@@ -6218,7 +6218,13 @@ class PayoutTest extends OAuthTestCase
     {
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+        //statusdetails experiment is also turned on
+        $this->mockRazorxTreatment('yesbank', 'on', 'on','off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on');
 
         $payoutQueuedEventData = $this->testData['testFiringOfWebhookOnQueuedPayoutEventData'];
 
@@ -6258,7 +6264,13 @@ class PayoutTest extends OAuthTestCase
                 return new \Requests_Response();
             })->times(7);
 
+
         $this->testCreateAndProcessQueuedPayout();
+
+        // checking whether status details entity is created and value is getting saved
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+        $this->assertNotNull($statusDetails);
+
     }
 
     public function testFiringOfWebhookPayoutStatusUpdateWithStork()
@@ -12193,7 +12205,16 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
 
         $payloadReversed = null;
 
@@ -12219,6 +12240,11 @@ class PayoutTest extends OAuthTestCase
             'bank_status_code' => 'TXN_REJECTED_BENE_BANK'
         ]);
 
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertEquals('beneficiary_bank_rejected',$statusDetails['reason']);
+        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.',$statusDetails['description']);
+
         $payoutReversedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventData, $payloadReversed);
@@ -12230,7 +12256,16 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
 
         $payloadReversed = null;
 
@@ -12255,6 +12290,11 @@ class PayoutTest extends OAuthTestCase
             'failure_reason' => '',
             'bank_status_code' => 'TXN_REJECTED_BENE_BANK'
         ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details','live');
+
+        $this->assertEquals('beneficiary_bank_rejected',$statusDetails['reason']);
+        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.',$statusDetails['description']);
 
         $payoutReversedEventData = $this->testData[__FUNCTION__];
 
@@ -12402,7 +12442,16 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
 
         $payloadProcessed = null;
 
@@ -12428,11 +12477,10 @@ class PayoutTest extends OAuthTestCase
             'bank_status_code' => null
         ]);
 
-        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
-            'fta_status' => 'processed',
-            'failure_reason' => null,
-            'bank_status_code' => null
-        ]);
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertEquals('payout_processed',$statusDetails['reason']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.',$statusDetails['description']);
 
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
@@ -12445,7 +12493,16 @@ class PayoutTest extends OAuthTestCase
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
-        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+        //$this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->mockRazorxTreatment(
+            'yesbank', 'off', 'off', 'off', 'off',
+            'on', 'on', 'off', 'on',
+            'on', 'off', 'on', 'on',
+            'off', 'control', 'on',
+            'on', 'off', 'control', 'off',
+            'on'
+        );
 
         $payloadProcessed = null;
 
@@ -12476,6 +12533,11 @@ class PayoutTest extends OAuthTestCase
             'failure_reason' => null,
             'bank_status_code' => null
         ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details','live');
+
+        $this->assertEquals('payout_processed',$statusDetails['reason']);
+        $this->assertEquals('Payout is processed and the money has been credited into the beneficiaries account.',$statusDetails['description']);
 
         $payoutProcessedEventData = $this->testData[__FUNCTION__];
 
@@ -13340,7 +13402,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($response['queueing_details']);
         $this->assertEquals('low_balance', $response['queueing_details']['reason']);
-        $this->assertEquals('Your account has insufficient balance. Kindly load money into your account to process the payout.',
+        $this->assertEquals('Payout is queued as there is insufficient balance in your account to process the payout.',
                             $response['queueing_details']['description']);
 
     }
@@ -15664,6 +15726,12 @@ class PayoutTest extends OAuthTestCase
                 ],
             ]);
 
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM',$statusDetails['description']);
+
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
@@ -15727,6 +15795,12 @@ class PayoutTest extends OAuthTestCase
             ],
         ]);
 
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM',$statusDetails['description']);
+
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
@@ -15785,6 +15859,12 @@ class PayoutTest extends OAuthTestCase
             ],
         ]);
 
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021',$statusDetails['description']);
+
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
@@ -15842,6 +15922,12 @@ class PayoutTest extends OAuthTestCase
             ],
         ]);
 
+        $statusDetails =$this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021',$statusDetails['description']);
+
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
@@ -15897,6 +15983,12 @@ class PayoutTest extends OAuthTestCase
                 ],
             ],
         ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('bank_window_closed', $statusDetails['reason']);
+        $this->assertEquals('The NEFT window for the day is closed. Payout will be processed by our partner bank at 09th November 2021, 09:13 PM',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -15955,6 +16047,12 @@ class PayoutTest extends OAuthTestCase
             ],
         ]);
 
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('bank_window_closed', $statusDetails['reason']);
+        $this->assertEquals('The RTGS window for the day is closed. Payout will be processed by our partner bank at 10th November 2021, 12:33 AM',$statusDetails['description']);
+
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
@@ -16008,6 +16106,12 @@ class PayoutTest extends OAuthTestCase
             ],
         ]);
 
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNotNull($statusDetails);
+        $this->assertEquals('payout_processing',$statusDetails['reason']);
+        $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after some time',$statusDetails['description']);
+
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
         $this->validateStorkWebhookFireEvent('payout.updated', $payoutUpdatedEventData, $payloadUpdated);
@@ -16054,6 +16158,10 @@ class PayoutTest extends OAuthTestCase
             'remarks' => '',
             'bank_status_code' => 'SUCCESS',
         ]);
+
+        $statusDetails = $this->getDbLastEntity('payouts_status_details');
+
+        $this->assertNull($statusDetails);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16153,4 +16261,5 @@ class PayoutTest extends OAuthTestCase
 
         $this->unitTestCase->setPrivateProperty($this->payoutService, 'slackAppService', $this->slackAppMock);
     }
+
 }

@@ -529,6 +529,8 @@ class Entity
 
     const PAYOUTS_BATCH = 'payouts_batch';
 
+    const PAYOUTS_STATUS_DETAILS = Table::PAYOUTS_STATUS_DETAILS;
+
     //user device details
     const USER_DEVICE_DETAIL = 'user_device_detail';
 
@@ -557,6 +559,7 @@ class Entity
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
     const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
+
     const M2M_REFERRAL                  = 'm2m_referral';
     const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_detail';
     const MERCHANT_SLABS                = 'merchant_slabs';
@@ -837,6 +840,8 @@ class Entity
         self::PAYOUTS_DETAILS => \RZP\Models\PayoutsDetails::class,
 
         self::PAYOUTS_BATCH => \RZP\Models\Payout\Batch::class,
+
+        self::PAYOUTS_STATUS_DETAILS => \RZP\Models\PayoutsStatusDetails::class,
 
         self::SUBSCRIPTION_OFFERS_MASTER  => \RZP\Models\Offer\SubscriptionOffer::class,
 

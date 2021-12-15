@@ -19,6 +19,8 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
+
 
 class FundAccountPayout extends Base
 {
@@ -159,6 +161,8 @@ class FundAccountPayout extends Base
     {
         if (($payout->isStatusQueued() === true) || ($payout->isStatusOnHold() === true))
         {
+            (new PayoutsStatusDetailsCore())->create($payout);
+
             $this->app->events->dispatch('api.payout.queued', [$payout]);
         }
         else

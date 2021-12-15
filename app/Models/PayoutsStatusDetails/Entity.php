@@ -23,7 +23,7 @@ class Entity extends PublicEntity
 
     const MODE                  = 'mode';
 
-    const TRIGGERED_BY        = 'triggered_by';
+    const TRIGGERED_BY         = 'triggered_by';
 
     // Relations
     const PAYOUT = 'payout';
@@ -33,6 +33,7 @@ class Entity extends PublicEntity
     protected $primaryKey = self::ID;
 
     protected $fillable   = [
+        self::PAYOUT_ID,
         self::STATUS,
         self::REASON,
         self::DESCRIPTION,
@@ -59,8 +60,10 @@ class Entity extends PublicEntity
     ];
 
     protected $defaults = [
-        self::REASON => null,
-        self::DESCRIPTION => null,
+        self::REASON        => null,
+        self::DESCRIPTION   => null,
+        self::MODE          => 'system',
+        self::TRIGGERED_BY  => null,
     ];
 
     protected $generateIdOnCreate = true;
@@ -75,6 +78,11 @@ class Entity extends PublicEntity
 
 
     // ============================= GETTERS =============================
+
+    public function getId()
+    {
+        return $this->getAttribute(self::ID);
+    }
 
     public function getStatus()
     {
@@ -107,7 +115,6 @@ class Entity extends PublicEntity
 
     public function setDescription($description)
     {
-
         $this->setAttribute(self::DESCRIPTION, $description);
     }
     // ============================= END SETTERS =============================

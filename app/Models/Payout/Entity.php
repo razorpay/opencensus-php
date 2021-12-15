@@ -46,8 +46,7 @@ use Razorpay\OAuth\Application\Repository as AppRepo;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Models\FundTransfer\Attempt as Attempt;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 
 /**
  * @property Customer\Entity        $customer
@@ -537,6 +536,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLATION_USER,
         self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
+        self::STATUS_DETAILS,
         self::MERCHANT_ID
     ];
 
@@ -608,6 +608,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLATION_USER,
         self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
+        self::STATUS_DETAILS,
     ];
 
     protected $defaults = [
@@ -775,6 +776,10 @@ class Entity extends Base\PublicEntity
         return $this->hasOne(PayoutsDetailsEntity::class);
     }
 
+    public function payoutsStatusDetails()
+    {
+        return $this->hasMany(PayoutsStatusDetails\Entity::class);
+    }
     // ============================= END RELATIONS =============================
 
     // ============================= GETTERS =============================
@@ -1050,7 +1055,7 @@ class Entity extends Base\PublicEntity
 
     public function getStatusDetails()
     {
-        return $this->statusDetails;
+        return $this->getAttribute(self::STATUS_DETAILS);
     }
 
     public function hasBeenQueued()
@@ -1636,43 +1641,6 @@ class Entity extends Base\PublicEntity
     public function setId($id)
     {
         $this->setAttribute(self::ID, $id);
-    }
-
-   public function setStatusDetails($statusDetails)
-    {
-        $statusDetailsReason = $statusDetails[Attempt\Entity::REASON] ?? null;
-
-        $processByTime = $statusDetails[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null;
-
-        if($statusDetailsReason === null)
-        {
-            $statusDetailsDescription = null;
-        }
-
-        else
-        {
-            $beneBankName = $this->provideBeneBankName() ?? 'beneficiary bank';
-
-            // templates will be picked as per status
-            //  currently for processing status
-            $statusDetailsDescription = View::make('status_details.processing_status',
-                [
-                'beneficiary_bank'  => $beneBankName,
-                'processByTime'     => $processByTime,
-                'reason'            => $statusDetailsReason,
-                'mode'              => $this->getMode(),
-                ])->render();
-
-            $statusDetailsDescription = rtrim($statusDetailsDescription);
-        }
-
-        $statusDetailsArray =
-                [
-                   'reason'         => $statusDetailsReason,
-                   'description'    => $statusDetailsDescription
-                ];
-
-        $this->statusDetails = $statusDetailsArray;
     }
 
     // ============================= END SETTERS =============================
@@ -2332,6 +2300,42 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicStatusDetailsAttribute(array &$attributes)
+    {
+               $app = App::getFacadeRoot();
+
+        $merchantId = $this->getMerchantId();
+
+              $mode = $app['rzp.mode'] ?? Mode::LIVE;
+
+           $variant = $app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
+            $mode,
+            Entity::RAZORX_RETRY_COUNT
+           );
+
+        if ((strtolower($variant) === 'on'))
+        {
+            $statusDetails = (new PayoutsStatusDetails\Repository())
+                    ->fetchPayoutStatusDetailsLatest($this->getId());
+
+                $statusDetailsArray =
+                    [
+                        'reason'         => $statusDetails['reason'],
+                        'description'    => $statusDetails['description'],
+                    ];
+
+                $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
+        }
+
+       else
+        {
+            unset($attributes[self::STATUS_DETAILS]);
+        }
+
+    }
+
     // ============================= END PUBLIC SETTERS =============================
 
     // ============================= MODIFIERS =============================
@@ -2536,7 +2540,7 @@ class Entity extends Base\PublicEntity
         return $data;
     }
 
-    private function getDescriptionForQueuedReason(String $reason)
+    public function getDescriptionForQueuedReason(String $reason)
     {
         $description = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION[$reason];
 

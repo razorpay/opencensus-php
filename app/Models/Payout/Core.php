@@ -62,6 +62,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
+use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 
 /**
  * Class Core
@@ -725,7 +726,7 @@ class Core extends Base\Core
 
             else
             {
-                $payout->setStatusDetails($statusDetails);
+                (new PayoutsStatusDetailsCore())->createStatusDetails($payout,$ftaData);
 
                 $this->app->events->fire('api.payout.updated', [$payout]);
             }
@@ -1138,6 +1139,8 @@ class Core extends Base\Core
             $payout->setFailureReason('Payout failed due to technical failure. Please retry after 30 min');
 
             $payout->setStatusCode("FTS_ATTEMPT_CREATE_FAILED");
+
+            (new PayoutsStatusDetailsCore())->create($payout);
 
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
@@ -1988,6 +1991,8 @@ class Core extends Base\Core
                                     'failure_reason' => $payout->getFailureReason(),
                                 ]);
 
+                            (new PayoutsStatusDetailsCore())->create($payout);
+
                             $this->app->events->dispatch('api.payout.failed', [$payout]);
                         }
                     }
@@ -2149,6 +2154,8 @@ class Core extends Base\Core
                         (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                     }
                 });
+
+            (new PayoutsStatusDetailsCore())->create($payout);
 
             $this->app->events->dispatch('api.payout.processed', [$payout]);
         }
@@ -2642,6 +2649,8 @@ class Core extends Base\Core
 
             $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas, $reversal);
 
+            (new PayoutsStatusDetailsCore())->create($payout);
+
             $this->app->events->dispatch('api.payout.reversed', [$payout]);
         }
 
@@ -2662,6 +2671,8 @@ class Core extends Base\Core
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
         $this->reversePayoutForHighTpsMerchants($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas, $reversal);
+
+        (new PayoutsStatusDetailsCore())->create($payout);
 
         $this->app->events->dispatch('api.payout.reversed', [$payout]);
 
@@ -2748,6 +2759,8 @@ class Core extends Base\Core
         }
         else
         {
+            (new PayoutsStatusDetailsCore())->create($payout);
+
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
     }

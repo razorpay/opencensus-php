@@ -1979,5 +1979,14 @@ final class FactoryData
             'description' => 'Sample description',
             'notes'       => null,
         ]);
+
+        $factory(\RZP\Models\PayoutsStatusDetails\Entity::class, [
+           'id'           => $faker->uniqueid,
+           'payout_id'    => 'factory:\RZP\Models\Payout\Entity',
+            'status'      => 'processing',
+            'reason'      => 'payout_processing',
+            'description' => 'Payout is being processed by our partner bank. Please check '
+                              .'the final status after some time',
+        ]);
     }
 }

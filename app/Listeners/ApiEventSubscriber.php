@@ -819,9 +819,6 @@ class ApiEventSubscriber extends Base\Core
     protected function onPayoutUpdated(Payout\Entity $payout)
     {
         $payload = $this->getPayoutPayload($payout);
-
-        $payload = $this->getStatusDetailsInPayload($payout,$payload);
-
         $this->dispatchEventToStork($payload);
     }
 
@@ -1812,26 +1809,6 @@ class ApiEventSubscriber extends Base\Core
         $this->repo->qr_payment->syncToEs($payment->qrPayment, Base\EsRepository::UPDATE);
     }
 
-    protected function getStatusDetailsInPayload($payout, $payload)
-    {
-        $merchantId = $payout->getMerchantId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
-            $this->mode,
-            Payout\Entity::RAZORX_RETRY_COUNT
-        );
-
-        if (strtolower($variant) === 'on')
-        {
-            $statusDetails = $payout->getStatusDetails();
-
-            $payload[Payout\Entity::PAYOUT][Payout\Entity::ENTITY][Payout\Entity::STATUS_DETAILS] = $statusDetails;
-        }
-        return $payload;
-    }
-
     protected function getTokenServiceProviderPayload($token): array
     {
         $serviceProviderTokens = $this->withPayload;
@@ -1848,4 +1825,5 @@ class ApiEventSubscriber extends Base\Core
 
         return $partialPayload;
     }
+
 }

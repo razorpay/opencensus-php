@@ -61,6 +61,8 @@ use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
+
 
 /**
  * Payouts base where we will have a generic flow for the customer/merchants payouts.
@@ -706,6 +708,8 @@ class Base extends BaseCore
         // We have already sent the initiated mail/webhook when we marked the payout as batch_submitted
         if ($payout->getStatus() === Status::FAILED)
         {
+            (new PayoutsStatusDetailsCore())->create($payout);
+
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
 
@@ -821,6 +825,8 @@ class Base extends BaseCore
         // We have already sent the initiated mail/webhook when we marked the payout as batch_submitted
         if ($payout->getStatus() === Status::FAILED)
         {
+            (new PayoutsStatusDetailsCore())->create($payout);
+
             $this->app->events->dispatch('api.payout.failed', [$payout]);
         }
 
@@ -949,6 +955,8 @@ class Base extends BaseCore
 
                             $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
 
+                            (new PayoutsStatusDetailsCore())->create($payout);
+
                             $this->app->events->dispatch('api.payout.queued', [$payout]);
                         }
                         else
@@ -958,6 +966,8 @@ class Base extends BaseCore
                             $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING);
 
                             $payout->setStatus(Status::FAILED);
+
+                            (new PayoutsStatusDetailsCore())->create($payout);
 
                             $this->app->events->dispatch('api.payout.failed', [$payout]);
                         }
@@ -1135,6 +1145,8 @@ class Base extends BaseCore
             // We only have to send mail/webhook if the payout fails.
             if ($payout->getStatus() === Status::FAILED)
             {
+                (new PayoutsStatusDetailsCore())->create($payout);
+
                 $this->app->events->dispatch('api.payout.failed', [$payout]);
             }
             else
@@ -2129,6 +2141,8 @@ class Base extends BaseCore
         }
 
         $this->repo->saveOrFail($payout);
+
+        (new PayoutsStatusDetailsCore())->create($payout);
 
         $this->app->events->dispatch('api.payout.pending', [$payout]);
 

@@ -44,7 +44,7 @@
   "EXCEEDED_AMOUNT_LIMIT": {
     "failed": {
       "source": "beneficiary_bank",
-      "reason": "transaction_limit_excedded",
+      "reason": "transaction_limit_exceeded",
       "description": "Payout amount greater than the limit supported by the beneficiary account."
     }
   },
@@ -407,8 +407,8 @@
   "FTS_BANK_TXN_LIMIT_CROSSED": {
     "failed": {
       "source": "business",
-      "reason": "neft_247_limit_exhausted",
-      "description": "Payout failed due to extended NEFT window limit exhausted. Please try again in the next NEFT window."
+      "reason": "amount_limit_exhausted(NEFT)",
+      "description": "The NEFT 24*7 limits for your account has been exhausted. Please retry after sometime"
     }
   },
   "DEFAULT": {
@@ -441,6 +441,13 @@
     }
   },
   "PARTNER_BANK_DOWN": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_down",
+      "description": "Payout failed as the partner bank is facing technical issues. Please retry"
+    }
+  },
+  "GATEWAY_DOWNTIME": {
     "failed": {
       "source": "gateway",
       "reason": "gateway_down",
