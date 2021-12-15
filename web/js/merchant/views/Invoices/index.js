@@ -117,7 +117,7 @@ export default class InvoicesContainer extends Component {
             />
           </ShowWhen>
           <PayPalForInvoice />
-          {this.props?.user?.international && <FIRCBanner />}
+          {user?.international && <FIRCBanner screen="invoices" />}
         </div>
 
         <tabbed-container>

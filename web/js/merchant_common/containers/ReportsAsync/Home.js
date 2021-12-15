@@ -158,7 +158,7 @@ export default class ReportHome extends React.PureComponent {
             bannerKey={`zapier-integration-banner-${user.current}`}
           />
         </ShowWhen>
-        {user?.international && <FIRCBanner />}
+        {user?.international && <FIRCBanner screen="reports" />}
         <tabbed-container>
           <header>
             <NavLink to="/reports">Reports</NavLink>

@@ -1,6 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+const clickHandler = () => {
+  analyticsTrack({
+    objectName: 'FIRC Banner',
+    actionName: 'clicked',
+    screen: 'Settings',
+    properties: {
+      ...getCommonAnalyticsProperties(window.rzp_user),
+    },
+    toLumberjack: true,
+  });
+};
+
 const Firc = () => {
   return (
     <div className="firc-settings-banner">
@@ -20,7 +35,7 @@ const Firc = () => {
       <div>
         Download monthly <b>e-FIRC</b> directly from the dashboard now!
       </div>
-      <Link to="/profile/view_firc" className="link">
+      <Link to="/profile/view_firc" className="link" onClick={clickHandler}>
         <u>
           <b>View FIRC</b>
         </u>

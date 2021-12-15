@@ -8,6 +8,18 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Paypal from './Paypal';
 import International from './International';
 
+const fircClickHandler = () => {
+  analyticsTrack({
+    objectName: 'FIRC Banner',
+    actionName: 'clicked',
+    screen: 'Instrument Dashboard',
+    properties: {
+      ...getCommonAnalyticsProperties(window.rzp_user),
+    },
+    toLumberjack: true,
+  });
+};
+
 const LeafList = ({ instrument, intermediateInstrument, user }) => {
   const [filter, setFilter] = useState('active');
   const ulRef = useRef(null);
@@ -190,7 +202,9 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
             </div>
             <div>
               <u>
-                <Link to="/profile/view_firc">View FIRC</Link>
+                <Link to="/profile/view_firc" onClick={fircClickHandler}>
+                  View FIRC
+                </Link>
               </u>
             </div>
           </div>
