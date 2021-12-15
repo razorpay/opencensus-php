@@ -15,6 +15,7 @@ class Handler extends BaseHandler
         Events::TICKET_DETAILS_PENDING    => [Channel::SMS, Channel::WHATSAPP],
         Events::TICKET_RESOLVED           => [Channel::SMS, Channel::WHATSAPP],
         Events::TICKET_REOPENED           => [Channel::SMS, Channel::WHATSAPP],
+        Events::AGENT_TICKET_CREATED      => [Channel::SMS, Channel::WHATSAPP],
     ];
 
     protected function getSupportedchannels(string $event)

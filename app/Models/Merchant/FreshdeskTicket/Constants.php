@@ -32,6 +32,8 @@ class Constants
     const CF_QUERY                  = 'cf_query';
     const CF_CREATED_BY             = 'cf_created_by';
 
+    const AGENT = 'agent';
+
     //Flows
     const CUSTOMER = 'Customer';
     const PARTNER  = 'Partner';

@@ -1405,6 +1405,21 @@ class FreshdeskTicketV2Test extends TestCase
             if (empty($testCase['created_by']) === false)
             {
                 $this->testData[__FUNCTION__]['request']['content']['created_by'] = $testCase['created_by'];
+
+                $this->mockRazorxTreatment('on');
+
+                $this->mockStork();
+
+                $this->mockRaven();
+
+                $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.agent_ticket_created', '9876543210');
+
+                $url = $this->app['config']->get('applications.dashboard.url');
+
+                $this->expectStorkWhatsappRequest('support.agent_ticket_created',
+                                                  'Hi, '.PHP_EOL.
+                                                  'Our team has raised a new service request that requires your action. Please respond sooner for a faster resolution. You can track and reply to the service request by logging into the dashboard : '. $url .' '.PHP_EOL.
+                                                  'Team Razorpay');
             }
             if (empty($testCase['status']) === false)
             {

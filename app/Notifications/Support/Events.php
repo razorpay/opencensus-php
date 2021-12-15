@@ -14,6 +14,7 @@ class Events
     const TICKET_DETAILS_PENDING    = 'TICKET_DETAILS_PENDING';
     const TICKET_RESOLVED           = 'TICKET_RESOLVED';
     const TICKET_REOPENED           = 'TICKET_REOPENED';
+    const AGENT_TICKET_CREATED      = 'AGENT_TICKET_CREATED';
 
     const SMS_TEMPLATES = [
         self::TICKET_CREATED            => 'sms.support.ticket_created',
@@ -21,7 +22,8 @@ class Events
         self::TICKET_DELAY_UPDATE_72HRS => 'sms.support.ticket_delay_update_72hrs',
         self::TICKET_DETAILS_PENDING    => 'sms.support.ticket_details_pending',
         self::TICKET_RESOLVED           => 'sms.support.ticket_resolved',
-        self::TICKET_REOPENED           => 'sms.support.ticket_reopened'
+        self::TICKET_REOPENED           => 'sms.support.ticket_reopened',
+        self::AGENT_TICKET_CREATED      => 'sms.support.agent_ticket_created'
     ];
 
     // The below text messages have to exactly match what is registered in the whatsapp messaging providers portal
@@ -55,6 +57,11 @@ class Events
         self::TICKET_REOPENED => [
             'Hi, ',
             'We believe that your issue regarding the ticket {ticket_id} is still not resolved. Your ticket has been reopened and our team will take it up on priority and get back to you within 24 hrs. You can track your ticket updates by logging into the dashboard : {url} ',
+            'Team Razorpay',
+        ],
+        self::AGENT_TICKET_CREATED => [
+            'Hi, ',
+            'Our team has raised a new service request that requires your action. Please respond sooner for a faster resolution. You can track and reply to the service request by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
       ];
