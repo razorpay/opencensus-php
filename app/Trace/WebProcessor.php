@@ -67,10 +67,23 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $headers = ApiRequest::getHeaders();
 
-        return array_filter($headers, function($key)
+        $data = array_filter($headers, function($key)
         {
             return (substr($key, 0, 2) === "X-");
         }, ARRAY_FILTER_USE_KEY);
+
+        $app = App::getFacadeRoot();
+
+        $user = $app['session']->get('dashboard_user_payload');
+
+        if(empty($user) === false)
+        {
+            $data['user_id'] = $user->id ?? null;
+        }
+
+        $data['merchant_id']  = $app['session']->get('current_merchant_id') ?? null;
+
+        return $data;
     }
 
     protected function unsetUrlForSensitiveUrls(& $serverData)
