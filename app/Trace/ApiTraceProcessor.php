@@ -4,9 +4,12 @@ namespace RZP\Trace;
 
 use App;
 use Request;
+use Route as RouteFacade;
+use OpenCensus\Trace\Tracer;
 
 use RZP\Http\RequestHeader;
 use RZP\Http\Route;
+use RZP\Constants\Tracing;
 use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\Admin\ConfigKey;
@@ -116,6 +119,8 @@ class ApiTraceProcessor
         $this->addProduct($record);
 
         $this->addTraceId($record);
+
+        $this->addDistributedTraceId($record);
 
         $this->addAwsTraceId($record);
 
@@ -422,6 +427,23 @@ class ApiTraceProcessor
             $traceId = $this->app->request->headers->get(RequestHeader::X_REQUEST_TRACE_ID);
 
             $record['request']['x_request_trace_id'] = $traceId;
+        }
+    }
+
+    // This function adds the Opentracing trace id(in our case jaeger id
+    // The official docs says the global trace id is by default kept as
+    // uber_trace_id. Following the same convention here.
+    // Also this id will be added only in case routes are enabled for
+    // distributed tracing
+    private function addDistributedTraceId(array &$record)
+    {
+        if ((Tracing::isEnabled($this->app) === true) and
+            (is_null(RouteFacade::current()) === false) and
+            (Tracing::shouldTraceRoute(RouteFacade::current()) === true))
+        {
+            $distributedTraceId = Tracer::spanContext()->traceId();
+
+            $record['request']['uber_trace_id'] =  $distributedTraceId;
         }
     }
 
