@@ -2,10 +2,10 @@
 
 namespace RZP\Services\PayoutService;
 
-use RZP\Http\Request\Requests;
 use Requests_Response;
 use Requests_Exception;
 use Razorpay\Trace\Logger;
+use Razorpay\Edge\Passport\Passport;
 
 use RZP\Exception;
 use RZP\Error\Error;
@@ -13,6 +13,7 @@ use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Http\Request\Requests;
 
 class Base
 {
@@ -152,6 +153,8 @@ class Base
         $traceRequest = $request;
 
         unset($traceRequest['options']['auth']);
+
+        unset($traceRequest['headers'][Passport::PASSPORT_JWT_V1 ]);
 
         $this->trace->info(TraceCode::PAYOUT_SERVICE_REQUEST, $traceRequest);
     }
