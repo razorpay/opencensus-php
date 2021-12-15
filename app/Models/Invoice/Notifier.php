@@ -521,9 +521,9 @@ class Notifier extends Base\Core
         $defaultTemplate = $reminder ? 'sms.reminder_invoice' : 'sms.invoice';
 
         $defaultParams   = [
-            'merchant_name' => $merchant->getBillingLabel(),
+            'merchant_name' => str_limit($merchant->getBillingLabel(),30),
             'invoice_link'  => $invoiceLink,
-            'currency'      => $this->invoice->getCurrency(),
+            'currency'      => $this->invoice->getCurrency() ?? "INR",
             'amount'        => $this->invoice->getAmount() / 100,
         ];
 
