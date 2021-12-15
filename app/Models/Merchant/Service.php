@@ -4860,17 +4860,7 @@ class Service extends Base\Service
 
             $query[Constants::AGGREGATIONS][$aggregationKey] =  $aggregationValue;
 
-            $allFilters = [];
-
-            foreach($filters as $filterKey => $filterValue)
-            {
-                if(($filterKey == Constants::DEFAULT) || (str_starts_with($aggregationKey, $filterKey) === true ))
-                {
-                    $allFilters[$filterKey] = $filterValue;
-                }
-            }
-
-            $query[Constants::FILTERS] = $allFilters;
+            $query[Constants::FILTERS] = $filters;
 
             array_push($queries, $query);
         }
