@@ -1,5 +1,7 @@
 import { merchantFetch } from 'merchant/utils/ajax';
 import { downloadFile } from './utility';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export const fetchFircFiles = (month, year) => {
   return merchantFetch({
@@ -28,5 +30,16 @@ export const downloadFiles = (obj) => {
     })
     .catch((err) => {
       throw new Error(err);
+    })
+    .finally(() => {
+      analyticsTrack({
+        objectName: 'FIRC File',
+        actionName: 'download',
+        screen: 'profile',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+        toLumberjack: true,
+      });
     });
 };

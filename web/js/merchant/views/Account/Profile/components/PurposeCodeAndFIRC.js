@@ -7,6 +7,8 @@ import { fetchPurposeCode } from 'merchant/reducers/profile';
 import { showNotification as fnNotification } from 'merchant_common/reducers/notifications';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const SelectPurposeCodeForm = lazy(() =>
   import(
@@ -40,6 +42,16 @@ const PurposeCodeAndFIRC = (props) => {
           <DownloadFIRCForm user={props.user} />,
         </SuspenseWithLoader>
       ),
+    });
+
+    analyticsTrack({
+      objectName: 'FIRC Modal',
+      actionName: 'opened',
+      screen: 'profile',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toLumberjack: true,
     });
   };
 
