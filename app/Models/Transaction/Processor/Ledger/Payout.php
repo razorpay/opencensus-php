@@ -2,8 +2,7 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
-use Razorpay\Trace\Logger as Trace;
-
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payout\Mode;
@@ -11,6 +10,7 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
@@ -181,7 +181,7 @@ class Payout extends Base
         return [
             self::TENANT              => self::X,
             self::MODE                => $this->mode,
-            self::IDEMPOTENCY_KEY     => gen_uuid(self::UUID_FORMAT),
+            self::IDEMPOTENCY_KEY     => Uuid::uuid1()->toString(),
             self::MERCHANT_ID         => $payout->getMerchantId(),
             self::CURRENCY            => $payout->getCurrency(),
             self::AMOUNT              => (string) $payout->getAmount(),

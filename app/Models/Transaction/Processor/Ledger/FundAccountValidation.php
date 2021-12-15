@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
-use Razorpay\Trace\Logger as Trace;
-
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
@@ -107,7 +107,7 @@ class FundAccountValidation extends Base
             $payload = [
                 self::TENANT             => self::X,
                 self::MODE               => $this->mode,
-                self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
+                self::IDEMPOTENCY_KEY    => Uuid::uuid1()->toString(),
                 self::MERCHANT_ID        => $fundAccountValidation->getMerchantId(),
                 self::CURRENCY           => $fundAccountValidation->getCurrency(),
                 self::AMOUNT             => (string) $fundAccountValidation->getAmount(),

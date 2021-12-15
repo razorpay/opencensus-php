@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
-use Razorpay\Trace\Logger as Trace;
-
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer\Entity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 
@@ -58,7 +58,7 @@ class FundLoading extends Base
             $payload = [
                 self::TENANT                => self::X,
                 self::MODE                  => $this->mode,
-                self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
+                self::IDEMPOTENCY_KEY       => Uuid::uuid1()->toString(),
                 self::MERCHANT_ID           => $bankTransfer->getMerchantId(),
                 self::CURRENCY              => $bankTransfer->getTransactionCurrency(),
                 self::AMOUNT                => (string) $bankTransfer->getAmount(),

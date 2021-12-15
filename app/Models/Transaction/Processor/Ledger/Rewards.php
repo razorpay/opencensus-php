@@ -2,12 +2,11 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
-
 use RZP\Models\Merchant\Credits\Entity;
-use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Rewards extends Base
@@ -55,7 +54,7 @@ class Rewards extends Base
             $payload = [
                 self::TENANT                => self::X,
                 self::MODE                  => $this->mode,
-                self::IDEMPOTENCY_KEY       => gen_uuid(self::UUID_FORMAT),
+                self::IDEMPOTENCY_KEY       => Uuid::uuid1()->toString(),
                 self::MERCHANT_ID           => $credits->getMerchantId(),
                 self::CURRENCY              => Currency::INR,
                 self::AMOUNT                => (string) $credits->getValue(),

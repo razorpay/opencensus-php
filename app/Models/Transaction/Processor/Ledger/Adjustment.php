@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Models\Adjustment\Entity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
@@ -53,7 +53,7 @@ class Adjustment extends Base
             $payload = [
                 self::TENANT             => self::X,
                 self::MODE               => $this->mode,
-                self::IDEMPOTENCY_KEY    => gen_uuid(self::UUID_FORMAT),
+                self::IDEMPOTENCY_KEY    => Uuid::uuid1()->toString(),
                 self::MERCHANT_ID        => $adjustment->getMerchantId(),
                 self::CURRENCY           => $adjustment->getCurrency(),
                 self::AMOUNT             => (string) abs($adjustment->getAmount()),
