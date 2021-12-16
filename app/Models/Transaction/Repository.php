@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -377,6 +378,30 @@ class Repository extends Base\Repository
     {
         $relationships = [];
         $objects = [];
+        // this is added to control the fetch queries to data warehouse connection
+        // once there are no issues we will be removing this experiment
+        $useDataWarehouse = false;
+
+        if($entities->count()>0)
+        {
+            $app = $this->app;
+            $merchantId = $entities[0]->getMerchantId();
+
+            $variant = $app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::USE_DATA_WAREHOUSE_CONNECTION_FOR_FETCH,
+                $app['basicauth']->getMode() ?? Mode::LIVE);
+
+            $this->trace->info(
+                TraceCode::TRANSACTION_REPORT_FETCH_QUERIES_TO_DATA_WAREHOUSE,
+                [
+                    'experiment_name' => Merchant\RazorxTreatment::USE_DATA_WAREHOUSE_CONNECTION_FOR_FETCH,
+                    'variant'         => $variant,
+                    'merchant_id'     => $merchantId
+                ]);
+
+            $useDataWarehouse = ($variant === 'on');
+        }
 
         // Collects in a map -- ids of different types
         foreach ($entities as $entity)
@@ -390,7 +415,7 @@ class Repository extends Base\Repository
             $eagerLoadRelations = $entityToRelationFetchMap[$type] ?? [];
 
             // Queries to eager load the ids of the $type, and also the required relations
-            $typeEntities = $this->repo->$type->findManyWithRelations($ids, $eagerLoadRelations);
+            $typeEntities = $this->repo->$type->findManyWithRelations($ids, $eagerLoadRelations, array('*'), $useDataWarehouse);
 
             // Creates an id to entity map of the above queried entities
             foreach ($typeEntities as $entity)

@@ -178,9 +178,16 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findMany($ids, $columns);
     }
 
-    public function findManyWithRelations($ids, $relations, $columns = array('*'))
+    public function findManyWithRelations($ids, $relations, $columns = array('*'), $useWarehouse = false)
     {
-        $query = $this->newQuery();
+        if ($useWarehouse === false)
+        {
+            $query = $this->newQuery();
+        }
+        else
+        {
+            $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT));;
+        }
 
         if (count($relations) > 0)
         {
