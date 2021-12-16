@@ -204,7 +204,7 @@ class CardVault extends Base\Core
     {
         $response = $this->fetchCryptogramFromVaultToken($cardVaultToken, $merchant);
 
-        return $response['service_provider_tokens'][0]['data'];
+        return $response['service_provider_tokens'][0]['provider_data'];
     }
 
     public function fetchToken($cardVaultToken)

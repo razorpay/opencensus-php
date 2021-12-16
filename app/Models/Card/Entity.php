@@ -857,7 +857,8 @@ class Entity extends Base\PublicEntity
 
     public function isRzpSavedCard()
     {
-        return (($this->getAttribute(self::VAULT) === Card\Vault::RZP_ENCRYPTION) or
+        return ((empty($this->getAttribute(self::VAULT)) === true) or
+                ($this->getAttribute(self::VAULT) === Card\Vault::RZP_ENCRYPTION) or
                 ($this->getAttribute(self::VAULT) === Card\Vault::RZP_VAULT));
     }
 

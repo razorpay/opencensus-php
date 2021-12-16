@@ -589,8 +589,8 @@ class Core extends Base\Core
         $input = [
             Card\Entity::NUMBER           => $cryptgram['token_number'],
             Card\Entity::NAME             => $card->getName(),
-            Card\Entity::EXPIRY_MONTH     => $cryptgram['expiry_month'],
-            Card\Entity::EXPIRY_YEAR      => $cryptgram['expiry_year'],
+            Card\Entity::EXPIRY_MONTH     => $cryptgram['token_expiry_month'],
+            Card\Entity::EXPIRY_YEAR      => $cryptgram['token_expiry_year'],
             Card\Entity::CRYPTOGRAM_VALUE => $cryptgram['cryptogram_value'],
             Card\Entity::TOKENISED        => 1,
             Card\Entity::VAULT            => "rzpvault",
