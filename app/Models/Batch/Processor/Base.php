@@ -279,7 +279,6 @@ class Base extends BaseModel\Core
         {
             $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
         }
-
         if ($response[Batch\Constants::ERROR_COUNT] > 0)
         {
             $this->trace->info(TraceCode::ERROR_IN_VALIDATING_BATCH_FILE,
@@ -970,6 +969,17 @@ class Base extends BaseModel\Core
                             $dict["notes[{$k}]"] = $v;
                         }
                     }
+                    // If the header is products, flatten products key & value pair at current position
+                    else if ($header === Batch\Header::PRODUCTS)
+                    {
+                        foreach ($value as $index => $productArray)
+                        {
+                            foreach ($productArray as $k => $v)
+                            {
+                                $dict["products_{$index}[{$k}]"] = $v;
+                            }
+                        }
+                    }
                     // lowercase any value in speed column
                     else if ($header === Batch\Header::SPEED)
                     {
@@ -1245,6 +1255,13 @@ class Base extends BaseModel\Core
                     unset($entry[$key]);
                     $entry[Batch\Header::NOTES][$matches[1]] = $value;
                 }
+                // put comment
+                else if (preg_match(Batch\Header::PRODUCTS_REGEX, $key, $matches) === 1)
+                {
+                    unset($entry[$key]);
+                    $entry[Batch\Header::PRODUCTS][$matches[1]][$matches[2]] = $value;
+                }
+
                 // Trim leading or trailing whitespace in the speed column value
                 else if ($key === Batch\Header::SPEED)
                 {

@@ -30,8 +30,11 @@ class Header
 
     // A header key which holds notes values(key value pairs)
     const NOTES             = 'notes';
+    const PRODUCTS          = 'products';
     // In file, notes columns are expected to be in format: Notes[<key>] & while parsing the file, formatted as above
     const NOTES_REGEX       = '/^notes\[(.*)]$/';
+    const PRODUCTS_REGEX    = '/^products_([1-9]|10)\[(.*)]$/';
+
     const TERMINAL_CREATION_TYPE_REGEX           = '/^Type\[(.*)]$/';
 
     const NOTES_PLACE               = 'notes[place]';
@@ -2770,6 +2773,7 @@ class Header
                 self::AUTH_LINK_DESCRIPTION,
                 self::AUTH_LINK_EXPIRE_BY,
                 self::NOTES,
+                self::PRODUCTS,
             ],
 
             self::OUTPUT => [
@@ -2794,6 +2798,7 @@ class Header
                 self::AUTH_LINK_NACH_REFERENCE2,
                 self::AUTH_LINK_NACH_CREATE_FORM,
                 self::NOTES,
+                self::PRODUCTS,
                 self::STATUS,
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
@@ -4139,6 +4144,7 @@ class Header
      */
     public static function validate(string $type, array $actualHeaders)
     {
+
         $expectedHeaders = Header::getInputHeadersForType($type);
 
         //
@@ -4149,6 +4155,11 @@ class Header
             (in_array(self::NOTES, $actualHeaders, true) === false))
         {
             $actualHeaders[] = self::NOTES;
+        }
+        if ((in_array(self::PRODUCTS, $expectedHeaders, true) === true) and
+            (in_array(self::PRODUCTS, $actualHeaders, true) === false))
+        {
+            $actualHeaders[] = self::PRODUCTS;
         }
 
         //
