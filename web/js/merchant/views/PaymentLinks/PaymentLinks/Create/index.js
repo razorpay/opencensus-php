@@ -493,13 +493,16 @@ export default class CreateNewContainer extends React.Component {
     }
 
     const notes = onChangeNotes(pairs);
-
-    this.setState((prevState) => ({
+    /* If refering from prevState this is breaking UI 
+    on prod as prevState.dirty is coming null or 
+    undefined , reverting back to previous code. */
+    this.setState({
       dirty: {
-        ...prevState.dirty,
+        // eslint-disable-next-line react/no-access-state-in-setstate
+        ...this.state.dirty,
         notes,
       },
-    }));
+    });
   };
 
   onAddNewNote = () => {
