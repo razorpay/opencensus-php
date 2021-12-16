@@ -220,6 +220,8 @@ class InfoCode
 
     const SCROOGE_RESPONSE_ON_REFERENCE1_UPDATE         = 'SCROOGE_RESPONSE_ON_REFERENCE1_UPDATE';
 
+    const GATEWAY_CAPTURED_MISMATCH                     = 'GATEWAY_CAPTURED_MISMATCH';
+
     public static $fileBasedReconInfoCodes = [
         self::COLUMN_HEADER_MISMATCH,
         self::RECON_BLACKLISTED_COLUMNS_NOT_DEFINED,

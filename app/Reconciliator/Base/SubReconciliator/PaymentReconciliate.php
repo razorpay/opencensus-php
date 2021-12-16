@@ -21,6 +21,7 @@ use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
+use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\RequestProcessor\Base as ReqBase;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -419,6 +420,23 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             'gateway'    => $this->gateway,
             'batch_id'   => $this->batchId,
         ];
+
+        // Adding below check as we need to send fulcrum payment ids to cps service
+        // to update the status further in fulcrum db
+        // https://razorpay.slack.com/archives/CRVCT80KW/p1630389589039000
+        if ((strtolower($this->payment->gateway) === Payment\Gateway::FULCRUM) and
+            ($this->payment->getGatewayCaptured() !== true))
+        {
+            $data[Reconciliation::IS_GATEWAY_CAPTURED_MISMATCH] = 1;
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'  => Base\InfoCode::GATEWAY_CAPTURED_MISMATCH,
+                    'payment_id' => $this->payment->getId(),
+                    'data'       => $data
+                ]
+            );
+        }
 
         CardsPaymentRecon::dispatch($data);
 

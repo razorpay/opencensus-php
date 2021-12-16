@@ -31,6 +31,8 @@ class Reconciliation extends Base
     // has come from batch service
     const BATCH_SERVICE_RECON_REQUEST = 'batch_service_recon_request';
 
+    const IS_GATEWAY_CAPTURED_MISMATCH = 'is_gateway_captured_mismatch';
+
     /**
      * Lock wait timeout for reconciliation batch entity
      */

@@ -250,7 +250,8 @@ class Service extends Base\Service
             return;
         }
 
-        if (empty($pushData) === true)
+        if (empty($pushData) === true and (!((strtolower($input['gateway']) === Payment\Gateway::FULCRUM) and
+                (empty($input[Reconciliation::IS_GATEWAY_CAPTURED_MISMATCH]) === false))))
         {
             // No param has been set to be saved/overwritten,
             // no meaning in pushing to queue.
@@ -264,6 +265,12 @@ class Service extends Base\Service
         $pushData[Constants::ENTITY_TYPE] = Constants::GATEWAY;
         $pushData[Constants::GATEWAY] = $data;
         $pushData['payment_id'] = $paymentId;
+
+        if ((strtolower($input['gateway']) === Payment\Gateway::FULCRUM) and
+            (empty($input[Reconciliation::IS_GATEWAY_CAPTURED_MISMATCH]) === false)){
+            $pushData[Constants::GATEWAY]['name'] = Payment\Gateway::FULCRUM;
+            $pushData[Constants::GATEWAY]['gateway_captured'] = true;
+        }
 
         $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
 
