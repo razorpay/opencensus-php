@@ -72,9 +72,10 @@ jobs:
           skipRoastByDevStr = context.payload.pull_request.body.toLowerCase()
           var skipRoastByDevValueRow = (skipRoastByDevStr.substring(skipRoastByDevStr.indexOf("skiproastbydev"))).split("\n")
           var skipRoastByDevValue = skipRoastByDevValueRow[0].split("|")
-          var skipRoastByDev = skipRoastByDevValue[1].trim()
-          console.log(skipRoastByDev)
-          return skipRoastByDev
+          var skipRoastByDev = skipRoastByDevValue[1].split("-")
+          var skipRoastByDevFlag = skipRoastByDev[0].trim()
+          console.log(skipRoastByDevFlag)
+          return skipRoastByDevFlag
     - name: Print PR Number
       run: echo ${{ steps.roastPRNumber.outputs.result }}
       # Get Roast PR State if its approved or not

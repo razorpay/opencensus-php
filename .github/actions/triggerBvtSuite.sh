@@ -12,6 +12,10 @@ run_bvt_suite_when_approved() {
     roastPRCommit="latest"
   fi
 
+  if [ "$SKIP_ROAST_BY_DEV" != "false" ]; then
+    SKIP_ROAST_BY_DEV="true"
+  fi
+
   URI="https://api.github.com"
   API_HEADER="Accept: application/vnd.github.v3+json"
   AUTH_HEADER="Authorization: token ${GITHUB_TOKEN}"
@@ -29,8 +33,10 @@ run_bvt_suite_when_approved() {
     exit 0
   fi
 
-  echo "Triggering bvt testing execution for :" + "$commitId"
-  echo "Triggering bvt testing execution for Roast PR :" + "$roastPRCommit"
+  echo "Triggering bvt testing execution for : " + "$commitId"
+  echo "Triggering bvt testing execution for Roast PR: " + "$roastPRCommit"
+  echo "{\"CommitId\":\"$commitId\",\"skip_roast\":$skipRoast,\"PRNumber\":\"$PRNumber\",\"pr_status\":\"approved\",\"roast_commit_id\":\"$roastPRCommit\",\"skip_roast_by_dev\":$SKIP_ROAST_BY_DEV}"
+  echo "https://deploy-github-actions.razorpay.com/webhooks/webhook/$WEBHOOK_TRIGGER"
 
   curl -X POST \
     -u github-actions:"$SPINNAKER_PASSWORD" \
