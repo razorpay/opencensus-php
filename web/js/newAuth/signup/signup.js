@@ -55,6 +55,20 @@ const SignUp = () => {
     }
   }, []);
 
+  useEffect(() => {
+    /*
+    Event snippet for Signuppage on https://dashboard.razorpay.com/signup: Please do not remove.
+    Place this snippet on pages with events you’re tracking.
+    Creation date: 12/06/2021
+    */
+    if (!window.gtag) return;
+    // eslint-disable-next-line
+    gtag('event', 'conversion', {
+      allow_custom_scripts: true,
+      send_to: 'DC-11482329/pbsign/signu0+unique',
+    });
+  }, []);
+
   const handleContactUsClick = () => {
     window.rzpQ.push(
       window.rzpQ.now().onbr().initiated('signup.secondary_links', { source: 'Contact us' }),

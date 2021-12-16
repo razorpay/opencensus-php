@@ -6,6 +6,7 @@
     }
     gtag('js', new Date());
     gtag('config', 'AW-928471290');
+    gtag('config', 'DC-11482329');
 </script>
 </head>
 <style type="text/css">
