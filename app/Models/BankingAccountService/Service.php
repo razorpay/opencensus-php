@@ -330,8 +330,10 @@ class Service extends Base\Service
 
         if($channel === 'rbl')
         {
+            $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
             // check in db if slot is already booked for the same id and dateAnTime
-            $activationDetail = $this->app['repo']->banking_account_activation_detail->findByBankingAccountId($id);
+            $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
 
             $this->trace->addDebug(TraceCode::SLOT_BOOKING_AND_SAVED_TIME,
                                    [
@@ -341,12 +343,17 @@ class Service extends Base\Service
 
             if(empty($activationDetail['booking_date_and_time']) === false && $activationDetail['booking_date_and_time'] === $epochSlotBookingDateTime)
             {
+                $this->trace->error(
+                    TraceCode::SLOT_IS_ALREADY_BOOKED_FOR_SAME_TIME_SO_SLOT_CANNOT_BE_RESCHEDULED,
+                    [
+                        'booking_date_and_time' => $activationDetail['booking_date_and_time'],
+                    ]);
+
                 return [
                     'bookingDetails' => null,
-                    'status' => 'failure',
+                    'status' => 'Failure',
                     'ErrorDetail' => [
-                        "errorReason" => 'Slot is already booked for the same date and time,
-                                          it cannot be booked again'
+                        "errorReason" => 'Slot is already booked for the same date and time, it cannot be booked again'
                     ]
 
                 ];
@@ -711,6 +718,68 @@ class Service extends Base\Service
         $path = 'booking/slot/availableSlots';
 
         $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'GET', $input);
+
+        return $response['data'];
+    }
+
+    public function rescheduleSlotForBankingAccount($input): array
+    {
+        $path = 'booking/slot/reschedule';
+
+        $bankingAccount = $this->repo->banking_account->findByPublicId($input['id']);
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        $additionalDetails = json_decode($activationDetail['additional_details'], true);
+
+        $slotBookingDateTime = $input['slotDateAndTime'];
+
+        $epochSlotBookingDateTime = strtotime($slotBookingDateTime);
+
+        if(empty($activationDetail['booking_date_and_time']) === true)
+        {
+            $this->trace->error(
+                TraceCode::SLOT_BOOKING_DATE_AND_TIME_IS_EMPTY_SLOT_CANNOT_BE_RESCHEDULED,
+                [
+                    'booking_date_and_time' => $activationDetail['booking_date_and_time'],
+                ]);
+
+            return [
+                'bookingDetails' => null,
+                'status' => 'Failure',
+                'ErrorDetail' => [
+                    "errorReason" => 'Slot is not booked previously, so you cannot reschedule it, as bookingId is empty, Please book the slot first'
+                ]
+
+            ];
+        }
+
+        if($activationDetail['booking_date_and_time'] === $epochSlotBookingDateTime)
+        {
+            $this->trace->error(
+                TraceCode::SLOT_IS_ALREADY_BOOKED_FOR_SAME_TIME_SO_SLOT_CANNOT_BE_RESCHEDULED,
+                [
+                    'booking_date_and_time' => $activationDetail['booking_date_and_time'],
+                ]);
+
+            return [
+                'bookingDetails' => null,
+                'status' => 'Failure',
+                'ErrorDetail' => [
+                    "errorReason" => 'Slot is already booked for the same date and time, it cannot be booked again'
+                ]
+
+            ];
+        }
+
+        $reschedulePayload = [
+            'bookingId' => $additionalDetails['booking_id'],
+            'id' => $input['id'],
+            'slotDateAndTime' => $input['slotDateAndTime'],
+            'channel' => $input['channel'],
+        ];
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'POST', $reschedulePayload);
 
         return $response['data'];
     }

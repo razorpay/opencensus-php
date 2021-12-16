@@ -137,6 +137,15 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function rescheduleSlotForBankingAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service->rescheduleSlotForBankingAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function sendCaLeadToSalesForce()
     {
         $input = Request::all();

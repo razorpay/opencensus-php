@@ -444,9 +444,196 @@ class BankingAccountServiceTest extends TestCase
     {
         $this->ba->proxyAuth();
 
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'bas_business_id'            => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['id'] = $ba1->getPublicId();
+
         $response = $this->startTest();
 
         $this->assertEquals('#TE-00038', $response['bookingId']);
+    }
+
+    public function testSlotRescheduleForBankingAccount()
+    {
+        $this->ba->proxyAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'bas_business_id'            => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
+            "additional_details"        => json_encode(["booking_id" => "#TE-00037"])
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['id'] = $ba1->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('#TE-00038', $response['bookingId']);
+    }
+
+    public function testSlotRescheduleForBankingAccountIfDateAndTimeOfBookingIsSame()
+    {
+        $this->ba->proxyAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'bas_business_id'            => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+            'booking_date_and_time'     => strtotime('17-Nov-2021 14:30:00'),
+            "additional_details"        => json_encode(["booking_id" => "#TE-00037"])
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['id'] = $ba1->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('Failure', $response['status']);
+
+        $this->assertEquals('Slot is already booked for the same date and time, it cannot be booked again', $response['ErrorDetail']['errorReason']);
+    }
+
+    public function testSlotRescheduleForBankingAccountIfAdditionalDetailsIsEmpty()
+    {
+        $this->ba->proxyAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'bas_business_id'            => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['id'] = $ba1->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('Failure', $response['status']);
+
+        $this->assertEquals('Slot is not booked previously, so you cannot reschedule it, as bookingId is empty, Please book the slot first', $response['ErrorDetail']['errorReason']);
     }
 
     public function testAvailableSlotsForBankingAccount()
@@ -479,7 +666,6 @@ class BankingAccountServiceTest extends TestCase
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $ba1 = $this->fixtures->create('banking_account', [
-            'id'                    => 'randomBaAccId8',
             'account_number'        => '567890123',
             'account_type'          => 'current',
             'merchant_id'           => '10000000000000',
@@ -498,9 +684,13 @@ class BankingAccountServiceTest extends TestCase
             'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00')
         ]);
 
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['id'] = $ba1->getPublicId();
+
         $response = $this->startTest();
 
-        $this->assertEquals('failure', $response['status']);
+        $this->assertEquals('Failure', $response['status']);
     }
 
     public function testDeleteSignatory()

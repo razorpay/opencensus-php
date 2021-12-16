@@ -451,6 +451,63 @@ return [
         ],
     ],
 
+    'testSlotRescheduleForBankingAccount' => [
+        'request'  => [
+            'url'     => '/booking/slot/reschedule',
+            'method'  => 'POST',
+            'content' => [
+                'id' => 'randomBaAccId8',
+                'channel' => 'rbl',
+                'merchantName' => 'Test Merchant',
+                'merchantEmail' => 'test@razorpay.com',
+                'phoneNumber' => '9876543210',
+                'slotDateAndTime' => '17-Nov-2021 13:30:00'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSlotRescheduleForBankingAccountIfDateAndTimeOfBookingIsSame' => [
+        'request'  => [
+            'url'     => '/booking/slot/reschedule',
+            'method'  => 'POST',
+            'content' => [
+                'id' => 'randomBaAccId8',
+                'channel' => 'rbl',
+                'merchantName' => 'Test Merchant',
+                'merchantEmail' => 'test@razorpay.com',
+                'phoneNumber' => '9876543210',
+                'slotDateAndTime' => '17-Nov-2021 14:30:00'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testSlotRescheduleForBankingAccountIfAdditionalDetailsIsEmpty' => [
+        'request'  => [
+            'url'     => '/booking/slot/reschedule',
+            'method'  => 'POST',
+            'content' => [
+                'id' => 'randomBaAccId8',
+                'channel' => 'rbl',
+                'merchantName' => 'Test Merchant',
+                'merchantEmail' => 'test@razorpay.com',
+                'phoneNumber' => '9876543210',
+                'slotDateAndTime' => '17-Nov-2021 14:30:00'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testAvailableSlotsForBankingAccount' => [
         'request'  => [
             'url'    => '/booking/slot/availableSlots?currentDate=17-Nov-2021',
@@ -478,10 +535,9 @@ return [
         'response' => [
             'content' => [
                 'bookingDetails' => null,
-                'status' => 'failure',
+                'status' => 'Failure',
                 'ErrorDetail' => [
-                    "errorReason" => 'Slot is already booked for the same date and time,
-                                          it cannot be booked again'
+                    "errorReason" => 'Slot is already booked for the same date and time, it cannot be booked again'
                 ],
             ],
         ],

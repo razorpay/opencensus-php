@@ -479,6 +479,7 @@ class UserRolesScope
             'banking_account_service_pincode_serviceability_check' => [Role::OWNER, Role::ADMIN],
             'banking_account_slot_book'                            => [Role::OWNER, Role::ADMIN],
             'banking_account_get_free_slot'                        => [Role::OWNER, Role::ADMIN],
+            'banking_account_slot_reschedule'                      => [Role::OWNER, Role::ADMIN],
             'banking_account_service_routes'                       => [Role::OWNER, Role::ADMIN],
             'banking_account_statement_generate'                   => [Role::OWNER, Role::ADMIN],
             'banking_account_update_dashboard'                     => [Role::OWNER, Role::ADMIN],

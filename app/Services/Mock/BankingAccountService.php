@@ -263,7 +263,7 @@ class BankingAccountService
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
-        else if($path == 'booking/slot/book' and $method == 'POST')
+        else if($path == 'booking/slot/book' ||  $path == 'booking/slot/reschedule' and $method == 'POST')
         {
             $result = [
                 'data' => [

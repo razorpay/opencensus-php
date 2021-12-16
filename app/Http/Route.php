@@ -2142,6 +2142,7 @@ class Route
 
         'banking_account_slot_book'                           =>    ['post',    'booking/slot/book',                                     'BasController@slotBookForBankingAccount'      ],
         'banking_account_get_free_slot'                       =>    ['get',     'booking/slot/availableSlots',                           'BasController@getFreeSlotForBankingAccount'   ],
+        'banking_account_slot_reschedule'                     =>    ['post',    'booking/slot/reschedule',                               'BasController@rescheduleSlotForBankingAccount'],
 
 
         //creates balance and banking_account_statement_details
@@ -4919,6 +4920,7 @@ class Route
         'banking_account_service_common_serviceability_check',
         'banking_account_slot_book',
         'banking_account_get_free_slot',
+        'banking_account_slot_reschedule',
 
         //Partner Activation routes
         'partner_activation_details',
@@ -7364,6 +7366,7 @@ class Route
         'banking_account_service_common_serviceability_check'        => '*',
         'banking_account_slot_book'                                  => '*',
         'banking_account_get_free_slot'                              => '*',
+        'banking_account_slot_reschedule'                            => '*',
 
         // Payout Links - Shopify Integration
         'payout_links_integrate_app'                   => '*',
@@ -8706,6 +8709,7 @@ class Route
             'banking_account_service_common_serviceability_check',
             'banking_account_slot_book',
             'banking_account_get_free_slot',
+            'banking_account_slot_reschedule',
             'bbps_bill_payments',
             'merchant_international_enablement_preview',
             'merchant_international_enablement_get',
