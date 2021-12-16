@@ -3133,6 +3133,7 @@ class Route
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
+        'update_shopify_1cc_config'               => ['post',          'merchant/1cc/shopify/config',                                 'MerchantController@updateShopify1ccConfig'                   ],
     ];
 
     public static $public = [
@@ -4210,6 +4211,8 @@ class Route
         'internal_pincode_get',
 
         'get_affordability_suite',
+
+        'update_shopify_1cc_config',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11100,6 +11103,7 @@ class Route
 
         'thirdwatch_cod_score' => [
             'third_watch_address_cod_score',
+            'update_shopify_1cc_config',
         ],
 
         'xpayroll' => [

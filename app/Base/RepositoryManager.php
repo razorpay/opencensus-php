@@ -179,6 +179,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Merchant1ccConfig\Repository             $merchant_1cc_configs
  * @property Models\PayoutsStatusDetails\Repository                   $payouts_status_details
  * @property Models\VirtualAccountProducts\Repository                 $virtual_account_products
+ * @property Models\Merchant\OneClickCheckout\AuthConfig\Repository   $merchant_1cc_auth_configs
  * @property Models\Offer\Repository                                  $offer
  */
 

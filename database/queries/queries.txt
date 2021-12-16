@@ -6541,3 +6541,17 @@ ALTER TABLE users MODIFY email varchar(255) DEFAULT NULL;
 ALTER TABLE users ADD COLUMN signup_via_email TINYINT(1) DEFAULT 1 NOT NULL;
 ALTER TABLE merchants ADD COLUMN signup_via_email TINYINT(1) DEFAULT 1 NOT NULL;
 ALTER TABLE merchants MODIFY email varchar(255) DEFAULT NULL;
+
+CREATE TABLE merchant_1cc_auth_configs
+(
+    id char(14) NOT NULL collate utf8mb4_bin,
+    merchant_id char(14) NOT NULL collate utf8mb4_bin,
+    platform varchar(50) NOT NULL,
+    config varchar(50) NOT NULL,
+    value varchar(1000) NOT NULL,
+    created_at int NOT NULL,
+    updated_at int NOT NULL,
+    deleted_at int DEFAULT NULL,
+    PRIMARY KEY (id),
+    ADD INDEX merchant_1cc_auth_configs_merchant_id_index (merchant_id)
+);

@@ -11103,4 +11103,46 @@ return [
             ],
         ],
     ],
+    'testUpdateMerchant1ccShopifyConfig' => [
+        'request' => [
+            'url' => '/merchant/1cc/shopify/config',
+            'method' => 'post',
+            'content' => [
+              "merchant_id" => "10000000000000",
+              "shop_id" => "hias",
+              "api_key" => "abasc",
+              "api_secret" => "def",
+              "storefront_access_token" => "ghi"
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testUpdateMerchant1ccShopifyConfigInvalidBody' => [
+        'request' => [
+            'url' => '/merchant/1cc/shopify/config',
+            'method'  => 'post',
+            'content' => [
+                "merchant_id" => "10000000000000",
+                "api_key" => "abasc",
+                "api_secret" => "def",
+                "storefront_access_token" => "ghi"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];

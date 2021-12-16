@@ -607,6 +607,7 @@ class Entity
     // Network Tokenization
     const SERVICE_PROVIDER_TOKEN = 'service_provider_token';
 
+    const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
 
     /**
      * Defines a map of entites which are currently
@@ -1084,6 +1085,8 @@ class Entity
         self::MERCHANT_SLABS            => \RZP\Models\Merchant\Slab::class,
 
         self::MERCHANT_1CC_CONFIGS       => \RZP\Models\Merchant\Merchant1ccConfig::class,
+
+        self::MERCHANT_1CC_AUTH_CONFIGS  => \RZP\Models\Merchant\OneClickCheckout\AuthConfig::class,
     ];
 
     protected static $repository = [

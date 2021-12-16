@@ -401,9 +401,10 @@ class Table
     // Merchant Risk Notes
     const MERCHANT_RISK_NOTE = 'merchant_risk_notes';
 
+    // Merchant configs for 1cc
     const MERCHANT_SLABS = 'merchant_slabs';
-
     const MERCHANT_1CC_CONFIGS = 'merchant_1cc_configs';
+    const MERCHANT_1CC_AUTH_CONFIGS = 'merchant_1cc_auth_configs';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
