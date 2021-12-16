@@ -394,7 +394,7 @@
                                                                 <b class="font-size-normal font-color-secondary"
                                                                    style="font-size: 16px; line-height: 1.5; color: #515978;">
                                                                     <div class="amount value"><span
-                                                                            class="symbol">{{$data['pending_collections'][$i]['collection_amount'][0]}}</span><span
+                                                                            class="symbol">₹</span><span
                                                                             class="rupees">{{$data['pending_collections'][$i]['collection_amount'][1]}}</span><span
                                                                             class="paise">.{{$data['pending_collections'][$i]['collection_amount'][2]}}</span>
                                                                     </div>

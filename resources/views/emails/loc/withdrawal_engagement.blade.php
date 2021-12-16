@@ -412,7 +412,7 @@
                                         <span
                                           class="symbol"
                                           style="font-size: 24px; line-height: 1.5; color: #0d2366"
-                                          >{{$data['available_balance'][0]}}</span
+                                          >₹</span
                                         > <span
                                           class="rupees"
                                           style="font-size: 24px; line-height: 1.5; color: #0d2366"
@@ -602,7 +602,7 @@
                                         <span
                                           class="symbol"
                                           style="font-size: 14px; line-height: 1.5; color: inherit"
-                                          >{{$data['available_balance'][0]}}</span
+                                          >₹</span
                                         > <span
                                           class="rupees"
                                           style="font-size: 14px; line-height: 1.5; color: inherit"
