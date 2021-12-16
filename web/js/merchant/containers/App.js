@@ -369,40 +369,44 @@ class App extends Component {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
-    const user = window.rzp_user;
-    if (user) {
-      this.openRequestEmailPopup();
+    this.fetchUser().then(({ data }) => {
+      const user = data;
       const hidden = {
         mid: `${user.id}`,
         source: 'dashboard',
         email: `${user.email}`,
       };
-      const GoLiveNPSEnableTypeForm = createSidetab(
-        'Ym2oQE39', // go live survey
-        {
-          width: 500,
-          buttonText: 'Feedback',
-          hideHeaders: true,
-          hideFooters: true,
-          hidden,
-          onSubmit: this.closeGoLiveSurvey,
-        },
-      );
-      this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
+      if(user.showNPSSurvey() === true) {
+        const GoLiveNPSEnableTypeForm = createSidetab(
+          'Ym2oQE39', // go live survey
+          {
+            width: 500,
+            buttonText: 'Feedback',
+            hideHeaders: true,
+            hideFooters: true,
+            hidden,
+            onSubmit: this.closeGoLiveSurvey,
+          },
+        );
+        this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
 
-      const NonGoLiveNPSEnableTypeForm = createSidetab(
-        'tHBn8pnC', // non go live survey
-        {
-          width: 500,
-          buttonText: 'Feedback',
-          hideHeaders: true,
-          hideFooters: true,
-          hidden,
-          onSubmit: this.closeNonGoLiveSurvey,
-        },
-      );
-      this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
-
+        const NonGoLiveNPSEnableTypeForm = createSidetab(
+          'tHBn8pnC', // non go live survey
+          {
+            width: 500,
+            buttonText: 'Feedback',
+            hideHeaders: true,
+            hideFooters: true,
+            hidden,
+            onSubmit: this.closeNonGoLiveSurvey,
+          },
+        );
+        this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
+      }
+    })
+    const user = window.rzp_user;
+    if (user) {
+      this.openRequestEmailPopup();
       if (
         ((user.experiments || {})['csm_experince_survey'] || {}).result === 'on' &&
         !LocalStorageService.getItem('csm_experience_survey_showed')
