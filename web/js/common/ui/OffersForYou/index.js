@@ -69,7 +69,7 @@ const OffersForYou = ({
       showMTUOffer();
       LocalStorageService.setItem('prev_session', window.session_id);
     }
-  }, []);
+  }, [mtuOfferCount]);
 
   const handleClick = () => {
     /* onboarding offer will be the priority over the other offers.

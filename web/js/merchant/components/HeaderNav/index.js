@@ -16,6 +16,11 @@ import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import SupportRequestDropdown from './SupportRequestDropdown';
+import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
+import {
+  fetchModalConfigDetails,
+  updateModalConfigDetails,
+} from 'merchant/reducers/ModalConfigApi';
 import StatusDetails from './StatusDetails/index';
 
 const analyticsAction = (action) => {
@@ -43,8 +48,26 @@ export default class HeaderNav extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      isSuccessfullyCouponApplied: false,
+      mtuOfferCount: null,
+    };
+
     this.onToggleAppMenu = this.onToggleAppMenu.bind(this);
   }
+
+  fetchMTUOfferConfigDetails = async () => {
+    const res = await fetchModalConfigDetails('onboarding');
+
+    if (res?.data) {
+      const count = Number(res.data?.mtu_coupon_popup_count);
+      const isCouponApplied = Number(res.data?.enable_mtu_congratulatory_popup) ?? 0;
+      this.setState({
+        mtuOfferCount: count,
+        isSuccessfullyCouponApplied: !!isCouponApplied,
+      });
+    }
+  };
 
   componentDidMount() {
     const hash = this.props.history.location.hash;
@@ -60,6 +83,7 @@ export default class HeaderNav extends Component {
         }),
       );
     }
+    this.fetchMTUOfferConfigDetails();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -88,9 +112,13 @@ export default class HeaderNav extends Component {
       activePageName,
       referee,
     } = this.props;
+    const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
+
     const fragmentSpecificProps = {
       mode,
       referee,
+      canShowMtuPopup: user.showMtuPopup,
+      mtuOfferCount,
     };
     const commonProps = {
       user,
@@ -185,6 +213,14 @@ export default class HeaderNav extends Component {
           </div>
         </nav>
         {mode === 'test' && isMobileDevice() && <HighlightTestMode onSwitchMode={onSwitchMode} />}
+        {isSuccessfullyCouponApplied && (
+          <SuccessFullCreditModal
+            onCloseModal={() => {
+              updateModalConfigDetails({ enable_mtu_congratulatory_popup: 0 }, 'onboarding');
+              this.setState({ isSuccessfullyCouponApplied: false });
+            }}
+          />
+        )}
       </div>
     );
   }
