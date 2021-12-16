@@ -11,10 +11,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node v12
+      - name: Use Node v16
         uses: actions/setup-node@v1
         with:
-          node-version: 12.13.0
+          node-version: 16.13.0
 
       - name: Get changed files
         id: changed-files

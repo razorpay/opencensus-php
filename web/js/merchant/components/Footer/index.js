@@ -31,11 +31,13 @@ const FooterLine = ({ user }) => {
         />
       )}
       © {`${user.isOrgRZP ? '2017' : '2018'}-${currentYear}`} Copyright Razorpay
-      <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
+      <ShowWhen
+        additionalCondition={(userObj) => userObj.isOrgAllowedFunctionality('external_links')}
+      >
         {' '}
         ·{' '}
         {footer_links.map((link_obj) => (
-          <React.Fragment>
+          <React.Fragment key={link_obj.label}>
             <u>
               <a
                 href={getCustomURL(link_obj.link)}
