@@ -2145,7 +2145,7 @@ class MerchantController extends Controller
 
     public function getMerchantPreferencesAdmin($merchantId, string $group, string $type = null)
     {
-        $response = $this->service(E::MERCHANT_ATTRIBUTE)->getPreferencesByGroupAndTypeAdmin($merchantId,$group, $type);
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->getPreferencesByGroupAndTypeAdminForBanking($merchantId,$group, $type);
 
         return ApiResponse::json($response);
     }

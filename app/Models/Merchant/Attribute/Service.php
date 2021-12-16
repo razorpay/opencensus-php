@@ -195,7 +195,7 @@ class Service extends Base\Service
      * @param string|null $type
      * @return mixed
      */
-    public function getPreferencesByGroupAndTypeAdmin(string $merchantId, string $group, string $type = null)
+    public function getPreferencesByGroupAndTypeAdminForBanking(string $merchantId, string $group, string $type = null)
     {
 
         if ($this->auth->isAdminAuth() === true)
@@ -208,7 +208,7 @@ class Service extends Base\Service
             $merchant = $this->merchant;
         }
 
-        $product = $this->auth->getRequestOriginProduct();
+        $product = Product::BANKING;
 
         $type = !empty($type) ? [$type] : [];
 
