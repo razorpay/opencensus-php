@@ -8,6 +8,8 @@ run_bvt_suite_when_approved() {
     skipRoast="true"
   fi
 
+  roastPRCommit=${ROAST_PR_COMMIT}
+
   if [ -z "$roastPRCommit"]; then
     roastPRCommit="latest"
   fi

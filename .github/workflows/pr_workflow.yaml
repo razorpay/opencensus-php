@@ -59,8 +59,9 @@ jobs:
         result-encoding: string
         script: |
           roastPRNumberStr = context.payload.pull_request.body.toLowerCase()
-          var roastPRNumberValue = (roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))).split("\n")
-          var prNumber = roastPRNumberValue[0].substring(16)
+          var roastPRNumberValueRow = (roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))).split("\n")
+          var prNumberValue = roastPRNumberValueRow[0].split("|")
+          var prNumber = prNumberValue[1].trim()
           return prNumber
       # Fetch SkipRoastByDev mentioned in description
     - name: Fetch SkipRoastbyDev
