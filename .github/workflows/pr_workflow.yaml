@@ -62,6 +62,19 @@ jobs:
           var roastPRNumberValue = (roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))).split("\n")
           var prNumber = roastPRNumberValue[0].substring(16)
           return prNumber
+      # Fetch SkipRoastByDev mentioned in description
+    - name: Fetch SkipRoastbyDev
+      uses: actions/github-script@0.9.0
+      id: skipRoastByDev
+      with:
+        result-encoding: string
+        script: |
+          skipRoastByDevStr = context.payload.pull_request.body.toLowerCase()
+          var skipRoastByDevValueRow = (skipRoastByDevStr.substring(skipRoastByDevStr.indexOf("skiproastbydev"))).split("\n")
+          var skipRoastByDevValue = skipRoastByDevValueRow[0].split("|")
+          var skipRoastByDev = skipRoastByDevValue[1].trim()
+          console.log(skipRoastByDev)
+          return skipRoastByDev
     - name: Print PR Number
       run: echo ${{ steps.roastPRNumber.outputs.result }}
       # Get Roast PR State if its approved or not
@@ -162,14 +175,15 @@ jobs:
     - name: Print Instance value
       run: echo $API_INSTANCE
     - name: Run bvt suite if PR approved && Build Image workflow succeeded
-      if: env.WORKFLOW_STATUS == 'success' && startsWith(github.event.pull_request.head.ref,'beta_') != true
+      if: startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER : api-pr-commit
+        WEBHOOK_TRIGGER : api-spin-sleeve
         GITHUB_TOKEN: ${{ github.token }}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+        SKIP_ROAST_BY_DEV: ${{steps.skipRoastByDev.outputs.result}}
         ONLY_IGNORE_FILES: ${{ env.ONLY_IGNORE_FILES }}
         GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
       run: |

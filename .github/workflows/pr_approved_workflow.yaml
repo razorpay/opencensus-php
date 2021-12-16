@@ -169,6 +169,19 @@ jobs:
             })
             const latestCommit = response.data.head.sha
             return String(latestCommit)
+      # Fetch SkipRoastByDev mentioned in description
+    - name: Fetch SkipRoastbyDev
+      uses: actions/github-script@0.9.0
+      id: skipRoastByDev
+      with:
+        result-encoding: string
+        script: |
+          skipRoastByDevStr = context.payload.pull_request.body.toLowerCase()
+          var skipRoastByDevValueRow = (skipRoastByDevStr.substring(skipRoastByDevStr.indexOf("skiproastbydev"))).split("\n")
+          var skipRoastByDevValue = skipRoastByDevValueRow[0].split("|")
+          var skipRoastByDev = skipRoastByDevValue[1].trim()
+          console.log(skipRoastByDev)
+          return skipRoastByDev
     - name: Check For Only Ignore Files
       id: only-ignore-files
       env:
@@ -180,12 +193,13 @@ jobs:
       if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER: api-pr-commit
+        WEBHOOK_TRIGGER : api-spin-sleeve
         GITHUB_TOKEN: ${{ github.token }}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}
         ONLY_IGNORE_FILES: ${{ env.ONLY_IGNORE_FILES }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+        SKIP_ROAST_BY_DEV: ${{steps.skipRoastByDev.outputs.result}}
         GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       run: |
         sh ./.github/actions/triggerBvtSuite.sh
