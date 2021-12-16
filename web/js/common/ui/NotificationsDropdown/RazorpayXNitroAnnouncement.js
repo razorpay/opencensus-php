@@ -855,7 +855,7 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
   if (activeView === 'detail-view') {
     return (
       <div ariaHideApp={false} id="hubspot-ca-form-modal">
-        <button type="button" class="close" onClick={handleClose}>
+        <button type="button" class="close btn-close-modal" onClick={handleClose}>
           <i class="i i-close" />
         </button>
         <div className="razorpayx-announcement">
