@@ -382,7 +382,16 @@ class UserAccess
     {
         $merchant = $this->ba->getMerchant();
 
-        $merchantAttributes = $this->repo->merchant_attribute->getValue($merchant, 'primary', Group::X_TRANSACTION_VIEW, $userRole);
+        try
+        {
+            $merchantAttributes = $this->repo->merchant_attribute->getValue($merchant, 'primary', Group::X_TRANSACTION_VIEW, $userRole);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return 1;
+        }
 
         if($merchantAttributes['value'] === 'true')
         {
