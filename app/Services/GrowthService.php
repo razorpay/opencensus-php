@@ -135,16 +135,15 @@ class GrowthService extends Base\Service
         $options = [
             'timeout' => $this->requestTimeout,
         ];
-        $jwt = $this->auth->getPassportJwt($this->baseUrl);
 
-        $this->trace->info(TraceCode::GROWTH_REQUEST, ['jwt' => $jwt]);
+        $jwt = $this->auth->getPassportJwt($this->baseUrl);
 
         if ($jwt == null) {
             $options['auth'] = [$this->key, $this->secret];
         }
         $headers[self::X_PASSPORT_JWT_V1] = $jwt;
 
-        $this->trace->info(TraceCode::GROWTH_REQUEST, ['url' => $url, 'parameters' => $parameters, 'headers' => $headers]);
+        $this->trace->info(TraceCode::GROWTH_REQUEST, ['url' => $url, 'parameters' => $parameters]);
 
         return [
             'url' => $url,
