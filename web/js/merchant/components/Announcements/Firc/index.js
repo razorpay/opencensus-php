@@ -33,7 +33,7 @@ export default React.memo((props) => {
       </span>
       <Link
         to="/profile/view_firc"
-        className="Button--secondary Button scheduled-btn-act btn-border"
+        className="Button--secondary firc-banner-cta Button scheduled-btn-act btn-border"
         onClick={clickHandler}
       >
         View / Download
