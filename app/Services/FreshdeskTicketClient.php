@@ -65,11 +65,12 @@ class FreshdeskTicketClient
      * Get ticket status for the given $ticketId
      *
      * @param string $ticketId
-     * @return string $ticketStatus
+     * @param string $urlKey
+     * @return array $ticketStatus
      */
-    public function getReserveBalanceTicketStatus(string $ticketId) : array
+    public function getReserveBalanceTicketStatus(string $ticketId, $urlKey = 'url') : array
     {
-        $url = $this->getUrl('tickets/'.$ticketId);
+        $url = $this->getUrl('tickets/'.$ticketId, $urlKey);
 
         $auth = $this->getAuth();
 

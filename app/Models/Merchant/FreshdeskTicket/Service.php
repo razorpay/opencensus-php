@@ -72,7 +72,7 @@ class Service extends Base\Service
             ];
         }
 
-        $response = $this->app['freshdesk_client']->getReserveBalanceTicketStatus($ticketId);
+        $response = $this->app['freshdesk_client']->getReserveBalanceTicketStatus($ticketId, Constants::URLIND);
 
         $response = [
             'ticket_id'     => $response['id'],
