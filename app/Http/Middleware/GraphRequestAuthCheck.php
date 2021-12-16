@@ -26,6 +26,18 @@ class GraphRequestAuthCheck
         'resendEmailOtp',
         'registerEmailVerify',
         'couponValidate',
+        'registerOAuth',
+        'registerMobileVerify',
+        'registerMerchant',
+        'loginOtp',
+        'loginOtpVerify',
+        'loginOtpResend',
+        'loginEmailVerify',
+        'accountVerify',
+        'accountVerificationOtpResend',
+        'resendTwoFactorLoginOtp',
+        'loginTwoFactorPassword',
+        'accountVerificationOtp'
     ];
 
     public function handle($request, Closure $next)
@@ -48,9 +60,9 @@ class GraphRequestAuthCheck
         }
 
         $end_time =  microtime(true);
-        
+
         $time_taken = $end_time - $start_time;
-        
+
         $operationName = $request->input(self::OPERATION_NAME);
 
         Trace::info(TraceCode::GRAPH_REQUEST_AUTH_VALIDATION_TIME, [
@@ -63,7 +75,7 @@ class GraphRequestAuthCheck
     }
 
     /* This function will first check for the definition kind. All definition kind should be OperationDefinition.
-    Then it will check for the selector names of first node in graph AST tree. 
+    Then it will check for the selector names of first node in graph AST tree.
     It will consider query as a valid if all the selector names of first node will be part of WHITELISTED_QUERY_SELECTORS.
     If any selector is not part of whitelist then it will return as invalid query. */
     private function isValidQuerySelector($query)
@@ -92,7 +104,7 @@ class GraphRequestAuthCheck
             }
             return $isValidQuerySelector;
         } catch (\Throwable $th) {
-            return false;       
+            return false;
         }
     }
 
