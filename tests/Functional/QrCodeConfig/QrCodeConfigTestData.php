@@ -1,6 +1,31 @@
 <?php
+
 use RZP\Gateway\Upi\Icici\Fields;
+
 return [
+    'createQrCodeConfigs' => [
+        'url'     => '/payment/qr_codes/configs/create',
+        'method'  => 'post',
+        'content' => [
+            'cut_off_time' => 1500,
+        ],
+    ],
+
+    'testQrCodeConfigsFetch' => [
+        'url'     => '/payment/qr_codes/configs',
+        'method'  => 'get',
+        'content' => [
+        ],
+    ],
+
+    'testQrCodeConfigsUpdate' => [
+        'url'     => '/payment/qr_codes/configs/update',
+        'method'  => 'post',
+        'content' => [
+            'cut_off_time' => 1800,
+        ],
+    ],
+
     'testProcessIciciQrPayment' => [
         'url'     => '/payment/callback/bharatqr/upi_icici',
         'method'  => 'post',

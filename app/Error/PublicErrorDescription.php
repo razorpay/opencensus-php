@@ -898,6 +898,13 @@ class PublicErrorDescription
     const SERVER_ERROR_INVALID_ES_PRICING                                       = 'Invalid ES pricing was assigned to this merchant';
     const SERVER_ERROR_QR_CODE_GENERATION_FAILURE                               = 'QR Code creation failed because of internal server error';
 
+    const BAD_REQUEST_QR_CODE_CONFIG_NO_PREVIOUS_CONFIG                         = 'There is no previous config to be updated for the merchant.';
+    const BAD_REQUEST_QR_CODE_CONFIG_EXPERIMENT_NOT_ENABLED_FOR_MERCHANT        = 'The QrCode Config Experiment is not enabled for merchant';
+    const BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_NON_POSITIVE_CUTOFF   = 'The cut off time should be greater than zero';
+    const BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_TOO_HIGH              = 'The cut off time cannot be greater than 86400';
+    const BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_EMPTY                 = 'The cut off time is required';
+    const BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_ALPHA_NUMERIC         = 'The cutoff time should be an integer';
+
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
 
     const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';

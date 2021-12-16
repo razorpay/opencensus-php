@@ -198,6 +198,12 @@ class UserRolesScope
             'qr_payments_fetch_multiple'     => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
             'qr_payment_fetch_for_qr_code'   => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
 
+            //qr_code_config
+            'qr_configs_create'           => Role::WRITER_ROLES,
+            'qr_configs_update'           => Role::WRITER_ROLES,
+            'qr_configs_delete'           => Role::WRITER_ROLES,
+            'qr_configs_fetch'            => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+
 
             // subscriptions
             'plan_account_fetch'          => [Role::OWNER, Role::MANAGER, Role::ADMIN],

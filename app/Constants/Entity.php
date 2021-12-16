@@ -808,6 +808,7 @@ class Entity
         self::BATCH_FUND_TRANSFER       => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION      => \RZP\Models\Customer\Transaction::class,
         self::QR_CODE                   => \RZP\Models\QrCode\NonVirtualAccountQrCode::class,
+        self::QR_CODE_CONFIG            => \RZP\Models\QrCodeConfig::class,
         self::FUND_TRANSFER_ATTEMPT     => \RZP\Models\FundTransfer\Attempt::class,
         self::VIRTUAL_ACCOUNT           => \RZP\Models\VirtualAccount::class,
         self::FUND_ACCOUNT_VALIDATION   => \RZP\Models\FundAccount\Validation::class,

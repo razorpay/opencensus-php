@@ -2,8 +2,7 @@
 
 namespace RZP\Models\QrCodeConfig;
 
-use App;
-use Carbon\Carbon;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
@@ -17,7 +16,11 @@ class Entity extends Base\PublicEntity
     const KEY                = 'config_key';
     const VALUE              = 'config_value';
 
-    protected $entity = 'qr_code_config';
+    protected $entity = Constants\Entity::QR_CODE_CONFIG;
+
+    protected $generateIdOnCreate = true;
+
+    protected static $sign = 'qcc';
 
     protected $fillable = [
         self::MERCHANT_ID,
@@ -41,7 +44,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Merchant\Entity::class);
     }
-    
+
     public function setDeletedAt($deleted_at)
     {
         $this->setAttribute(self::DELETED_AT, $deleted_at);

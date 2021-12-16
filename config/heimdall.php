@@ -592,6 +592,9 @@ return [
             Permission::CREATE_VIRTUAL_ACCOUNTS => [
                 'description' => 'Create VAs for a merchant',
             ],
+            Permission::CREATE_QR_CODE_CONFIG => [
+                'description' => 'Create qr code configs for a merchant',
+            ],
             Permission::BANK_TRANSFER_INSERT => [
                 'description' => 'Insert bank transfers for failed payments',
                 'assignable'  => true,

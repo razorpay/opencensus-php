@@ -24,6 +24,11 @@ class Route
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
+        //qr code cutoff config
+        'qr_configs_create'                        => ['post',      '/payment/qr_codes/configs/create',             'QrCodeConfigController@create'                                      ],
+        'qr_configs_fetch'                         => ['get',       '/payment/qr_codes/configs',                    'QrCodeConfigController@fetchConfigsForMerchant'                     ],
+        'qr_configs_delete'                        => ['delete',    '/payment/qr_codes/configs',                    'QrCodeConfigController@delete'                                      ],
+        'qr_configs_update'                        => ['post',      '/payment/qr_codes/configs/update',             'QrCodeConfigController@update'                                      ],
         //qr code demo
         'qr_code_demo'                             => ['post',     'payments/qr_codes/demo',                         'QrCodeController@qrDemo'                                           ],
         'qr_code_demo_cors'                        => ['options',  'payments/qr_codes/demo',                         'QrCodeController@qrDemoCors'                                       ],
@@ -3297,6 +3302,10 @@ class Route
     ];
 
     public static $private = [
+        'qr_configs_create',
+        'qr_configs_fetch',
+        'qr_configs_delete',
+        'qr_configs_update',
         'payout_reject',
         'payout_approve',
         'payout_create_with_otp',
@@ -6587,6 +6596,9 @@ class Route
         'merchant_pricing_bulk'                    => Permission::PRICING_ASSIGN_BULK,
         'qr_code_create'                           => Permission::CREATE_QR_CODE,
         'qr_code_close'                            => Permission::CREATE_QR_CODE,
+        'qr_configs_create'                        => Permission::CREATE_QR_CODE_CONFIG,
+        'qr_configs_update'                        => Permission::CREATE_QR_CODE_CONFIG,
+        'qr_configs_delete'                        => Permission::CREATE_QR_CODE_CONFIG,
         'virtual_account_create'                   => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_create_for_internal'      => Permission::CREATE_VIRTUAL_ACCOUNTS,
         'virtual_account_expiry_setting_upsert'    => Permission::CREATE_VIRTUAL_ACCOUNTS,
@@ -7661,6 +7673,10 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'qr_configs_create',
+            'qr_configs_fetch',
+            'qr_configs_delete',
+            'qr_configs_update',
             'corporate_card_get',
             'corporate_card_update',
             'corporate_card_list',

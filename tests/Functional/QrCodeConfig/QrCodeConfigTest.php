@@ -5,6 +5,8 @@ namespace Functional\QrCodeConfig;
 use Illuminate\Database\Eloquent\Factory;
 
 use Carbon\Carbon;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -56,6 +58,135 @@ class QrCodeConfigTest extends TestCase
                });
     }
 
+    private function createQrCodeConfigs($cutoff = null)
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($cutoff !== null)
+        {
+            $testData['content']['cut_off_time'] = $cutoff;
+        }
+
+        $response = $this->makeRequestAndGetContent($testData);
+
+        return $response;
+    }
+
+    public function testQrCodeConfigsCreate()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $response = $this->createQrCodeConfigs();
+
+        $this->assertEquals($response['cut_off_time'], 1500);
+
+        $configs = $this->getDbLastEntityToArray('qr_code_config');
+        $this->assertEquals($configs['config_key'], 'cut_off_time');
+        $this->assertEquals($configs['config_value'], 1500);
+    }
+
+    public function testQrCodeConfigsCreateWithoutEnableExperiment()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_EXPERIMENT_NOT_ENABLED_FOR_MERCHANT);
+
+        $response = $this->createQrCodeConfigs();
+    }
+
+    public function testQrCodeConfigsUpdate()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $response = $this->createQrCodeConfigs();
+
+        $configs = $this->getDbLastEntityToArray('qr_code_config');
+        $this->assertEquals($configs['config_key'], 'cut_off_time');
+        $this->assertEquals($configs['config_value'], '1500');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($testData);
+        $this->assertEquals($response['cut_off_time'], '1800');
+
+        $configsArray = $this->getDbEntities('qr_code_config');
+        $configs1     = $configsArray[0]->toArray();
+        $configs2     = $configsArray[1]->toArray();
+
+        $this->assertEquals($configs1['config_key'], 'cut_off_time');
+        $this->assertEquals($configs1['config_value'], 1500);
+        $this->assertNotNull($configs1['deleted_at']);
+
+        $this->assertEquals($configs2['config_key'], 'cut_off_time');
+        $this->assertEquals($configs2['config_value'], 1800);
+    }
+
+    public function testQrCodeConfigsFetch()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $this->createQrCodeConfigs();
+
+        $response = $this->makeRequestAndGetContent($this->testData[__FUNCTION__]);
+
+        $this->assertEquals($response['cut_off_time'], 1500);
+    }
+
+    public function testQrCodeConfigsCreateWithNegativeCutoffValue()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_NON_POSITIVE_CUTOFF);
+
+        $this->createQrCodeConfigs(-10);
+
+        $configs = $this->getDbLastEntityToArray('qr_code_config');
+        $this->assertEmpty($configs);
+    }
+
+    public function testQrCodeConfigsCreateWithHighCutoffValue()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_TOO_HIGH);
+
+        $this->createQrCodeConfigs(100000);
+
+        $configs = $this->getDbLastEntityToArray('qr_code_config');
+        $this->assertEmpty($configs);
+    }
+
+    public function testQrCodeConfigsCreateWithStringNumberedCutoffValue()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $this->createQrCodeConfigs("1500");
+
+        $configs = $this->getDbLastEntityToArray('qr_code_config');
+        $this->assertEquals($configs['config_key'], 'cut_off_time');
+        $this->assertEquals($configs['config_value'], '1500');
+    }
+
+    public function testQrCodeConfigsCreateWithAlphaNumericCutoffValue()
+    {
+        $this->enableRazorXTreatmentForQrCutoffConfig();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_QR_CODE_CONFIG_INVALID_CUT_OFF_TIME_ALPHA_NUMERIC);
+
+        $this->createQrCodeConfigs("ab13");
+
+        $configs = $this->getDbLastEntityToArray('qr_code_config');
+        $this->assertEmpty($configs);
+    }
+
     public function testProcessIciciQrPaymentCutoffTimeExceeded()
     {
         $this->enableRazorXTreatmentForQrCutoffConfig();
@@ -77,7 +208,7 @@ class QrCodeConfigTest extends TestCase
         $response = $this->makeUpiIciciPayment($request);
 
         $qrPayment = $this->getDbLastEntityToArray('qr_payment');
-        $payment = $this->getDbLastEntityToArray('payment');
+        $payment   = $this->getDbLastEntityToArray('payment');
 
         $this->assertEquals('upi', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
@@ -87,7 +218,7 @@ class QrCodeConfigTest extends TestCase
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
 
-        $this->assertEquals(UnexpectedPaymentReason::QR_CODE_CUTOFF_TIME_EXCEEDED,$qrPayment['unexpected_reason']);
+        $this->assertEquals(UnexpectedPaymentReason::QR_CODE_CUTOFF_TIME_EXCEEDED, $qrPayment['unexpected_reason']);
     }
 
     public function testProcessIciciQrPaymentCutoffTimeNotExceeded()
