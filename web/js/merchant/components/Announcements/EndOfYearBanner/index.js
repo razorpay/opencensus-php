@@ -3,7 +3,10 @@ import React from 'react';
 import { getMode, getUser } from 'merchant/store';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { openModal as openModalProp } from 'merchant_common/reducers/modals';
+import {
+  openModal as openModalProp,
+  closeModal as fnCloseModal,
+} from 'merchant_common/reducers/modals';
 import RazorpayXNitroAnnouncement from '../../../../../js/common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 
 const bannerText =
@@ -32,12 +35,12 @@ function _track(source, merchant_id) {
   };
 }
 
-const EndOfYearBanner = React.memo(({ productName, openModal }) => {
+const EndOfYearBanner = React.memo(({ productName, openModal, closeModal }) => {
   const user = getUser();
   const track = _track(productName, user?.current);
   const handleCTA1Click = () => {
     openModal({
-      component: <RazorpayXNitroAnnouncement />,
+      component: <RazorpayXNitroAnnouncement hideModal={closeModal} />,
       className: 'RazorpayXNitroAnnouncement--Modal',
     });
     track.onClickCTA1();
@@ -59,4 +62,6 @@ const EndOfYearBanner = React.memo(({ productName, openModal }) => {
   );
 });
 
-export default compose(connect(null, { openModal: openModalProp }))(EndOfYearBanner);
+export default compose(connect(null, { openModal: openModalProp, closeModal: fnCloseModal }))(
+  EndOfYearBanner,
+);
