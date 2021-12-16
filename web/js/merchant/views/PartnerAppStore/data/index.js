@@ -1,4 +1,15 @@
 export const partnerProducts = {
+  integromart: {
+    slug: 'integromat',
+    title: 'Integromat',
+    url: 'https://www.integromat.com/en/apps/invite/fb21279e0381a5a245f3d0102250b268',
+    category: 'Workflow Automation',
+    description:
+      'With the Integromat app, users can integrate Razorpay with other web apps by moving the data automatically using triggers and actions.',
+    logo: 'integromart.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#3277AD',
+    isNew: true,
+  },
   slack: {
     slug: 'slack',
     title: 'Slack',
