@@ -679,11 +679,16 @@ class Service extends Base\Service
 
         if (empty($error) === false)
         {
-            throw new BadRequestError(
-                $error[0],
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
+
+            $this->trace->info(TraceCode::GET_CAMPAIGNS_ROUTE_INFO, [
+                'action'              => 'FetchFailed',
+                'error_description'   => $error[0],
+                'controller'          => app('request')->route()->getAction()['controller']
+            ]);
+
+            $this->trace->warning(ErrorCode::BAD_REQUEST_ERROR, ['error' => $error]);
+
+            return [];
         }
 
         $campaigns = array_map(function($val) {
