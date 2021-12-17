@@ -79,7 +79,7 @@ class RiskMobileSignupHelper
                 'group_id'                              => $requestParams['groupId'] ?? (int) $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                 'priority'                              => $requestParams['priority'] ?? 1,
                 FreshdeskTicket\Constants::FD_INSTANCE  => FreshdeskTicket\Constants::RZPIND,
-                'custom_fields'     => [
+                'custom_fields'                         => [
                     'cf_ticket_queue'           => 'Merchant',
                     'cf_category'               => $requestParams['category'] ?? 'Risk Report_Merchant',
                     'cf_subcategory'            => $requestParams['subCategory'] ?? 'Fraud alerts',
@@ -89,7 +89,7 @@ class RiskMobileSignupHelper
             ];
 
             $response = (new FreshdeskTicket\Service())->postTicketOnMerchantBehalf(
-                $postTicketRequest, $merchant->getId());
+                $postTicketRequest, $merchant->getId(), true);
 
             $this->app['trace']->info(
                 TraceCode::MERCHANT_RISK_FD_TICKET_CREATED,

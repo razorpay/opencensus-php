@@ -103,10 +103,7 @@ class MerchantActionNotificationTest extends TestCase
         $this->createMerchant();
 
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
-                                                    $expectedContent,
-                                                    [
-                                                        'id' => '1234',
-                                                    ]);
+                                                    $expectedContent, ['id' => '1234'], 1, true);
 
         $this->startTest();
     }

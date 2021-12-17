@@ -358,11 +358,18 @@ class Service extends Base\Service
         return $freshdeskTicketResponse;
     }
 
-    public function postTicketV2($type, $input)
+    public function postTicketV2($type, $input, $keepHtmlTags = false)
     {
         $function = 'makeInputFor' . studly_case($type) . 'PostTicket';
 
-        $input = $this->$function($input);
+        if ($keepHtmlTags === true and $type == Type::SUPPORT_DASHBOARD)
+        {
+            $input = $this->$function($input, true);
+        }
+        else
+        {
+            $input = $this->$function($input);
+        }
 
         if($this->merchant->isSignupViaEmail() === true)
         {
@@ -1152,7 +1159,7 @@ class Service extends Base\Service
     }
 
 
-    protected function makeInputForSupportDashboardPostTicket($input)
+    protected function makeInputForSupportDashboardPostTicket($input, $keepHtmlTags = false)
     {
         $input = $this->addMerchantDetailsToInput($input);
 
@@ -1166,8 +1173,11 @@ class Service extends Base\Service
 
         $this->getGroupIdForTicketInput($input);
 
-        //Removing HTML tags in description
-        $input['description'] = strip_tags($input['description'], '<b><br>');
+        if ($keepHtmlTags === false)
+        {
+            //Removing HTML tags in description
+            $input['description'] = strip_tags($input['description'], '<b><br>');
+        }
 
         return $input;
     }
@@ -1390,7 +1400,7 @@ class Service extends Base\Service
     }
 
 
-    public function postTicketOnMerchantBehalf($input, $merchantId)
+    public function postTicketOnMerchantBehalf($input, $merchantId, $keepHtmlTags = false)
     {
         if (empty($this->merchant) === true)
         {
@@ -1399,7 +1409,7 @@ class Service extends Base\Service
             $this->merchant = $merchant;
         }
 
-        return $this->postTicketV2(TYPE::SUPPORT_DASHBOARD, $input);
+        return $this->postTicketV2(TYPE::SUPPORT_DASHBOARD, $input, $keepHtmlTags);
     }
 
     protected function appendTagsToTicket($ticketId, $fdInstance, array $tagsToAdd)

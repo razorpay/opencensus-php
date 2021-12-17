@@ -9,7 +9,7 @@ trait FreshdeskTrait
 {
     protected $freshdeskClientMock;
 
-    protected function expectFreshdeskRequestAndRespondWith($expectedPath, $expectedMethod, $expectedContent, $respondWith = [], $times = 1)
+    protected function expectFreshdeskRequestAndRespondWith($expectedPath, $expectedMethod, $expectedContent, $respondWith = [], $times = 1, $checkHtmlTag = false)
     {
         $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
         $expectedUrlInd = $this->app['config']->get('applications.freshdesk.urlind') . '/' . $expectedPath;
@@ -20,13 +20,13 @@ trait FreshdeskTrait
         $this->freshdeskClientMock
             ->shouldReceive('getResponse')
             ->times($times)
-            ->with(Mockery::on(function ($request)  use ($expectedUrls, $expectedMethod, $expectedContent ) {
+            ->with(Mockery::on(function ($request)  use ($expectedUrls, $expectedMethod, $expectedContent, $checkHtmlTag) {
                 if (in_array($request['url'], $expectedUrls) === false)
                 {
                     return false;
                 }
 
-                return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent);
+                return $this->validateMethodAndContent($request,$expectedMethod,$expectedContent, $checkHtmlTag);
             }))
             ->andReturnUsing(function () use ($respondWith) {
                 $response = new \Requests_Response;
@@ -59,7 +59,7 @@ trait FreshdeskTrait
         $this->app['freshdesk_client'] = $this->freshdeskClientMock;
     }
 
-    protected function validateMethodAndContent($request, $expectedMethod, $expectedContent) : bool
+    protected function validateMethodAndContent($request, $expectedMethod, $expectedContent, $checkHtmlTag = false) : bool
     {
         if (strtolower($request['method']) !== strtolower($expectedMethod))
         {
@@ -69,6 +69,11 @@ trait FreshdeskTrait
         if (is_string($request['content']) === true)
         {
             $actualContent = json_decode($request['content'], true);
+
+            if ($checkHtmlTag === true and str_contains($actualContent['description'], 'a href') === false)
+            {
+                return false;
+            }
         }
 
         foreach ($expectedContent as $key => $value)
