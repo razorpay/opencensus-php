@@ -71,10 +71,10 @@ final class KeylessPublicAuth
         if (E::isExternalEntity($entity) === true)
         {
             $serviceClass = E::getEntityService($entity);
-            
+
             list($mode, $merchant)  = (new $serviceClass)->getModeAndMerchant($signedId);
         }
-        else 
+        else
         {
             list($mode, $merchant)   = $this->retrieveModeAndMerchantForEntity($entity, $signedId);
         }
@@ -178,6 +178,13 @@ final class KeylessPublicAuth
 
         $entityClass = E::getEntityClass($entity);
         $entityId    = $entityClass::verifyIdAndSilentlyStripSign($signedId);
+
+        if ($entityClass === E::ORDER)
+        {
+            $order = $this->repo->order->findOrFail($entityId);
+
+            return [Mode::LIVE, $order->merchant];
+        }
 
         // Try to retrieve merchant using LIVE mode
         $mode     = Mode::LIVE;
