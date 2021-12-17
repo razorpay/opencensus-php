@@ -7,19 +7,20 @@ use App;
 use Excel;
 use Config;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Excel\Import as ExcelImport;
-use RZP\Excel\Export as ExcelExport;
-use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use RZP\Excel\MultipleSheetsImport as ExcelMultipleSheetsImport;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Batch\Header;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Excel\Import as ExcelImport;
+use RZP\Excel\Export as ExcelExport;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
+use RZP\Excel\MultipleSheetsImport as ExcelMultipleSheetsImport;
 use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder as PhpSpreadsheetDefaultValueBinder;
 
 trait FileHandlerTrait
@@ -581,6 +582,12 @@ trait FileHandlerTrait
 
         foreach ($data as $row)
         {
+            if ((array_key_exists(Header::ERROR_DESCRIPTION, $row) !== false) and
+                (strpos($row[Header::ERROR_DESCRIPTION], ',') !== false))
+            {
+                $row[Header::ERROR_DESCRIPTION] = "\"" . $row[Header::ERROR_DESCRIPTION] . "\"";
+            }
+
             $txt .= implode($glue, array_values($row));
 
             $count--;

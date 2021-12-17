@@ -6,6 +6,48 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testValidateErrorDescriptionsInBatchPayoutsCSV' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 3,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '40',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                        Batch\Header::CONTACT_NAME_2            => 'Chirag Chiranjib',
+                        Batch\Header::CONTACT_EMAIL_2           => 'chirag.chiranjib@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                        Batch\Header::NOTES_CODE                => 'test',
+                        Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+                    ],
+                ],
+            ],
+        ],
+
+    ],
     'testValidateUtf8EncodingInBatchFundAccountsCSV' => [
         'request'  => [
             'url'     => '/batches/validate',

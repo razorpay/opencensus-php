@@ -1027,6 +1027,12 @@ class Constants
 
     const EDIT_SINGLE_VA = 'edit_single_va';
 
+    /**
+     * Feature flag to show entire error description for each row in error csv file generated in case
+     * of bulk validation during batch payouts
+     */
+    const ALLOW_COMPLETE_ERROR_DESC = 'allow_complete_error_desc';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1442,6 +1448,7 @@ class Constants
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
         self::EDIT_SINGLE_VA                  => true,
         self::ADDRESS_NAME_REQUIRED           => true,
+        self::ALLOW_COMPLETE_ERROR_DESC       => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

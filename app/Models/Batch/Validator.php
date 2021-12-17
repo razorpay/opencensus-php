@@ -4,11 +4,15 @@ namespace RZP\Models\Batch;
 
 use App;
 use DateTime;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator as LaravelValidator;
 
 use RZP\Base;
-use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Admin;
+use RZP\Models\Batch;
+use RZP\Models\Pricing;
 use RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Models\Settings;
@@ -16,11 +20,9 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
-use RZP\Models\Batch;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
-use RZP\Models\Pricing;
 use RZP\Http\UserRolesScope;
 use RZP\Models\Payment\Refund;
 use RZP\Exception\BaseException;
@@ -600,7 +602,7 @@ class Validator extends Base\Validator
         Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_space_num|between:5,22',
         Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
         Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
-        Header::PAYOUT_AMOUNT_RUPEES        => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
+        Header::PAYOUT_AMOUNT_RUPEES        => 'required|regex:/^\d+(\.\d{1,2})?$/',
         Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
         Header::PAYOUT_MODE                 => 'required|string|custom',
         Header::PAYOUT_REFERENCE_ID         => 'sometimes|nullable|string|max:40',
@@ -1497,19 +1499,35 @@ class Validator extends Base\Validator
         // For existing merchants who use bulk, we will keep letting them upload their files with amount as paise
         if ($expectedAmountType === BatchHelper::PAISE)
         {
-            $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+            $operation = 'payoutTypeRow';
+
+            if ($merchant->isFeatureEnabled(Feature::ALLOW_COMPLETE_ERROR_DESC))
             {
-                $this->validateInput('payoutTypeRow', $entry);
-            });
+                $this->validateEntriesWithPublicExceptionHandledAndCompleteErrorDescription($entries, $operation);
+            }
+            else
+            {
+                $this->validateEntriesWithPublicExceptionHandled($entries, function(array $entry) use ($operation) {
+                    $this->validateInput($operation, $entry);
+                });
+            }
         }
         // For new merchants as well as existing merchants that have transferred over to amount type rupees,
         // we will allow them to upload their file only in rupees.
         else
         {
-            $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+            $operation = 'payoutRupeesTypeRow';
+
+            if ($merchant->isFeatureEnabled(Feature::ALLOW_COMPLETE_ERROR_DESC))
             {
-                $this->validateInput('payoutRupeesTypeRow', $entry);
-            });
+                $this->validateEntriesWithPublicExceptionHandledAndCompleteErrorDescription($entries, $operation);
+            }
+            else
+            {
+                $this->validateEntriesWithPublicExceptionHandled($entries, function(array $entry) use ($operation) {
+                    $this->validateInput($operation, $entry);
+                });
+            }
         }
 
         $this->getTrace()->info(TraceCode::BULK_PAYOUTS_VALIDATION_ENDS, [
@@ -1834,10 +1852,18 @@ class Validator extends Base\Validator
 
     protected function validateFundAccountEntries(array & $entries, array $params, ME $merchant)
     {
-        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        $operation = 'fundAccountTypeRow';
+
+        if ($merchant->isFeatureEnabled(Feature::ALLOW_COMPLETE_ERROR_DESC))
         {
-            $this->validateInput('fundAccountTypeRow', $entry);
-        });
+            $this->validateEntriesWithPublicExceptionHandledAndCompleteErrorDescription($entries, $operation);
+        }
+        else
+        {
+            $this->validateEntriesWithPublicExceptionHandled($entries, function(array $entry) use ($operation) {
+                $this->validateInput($operation, $entry);
+            });
+        }
     }
 
     protected function validateAdjustmentEntries(array & $entries, array $params, ME $merchant)
@@ -1892,6 +1918,139 @@ class Validator extends Base\Validator
         if (in_array($balanceType, $validBalanceTypes, true) === false)
         {
             throw new BadRequestValidationFailureException('invalid balance type'. $balanceType . 'for reference id'. $referenceId);
+        }
+    }
+
+    protected function validateEntriesWithPublicExceptionHandledAndCompleteErrorDescription(array & $entries, $operation)
+    {
+        $errors          = [];
+        $erroneousRows   = [];
+        $customFieldRules = [];
+
+        $rulesVar = $this->getRulesVariableName($operation);
+
+        $rules = static::$$rulesVar;
+
+        foreach ($rules as $key => $value)
+        {
+            $rule = explode('|', $value);
+
+            $customRule = preg_grep('/^custom:?.*$/', array_values($rule));
+
+            if (empty($customRule) === false)
+            {
+                $rules[$key] = str_replace('|' . array_values($customRule)[0], '', $value);
+
+                $customFieldRules[$key] = array_values($customRule)[0];
+            }
+        }
+
+        foreach ($entries as $seq => $entry)
+        {
+            try
+            {
+                $this->validateInputByRules($operation, $entry, $rules);
+
+                $error[Header::ERROR_CODE]        = null;
+                $error[Header::ERROR_DESCRIPTION] = null;
+            }
+            catch (BaseException $e)
+            {
+                $error[Header::ERROR_CODE]        = $e->getError()->getPublicErrorCode();
+                $error[Header::ERROR_DESCRIPTION] = $e->getError()->getDescription();
+
+                $errors[$seq] = $error;
+                array_push($erroneousRows, $seq + 1);
+            }
+
+            $messages = [];
+            foreach ($customFieldRules as $key => $rule)
+            {
+                try
+                {
+                    if (array_key_exists($key, $entry))
+                    {
+                        (new Validator)->setStrictFalse()->validateInputByRules($operation, $entry, [$key => $rule]);
+                    }
+                }
+                catch (BaseException $e)
+                {
+                    $messages[] = $e->getError()->getDescription();
+                }
+            }
+            if (empty($messages) === false)
+            {
+                // Adding vertical tab between error messages to keep it inside same field
+                // in ouput csv error file for batch payouts
+                $message                   = implode("\v", $messages);
+
+                $error[Header::ERROR_CODE] = $e->getError()->getPublicErrorCode();
+
+                if (empty($error[Header::ERROR_DESCRIPTION]) === false)
+                {
+                    $error[Header::ERROR_DESCRIPTION] = $error[Header::ERROR_DESCRIPTION] . "\v" . $message;
+                }
+                else
+                {
+                    $error[Header::ERROR_DESCRIPTION] = $message;
+                }
+                $errors[$seq] = $error;
+
+                array_push($erroneousRows, $seq + 1);
+            }
+
+            $entries[$seq] += $error;
+        }
+
+        $errorsCount = count($errors);
+
+        // If request done via earlier direct upload flow (instead of validation flow), throw 4XX.
+        if (($errorsCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
+        {
+            throw new BadRequestValidationFailureException(
+                sprintf(
+                    'There are validation errors in %s %s of the file',
+                    $errorsCount,
+                    $errorsCount === 1 ? 'row' : 'rows'),
+                Entity::FILE,
+                array_slice($errors, 0, 15, true));
+        }
+    }
+
+    protected function validateInputByRules($operation, $input, $rules)
+    {
+        if ($this->strict)
+        {
+            $invalidKeys = array_keys(array_diff_key($input, $rules));
+
+            if (count($invalidKeys) > 0)
+            {
+                $this->throwExtraFieldsException($invalidKeys);
+            }
+        }
+
+        $customAttributes = $this->getCustomAttributes($operation);
+
+        $validator = LaravelValidator::make(
+            $input,
+            $rules,
+            array(),
+            $customAttributes);
+
+        $this->laravelValidatorInstance = $validator;
+
+        $validator->setEntityValidator($this);
+
+        if ($validator->fails())
+        {
+            $this->processValidationFailure($validator->messages(), $operation, $input);
+        }
+
+        $operationFunctionVar = camel_case($operation) . 'Validators';
+
+        if (isset(static::$$operationFunctionVar))
+        {
+            $this->runEachValidator(static::$$operationFunctionVar, $input);
         }
     }
 
@@ -2190,6 +2349,30 @@ class Validator extends Base\Validator
         {
             $this->validateInputValues('payout_create_otp', $input);
         }
+    }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        if ($this->checkIfOperationIsAllowed($operation) === true)
+        {
+            throw new Exception\Batch\BadRequestValidationFailureException($messages, null, $operation);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException($messages);
+        }
+    }
+
+    public function checkIfOperationIsAllowed($operation)
+    {
+        // Add all the operations for which the all the error descriptions are shown
+        $operations = [
+            'payoutRupeesTypeRow',
+            'payoutTypeRow',
+            'fundAccountTypeRow'
+        ];
+
+        return (in_array($operation, $operations) === true);
     }
 
     protected function validateIciciLeadAccountActivationCommentsEntries(array &$entries, array $params, ME $merchant)
