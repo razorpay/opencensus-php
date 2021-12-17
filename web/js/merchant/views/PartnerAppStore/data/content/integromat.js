@@ -16,7 +16,7 @@ function Data(brandColor) {
           and save time to focus on your most important work.
         </p>
         <p>
-          <strong>Why Integromart?</strong>
+          <strong>Why Integromat?</strong>
         </p>
         <p>
           Here are some sample workflows that can significantly reduce your effort while working
@@ -52,7 +52,7 @@ function Data(brandColor) {
           </h2>
           <p style={brandStyles.brandBorderLeft}>
             You will need an activated <a href="https://dashboard.razorpay.com">Razorpay account</a>{' '}
-            and an <a href="https://www.integromat.com/en/register">Integromart account</a> for this
+            and an <a href="https://www.integromat.com/en/register">Integromat account</a> for this
             integration to work.
           </p>
           <section className="how-to-use-video">
@@ -86,7 +86,7 @@ function Data(brandColor) {
                 </p>
                 <PaddedImage
                   alt="Integromat add to my inventory screenshot"
-                  src="/dist/css/assets/app-store/content-assets/integromart/add-to-inventory.png"
+                  src="/dist/css/assets/app-store/content-assets/integromat/add-to-inventory.png"
                 />
               </div>
             </li>
@@ -107,7 +107,7 @@ function Data(brandColor) {
                 </p>
                 <PaddedImage
                   alt="Start using Razorpay on integromat screenshot"
-                  src="/dist/css/assets/app-store/content-assets/integromart/start-using-razorpay.png.png"
+                  src="/dist/css/assets/app-store/content-assets/integromat/start-using-razorpay.png.png"
                 />
               </div>
             </li>
@@ -119,7 +119,7 @@ function Data(brandColor) {
                 </p>
                 <PaddedImage
                   alt="Start creating scenarios"
-                  src="/dist/css/assets/app-store/content-assets/integromart/create-scenarios.png"
+                  src="/dist/css/assets/app-store/content-assets/integromat/create-scenarios.png"
                 />
               </div>
             </li>
