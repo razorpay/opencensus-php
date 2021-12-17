@@ -2938,6 +2938,21 @@ class Route
             'merchant_risk_alerts/merchant/foh/workflow',
             'MerchantRiskAlertController@createFOHWorkflow'
         ],
+        'merchant_risk_alerts_create_rule' => [
+            'post',
+            'merchant_risk_alerts/rules/create',
+            'MerchantRiskAlertController@createRule'
+        ],
+        'merchant_risk_alerts_update_rule' => [
+            'post',
+            'merchant_risk_alerts/rules/{rule_id}/update',
+            'MerchantRiskAlertController@updateRule'
+        ],
+        'merchant_risk_alerts_delete_rule' => [
+            'post',
+            'merchant_risk_alerts/rules/{rule_id}/delete',
+            'MerchantRiskAlertController@deleteRule'
+        ],
         'merchant_risk_alerts_foh_workflow_trigger_nc'    => [
             'post',
             'merchant_risk_alerts/merchant/foh/workflow/{workflow_action_id}/needs_clarification',
@@ -5974,6 +5989,10 @@ class Route
         //growth service
         'growth_downtime_for_x',
 
+        // Merchant Risk Alerts
+        'merchant_risk_alerts_create_rule',
+        'merchant_risk_alerts_update_rule',
+        'merchant_risk_alerts_delete_rule',
     ];
 
     public static $routePermission = [
@@ -7056,7 +7075,12 @@ class Route
         'merchant_risk_notes_get'                         => Permission::GET_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_create'                      => Permission::CREATE_MERCHANT_RISK_NOTES,
         'merchant_risk_notes_delete'                      => Permission::DELETE_MERCHANT_RISK_NOTES,
+
+        // Merchant Risk Alerts
         'merchant_risk_alerts_foh_workflow_trigger_nc'    => Permission::MERCHANT_RISK_ALERT_FOH,
+        'merchant_risk_alerts_create_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
+        'merchant_risk_alerts_update_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
+        'merchant_risk_alerts_delete_rule'                => Permission::MERCHANT_RISK_ALERT_DELETE_RULE,
 
         // Risk Audit Workflow Actions
         'w-actions_merchant_risk_audit_get'               => Permission::VIEW_ALL_WORKFLOW,
@@ -9502,6 +9526,9 @@ class Route
             'merchant_edit_free_credits',
             'merchant_edit_pre_signup_details',
             'merchant_risk_alerts_foh_workflow_trigger_nc',
+            'merchant_risk_alerts_create_rule',
+            'merchant_risk_alerts_update_rule',
+            'merchant_risk_alerts_delete_rule',
             'merchant_edit_risk_attributes',
             'execute_bulk_action',
             'merchant_features_fetch',

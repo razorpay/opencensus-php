@@ -674,8 +674,10 @@ class Name
 
     const MANUALLY_LINK_RBL_ACCOUNT_STATEMENT = 'manually_link_rbl_account_statement';
 
-    const MERCHANT_RISK_ALERT_FOH          = 'merchant_risk_alert_foh';
+    const MERCHANT_RISK_ALERT_FOH           = 'merchant_risk_alert_foh';
     const MERCHANT_RISK_CONSTRUCTIVE_ACTION = 'merchant_risk_constructive_action';
+    const MERCHANT_RISK_ALERT_UPSERT_RULE   = 'merchant_risk_alert_upsert_rule';
+    const MERCHANT_RISK_ALERT_DELETE_RULE   = 'merchant_risk_alert_delete_rule';
 
     // NPS survey create
     const NPS_SURVEY                          = 'nps_survey';

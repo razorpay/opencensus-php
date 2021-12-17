@@ -167,4 +167,8 @@ class Constants
     const RAS_NC_OUTBOUND_EMAIL_FRESHDESK_TICKET_URL_FORMAT = 'RAS NC Outbound email freshdesk ticket url: https://razorpay-ind.freshdesk.com/a/tickets/%s'; //hardcoding url as its the only instance being used
     const RAS_NC_WORKFLOW_CACHE_KEY                         = 'ras_nc_workflow_key_%s';
     const RAS_NC_WORKFLOW_CACHE_TTL                         = 120 * (60 * 60 * 24); // 120days
+
+    const CREATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Create';
+    const UPDATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Update';
+    const DELETE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Delete';
 }

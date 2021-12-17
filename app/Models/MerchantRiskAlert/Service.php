@@ -911,6 +911,25 @@ class Service extends Base\Service
         return $this->app['merchant_risk_alerts']->identifyBlacklistCountryAlerts($input);
     }
 
+    public function createRule(array $input)
+    {
+        return $this->app['merchant_risk_alerts']->sendRequest(Constants::CREATE_RULE_URL, $input);
+    }
+
+    public function updateRule($ruleId, $input)
+    {
+        $input['rule_id'] = $ruleId;
+
+        return $this->app['merchant_risk_alerts']->sendRequest(Constants::UPDATE_RULE_URL, $input);
+    }
+
+    public function deleteRule($ruleId)
+    {
+        return $this->app['merchant_risk_alerts']->sendRequest(Constants::DELETE_RULE_URL, [
+            'rule_id'   =>  $ruleId,
+        ]);
+    }
+
     public function sendMobileSignUpNotificationForNC($merchant)
     {
         try

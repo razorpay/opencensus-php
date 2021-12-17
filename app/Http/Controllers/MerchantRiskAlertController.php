@@ -16,6 +16,31 @@ class MerchantRiskAlertController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createRule()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createRule($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateRule($ruleId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateRule($ruleId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteRule($ruleId)
+    {
+        $response = $this->service()->deleteRule($ruleId);
+
+        return ApiResponse::json($response);
+    }
+
     public function getMerchantDetails(string $mid)
     {
         $response = $this->service()->getMerchantDetails($mid);

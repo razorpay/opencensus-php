@@ -2,7 +2,9 @@
 
 namespace Functional\Risk;
 
+use RZP\Constants;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -37,6 +39,69 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->setUpFreshdeskClientMock();
 
         $this->setUpSalesforceMock();
+    }
+
+    protected function rulesRouteSetUp()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $this->app['config']->set('services.merchant_risks_alerts.mock', true);
+
+        $upsertPerm = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::MERCHANT_RISK_ALERT_UPSERT_RULE]);
+
+        $deletePerm = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::MERCHANT_RISK_ALERT_DELETE_RULE]);
+
+        $role->permissions()->attach($upsertPerm->getId());
+
+        $role->permissions()->attach($deletePerm->getId());
+    }
+
+    public function testCreateRule()
+    {
+        $this->rulesRouteSetUp();
+
+        $input = [
+            'method'  => 'post',
+            'url'     => '/merchant_risk_alerts/rules/create',
+            'content' => [
+                'rule_group'    => 'sign_up_checker',
+                'expression'    => "client_ip == '127.0.0.1'",
+            ],
+        ];
+
+        $this->assertEquals([], $this->makeRequestAndGetContent($input));
+    }
+
+    public function testUpdateRule()
+    {
+        $this->rulesRouteSetUp();
+
+        $input = [
+            'method'  => 'post',
+            'url'     => '/merchant_risk_alerts/rules/random_id/update',
+            'content' => [
+                'rule_group'    => 'sign_up_checker',
+                'expression'    => "client_ip == '127.0.0.1'",
+            ],
+        ];
+
+        $this->assertEquals([], $this->makeRequestAndGetContent($input));
+    }
+
+    public function testDeleteRule()
+    {
+        $this->rulesRouteSetUp();
+
+        $input = [
+            'method'  => 'post',
+            'url'     => '/merchant_risk_alerts/rules/random_id/delete',
+        ];
+
+        $this->assertEquals([], $this->makeRequestAndGetContent($input));
     }
 
     /**

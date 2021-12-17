@@ -217,6 +217,40 @@ class MerchantRiskAlertClient
         } while ($retryWithFallbackRoute === true);
     }
 
+    public function sendRequest($url, $requestPayload)
+    {
+        $retryWithFallbackRoute = false;
+
+        do {
+            $configKey = self::SVC_NEW_CONFIG_KEY;
+
+            $this->init($configKey);
+
+            try
+            {
+                $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
+                    'payload'   => $requestPayload,
+                    'service'   => 'merchant_risk_alerts',
+                ]);
+
+                return $this->requestAndGetParsedBody($url, $requestPayload);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::CRITICAL,
+                                             TraceCode::DOWNSTREAM_SERVICE_REQUEST_FAILED,
+                                             [
+                                                 'payload'   => $requestPayload,
+                                                 'service'   => 'merchant_risk_alerts',
+                                                 'path'      => $url,
+                                             ]
+                );
+
+                $retryWithFallbackRoute = $this->retryWithFallback($configKey);
+            }
+        } while ($retryWithFallbackRoute === true);
+    }
+
     public function identifyBlacklistCountryAlerts(array $requestPayload)
     {
         $retryWithFallbackRoute = false;
