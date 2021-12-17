@@ -575,6 +575,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         'method_based_input',
         'convert_empty_strings_to_null',
         self::PREFERRED_AUTH,
+        self::SAVE,
     ];
 
     protected static $generators = [
@@ -900,6 +901,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
 
             $input[Entity::PREFERRED_AUTH] = $preferredAuth;
+        }
+    }
+
+    protected function modifySave(&$input)
+    {
+        if (isset($input[self::SAVE]) && is_bool($input[self::SAVE])) {
+            $input[self::SAVE] = $input[self::SAVE] ? '1' : '0';
         }
     }
 

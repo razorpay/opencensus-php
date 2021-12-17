@@ -2849,7 +2849,8 @@ class PaymentCreateTest extends TestCase
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/json',
-            'content' => $payment
+            'content' => $payment,
+            'convertContentToString' => false,
         ];
 
         $this->ba->privateAuth();
