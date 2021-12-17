@@ -33,7 +33,7 @@ class RollKey extends Component {
         actionName: 'ok',
         option:
           props.delay_roll === '0'
-            ? 'De-activate Old Key Immediately'
+            ? 'De-activate old key immediately'
             : 'De-activate old key in 24 hours',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -77,7 +77,7 @@ class RollKey extends Component {
                 component={RadioButton}
                 name="delay_roll"
                 htmlValue="0"
-                label={() => <span>De-activate Old Key Immediately</span>}
+                label={() => <span>De-activate old key immediately</span>}
               />
             </div>
             <div class="radio">
