@@ -3519,18 +3519,17 @@ class Core extends Base\Core
             return false;
         }
 
-        $conditions          = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
-
-        $isExperimentEnabled = true;
+        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
 
         if ($businessType === BusinessType::PARTNERSHIP)
         {
-            $isExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                 RazorxTreatment::AUTO_KYC_PARTNERSHIP);
-        }
-        if ($isExperimentEnabled === false)
-        {
-            return false;
+            $isExperimentEnabledForPartnershipBiz = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                RazorxTreatment::AUTO_KYC_PARTNERSHIP);
+
+            if($isExperimentEnabledForPartnershipBiz === false)
+            {
+                return false;
+            }
         }
 
         return (new Parser)->parse($conditions, function($key, $condition) use ($merchantDetails) {
@@ -3552,7 +3551,26 @@ class Core extends Base\Core
 
     protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
     {
+        $businessType = $merchantDetails->getBusinessType();
+
         [$type, $identifier] = explode('|', $key);
+
+        if((in_array($businessType, BusinessType::getCOIApplicableBusinessTypes(), true) === true) && ($type == Constant::CERTIFICATE_OF_INCORPORATION))
+        {
+            $isExperimentEnabledForCOI = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                RazorxTreatment::AUTO_KYC_COI);
+
+            $this->trace->info(TraceCode::COI_EXPERIMENT,[
+                "merchantId" => $merchantDetails->getMerchantId(),
+                "isExperimentEnabledForCOI" => $isExperimentEnabledForCOI,
+                "type" => $type,
+            ]);
+
+            if($isExperimentEnabledForCOI === false)
+            {
+                return false;
+            }
+        }
 
         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $merchantDetails->getMerchantId(),

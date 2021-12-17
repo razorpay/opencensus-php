@@ -320,4 +320,13 @@ class BusinessType
 
         return in_array($businessTypeName, self::$validCompanySearchBusinessTypes, true);
     }
+
+    public static function getCOIApplicableBusinessTypes()
+    {
+        return [
+            self::PRIVATE_LIMITED,
+            self::PUBLIC_LIMITED,
+            self::LLP
+        ];
+    }
 }

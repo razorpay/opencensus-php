@@ -184,7 +184,8 @@ class Core extends Base\Core
             $this->PerformOcrIfApplicable(
                 $merchantDetails,
                 $document,
-                $merchant);
+                $merchant
+            );
 
             (new Detail\Core())->updateDocumentVerificationStatus($merchant, $document->getDocumentType());
 
@@ -398,7 +399,10 @@ class Core extends Base\Core
             $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
                 $document, $merchant, $merchantDetails);
 
-            if(empty($requestDispatcher)===false) $requestDispatcher->triggerBVSRequest();
+            if(empty($requestDispatcher)===false)
+            {
+                $requestDispatcher->triggerBVSRequest();
+            }
         }
     }
 

@@ -26,9 +26,11 @@ class BvsValidationJob extends Job
             'payload' => $this->getPayload(),
             'task_id' => $taskId
         ];
+
         $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
 
         $bvsCore = new BvsCore();
+
         $bvsCore->process($this->payload);
     }
 }

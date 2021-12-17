@@ -16,9 +16,7 @@ class Constants
     const IDENTIFIER = 'identifier';
     const PROOF      = 'proof';
 
-    //
     // message keys Kafka consumer
-    //
     const VALIDATION_ID         = 'validation_id';
     const STATUS                = 'status';
     const ERROR_CODE            = 'error_code';
@@ -85,7 +83,6 @@ class Constants
             'NOT_SUPPORTED',
             'INVALID_DOCUMENT_ERROR'
         ],
-
         self::NOT_MATCHED => [
             'RULE_EXECUTION_FAILED'
         ]

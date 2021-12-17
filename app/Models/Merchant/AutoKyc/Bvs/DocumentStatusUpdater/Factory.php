@@ -86,7 +86,10 @@ class Factory
                     $validation);
 
             case Constant::PARTNERSHIP_DEED :
-                return new PartnershipDeedOcrStatusUpdater($merchant,$validation);
+                return new PartnershipDeedOcrStatusUpdater($merchant, $validation);
+
+            case Constant::CERTIFICATE_OF_INCORPORATION:
+                return new CertificateOfIncorporationStatusUpdater($merchant, $validation);
 
             case Constant::COMMON:
                 return new NullStatusUpdater($merchant, $validation);

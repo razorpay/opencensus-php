@@ -88,13 +88,14 @@ class Constant
     const ON         = 'on';
 
     // Config names
-    const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
-    const BUSINESS_PAN_OCR           = 'business_pan_ocr';
-    const COMMON_MANUAL_VERIFICATION = 'common_manual_verification';
-    const GST_CERTIFICATE_OCR_CONFIG = 'gst_in_ocr';
-    const MSME_OCR                   = 'msme_ocr';
-    const SHOP_ESTABLISHMENT_OCR     = 'shop_establishment_ocr';
-    const PARTNERSHIP_DEED_OCR       = 'partnership_deed_ocr';
+    const PERSONAL_PAN_OCR                 = 'personal_pan_ocr';
+    const BUSINESS_PAN_OCR                 = 'business_pan_ocr';
+    const COMMON_MANUAL_VERIFICATION       = 'common_manual_verification';
+    const GST_CERTIFICATE_OCR_CONFIG       = 'gst_in_ocr';
+    const MSME_OCR                         = 'msme_ocr';
+    const SHOP_ESTABLISHMENT_OCR           = 'shop_establishment_ocr';
+    const PARTNERSHIP_DEED_OCR             = 'partnership_deed_ocr';
+    const CERTIFICATE_OF_INCORPORATION_OCR = 'certificate_of_incorporation_ocr';
 
     const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
@@ -109,33 +110,28 @@ class Constant
     const ADMIN_LOGGED_IN_AS_MERCHANT_MESSAGE           = "(Admin Logged in as Merchant)";
     const ADMIN_IS_LOGGED_IN_AS_MERCHANT_HEADER         = "1";
 
-    //
     // Response fields
-    //
     const VALIDATION_ID   = 'validation_id';
     const VALIDATION_UNIT = 'validation_unit';
     const STATUS          = 'status';
 
-    //
     // Artefact types in BVS
-    //
-    const PERSONAL_PAN       = 'personal_pan';
-    const AADHAAR            = 'aadhaar';
-    const CIN                = 'cin';
-    const GSTIN              = 'gstin';
-    const VOTERS_ID          = 'voters_id';
-    const PASSPORT           = 'passport';
-    const LLP_DEED           = 'llp_deed';
-    const BUSINESS_PAN       = 'business_pan';
-    const SHOP_ESTABLISHMENT = 'shop_establishment';
-    const GST_CERTIFICATE    = 'gst_certificate';
-    const MSME               = 'msme';
-    const COMMON             = 'common';
-    const PARTNERSHIP_DEED   = 'partnership_deed';
+    const PERSONAL_PAN                  = 'personal_pan';
+    const AADHAAR                       = 'aadhaar';
+    const CIN                           = 'cin';
+    const GSTIN                         = 'gstin';
+    const VOTERS_ID                     = 'voters_id';
+    const PASSPORT                      = 'passport';
+    const LLP_DEED                      = 'llp_deed';
+    const BUSINESS_PAN                  = 'business_pan';
+    const SHOP_ESTABLISHMENT            = 'shop_establishment';
+    const GST_CERTIFICATE               = 'gst_certificate';
+    const MSME                          = 'msme';
+    const COMMON                        = 'common';
+    const PARTNERSHIP_DEED              = 'partnership_deed';
+    const CERTIFICATE_OF_INCORPORATION  = 'certificate_of_incorporation';
 
-    //
     // Company Search in BVS
-    //
     const COMPANY_SEARCH    = 'company_search';
     const GET_GST_DETAILS   = 'get_gst_details';
     const SEARCH_DATA       = 'search_data';
@@ -166,12 +162,17 @@ class Constant
     const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
 
     const FIELD_ARTEFACT_DETAILS_MAP      = [
-
-        self::PARTNERSHIP_DEED             => [
+        self::PARTNERSHIP_DEED => [
             self::ARTEFACT_TYPE   => self::PARTNERSHIP_DEED,
             self::PROOF_INDEX     => '1',
             self::VALIDATION_UNIT => Constants::PROOF,
             self::CONFIG_NAME     => self::PARTNERSHIP_DEED_OCR
+        ],
+        self::CERTIFICATE_OF_INCORPORATION => [
+            self::ARTEFACT_TYPE   => self::CERTIFICATE_OF_INCORPORATION,
+            self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
+            self::CONFIG_NAME     => self::CERTIFICATE_OF_INCORPORATION_OCR
         ],
         Type::GST_CERTIFICATE             => [
             self::ARTEFACT_TYPE   => self::GSTIN,

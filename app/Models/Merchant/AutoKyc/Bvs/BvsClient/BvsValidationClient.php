@@ -67,7 +67,7 @@ class BvsValidationClient extends BaseClient
      */
     public function createValidation(array $validation)
     {
-        $ownerId = $validation[Constant::OWNER_ID] ?? '';
+        $ownerId      = $validation[Constant::ARTEFACT][Constant::OWNER_ID] ?? '';
         $artefactType = $validation[Constant::ARTEFACT][Constant::TYPE] ?? '';
 
         $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_REQUEST, [
@@ -80,12 +80,17 @@ class BvsValidationClient extends BaseClient
         $requestSuccess = false;
 
         if($validationCreateRequest->getMetadata()!=null)
+        {
             $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_METADATA, [Constant::META_DATA => $validationCreateRequest->getMetadata()->serializeToJsonString()]);
+        }
         else
+        {
             $this->trace->info(TraceCode::BVS_CREATE_VALIDATION_METADATA, [Constant::META_DATA => null]);
+        }
 
 
-        try {
+        try
+        {
             $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $validationCreateRequest);
 
             $requestSuccess = true;
@@ -103,12 +108,16 @@ class BvsValidationClient extends BaseClient
             );
 
             return $response;
-        } catch (Error $e) {
+        }
+        catch (Error $e)
+        {
             $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
 
             throw new IntegrationException('
                 Could not receive proper response from BVS service');
-        } finally {
+        }
+        finally
+        {
             $dimension = [
                 Constant::ARTEFACT_TYPE => $artefactType,
                 Constant::SUCCESS       => $requestSuccess,

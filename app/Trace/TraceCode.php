@@ -15,6 +15,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION                = 'TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION';
 
+    const COI_EXPERIMENT                                        = 'COI_EXPERIMENT';
     /*
      * Payment component error messages
      */

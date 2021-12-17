@@ -36,9 +36,9 @@ class CoreTest extends TestCase
 
         return $this->fixtures->create('merchant_detail:valid_fields', $merchantAttributes);
     }
+
     public function testShouldPerformOcrForAadharBackDocumentTypeAndExperimentIsEnabled()
     {
-
         $merchantDetail = $this->getMerchantDetailFixture(11);
         $document = $this->fixtures->create('merchant_document', [
             'document_type' => Type::AADHAR_BACK,
@@ -50,9 +50,9 @@ class CoreTest extends TestCase
         $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
         $this->assertTrue($shouldPerformOCR);
     }
+
     public function testShouldPerformOcrForGstCertificateDocumentTypeAndExperimentIsEnabled()
     {
-
         $merchantDetail = $this->getMerchantDetailFixture(1);
         $document = $this->fixtures->create('merchant_document', [
             'document_type' => Type::GST_CERTIFICATE,
@@ -64,9 +64,9 @@ class CoreTest extends TestCase
         $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
         $this->assertTrue($shouldPerformOCR);
     }
+
     public function testShouldPerformOcrForPartnerShipDocumentTypeAndExperimentIsEnabled()
     {
-
         $merchantDetail = $this->getMerchantDetailFixture(3);
         $document = $this->fixtures->create('merchant_document', [
             'document_type' => Type::BUSINESS_PROOF_URL,
@@ -78,13 +78,29 @@ class CoreTest extends TestCase
         $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
         $this->assertTrue($shouldPerformOCR);
     }
+
+    public function testShouldPerformOcrForCertificateOfIncorporationDocumentType()
+    {
+        $merchantDetail = $this->getMerchantDetailFixture(6);
+
+        $document = $this->fixtures->create('merchant_document', [
+            'document_type' => Type::BUSINESS_PROOF_URL,
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchantDetail->getMerchantId(),
+        ]);
+
+        $documentCore = new DocumentCore();
+        $shouldPerformOCR = $documentCore->shouldPerfomOcrOnDocumentUpload($document, $merchantDetail->merchant, $merchantDetail);
+        $this->assertTrue($shouldPerformOCR);
+    }
+
     public function testShouldPerformOcrForMsmeDocumentTypeAndExperimentIsEnabled()
     {
         $mocks = $this->createAndFetchMocks(true);
 
         $merchantDetail = $this->getMerchantDetailFixture(11);
         $document = $this->fixtures->create('merchant_document', [
-            'document_type' => 'msme_certificate',
+            'document_type' => Type::MSME_CERTIFICATE,
             'file_store_id' => '123123',
             'merchant_id'   => $merchantDetail->getMerchantId(),
         ]);

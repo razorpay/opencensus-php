@@ -13,7 +13,9 @@ final class RazorxTreatment
     //Razorx treatment constant, allows system to call bvs for partnership deed verification.
     const AUTO_KYC_PARTNERSHIP = "auto_kyc_partnership";
 
-
+    //Razorx treatment constant, allows system to call bvs for certificate of incorporation verification.
+    const AUTO_KYC_COI = "auto_kyc_coi";
+    
     //Razorx treatment constant, allows system to auto populate gst number from pan.
     const BVS_GET_GST_DETAILS = "bvs_get_gst_details";
 

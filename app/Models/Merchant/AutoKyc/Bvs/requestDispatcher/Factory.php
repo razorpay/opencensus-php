@@ -58,6 +58,11 @@ class Factory
                 {
                     case Detail\BusinessType::PARTNERSHIP:
                         return new PartnershipDeedOcr($merchant, $merchantDetails, $document);
+
+                    case Detail\BusinessType::PRIVATE_LIMITED:
+                    case Detail\BusinessType::PUBLIC_LIMITED:
+                    case Detail\BusinessType::LLP:
+                        return new CertificateOfIncorporationOcr($merchant, $merchantDetails, $document);
                 }
                 break;
 

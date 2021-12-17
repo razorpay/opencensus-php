@@ -110,23 +110,30 @@ class Constants
 
         BusinessType::PRIVATE_LIMITED => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
-                Entity::POA_VERIFICATION_STATUS         => self::POA_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
-                Operator:: AND                          => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+                Operator:: OR => [
+                    Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
+                    'certificate_of_incorporation|doc'      => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                ]
             ]
         ],
 
         BusinessType::PUBLIC_LIMITED => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
-                Entity::POA_VERIFICATION_STATUS         => self::POA_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
-                Operator:: AND                          => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+                Operator:: OR => [
+                    Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
+                    'certificate_of_incorporation|doc'      => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                ]
             ]
         ],
+
         BusinessType::PARTNERSHIP    => [
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
@@ -136,13 +143,17 @@ class Constants
                 Operator:: OR                            => self::POA_VERIFICATION_CONDITION,
             ]
         ],
-        BusinessType::LLP            => [
+
+        BusinessType::LLP  => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
-                Entity::POA_VERIFICATION_STATUS         => self::POA_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
-                Operator:: AND                          => self::BANK_DETAILS_VERIFICATION_CONDITION
+                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+                Operator:: OR => [
+                        Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
+                        'certificate_of_incorporation|doc'      => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                ]
             ]
         ],
     ];
