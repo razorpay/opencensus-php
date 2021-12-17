@@ -335,20 +335,32 @@ class Raven
 
         $orgId = $basicAuth->getOrgId() ?? '';
 
-        // check if RazorX experiment is turned on then only pass orgId in sms request raven
-        $id   = $orgId ?? $app['request']->getTaskId() ?? '';
-
-        if (strtolower(app('razorx')->getTreatment($id, self::RavenOrgIdSmsRequest, Mode::LIVE)) === 'on')
+        if (empty($orgId) === false)
         {
-            // By default app is appending org_ as prefix but stork service expecting without prefix so trimming
-            $trimmedOrgId = str_replace('org_', '', $orgId);
-
-            if (isset($input['stork']['context']['org_id']) === false)
+            // check if RazorX experiment is turned on then only pass orgId in sms request raven
+            if (strtolower(app('razorx')->getTreatment($orgId, self::RavenOrgIdSmsRequest, $this->mode ?? Mode::LIVE)) === 'on')
             {
-                $input['stork']['context']['org_id'] = $trimmedOrgId;
+                // By default app is appending org_ as prefix but stork service expecting without prefix so trimming
+                $trimmedOrgId = str_replace('org_', '', $orgId);
+
+                if (isset($input['stork']['context']['org_id']) === false)
+                {
+                    $input['stork']['context']['org_id'] = $trimmedOrgId;
+                }
             }
+
+            return $input;
+        }
+
+        // Logging template name which doesn't have orgID.
+        if (isset($input['template']))
+        {
+            $app['trace']->info(TraceCode::RAVEN_REQUEST_ORG_ID_EMPTY, [
+                  "template" => $input['template'],
+                ]);
         }
 
         return $input;
+
     }
 }

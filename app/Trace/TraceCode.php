@@ -1928,6 +1928,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CORE_PAYMENT_SERVICE_ERROR                            = 'CORE_PAYMENT_SERVICE_ERROR';
     const RAVEN_REQUEST                                         = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                                        = 'RAVEN_RESPONSE';
+    const RAVEN_REQUEST_ORG_ID_EMPTY                            = 'RAVEN_REQUEST_ORG_ID_EMPTY';
     const RAVEN_CALLBACK_REQUEST                                = 'RAVEN_CALLBACK_REQUEST';
     const RAVEN_ASYNC_REQUEST_FAILED                            = 'RAVEN_ASYNC_REQUEST_FAILED';
     const LUMBERJACK_ASYNC_REQUEST_FAILED                       = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
