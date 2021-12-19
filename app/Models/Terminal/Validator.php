@@ -488,6 +488,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
     ];
 
     protected static $amexTerminalRules = [
@@ -681,6 +682,7 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::MODE                       => 'sometimes|in:1,2', // mode can be edited to auth_capture(1) or purchase(2)
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
     ];
 
     protected static $payuEditTerminalRules = [
