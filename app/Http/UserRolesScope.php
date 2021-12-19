@@ -431,6 +431,8 @@ class UserRolesScope
             'user_fetch_for_merchant'                       => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT,],
             'user_fetch_purpose_code'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE,],
             'user_otp_create'                               => Role::ALL_ROLES,
+            'user_check_has_set_password'                   => Role::ALL_ROLES,
+            'user_set_password'                             => Role::ALL_ROLES,
             'user_verify_through_mode'                      => [Role::ADMIN, Role::OWNER, Role::FINANCE,],
             'virtual_account_configs'                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER,],
             'webhook_fetch'                                 => [Role::ADMIN, Role::OWNER, Role::MANAGER,],

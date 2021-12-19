@@ -765,6 +765,29 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
+    public function checkUserHasSetPassword(): array
+    {
+        $user = $this->user;
+
+       return $this->core->checkUserHasSetPassword($user);
+    }
+
+    public function setUserPassword(array $input): array
+    {
+        $user = $this->user;
+
+        $setPassword = $this->core->checkUserHasSetPassword($user);
+
+        if($setPassword[Constants::SET_PASSWORD] === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PASSWORD_ALREADY_SET);
+        }
+
+        $user->getValidator()->validateInput(Constants::SET_PASSWORD, $input);
+
+        return $this->core->setUserPassword($user, $input);
+    }
+
     public function updateUserMerchantMapping(string $id, array $input): array
     {
         $input[Merchant\Entity::PRODUCT] = $input[Merchant\Entity::PRODUCT] ?? $this->auth->getRequestOriginProduct();

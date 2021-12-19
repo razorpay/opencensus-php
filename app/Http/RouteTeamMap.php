@@ -219,6 +219,8 @@ class RouteTeamMap
         'user_resend_verification_otp'             => [self::TEAM_PAYMENTS_DASHBOARD],
         'send_verification_otp'                    => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_otp_create'                          => [self::TEAM_PAYMENTS_DASHBOARD],
+        'user_check_has_set_password'              => [self::TEAM_PAYMENTS_DASHBOARD],
+        'user_set_password'                        => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_merchant_upgrade'                    => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_details_unified'                     => [self::TEAM_PAYMENTS_DASHBOARD],
         'business_website_status'                  => [self::TEAM_PAYMENTS_DASHBOARD],

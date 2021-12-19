@@ -2318,11 +2318,14 @@ class Core extends Base\Core
 
         $response =  $this->verifyOtpForSecondFactorAuthOnLogin($user, $input);
 
-        /** @var HubspotClient $hubspotClient */
-        $hubspotClient = $this->app->hubspot;
-        $hubspotClient->trackHubspotEvent($user->getEmail(), [
-            'contact_verified' => true
-        ]);
+        if($user->getEmail() !== null)
+        {
+            /** @var HubspotClient $hubspotClient */
+            $hubspotClient = $this->app->hubspot;
+            $hubspotClient->trackHubspotEvent($user->getEmail(), [
+                'contact_verified' => true
+            ]);
+        }
 
         return $response;
     }
@@ -3790,6 +3793,42 @@ class Core extends Base\Core
         ];
 
         $this->changePassword($user, $changePasswordData);
+    }
+
+    /**
+     * For checking user has set password two conditions are considered :
+     *  1. Mobile signup user who has not set the password yet.
+     *  2. User has signup up via Google authentication in that case password is not present in Rzp-org db.
+     *
+     * @param Entity $user
+     *
+     */
+    public function checkUserHasSetPassword(Entity $user)
+    {
+        $this->trace->info(TraceCode::USER_CHECK_HAS_PASSWORD_ACTION, [
+            Entity::USER_ID => $user->getId()
+        ]);
+
+        $setPassword = (($user->getPassword() !== null) or ($user->isSignupViaEmail() === true));
+
+        return [Constants::SET_PASSWORD => $setPassword];
+    }
+
+    /**
+     * @param Entity $user
+     * @param array  $input
+     */
+    public function setUserPassword(Entity $user, array $input)
+    {
+        $this->trace->info(TraceCode::USER_SET_PASSWORD_ACTION, [
+            Entity::USER_ID => $user->getId()
+        ]);
+
+        $user->fill($input);
+
+        $this->repo->saveOrFail($user);
+
+        return $user->toArrayPublic();
     }
 
     /**

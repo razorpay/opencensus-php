@@ -33,6 +33,7 @@ use RZP\Mail\User\AccountVerification;
 use RZP\Models\Merchant\Attribute\Type;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Models\User\Repository as UserRepo;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -2954,6 +2955,77 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+    }
+    /*checks for user who signs up via google auth*/
+    public function testcheckUserHasSetPassword()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
+                                                             [
+                                                                 'signup_via_email'        => 1,
+                                                                 'contact_mobile'          => '9012345678',
+                                                                 'contact_mobile_verified' => true,
+                                                             ]);
+
+        $user->setPasswordNull();
+
+        $user->save();
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+    }
+
+    /*checks for user has only set password before*/
+    public function testcheckUserHasSetPasswordAlready()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
+                                                             [
+                                                                 'signup_via_email'        => 0,
+                                                                 'contact_mobile'          => '9012345678',
+                                                                 'contact_mobile_verified' => true,
+                                                             ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+    }
+
+    public function testSetUserPassword()
+    {
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id'],
+            [
+                'signup_via_email'        => 0,
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+            ]);
+
+        $user->setPasswordNull();
+
+        (new UserRepo())->saveOrFail($user);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $content = [
+            'password'              => 'hello123',
+            'password_confirmation' => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertNotNull($user->getPassword());
     }
 
     public function testChangeInvalidPassword()

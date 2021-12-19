@@ -49,6 +49,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
     const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                 = 'Fund Account Validations are temporarily blocked. Please contact support.';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';
+    const BAD_REQUEST_PASSWORD_ALREADY_SET                                      = 'Password is already set for this user';
     const BAD_REQUEST_ACCESS_TOKEN_INVALID                                      = 'Access Token is not valid or expired.';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_FEATURE_PERMISSION_NOT_FOUND                                      = "You do not have permission to access this feature.";

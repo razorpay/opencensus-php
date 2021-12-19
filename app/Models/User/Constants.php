@@ -34,6 +34,8 @@ class Constants
 
     const ATTRIBUTIONS  = "attributions";
 
+    const SET_PASSWORD  = "set_password";
+
     const PERMISSIONS   = 'permissions';
 
     const BANNER_ID = 'banner_id';

@@ -120,6 +120,22 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getCheckUserHasSetPassword()
+    {
+        $data = $this->service()->checkUserHasSetPassword();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSetUserPassword()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setUserPassword($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateUserMaping(string $id, string $action)
     {
         $input = Request::all();

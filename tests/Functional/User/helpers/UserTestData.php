@@ -2202,6 +2202,47 @@ return [
         ],
     ],
 
+    'testcheckUserHasSetPasswordAlready' => [
+        'request' => [
+            'url'     => '/users/set/password',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' =>
+            [
+                'content' =>
+                    [
+                        'set_password' => true
+                    ],
+            ],
+    ],
+
+    'testcheckUserHasSetPassword' => [
+        'request' => [
+            'url'     => '/users/set/password',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' =>
+            [
+            'content' =>
+                [
+                'set_password' => true
+                ],
+            ],
+        ],
+
+    'testSetUserPassword' => [
+        'request' => [
+            'url'     => '/users/set/password',
+            'method'  => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testChangePassword' => [
         'request' => [
             'url'     => '/users/id/password',

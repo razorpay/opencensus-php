@@ -124,6 +124,11 @@ class Validator extends Base\Validator
         Entity::OLD_PASSWORD          => 'required|string',
     ];
 
+    protected static $setPasswordRules = [
+        Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
+    ];
+
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',

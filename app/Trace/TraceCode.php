@@ -2518,6 +2518,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_OTP_SMS_FOR_ACTION_FAILED                      = 'VERIFY_OTP_SMS_FOR_ACTION';
     const VERIFY_OTP_SMS_VALIDATION_FAILURE                     = 'VERIFY_OTP_SMS_VALIDATION_FAILURE';
     const USER_CONTACT_MOBILE_UPDATE                            = 'USER_CONTACT_MOBILE_UPDATE';
+    const USER_CHECK_HAS_PASSWORD_ACTION                        = 'USER_CHECK_HAS_PASSWORD_ACTION';
+    const USER_SET_PASSWORD_ACTION                              = 'USER_SET_PASSWORD_ACTION';
     const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';
 
     //Trace codes for user device details
