@@ -10,12 +10,14 @@ use Config;
 use Session;
 use Request;
 use App\Http\Headers;
+use App\Trace\SpanTrace;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Lcobucci\JWT\Parser as JWTParser;
 use App\Admin\Service as AdminService;
 use App\User\Constants as UserConstants;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
@@ -440,6 +442,8 @@ class ApiRequestAny
         $httpCode = null;
         $method = $method ?? Request::method();
 
+        $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
+
         // In some cases (for instance dashboard merchant searches)
         // $path ends up having URLs which triggers `cURL error 6: Could not resolve host`
         // because Guzzle doesn't attach $path to the base_url set above
@@ -450,8 +454,15 @@ class ApiRequestAny
         {
             $start_time = microtime(true);
 
-            $client = $this->client
-                           ->$method($path, $this->options);
+            $client = (new ApiRequestSpan($this->client))->wrapRequestInSpan(
+                $method,
+                $path,
+                [
+                    'options' => $this->options,
+                    'headers' => $this->options['headers']??[],
+                    ],
+                $spanOptions
+            );
 
             $end_time = microtime(true);
 

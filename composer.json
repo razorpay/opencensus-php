@@ -29,6 +29,8 @@
     "php-http/guzzle5-adapter": "^1.0",
     "lcobucci/jwt": "^3.2",
     "razorpay/metrics-php": "^2.1",
+    "opencensus/opencensus":"v0.7.6.7",
+    "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
     "hisorange/browser-detect": "^4.4",
     "webonyx/graphql-php": "^14.9"
   },
@@ -44,6 +46,14 @@
     {
       "type": "vcs",
       "url": "git@github.com:razorpay/metrics-php.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:razorpay/opencensus-php.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:razorpay/opencensus-php-exporter-jaeger.git"
     }
   ],
   "autoload": {

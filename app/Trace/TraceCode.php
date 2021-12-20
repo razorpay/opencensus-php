@@ -119,6 +119,10 @@ class TraceCode
     const PRODUCT_SWITCH_ROUTE_INFO              = 'PRODUCT_SWITCH_ROUTE_INFO';
     const FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO       = 'FIRE_EVENT_TO_HUBSPOT_ROUTE_INFO';
 
+    const OPENCENSUS_ERROR                       = 'OPENCENSUS_ERROR';
+    const JAEGER_SPAN_EXCEPTION                  = 'JAEGER_SPAN_EXCEPTION';
+    const JAEGER_INFO                            = 'JAEGER_INFO';
+
     const MERCHANT_EXPERIMENTS                   = 'MERCHANT_EXPERIMENTS';
 
     // Graph Request Trace codes

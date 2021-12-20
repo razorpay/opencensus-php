@@ -170,7 +170,7 @@ return array(
 
         // This one is our own custom provider
         App\Providers\UuidServiceProvider::class,
-
+        App\Providers\OpenCensusProvider::class,
         // We are extending because 1.4 is the last version
         // that works with L5.0
         // and it does not work with PHP7

@@ -1,15 +1,23 @@
-# alpine:3.7
-# -> razorpay/ongii:php7.3 ->
-FROM c.rzp.io/razorpay/onggi:php-7.3-nginx
-# -> razorpay/dashboard:{GIT_COMMIT_HASH}
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.3-nginx
 
-COPY composer.json composer.lock /app/
+FROM $ONGGI_IMAGE
 
-WORKDIR /app
+FROM $ONGGI_IMAGE as opencensus-ext
+WORKDIR /
+ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+RUN set -eux && \
+    wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar zx --strip=1
+RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+
+FROM $ONGGI_IMAGE
 
 ARG GIT_COMMIT_HASH
 ARG GIT_TOKEN
 ARG GIT_USERNAME
+
+COPY composer.json composer.lock /app/
+
+WORKDIR /app
 
 RUN set -eu && \
     composer --version && \
@@ -18,15 +26,21 @@ RUN set -eu && \
     composer config -g repos.packagist composer "https://packagist.rzp.io" && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
-    composer clear-cache
+    composer clear-cache && \
+    pear config-set php_ini /etc/php7/php.ini && \
+    pecl install opencensus-alpha
 
 RUN mkdir -p public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt
 
+COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/modules
+
 COPY --chown=nginx:nginx . /app/
 
 # This step can't run without some classes from above step
-RUN composer dump-autoload && php artisan optimize
+RUN composer dump-autoload -o
+
+RUN cd /app/ && php artisan optimize
 
 EXPOSE 80
 

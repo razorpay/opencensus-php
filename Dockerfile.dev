@@ -1,23 +1,45 @@
-FROM razorpay/onggi:php-7.3-nginx
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.3-nginx
 
-VOLUME ["/app"]
+FROM $ONGGI_IMAGE as opencensus-ext
 
-RUN apk add --update lsof && \
-    apk add --virtual nodejs-deps nodejs-current nodejs-npm && \
-    chown -R nginx.nginx /app
+WORKDIR /
+ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+RUN set -eux && \
+    wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar zx --strip=1
+RUN cd /ext && phpize && ./configure --enable-opencensus && make install
 
-COPY ./dockerconf/entrypoint-dev.sh /entrypoint.sh
+FROM $ONGGI_IMAGE
+
+ARG GIT_COMMIT_HASH
+ARG GIT_TOKEN
+ARG GIT_USERNAME
+
+COPY composer.json composer.lock /app/
 
 WORKDIR /app
 
-#Please run these manually. TODO:Avoid Errors while doing directly.
-#RUN npm install && \
-#    cd web && npm install && cd .. && \
-#    npm run build && \
-#    echo $GIT_COMMIT_HASH > public/commit.txt && \
-##   Skipping tests till deploy to QA
-##   npm test && \
-#    apk del nodejs-deps
+RUN set -eu && \
+    composer --version && \
+    git config --global user.name ${GIT_USERNAME} && \
+    composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer config -g repos.packagist composer "https://packagist.rzp.io" && \
+    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
+    rm -rf /root/.composer && \
+    composer clear-cache && \
+    pear config-set php_ini /etc/php7/php.ini && \
+    pecl install opencensus-alpha
+
+RUN mkdir -p public && \
+    echo ${GIT_COMMIT_HASH} > public/commit.txt
+
+COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/modules
+
+COPY --chown=nginx:nginx . /app/
+
+# This step can't run without some classes from above step
+RUN composer dump-autoload -o
+
+RUN cd /app/ && php artisan optimize
 
 EXPOSE 80
 

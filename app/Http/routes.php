@@ -56,16 +56,16 @@ Route::group(['middleware' => ['web']], function () {
         ->middleware(['jwt']);
 
     // Org
-    Route::get('/org', 'AdminController@getOrg');
+    Route::get('/org', 'AdminController@getOrg')->name('get_org');
 
     Route::group(['prefix' => 'admin', 'middleware'  =>  ['set_x_frame']], function () {
-        Route::post('/signin', 'AdminController@postSignin');
-        Route::get('/', 'AdminController@getIndex');
+        Route::post('/signin', 'AdminController@postSignin')->name('admin_signin');
+        Route::get('/', 'AdminController@getIndex')->name('admin_getIndex');
     });
 
     Route::group(['prefix' => 'user'], function()
     {
-        Route::post('/signin', 'UserController@postSignin'); // ePOS
+        Route::post('/signin', 'UserController@postSignin')->name('user_signin'); // ePOS
         Route::post('/demo-signin', 'UserController@postDemoSignin');
         // allow users with verified email/mobile to login with otp
         Route::post('/signin/otp', 'UserController@postSendLoginOtp');

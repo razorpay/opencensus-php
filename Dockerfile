@@ -1,7 +1,16 @@
 # alpine:3.7
-# -> razorpay/ongii:php7.3 ->
-FROM c.rzp.io/razorpay/onggi:php-7.3-nginx
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.3-nginx
 # -> razorpay/dashboard:{GIT_COMMIT_HASH}
+
+FROM $ONGGI_IMAGE as opencensus-ext
+WORKDIR /
+ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+RUN set -eux && \
+    wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar zx --strip=1
+RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+
+RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts \
+    && rm -rf /root/.composer
 
 COPY composer.json composer.lock /app/
 
@@ -9,15 +18,13 @@ COPY composer.json composer.lock /app/
 COPY composer-auth.json /root/.composer/auth.json
 
 WORKDIR /app
-
-RUN composer install --no-dev --no-interaction --no-autoloader --no-scripts \
-    && rm -rf /root/.composer
-
 # This is the final production image
 # Define these late so as to improve docker caching
 ARG GIT_COMMIT_HASH
 
-RUN mkdir -p public && \
+RUN pear config-set php_ini /etc/php7/php.ini && \
+    pecl install opencensus-alpha && \
+    mkdir -p public && \
     echo ${GIT_COMMIT_HASH} > public/commit.txt
 
 COPY --chown=nginx:nginx . /app/

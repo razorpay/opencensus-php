@@ -11,10 +11,12 @@ use Request;
 
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
+use App\Trace\SpanTrace;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Razorpay\Api\Request as ApiRequest;
+use OpenCensus\Trace\Propagator\ArrayHeaders;
 
 
 class RawApiRequest
@@ -375,9 +377,17 @@ class RawApiRequest
 
             $start_time = microtime(true);
 
-            $response = $this->client
-                             ->$method($this->path, $this->params)
-                             ->json();
+            $spanOptions = (new ApiRequestSpan())::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$this->path);
+
+            $response = (new ApiRequestSpan($this->client))->wrapRequestInSpan(
+                $method,
+                $this->path,
+                [
+                    'options' => $this->params,
+                    'headers' => $this->params['headers'] ?? [],
+                ],
+                $spanOptions
+            )->json();
 
             $end_time = microtime(true);
 
@@ -468,5 +478,68 @@ class RawApiRequest
         }
 
         return $merchantId;
+    }
+
+    private function wrapRequestInSpan($methodName, $defaultSpanOptions = array())
+    {
+        $span = SpanTrace::startSpan($defaultSpanOptions);
+        $scope = SpanTrace::withSpan($span);
+
+        // inject spanContext into trace propagation headers
+        $headers = [];
+        if (empty($this->params['headers']) === false)
+        {
+            $headers = $this->params['headers'];
+        }
+
+        $path = $this->path;
+
+        $arrHeaders = new ArrayHeaders($headers);
+
+        SpanTrace::injectContext($arrHeaders);
+
+        $headers = $arrHeaders->toArray();
+
+        $methodArgs[1] = $headers;
+
+        $methodTag = $methodName;
+
+        $span->addAttribute('http.method', $methodTag);
+
+        // handle actual request
+        try {
+            $client = $this->client
+                ->$methodName($path, $this->params);
+        }
+        catch (\Throwable $e)
+        {
+            Trace::info(TraceCode::JAEGER_INFO, [
+                'message'   => $e->getMessage(),
+                'code'      => $e->getCode(),
+                'stack'     => $e->getTraceAsString(),
+            ]);
+
+            $span->addAttribute('error', 'true');
+
+            throw $e;
+        }
+        finally {
+            $scope->close();
+        }
+
+        if (!is_null($client->json()))
+        {
+            // add response status as a span tags
+            $httpCode = $client->getStatusCode();
+
+            $span->addAttribute('http.status_code', $httpCode);
+
+            if ($httpCode >= 400)
+            {
+                $span->addAttribute('error', 'true');
+            }
+        }
+
+        return $client->json;
     }
 }
