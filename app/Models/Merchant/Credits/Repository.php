@@ -351,21 +351,13 @@ class Repository extends Base\Repository
                                       ->firstOrFail();
     }
 
-    public function setMerchantCreditsLockForUpdate(string $merchantId, string $product = null, string $type = null)
+    public function getCreditsForMerchant(string $merchantId, string $product = null, string $type = null)
     {
-        assertTrue ($this->isTransactionActive());
-
-        return Entity::lockForUpdate()->newQuery()
-                                    ->where(Entity::MERCHANT_ID, $merchantId)
-                                    ->where(Entity::PRODUCT, $product)
-                                    ->where(Entity::TYPE, $type)
-                                    ->where(function ($query)
-                                    {
-                                        $query->where(Entity::EXPIRED_AT, '>', time())
-                                            ->orWhereNull(Entity::EXPIRED_AT);
-                                    })
-                                    ->orderBy(\DB::raw('-`expired_at`'), 'desc')
-                                    ->get();
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::PRODUCT, $product)
+                    ->where(Entity::TYPE, $type)
+                    ->get();
     }
 
     protected function addQueryParamFetchExpired($query, $params)

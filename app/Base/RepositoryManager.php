@@ -51,6 +51,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\FundTransfer\Attempt\Repository              $fund_transfer_attempt
  * @property Models\Reversal\Repository                          $reversal
  * @property Models\Payout\Repository                            $payout
+ * @property Models\Merchant\Credits\Repository                  $credits
  * @property Models\Merchant\Detail\Repository                   $merchant_detail
  * @property Models\Merchant\Stakeholder\Repository              $stakeholder
  * @property Models\Merchant\AvgOrderValue\Repository            $merchant_avg_order_value

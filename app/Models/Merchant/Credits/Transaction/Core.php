@@ -475,15 +475,36 @@ class Core extends Base\Core
                 'source_id'   => $source->getId(),
             ]);
 
-        // There is an outer db transaction which ensures that credits
-        // and credits transactions are created in sync with payouts
-        // The order of locking is  - lock on credits and then lock
-        // on merchant banking balance
-        $credits = $this->repo->credits->setMerchantCreditsLockForUpdate($merchant->getId(), $product, $creditType);
+        $credits = $this->repo->credits->getCreditsForMerchant($merchant->getId(), $product, $creditType);
 
-        if ($credits === null)
+        $validCreditIds = [];
+
+        // sum of available credits before acquiring lock is calculated to avoid
+        //    -> waiting for acquiring locks without sufficient credits
+        //    -> avoid unnecessary acquisition of locks without sufficient credits
+        //the total available credit sum is once again calculated after acquiring locks to ensure
+        //that no concurrent request consumed the available credits
+        $creditsAvailableBeforeLockAcquisition = 0;
+
+        foreach ($credits as $credit)
         {
-            $this->trace->info(TraceCode::NO_CREDITS_AVAILABLE_WITH_MERCHANT,
+            if ($credit->isValid() === true)
+            {
+                $unusedCredit = $credit->getValue() - $credit->getUsed();
+
+                $creditsAvailableBeforeLockAcquisition += $unusedCredit;
+
+                // here the condition is not equal to zero because there can be negative credits as well.
+                if($unusedCredit !== 0)
+                {
+                    array_push($validCreditIds, $credit->getId());
+                }
+            }
+        }
+
+        if ($amount > $creditsAvailableBeforeLockAcquisition)
+        {
+            $this->trace->info(TraceCode::CREDITS_TO_BE_CONSUMED_MORE_THAN_MERCHANT_CREDITS,
                 [
                     'credit_type' => $creditType,
                     'product'     => $product,
@@ -493,6 +514,12 @@ class Core extends Base\Core
 
             return $creditsConsumed;
         }
+
+        // There is an outer db transaction which ensures that credits
+        // and credits transactions are created in sync with payouts
+        // The order of locking is  - lock on credits and then lock
+        // on merchant banking balance
+        $credits = $this->repo->credits->getCreditEntitiesLockForUpdate($validCreditIds);
 
         $creditsAvailable = 0;
 

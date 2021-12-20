@@ -581,8 +581,8 @@ return [
                 'purpose'      => 'refund',
                 'status'       => 'processing',
                 'mode'         => 'IMPS',
-                'tax'          => 162,
-                'fees'         => 1062,
+                'tax'          => 0,
+                'fees'         => 900,
                 'notes'        => [
                     'abc' => 'xyz',
                 ],

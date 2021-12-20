@@ -283,4 +283,17 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Promotion\Entity');
     }
 // --------------------- End Foreign Key Relations ---------------------------
+
+    public function isValid()
+    {
+        $expiredAt = $this->getExpiredAt();
+
+        if ($expiredAt > time() or $expiredAt === null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }

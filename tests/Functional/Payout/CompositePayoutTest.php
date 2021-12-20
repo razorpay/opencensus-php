@@ -135,7 +135,7 @@ class CompositePayoutTest extends TestCase
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 2000000 , 'used' => 1000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
-        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1000000 , 'used' => 2000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1000000 , 'used' => 1000000, 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
         $response = $this->startTest();
 
