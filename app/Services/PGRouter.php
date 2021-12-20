@@ -580,6 +580,11 @@ class PGRouter
             $traceRequest['content'] = json_encode($content);
         }
 
+        if (is_array($traceRequest['headers']) === true)
+        {
+            unset($traceRequest['headers'][Passport::PASSPORT_JWT_V1]);
+        }
+
         $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);
     }
 
