@@ -116,4 +116,34 @@ return [
         ],
     ],
 
+    'testGetMerchantSupportDetailsPresentSuccess' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/proxy/merchants/supportdetails',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'type'  => 'support',
+                'email' => 'abcd@razorpay.com',
+                'phone' => '9876543210',
+                'url'   => 'https://www.abcd.com'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetMerchantSupportDetailsNotPresentSuccess' => [
+        'request'  => [
+            'content' => [
+            ],
+            'url'     => '/proxy/merchants/supportdetails',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

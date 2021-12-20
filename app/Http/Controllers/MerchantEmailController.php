@@ -71,7 +71,7 @@ class MerchantEmailController extends Controller
     {
         $merchant =  $this->ba->getMerchant();
 
-        $data = $this->service()->proxyGetSupportDetails($merchant);
+        $data = $this->service()->getSupportDetails($merchant);
 
         return ApiResponse::json($data);
     }

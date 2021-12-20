@@ -106,6 +106,22 @@ class Service extends Base\Service
         return $merchantEmailMap;
     }
 
+    public function getSupportDetails(Merchant\Entity $merchant)
+    {
+        try
+        {
+            $supportDetails = $this->core()->fetchEmailsByType($merchant, Type::SUPPORT);
+
+            return $supportDetails->toArrayPublic();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            return null;
+        }
+    }
+
     public function proxyGetSupportDetails(Merchant\Entity $merchant): array
     {
         $supportDetails = $this->core()->fetchEmailsByType($merchant, Type::SUPPORT);

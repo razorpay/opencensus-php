@@ -202,5 +202,74 @@ class MerchantEmailTest extends TestCase
         $this->assertNull($supportDetails['email']);
     }
 
+    public function testGetMerchantSupportDetailsPresentSuccess()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => $user->id,
+                                                             'merchant_id' => $merchantId,
+                                                             'role'        => 'owner',
+                                                         ]);
+
+        $this->fixtures->merchant_email->create([
+                                                    'merchant_id' => $merchantId,
+                                                    'type'        => 'support',
+                                                    'email'       => 'abcd@razorpay.com',
+                                                    'phone'       => '9876543210',
+                                                    'url'         => 'https://www.abcd.com'
+                                                ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user->id);
+
+        $this->startTest();
+
+        $supportDetails = $this->getLastEntity('merchant_email', true);
+
+        $this->assertEquals('9876543210', $supportDetails['phone']);
+
+        $this->assertEquals('abcd@razorpay.com', $supportDetails['email']);
+
+        $this->assertEquals('https://www.abcd.com', $supportDetails['url']);
+    }
+
+    public function testGetMerchantSupportDetailsNotPresentSuccess()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => $user->id,
+                                                             'merchant_id' => $merchantId,
+                                                             'role'        => 'owner',
+                                                         ]);
+
+        $this->fixtures->merchant_email->create([
+                                                    'merchant_id' => $merchantId,
+                                                    'type'        => 'support',
+                                                    'email'       => null,
+                                                    'phone'       => null,
+                                                    'url'         => null
+                                                ]);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $user->id);
+
+        $this->startTest();
+
+        $supportDetails  = $this->getLastEntity('merchant_email', true);
+
+        $this->assertNull( $supportDetails['phone']);
+
+        $this->assertNull($supportDetails['email']);
+
+        $this->assertNull($supportDetails['url']);
+    }
 }
 
