@@ -20,11 +20,12 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
     analyticsTrack({
       objectName,
       actionName,
       screen: 'button create',
+      toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
@@ -37,7 +38,7 @@ function _track() {
       this.setConfig({ payment_button_id });
 
       sendToLumberjack('review.complete_button.success');
-      sendToSegment('create button', 'success');
+      sendToSegment('create button', 'success', {}, true);
     },
     createOrEditFail: (error) => {
       sendToLumberjack('review.complete_button.fail', error);
@@ -47,7 +48,7 @@ function _track() {
       this.setConfig({ template });
 
       sendToLumberjack('template.select', { template });
-      sendToSegment('template select', 'click', { template });
+      sendToSegment('template select', 'click', { template }, true);
     },
     onClickButtonSettings: () => {
       sendToLumberjack('review.navigate_settings');

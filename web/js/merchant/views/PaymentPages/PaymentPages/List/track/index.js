@@ -13,11 +13,12 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
     analyticsTrack({
       objectName,
       actionName,
       screen: 'list payment page',
+      toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
@@ -44,7 +45,7 @@ function _track() {
     },
     createPaymentPage: () => {
       sendToLumberjack('create.click_create');
-      sendToSegment('create page', 'clicked');
+      sendToSegment('create page', 'clicked', {}, true);
       triggerHotjarRecording('PP_Creation');
     },
     paginate: (type, data) => {

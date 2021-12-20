@@ -16,11 +16,12 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
     analyticsTrack({
       objectName,
       actionName,
       screen: 'create payment page',
+      toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
@@ -45,7 +46,7 @@ function _track() {
       setConfig({ payment_page_id });
 
       sendToLumberjack('publish_page.success', { isNew });
-      sendToSegment('publish page', 'success', { isNew });
+      sendToSegment('publish page', 'success', { isNew }, true);
     },
     publishPaymentPageFail: (isNew) => {
       sendToLumberjack('publish_page.fail', { isNew });
@@ -148,7 +149,7 @@ function _track() {
     success: {
       clickCopyUrl: () => {
         sendToLumberjack(`success.copy_url`);
-        sendToSegment('success', 'copy url');
+        sendToSegment('success', 'copy url', {}, true);
       },
       clickShareUrlViaEmailorSMS: (trackData) => {
         sendToLumberjack(`success.share.sms_email`, { trackData });
@@ -186,7 +187,7 @@ function _track() {
       },
       selectTemplate: (template) => {
         sendToLumberjack('choose_template', { template });
-        sendToSegment('template', 'selected', { templateName: template });
+        sendToSegment('template', 'selected', { templateName: template }, true);
       },
       titleEnterSuccess: (title) => {
         sendToLumberjack('title.success', { title });

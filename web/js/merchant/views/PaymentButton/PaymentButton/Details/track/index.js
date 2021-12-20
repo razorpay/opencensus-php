@@ -14,11 +14,12 @@ function _track() {
     );
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
     analyticsTrack({
       objectName,
       actionName,
       screen: 'details payment button',
+      toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
@@ -74,7 +75,7 @@ function _track() {
     },
     copyCode: () => {
       sendToLumberjack('review.copy_code');
-      sendToSegment('get code copy code', 'click');
+      sendToSegment('get code copy code', 'click', {}, true);
     },
     closeGetCodeModal: () => {
       sendToLumberjack('review.close_code');
@@ -86,7 +87,7 @@ function _track() {
     },
     testButton: () => {
       sendToLumberjack('review.test_button');
-      sendToSegment('success test button', 'click');
+      sendToSegment('success test button', 'click', {}, true);
     },
     paymentReceiptsOpen: () => {
       sendToLumberjack('payment_receipts.open');
@@ -128,7 +129,7 @@ function _track() {
     },
     pluginClick: (name) => {
       sendToLumberjack(`plugins.${name}`);
-      sendToSegment(`${name} documentation link`, 'click');
+      sendToSegment(`${name} documentation link`, 'click', {}, true);
     },
 
     init(_lumberjackTrack, _buttonId) {

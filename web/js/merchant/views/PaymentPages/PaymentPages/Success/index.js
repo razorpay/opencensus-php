@@ -2,23 +2,28 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
+
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Tooltip from 'common/ui/Tooltip';
 import Loader from 'common/ui/Loader';
-import { autoPrefixUrls, getErrorMessageFromResponse } from 'common/utils/rzp-utils';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import PageSettingsModal from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceiptModal from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
-import { fetchPaymentPage, updateReceiptDetails, updateData } from 'merchant/reducers/wysiwyg';
 import Header from '../Success/Header';
-import { sendLink, editPaymentPage, setReceiptDetails } from '../model';
+
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { fetchPaymentPage, updateReceiptDetails, updateData } from 'merchant/reducers/wysiwyg';
+
 import RoundTickImage from '../../../../../../icons/merchant/tick-round.svg';
 import EmbedButtonImage from '../../../../../../icons/merchant/embed-button.svg';
-import Popover, { PopoverBody } from 'common/ui/Popover';
+
+import { autoPrefixUrls, getErrorMessageFromResponse } from 'common/utils/rzp-utils';
+import { sendLink, editPaymentPage, setReceiptDetails } from '../model';
+import track from '../Wysiwyg/track';
 
 @connect(
   (state) => ({
@@ -282,6 +287,7 @@ class Success extends React.Component {
                         const ele = document.getElementsByName('short_url');
                         ele?.[0].focus();
                         // this.props.trackerFn('Click Copy URL');
+                        track.success.clickCopyUrl();
                       }}
                     >
                       <Input

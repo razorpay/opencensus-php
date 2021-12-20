@@ -8,11 +8,12 @@ function _track() {
     lumberjackTrack(window.rzpQ.paymentButtons().interaction(`button.${event}`, options));
   }
 
-  function sendToSegment(objectName, actionName, properties) {
+  function sendToSegment(objectName, actionName, properties, toCleverTap = false) {
     analyticsTrack({
       objectName,
       actionName,
       screen: 'list payment buttons',
+      toCleverTap,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
@@ -39,7 +40,7 @@ function _track() {
     },
     createEnter: () => {
       sendToLumberjack('create.enter');
-      sendToSegment('create payment button', 'click');
+      sendToSegment('create payment button', 'click', {}, true);
     },
     paginate: (params, type) => {
       sendToLumberjack(`browse.${type}`, {
