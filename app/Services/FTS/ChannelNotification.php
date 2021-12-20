@@ -44,7 +44,6 @@ class ChannelNotification
         '8050408646',
         '8976670177',
         '8861655100',
-        '9845404807',
     ];
 
     protected $internalEmails = [
