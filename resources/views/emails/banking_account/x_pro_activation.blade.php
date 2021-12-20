@@ -10,3 +10,10 @@
 - Pin Code : {{$pincode}} <br/>
 - Business Category: {{$business_category}} <br/>
 - Application Date: {{$application_date}} <br/>
+- Sales Team: {{$sales_team}} <br/>
+- SPOC Email: {{$sales_poc_email}} <br/>
+@if ($sales_team === 'self_serve')
+    <br/><b>Self Serve Fields below:- </b> <br/>
+    - Slot Booked Date & Time: {{$slot_booking_date_and_time}} <br/>
+    - Assigned Ops Reviewer: {{$reviewer_name}} <br/>
+@endif

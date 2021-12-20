@@ -393,6 +393,56 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(XProActivation::class);
     }
 
+    public function testFreshDeskTicketForSelfServe()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        $this->bookSlotForBankingAccount($bankingAccountId);
+
+        Mail::fake();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccountId,
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+            return $mail->hasTo('x.support@razorpay.com');
+        });
+    }
+
     public function testCreateBankingAccountAndSubmitAgain()
     {
         $attribute = ['activation_status' => 'activated'];

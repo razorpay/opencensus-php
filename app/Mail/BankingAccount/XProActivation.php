@@ -9,6 +9,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Models\BankingAccount\Entity;
+use RZP\Models\BankingAccount\Activation\Detail;
 
 
 class XProActivation extends Base
@@ -55,12 +56,32 @@ class XProActivation extends Base
 
         $dateTime = Carbon::createFromTimestamp($createdAt, Timezone::IST)->format('d-M-y H:i');
 
+        $slotBookingDateTime = "";
+
+        $spocEmail = "";
+
+        if ($data[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Detail\Entity::BOOKING_DATE_AND_TIME] != null)
+        {
+            $slotBookingDateTime = Carbon::createFromTimestamp($data[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Detail\Entity::BOOKING_DATE_AND_TIME])->format('d-M-y H:i');
+        }
+
+        $spocDetail = array_key_exists(Entity::BANKING_ACCOUNT_CA_SPOC_DETAILS, $data);
+
+        if ($spocDetail === true)
+        {
+            $spocEmail = $data[Entity::BANKING_ACCOUNT_CA_SPOC_DETAILS][Detail\Entity::SALES_POC_EMAIL];
+        }
+
         $data = [
             'internal_reference_number' => $data[Entity::BANK_REFERENCE_NUMBER],
             'merchant_name'             => $merchant[Merchant\Entity::NAME],
             'merchant_id'               => $merchant[Merchant\Entity::ID],
             'merchant_email'            => $merchant[Merchant\Entity::EMAIL],
             'business_category'         => $merchant[Merchant\Entity::CATEGORY],
+            'sales_team'                => $data[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Entity::SALES_TEAM],
+            'sales_poc_email'           => $spocEmail,
+            'slot_booking_date_and_time'=> $slotBookingDateTime,
+            'reviewer_name'             => $data['reviewer_name'],
             'pincode'                   => $data[Entity::PINCODE],
             'application_date'          => $dateTime,
         ];

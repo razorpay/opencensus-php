@@ -198,7 +198,16 @@ class Core extends Base\Core
     {
         try
         {
-            $mailer = new XProActivation($bankingAccount->toArray());
+            $activationDetail = $bankingAccount->bankingAccountActivationDetails;
+
+            $reviewer = ['reviewer_name' => ""];
+
+            if ($activationDetail != null)
+            {
+                $reviewer = ['reviewer_name' => $activationDetail->getAssigneeName()];
+            }
+
+            $mailer = new XProActivation(array_merge($bankingAccount->toArray(), $reviewer));
 
             Mail::queue($mailer);
 
