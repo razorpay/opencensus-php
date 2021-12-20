@@ -11629,6 +11629,34 @@ return [
         ],
     ],
 
+    'testFetchPayoutsOnXDemo' => [
+        'request' => [
+            'url'    => '/payouts?product=banking',
+            'method' => 'get',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'          => 'payout',
+                        'amount'          => 100,
+                        'currency'        => 'INR',
+                        'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
+                        'purpose'         => 'refund',
+                        'status'          => 'processing',
+                        'tax'             => 90,
+                        'fees'            => 590,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPayoutToSCBLCardWithNetworkOtherThanAmexMasterVisa' => [
         'request'  => [
             'method'  => 'POST',

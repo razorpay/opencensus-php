@@ -178,6 +178,10 @@ class Entity extends Base\PublicEntity
     const FILTERS                   = 'filters';
     const KEY_MERCHANT_ID           = 'merchant_id';
     const DEFAULT_FILTER            = 'default';
+    const POSTED_AT                 = 'posted_at';
+    const REVERSED_AT               = 'reversed_at';
+    const GT                        = 'gt';
+    const GTE                       = 'gte';
 
     //
     // Configs
@@ -3137,6 +3141,11 @@ class Entity extends Base\PublicEntity
         return array_unique($relations);
     }
 
+    public function isXDemoAccount(): bool
+    {
+        return Account::isXDemoAccount($this->getId());
+    }
+  
     public function isAddressWithNameRequiredEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_NAME_REQUIRED) === true);

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Contact;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
@@ -95,6 +97,17 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input): array
     {
+
+        // This is a temporary solution to hide junk data from X Demo accounts.
+        if ($this->merchant->isXDemoAccount())
+        {
+            $prevDt = isset($input['from']) ? (int)$input['from'] : 0;
+
+            $maxFrom = max($prevDt, Carbon::now(Timezone::IST)->timestamp - Constants\BankingDemo::MAX_TIME_DURATION);
+
+            $input['from'] = (string)$maxFrom;
+        }
+
         $startTimeMs = round(microtime(true) * 1000);
 
         $entities = $this->core

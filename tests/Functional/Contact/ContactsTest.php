@@ -112,6 +112,26 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchContactsForXDemo()
+    {
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'          => 'Hrw2ujXW6LGEk7',
+            ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->fixtures->create('contact',
+            ['id' => '1000001contact', 'name' => 'Contact X', 'created_at' => 0, 'merchant_id' => $merchant['id']]);
+
+        $this->fixtures->create('contact',
+            ['id' => '1000002contact', 'name' => 'Contact Y', 'merchant_id' => $merchant['id']]);
+
+        $this->ba->proxyAuth('rzp_test_Hrw2ujXW6LGEk7', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testFetchContactsWithTypeVendorAndPrivateAuth()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X', 'type' => 'vendor']);

@@ -28,6 +28,9 @@ class Account
     const MEDLIFE               = '6knz9sdyiFESCn';
     const OKCREDIT              = 'BhxjLIZbVWc0AI';
 
+    const X_DEMO_PROD_ACCOUNT        = 'Hy5Vxj9TTVm4Oi';
+    const X_DEMO_BETA_ACCOUNT        = 'Hrw2ujXW6LGEk7';
+
     protected static $nodalAccounts = [
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT
@@ -36,6 +39,11 @@ class Account
     protected static $testAccounts = [
         self::DEMO_ACCOUNT,
         self::TEST_ACCOUNT,
+    ];
+
+    protected static $xDemoAccounts = [
+        self::X_DEMO_PROD_ACCOUNT,
+        self::X_DEMO_BETA_ACCOUNT
     ];
 
     /**
@@ -59,5 +67,10 @@ class Account
     public static function isTestAccount($id)
     {
         return in_array($id, self::$testAccounts);
+    }
+
+    public static function isXDemoAccount($id): bool
+    {
+        return in_array($id, self::$xDemoAccounts,true);
     }
 }

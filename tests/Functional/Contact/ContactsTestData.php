@@ -88,6 +88,26 @@ return [
         ],
     ],
 
+    'testFetchContactsForXDemo' => [
+        'request'  => [
+            'url'    => '/contacts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'cont_1000002contact',
+                        'entity' => 'contact',
+                        'name'   => 'Contact Y',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchContactsWithTypeVendorAndPrivateAuth' => [
         'request'  => [
             'url'    => '/contacts',

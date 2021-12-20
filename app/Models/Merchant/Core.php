@@ -41,6 +41,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Admin\Admin;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Admin\Action;
+use RZP\Constants\BankingDemo;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
@@ -1556,6 +1557,61 @@ class Core extends Base\Core
                 {
                     $subFilter[Entity::KEY_MERCHANT_ID] = $merchantId;
                 }
+            }
+        }
+
+        // This is a temporary solution to hide junk data from X Demo accounts.
+        if ((is_null($this->merchant) === false) and $this->merchant->isXDemoAccount())
+        {
+            foreach ($filters as & $filter)
+            {
+                foreach ($filter as & $subFilter)
+                {
+                    $paramType = '';
+
+                    if (isset($subFilter[Entity::CREATED_AT]))
+                    {
+                        $paramType = Entity::CREATED_AT;
+                    }
+                    elseif (isset($subFilter[Entity::POSTED_AT]))
+                    {
+                        $paramType = Entity::POSTED_AT;
+                    }
+                    elseif (isset($subFilter[Entity::REVERSED_AT]))
+                    {
+                        $paramType = Entity::REVERSED_AT;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    $lowerBoundType = '';
+
+                    if (isset($subFilter[$paramType][Entity::GT]))
+                    {
+                        $lowerBoundType = Entity::GT;
+                    }
+                    elseif (isset($subFilter[$paramType][Entity::GTE]))
+                    {
+                        $lowerBoundType = Entity::GTE;
+                    }
+                    else
+                    {
+                        // Force creation of gte param. This ensures all requests have lower bound timeframe
+                        $lowerBoundType = 'gte';
+
+                        $subFilter[$paramType][$lowerBoundType] = 0;
+                    }
+
+                    $prevDt = $subFilter[$paramType][$lowerBoundType];
+
+                    $maxFrom = max($prevDt, Carbon::now(Timezone::IST)->timestamp - BankingDemo::MAX_TIME_DURATION);
+
+                    $subFilter[$paramType][$lowerBoundType] = (string)$maxFrom;
+
+                }
+
             }
         }
 

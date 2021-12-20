@@ -10368,6 +10368,66 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
     }
 
+    public function testFetchPayoutsOnXDemo()
+    {
+
+        $merchant = $this->fixtures->create('merchant',
+            [
+                'id'               => 'Hrw2ujXW6LGEk7',
+                'pricing_plan_id'  => '1hDYlICobzOCYt',
+                'business_banking' => 1
+            ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT,
+            'entity_id'   => $merchant['id'],
+            'entity_type' => 'merchant',
+        ]);
+
+        $xBalance = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchant['id'],
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 3000000,
+            ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->fixtures->create('contact',
+            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);
+
+        $this->fixtures->create('fund_account:bank_account',
+            [
+                'id'          => 'D6Z9Jfir2egAUT',
+                'source_type' => 'contact',
+                'source_id'   => '1000002contact',
+                'merchant_id' => $merchant['id']
+            ]);
+
+        $this->fixtures->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'fund_account_id' => 'D6Z9Jfir2egAUT',
+            'pricing_rule_id' => 'Bbg7cl6t6I3XA5',
+            'balance_id'      => $xBalance->getId(),
+            'merchant_id'     => $merchant['id'],
+            'created_at'      => 0
+        ]);
+
+        $this->fixtures->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3y',
+            'fund_account_id' => 'D6Z9Jfir2egAUT',
+            'pricing_rule_id' => 'Bbg7cl6t6I3XA5',
+            'balance_id'      => $xBalance->getId(),
+            'merchant_id'     => $merchant['id'],
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_Hrw2ujXW6LGEk7', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testFetchPayoutsOnPrivateAuth()
     {
         $this->testCreatePayoutLinkPayoutWithSourceDetails();

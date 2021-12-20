@@ -748,6 +748,17 @@ class Service extends Base\Service
             // unset 'exclude_sources' since its not part of the payout entity and will throw validation error
             unset($input['mask_sources']);
         }
+
+        // This is a temporary solution to hide junk data from X Demo accounts.
+        if ($this->merchant->isXDemoAccount())
+        {
+            $prevDt = isset($input['from']) ? (int)$input['from'] : 0;
+
+            $maxFrom = max($prevDt, Carbon::now(Timezone::IST)->timestamp - Constants\BankingDemo::MAX_TIME_DURATION);
+
+            $input['from'] = (string)$maxFrom;
+        }
+
         $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId());
 
         // Since pending payouts can be on both the api workflow system and workflow service
