@@ -210,6 +210,8 @@ class Service extends Base\Service
             'pp_donation_goal_tracker',
             'ftx_2021',
             'gstin_self_serve',
+            'gstin_self_serve_add',
+            'gstin_self_serve_edit',
             'rx_icici_auto_kyc',
             'rx_icici_auto_kyc',
             'updated_lite_onboarding',

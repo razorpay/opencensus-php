@@ -1362,8 +1362,12 @@ export default class User {
     return this.getExpStatus('mandatory_gstin_input');
   }
 
-  get isGstinSelfServeOn() {
-    return this.getExpStatus('gstin_self_serve');
+  get isGstinAddFlowEnabled() {
+    return this.getExpStatus('gstin_self_serve_add');
+  }
+
+  get isGstinEditFlowEnabled() {
+    return this.getExpStatus('gstin_self_serve_edit');
   }
 
   get isSyncExperimentEnabled() {

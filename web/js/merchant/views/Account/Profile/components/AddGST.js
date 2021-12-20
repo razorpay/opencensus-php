@@ -3,9 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { Field, reduxForm } from 'redux-form';
-import AsyncButton from 'react-async-button';
 import Banner from 'common/ui/Banner';
-import InputField from 'common/ui/Forms/InputField';
 import Alert from 'common/ui/Forms/Alert';
 import ModalHeader from 'common/ui/ModalHeader';
 import { saveGST } from 'merchant/reducers/profile';
@@ -18,6 +16,11 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import FileUpload from 'merchant/components/File/Upload';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { bindActionCreators, compose } from 'redux';
+import Input from 'common/new-ui/Input';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
+const GST_SUCCESS_MSG = 'Entered GSTIN will be applicable only from current month onwards.';
 
 function ShowStatusMsg({ closeModal }) {
   return (
@@ -42,37 +45,26 @@ function ShowStatusMsg({ closeModal }) {
 
 class AddGST extends Component {
   state = {
-    isGSTINSelfServeOn: false,
     gstinCertificate: null,
+    gstin: null,
   };
 
-  gst_success_msg = 'Entered GSTIN will be applicable only from current month onwards.';
+  onInputFieldBlur = (e) => this.setState({ gstin: e.target.value });
 
-  componentWillMount() {
-    const { merchant_gst } = this.props;
-
-    const initialValues = {
-      gst_type: 'gstin',
-    };
-
-    this.props.initialize({
-      ...initialValues,
-      ...merchant_gst,
-    });
-  }
-
-  handleEditClick = () =>
-    this.setState((prevState) => {
-      return {
-        isGSTINSelfServeOn: !prevState.isGSTINSelfServeOn,
-      };
-    });
-
-  updateGSTINAddress = async (event) => {
+  updateGSTIN = async (event) => {
     event.preventDefault();
     const formData = new FormData();
     formData.append('gstin_self_serve_certificate', this.state.gstinCertificate);
-    formData.append('gstin', this.props.merchant_gst.gstin);
+    formData.append('gstin', this.state.gstin);
+
+    analyticsTrack({
+      objectName: 'Merchant submits new gstin in edit gstin flow',
+      actionName: 'Edit GSTIN submitted',
+      screen: 'My account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
     try {
       const response = await merchantFetch({
@@ -98,53 +90,49 @@ class AddGST extends Component {
   };
 
   onGstCertificateFileChange = (file) => {
-    this.setState({ gstinCertificate: file || null });
+    this.setState({ gstinCertificate: file || null, errors: null });
   };
 
-  save = ({ gst_type, ...otherProps }) => {
-    const fieldProps = {};
-    fieldProps[gst_type] = otherProps[gst_type];
+  addGSTIN = (event) => {
+    event.preventDefault();
 
-    return this.props
-      .saveGST(fieldProps)
+    const formData = new FormData();
+    formData.append('gstin_self_serve_certificate', this.state.gstinCertificate);
+    formData.append('gstin', this.state.gstin);
+
+    analyticsTrack({
+      objectName: 'Merchant submits new gstin in add gstin flow',
+      actionName: 'Add GSTIN submitted',
+      screen: 'My account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
+    return merchantFetch({
+      url: `merchant/gstin_self_serve`,
+      data: formData,
+      method: `POST`,
+    })
       .then((item) => {
-        const {
-          updateSession: updateSessionFn,
-          tracking,
-          showNotification,
-          closeModal,
-        } = this.props;
-
+        const { updateSession: updateSessionFn, showNotification, closeModal } = this.props;
         const user = new User({
           ...this.props.session.user,
           ...item.data,
         });
-
         updateSessionFn({
           user,
         });
-
         this.setState({
           saved: true,
         });
-
-        tracking.trackEvent(
-          window.rzpQ.onbr().initiated('dash.my_account_actions', {
-            action: 'Add_GSTIN_Successful',
-          }),
-        );
-
         showNotification({
           type: 'success',
-          message: `Your GST details are added. ${this.gst_success_msg}`,
-          closeTimeout: 7000,
+          message: `Your GST details are added. ${GST_SUCCESS_MSG}`,
         });
-
-        if (this.props.reloadAfterSave) {
-          setTimeout(window.location.reload, 2500);
-        } else {
-          closeModal();
-        }
+        // cleanup
+        this.props.fetchStatus();
+        closeModal();
       })
       .catch((err) => {
         this.setState({
@@ -161,8 +149,13 @@ class AddGST extends Component {
     return true;
   };
 
+  onBiggerFileSize = () =>
+    this.setState({
+      errors: `Document too large. Max limit 2MB`,
+    });
+
   render() {
-    const { handleSubmit, merchant_gst, session, activationData } = this.props;
+    const { merchant_gst, session } = this.props;
     const isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
     const isEditable = isNew && session.user.isAllowedEdit('profile_gst');
     const title = merchant_gst.gstin ? `Update GST details` : `Add GST details`;
@@ -171,11 +164,11 @@ class AddGST extends Component {
       <div>
         {isNew ? <ModalHeader title={title} onCloseClick={this.props.closeModal} /> : null}
 
-        <div class="modal-body rzp-gst-content">
+        <div className="modal-body rzp-gst-content">
           {!isNew ? (
-            <div class="rzp-gst">
-              <button type="button" class="close" onClick={this.props.closeModal}>
-                <i class="i i-close" />
+            <div className="rzp-gst">
+              <button type="button" className="close" onClick={this.props.closeModal}>
+                <i className="i i-close" />
               </button>
             </div>
           ) : null}
@@ -191,15 +184,15 @@ class AddGST extends Component {
                 </Link>
               </div>
 
-              <div class="gst-update-note">
+              <div className="gst-update-note">
                 <Banner>
-                  <b>Note:</b> {this.gst_success_msg}
+                  <b>Note:</b> {GST_SUCCESS_MSG}
                 </Banner>
               </div>
 
-              <div class="Modal__actions">
+              <div className="Modal__actions">
                 <Link
-                  class="btn btn-primary btn-block"
+                  className="btn btn-primary btn-block"
                   to="/profile"
                   onClick={this.props.closeModal}
                 >
@@ -208,156 +201,63 @@ class AddGST extends Component {
               </div>
             </div>
           ) : (
-            <form onSubmit={isEditable ? handleSubmit(this.save) : undefined}>
+            <form onSubmit={isNew ? this.addGSTIN : this.updateGSTIN}>
               {!isNew && (
-                <div class="help-block">
+                <div className="help-block">
                   Entered GSTIN will appear on invoices that we send to you.
                 </div>
               )}
-
-              <div class="form-group">
-                <label class="label-required">GSTIN</label>
-                <div>
-                  <Field
-                    name="gstin"
-                    component={InputField}
-                    class="form-control"
-                    autoFocus={true}
-                    placeholder="19AAAAA1234Y1YY"
-                    validate={[required(), validateGSTIN]}
-                    disabled={this.shouldGSTINBeDisabled(isEditable)}
-                  />
+              <Input
+                label="GSTIN"
+                autoFocus={true}
+                placeholder="19AAAAA1234Y1YY"
+                validator={validateGSTIN}
+                disabled={this.shouldGSTINBeDisabled(isEditable)}
+                onBlur={this.onInputFieldBlur}
+                required
+              />
+              {isNew && (
+                <div className="gst-update-note">
+                  <Banner>
+                    <b>Note:</b> {GST_SUCCESS_MSG}
+                  </Banner>
                 </div>
-
-                {isNew && (
-                  <div class="gst-update-note">
-                    <Banner>
-                      <b>Note:</b> {this.gst_success_msg}
-                    </Banner>
-                  </div>
-                )}
+              )}
+              <label>GSTIN Address</label>
+              <div className="label-info">
+                <span>
+                  Should be as per your GST Certificate. Your business address will also be updated
+                  to this <i className="i i-info-circle" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        We use your business address to bill the invoices. It should be same as the
+                        address on you GST certificate if you want to generate E-invoices.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </span>
               </div>
-
-              {this.props.selfServeStatus === 'not_started' && isNew && (
-                <>
-                  <label>GSTIN Address</label>
-                  <div class="label-info">
-                    <span>
-                      Should be as per your GST Certificate. Your business address will also be
-                      updated to this <i className="i i-info-circle" />
-                      <Popover align="top" theme="dark">
-                        <PopoverBody>
-                          <div>
-                            We use your business address to bill the invoices. It should be same as
-                            the address on you GST certificate if you want to generate E-invoices.
-                          </div>
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  </div>
-                </>
-              )}
-
-              {this.state.isGSTINSelfServeOn === false &&
-                this.props.selfServeStatus === 'not_started' &&
-                isNew && (
-                  <div class="suggested-address-row">
-                    <span>
-                      {activationData.business_registered_address},{' '}
-                      {activationData.business_registered_pin}{' '}
-                      <p onClick={this.handleEditClick}>Edit</p>
-                    </span>
-                  </div>
-                )}
-
-              {this.state.isGSTINSelfServeOn === true && (
-                <div class="form-group">
-                  <div>
-                    <Field
-                      name="address"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                    />
-                  </div>
-                  <label class="label-required">Pincode</label>
-                  <div>
-                    <Field
-                      name="pincode"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="Pincode"
-                    />
-                  </div>
-
-                  <label class="label-required">City</label>
-                  <div>
-                    <Field
-                      name="city"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="City"
-                    />
-                  </div>
-
-                  <label class="label-required">State</label>
-                  <div>
-                    <Field
-                      name="state"
-                      component={InputField}
-                      class="form-control"
-                      autoFocus={true}
-                      placeholder="State"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {(isEditable || this.state.isGSTINSelfServeOn) && (
-                <div class="Modal__actions">
-                  <AsyncButton
-                    type="submit"
-                    class="btn btn-primary btn-block"
-                    text="Save my GST Details"
-                    pendingText="Saving..."
-                    onClick={handleSubmit(this.save)}
-                  />
-                </div>
-              )}
-              <div>
-                {!isNew && (
-                  <>
-                    <label class="label-required">GSTIN Certificate</label>
-                    <Field
-                      name="certificate"
-                      component={FileUpload}
-                      accept={['jpg', 'png', 'pdf']}
-                      maxSize={2102000}
-                      onBiggerFileSize={() => {
-                        this.props.showNotification({
-                          type: 'error',
-                          message: `Document too large. Max limit 2MB`,
-                        });
-                      }}
-                      onFileChange={this.onGstCertificateFileChange}
-                      validate={required('Please upload GSTIN certificate')}
-                      onCloseClick={this.onGstCertificateFileChange}
-                    />
-
-                    <div class="Modal__actions">
-                      <button
-                        type="submit"
-                        class="btn btn-primary btn-block"
-                        onClick={this.updateGSTINAddress}
-                        disabled={this.state.gstinCertificate === null}
-                      >
-                        Submit
-                      </button>
-                    </div>
-                  </>
-                )}
+              <label className="label-required">GSTIN Certificate</label>
+              <Field
+                name="certificate"
+                component={FileUpload}
+                accept={['jpg', 'png', 'pdf']}
+                maxSize={2102000}
+                onBiggerFileSize={this.onBiggerFileSize}
+                onFileChange={this.onGstCertificateFileChange}
+                validate={required('Please upload GSTIN certificate')}
+                onCloseClick={this.onGstCertificateFileChange}
+                required
+              />
+              <div class="Modal__actions">
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-block"
+                  disabled={this.state.gstinCertificate === null}
+                >
+                  Submit
+                </button>
               </div>
             </form>
           )}

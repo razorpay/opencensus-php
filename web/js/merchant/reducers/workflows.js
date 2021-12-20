@@ -22,6 +22,10 @@ const initialState = {
     loading: true,
     error: null,
   },
+  gstin_update_self_serve: {
+    loading: true,
+    error: null,
+  },
 };
 
 /**
@@ -32,6 +36,7 @@ const workflowURLs = {
   bank_detail_update: 'merchant/bank_detail_update/details',
   add_additional_website: 'merchant/add_additional_website/details',
   update_business_website: 'merchant/additional_website/details',
+  gstin_update_self_serve: 'merchant/gstin_update_self_serve/details',
 };
 
 //actions

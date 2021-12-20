@@ -3,6 +3,7 @@ import {
   NC_UPDATE_WEBSITE,
   NC_INCREASE_TXN_LIMIT,
   NC_UPDATE_BANK_ACC,
+  NC_UPDATE_GSTIN,
 } from '../../deeplink-constants';
 
 /**
@@ -14,6 +15,7 @@ export const WORKFLOWS = {
   BANK_DETAIL_UPDATE: 'bank_detail_update',
   ADD_ADDITIONAL_WEBSITE: 'add_additional_website',
   UPDATE_BUSINESS_WEBSITE: 'update_business_website',
+  UPDATE_GSTIN: 'gstin_update_self_serve',
 };
 
 /**
@@ -26,6 +28,7 @@ export const workflowNames = {
   [WORKFLOWS.BANK_DETAIL_UPDATE]: 'Update Bank Details',
   [WORKFLOWS.ADD_ADDITIONAL_WEBSITE]: 'Add Additional Website',
   [WORKFLOWS.UPDATE_BUSINESS_WEBSITE]: 'Update Business Website',
+  [WORKFLOWS.UPDATE_GSTIN]: 'Update GSTIN Details',
 };
 
 /**
@@ -44,6 +47,8 @@ export const getWorkflowTypeForRoute = (route) => {
       return WORKFLOWS.ADD_ADDITIONAL_WEBSITE;
     case NC_UPDATE_WEBSITE:
       return WORKFLOWS.UPDATE_BUSINESS_WEBSITE;
+    case NC_UPDATE_GSTIN:
+      return WORKFLOWS.UPDATE_GSTIN;
     default:
       return null;
   }
