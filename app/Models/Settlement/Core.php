@@ -878,6 +878,12 @@ class Core extends Base\Core
             $response['config']['types']['default']['enable'] = false;
         }
 
+        if((in_array($merchant->getId(), SettlementServiceMigration::MIGRATION_BLACKLISTED_MIDS_TO_AXIS3) === true) ||
+           (in_array($merchant->getParentId(), SettlementServiceMigration::MIGRATION_BLACKLISTED_MIDS_TO_AXIS3) === true))
+        {
+            $response['config']['preferences']['channel']='AXIS3';
+        }
+
         $request = array_merge($req, $response);
 
         $result = app('settlements_api')->migrateMerchantConfigUpdate($request, $mode);

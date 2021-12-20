@@ -117,12 +117,6 @@ class migration extends Job
             $skipReason = 'merchant belong to blacklisted mids';
         }
 
-        if(in_array($merchant->getParentId(), SettlementServiceMigration::MIGRATION_BLACKLISTED_PARENT_MIDS) === true)
-        {
-            $skip = true;
-            $skipReason = sprintf('merchants parent mid %s belongs to blacklisted parent mids', $merchant->getParentId());
-        }
-
         if(in_array(Constants::DAILY_SETTLEMENT, $featureResult) === true)
         {
             $skip = true;
