@@ -210,7 +210,6 @@ class RouteTeamMap
         'merchant_create_additional_email'         => [self::TEAM_PAYMENTS_DASHBOARD],
         'email_user_status_for_email_update'       => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_register'                            => [self::TEAM_PAYMENTS_DASHBOARD],
-        'user_otp_login'                           => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_fetch_additional_email'          => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_delete_additional_email'         => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_fetch_entity'                        => [self::TEAM_PAYMENTS_DASHBOARD],
