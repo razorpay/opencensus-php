@@ -241,4 +241,8 @@ export const QRCodeStatusLabel = statusLabel(qrCOdeStatusMap);
 export const XSubmerchantCAStatusLabel = statusLabel(XSubmerchantCAStatusMap);
 export const XSubmerchantVAStatusLabel = statusLabel(XSubmerchantVAStatusMap);
 export const StoreProductsStatusLabel = statusLabel(storeProductsStatusMap);
-export default (item) => statusLabel(entityMap[item.entity])(item);
+
+// statusLabel is being used in lot of places, not sure which place is triggering this error https://sentry.io/organizations/rzp/issues/2660520384/?project=5699615
+// item.entity is coming as undefined. Passing {} for now, this will hide the status, enabling us to
+// know which api is returning incorrect data and silence the errors for now.
+export default (item) => statusLabel(item.entity ? entityMap[item.entity] : {})(item);
