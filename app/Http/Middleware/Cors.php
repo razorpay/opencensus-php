@@ -34,10 +34,13 @@ class Cors
 
         $crossOriginPolicy = false;
 
+        $env = \App::environment();
+
         if (($originHost === $crossOriginDomains['banking']) or
             ($originHost === $crossOriginDomains['docs']) or
             (($originHost === $crossOriginDomains['auth']) and
-                (in_array($request->getPathInfo(), $this->authRoutes, true) === true)))
+                (in_array($request->getPathInfo(), $this->authRoutes, true) === true)) or
+            (($env === 'stage') and ($this->isDevstackHost($originHost) === true)))
         {
             // For Auth Origin we have to enable cors only for one route.
             $crossOriginPolicy = true;
@@ -86,5 +89,17 @@ class Cors
         }
 
         return $next($request);
+    }
+
+    /**
+     * Enable CORS policy for Devstack hosts *.dev.razorpay.in
+     *
+     * @return boolean
+     */
+    private function isDevstackHost($originHost) : bool
+    {
+        preg_match('/\.dev\.razorpay\.in$/', $originHost, $matches);
+
+        return (isset($matches[0]));
     }
 }
