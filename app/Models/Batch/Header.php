@@ -2773,7 +2773,6 @@ class Header
                 self::AUTH_LINK_DESCRIPTION,
                 self::AUTH_LINK_EXPIRE_BY,
                 self::NOTES,
-                self::PRODUCTS,
             ],
 
             self::OUTPUT => [
@@ -2798,7 +2797,6 @@ class Header
                 self::AUTH_LINK_NACH_REFERENCE2,
                 self::AUTH_LINK_NACH_CREATE_FORM,
                 self::NOTES,
-                self::PRODUCTS,
                 self::STATUS,
                 self::AUTH_LINK_ID,
                 self::AUTH_LINK_SHORT_URL,
@@ -4156,10 +4154,10 @@ class Header
         {
             $actualHeaders[] = self::NOTES;
         }
-        if ((in_array(self::PRODUCTS, $expectedHeaders, true) === true) and
-            (in_array(self::PRODUCTS, $actualHeaders, true) === false))
+        if ((in_array(self::PRODUCTS, $actualHeaders, true) === true) and
+            (in_array(self::PRODUCTS, $expectedHeaders, true) === false))
         {
-            $actualHeaders[] = self::PRODUCTS;
+            $expectedHeaders[] = self::PRODUCTS;
         }
 
         //

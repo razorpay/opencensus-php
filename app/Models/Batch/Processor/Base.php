@@ -1255,7 +1255,7 @@ class Base extends BaseModel\Core
                     unset($entry[$key]);
                     $entry[Batch\Header::NOTES][$matches[1]] = $value;
                 }
-                // put comment
+                // If key is of products pattern pushes the key value pair in a entry's products & unset current key
                 else if (preg_match(Batch\Header::PRODUCTS_REGEX, $key, $matches) === 1)
                 {
                     unset($entry[$key]);
@@ -1279,7 +1279,6 @@ class Base extends BaseModel\Core
         $tracePayload = $this->batch->toArrayTrace([], $stats);
 
         $this->trace->debug(TraceCode::BATCH_PROCESS_ENTRIES_CLEANED, $tracePayload);
-
         return $entries;
     }
 
