@@ -1708,7 +1708,44 @@ class Service extends Base\Service
             throw new Exception\LogicException('User does not have a mobile number associated with the account');
         }
 
-        return app('stork_service')->optInForWhatsapp($this->mode, $contact, $input);
+        try
+        {
+            $res = app('stork_service')->optInForWhatsapp($this->mode, $contact, $input);
+        }
+        catch (\Exception $exception)
+        {
+            // request exception is being catched and set as previous
+            $ex = $exception->getPrevious();
+
+            if ((empty($ex) === false) and
+                ($this->isTimeOutException($ex) === true))
+            {
+                $this->trace->traceException($ex);
+
+                return [
+                    'optin_status' => false,
+                    'error_message' => 'request to stork service timed out',
+                ];
+            }
+
+           throw $exception;
+        }
+
+        $res['optin_status'] = true;
+
+        return $res;
+    }
+
+    protected function isTimeOutException(\Exception $ex)
+    {
+        $message = $ex->getMessage();
+
+        if (substr($message, 0, 34 ) === 'cURL error 28: Operation timed out')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
