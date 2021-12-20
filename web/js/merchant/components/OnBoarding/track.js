@@ -28,6 +28,7 @@ function _track() {
       objectName,
       actionName,
       screen,
+      toCleverTap: true,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
