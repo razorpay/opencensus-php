@@ -7,6 +7,15 @@ export default (props) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
+        <label>QR Code Status</label>
+        <Field name="status" component="select" class="form-control input-sm" onBlur={track.field}>
+          <option value="">All</option>
+          <option value="active">Active</option>
+          <option value="closed">Closed</option>
+        </Field>
+      </div>
+
+      <div class="form-group list-filter-item">
         <label>QR Code ID</label>
         <Field name="id" component="input" class="form-control input-sm" onBlur={track.field} />
       </div>
@@ -17,23 +26,19 @@ export default (props) => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm" onBlur={track.field}>
-          <option value="">All</option>
-          <option value="active">Active</option>
-          <option value="closed">Closed</option>
-        </Field>
-      </div>
-
-      <div class="form-group list-filter-item">
-        <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" onBlur={track.field} />
-      </div>
-
-      <div class="form-group list-filter-item">
         <label>Customer Name</label>
         <Field
           name="cust_name"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
+      </div>
+
+      <div class="form-group list-filter-item">
+        <label>Customer Email</label>
+        <Field
+          name="cust_email"
           component="input"
           class="form-control input-sm"
           onBlur={track.field}
@@ -51,13 +56,8 @@ export default (props) => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Customer Email</label>
-        <Field
-          name="cust_email"
-          component="input"
-          class="form-control input-sm"
-          onBlur={track.field}
-        />
+        <label>Notes</label>
+        <Field name="notes" component="input" class="form-control input-sm" onBlur={track.field} />
       </div>
     </ListFilter>
   );
