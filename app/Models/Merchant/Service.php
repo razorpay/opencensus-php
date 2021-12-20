@@ -6878,21 +6878,19 @@ class Service extends Base\Service
 
                 $response->push($record);
 
-                if(Constants::BATCH_ACTION == 'submerchantLink') {
-                    $this->trace->count(Metric::SUBMERCHANT_LINKING_SUCCESS_TOTAL);
-                }
-                else {
-                    $this->trace->count(Metric::SUBMERCHANT_DELINKING_SUCCESS_TOTAL);
-                }
+                $dimension = [
+                    'action' => $batch_action,
+                ];
+
+                $this->trace->count(Metric::SUBMERCHANT_BATCH_ACTION_SUCCESS_TOTAL,$dimension);
             }
             catch (BaseException $exception)
             {
-                if(Constants::BATCH_ACTION == 'submerchantLink') {
-                    $this->trace->count(Metric::SUBMERCHANT_LINKING_FAILURE_TOTAL);
-                }
-                else {
-                    $this->trace->count(Metric::SUBMERCHANT_DELINKING_FAILURE_TOTAL);
-                }
+                $dimension = [
+                    'action' => $batch_action,
+                ];
+
+                $this->trace->count(Metric::SUBMERCHANT_BATCH_ACTION_FAILURE_TOTAL,$dimension);
 
                 $this->setErrorAttributesToResponse($record, $exception, $response);
             }

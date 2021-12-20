@@ -60,10 +60,8 @@ final class Metric
     const BATCH_UPLOAD_BY_ADMIN_FAILURE_TOTAL = 'batch_upload_by_admin_failure_total';
     const BATCH_UPLOAD_BY_ADMIN_LATENCY = 'batch_upload_by_admin_latency';
 
-    const SUBMERCHANT_LINKING_SUCCESS_TOTAL = 'submerchant_linking_success_total';
-    const SUBMERCHANT_LINKING_FAILURE_TOTAL = 'submerchant_linking_failure_total';
-    const SUBMERCHANT_DELINKING_SUCCESS_TOTAL = 'submerchant_delinking_success_total';
-    const SUBMERCHANT_DELINKING_FAILURE_TOTAL = 'submerchant_delinking_failure_total';
+    const SUBMERCHANT_BATCH_ACTION_SUCCESS_TOTAL = 'submerchant_batch_action_success_total';
+    const SUBMERCHANT_BATCH_ACTION_FAILURE_TOTAL = 'submerchant_batch_action_failure_total';
 
     // 1CC metrics
     private const MERCHANT_EXTERNAL_PREFIX = 'merchant_external_';

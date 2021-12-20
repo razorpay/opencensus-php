@@ -13,6 +13,8 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Metric;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -70,10 +72,13 @@ class OAuthApplicationController extends Controller
             $oauthApplication = (new Application\Repository())->findOrFail($data[App::ID]);
 
             (new MerchantCore)->createPartnerConfig($oauthApplication, $merchant);
-        }
 
-        if ($merchant->isNonPurePlatformPartner() === true){
-            $this->trace->count(self::PURE_PLATFORM_PARTNER_APPLICATIONS_CREATED_TOTAL);
+            $dimensionsForMerchantApplication = [
+                Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                'application_type'   => MerchantApplications\Entity::OAUTH
+            ];
+
+            $this->trace->count(Metric::PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL, $dimensionsForMerchantApplication);
         }
 
         return ApiResponse::json($data);
@@ -94,9 +99,15 @@ class OAuthApplicationController extends Controller
             $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
 
             (new MerchantCore)->createMerchantApplication($merchant, $data[App::ID], $applicationType);
+
+            $dimensionsForMerchantApplication = [
+                Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+                'application_type'   => $applicationType
+            ];
+
+            $this->trace->count(Metric::PARTNER_MERCHANT_APPLICATION_CREATE_TOTAL, $dimensionsForMerchantApplication);
         }
 
-        $this->trace->count(self::PARTNER_APPLICATIONS_CREATED_TOTAL);
         return ApiResponse::json($data);
     }
 
