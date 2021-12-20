@@ -364,7 +364,7 @@ class Core extends Base\Core
 
         list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
             ['app_token' => $appToken],
-            $this->repo->merchant->getSharedAccount(),
+            $this->merchant,
             true);
 
         // 1cc Demo: Reject address saving for +911234567890
