@@ -195,7 +195,7 @@ jobs:
       if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER : api-spin-sleeve
+        WEBHOOK_TRIGGER : api-pr-commit
         GITHUB_TOKEN: ${{ github.token }}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}

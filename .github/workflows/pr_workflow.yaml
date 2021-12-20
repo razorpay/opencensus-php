@@ -177,10 +177,11 @@ jobs:
     - name: Print Instance value
       run: echo $API_INSTANCE
     - name: Run bvt suite if PR approved && Build Image workflow succeeded
-      if: startsWith(github.event.pull_request.head.ref,'beta_') != true
+      if: env.WORKFLOW_STATUS == 'success' &&
+        startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER : api-spin-sleeve
+        WEBHOOK_TRIGGER : api-pr-commit
         GITHUB_TOKEN: ${{ github.token }}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}
