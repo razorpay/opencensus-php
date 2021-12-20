@@ -1384,6 +1384,22 @@ class Core extends Base\Core
         return [$token, $serviceProviderTokens];
     }
 
+    public function migrateToTokenizedCard($token, $cardInput)
+    {
+        $cardInput['merchant_token'] = $token->getId();
+
+        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput);
+
+         $this->trace->info(
+            TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
+
+        $token->card()->associate($card);
+
+        $this->repo->saveOrFail($card);
+
+        $this->repo->saveOrFail($token);
+    }
+
     public function createNetworkToken($input)
     {
         $customer = null;

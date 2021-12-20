@@ -6314,7 +6314,69 @@ trait Authorize
 
         $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
 
+        $this->migrateTokenIfApplicable($payment);
+
         return $this->processAuthorizeResponse($payment);
+    }
+
+    protected function migrateTokenIfApplicable($payment)
+    {
+        try
+        {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            if ((empty($token) === true) or
+                ($payment->isMethodCardOrEmi() === false))
+            {
+                return;
+            }
+
+            $card = $token->card;
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false)
+            {
+                return;
+            }
+
+            if (($card->isVisa() === false) and
+                ($card->isMasterCard() === false) and
+                ($card->isRuPay() === false) and
+                ($card->isDiners() === false))
+            {
+                return;
+            }
+
+            if ($card->isRzpTokenisedCard() === false)
+            {
+                return;
+            }
+
+            $input['payment'] = $payment->toArrayGateway();
+            $input['card'] = $payment->card->toArray();
+
+            $this->setCardNumberAndCvv($input);
+
+            $cardInput = [
+                'cvv'          => $input['card']['cvv'] ?? 123,
+                'last4'        => $input['card']['last4'] ?? "0000",
+                'expiry_month' => $input['card']['expiry_month'] ?? "0",
+                'expiry_year'  => $input['card']['expiry_year'] ?? "9999",
+                'emi'          => $input['card']['emi'] ?? false,
+                'iin'          => $input['card']['iin'] ?? 0
+            ];
+
+            $core = (new Token\Core);
+
+            $core->migrateToTokenizedCard($token, $cardInput);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->warn(TraceCode::VAULT_TOKEN_MIGRATION_DISPATCH_FAILED, [
+                'error' => $e,
+                'level' => Trace::WARNING,
+                'payment_id' => $payment->getId()
+                ]);
+        }
     }
 
     protected function postPaymentAuthenticateProcessing(Payment\Entity $payment): array

@@ -833,6 +833,21 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::DICL]);
     }
 
+    public function isVisa()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::VISA]);
+    }
+
+    public function isRzpTokenisedCard()
+    {
+        $vault = $this->getVault();
+
+        return (($vault === Card\Vault::RZP_VAULT) or
+                ($vault === Card\Vault::RZP_ENCRYPTION));
+    }
+
     public function isCredit()
     {
         return ($this->getType() === Type::CREDIT);

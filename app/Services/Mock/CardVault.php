@@ -112,6 +112,44 @@ class CardVault extends BaseCardVault
         return $response;
     }
 
+    public function migrateToTokenizedCard($input): array
+    {
+        $response['success'] = true;
+        $token = base64_encode($input['vault_token']);
+
+        $response['success'] = true;
+        $response['token']  = $token;
+        $response['fingerprint'] = strrev($token);
+        $response['token_iin'] = '411111';
+        $response['expiry_month'] = $input['card']['expiry_month'];
+        $response['expiry_year'] = $input['card']['expiry_year'];
+
+        if (strlen($response['expiry_year']) > 2)
+        {
+            $response['expiry_year'] = '20' . $response['expiry_year'];
+        }
+
+        $response['service_provider_tokens'] = [
+            [
+                'id'             => 'spt_1234abcd',
+                'entity'         => 'service_provider_token',
+                'provider_type'  => 'network',
+                'provider_name'  => $input['provider']['network'],
+                'interoperable'  => true,
+                'status'         => 'activated',
+                'provider_data'  => [
+                    'token_reference_number' => $token,
+                    'card_reference_number'  => strrev($token),
+                    'token_iin'              => '453335',
+                    'token_expiry_month'     => 12,
+                    'token_expiry_year'      => 2021,
+                ],
+            ]
+        ];
+
+        return $response;
+    }
+
     public function fetchCryptogram($input): array
     {
         $response['success'] = true;

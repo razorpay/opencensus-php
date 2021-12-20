@@ -196,7 +196,7 @@ class TokenTest extends TestCase
         $this->assertEquals(null, $MCResponse['expired_at']);
     }
 
-     public function testCreateTokenWithCustmerId()
+    public function testCreateTokenWithCustmerId()
     {
         $this->ba->privateAuth();
 
@@ -215,6 +215,33 @@ class TokenTest extends TestCase
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
         $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+    }
+
+    public function testMigrateTokenToTokenizedCard()
+    {
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['save'] = 1;
+
+        $payment['customer_id']='cust_100000customer';
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['token_id']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('card_' . $token['card_id'], $card['id']);
+
+        $this->assertEquals($card['vault'], 'visa');
     }
 
 
@@ -1084,5 +1111,108 @@ class TokenTest extends TestCase
         $this->ba->appAuth('rzp_test','');
 
         $statusResponse = $this->startTest($statusPayload);
+    }
+
+    public function mockCardVaultWithMigrateToken()
+    {
+         $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $mpanVault = Mockery::mock('RZP\Services\CardVault', [$app, 'mpan'])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $mpanVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            $response = [
+                'error' => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token'] = base64_encode($input['secret']);
+                    $response['fingerprint'] = strrev(base64_encode($input['secret']));
+                    $response['scheme'] = '0';
+                    break;
+
+                case 'detokenize':
+                    $response['value'] = base64_decode($input['token']);
+                    break;
+
+                case 'validate':
+                    if ($input['token'] === 'fail')
+                    {
+                        $response['success'] = false;
+                    }
+                    break;
+
+                case 'token/renewal' :
+                    $response['expiry_time'] = date('Y-m-d H:i:s', strtotime('+1 year'));
+                    break;
+
+                case 'tokens/migrate':
+                    $response['success'] = true;
+                   
+                    $response['provider'] = strtolower($input['iin']['network']);
+
+                    $token = base64_encode($input['card']['vault_token']);
+                    $response['token']  = $token;
+
+                    $response['fingerprint'] = strrev($token);
+                    $response['last4'] = 1234;
+
+                    $token_iin = 411111;
+
+                    $expiry_year = $input['card']['expiry_year'];
+                    if (strlen($expiry_year) == 2)
+                    {
+                        $expiry_year = '20' . $expiry_year;
+                    }
+
+                    $response['service_provider_tokens'] = [
+                        [
+                            'id'             => 'spt_1234abcd',
+                            'entity'         => 'service_provider_token',
+                            'provider_type'  => 'network',
+                            'provider_name'  => $input['iin']['network'],
+                            'status'         => 'created',
+                            'interoperable'  => true,
+                            'provider_data'  => [
+                                'token_reference_number' => $token,
+                                'card_reference_number'  => strrev($token),
+                                'token_expiry_month'     => $input['card']['expiry_month'],
+                                'token_expiry_year'      => $expiry_year,
+                                'token_iin'              => $token_iin,
+                                'token_number'           => 411111,
+                            ],
+                        ]
+                    ];
+                    break;
+
+                case 'delete':
+                    break;
+            }
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $mpanVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', null)
+                  ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
     }
 }

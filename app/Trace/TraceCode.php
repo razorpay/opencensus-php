@@ -3665,6 +3665,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_TOKEN_RENEWAL_RESPONSE                          = 'VAULT_TOKEN_RENEWAL_RESPONSE';
 
     const VAULT_CREATE_TOKEN                                    = 'VAULT_CREATE_TOKEN';
+    const VAULT_MIGRATE_TOKEN                                   = 'VAULT_MIGRATE_TOKEN';
     const VAULT_FETCH_CRYPTOGRAM                                = 'VAULT_FETCH_CRYPTOGRAM';
     const VAULT_FETCH_TOKEN                                     = 'VAULT_FETCH_TOKEN';
     const VAULT_DELETE_TOKEN                                    = 'VAULT_DELETE_TOKEN';
@@ -5732,6 +5733,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RETURN_PAGE_DOWNTIMES_FROM_CACHE                    = 'RETURN_PAGE_DOWNTIMES_FROM_CACHE';
     const NETWORK_TOKEN_CREATE                                = 'NETWORK_TOKEN_CREATE';
     const TOKEN_CREATE_FOR_TOKENIZED_CARD                     = 'TOKEN_CREATE_FOR_TOKENIZED_CARD';
+    const TOKEN_MIGREATE_FOR_TOKENIZED_CARD                   = 'TOKEN_MIGREATE_FOR_TOKENIZED_CARD';
 
     const TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND               = 'TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND';
     const TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND               = 'TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND';

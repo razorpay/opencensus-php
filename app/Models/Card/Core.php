@@ -46,14 +46,26 @@ class Core extends Base\Core
         return $card;
     }
 
+    public function migrateToTokenizedCard($card, $merchant, $input)
+    {
+        $response = $this->getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input);
+
+        return $this->createTokenizedCardEntity($input, $merchant, $response);
+    }
+
     public function createTokenizedCard($input, $merchant)
     {
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
+        return $this->createTokenizedCardEntity($input, $merchant, $response);
+    }
+
+    protected function createTokenizedCardEntity($input, $merchant, $response)
+    {
         $createInput = [
             Card\Entity::VAULT_TOKEN        => $response['token'],
             Card\Entity::GLOBAL_FINGERPRINT => $response['fingerprint'],
-            Card\Entity::LAST4              => substr($input['number'] ?? null, -4),
+            Card\Entity::LAST4              => $this->getLast4($input, $response),
             Card\Entity::LENGTH             => 0,
             Card\Entity::IIN                => '000000',
             Card\Entity::EXPIRY_MONTH       => '0',
@@ -62,7 +74,7 @@ class Core extends Base\Core
 
         if(empty($response['service_provider_tokens']) === false)
         {
-            $createInput[Card\Entity::VAULT] = $response['service_provider_tokens'][0]['provider_name'];
+            $createInput[Card\Entity::VAULT] = strtolower($response['service_provider_tokens'][0]['provider_name']);
 
             if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_iin'))
             {
@@ -369,10 +381,11 @@ class Core extends Base\Core
     public function fillNetworkDetails($card, $input)
     {
         $iinNumber = $card->getIin();
-        
+
         // for tokenised card we need to fetch the details from a static list.
         if ((empty($input[Card\Entity::TOKENISED]) === false) and
-            (boolval($input[Card\Entity::TOKENISED]) === true))
+            (boolval($input[Card\Entity::TOKENISED]) === true) and
+            array_key_exists('number', $input) === true)
         {
             $tokenizedRange = substr($input['number'], 0, 9);
             $iinNumber = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iinNumber;
@@ -416,7 +429,14 @@ class Core extends Base\Core
 
             $category = $iin[Card\IIN\Entity::CATEGORY];
 
-            $emi = IIN\IIN::isEmiAvailableForCard($iin, $input['number']);
+            if (array_key_exists('emi', $input))
+            {
+                $emi = $input['emi'];
+            }
+            else
+            {
+                $emi = IIN\IIN::isEmiAvailableForCard($iin, $input['number']);
+            }
 
             // Since AMEX is handled as a different case,
             // mark all amex cards as non international
@@ -433,7 +453,7 @@ class Core extends Base\Core
                 Entity::INTERNATIONAL   => $isInternational,
                 Entity::EMI             => $emi,
             ];
-            
+
             $card->fill($arr);
         }
         else
@@ -486,6 +506,11 @@ class Core extends Base\Core
         //
         if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === true) and
             (isset($input['cvv']) === false))
+        {
+            return;
+        }
+
+        if ($card->isRzpTokenisedCard() === false)
         {
             return;
         }
@@ -692,6 +717,26 @@ class Core extends Base\Core
         return $cardVault ->createTokenizedCard($input, $merchant, $iinInfo);
     }
 
+    protected function getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input)
+    {
+        $iin = $this->repo->card->retrieveIinDetails($card->getIin());
+
+        $iinInfo = [
+            'issuer'       => $iin->getIssuer(),
+            'network'      => $iin->getNetwork(),
+            'network_code' => $iin->getNetworkCode(),
+            'iin'          => $iin->getIin(),
+            'category'     => $iin->getCategory(),
+            'type'         => $iin->getType(),
+            'country'      => $iin->getCountry(),
+            'issuer_name'  => $iin->getIssuerName(),
+        ];
+
+        $cardVault = (new Card\CardVault);
+
+        return $cardVault ->migrateToTokenizedCard($card, $merchant, $iinInfo, $input);
+    }
+
     protected function getCryptogramResponseFromVault($serviceProviderTokenId, $merchant)
     {
         $cardVault = (new Card\CardVault);
@@ -770,12 +815,42 @@ class Core extends Base\Core
     {
         $card = $tokenizedCard;
 
-        $card[Card\Entity::IIN] = substr($inputCard['number'] ?? 0, 0, 6);
+        if (array_key_exists('iin', $inputCard))
+        {
+            $card[Card\Entity::IIN] = $inputCard[Card\Entity::IIN];
+
+        }
+        else
+        {
+            $card[Card\Entity::IIN] = substr($inputCard['number'] ?? 0, 0, 6);
+        }
 
         $card[Card\Entity::EXPIRY_MONTH] = $inputCard[Card\Entity::EXPIRY_MONTH];
 
         $card[Card\Entity::EXPIRY_YEAR] = $inputCard[Card\Entity::EXPIRY_YEAR];
 
         return $card;
+    }
+
+    protected function getLast4($input, $response)
+    {
+        $default = "0000";
+
+        if (empty($response['last4']) === false)
+        {
+            return $response['last4'];
+        }
+
+        if (empty($input['number']) === false)
+        {
+            return substr($input['number'] ?? null, -4);
+        }
+
+        if (empty($input['last4']) === false)
+        {
+            return $input['last4'];
+        }
+
+        return $default;
     }
 }

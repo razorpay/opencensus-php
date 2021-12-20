@@ -445,6 +445,20 @@ class CardVault
         return $response;
     }
 
+    public function migrateToTokenizedCard(array $input): array
+    {
+        $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN);
+
+        $response = $this->sendRequest('tokens/migrate', 'post', $input);
+
+        if ($response[self::SUCCESS] === false)
+        {
+            throw new Exception\RuntimeException(
+                'Network Token create request failed', ['data' => $response]);
+        }
+
+        return $response;
+    }
 
     public function renewVaultToken(): array
     {

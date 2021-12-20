@@ -179,6 +179,29 @@ class CardVault extends Base\Core
         return $this->app['card.cardVault']->createTokenizedCard($input);
     }
 
+    public function migrateToTokenizedCard($card, $merchant, $iinInfo, $cardInput)
+    {
+        $input['card']     = [
+            'vault_token'   => $card->getVaultToken(),
+            'expiry_month'  => strval($card->getExpiryMonth()),
+            'expiry_year'   => strval($card->getExpiryYear()),
+            'cvv'           => strval($cardInput['cvv']),
+        ];
+
+        $input['iin'] = $iinInfo;
+
+        if (empty($cardInput['merchant_token']) === false)
+        {
+            $input['merchant_token'] = $cardInput['merchant_token'];
+        }
+
+        $input = $this->setMerchantDetails($input, $merchant);
+
+        $input['features'] = $merchant->getEnabledFeatures();
+
+        return $this->app['card.cardVault']->migrateToTokenizedCard($input);
+    }
+
     public function fetchCryptogram($serviceProviderTokenId, $merchant)
     {
         $input = [
