@@ -1428,6 +1428,7 @@ class Gateway
             self::CCAVENUE,
             self::PINELABS,
             self::CHECKOUT_DOT_COM,
+            self::FULCRUM,
         ],
 
         Method::NETBANKING => [
