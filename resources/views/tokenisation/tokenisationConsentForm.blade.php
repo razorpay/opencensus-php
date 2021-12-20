@@ -196,15 +196,21 @@
             font-weight: 600;
         }
 
+        #consentForm {
+            display: inline-grid;
+            width: 100%;
+            justify-items: center;
+        }
+
         .secondary-button {
-            border: 1px solid #a7a5a5;
-            height: 45px;
-            color: black;
+            border: 0px;
+            border-bottom: 1px solid #655858;
+            width: fit-content;
+            color: #655858;
             background: white;
-            border-radius: 4px;
-            padding: 14px 30px;
-            cursor: pointer;
-            opacity: 0.6;
+            margin: 13px 30px 0px 30px;
+            padding: 0px;
+            opacity: 0.8;
         }
 
         .title-card {
@@ -248,7 +254,7 @@
             padding: 20px;
         }
 
-        .content p {
+        .content p, .content ul {
             /* margin-top: 24px; */
             font-size: 16px;
             line-height: 21px;
@@ -256,12 +262,55 @@
             opacity: 0.7;
         }
 
-        .content p span {
-            display: inline-flex;
+        .spinner {
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: lo .8s infinite linear;
+            -webkit-animation: lo .8s infinite linear;
+            transition: 0.3s;
+            -webkit-transition: 0.3s;
+            border: 2px solid #f8f8f8;
+            border-top-color: transparent;
         }
 
-        .content p span span:last-child {
-            margin-left: 5px;
+        .spinner-location {
+            position: absolute;
+            left: 50%;
+            top: 50%
+        }
+
+        .backdrop {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .visible{
+            display:block !important;
+        }
+        .loader {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 99999;
+            display: none;
+        }
+
+        @keyframes lo {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @-webkit-keyframes lo {
+            to {
+                -webkit-transform: rotate(360deg)
+            }
         }
 
         @media screen and (max-width: 760px) {
@@ -294,7 +343,7 @@
                 padding: 5px;
             }
 
-            .content p {
+            .content  p, .content ul {
                 font-size: 13px;
                 line-height: 18px;
             }
@@ -316,9 +365,6 @@
                 min-width: 200px;
             }
 
-            .secondary-button {
-                min-width: 150px;
-            }
 
             #view-content>div>div {
                 padding: 15px 0px;
@@ -354,6 +400,10 @@
 
 <body>
 <div id="app">
+        <div  id="page-loader" class="loader">
+            <div class="backdrop"></div>
+            <div class="spinner-location spinner"></div>
+        </div>
     <div id="app-container">
         <div id="view-content">
             <div class="powered-by-header hide-sm">
@@ -401,30 +451,21 @@
                     <div>
                         <div class="content">
                             <p>
-                                    As per RBI’s latest guidelines, your permission is required to continue keeping this
-                                    card saved securely for future payments on Razorpay.
+                                As per RBI guidelines, your permission is required to continue keeping this card saved securely on Razorpay.
                             </p>
-                                <p>
-                                    If you do not allow this, your card will no longer be saved after Dec 31, 2021 on
-                                    Razorpay and you will be required to enter details for every payment.
-                                </p>
-                            <p><span>
-                                        <span class="icon shield">
-                                            <svg width="16" height="17" viewBox="0 0 16 17" fill="none"
-                                                 xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M14.318 2.69624L14.3149 2.69635C10.4835 2.82577 8.34235 1.00465 8.25723 0.930958C8.16321 0.846648 8.04137 0.8 7.91505 0.8C7.78859 0.8 7.66662 0.846748 7.57257 0.93123C7.48291 1.00898 5.34818 2.82562 1.51521 2.69632L1.51211 2.69627C1.39148 2.69407 1.27395 2.7345 1.1802 2.81044C1.08645 2.88638 1.02249 2.99295 0.99959 3.11141L0.999591 3.11141C0.977901 3.22256 0.50393 5.87901 1.098 8.80585C1.69903 11.767 3.40269 15.0331 7.78928 16.1841L7.78928 16.1841L7.79287 16.185C7.87521 16.205 7.96114 16.205 8.04347 16.185L8.04348 16.185L8.04708 16.1841C12.4321 15.0331 14.135 11.7669 14.7352 8.8058C15.3212 5.9152 14.8656 3.28709 14.8305 3.11141L14.8305 3.1114C14.8076 2.99295 14.7436 2.88638 14.6499 2.81044C14.5561 2.7345 14.4386 2.69407 14.318 2.69624ZM7.915 15.1552C4.39377 14.1826 2.84534 11.7075 2.20273 9.25716C1.59535 6.94108 1.80263 4.65877 1.93392 3.72808C5.13862 3.71705 7.15007 2.51488 7.91512 1.96348C8.68188 2.51496 10.7098 3.71899 13.8906 3.72822C14.0082 4.65234 14.1943 6.93615 13.5814 9.25443C12.9314 11.7126 11.39 14.1936 7.915 15.1552Z"
-                                                    fill="#01C413" stroke="#01C413" stroke-width="0.4" />
-                                                <path
-                                                    d="M7.19915 10.4837C7.26621 10.484 7.33266 10.471 7.39475 10.4457C7.4572 10.4202 7.51399 10.3826 7.56188 10.3351L7.56188 10.3351L7.56263 10.3344L10.0878 7.80297L10.088 7.80273C10.1835 7.7067 10.237 7.5768 10.237 7.4414C10.237 7.306 10.1835 7.1761 10.088 7.08008L10.0881 7.08003L10.0842 7.07632C9.98885 6.98545 9.86222 6.93477 9.73053 6.93477C9.59884 6.93477 9.47221 6.98545 9.37689 7.07632L9.37686 7.07628L9.37357 7.07956L7.19088 9.25932L6.45715 8.51511L6.45722 8.51505L6.45273 8.51077C6.35741 8.4199 6.23078 8.36921 6.09909 8.36921C5.96741 8.36921 5.84077 8.4199 5.74546 8.51077L5.74543 8.51074L5.74262 8.51353C5.69458 8.56117 5.65645 8.61786 5.63043 8.68031C5.60441 8.74277 5.59102 8.80975 5.59102 8.87741C5.59102 8.94507 5.60441 9.01206 5.63043 9.07452C5.65639 9.13682 5.6944 9.19339 5.74228 9.24097C5.74239 9.24108 5.74251 9.24119 5.74262 9.2413L6.83584 10.3345L6.83642 10.3351C6.88431 10.3826 6.9411 10.4202 7.00355 10.4457C7.06564 10.471 7.13209 10.484 7.19915 10.4837ZM7.19915 10.4837C7.19876 10.4837 7.19838 10.4837 7.19799 10.4837L7.19915 10.2837L7.20031 10.4837C7.19992 10.4837 7.19954 10.4837 7.19915 10.4837Z"
-                                                    fill="#01C413" stroke="#01C413" stroke-width="0.4" />
-                                            </svg>
-                                        </span>
-                                        <span>
-                                            All saved cards are compliant with the latest security guidelines
-                                        </span>
-                                    </span>
-                            </p>
+
+                            <ul>
+                                <li>
+                                    Skip entering card details everytime for a smoother payment experience
+
+                                </li>
+
+                                <li>
+                                    Protect sensitive card information and increase security
+                                </li>
+                            </ul>
+
+
                         </div>
                         <div class="actions">
                             <form name="consentForm" id="consentForm" action="{{$url}}"
@@ -434,11 +475,11 @@
                                 @endforeach
                                 <input type="hidden" name="consent_to_save_card"
                                        id="consent_to_save_card" value=1 />
-                                <button type="submit" id="skip-action" class="secondary-button ">
-                                    Skip
-                                </button>
                                 <button type="submit" id="submit-action" class="primary-button">
                                     Secure & Continue
+                                </button>
+                                <button id="skip-action" class="secondary-button ">
+                                    Not now
                                 </button>
                             </form>
                         </div>
@@ -507,6 +548,7 @@
             document.consentForm.submit()
         }
         function disableButtons(){
+            document.getElementById('page-loader').classList.add('visible');
             document.getElementById('submit-action').classList.add('disabled');
             document.getElementById('skip-action').classList.add('disabled');
         }
