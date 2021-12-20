@@ -10804,6 +10804,79 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout->getPublicId(), $response['id']);
     }
 
+    public function testSourceCreationInCaseOfInternalContactPayoutCreatedByXpayroll()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '2000000']);
+
+        $this->ba->xpayrollAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::XPAYROLL_INTERNAL
+            ]);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
+    public function testIdempotencyInCaseOfInternalContactPayoutCreatedByXpayrollWithSameRequestContents()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->xpayrollAuth();
+
+        $this->testSourceCreationInCaseOfInternalContactPayoutCreatedByXpayroll();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->testData[__FUNCTION__] = $this->testData['testSourceCreationInCaseOfInternalContactPayoutCreatedByXpayroll'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($payout->getPublicId(), $response['id']);
+    }
+
+    public function testIdempotencyInCaseOfInternalContactPayoutCreatedByXpayrollWithDifferentRequestContents()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '20000']);
+
+        $this->ba->xpayrollAuth();
+
+        $this->testSourceCreationInCaseOfInternalContactPayoutCreatedByXpayroll();
+
+        $this->testData[__FUNCTION__]['request'] = $this->testData['testSourceCreationInCaseOfInternalContactPayoutCreatedByXpayroll']['request'];
+
+        // This changes the request body
+        $this->testData[__FUNCTION__]['request']['content']['amount'] = 1000;
+
+        $this->startTest();
+    }
+
     /**
      * Keeping this test here because although we are testing for fund account dedup, it's happening via
      * composite API which requires certain setups which already exist in payoutTest
@@ -13265,9 +13338,8 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals(5, $response['count']);
+        $this->assertEquals(4, $response['count']);
         $this->assertEquals(0, $response['items'][3]['amount']);
-        $this->assertEquals(0, $response['items'][4]['amount']);
     }
 
     public function testFetchPayoutSkipXpayrollOnPrivateAuth()
@@ -13291,10 +13363,8 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals(5, $response['count']);
+        $this->assertEquals(4, $response['count']);
         $this->assertEquals(0, $response['items'][3]['amount']);
-        $this->assertEquals(0, $response['items'][4]['amount']);
-
     }
 
     public function testGetXpayrollPayout()

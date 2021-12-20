@@ -12280,6 +12280,78 @@ return [
         ],
     ],
 
+    'testSourceCreationInCaseOfInternalContactPayoutCreatedByXpayroll' => [
+        'request' => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => '',
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+                'queue_if_low_balance' => 1,
+                'origin'               => 'dashboard',
+                'source_details'       => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testIdempotencyInCaseOfInternalContactPayoutCreatedByXpayrollWithDifferentRequestContents' => [
+        'request' => [],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testDuplicateFundAccountInCaseOfCompositePayoutCreatedBySettlements' => [
         'request' => [
             'method'  => 'POST',

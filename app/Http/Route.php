@@ -11785,6 +11785,10 @@ class Route
             IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUTS_BATCH,
             IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_BATCH_IDEMPOTENCY,
         ],
+        'payout_create_on_internal_contact' => [
+            IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+        ],
     ];
 
     /**
