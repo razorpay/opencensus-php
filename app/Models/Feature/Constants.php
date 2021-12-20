@@ -933,6 +933,12 @@ class Constants
      * All Ledger Features for RX release
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
+
+    /**
+     * This will enable reads flow from ledger for merchants having this feature flag.
+     */
+    const LEDGER_JOURNAL_READS  = 'ledger_journal_reads';
+
     const LEDGER_REVERSE_SHADOW = 'ledger_reverse_shadow';
 
     /**
@@ -1413,6 +1419,7 @@ class Constants
         self::FEATURE_BBPS                    => true,
         self::ADDRESS_REQUIRED                => true,
         self::LEDGER_JOURNAL_WRITES           => true,
+        self::LEDGER_JOURNAL_READS            => true,
         self::LEDGER_REVERSE_SHADOW           => true,
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,

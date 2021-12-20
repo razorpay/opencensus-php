@@ -99,6 +99,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPayoutWithExpands(string $id, array $expands)
+    {
+        return $this->newQuery()
+                    ->with($expands)
+                    ->where(Entity::ID, $id)
+                    ->first();
+    }
+
     public function fetchFromUtr($utr, $amount, $balanceId)
     {
         return $this->newQuery()

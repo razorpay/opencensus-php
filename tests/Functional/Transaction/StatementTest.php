@@ -81,6 +81,29 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($response['source']['payee_account']);
     }
 
+    public function testFetchStatementForPayoutFromLedger()
+    {
+        $this->createPayout([
+            'id' => 'payout00000001'
+        ]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        // Asserts other keys existence in response.
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['created_at']);
+        $this->assertNotEmpty($response['source']['id']);
+        $this->assertNotEmpty($response['source']['entity']);
+        $this->assertNotEmpty($response['source']['amount']);
+    }
+
     public function testFetchMultipleStatementsWithIncorrectAccountNumberParameter()
     {
         $this->ba->privateAuth();

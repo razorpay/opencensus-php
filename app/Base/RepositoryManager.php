@@ -32,6 +32,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Account\Repository                  $account
  * @property Models\PaymentLink\Repository                       $payment_link
  * @property Models\PayoutLink\Repository                        $payout_link
+ * @property Models\Adjustment\Repository                        $adjustment
  * @property Models\Feature\Repository                           $feature
  * @property Models\Order\Repository                             $order
  * @property Models\Order\Product\Repository                     $product
@@ -181,6 +182,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\VirtualAccountProducts\Repository                 $virtual_account_products
  * @property Models\Merchant\OneClickCheckout\AuthConfig\Repository   $merchant_1cc_auth_configs
  * @property Models\Offer\Repository                                  $offer
+ * @property Models\Transaction\Statement\Ledger\Statement\Repository $ledger_statement
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

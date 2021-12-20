@@ -126,7 +126,7 @@ class Entity extends Transaction\Entity
         }
     }
 
-    protected function setPublicSourceAttributeForAdjustment(array & $array)
+    public function setPublicSourceAttributeForAdjustment(array & $array)
     {
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
@@ -142,7 +142,7 @@ class Entity extends Transaction\Entity
         $array['source']['amount'] = abs($array['source']['amount']);
     }
 
-    protected function setPublicSourceAttributeForPayout(array & $array)
+    public function setPublicSourceAttributeForPayout(array & $array)
     {
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
@@ -176,7 +176,7 @@ class Entity extends Transaction\Entity
             ]);
     }
 
-    protected function setPublicSourceAttributeForBankTransfer(array & $array)
+    public function setPublicSourceAttributeForBankTransfer(array & $array)
     {
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],

@@ -128,6 +128,28 @@ return [
         ],
     ],
 
+    'testFetchStatementForPayoutFromLedger' => [
+        'request' => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 1590,
+                'currency'       => 'INR',
+                'credit'         => 0,
+                'debit'          => 1590,
+                'balance'        => 98410,
+                'source'         => [
+                    'entity'         => 'payout',
+                    'amount'         => 1000,
+                ],
+            ],
+        ],
+    ],
+
     'testFetchMultipleStatementsWithIncorrectAccountNumberParameter' => [
         'request' => [
             'url'    => '/transactions',

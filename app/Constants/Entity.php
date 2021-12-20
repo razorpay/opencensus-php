@@ -607,6 +607,9 @@ class Entity
     // Network Tokenization
     const SERVICE_PROVIDER_TOKEN = 'service_provider_token';
 
+
+    const LEDGER_STATEMENT  = 'ledger_statement';
+
     const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
 
     /**
@@ -754,6 +757,7 @@ class Entity
         self::PROMOTION                 => \RZP\Models\Promotion::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
         self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
+        self::LEDGER_STATEMENT          => \RZP\Models\Transaction\Statement\Ledger\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,

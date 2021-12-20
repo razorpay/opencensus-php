@@ -1202,21 +1202,51 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetchMerchantLedgerEntryByID($input, bool $throwExceptionOnFailure = false): array
     {
-     $response = [
-         "merchant_ids_not_deleted" => [
-              "sampleMerchant1"
-         ],
-         "merchant_ids_not_exist" => [
-              "sampleMerchant2"
-         ]
-     ];
+        $response = [
+            "ledger_entry" => [
+                "amount"           => "1590",
+                "balance"          => "98410",
+                "base_amount"      => "1590",
+                "created_at"       => 1634027277,
+                "currency"         => "INR",
+                "journal_id"       => "IWx1NL90G02vxr",
+                "ledger_entry_id"  => "I8MJlgVttAs4KQ",
+                "merchant_id"      => "10000000000000",
+                "transactor_id"    => "pout_payout00000001",
+                "transactor_event" => "payout_initiated",
+                "type"             => "debit",
+                "updated_at"       => 1634027277,
+            ],
+        ];
+
         return [
             'code' => 200,
             'body' => $response
         ];
     }
 
+    public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+             "merchant_ids_not_deleted" => [
+                  "sampleMerchant1"
+             ],
+             "merchant_ids_not_exist" => [
+                  "sampleMerchant2"
+             ]
+        ];
 
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
 }

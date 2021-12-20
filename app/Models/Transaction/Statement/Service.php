@@ -13,6 +13,15 @@ use RZP\Models\Base\PublicCollection;
  */
 class Service extends Transaction\Service
 {
+    protected $ledgerStatementService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->ledgerStatementService = (new Ledger\Statement\Service());
+    }
+
     public function fetchMultiple(array $input): array
     {
         /** @var Merchant\Validator $merchantValidator */
@@ -32,6 +41,20 @@ class Service extends Transaction\Service
         $merchantValidator = $this->merchant->getValidator();
 
         $merchantValidator->validateBusinessBankingActivated();
+
+        // In case feature flag is added to the merchant and it is a shared banking balance,
+        // only in that case ledger service will be called.
+        if (($this->ledgerStatementService->isLedgerJournalReadsEnabled() === true) &&
+            ($this->merchant->sharedBankingBalance !== null))
+        {
+            $ledgerTransaction = $this->ledgerStatementService->fetchFromLedger($id);
+
+            // Only return ledger response if ledger didn't return any error, else return from API.
+            if (empty($ledgerTransaction) === false)
+            {
+                return $ledgerTransaction;
+            }
+        }
 
         /** @var Entity $transaction */
         $transaction = $this->repo

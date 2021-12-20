@@ -66,6 +66,7 @@ class Ledger
         'fetchLedgerConfigFormFieldOptions' => 'FetchLedgerConfigFormFieldOptions',
         'fetchAccountTypes'                 => 'FetchAccountTypes',
         'fetchFundAccountTypes'             => 'FetchFundAccountTypes',
+        'fetchMerchantLedgerEntryByID'      => 'FetchMerchantLedgerEntryByID',
         'deleteMerchants'                   => 'DeleteMerchants',
     ];
 
@@ -408,6 +409,19 @@ class Ledger
     public function fetchFundAccountTypes($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchFundAccountTypes'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param $input
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchMerchantLedgerEntryByID($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchMerchantLedgerEntryByID'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

@@ -83,4 +83,11 @@ class Repository extends Base\Repository
                      ->orderBy($createdAtInFAV, 'desc')
                      ->first();
     }
+
+    public function fetchFAVWithExpands(string $id, array $expands) {
+        return $this->newQuery()
+                    ->with($expands)
+                    ->where(Entity::ID, $id)
+                    ->first();
+    }
 }

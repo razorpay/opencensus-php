@@ -18,6 +18,7 @@ use RZP\Base\ConnectionType;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundAccount\Validation;
 
