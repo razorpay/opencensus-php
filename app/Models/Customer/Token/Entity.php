@@ -844,6 +844,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setIfsc($ifsc)
+    {
+        return $this->setAttribute(self::IFSC, $ifsc);
+    }
+
     /**
      * Appending recurring status and recurring
      * failure reason when recurring status is set

@@ -1999,6 +1999,14 @@ class Header
             ],
         ],
 
+        'nach_update_ifsc' => [
+            self::INPUT => [
+                'token_id',
+                'old_ifsc',
+                'new_ifsc',
+            ]
+        ],
+
         'merchant_onboarding_emi_sbi' => [
             self::INPUT => [
                 self::MERCHANT_ONBOARDING_EMI_SBI_MID,

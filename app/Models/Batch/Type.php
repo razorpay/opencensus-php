@@ -47,6 +47,8 @@ class Type
 
     const NACH_MIGRATION            = 'nach_migration';
 
+    const UPDATE                    = 'update';
+
     const PAYOUT                    = 'payout';
 
     const SUB_MERCHANT              = 'sub_merchant';
@@ -353,6 +355,7 @@ class Type
         CardlessEmi::FLEXMONEY,
         CardlessEmi::EARLYSALARY,
         self::CANCEL_DEBIT,
+        self::UPDATE,
     ];
 
     /**

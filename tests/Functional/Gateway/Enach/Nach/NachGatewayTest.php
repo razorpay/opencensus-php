@@ -875,6 +875,76 @@ class NachGatewayTest extends TestCase
         $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
     }
 
+    public function testTokenUpdateBatchFile()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterResponse($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEmpty($payment['internal_error_code'], "Payment should not have some Error Code");
+        $this->assertEmpty($payment['error_description'], "Payment should not have some Error Reason");
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNotNull($token['gateway_token']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+        $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
+
+        $data[] = [
+            'token_id' => $token['id'],
+            'old_ifsc' => 'HDFC0001233',
+            'new_ifsc' => 'MAHG0004000'
+        ];
+
+        $excel = (new ExcelExport)->setSheets(function() use ($data) {
+
+            $sheetsInfo[] = (new ExcelSheetExport($data))->setTitle('Sheet1');
+
+            return $sheetsInfo;
+        });
+
+        $data = $excel->raw('Xlsx');
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+
+        $file = (new TestingFile('update data.xlsx', $handle));
+
+        $request = [
+            'url'     => $url,
+            'method'  => 'POST',
+            'content' => [
+                'type'     => 'nach',
+                'sub_type' => 'update',
+                'gateway'  => 'ifsc',
+            ],
+            'files'   => [
+                'file' => $file,
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedToken = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('MAHG0004000', $updatedToken['ifsc']);
+
+        $this->assertEquals('HDFC0001233', $token['ifsc']);
+    }
+
     protected function createRecurringNachPayment($overideData = [])
     {
         $initialPayment = $this->createAcceptedToken($overideData);
