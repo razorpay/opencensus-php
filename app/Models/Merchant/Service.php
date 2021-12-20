@@ -4816,6 +4816,10 @@ class Service extends Base\Service
     {
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
+        $this->trace->info(TraceCode::HARVESTER_REQUEST_DETAILS,[
+            "data" => $input
+        ]);
+
         $variant = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
             RazorxTreatment::HARVESTER_SEGREGATE_QUERIES,

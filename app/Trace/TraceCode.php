@@ -1971,6 +1971,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_FAILURE                                     = 'HARVESTER_FAILURE';
     const HARVESTER_RESPONSE                                    = 'HARVESTER_RESPONSE';
     const HARVESTER_RESPONSE_TIME                               = 'HARVESTER_RESPONSE_TIME';
+    const HARVESTER_REQUEST_DETAILS                             = 'HARVESTER_REQUEST_DETAILS';
 
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const SHIELD_SLACK_REQUEST_INITIATED                        = 'SHIELD_SLACK_REQUEST_INITIATED';
