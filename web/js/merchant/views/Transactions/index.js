@@ -126,9 +126,7 @@ class TransactionsContainer extends Component {
             </AnnouncementBanner>
           </ShowWhen>
           <DashboardBanner />
-          <ShowWhen
-            additionalCondition={(usr) => usr.isCatalystCampaignEnabled && !usr.isGSBannersEnabled}
-          >
+          <ShowWhen additionalCondition={(usr) => usr.isCatalystCampaignEnabled}>
             <CatalystCampaignBanner productName="Transactions" />
           </ShowWhen>
         </div>

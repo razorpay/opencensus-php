@@ -40,8 +40,7 @@ export default class PaymentPagesContainer extends Component {
           <ShowWhen
             additionalCondition={(currentUser) =>
               currentUser.isPartOfZapierIntegrationExperiment &&
-              !getItem(`zapier-integration-banner-${user.current}`) &&
-              !currentUser.isGSBannersEnabled
+              !getItem(`zapier-integration-banner-${user.current}`)
             }
           >
             <ZapierLaunchBanner

@@ -107,7 +107,6 @@ export default class InvoicesContainer extends Component {
           <ShowWhen
             additionalCondition={(currentUser) =>
               currentUser.isPartOfZapierIntegrationExperiment &&
-              !currentUser.isGSBannersEnabled &&
               !getItem(`zapier-integration-banner-${user.current}`)
             }
           >

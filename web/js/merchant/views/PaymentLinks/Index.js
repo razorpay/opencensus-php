@@ -166,7 +166,6 @@ class PaymentLinksContainer extends React.Component {
           <ShowWhen
             additionalCondition={(user) =>
               user.isPartOfAiSensyBannerExperiment &&
-              !user.isGSBannersEnabled &&
               !getItem(`payment-links-on-whatsapp-banner-${user.current}`)
             }
           >

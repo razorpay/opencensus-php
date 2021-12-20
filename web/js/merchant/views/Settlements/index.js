@@ -111,13 +111,11 @@ const Settlements = ({
           />
         </ShowWhen>
         <DashboardBanner />
-        <ShowWhen additionalCondition={(usr) => !usr.isGSBannersEnabled}>
-          <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
-            <UltraCampaignBanner productName="Settlements" />
-          </ShowWhen>
-          <ShowWhen additionalCondition={(usr) => usr.isUltraP2CashAdvanceCampaignBannerEnabled}>
-            <UltraP2CashAdvanceBanner productName="Settlements" />
-          </ShowWhen>
+        <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
+          <UltraCampaignBanner productName="Settlements" />
+        </ShowWhen>
+        <ShowWhen additionalCondition={(usr) => usr.isUltraP2CashAdvanceCampaignBannerEnabled}>
+          <UltraP2CashAdvanceBanner productName="Settlements" />
         </ShowWhen>
       </div>
 
