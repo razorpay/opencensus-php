@@ -303,13 +303,9 @@ class Service extends Base\Service
     {
         $user = Auth::user();
 
-        $preSignupValues = array_values($data['pre_signup']);
-
-        // This is same as on UserController
-        $data['pre_signup_complete'] = array_reduce($preSignupValues, function($carry, $item)
-        {
-            return $carry and !empty($item);
-        }, true);
+        // with mobile signup going live, only contact name is used
+        // as a pre_signup completeness check
+        $data['pre_signup_complete'] = (strlen($data["pre_signup"][Merchant\Entity::CONTACT_NAME]) !== 0);
 
         // We don't show presignup form for user
         // created before this date
