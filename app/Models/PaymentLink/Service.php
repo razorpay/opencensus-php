@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Settings;
 use RZP\Models\LineItem;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
@@ -401,7 +402,13 @@ class Service extends Base\Service
         return $payload;
     }
 
-    public function createPaymentHandle(array $input) : array
+    /**
+     * @param \RZP\Models\Merchant\Entity $merchant
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function createPaymentHandle() : array
     {
         if ($this->mode === Mode::TEST)
         {
@@ -410,6 +417,8 @@ class Service extends Base\Service
                 null,
                 null);
         }
+
+        $input = $this->getDefaultValuesPaymentHandle();
 
         $validator = (new Validator);
 
@@ -564,5 +573,18 @@ class Service extends Base\Service
         $modifiedResponse[ENTITY::URL]   = $this->app['config']->get('app.payment_handle_hosted_base_url'). '/' . $modifiedResponse[Entity::SLUG]; ;
 
         return $modifiedResponse;
+    }
+
+    private function getDefaultValuesPaymentHandle(): array
+    {
+        $input = [];
+
+        $suggestedPaymentHandle = $this->core->suggestionPaymentHandle(1);
+
+        $input[Entity::SLUG] = $suggestedPaymentHandle[0];
+
+        $input[Entity::TITLE] = $this->merchant->getBillingLabel();
+
+        return $input;
     }
 }

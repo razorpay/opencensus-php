@@ -1951,7 +1951,7 @@ class PaymentLinkTest extends TestCase
         $elfin->method('driver')->willReturn($gimli);
 
         $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/@sampleHandle"
+            "https://rzp.io/i/@testmerchant"
         );
 
         $this->app->instance('elfin', $elfin);
@@ -1979,7 +1979,7 @@ class PaymentLinkTest extends TestCase
         $elfin->method('driver')->willReturn($gimli);
 
         $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/@newHandle"
+            "https://rzp.io/i/@testmerchant"
         );
 
         $this->app->instance('elfin', $elfin);

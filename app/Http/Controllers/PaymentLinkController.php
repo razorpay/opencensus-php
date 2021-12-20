@@ -345,9 +345,7 @@ class PaymentLinkController extends Controller
 
     public function createPaymentHandle()
     {
-        $input = Request::all();
-
-        $response = $this->service()->createPaymentHandle($input);
+        $response = $this->service()->createPaymentHandle();
 
         return ApiResponse::json($response);
     }

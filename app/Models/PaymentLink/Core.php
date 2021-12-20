@@ -2268,7 +2268,7 @@ class Core extends Base\Core
         $merchantBillingLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
 
         // removes spaces
-        $merchantBillingLabel = '@' . str_replace(' ', '', $merchantBillingLabel);
+        $merchantBillingLabel = '@' . strtolower(str_replace(' ', '', $merchantBillingLabel));
 
         $suggestions = [];
 

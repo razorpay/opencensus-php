@@ -3026,9 +3026,9 @@ return [
         ],
         'response' => [
             'content'  => [
-                'title'      => 'sample title',
-                'slug'       => '@sampleHandle',
-                'url'        => 'https://pages.razorpay.com/@sampleHandle',
+                'title'      => 'Test Merchant',
+                'slug'       => '@testmerchant',
+                'url'        => 'https://pages.razorpay.com/@testmerchant',
             ]
         ]
     ],
@@ -3040,9 +3040,9 @@ return [
         ],
         'response' => [
             'content'   => [
-                'title'      =>    'sample title',
-                'slug'       =>    '@sampleHandle',
-                'url'        =>    'https://pages.razorpay.com/@sampleHandle'
+                'title'      =>    'Test Merchant',
+                'slug'       =>    '@testmerchant',
+                'url'        =>    'https://pages.razorpay.com/@testmerchant'
             ]
         ]
     ],

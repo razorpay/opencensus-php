@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Feature\Constants;
 use Throwable;
 
@@ -133,6 +134,11 @@ class Activate extends Base\Core
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
+        PaymentPageProcessor::dispatch(Mode::LIVE, [
+            'event'     => PaymentPageProcessor::PAYMENT_HANDLE_CREATION,
+            'merchant_id'  => $merchant->getPublicId(),
+        ]);
+
         //to be removed once hold funds issue is resolved
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
 
@@ -205,6 +211,11 @@ class Activate extends Base\Core
         $merchantBalance = (new Core)->createBalance($merchant, 'live');
 
         (new Core)->createBalanceConfig($merchantBalance, 'live');
+
+        PaymentPageProcessor::dispatch(Mode::LIVE, [
+            'event'     => PaymentPageProcessor::PAYMENT_HANDLE_CREATION,
+            'merchant_id'  => $merchant->getPublicId(),
+        ]);
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED, [
             'merchant_id'   => $merchant->getId()

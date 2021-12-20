@@ -2,9 +2,11 @@
 
 namespace RZP\Jobs;
 
+use App;
 use RZP\Trace\TraceCode;
 use RZP\Models\PaymentLink;
 use Illuminate\Support\Str;
+use RZP\Models\Merchant;
 
 /**
  * - Asynchronously update payment page, generate receipt etc after a successful payment
@@ -16,6 +18,7 @@ class PaymentPageProcessor extends Job
 
     const PAYMENT_CAPTURE_EVENT     = 'PAYMENT_CAPTURE_EVENT';
     const REFUND_PROCESSED_EVENT    = 'REFUND_PROCESSED_EVENT';
+    const PAYMENT_HANDLE_CREATION   = 'PAYMENT_HANDLE_CREATION';
 
     /**
      * {@inheritDoc}
@@ -40,6 +43,8 @@ class PaymentPageProcessor extends Job
     protected $core;
 
     protected $event;
+
+    protected $service;
 
     /**
      * Params should have payment key with payment object during payment capture event
@@ -145,5 +150,47 @@ class PaymentPageProcessor extends Job
         }
 
         $this->delete();
+    }
+
+    protected function handlePaymentHandleCreation()
+    {
+        $this->service = new PaymentLink\Service;
+
+        try
+        {
+            $merchantId = $this->params->get('merchant_id');
+
+            $merchant = $this->repoManager->merchant->findByPublicId($merchantId);
+
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATION_QUEUE_START);
+
+            $this->setMerchant($merchant);
+
+            $paymentHandle = $this->service->createPaymentHandle();
+
+            $context = [
+                PaymentLink\Entity::ID      => $paymentHandle[PaymentLink\Entity::ID],
+                PaymentLink\Entity::TITLE   => $paymentHandle[PaymentLink\Entity::TITLE],
+                PaymentLink\Entity::SLUG    => $paymentHandle[PaymentLink\Entity::SLUG],
+                PaymentLink\Entity::URL     => $paymentHandle[PaymentLink\Entity::URL],
+            ];
+
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATION_QUEUE_COMPLETED, $context);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e, null, null, [
+                'params'    => $this->params->toArray(),
+            ]);
+        }
+
+        $this->delete();
+    }
+
+    protected function setMerchant(Merchant\Entity $merchant)
+    {
+        $this->app = App::getFacadeRoot();
+
+        $this->app['basicauth']->setMerchant($merchant);
     }
 }
