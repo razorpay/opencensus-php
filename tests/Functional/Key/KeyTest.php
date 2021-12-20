@@ -3,8 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
+use Mockery;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Merchant as MerchantMail;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class KeyTest extends TestCase
@@ -306,15 +309,135 @@ class KeyTest extends TestCase
         return $keyIds;
     }
 
+    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver, $expectedParms = [])
+    {
+        $ravenMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPayload) use ($templateName, $receiver, $expectedParms)
+                {
+                    $this->assertArraySelectiveEquals($expectedParms, $actualPayload['params']);
+
+                    if (($templateName !== $actualPayload['template']) or
+                        ($receiver !== $actualPayload['receiver']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),  Mockery::on(function ($mockInTestMode)
+            {
+                if ($mockInTestMode === true)
+                {
+                    return false;
+                }
+                return true;
+            }))
+            ->andReturnUsing(function ()
+            {
+                return ['sms_id' => '10000000000sms'];
+            });
+    }
+
+    protected function expectStorkWhatsappRequest($storkMock, $text, $destination): void
+    {
+        $storkMock->shouldReceive('sendWhatsappMessage')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualText) use($text)
+                {
+                    $actualText = trim(preg_replace('/\s+/', ' ', $actualText));
+
+                    $text = trim(preg_replace('/\s+/', ' ', $text));
+
+                    if ($actualText !== $text)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),
+                Mockery::on(function ($actualReceiver) use($destination)
+                {
+                    if ($actualReceiver !== $destination)
+                    {
+                        return false;
+                    }
+                    return true;
+                }),
+                Mockery::on(function ($input)
+                {
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode(['key' => 'value']);
+
+                return $response;
+            });
+    }
+
+    protected function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $mock->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                    {
+                        return $feature === $featureUnderTest ? $value : 'control';
+                    }));
+
+        $this->app->instance('razorx', $mock);
+    }
+
     public function testBulkRegenerateApiKey()
     {
         Mail::fake();
+
+        $this->enableRazorXTreatmentForFeature(RazorxTreatment::WHATSAPP_NOTIFICATIONS, 'on');
+
+        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bulk_regenerate_api_key', '1234567890', []);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi,
+                We have deactivated your  API keys, since we noticed that you are hardcoding them on your App. To continue accepting payments, we request you to generate new API keys.
+                To generate API key in live mode:
+                1. Log into Dashboard and switch to Live mode on the menu.
+                2. Navigate to Settings - API Keys - Re-Generate Key to generate a new API key for live mode.
+                3. Download the keys and save it securely.
+                4. Ensure that Razorpay API secret is not included in the final Android or iOS build
+                Thanks,
+                Team Razorpay',
+            '1234567890'
+        );
 
         $merchantDetail             = $this->fixtures->create('merchant_detail');
 
         $merchantId                 = $merchantDetail->getEntityId();
 
-        $user                       = $this->fixtures->user->createUserForMerchant($merchantId);
+        $user                       = $this->fixtures->user->createUserForMerchant($merchantId, [
+                                                    'contact_mobile' => '1234567890',
+                                                    'contact_mobile_verified' => true
+                                               ]);
 
         $testData                   = & $this->testData[__FUNCTION__];
 

@@ -79,6 +79,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW               => 'sms.dashboard.merchant_website_add_needs_clarification',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => 'sms.dashboard.merchant_gstin_auto_updated',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => 'sms.dashboard.merchant_gstin_workflow_approve',
+        self::BULK_REGENERATE_API_KEYS                                  => 'sms.dashboard.bulk_regenerate_api_key',
     ];
 
     /**
@@ -104,6 +105,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => [Constants::MERCHANT_NAME],
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => [Constants::GSTIN,Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => [Constants::GSTIN],
+        self::BULK_REGENERATE_API_KEYS                                  => []
     ];
 
     // Event vs whatsapp templates mapping
@@ -126,6 +128,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => 'whatsapp.merchant.dashboard.merchant_gstin_needs_clarification',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => 'whatsapp.merchant.dashboard.merchant_gstin_auto_updated',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => 'whatsapp.merchant.dashboard.merchant_gstin_workflow_approve',
+        self::BULK_REGENERATE_API_KEYS                                  => 'whatsapp.merchant.dashboard.bulk_regenerate_api_keys'
     ];
 
     /**
@@ -150,6 +153,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => [Constants::MERCHANT_NAME],
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => [Constants::GSTIN,Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => [Constants::GSTIN],
+        self::BULK_REGENERATE_API_KEYS                                  => [],
     ];
 
     // Event vs email templates mapping
@@ -289,6 +293,6 @@ class Events
         self::FEATURE_UPDATE_NOTIFICATION                               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => [Channel::EMAIL],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Channel::EMAIL],
-        self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL],
+        self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
     ];
 }
