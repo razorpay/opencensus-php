@@ -2338,6 +2338,9 @@ class ErrorCode
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'BAD_REQUEST_EMI_INSTRUMENT_INVALID';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                                  = 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN';
 
+    const BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED                                  = 'BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED';
+    const BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED                               = 'BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED';
+
     // XPayroll
     const BAD_REQUEST_TO_XPAYROLL_SERVICE                                           = 'BAD_REQUEST_TO_XPAYROLL_SERVICE';
 

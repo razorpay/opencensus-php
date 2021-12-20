@@ -111,6 +111,7 @@ class Name
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
     const MERCHANT_INVOICE_CONTROL            = 'merchant_invoice_control';
     const MERCHANT_EMAIL_EDIT                 = 'merchant_edit_email';
+    const UPDATE_MOBILE_NUMBER                = 'update_mobile_number';
     const MERCHANT_PRICING_PLANS              = 'merchant_pricing_plans';
     const PAYMENTS_TERMINAL_BUY_PRICING_PLANS  = 'payments_terminal_buy_pricing_plans';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';

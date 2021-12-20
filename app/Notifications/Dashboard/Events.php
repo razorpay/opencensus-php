@@ -51,6 +51,8 @@ class Events
 
     const GSTIN_ADD_REJECTION_REASON                                    = 'GSTIN_ADD_REJECTION_REASON';
 
+    const UPDATE_MERCHANT_CONTACT_FROM_ADMIN                            = 'UPDATE_MERCHANT_CONTACT_FROM_ADMIN';
+
     const NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                     = 'NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW';
 
     const NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW                  = 'NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW';
@@ -164,6 +166,7 @@ class Events
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                     => 'emails.merchant.rejection_reason_notification',
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                  => 'emails.merchant.rejection_reason_notification',
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON               => 'emails.merchant.rejection_reason_notification',
+        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => 'emails.merchant.update_merchant_contact_from_admin',
         self::GSTIN_UPDATE_REJECTION_REASON                             => 'emails.merchant.rejection_reason_notification',
         self::GSTIN_ADD_REJECTION_REASON                                => 'emails.merchant.rejection_reason_notification',
         self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => 'emails.merchant.gstin_updated_self_serve',
@@ -187,6 +190,7 @@ class Events
         self::FEATURE_UPDATE_NOTIFICATION                               => MailTags::FEATURE_ENABLED,
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE                => MailTags::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE,
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => MailTags::GSTIN_UPDATED_VALIDATION_SUCCESS,
+        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => MailTags::UPDATE_CONTACT_NUMBER,
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => MailTags::GSTIN_UPDATED_WORKFLOW_APPROVE,
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                     => MailTags::MERCHANT_BUSINESS_WEBSITE_ADD_REJECTION_REASON,
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                  => MailTags::MERCHANT_BUSINESS_WEBSITE_UPDATE_REJECTION_REASON,
@@ -213,6 +217,7 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                            => 'Razorpay | Bank account change successful for %s(MID: %s)',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE                => 'Razorpay | Transaction Limit updated successfully for %s(MID: %s)',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => 'Razorpay | Gstin updated for %s(MID: %s)',
+        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => 'Mobile Number for your Razorpay account is updated',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => 'Razorpay | Gstin updated for %s(MID: %s)',
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                     => '%s',
         self::FEATURE_UPDATE_NOTIFICATION                               => '%s',
@@ -241,6 +246,7 @@ class Events
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE                => [UserRole::OWNER],
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => [UserRole::OWNER],
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => [UserRole::OWNER],
+        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => [UserRole::OWNER],
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                     => [UserRole::OWNER],
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                  => [UserRole::OWNER],
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON               => [UserRole::OWNER],
@@ -281,6 +287,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::FEATURE_UPDATE_NOTIFICATION                               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => [Channel::EMAIL],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Channel::EMAIL],
         self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL],
     ];

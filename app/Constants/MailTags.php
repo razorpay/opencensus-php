@@ -178,6 +178,8 @@ class MailTags
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
+    const UPDATE_CONTACT_NUMBER            = 'update_contact_number';
+
     // Merchant Request tags
     const MERCHANT_REQUEST_REJECTED            = 'merchant_request_rejected';
     const MERCHANT_REQUEST_NEEDS_CLARIFICATION = 'merchant_request_needs_clarification';

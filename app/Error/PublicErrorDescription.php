@@ -1097,6 +1097,9 @@ class PublicErrorDescription
 
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN                              = 'Request failed as contact mobile already taken';
 
+    const BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED                              = 'No owner accounts associated with this contact mobile';
+    const BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED                           = 'Multiple owner accounts associated with this contact mobile';
+
     // Scheduled Payouts
     const BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED                       = 'Scheduled Payouts can only be created via dashboard';
     const BAD_REQUEST_SCHEDULED_PAYOUT_CANCEL_AUTH_NOT_SUPPORTED                = 'Scheduled Payouts can only be cancelled via dashboard';

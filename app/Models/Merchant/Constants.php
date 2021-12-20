@@ -125,6 +125,8 @@ final class Constants
     const DASHBOARD_INTERNAL                      = 'DASHBOARD_INTERNAL';
     const MERCHANT_USER                           = 'MERCHANT_USER';
 
+    const USER_CONTACT_MOBILE                     = 'user_contact_mobile';
+
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';
     const CUSTOM_PRICING            = 'custom_pricing';

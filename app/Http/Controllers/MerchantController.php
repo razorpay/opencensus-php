@@ -1265,6 +1265,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function putMerchantContactUpdatePostWorkflow()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::MERCHANT_DETAIL)->merchantContactUpdatePostWorkflow($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * @param $id
      *
@@ -2514,6 +2523,15 @@ class MerchantController extends Controller
         $response = $this->service()->patchMerchantPurposeCode($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function putMerchantContact(string $id)
+    {
+        $input = Request::all();
+
+        $this->service(E::MERCHANT_DETAIL)->updateMerchantContact($id, $input);
+
+        return ApiResponse::json([]);
     }
 
     public function postSaveBusinessWebsite(string $urlType)

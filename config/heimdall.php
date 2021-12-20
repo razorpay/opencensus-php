@@ -757,6 +757,10 @@ return [
                 'description' => 'to raise needs clarification on workflow',
                 'assignable'  => true,
             ],
+            Permission::UPDATE_MOBILE_NUMBER           => [
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

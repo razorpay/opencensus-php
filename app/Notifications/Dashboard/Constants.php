@@ -12,6 +12,11 @@ class Constants
 
     const UPDATED_BUSINESS_WEBSITE                 = 'updated_business_website';
 
+
+    const OLD_CONTACT_NUMBER                       = 'old_contact_number';
+
+    const NEW_CONTACT_NUMBER                       = 'new_contact_number';
+
     const MESSAGE_BODY                             = 'messageBody';
 
     const MESSAGE_SUBJECT                          = 'messageSubject';

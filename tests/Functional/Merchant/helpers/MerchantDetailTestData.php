@@ -773,6 +773,129 @@ return [
         ],
     ],
 
+    'testUpdateMerchantContactWithContactAlreadyExistsFailure' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '1234567890',
+                'new_contact_number' => '8722627189'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>  PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+        ],
+    ],
+
+    'testUpdateMerchantContactMultipleOwnersExistWithContactNumberFail' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '1234567890',
+                'new_contact_number' => '8722627189'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>  PublicErrorDescription::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED,
+        ],
+    ],
+
+    'testUpdateMerchantContactNoOwnerExistWithContactNumberFail' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '1234567890',
+                'new_contact_number' => '8722627189'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>  PublicErrorDescription::BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED,
+        ],
+    ],
+
+    'testUpdateMerchantContactWithWorkflowReject' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '1234567890',
+                'new_contact_number' => '8722627189'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateMerchantContactWithWorkflow' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '1234567890',
+                'new_contact_number' => '8722627189'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateMerchantContactWithSameNewNumberAndMerchantContactDetails' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '1234567890',
+                'new_contact_number' => '8722627189'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMerchantUpdateWebsiteDetailsIpv6' => [
         'request'  => [
             'content' => [

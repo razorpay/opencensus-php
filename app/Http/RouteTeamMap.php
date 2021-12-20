@@ -161,6 +161,7 @@ class RouteTeamMap
         'proxy_merchant_create_support_details'    => [self::TEAM_PAYMENTS_DASHBOARD],
         'proxy_merchant_edit_support_details'      => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_change_password'                     => [self::TEAM_PAYMENTS_DASHBOARD],
+        'update_merchant_mobile_number'            => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_reset_password_token'                => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_trigger_2fa_otp'                     => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_update_contact'                      => [self::TEAM_PAYMENTS_DASHBOARD],

@@ -836,6 +836,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function merchantContactUpdatePostWorkflow(array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $this->core()->changeMerchantUserMobile($merchant, $input);
+
+            $this->core()->merchantContactUpdatePostWorkflow($merchant, $input);
+        });
+
+    }
+
     public function putBusinessWebsiteUpdatePostWorkflow(array $input)
     {
         $previousWebsite = $this->merchant->merchantDetail->getWebsite();
@@ -2241,6 +2254,31 @@ class Service extends Base\Service
             $validationArtefact, $merchant, $merchant->merchantDetail);
 
         return $requestDispatcher->fetchValidationDetails($validationId);
+    }
+
+    /**
+     * This function is used for edit contact details of an merchant and login mobile number of owner user
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws Throwable
+     */
+    public function updateMerchantContact(string $id, array $input)
+    {
+        $this->validator->validateInput('update_contact_and_login_mobile', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        // check if the merchant has more or zero users as [OWNERS]
+        $this->validator->validateUniqueMerchantOwnerUserForMobile($merchant, $input[DetailConstants::OLD_CONTACT_NUMBER]);
+
+        // add validator for contact already exists
+        $this->validator->validateMerchantUniqueNumberExcludingCurrentMerchantDetails($id, $input[DetailConstants::NEW_CONTACT_NUMBER]);
+
+        return (new Core)->updateMerchantContact($merchant, $input);
     }
 
     /**

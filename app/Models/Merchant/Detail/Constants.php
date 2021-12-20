@@ -17,6 +17,11 @@ class Constants
     const ADMIN  = 'admin';
     const SYSTEM = 'system';
 
+    const OWNER  = 'owner';
+
+    const OLD_CONTACT_NUMBER = 'old_contact_number';
+    const NEW_CONTACT_NUMBER = 'new_contact_number';
+
     const NEEDS_CLARIFICATION_SOURCES = [self::ADMIN, self::SYSTEM];
     //verification retry constants
     const RETRY_DELAY_IN_SECONDS = 300;
@@ -241,6 +246,7 @@ class Constants
     const ACTIVATION_CONTROLLER                = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
 
     const  UPDATE_BUSINESS_WEBSITE_CONTROLLER  = 'RZP\Http\Controllers\MerchantController@putBusinessWebsiteUpdatePostWorkflow';
+    const  UPDATE_CONTACT_CONTROLLER           = 'RZP\Http\Controllers\MerchantController@putMerchantContactUpdatePostWorkflow';
 
     const ADD_ADDITIONAL_WEBSITE_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@putAddAdditionalWebsiteSelfServePostWorkflowApproval';
 

@@ -4288,6 +4288,15 @@ Team Razorpay',
         return $merchantId;
     }
 
+    private function setupMerchantUserAndWorkflow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::UPDATE_MOBILE_NUMBER)
+    {
+       [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails([], $predefinedMerchantDetails);
+
+        $this->setupWorkflow("update mobile number", $permissionName);
+
+        return [$merchantId, $userId];
+    }
+
     private function saveBusinessWebsiteMakerFlow(array $predefinedMerchantDetails = [], string $permissionName = PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL, bool $addTestCredentials = true)
     {
         [$merchantId , $userId] = $this->setupMerchantWithMerchantDetails(['name' => 'Test name', 'has_key_access' => true], $predefinedMerchantDetails);
@@ -4302,6 +4311,32 @@ Team Razorpay',
         }
 
         return $merchantId;
+    }
+
+    private function rejectUpdateMerchantContactWorkflowAndAssertData($merchantId , $userId, $workflowActionId)
+    {
+        $this->performWorkflowAction($workflowActionId, false);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getContactMobile(), '1234567890');
+
+        $user = $this->getDbEntityById('user', $userId);
+
+        $this->assertEquals($user->getContactMobile() , '1234567890');
+    }
+
+    private function updateMerchantContactWorkflowApproveAndAssertData($merchantId , $userId, $workflowActionId)
+    {
+        $this->performWorkflowAction($workflowActionId, true);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals($merchantDetails->getContactMobile(), '8722627189');
+
+        $user = $this->getDbEntityById('user', $userId);
+
+        $this->assertEquals($user->getContactMobile() , '8722627189');
     }
 
     private function validateBusinessWebsiteWorkflowApprove($merchantId , $workflowActionId)
@@ -4338,6 +4373,65 @@ Team Razorpay',
         $this->assertNotEquals('https://www.example.com', $merchant->getWebsite());
     }
 
+    private function assertWorkflowDataForUpdateMerchantContact($merchantId, $userId, string $permissionName, $merchantContact, $userContact)
+    {
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $user = $this->getDbEntityById('user', $userId);
+
+        $this->assertEquals($merchantDetails->getContactMobile(), $merchantContact);
+
+        $this->assertEquals($user->getContactMobile(), $userContact);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+                                                             substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals('open', $action['state']);
+        $this->assertEquals('PUT', $action['method']);
+        $this->assertEquals('RZP\Http\Controllers\MerchantController@putMerchantContactUpdatePostWorkflow', $action['controller']);
+        $this->assertEquals('update_merchant_mobile_number', $action['route']);
+        $this->assertEquals($permissionName, $action['permission']);
+
+        $this->assertArraySelectiveEquals([
+                                              'old_contact_number' => "1234567890",
+                                              'new_contact_number' => "8722627189",
+                                          ], $action['payload']);
+        $this->assertEquals(['id' => $merchantId], $action['route_params']);
+
+        if ($merchantContact == '8722627189')
+        {
+            $this->assertArraySelectiveEquals([
+                                                  'old' => [
+                                                      'user_contact_mobile' => '1234567890',
+                                                  ],
+                                                  'new' => [
+                                                      'user_contact_mobile' => '8722627189',
+                                                  ],
+                                              ], $action['diff']);
+        }
+        else
+        {
+            $this->assertArraySelectiveEquals([
+                                                  'old' => [
+                                                      'contact_mobile'      => $merchantContact,
+                                                      'user_contact_mobile' => '1234567890',
+                                                  ],
+                                                  'new' => [
+                                                      'contact_mobile'      => '8722627189',
+                                                      'user_contact_mobile' => '8722627189',
+                                                  ],
+                                              ], $action['diff']);
+        }
+
+        return [$merchantId, $workflowAction['id']];
+    }
+
     private function validateBusinessWebsiteWorkflow($merchantId, string $permissionName = PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL)
     {
         $merchant = $this->getDbEntityById('merchant', $merchantId);
@@ -4361,6 +4455,208 @@ Team Razorpay',
         $this->esClient->indices()->refresh();
 
         return [$merchantId, $workflowAction['id']];
+    }
+
+    public function testUpdateMerchantContactWithWorkflowReject()
+    {
+        [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "1234567890"]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/$merchantId/mobile";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
+                                                                                             PermissionName::UPDATE_MOBILE_NUMBER,
+                                                                                             '1234567890', '1234567890');
+
+        $this->rejectUpdateMerchantContactWorkflowAndAssertData($merchantId, $userId, $workflowActionId);
+    }
+
+    public function testUpdateMerchantContactNoOwnerExistWithContactNumberFail()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'          => '0123456789',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => $user->id,
+                                                             'merchant_id' => $merchantId,
+                                                             'role'        => 'owner',
+                                                         ]);
+
+        $predefinedMerchantDetails = [
+            'merchant_id'    => $merchantId,
+            'contact_mobile' => '1234567890'
+        ];
+
+        $this->fixtures->create('merchant_detail', $predefinedMerchantDetails);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/$merchantId/mobile";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Validation failure for a contact number which already exists for some other merchant or users
+     */
+    public function testUpdateMerchantContactWithContactAlreadyExistsFailure()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'          => '8722627189',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => $user->id,
+                                                             'merchant_id' => $merchantId,
+                                                             'role'        => 'owner',
+                                                         ]);
+
+        $predefinedMerchantDetails = ['merchant_id'  => $merchantId, 'contact_mobile' => '8722627189'];
+
+        [$merchantId2, $userId2] = $this->setupMerchantWithMerchantDetails([], $predefinedMerchantDetails);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/$merchantId2/mobile";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantContactMultipleOwnersExistWithContactNumberFail()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant['id'];
+
+        $user1 = $this->fixtures->create('user', [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $user2 = $this->fixtures->create('user', [
+            'contact_mobile'          => '1234567890',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => $user1->id,
+                                                             'merchant_id' => $merchantId,
+                                                             'role'        => 'owner',
+                                                         ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                              'user_id'     => $user2->id,
+                                                              'merchant_id' => $merchantId,
+                                                              'role'        => 'owner',
+                                                          ]);
+
+        $predefinedMerchantDetails = array_merge(['merchant_id'  => $merchantId], ['contact_mobile' => '1234567890'] );
+
+        $this->fixtures->create('merchant_detail', $predefinedMerchantDetails);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/$merchantId/mobile";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantContactWithSameNewNumberAndMerchantContactDetails()
+    {
+        Mail::fake();
+
+        [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "8722627189"]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/$merchantId/mobile";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
+                                                                                             PermissionName::UPDATE_MOBILE_NUMBER,
+                                                                                             '8722627189', '1234567890');
+
+        $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('1234567890', $data['old_contact_number']);
+
+            $this->assertEquals('8722627189', $data['new_contact_number']);
+
+            $this->assertEquals('emails.merchant.update_merchant_contact_from_admin', $mail->view);
+
+            $mail->hasTo($merchant['email']);
+
+            return true;
+        });
+    }
+
+    public function testUpdateMerchantContactWithWorkflow()
+    {
+        Mail::fake();
+
+        [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "1234567890"]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchants/$merchantId/mobile";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
+                                                                                             PermissionName::UPDATE_MOBILE_NUMBER,
+                                                                                             "1234567890", "1234567890");
+
+        $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('1234567890', $data['old_contact_number']);
+
+            $this->assertEquals('8722627189', $data['new_contact_number']);
+
+            $this->assertEquals('emails.merchant.update_merchant_contact_from_admin', $mail->view);
+
+            $mail->hasTo($merchant['email']);
+
+            return true;
+        });
     }
 
     public function testUpdateBusinessWebsiteWorkflowApprove()

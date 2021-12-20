@@ -387,4 +387,10 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function findMerchantDetailsWithContactMobile(string $newNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CONTACT_MOBILE, '=', $newNumber)
+                    ->first();
+    }
 }

@@ -31,6 +31,7 @@ class Workflow
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
         Permission::EDIT_ACTIVATE_PARTNER,
+        Permission::UPDATE_MOBILE_NUMBER,
         Permission::EDIT_MERCHANT_KEY_ACCESS,
         Permission::ADD_MERCHANT_ADJUSTMENT,
         Permission::SCHEDULE_ASSIGN,

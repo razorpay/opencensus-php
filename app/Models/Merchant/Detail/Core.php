@@ -5450,6 +5450,94 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used for edit merchant contact details
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return array
+     */
+    public function updateMerchantContact(Merchant\Entity $merchant, array $input)
+    {
+        $this->trace->info(
+            TraceCode::CONTACT_UPDATE_REQUEST, [
+            Entity::MERCHANT_ID    => $merchant->getMerchantId(),
+            Entity::CONTACT_MOBILE => mask_phone($input[DetailConstants::NEW_CONTACT_NUMBER])
+        ]);
+
+        $input[Entity::MERCHANT_ID] = $merchant->getMerchantId();
+
+        $oldMerchantDetails = [
+            Entity::CONTACT_MOBILE         => $merchant->merchantDetail->getContactMobile(),
+            Constants::USER_CONTACT_MOBILE => $input[DetailConstants::OLD_CONTACT_NUMBER],
+        ];
+
+        $newMerchantDetails = [
+            Entity::CONTACT_MOBILE         => $input[DetailConstants::NEW_CONTACT_NUMBER],
+            Constants::USER_CONTACT_MOBILE => $input[DetailConstants::NEW_CONTACT_NUMBER],
+        ];
+
+        $this->app['workflow']
+            ->setPermission(Permission\Name::UPDATE_MOBILE_NUMBER)
+            ->setEntityAndId($merchant->getEntity(), $merchant->getId())
+            ->setController(DetailConstants::UPDATE_CONTACT_CONTROLLER)
+            ->setInput($input)
+            ->handle($oldMerchantDetails, $newMerchantDetails);
+    }
+
+    public function changeMerchantUserMobile(Merchant\Entity $merchant, $input)
+    {
+        $user = $merchant->users()
+                         ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
+                         ->where(Entity::CONTACT_MOBILE, '=', $input[DetailConstants::OLD_CONTACT_NUMBER])
+                         ->first();
+
+        $this->trace->info(TraceCode::MERCHANT_USER_NUMBER_CHANGE, [
+                Entity::MERCHANT_ID                 => $merchant->getMerchantId(),
+                Entity::CONTACT_MOBILE              => mask_phone($input[DetailConstants::NEW_CONTACT_NUMBER]),
+                DetailConstants::OLD_CONTACT_NUMBER => mask_phone($merchant->merchantDetail->getContactMobile()),
+                Constants::MERCHANT_USER            => $user->getId(),
+                Constants::USER_CONTACT_MOBILE      => mask_phone($user->getContactMobile())
+            ]);
+
+        $user->setContactMobile($input[DetailConstants::NEW_CONTACT_NUMBER]);
+
+        $this->repo->saveOrFail($user);
+    }
+
+    /**
+     * update contact mobile of a merchant after workflow approval
+     *
+     * @param array  $input
+     *
+     * @param Entity $user
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function merchantContactUpdatePostWorkflow(Merchant\Entity $merchant, array $input)
+    {
+        $oldMerchantContact = $input[DetailConstants::OLD_CONTACT_NUMBER];
+
+        $newMerchantContact  = $input[DetailConstants::NEW_CONTACT_NUMBER];
+
+        $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $newMerchantContact);
+
+        $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+
+        $args = [
+            Constants::MERCHANT                             => $merchant,
+            DashboardNotificationEvent::EVENT               => DashboardNotificationEvent::UPDATE_MERCHANT_CONTACT_FROM_ADMIN,
+            Constants::PARAMS                               => [
+                DetailConstants::OLD_CONTACT_NUMBER         => $oldMerchantContact,
+                DetailConstants::NEW_CONTACT_NUMBER         => $newMerchantContact,
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    /**
      * This function is used for add/edit merchant website details
      *
      * @param Entity $merchantDetails

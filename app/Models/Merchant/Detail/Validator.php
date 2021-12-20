@@ -259,6 +259,11 @@ class Validator extends Base\Validator
         Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png',
     ];
 
+    protected static $updateContactAndLoginMobileRules = [
+        Constants::OLD_CONTACT_NUMBER                             => 'required|max:15|contact_syntax',
+        Constants::NEW_CONTACT_NUMBER                             => 'required|max:15|contact_syntax',
+    ];
+
     protected static $cinVerificationRules = [
         Constants::COMPANY_CIN => ['required', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})$/'],
     ];
@@ -741,6 +746,38 @@ class Validator extends Base\Validator
         if (IFSC::validate($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function validateMerchantUniqueNumberExcludingCurrentMerchantDetails($merchantId, $newNumber)
+    {
+        $merchantDetail = (new Repository())->findMerchantDetailsWithContactMobile($newNumber);
+
+        if (isset($merchantDetail) === true and $merchantDetail->getId() !== $merchantId)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN);
+        }
+    }
+
+    public function validateUniqueMerchantOwnerUserForMobile(Merchant\Entity $merchant, $old_contact_number)
+    {
+        $merchantCount = $merchant->users()
+                                  ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
+                                  ->where(Entity::CONTACT_MOBILE, '=', $old_contact_number)
+                                  ->count();
+
+        if($merchantCount > 1){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED);
+        }
+
+        if($merchantCount === 0){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED);
         }
     }
 
