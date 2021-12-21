@@ -1,4 +1,5 @@
 import React from 'react';
+import Spinner from 'common/ui/Spinner';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import adminFetch from 'razorx/helpers/admin-fetch';
@@ -10,6 +11,7 @@ export default class SegmentDetails extends React.Component {
   state = {
     data: null,
     isFetchingSegment: true,
+    status: true,
   };
 
   componentDidMount() {
@@ -30,8 +32,10 @@ export default class SegmentDetails extends React.Component {
     this.setState({
       data: null,
       isFetchingSegment: true,
+      status: null,
     });
 
+    // Fetch Segment Properties
     splitzFetch({
       url: 'segment.v1.SegmentAPI/Get',
       data: {
@@ -47,6 +51,24 @@ export default class SegmentDetails extends React.Component {
       .catch(() => {
         this.setState({
           isFetchingSegment: false,
+        });
+      });
+
+    // Get Segment Status
+    splitzFetch({
+      url: 'segment.v1.SegmentAPI/Status',
+      data: {
+        segmentID: segmentId,
+      },
+    })
+      .then((res) => {
+        this.setState({
+          status: res.status,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          status: 'Error occurred while fetching status',
         });
       });
   }
@@ -79,7 +101,7 @@ export default class SegmentDetails extends React.Component {
   // onEdit = () => this.fetch(this.props.segmentId);
 
   render() {
-    const { isFetchingSegment, data } = this.state;
+    const { isFetchingSegment, status, data } = this.state;
     const { segmentId } = this.props;
 
     const isFetching = isFetchingSegment;
@@ -120,6 +142,15 @@ export default class SegmentDetails extends React.Component {
           </div>
           <br />
           <br />
+          <div className="flex-row">
+            <div className="flex-row-item">
+              <div className="label">Status</div>
+            </div>
+          </div>
+          {!status && <Spinner />}
+          {status && <div>{status}</div>}
+          <br />
+          <br />
           <div className="flex-row" style={{ justifyContent: 'space-between' }}>
             <div className="flex-row-item">
               <div className="label">Entries</div>
@@ -128,19 +159,39 @@ export default class SegmentDetails extends React.Component {
           </div>
           <br />
           <br />
-          <div className="flex-row">
-            <div className="flex-row-item">
-              <div className="label">Input File</div>
-              <div className="sub-description column">
-                <div>
-                  <b>ID: </b> {data.inputFileID}
+          {data.source_type !== 'SQL' && (
+            <div className="flex-row">
+              <div className="flex-row-item">
+                <div className="label">Input File</div>
+                <div className="sub-description column">
+                  <div>
+                    <b>ID: </b> {data.inputFileID}
+                  </div>
+                </div>
+                <div className="link" onClick={() => this.viewFile(data.inputFileID)}>
+                  View File
                 </div>
               </div>
-              <div className="link" onClick={() => this.viewFile(data.inputFileID)}>
-                View File
+            </div>
+          )}
+          {data.source_type === 'SQL' && (
+            <div>
+              <div className="flex-row">
+                <div className="flex-row-item">
+                  <div className="label">Cron Expression</div>
+                  <div>{data.cron_expression}</div>
+                </div>
+              </div>
+              <br />
+              <br />
+              <div className="flex-row">
+                <div className="flex-row-item">
+                  <div className="label">SQL Query</div>
+                  <div>{data.sql_query}</div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
           <br />
           <br />
         </div>
