@@ -19,7 +19,7 @@ export default class VirtualAccount extends GenericEntity {
   resourceUrl = 'virtual_accounts';
 
   resourceFields() {
-    let resourceFields = fields.slice();
+    const resourceFields = fields.slice();
     return resourceFields;
   }
 
@@ -53,6 +53,13 @@ export default class VirtualAccount extends GenericEntity {
   updateAccountDetails(id, data) {
     const url = `${this.resourceUrl}/${id}/receivers`;
     return this.makeGenericAjaxCall({ method: 'POST', url, data }).then((response) => {
+      return new VirtualAccount(response.data).deserialize();
+    });
+  }
+
+  updateCloseBy(id, data) {
+    const url = `merchant/${this.resourceUrl}/${id}`;
+    return this.makeGenericAjaxCall({ method: 'patch', url, data }).then((response) => {
       return new VirtualAccount(response.data).deserialize();
     });
   }

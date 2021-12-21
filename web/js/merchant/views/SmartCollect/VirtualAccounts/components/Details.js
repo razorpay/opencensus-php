@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
@@ -21,6 +22,8 @@ import { paymentId, amount } from 'common/ui/item/pair';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
+import { EditExpiry } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
 
 @connect(
   (state) => ({
@@ -32,9 +35,35 @@ import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
     closeModal,
     showNotification,
     updateVirtualAccountDetails,
+    fetchFeatureStatus,
   },
 )
 export default class extends React.Component {
+  state = {
+    isEditSingleVaMid: false,
+  };
+
+  componentWillMount() {
+    // check edit_single_va_expiry MID feature
+    this.props
+      .fetchFeatureStatus(this.props.user.id, 'edit_single_va_expiry')
+      .then((fetchFeatureStatusResp) => {
+        if (fetchFeatureStatusResp.data.status) {
+          this.setState({
+            isEditSingleVaMid: true,
+          });
+        }
+      })
+      .catch((err) => {
+        if (err) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors[0],
+          });
+        }
+      });
+  }
+
   openEnableTransferModeModal = () => {
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
       this.props.virtualaccount,
@@ -61,8 +90,7 @@ export default class extends React.Component {
       .then((data) => {
         this.props.closeModal();
 
-        let accountDetails, modalTitle;
-        let showUPIAddressDetails, showBankAccountDetails;
+        let modalTitle, showUPIAddressDetails, showBankAccountDetails;
 
         if (payload.types && payload.types.indexOf('vpa') > -1) {
           modalTitle = 'UPI Transfer Enabled';
@@ -94,7 +122,7 @@ export default class extends React.Component {
   };
 
   render() {
-    let {
+    const {
       virtualaccount,
       va_payments,
       mode,
@@ -105,8 +133,8 @@ export default class extends React.Component {
       onCopy = () => {},
       user,
       isTestMode,
+      updateCloseByDate,
     } = this.props;
-
     const isClosed = virtualaccount.status === 'closed';
 
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(virtualaccount);
@@ -120,6 +148,26 @@ export default class extends React.Component {
     });
 
     const showTestPaymentBtn = mode === 'test' && virtualaccount.status === 'active';
+    let closeByContent = () => <span>No closing date</span>;
+    if (!isClosed && this.state.isEditSingleVaMid) {
+      closeByContent = () => (
+        <EditExpiry
+          value={virtualaccount.close_by}
+          editFn={updateCloseByDate}
+          entityId={virtualaccount.id}
+          isRoleAllowedEdit={true}
+          isExpireByRequired={!!virtualaccount.close_by}
+          entityName={virtualaccount.entity}
+        />
+      );
+    } else if (virtualaccount.close_by) {
+      closeByContent = () => (
+        <Time
+          value={isClosed ? virtualaccount.closed_at : virtualaccount.close_by}
+          format="DD MMM YYYY, hh:mm a"
+        />
+      );
+    }
 
     return (
       <div class="content-wrapper content-sm txn-details VirtualAccount--Details">
@@ -200,12 +248,10 @@ export default class extends React.Component {
                     <Time value={virtualaccount.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                   </EntityDetailRow>
 
-                  <EntityDetailRow label={isClosed ? 'Closed At' : 'Close By'}>
-                    <Time
-                      value={isClosed ? virtualaccount.closed_at : virtualaccount.close_by}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  </EntityDetailRow>
+                  <EntityDetailRow
+                    label={isClosed ? 'Closed At' : 'Close By'}
+                    value={closeByContent}
+                  />
 
                   {/* Notes */}
                   <EntityDetailRow label="Notes">
@@ -273,8 +319,8 @@ const AllowedPayersList = ({ allowedPayers }) => (
       </tr>
     </thead>
     <tbody>
-      {allowedPayers.map(({ bank_account }) => (
-        <tr>
+      {allowedPayers.map(({ bank_account, idx }) => (
+        <tr key={idx}>
           <td>{bank_account.ifsc}</td>
           <td>{bank_account.account_number}</td>
         </tr>

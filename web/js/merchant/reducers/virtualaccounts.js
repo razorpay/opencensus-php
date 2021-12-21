@@ -6,7 +6,6 @@ import { makeEntityReducer, updateEntity } from 'merchant_common/reducers/entity
 
 const VIRTUAL_ACCOUNT_CREATE = 'VIRTUAL_ACCOUNT_CREATE';
 const VIRTUAL_ACCOUNT_EDIT = 'VIRTUAL_ACCOUNT_EDIT';
-const VIRTUAL_ACCOUNT_DELETE = 'VIRTUAL_ACCOUNT_DELETE';
 const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 const VIRTUAL_ACCOUNT_CONFIG = 'VIRTUAL_ACCOUNT_CONFIG';
@@ -29,7 +28,7 @@ export const fetchVirtualAccounts = (params) => {
 };
 
 export const fetchItem = (id) => {
-  let virtualAccount = new VirtualAccount();
+  const virtualAccount = new VirtualAccount();
   return {
     type: VIRTUAL_ACCOUNT_FETCH,
     payload: virtualAccount.fetch(id),
@@ -37,7 +36,7 @@ export const fetchItem = (id) => {
 };
 
 export const fetchVAPayments = (id) => {
-  let virtualAccount = new VirtualAccount({ id });
+  const virtualAccount = new VirtualAccount({ id });
   return {
     type: VIRTUAL_ACCOUNT_PAYMENTS_FETCH,
     payload: virtualAccount.fetchPayments(),
@@ -58,6 +57,14 @@ export const closeVirtualAccount = (params) => {
   return {
     type: VIRTUAL_ACCOUNT_EDIT,
     payload: virtualAccount.close(),
+  };
+};
+
+export const updateCloseByDate = (id, data) => {
+  const virtualAccount = new VirtualAccount();
+  return {
+    type: VIRTUAL_ACCOUNT_EDIT,
+    payload: virtualAccount.updateCloseBy(id, data),
   };
 };
 
@@ -99,16 +106,6 @@ export const saveVPACustomPrefix = (prefix) => {
   };
 };
 
-// Virtual Accounts Details Reducer
-let listInitialState = {
-  va_config: null, // null => data is loading
-
-  // Below are same as in defaultInitialState of makeActionCollectionReducer
-  loading: true,
-  items: [],
-  error: null,
-};
-
 // List Reducer
 export const virtualAccountsReducer = makeActionCollectionReducer('VIRTUAL_ACCOUNTS', {
   [`${VIRTUAL_ACCOUNT_CONFIG}::SUCCESS`]: (state, action) => {
@@ -123,7 +120,7 @@ export const virtualAccountsReducer = makeActionCollectionReducer('VIRTUAL_ACCOU
 
     return set(state, 'va_config', va_config);
   },
-  [`${VIRTUAL_ACCOUNT_CONFIG}::ERROR`]: (state, action) => {
+  [`${VIRTUAL_ACCOUNT_CONFIG}::ERROR`]: (state) => {
     return set(state, 'va_config', {}); // Set empty config
   },
   [`${VPA_PREFIX}::SUCCESS`]: (state, action) => {
@@ -142,7 +139,7 @@ export const virtualAccountsReducer = makeActionCollectionReducer('VIRTUAL_ACCOU
 });
 
 // Virtual Accounts Details Reducer
-let detailsInitialState = {
+const detailsInitialState = {
   loading: true,
   entity: {},
   error: null,

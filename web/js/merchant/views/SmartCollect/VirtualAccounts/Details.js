@@ -11,6 +11,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 
 import CreateTestPayment from './components/Modals/CreateTestPayment';
 import { getKeysSeparatedByPipe, getEventCategoryFromPath } from 'common/utils/rzp-utils';
+import moment from 'moment';
 
 @withRouter
 @connect(
@@ -33,7 +34,7 @@ export default class VirtualAccountDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    let { id } = this.props;
+    const { id } = this.props;
     this.props.fetchItem(id);
     this.props.fetchVAPayments(id);
   }
@@ -46,11 +47,11 @@ export default class VirtualAccountDetailsContainer extends Component {
   }
 
   componentDidMount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Open Details - Virtual Account',
         eventLabel: `virtual_account_id=${id}`,
       });
@@ -59,11 +60,11 @@ export default class VirtualAccountDetailsContainer extends Component {
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Close Details - Virtual Account',
         eventLabel: `virtual_account_id=${id}`,
       });
@@ -88,7 +89,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       action: () =>
         this.props
           .closeVirtualAccount({ ...virtualaccount, status: 'closed' })
-          .then((response) => {
+          .then(() => {
             window.rzpAnalytics({
               eventCategory: 'Dashboard - Smart Collect',
               eventAction: 'Submit Form - Close Virtual Account',
@@ -134,11 +135,11 @@ export default class VirtualAccountDetailsContainer extends Component {
   };
 
   onCopy = (virtualaccount) => {
-    const { closeUrl } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Copy To Clipboard',
         eventLabel: `virtual_account_id${virtualaccount.id}`,
       });
@@ -147,33 +148,33 @@ export default class VirtualAccountDetailsContainer extends Component {
   };
 
   onTestPaymentModalMount = (id) => {
-    const { closeUrl } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Open Form - Make Test Payment',
         eventLabel: `virtual_account_id=${id}`,
       });
   };
 
   onTestPaymentModalUnmount = (id) => {
-    const { closeUrl } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Close Form - Make Test Payment',
         eventLabel: `virtual_account_id=${id}`,
       });
   };
 
   onTestPayment = (params) => {
-    const { closeUrl } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Submit Form - Make Test Payment',
         eventLabel: getKeysSeparatedByPipe(params),
       });
@@ -193,8 +194,31 @@ export default class VirtualAccountDetailsContainer extends Component {
     });
   };
 
+  updateCloseBy = (data) => {
+    const { id } = this.props;
+    const close_by = moment(data.expire_by).isValid()
+      ? moment(data.expire_by).format('DD-MM-YYYY HH:mm')
+      : null;
+    const payload = { close_by };
+
+    return this.props
+      .updateCloseByDate(id, payload)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Close By updated successfully!',
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   render() {
-    let { loading, error, entity, va_payments, mode } = this.props;
+    const { loading, error, entity, va_payments, mode } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -215,6 +239,7 @@ export default class VirtualAccountDetailsContainer extends Component {
         onMakeTestPaymentClick={this.openTestPaymentModal}
         onCopy={this.onCopy}
         track={this.track}
+        updateCloseByDate={this.updateCloseBy}
       />
     );
   }

@@ -36,13 +36,14 @@ export default class EditExpiry extends React.Component {
   };
 
   render() {
-    const { isRoleAllowedEdit, isExpireByRequired } = this.props;
+    const { isRoleAllowedEdit, isExpireByRequired, entityName } = this.props;
+    const label = entityName === 'virtual_account' ? 'No closing date' : 'No Expiry';
     let content = (
       <React.Fragment>
         {this.props.value ? (
           <Time value={this.props.value} format="DD MMM YYYY, hh:mm a" class="mr-12" />
         ) : (
-          'No Expiry'
+          <span className="close-by-value">{label}</span>
         )}
 
         {isRoleAllowedEdit && (
@@ -57,7 +58,7 @@ export default class EditExpiry extends React.Component {
       content = (
         <React.Fragment>
           <Input.DateTime
-            checkboxFieldLabel="No Expiry"
+            checkboxFieldLabel={label}
             value={this.state.expire_by}
             defaultValue={this.state.expire_by}
             required={isExpireByRequired}
