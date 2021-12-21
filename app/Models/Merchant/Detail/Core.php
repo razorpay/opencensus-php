@@ -222,6 +222,8 @@ class Core extends Base\Core
         $businessDetailsInput = [];
 
         $urlsInput = [BusinessDetailConstants::PLAYSTORE_URL, BusinessDetailConstants::APPSTORE_URL];
+        $paymentsAvenueInput = [BusinessDetailConstants::SOCIAL_MEDIA, BusinessDetailConstants::PHYSICAL_STORE,
+                                BusinessDetailConstants::WEBSITE_OR_APP];
 
         foreach ($urlsInput as $url){
             if(isset($input[$url]) === true)
@@ -231,9 +233,19 @@ class Core extends Base\Core
             }
         }
 
-        if(empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false)
+        foreach ($paymentsAvenueInput as $payInput){
+            if(isset($input[$payInput]) === true)
+            {
+                $businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS][$payInput] = $input[$payInput];
+                unset($input[$payInput]);
+            }
+        }
+
+        if(empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false || empty($businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
         {
-            $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
+            if(array_key_exists(BusinessDetailEntity::APP_URLS,$businessDetailsInput)) {
+                $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
+            }
             //save App Urls Details
             $businessDetailService = new Service();
             $businessDetails = $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $businessDetailsInput);

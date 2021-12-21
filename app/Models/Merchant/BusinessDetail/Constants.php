@@ -16,6 +16,9 @@ class Constants
     const LOGIN           = 'login';
     const CANCELLATION    = 'cancellation';
     const COMMENTS        = 'comments';
+    const PHYSICAL_STORE  = 'physical_store';
+    const SOCIAL_MEDIA    = 'social_media';
+    const WEBSITE_OR_APP  = 'live_website_or_app';
 
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';

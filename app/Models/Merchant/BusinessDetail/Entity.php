@@ -87,14 +87,17 @@ class Entity extends Base\PublicEntity
     public static function getDefaultWebsiteDetails()
     {
         return [
-            BusinessDetailConstant::ABOUT        => null,
-            BusinessDetailConstant::CONTACT      => null,
-            BusinessDetailConstant::CANCELLATION => null,
-            BusinessDetailConstant::PRICING      => null,
-            BusinessDetailConstant::PRIVACY      => null,
-            BusinessDetailConstant::REFUND       => null,
-            BusinessDetailConstant::TERMS        => null,
-            BusinessDetailConstant::LOGIN        => null
+            BusinessDetailConstant::ABOUT          => null,
+            BusinessDetailConstant::CONTACT        => null,
+            BusinessDetailConstant::CANCELLATION   => null,
+            BusinessDetailConstant::PRICING        => null,
+            BusinessDetailConstant::PRIVACY        => null,
+            BusinessDetailConstant::REFUND         => null,
+            BusinessDetailConstant::TERMS          => null,
+            BusinessDetailConstant::LOGIN          => null,
+            BusinessDetailConstant::PHYSICAL_STORE => false,
+            BusinessDetailConstant::SOCIAL_MEDIA   => false,
+            BusinessDetailConstant::WEBSITE_OR_APP => false
         ];
     }
 

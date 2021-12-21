@@ -136,6 +136,9 @@ class Validator extends Base\Validator
         Entity::SHOP_ESTABLISHMENT_NUMBER       => 'sometimes|string|max:100|nullable',
         BusinessDetailConstants::PLAYSTORE_URL  => 'sometimes|active_url|max:255|nullable',
         BusinessDetailConstants::APPSTORE_URL   => 'sometimes|active_url|max:255|nullable',
+        BusinessDetailConstants::PHYSICAL_STORE => 'sometimes|boolean',
+        BusinessDetailConstants::SOCIAL_MEDIA   => 'sometimes|boolean',
+        BusinessDetailConstants::WEBSITE_OR_APP => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -238,6 +241,9 @@ class Validator extends Base\Validator
         Entity::BUSINESS_SUGGESTED_ADDRESS               => 'sometimes|max:255',
         BusinessDetailConstants::PLAYSTORE_URL           => 'sometimes|active_url|max:255|nullable',
         BusinessDetailConstants::APPSTORE_URL            => 'sometimes|active_url|max:255|nullable',
+        BusinessDetailConstants::PHYSICAL_STORE          => 'sometimes|boolean',
+        BusinessDetailConstants::SOCIAL_MEDIA            => 'sometimes|boolean',
+        BusinessDetailConstants::WEBSITE_OR_APP          => 'sometimes|boolean',
     ];
 
     protected static $preSignupRules = [

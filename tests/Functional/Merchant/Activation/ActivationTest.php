@@ -150,6 +150,13 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddPaymentsAvenue()
+    {
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testInstantActivationWithInvalidActivationFormMilestone()
     {
         $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);

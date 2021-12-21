@@ -3711,6 +3711,34 @@ return [
         'status_code' => 200,
     ],
 
+    'testAddPaymentsAvenue' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                "physical_store"=> true,
+                "social_media"  => true,
+                "live_website_or_app" => false
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'merchant_business_detail' => [
+                    "merchant_id"=> "10000000000000",
+                    "website_details" => [
+                        "physical_store"=> "1",
+                        "social_media"  => "1",
+                        "live_website_or_app" => ""
+                    ],
+                ],
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testInstantActivationWithInvalidActivationFormMilestone' => [
         'request'     => [
             'method'  => 'POST',
