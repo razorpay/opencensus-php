@@ -1444,7 +1444,8 @@ export default class User {
   }
 
   get isActivationFormFullView() {
-    if (this.isSourceRX) {
+    // not required for Razorpay X, partner accounts and sub merchants
+    if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {
       return false;
     }
     return this.getExpStatus('show_activation_form_full_view') && !!this.isOrgRZP;

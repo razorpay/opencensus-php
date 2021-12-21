@@ -29,7 +29,19 @@ const RecommendationWidget = ({
   const landingProduct =
     localStorage.getItem('merchant_landing_page') || localStorage.getItem('default_product_page');
 
-  const recommendedProduct = getRecommendedProduct(landingProduct);
+  const { social_media, physical_store } = user.merchant_business_detail?.website_details ?? {};
+  const isActivationFormFullView = user.isActivationFormFullView;
+  const hasWebsiteOrAppUrl = !!user.business_website || !!user.playstore_url;
+  const isL1Submitted = user.activation_form_milestone === 'L1';
+
+  const recommendedProduct = getRecommendedProduct(
+    landingProduct,
+    hasWebsiteOrAppUrl,
+    social_media,
+    physical_store,
+    isL1Submitted,
+    isActivationFormFullView,
+  );
 
   useEffect(() => {
     fetchKeys({ mode: session.mode }, session.user.has_key_access);

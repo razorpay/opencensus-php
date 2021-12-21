@@ -72,9 +72,39 @@ const activeProductIDOrder = {
   subscriptions: ['4', '1', '3'],
 };
 
-export const getRecommendedProduct = (activeProduct) => {
-  const filterProduct = activeProductIDOrder[activeProduct]
-    ? activeProductIDOrder[activeProduct].reduce((acc, curr) => {
+const productIDOrderWithWebsiteInfo = {
+  payment_gateway: ['2', '7', '1'],
+  payment_page: ['7', '2', '3'],
+  payment_link: ['7', '2', '1'],
+  payment_button: ['7', '2', '1'],
+};
+
+const productIDOrderWithStoreOrSocialMedia = {
+  payment_gateway: ['1', '3', '2'],
+  payment_page: ['3', '1', '7'],
+  payment_link: ['1', '3', '7'],
+  payment_button: ['1', '3', '7'],
+};
+
+export const getRecommendedProduct = (
+  activeProduct,
+  hasWebsiteOrAppUrl,
+  socialMedia,
+  physicalStore,
+  isL1Submitted,
+  isActivationFormFullView,
+) => {
+  let productOrder = activeProductIDOrder; // default product order
+
+  if (isActivationFormFullView && isL1Submitted) {
+    if (hasWebsiteOrAppUrl) {
+      productOrder = productIDOrderWithWebsiteInfo;
+    } else if (Number(socialMedia) || Number(physicalStore)) {
+      productOrder = productIDOrderWithStoreOrSocialMedia;
+    }
+  }
+  const filterProduct = productOrder[activeProduct]
+    ? productOrder[activeProduct].reduce((acc, curr) => {
         if (productMap[curr]) {
           acc.push(productMap[curr]);
         }

@@ -96,6 +96,7 @@ import { LOADING, FOOTER_BUTTONS } from './Constants';
 import { TypeAhead } from 'react-power-select';
 import EAadhard from './components/E-Aadhar';
 import CustomEmail from './components/CustomEmail';
+import PaymentChannels from './components/PaymentChannels';
 import SupportButton from 'merchant/components/Home/SupportButton';
 import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
 import { isValidGSTIN } from '../../../common/utils/rzp-utils';
@@ -778,14 +779,32 @@ export default class ActivationWizard extends React.Component {
       return;
     }
 
-    const currentDirty = this.state.dirty;
+    let currentDirty = this.state.dirty;
+
+    const isActivationFormFullView = this.props.user.isActivationFormFullView;
+    const isWebsiteOrAppUrlFilled =
+      this.state.dirty.business_website || this.state.dirty.playstore_url;
+
+    if (!!isWebsiteOrAppUrlFilled && isActivationFormFullView) {
+      currentDirty = { ...currentDirty, live_website_or_app: '1' };
+    }
+
+    if (!!this.state.dirty.business_website && isActivationFormFullView) {
+      // Business website must have http/https prepended
+      currentDirty = {
+        ...currentDirty,
+        business_website: autoPrefixUrls(this.state.dirty.business_website),
+      };
+    }
+
     const reqData = {};
 
     /* Send only those fields which belongs to the TAB being saved */
     Object.keys(currentDirty).forEach((name) => {
       if (
         currentDirty.hasOwnProperty(name) &&
-        FORM_TABS_NAMES[currentActive].indexOf(name) !== -1 &&
+        (FORM_TABS_NAMES[currentActive].indexOf(name) !== -1 ||
+          ['physical_store', 'social_media', 'live_website_or_app'].indexOf(name) !== -1) &&
         currentDirty[name] !== 'fakepath'
       ) {
         // Saving only the fields corresponding to currentActive tab.
@@ -1530,6 +1549,7 @@ export default class ActivationWizard extends React.Component {
       isEmailMandatoryOnL1,
       isEmailNonMandatoryOnL1,
       isEmailNonMandatoryOnL2Form,
+      isActivationFormFullView,
     } = this.props.user;
     const currentBusinessType = dirty.business_type || data.business_type;
     if (this.props.user.isSyncExperimentEnabled) {
@@ -1546,6 +1566,15 @@ export default class ActivationWizard extends React.Component {
       this.setState({ tempContactEmail: fieldValue });
       return;
     }
+    if (
+      isActivationFormFullView &&
+      ['has_url', 'app_website_url', 'business_website', 'app_url', 'playstore_url'].includes(
+        fieldName,
+      )
+    ) {
+      return;
+    }
+
     if (placeholder === 'Enter GSTIN') {
       this.showFullGstinList = false;
       this.setState((prevState) => ({
@@ -1857,6 +1886,43 @@ export default class ActivationWizard extends React.Component {
 
   setEnableAndDisableCheckboxOnL2 = (isEmailOnL2) => {
     this.setState({ isEmailOnL2 });
+  };
+
+  onWebsiteCheckboxChange = ({ target }) => {
+    const name = target.name;
+    const value = target.value;
+
+    let fieldsToUpdate = {};
+
+    if (name === 'has_url' && value === '0') {
+      fieldsToUpdate.business_website = '';
+      fieldsToUpdate.playstore_url = '';
+      fieldsToUpdate.live_website_or_app = value;
+    } else if (name === 'app_website_url' && value === '0') {
+      fieldsToUpdate.business_website = '';
+    } else if (name === 'app_url' && value === '0') {
+      fieldsToUpdate.playstore_url = '';
+    } else if (name === 'physical_store') {
+      fieldsToUpdate.physical_store = value;
+    } else if (name === 'social_media') {
+      fieldsToUpdate.social_media = value;
+    }
+
+    if (name === 'has_url') {
+      this.setState({ has_url: value });
+    } else if (name === 'app_website_url') {
+      this.setState({ app_website_url: value });
+    } else if (name === 'app_url') {
+      this.setState({ app_url: value });
+    }
+
+    this.setState({ dirty: { ...this.state.dirty, ...fieldsToUpdate } });
+  };
+
+  onWebsiteInputChange = ({ target }) => {
+    const name = target.name;
+    const value = target.value;
+    this.setState({ dirty: { ...this.state.dirty, [name]: value } });
   };
 
   /* Find if all tabs are valid */
@@ -2701,6 +2767,26 @@ export function ActivationField(field) {
     rest.activeTab = this.state.activeTab;
   }
 
+  if (field.name === 'payment_channels' && rest.customField) {
+    const { app_url, app_website_url, has_url, dirty } = this.state;
+
+    const merchantBusinessDetail =
+      this.props.data.merchant_business_detail || this.props.user.merchant_business_detail;
+    const { live_website_or_app, social_media, physical_store } =
+      merchantBusinessDetail.website_details ?? {};
+
+    rest.hasWebsiteAppURL = has_url || live_website_or_app;
+    rest.hasWebsiteURL = app_website_url;
+    rest.hasAppURL = app_url;
+    rest.onChange = this.onWebsiteCheckboxChange;
+    rest.onWebsiteInputChange = this.onWebsiteInputChange;
+    rest.businessWebsite = dirty.business_website || this.props.user.business_website;
+    rest.playstoreUrl = dirty.playstore_url || this.props.user.playstore_url;
+    rest.physicalStore = dirty.physical_store || physical_store;
+    rest.socialMedia = dirty.social_media || social_media;
+    rest.sendErrorMessageToSegment = this.sendErrorMessageToSegment;
+  }
+
   if (typeof rest.onBlur === 'function') {
     rest.onBlur = rest.onBlur.bind(this);
   }
@@ -2902,6 +2988,10 @@ function isFieldValid(field, activation) {
     return field.isFieldValid(activation);
   }
 
+  if (name === 'payment_channels') {
+    return field.isFieldValid(activation);
+  }
+
   if (isFieldRequired && !value) {
     field.autoFocus = true; // To autofocus first unfilled required field
 
@@ -3046,6 +3136,17 @@ function CustomField(props) {
       return (
         <div className={classList(disabled && 'Input--disabled')}>
           <CustomEmail {...props} emailVerified={emailVerified} contactEmail={contactEmail} />
+        </div>
+      );
+    case 'payment_channels':
+      return (
+        <div
+          className={classList(
+            'website-payment-channel Input--required',
+            disabled && 'Input--disabled',
+          )}
+        >
+          <PaymentChannels {...props} />
         </div>
       );
     default:

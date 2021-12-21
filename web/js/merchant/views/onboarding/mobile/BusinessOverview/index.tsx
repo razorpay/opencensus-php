@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -31,7 +31,12 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
   const { data, postData } = useActivation();
   const {
     user,
-    experiments: { isEmailNonMandatoryOnL2Form, isLiteOnboarding, canGenerateTnCPage },
+    experiments: {
+      isEmailNonMandatoryOnL2Form,
+      isLiteOnboarding,
+      canGenerateTnCPage,
+      isActivationFormFullView,
+    },
   } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const businessOverview = data.business_overview;
@@ -139,6 +144,15 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
     ) : null;
   };
 
+  const { live_website_or_app, social_media, physical_store } =
+    data?.merchant_business_detail?.website_details ?? {};
+
+  useEffect(() => {
+    if (Number(live_website_or_app) && (!data?.business_website || !data?.playstore_url)) {
+      postData({ live_website_or_app: false });
+    }
+  }, []);
+
   return (
     <Formik
       initialValues={{
@@ -149,6 +163,9 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
         merchant_avg_order_value: businessOverview.merchant_avg_order_value.value,
         business_model: businessOverview.business_model.value,
         contact_name: isEmailNonMandatoryOnL2Form ? businessOverview.contact_name.value : '',
+        physical_store: !!Number(physical_store),
+        social_media: !!Number(social_media),
+        live_website_or_app: !!Number(live_website_or_app),
       }}
       initialErrors={{
         business_type: businessOverview.business_type.error,
@@ -331,7 +348,12 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
               </Field>
             </FormSection>
 
-            <FormSection title="Website Details" last disabled={isFormLocked}>
+            <FormSection
+              title="Website Details"
+              last
+              disabled={isFormLocked}
+              visible={!isActivationFormFullView}
+            >
               <Field last>
                 <Radio
                   defaultValue={hasWebsiteOrApp ? '0' : '1'}
@@ -537,6 +559,195 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                 </Radio>
               </Field>
             </FormSection>
+
+            <FormSection
+              title="Payment Channels"
+              subtitle="This allows us to recommend a suitable product for your business"
+              disabled={isFormLocked}
+              visible={isActivationFormFullView}
+              last
+            >
+              <Field last>
+                <Space margin={[1.5, 0, 0, 0.5]}>
+                  <Container>
+                    <Checkbox
+                      title="Store/ In-person"
+                      size="medium"
+                      name="physical_store"
+                      onChange={(checked) => {
+                        formikProps.setFieldTouched('physical_store');
+                        formikProps.setFieldValue('physical_store', checked);
+                        setIsBlurCalled(true);
+                      }}
+                      defaultChecked={formikProps.values.physical_store}
+                    />
+                  </Container>
+                </Space>
+                <Space margin={[1.5, 0, 0, 0.5]}>
+                  <Container>
+                    <Checkbox
+                      title="Social Media (e.g. WhatsApp)"
+                      size="medium"
+                      name="social_media"
+                      onChange={(checked) => {
+                        formikProps.setFieldTouched('social_media');
+                        formikProps.setFieldValue('social_media', checked);
+                        setIsBlurCalled(true);
+                      }}
+                      defaultChecked={formikProps.values.social_media}
+                    />
+                  </Container>
+                </Space>
+                <Space margin={[1.5, 0, 0, 0.5]}>
+                  <Container>
+                    <Checkbox
+                      title="Live Website/App"
+                      size="medium"
+                      name="live_website_or_app"
+                      onChange={(checked) => {
+                        setHasWebsiteOrApp(checked);
+                        formikProps.setFieldTouched('live_website_or_app');
+                        formikProps.setFieldValue('live_website_or_app', checked);
+                        if (!checked) {
+                          formikProps.setFieldTouched('business_website');
+                          formikProps.setFieldTouched('playstore_url');
+                          formikProps.setFieldValue('business_website', '');
+                          formikProps.setFieldValue('playstore_url', '');
+                          setHasWebsite(false);
+                          setHasApp(false);
+                        }
+                        setIsBlurCalled(true);
+                      }}
+                      defaultChecked={hasWebsiteOrApp}
+                    />
+                  </Container>
+                </Space>
+                {hasWebsiteOrApp && (
+                  <>
+                    <Space margin={[1.5, 0, 0, 3]}>
+                      <Container>
+                        <Checkbox
+                          title="Accept payments on website"
+                          size="medium"
+                          onChange={(checked) => {
+                            setHasWebsite(checked);
+                            if (!checked) {
+                              formikProps.setFieldTouched('business_website');
+                              formikProps.setFieldValue('business_website', '');
+                            }
+                            setIsBlurCalled(true);
+                          }}
+                          defaultChecked={hasWebsite}
+                        />
+                      </Container>
+                    </Space>
+                    {hasWebsite && (
+                      <Space margin={[2.25, 0, 0, 4]}>
+                        <Container>
+                          <TextInput
+                            width="auto"
+                            name="business_website"
+                            label="Website URL"
+                            helpText="Check the pages/section required on the app by clicking on the info icon"
+                            value={formikProps.values.business_website}
+                            errorText={
+                              formikProps.touched.business_website &&
+                              formikProps.errors.business_website
+                            }
+                            disabled={isFormLocked}
+                          />
+                          <IconContainer
+                            onClick={() => {
+                              if (isFormLocked) {
+                                return;
+                              }
+                              analyticsTrack({
+                                objectName: 'SignUp',
+                                actionName: 'faq',
+                                screen: 'home page',
+                                user,
+                                eventAction: 'initiated',
+                                properties: {
+                                  clickSource: 'business website',
+                                },
+                              });
+                              setFAQSection('Q2');
+                              setIsOpen(true);
+                            }}
+                          >
+                            <Icon
+                              name="helpCircle"
+                              size="small"
+                              fill={isFormLocked ? 'shade.930' : 'primary.800'}
+                            />
+                          </IconContainer>
+                        </Container>
+                      </Space>
+                    )}
+                    <Space margin={[1.5, 0, 0, 3]}>
+                      <Container>
+                        <Checkbox
+                          title="Accept payments on app"
+                          size="medium"
+                          onChange={(checked) => {
+                            setHasApp(checked);
+                            if (!checked) {
+                              formikProps.setFieldTouched('playstore_url');
+                              formikProps.setFieldValue('playstore_url', '');
+                            }
+                            setIsBlurCalled(true);
+                          }}
+                          defaultChecked={hasApp}
+                        />
+                      </Container>
+                    </Space>
+                    {hasApp && (
+                      <Space margin={[2, 0, 0, 4]}>
+                        <Container>
+                          <TextInput
+                            width="auto"
+                            name="playstore_url"
+                            label="App URL"
+                            helpText="Check the pages/section required on the app by clicking on the info icon"
+                            value={formikProps.values.playstore_url}
+                            errorText={
+                              formikProps.touched.playstore_url && formikProps.errors.playstore_url
+                            }
+                            disabled={isFormLocked}
+                          />
+                          <IconContainer
+                            onClick={() => {
+                              if (isFormLocked) {
+                                return;
+                              }
+                              analyticsTrack({
+                                objectName: 'SignUp',
+                                actionName: 'faq',
+                                screen: 'home page',
+                                user,
+                                eventAction: 'initiated',
+                                properties: {
+                                  clickSource: 'business app',
+                                },
+                              });
+                              setFAQSection('Q2');
+                              setIsOpen(true);
+                            }}
+                          >
+                            <Icon
+                              name="helpCircle"
+                              size="small"
+                              fill={isFormLocked ? 'shade.930' : 'primary.800'}
+                            />
+                          </IconContainer>
+                        </Container>
+                      </Space>
+                    )}
+                  </>
+                )}
+              </Field>
+            </FormSection>
+
             <GetTouchedFields
               handleSubmit={handleSubmit}
               isBlurCalled={isBlurCalled}

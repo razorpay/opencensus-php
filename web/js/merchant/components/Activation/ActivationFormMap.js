@@ -416,6 +416,15 @@ const businessModel = [
       return !isSourceRX() && !user?.isLiteOnboarding && user?.isBDAndAovEnabled && user?.isOrgRZP;
     },
   },
+  {
+    name: 'payment_channels',
+    customField: (activation) => activation.props.user.isActivationFormFullView,
+    _when: (activation) => activation.props.user.isActivationFormFullView,
+    isFieldValid: () => {
+      // it should be optional and selecting any checkbox user can proceed.
+      return true;
+    },
+  },
   [
     {
       label: 'How do you wish to accept payments',
@@ -454,6 +463,7 @@ const businessModel = [
           'On my website/app',
         ];
       },
+      _when: (activation) => !activation.props.user.isActivationFormFullView,
       // _disabledWhen: (activation) =>
       //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
@@ -463,7 +473,8 @@ const businessModel = [
       _name: 'app_website_url',
       className: 'Input--vTop Input--website',
       value: 1,
-      _when: (activation) => activation.state.has_url === '1',
+      _when: (activation) =>
+        activation.state.has_url === '1' && !activation.props.user.isActivationFormFullView,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
       },
@@ -484,7 +495,9 @@ const businessModel = [
       },
       info: 'Payments will be enabled for the website/App after KYC approval.',
       _when: (activation) =>
-        activation.state.app_website_url === '1' && activation.state.has_url === '1',
+        activation.state.app_website_url === '1' &&
+        activation.state.has_url === '1' &&
+        !activation.props.user.isActivationFormFullView,
       // _disabledWhen: (activation) =>
       //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },
@@ -493,7 +506,8 @@ const businessModel = [
       _cmp: Input.Check,
       _name: 'app_url',
       className: 'Input--vTop Input--app',
-      _when: (activation) => activation.state.has_url === '1',
+      _when: (activation) =>
+        activation.state.has_url === '1' && !activation.props.user.isActivationFormFullView,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
       },
@@ -509,7 +523,10 @@ const businessModel = [
       },
       info:
         'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
-      _when: (activation) => activation.state.app_url === '1' && activation.state.has_url === '1',
+      _when: (activation) =>
+        activation.state.app_url === '1' &&
+        activation.state.has_url === '1' &&
+        !activation.props.user.isActivationFormFullView,
     },
     {
       className: 'only-content',
@@ -551,7 +568,8 @@ const businessModel = [
           </div>
         </React.Fragment>
       ),
-      _when: (activation) => activation.state.has_url === '1',
+      _when: (activation) =>
+        activation.state.has_url === '1' && !activation.props.user.isActivationFormFullView,
       _disabledWhen: (activation) =>
         activation.props.user.isInstantActivationEnabled &&
         isL1Completed(activation) &&

@@ -38,6 +38,7 @@ const customRender = (
       isEmailMandatoryOnL1: true,
       isEmailNonMandatoryOnL1: false,
       isEmailNonMandatoryOnL2Form: false,
+      isActivationFormFullView: true,
     };
     return (
       <Provider store={reduxStore}>

@@ -1037,6 +1037,60 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     font-size: 13px;
     margin: 6px 0;
 
+.website-payment-channel
+  margin-top: 20px;
+  .channel_checkbox
+    width: 500px;
+    @media (max-width: 972px)
+      width: 265px;
+
+    .Input-channels
+      margin: 0 30px 18px 0;
+
+    .contents
+      margin-left: 0px;
+
+    .info-text
+      margin-bottom: 10px;
+
+  .website-app
+    display: flex;
+    margin-left: 210px !important;
+    justify-content: space-between;
+    @media (max-width: 972px)
+      flex-direction: column;
+      margin-left: 20px !important;
+      margin-bottom: 0;
+
+  .channel-inputs
+    display: flex;
+    width: 750px;
+    @media (max-width: 972px)
+      flex-direction: column;
+      width: 265px;
+
+    .website-input
+      margin-top: 0px;
+
+    .app-input
+      margin-left: calc(35px - 35%);
+      @media (max-width: 972px)
+        margin-left: 0;
+
+  .payment-channel-bullet
+    .bullet-list-container
+        display: flex
+        max-width: 280px
+        margin-top: 10px
+
+        .bullet-list
+          padding-left: 15px
+
+        .bullet-list--left
+          width: 40%
+        
+        .bullet-list--right
+          width: 60%
 .full-view-wizard {
   max-width: none;
   height: 100vh;

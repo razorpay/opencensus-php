@@ -44,10 +44,27 @@ test('renders all the input fields of the form correctly', async () => {
   fireEvent.change(AovField, { target: { value: { value: '₹ 1 - ₹ 150' } } });
   fireEvent.blur(AovField);
 
-  expect(screen.getByText('Website Details')).toBeInTheDocument();
-  expect(screen.getByText('I have a live website/app')).toBeInTheDocument();
+  expect(screen.getByText('Payment Channels')).toBeInTheDocument();
+  expect(
+    screen.getByText('This allows us to recommend a suitable product for your business'),
+  ).toBeInTheDocument();
+  expect(screen.getByText('Store/ In-person')).toBeInTheDocument();
+  expect(screen.getByText('Social Media (e.g. WhatsApp)')).toBeInTheDocument();
+  expect(screen.getByText('Live Website/App')).toBeInTheDocument();
 
-  fireEvent.click(screen.getByText('I have a live website/app'));
+  const liveWebsiteOrAppCheckbox = screen.getByText('Live Website/App');
+  fireEvent.click(liveWebsiteOrAppCheckbox);
+
   expect(screen.getByText('Accept payments on website')).toBeInTheDocument();
+  const websiteCheckbox = screen.getByText('Accept payments on website');
+  fireEvent.click(websiteCheckbox);
+  expect(screen.getByText('Website URL')).toBeInTheDocument();
+  expect(
+    screen.getByText('Check the pages/section required on the app by clicking on the info icon'),
+  ).toBeInTheDocument();
+
   expect(screen.getByText('Accept payments on app')).toBeInTheDocument();
+  const appCheckbox = screen.getByText('Accept payments on app');
+  fireEvent.click(appCheckbox);
+  expect(screen.getByText('App URL')).toBeInTheDocument();
 });

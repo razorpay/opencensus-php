@@ -197,6 +197,8 @@ export default class ActivationContainer extends React.Component {
       bank_account_name,
       bank_account_number,
       contact_name,
+      playstore_url,
+      merchant_business_detail,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -225,6 +227,8 @@ export default class ActivationContainer extends React.Component {
       bank_account_name,
       bank_account_number,
       contact_name,
+      playstore_url,
+      merchant_business_detail,
     });
 
     this.props.updateSession({

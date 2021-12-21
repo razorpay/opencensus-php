@@ -21,6 +21,7 @@ const mockRazorXExp = {
   isEmailMandatoryOnL1: true,
   isEmailNonMandatoryOnL1: false,
   isEmailNonMandatoryOnL2Form: false,
+  isActivationFormFullView: true,
 };
 
 addParameters({
