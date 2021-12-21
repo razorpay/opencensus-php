@@ -2855,7 +2855,10 @@ class Core extends Base\Core
                     function() use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas) {
                         $reversal = (new Reversal\Core)->reverseForPayout($payout);
 
-                        $payout->setFailureReason($reverseReason);
+                        if ($reverseReason !== null)
+                        {
+                            $payout->setFailureReason($reverseReason);
+                        }
 
                         $payout->setStatusCode($ftaBankStatusCode);
 

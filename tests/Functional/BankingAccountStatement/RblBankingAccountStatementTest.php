@@ -9842,6 +9842,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(Payout\Status::FAILED, $payout['status']);
         $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
 
+        $payoutFailureReason = $payout->getFailureReason();
+
         $this->setMozartMockResponse($mockedResponse);
 
         $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
@@ -9879,6 +9881,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
 
         $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals($payoutFailureReason, $payout->getFailureReason());
 
         $this->assertNotNull($payout['transaction_id']);
 
