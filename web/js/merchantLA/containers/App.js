@@ -21,8 +21,9 @@ import rolesList from 'merchantLA/helpers/permissions/roles-list';
 import LogoutDialog from '../../merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { initSentry } from 'common/utils/observability';
+import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 
-initSentry("MerchantLA");
+initSentry('MerchantLA');
 
 @withRouter
 @connect(
@@ -112,6 +113,14 @@ export default class App extends Component {
         this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
 
+        if (user?.user) {
+          // Initialize segment
+          initSegment('MerchantLA', user);
+
+          // Initialize refiner
+          initRefiner(user);
+        }
+
         return data;
       }),
       this.fetchOrg().then(({ data }) => {
@@ -134,6 +143,9 @@ export default class App extends Component {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
+
+    // Init lumberjack
+    initLumberjack();
   }
 
   componentWillReceiveProps({ user, history }) {

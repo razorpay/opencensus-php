@@ -2,12 +2,12 @@ import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
-import analyticsService from '@razorpay/commander-services/analytics';
 import { createSidetab, createPopup } from '@typeform/embed';
 import Loader from 'common/ui/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
 import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
+import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { initSentry } from 'common/utils/observability';
 import Notifications from 'common/ui/Notifications';
@@ -131,56 +131,8 @@ class App extends Component {
   componentWillMount() {
     const user = window.rzp_user;
 
-    analyticsService.init({
-      lumberjackAppName: 'pg-dashboard',
-      lumberjackApiKey: window.LUMBERJACK_API_KEY,
-      lumberjackApiUrl: window.LUMBERJACK_API_URL,
-    });
-
-    initAnalytics().then(() => {
-      window.segment_loaded = true;
-      if (user && window.analytics) {
-        const mode = localStorage.getItem(`rzp_mode--${user.id}`);
-        const kycStatus = user.activated ? 'activated' : 'not activated';
-        const activatedAt = user.activated_at;
-
-        const segmentIdentiyCall = (props) =>
-          analytics.identify(user.user.id, {
-            id: user.user.id,
-            userId: user.user.id,
-            emailId: user.email,
-            activatedAt: moment.unix(activatedAt),
-            mode,
-            userRole: user.role,
-            kycStatus,
-            merchantId: user.current,
-            businessCategory: user.businessCategory,
-            phone: '+91' + user.contact_mobile,
-            ...props,
-          });
-
-        let dataFromAPI = {};
-        return merchantFetch('merchant/data_for_segment')
-          .then((res) => {
-            if (res.data) {
-              dataFromAPI = res.data;
-              this.props.updateUserSegmentData(res.data);
-            }
-            segmentIdentiyCall(dataFromAPI);
-          })
-          .catch(() => segmentIdentiyCall(dataFromAPI));
-      }
-    });
-
-    // Initialize refiner
-    if (window.REFINER_PROJECT_ID && user && user.user) {
-      _refiner('setProject', window.REFINER_PROJECT_ID);
-      _refiner('identifyUser', {
-        id: user.user?.id,
-        merchant_id: user.current,
-        created_at: user.user?.created_at,
-      });
-    }
+    // Init lumberjack
+    initLumberjack();
 
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
@@ -263,6 +215,14 @@ class App extends Component {
           setTimeout(() => {
             initChat(user);
           });
+        }
+
+        if (user?.user) {
+          // Initialize segment
+          initSegment('Merchant', user, this.props.updateUserSegmentData);
+
+          // Initialize refiner
+          initRefiner(user);
         }
 
         return data;

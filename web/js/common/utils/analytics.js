@@ -156,6 +156,7 @@ export const analyticsTrack = ({
         // TODO: Deprecated, remove once all iterations are migrated
         device_type: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
         source: window.innerWidth <= 1020 ? 'Mobile Dashboard' : 'Dashboard',
+        userId: properties.userId || 'UNKNWON_USER',
       },
       {
         integrations: {
