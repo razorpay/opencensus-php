@@ -2,6 +2,7 @@
 
 namespace RZP\Services\PayoutService;
 
+use App;
 use Requests_Response;
 use Requests_Exception;
 use Razorpay\Trace\Logger;
@@ -35,8 +36,13 @@ class Base
 
     const X_REQUEST_ID  = 'X-Request-ID';
 
-    public function __construct($app)
+    public function __construct($app = null)
     {
+        if (empty($app) === true)
+        {
+            $app = App::getFacadeRoot();
+        }
+
         $this->app = $app;
 
         $this->trace = $app['trace'];

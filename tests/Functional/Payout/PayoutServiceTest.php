@@ -22,6 +22,7 @@ use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
+use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 
 class PayoutServiceTest extends TestCase
 {
@@ -178,7 +179,6 @@ class PayoutServiceTest extends TestCase
         $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
     }
 
-
     public function mockPayoutServiceQueuedInitiate($fail = false, $request = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request content that
@@ -191,39 +191,61 @@ class PayoutServiceTest extends TestCase
         $request = array_merge($defaultRequest, $request);
 
         $payoutServiceQueuedInitiateMock->shouldReceive('sendRequest')
-                                ->withArgs(
-                                    function($arg) use ($request) {
-                                        try
-                                        {
-                                            // json decoding the content so that we can assert the keys of content.
-                                            $arg['content'] = json_decode($arg['content'], true);
+                                        ->withArgs(
+                                            function($arg) use ($request) {
+                                                try
+                                                {
+                                                    // json decoding the content so that we can assert the keys of content.
+                                                    $arg['content'] = json_decode($arg['content'], true);
 
-                                            // Using this method only here as we want to check if the keys in the
-                                            // request are coming properly or not.
-                                            $this->assertArrayKeySelectiveEquals($request, $arg);
+                                                    // Using this method only here as we want to check if the keys in the
+                                                    // request are coming properly or not.
+                                                    $this->assertArrayKeySelectiveEquals($request, $arg);
 
-                                            if (empty($request['content']['balance_ids']) === false)
-                                            {
-                                                return ($request['content']['balance_ids'] ===
-                                                        $arg['content']['balance_ids']);
+                                                    if (empty($request['content']['balance_ids']) === false)
+                                                    {
+                                                        return ($request['content']['balance_ids'] ===
+                                                                $arg['content']['balance_ids']);
+                                                    }
+
+                                                    return true;
+                                                }
+                                                catch (\Throwable $e)
+                                                {
+                                                    return false;
+                                                }
                                             }
+                                        )
+                                        ->andReturn(
+                                        // We are returning this response only as we don't have a use case of supporting
+                                        // response based on $request, if needed, that can also be added here using
+                                        // andReturnUsing method instead of andReturn
+                                            $this->createResponseForPayoutServiceMock($fail)
+                                        );
 
-                                            return true;
-                                        }
-                                        catch (\Throwable $e)
-                                        {
-                                            return false;
-                                        }
-                                    }
-                                )
-                                ->andReturn(
-                                // We are returning this response only as we don't have a use case of supporting
-                                // response based on $request, if needed, that can also be added here using
-                                // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail)
-                                );
+        $this->app->instance(PayoutServiceQueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE,
+                             $payoutServiceQueuedInitiateMock);
+    }
 
-        $this->app->instance('payout_service_queued_initiate', $payoutServiceQueuedInitiateMock);
+    public function mockPayoutServiceAdminFetch($request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceAdminFetchMock = Mockery::mock('overload:RZP\Services\PayoutService\AdminFetch')->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceAdminFetchMock->shouldReceive('fetch')
+                                    ->withAnyArgs()
+                                    ->andReturnUsing(
+                                        function($entity, $id, $input) {
+                                            return $this->adminGetResponseForService($entity, $id);
+                                        }
+                                    );
+
+        //$this->app->instance(PayoutServiceAdminFetch::PAYOUT_SERVICE_ADMIN_FETCH, $payoutServiceAdminFetchMock);
     }
 
     public function mockPayoutServiceStatus($status, $fail = false)
@@ -1617,6 +1639,71 @@ class PayoutServiceTest extends TestCase
             $response->status_code = 200;
             $response->success = true;
         }
+
+        return $response;
+    }
+
+    public function testAdminFetchPayoutsViaService()
+    {
+        $this->mockPayoutServiceAdminFetch();
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+
+        $this->assertEquals('pout_Gg7sgBZgvYjlSB', $response['id']);
+    }
+
+    public function adminGetResponseForService($entity, $id)
+    {
+        if (empty($entity) === true)
+        {
+            return [];
+        }
+
+        $function = 'getAdminFetchFor' . ucfirst($entity) . 'ViaService';
+
+        return $this->$function($id);
+    }
+
+    protected function getAdminFetchForPayoutsViaService($id)
+    {
+        if (empty($id) === false)
+        {
+            return $this->getAdminFetchForPayoutsByIdViaService();
+        }
+
+        return [];
+    }
+
+    protected function getAdminFetchForPayoutsByIdViaService($status = 'created')
+    {
+        $response =
+            [
+                "id"                =>   "pout_Gg7sgBZgvYjlSB",
+                "entity"            =>   "payout",
+                "fund_account_id"   =>   "fa_100000000000fa",
+                "amount"            =>   100,
+                "currency"          =>   "INR",
+                "merchant_id"       =>   "10000000000000",
+                "notes"             =>   "",
+                "fees"              =>   0,
+                "tax"               =>   0,
+                "status"            =>   $status,
+                "purpose"           =>   "refund",
+                "utr"               =>   "",
+                "reference_id"      =>   null,
+                "narration"         =>   "test Merchant Fund Transfer",
+                "batch_id"          =>   "",
+                "initiated_at"      =>   1614325830,
+                "failure_reason"    =>   null,
+                "created_at"        =>   1614325826,
+                "fee_type"          =>   null
+            ];
 
         return $response;
     }

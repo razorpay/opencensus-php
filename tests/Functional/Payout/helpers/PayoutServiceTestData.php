@@ -334,7 +334,6 @@ return [
                 'status'              => 'PROCESSED',
                 'utr'                 => 928337183,
             ],
-
         ],
         'response' => [
             'content' => [
@@ -755,4 +754,17 @@ return [
                 ],
             ],
         ],
+
+    'testAdminFetchPayoutsViaService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/payouts.payouts/Gg7sgBZgvYjlSB',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

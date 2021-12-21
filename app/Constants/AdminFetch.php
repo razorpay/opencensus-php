@@ -1485,6 +1485,8 @@ class AdminFetch
                     Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::PAYOUTS_PAYOUTS => [
+            ],
         ];
     }
 

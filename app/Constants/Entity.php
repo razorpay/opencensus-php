@@ -486,6 +486,9 @@ class Entity
     const CAPITAL_LOS_SIGN_INVITEES                               = 'loan_origination_system.sign_invitees';
     const CAPITAL_LOS_VENDORS                                     = 'loan_origination_system.vendors';
 
+    // Payout service
+    const PAYOUTS_PAYOUTS = 'payouts.payouts';
+
     // care service
     const CARE_CALLBACK                 = 'care.callback';
     const CARE_CALLBACK_OPERATOR        = 'care.callback_operator';
@@ -1287,6 +1290,8 @@ class Entity
         self::CAPITAL_LOS_PRODUCT_LENDERS                           => \RZP\Services\ExternalServiceClient::class,
         self::CAPITAL_LOS_SIGN_INVITEES                             => \RZP\Services\ExternalServiceClient::class,
         self::CAPITAL_LOS_VENDORS                                   => \RZP\Services\ExternalServiceClient::class,
+
+        self::PAYOUTS_PAYOUTS => \RZP\Services\PayoutService\AdminFetch::class,
     ];
 
     protected static $syncedInLiveAndTest = [
