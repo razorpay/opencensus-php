@@ -1239,4 +1239,103 @@ return [
             ]
         ]
     ],
+
+    'testRequirements' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'requirements' => [
+                    [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ],
+                'activation_status' => 'instantly_activated'
+            ]
+        ]
+    ],
+    'testRequirementsRegistered' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'requirements' => [
+                    [
+                        'field_reference' => 'accepted',
+                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ]
+            ]
+        ]
+    ],
+
 ];

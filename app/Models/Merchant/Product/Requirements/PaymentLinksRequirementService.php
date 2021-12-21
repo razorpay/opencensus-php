@@ -9,6 +9,7 @@ class PaymentLinksRequirementService extends PaymentProductsBaseService
         parent::__construct();
     }
 
-    //Override requirements if any
-
+    public function isNonTerminalStatusApplicable() {
+        return true;
+    }
 }

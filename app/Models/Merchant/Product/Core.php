@@ -14,6 +14,7 @@ use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
 
 class Core extends Base\Core
@@ -47,8 +48,17 @@ class Core extends Base\Core
         {
             case Name::PAYMENT_GATEWAY :
             case Name::PAYMENT_LINKS:
+            {
+                $merchantDetailsCore = new Detail\Core;
+
+                $MerchantDetails = $merchantDetailsCore->getMerchantDetails($merchant);
+
                 $response = $this->createPaymentGatewayConfig($merchant, $merchantProduct, $input);
+
+                AutoUpdateMerchantProducts::dispatch(Status::ACCOUNT_SOURCE, $merchant, $MerchantDetails);
+
                 break;
+            }
         }
 
         return $response;
@@ -281,6 +291,11 @@ class Core extends Base\Core
                     $function = 'update' . studly_case($productName) . 'ProductIfApplicable';
 
                     $this->$function($subMerchant, $merchantDetails, $merchantProduct);
+                }
+
+                if ($requirementService->isNonTerminalStatusApplicable() === true)
+                {
+                    $requirementService->autoUpdateNonTerminalStatus($subMerchant, $merchantDetails);
                 }
             }
         }
