@@ -1102,6 +1102,7 @@ return [
             'content' => [
                 'status'                    => 'lost',
                 'recovery_method'           => 'refund',
+                'internal_status'           => 'lost_merchant_debited',
             ],
         ],
         'response' => [
@@ -1884,6 +1885,7 @@ return [
                 'status'             => 'lost',
                 'skip_deduction'     => false,
                 'recovery_method'    => 'adjustment',
+                'internal_status'    => 'lost_merchant_debited',
             ],
         ],
         'response' => [
@@ -1904,6 +1906,7 @@ return [
                 'status'             => 'lost',
                 'skip_deduction'     => false,
                 'recovery_method'    => 'refund',
+                'internal_status'    => 'lost_merchant_debited',
             ],
         ],
         'response' => [
@@ -1968,6 +1971,28 @@ return [
     ],
 
     'testBulkDisputeEdit' => [
+        'request' => [
+            'url' => '/disputes/bulk-edit',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testBulkLostDisputeEdit' => [
+        'request' => [
+            'url' => '/disputes/bulk-edit',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testBulkDisputeEditValidationFailure' => [
         'request' => [
             'url' => '/disputes/bulk-edit',
             'method' => 'post',

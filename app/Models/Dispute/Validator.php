@@ -80,6 +80,7 @@ class Validator extends Base\Validator
         'internal_status_transition',
         'deduction_source_type_and_id',
         'deduction_reversal_at',
+        'recovery_method',
     ];
 
     protected static $merchantEditRules = [
@@ -434,6 +435,49 @@ class Validator extends Base\Validator
     protected function validateInternalStatus($attribute, $value)
     {
         InternalStatus::validate($value);
+    }
+
+    protected function validateRecoveryMethod($input)
+    {
+        if ($this->entity->getDeductAtOnset() === true)
+        {
+            if ((isset($input[Entity::RECOVERY_METHOD]) === false))
+            {
+                return;
+            }
+            throw new BadRequestValidationFailureException('Recovery Method is not supported when Deduct at Onset');
+        }
+
+        if ((isset($input[Entity::INTERNAL_STATUS]) === true) and
+            ($input[Entity::INTERNAL_STATUS] === InternalStatus::LOST_MERCHANT_DEBITED))
+        {
+            $currentInternalStatus = $this->entity->getInternalStatus();
+
+            //if internal_status is lost_merchant_debited than recovery_method has to be set, except when current status is lost_merchant_not_debited and skip_deduction is true)
+            if (($currentInternalStatus === InternalStatus::LOST_MERCHANT_NOT_DEBITED) and
+                isset($input[Entity::SKIP_DEDUCTION]) and (boolval($input[Entity::SKIP_DEDUCTION]) === true))
+            {
+                if (isset($input[Entity::RECOVERY_METHOD]) === true)
+                {
+                    throw new BadRequestValidationFailureException('Recovery Method is not supported with Skip Deduction');
+                }
+
+                return;
+            }
+
+            //if recovery_method is present than internal_status has to be lost_merchant_debited
+            if (isset($input[Entity::RECOVERY_METHOD]) === false)
+            {
+                throw new BadRequestValidationFailureException('Recovery Method is required for given Internal Status');
+            }
+
+            return;
+        }
+
+        if (isset($input[Entity::RECOVERY_METHOD]) === true)
+        {
+            throw new BadRequestValidationFailureException('Recovery Method not supported for given Internal Status');
+        }
     }
 
     protected function validateDeductionReversalAt($input)

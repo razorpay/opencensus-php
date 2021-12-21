@@ -77,6 +77,7 @@ class Service extends Base\Service
         Entity::COMMENTS,
         Entity::INTERNAL_STATUS,
         Entity::DEDUCTION_REVERSAL_DELAY_IN_DAYS,
+        Entity::RECOVERY_METHOD,
     ];
 
     // The 3 bulk dispute column name constants defined below BULK_CREATE_DISPUTES_COLUMNS_SILENT,
@@ -125,6 +126,7 @@ class Service extends Base\Service
         Entity::BACKFILL,
         Entity::INTERNAL_STATUS,
         Entity::DEDUCTION_REVERSAL_DELAY_IN_DAYS,
+        Entity::RECOVERY_METHOD,
     ];
 
     // mapping of bulk action to file header values
@@ -260,6 +262,8 @@ class Service extends Base\Service
                 }
 
                 $editInput = $this->prepareInputForEdit($input);
+
+                $this->app['basicauth']->setMerchant($dispute->merchant);
 
                 $this->core()->update($dispute, $editInput);
 

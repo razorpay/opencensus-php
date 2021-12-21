@@ -1316,7 +1316,7 @@ class DisputeTest extends TestCase
      */
     public function testDisputeEditDeductionSourceTypeAndIdValidationFailures($disputeAttributes, $editInput, $expectedError, $expectedException = [])
     {
-        $this->updateEditTestData();
+        $this->updateEditTestData($disputeAttributes);
 
         $this->startTest([
             'request'       => ['content' => $editInput,],
@@ -1367,7 +1367,6 @@ class DisputeTest extends TestCase
                     'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
                 ],
             ],
-
             'skip deduction evaluates to false' => [
                 'dispute_attributes' => [],
                 'edit_input'         => [
@@ -1380,7 +1379,50 @@ class DisputeTest extends TestCase
         and deduction_source_type',
                 ],
             ],
-
+            'invalid internal status for recovery method' => [
+                'dispute_attributes' => [],
+                'edit_input'         => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'open',
+                    'recovery_method' => 'refund',
+                ],
+                'error'              => [
+                    'description' => 'Recovery Method not supported for given Internal Status',
+                ],
+            ],
+            'no recovery method for internal status' => [
+                'dispute_attributes' => [],
+                'edit_input'         => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost_merchant_debited',
+                ],
+                'error'              => [
+                    'description' => 'Recovery Method is required for given Internal Status',
+                ],
+            ],
+            'recovery method for skip deduction' => [
+                'dispute_attributes' => ['status' => 'lost', 'internal_status' => 'lost_merchant_not_debited'],
+                'edit_input'         => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost_merchant_debited',
+                    'skip_deduction' => '1',
+                    'recovery_method' => 'adjustment'
+                ],
+                'error'              => [
+                    'description' => 'Recovery Method is not supported with Skip Deduction',
+                ],
+            ],
+            'recovery method for Deduct At Onset' => [
+                'dispute_attributes' => ['status' => 'open', 'deduct_at_onset' => true],
+                'edit_input'         => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost_merchant_debited',
+                    'recovery_method' => "refund",
+                ],
+                'error'              => [
+                    'description' => 'Recovery Method is not supported when Deduct at Onset',
+                ],
+            ],
         ];
     }
 
@@ -1402,7 +1444,19 @@ class DisputeTest extends TestCase
 
             $this->testData[__FUNCTION__]['response']['content'] = $testcase['response'];
 
+            if (isset($testcase['exception']) === true)
+            {
+                $this->testData[__FUNCTION__]['response']['status_code'] = 400;
+                $this->testData[__FUNCTION__]['exception'] = $testcase['exception'];
+            }
+
             $this->startTest();
+
+            if (isset($testcase['exception']) === true)
+            {
+                $this->testData[__FUNCTION__]['response']['status_code'] = 200;
+                $this->testData[__FUNCTION__]['exception'] = null;
+            }
         }
     }
 
@@ -1754,21 +1808,106 @@ class DisputeTest extends TestCase
 
     public function testBulkDisputeEdit()
     {
-        $dispute = $this->fixtures->create('dispute', [
+        $disputeForRefund = $this->fixtures->create('dispute', [
             'status'              => 'open',
             'internal_status'     => 'open',
             'deduct_at_onset'     => true,
         ]);
 
+        $disputeForAdjustment = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => true,
+        ]);
+
+
+        $fileData = [
+            [
+                'id'                                 => $disputeForRefund->getId(),
+                'gateway_dispute_status'             => 'open',
+                'skip_deduction'                     => 'Y',
+                'comments'                           => 'test comment',
+                'status'                             => 'under_review',
+                'internal_status'                    => 'represented',
+                'deduction_reversal_delay_in_days'   => 50,
+                'recovery_method'                    => null,
+            ],
+
+            [
+                'id'                                 => $disputeForAdjustment->getId(),
+                'gateway_dispute_status'             => 'open',
+                'skip_deduction'                     => 'Y',
+                'comments'                           => 'test comment',
+                'status'                             => 'under_review',
+                'internal_status'                    => 'represented',
+                'deduction_reversal_delay_in_days'   => 50,
+                'recovery_method'                    => null,
+            ],
+        ];
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $this->startTest($testData);
+
+        $disputeArrayForRefund     = $this->getEntityById('dispute', $disputeForRefund->getId(), true);
+        $disputeArrayForAdjustment = $this->getEntityById('dispute', $disputeForAdjustment->getId(), true);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'represented',
+            'status'          => 'under_review',
+            ], $disputeArrayForRefund);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'represented',
+            'status'          => 'under_review',
+            ], $disputeArrayForAdjustment);
+
+        $this->assertNotNull($disputeArrayForRefund['deduction_reversal_at']);
+        $this->assertNotNull($disputeArrayForAdjustment['deduction_reversal_at']);
+
+        $this->assertNotEquals(1300000000, $disputeArrayForRefund['internal_respond_by']);
+        $this->assertNotEquals(1300000000, $disputeArrayForAdjustment['internal_respond_by']);
+    }
+
+    public function testBulkLostDisputeEdit()
+    {
+        $disputeForRefund = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => false,
+        ]);
+
+        $disputeForAdjustment = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => false,
+        ]);
+
         $fileData = [
               [
-                   'id'                                 => $dispute->getId(),
-                   'gateway_dispute_status'             => 'open',
-                   'skip_deduction'                     => 'Y',
-                   'comments'                           => 'test comment',
-                   'status'                             => 'under_review',
-                   'internal_status'                    => 'represented',
-                   'deduction_reversal_delay_in_days'   => 50,
+                  'id'                               => $disputeForRefund->getId(),
+                  'gateway_dispute_status'           => 'open',
+                  'skip_deduction'                   => 'N',
+                  'comments'                         => 'test comment',
+                  'status'                           => 'lost',
+                  'internal_status'                  => 'lost_merchant_debited',
+                  'deduction_reversal_delay_in_days' => null,
+                  'recovery_method'                  => 'refund',
+              ],
+
+              [
+                  'id'                               => $disputeForAdjustment->getId(),
+                  'gateway_dispute_status'           => 'open',
+                  'skip_deduction'                   => 'N',
+                  'comments'                         => 'test comment',
+                  'status'                           => 'lost',
+                  'internal_status'                  => 'lost_merchant_debited',
+                  'deduction_reversal_delay_in_days' => null,
+                  'recovery_method'                  => 'adjustment',
               ],
         ];
 
@@ -1780,16 +1919,114 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
 
-        $disputeArray = $this->getEntityById('dispute', $dispute->getId(), true);
+        $disputeArrayForRefund     = $this->getEntityById('dispute', $disputeForRefund->getId(), true);
+        $disputeArrayForAdjustment = $this->getEntityById('dispute', $disputeForAdjustment->getId(), true);
 
         $this->assertArraySelectiveEquals([
-            'internal_status' => 'represented',
-            'status'          => 'under_review',
-        ], $disputeArray);
+            'internal_status'       => 'lost_merchant_debited',
+            'status'                => 'lost',
+            'deduction_source_type' => 'refund',
+        ], $disputeArrayForRefund);
 
-        $this->assertNotNull($disputeArray['deduction_reversal_at']);
+        $this->assertArraySelectiveEquals([
+            'internal_status'       => 'lost_merchant_debited',
+            'status'                => 'lost',
+            'deduction_source_type' => 'adjustment',
+        ], $disputeArrayForAdjustment);
 
-        $this->assertNotEquals(1300000000, $disputeArray['internal_respond_by']);
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($disputeArrayForRefund['payment_id'], $refund['payment_id']);
+        $this->assertEquals($disputeArrayForRefund['amount'], $refund['amount']);
+
+        $adjustment = $this->getLastEntity('adjustment', true);
+
+        $this->assertEquals($disputeForAdjustment->getId(), $adjustment['entity_id']);
+    }
+
+    public function testBulkDisputeEditValidationFailure()
+    {
+        $id1 = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => true,
+        ])->getId();
+
+        $id2 = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => false,
+        ])->getId();
+
+        $id3 = $this->fixtures->create('dispute', [
+            'status'              => 'open',
+            'internal_status'     => 'open',
+            'deduct_at_onset'     => false,
+        ])->getId();
+
+        $fileData = [
+            [
+                'id'                               => $id1,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'open',
+                'deduction_reversal_delay_in_days' => 50,
+                'recovery_method'                  => 'refund',
+            ],
+
+            [
+                'id'                               => $id2,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'lost_merchant_debited',
+                'deduction_reversal_delay_in_days' => null,
+                'recovery_method'                  => null,
+            ],
+
+            [
+                'id'                               => $id3,
+                'gateway_dispute_status'           => 'open',
+                'skip_deduction'                   => 'N',
+                'comments'                         => 'test comment',
+                'status'                           => 'lost',
+                'internal_status'                  => 'lost_merchant_debited',
+                'deduction_reversal_delay_in_days' => null,
+                'recovery_method'                  => 'refund',
+            ],
+        ];
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $disputeArray1Before = $this->getEntityById('dispute', $id1, true);
+        $disputeArray2Before = $this->getEntityById('dispute', $id2, true);
+
+        $this->startTest($testData);
+
+        $disputeArray1After = $this->getEntityById('dispute', $id1, true);
+        $disputeArray2After = $this->getEntityById('dispute', $id2, true);
+
+        $this->assertEquals($disputeArray1Before, $disputeArray1After);
+        $this->assertEquals($disputeArray2Before, $disputeArray2After);
+
+        $disputeArray3 = $this->getEntityById('dispute', $id3, true);
+
+        $this->assertArraySelectiveEquals([
+            'internal_status'       => 'lost_merchant_debited',
+            'status'                => 'lost',
+            'deduction_source_type' => 'refund',
+            ], $disputeArray3);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($disputeArray3['payment_id'], $refund['payment_id']);
+        $this->assertEquals($disputeArray3['amount'], $refund['amount']);
     }
 
     public function testDisputeReasonFetch()
@@ -2933,10 +3170,56 @@ class DisputeTest extends TestCase
                 'request'  => [
                     'status'          => 'lost',
                     'internal_status' => 'lost_merchant_debited',
+                    'recovery_method' => 'refund',
                 ],
                 'response' => [
                     'status'          => 'lost',
                     'internal_status' => 'lost_merchant_debited',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'lost',
+                    'internal_status' => 'lost_merchant_debited',
+                ],
+                'response' => [
+                    'error' => [
+                        'code'        => "BAD_REQUEST_ERROR",
+                        'description' => "Recovery Method is required for given Internal Status",
+                        'reason'      => "input_validation_failed",
+                    ],
+                ],
+                'exception' => [
+                    'class'               => BadRequestValidationFailureException::class,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    'message'             => 'Recovery Method is required for given Internal Status',
+                ],
+            ],
+            [
+                'seed'     => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'contested',
+                ],
+                'request'  => [
+                    'status'          => 'under_review',
+                    'internal_status' => 'open',
+                    'recovery_method' => 'adjustment',
+                ],
+                'response' => [
+                    'error' => [
+                        'code'        => "BAD_REQUEST_ERROR",
+                        'description' => "Recovery Method not supported for given Internal Status",
+                        'reason'      => "input_validation_failed",
+                    ],
+                ],
+                'exception' => [
+                    'class'               => BadRequestValidationFailureException::class,
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    'message'             => 'Recovery Method not supported for given Internal Status',
                 ],
             ],
             [
