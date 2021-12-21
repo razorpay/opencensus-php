@@ -7319,7 +7319,8 @@ return [
                     'trigger_communication' => '1',
                     'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/risk-actions/create',
@@ -7372,7 +7373,8 @@ return [
                     'trigger_communication' => '1',
                     'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/risk-actions/create',
@@ -7401,7 +7403,8 @@ return [
                 'risk_attributes' => [
                     'trigger_communication' => '2',
                     'risk_tag'              => 'risk_international_disablement',
-                    'risk_reason'           => 'high_fts'
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/risk-actions/create',
@@ -7431,7 +7434,8 @@ return [
                     'trigger_communication' => '3',
                     'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/risk-actions/create',
@@ -7461,7 +7465,8 @@ return [
                     'trigger_communication' => '1',
                     'risk_tag'              => 'risk_review_suspend',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/risk-actions/create',
@@ -10039,7 +10044,8 @@ return [
                 'merchant_ids'    => ['10000000000044'],
                 'action'          => 'suspend',
                 'risk_attributes' => [
-                    'risk_reason'           => 'high_cts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                     'risk_source'           => 'high_fts',
                     'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
@@ -10064,7 +10070,8 @@ return [
                 'merchant_ids'    => ['10000000000044'],
                 'action'          => 'hold_funds',
                 'risk_attributes' => [
-                    'risk_reason'           => 'high_cts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                     'risk_source'           => 'high_fts',
                     'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
@@ -10111,7 +10118,8 @@ return [
                 'merchant_ids'    => ['10000000000044', '10000000000004'],
                 'action'          => 'live_disable',
                 'risk_attributes' => [
-                    'risk_reason'           => 'high_cts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                     'risk_source'           => 'high_fts',
                     'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'
@@ -10163,7 +10171,8 @@ return [
                 'merchant_ids'    => ['10000000000044'],
                 'action'          => 'live_disable',
                 'risk_attributes' => [
-                    'risk_reason'           => 'wjjjr',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'wrong_sub_reason',
                     'risk_source'           => 'high_fts',
                     'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1',
@@ -10177,7 +10186,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected risk reason is invalid.',
+                    'description' => 'wrong_sub_reason is not a valid risk sub-reason for the following risk reason: chargeback_and_disputes',
                 ],
             ],
             'status_code' => 400,
@@ -10694,7 +10703,8 @@ return [
                 'action_id'       => '{action_id}',
                 'action'          => 'live_disable',
                 'risk_attributes' => [
-                    'risk_reason'           => 'high_cts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                     'risk_source'           => 'high_fts',
                     'risk_tag'              => 'risk_review_watchlist',
                     'trigger_communication' => '1'

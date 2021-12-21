@@ -13832,7 +13832,8 @@ The same has been enabled for the account.
                 'merchant_ids' => ['10000000000044'],
                 'action'       => 'live_disable',
                 'risk_attributes' => [
-                    'risk_reason' => 'high_cts',
+                    'risk_reason'          => 'chargeback_and_disputes',
+                    'risk_sub_reason'      => 'high_fts',
                     'risk_source' => 'high_fts',
                     'risk_tag'     => 'risk_review_watchlist',
                     'trigger_communication' => '1'

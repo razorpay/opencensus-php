@@ -130,6 +130,9 @@ class Core extends Base\Core
                         Constants::CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR,
                         $riskAttributes);
                 }
+
+                (new Validator())->validateRiskReasonAndSubReason($riskAttributes[Constants::RISK_REASON],
+                                                                  $riskAttributes[Constants::RISK_SUB_REASON]);
             }
         }
     }

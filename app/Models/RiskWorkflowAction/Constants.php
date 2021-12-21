@@ -12,6 +12,7 @@ class Constants
     const ACTION                 = 'action';
     const RISK_ATTRIBUTES        = 'risk_attributes';
     const RISK_REASON            = 'risk_reason';
+    const RISK_SUB_REASON        = 'risk_sub_reason';
     const RISK_TAG               = 'risk_tag';
     const RISK_SOURCE            = 'risk_source';
     const TRIGGER_COMMUNICATION  = 'trigger_communication';
@@ -44,32 +45,110 @@ class Constants
         self::RISK_SOURCE_BANK_NW_ALERTS . ',' .
         self::RISK_SOURCE_OTHERS;
 
-    // Risk reasons
-    const RISK_REASON_COPYRIGHT_INFRINGEMENT = 'copyright_infringement_or_trademark_violation_or_price_too_good_to_be_true';
-    const RISK_REASON_MULTIPLE_TRANSACTION   = 'multiple_transaction_performed_using_same_credentials';
-    const RISK_REASON_NEEDS_CLARIFICATION    = 'needs_clarification_mail_wasnt_reverted_for_5_days';
+    // Risk Reasons
+    const RISK_REASON_FRAUD_BEHAVIOUR       = 'suspicious_or_fraudulent_merchant_behaviour';
+    const RISK_REASON_DEPT_PROCESS_LAPSES   = 'intra_department_process_lapses';
+    const RISK_REASON_ANOMALY_TXN_PATTERN   = 'anomaly_in_transaction_pattern';
+    const RISK_REASON_RAZORPAYX             = 'razorpay_x';
+    const RISK_REASON_CHARGEBACK            = 'chargeback_and_disputes';
+    const RISK_REASON_EXTERNAL_FACTORS      = 'external_factors';
+    const RISK_REASON_ABUSIVE_MERCHANTS     = 'abusive_merchants';
+    const RISK_REASON_OTHERS                = 'others';
 
-    const RISK_REASON_COMPLIANCE_DOCUMENT_DISCREPANCY = 'compliance_document_discrepancy';
+    // Risk Sub Reasons
+    const RISK_SUB_REASON_PRICING           = 'pricing_too_good_to_be_true';
+    const RISK_SUB_REASON_BRAND             = 'brand_imposter';
+    const RISK_SUB_REASON_INFRINGEMENT      = 'infringement';
+    const RISK_SUB_REASON_BUSINESS_MODEL    = 'business_model_deviation';
+    const RISK_SUB_REASON_PROHIBITED        = 'prohibited_and_restricted_business_category';
+    const RISK_SUB_REASON_MERCHANT_POLICY   = 'standard_merchant_policy_not_updated';
+    const RISK_SUB_REASON_DOCUMENTS         = 'illegitimate_documents';
+    const RISK_SUB_REASON_API_KEY_MISUSE    = 'api_key_misuse_different_website_or_app_used';
+    const RISK_SUB_REASON_CHINESE_MERCHANT  = 'chinese_risky_merchant';
+    const RISK_SUB_REASON_BLACKLIST_MATCH   = 'match_with_blacklist';
+    const RISK_SUB_REASON_KYC_MISSING       = 'kyc_missing';
+    const RISK_SUB_REASON_WRONG_MCC         = 'wrong_mcc_allotment';
+    const RISK_SUB_REASON_BANK_MISMATCH     = 'bank_details_mismatch';
+    const RISK_SUB_REASON_TXN_PATTERN       = 'abnormal_transaction_pattern';
+    const RISK_SUB_REASON_TEST_TXN          = 'surge_in_low_value_or_test_transaction';
+    const RISK_SUB_REASON_DORMANT           = 'dormant_more_than_three_months';
+    const RISK_SUB_REASON_HIGH_GMV          = 'high_gmv';
+    const RISK_SUB_REASON_TXN_SIZE          = 'transaction_size_not_aligned_with_merchant_profile';
+    const RISK_SUB_REASON_CARD_ENCASHMENT   = 'card_encashment';
+    const RISK_SUB_REASON_MULTI_PAYOUTS     = 'multiple_payouts_with_same_beneficiary';
+    const RISK_SUB_REASON_MULTI_VA          = 'multiple_va_creations';
+    const RISK_SUB_REASON_FUND_LOADING      = 'abnormal_fund_loading_pattern';
+    const RISK_SUB_REASON_PAYOUT_PATTERN    = 'business_model_not_aligning_with_payout_pattern';
+    const RISK_SUB_REASON_HIGH_CTS          = 'high_cts';
+    const RISK_SUB_REASON_HIGH_FTS          = 'high_fts';
+    const RISK_SUB_REASON_DISPUTE_SURGE     = 'sudden_surge_in_merchant_disputes_,_frauds_and_chargebacks';
+    const RISK_SUB_REASON_CB_RECOVERY       = 'CB_recovery_and_fraud_recovery_(internal_policy)';
+    const RISK_SUB_REASON_COMPLAINTS        = 'high_consumer_complaints';
+    const RISK_SUB_REASON_REGULATORY        = 'regulatory';
+    const RISK_SUB_REASON_LEA               = 'LEA';
+    const RISK_SUB_REASON_BANK_ALERTS       = 'bank_or_payment_service_providers_alerts';
+    const RISK_SUB_REASON_NETWORK_ALERTS    = 'network_alerts_VISA,MASTER,RUPAY,VAMP,GBPP,AML,Mastercard_match';
+    const RISK_SUB_REASON_FREE_CREDITS      = 'free_credits';
+    const RISK_SUB_REASON_NO_RESPONSE       = 'no_response_from_merchant_within_tat';
+    const RISK_SUB_REASON_UNSATISFIED_RESP  = 'merchant_response_not_satisfactory';
+    const RISK_SUB_REASON_OTHERS            = 'others';
 
-    const RISK_REASON_SPIKE_IN_COMPLAINTS  = 'spike_in_complaints_across_end_user_or_cyber_crime_or_chargebacks_or_banks';
 
-    const RISK_REASON_MCC_VIOLATION = 'mcc_violation_business_model_deviation_or_restricted_business_model_or_many_businesses_running_under_one_mid';
-
-    const RISK_REASON_HIGH_CTS = 'high_cts';
-    const RISK_REASON_HIGH_FTS = 'high_fts';
-    const RISK_REASON_OTHERS   = 'others';
-
-    //risk reason allowed values
-    const RISK_REASONS_CSV =
-        self::RISK_REASON_COPYRIGHT_INFRINGEMENT . ',' .
-        self::RISK_REASON_MULTIPLE_TRANSACTION . ',' .
-        self::RISK_REASON_NEEDS_CLARIFICATION . ',' .
-        self::RISK_REASON_COMPLIANCE_DOCUMENT_DISCREPANCY . ',' .
-        self::RISK_REASON_SPIKE_IN_COMPLAINTS . ',' .
-        self::RISK_REASON_MCC_VIOLATION . ',' .
-        self::RISK_REASON_HIGH_CTS . ',' .
-        self::RISK_REASON_HIGH_FTS . ',' .
-        self::RISK_REASON_OTHERS;
+    const RISK_REASONS_MAP = [
+        self::RISK_REASON_FRAUD_BEHAVIOUR   =>  [
+            self::RISK_SUB_REASON_PRICING,
+            self::RISK_SUB_REASON_BRAND,
+            self::RISK_SUB_REASON_INFRINGEMENT,
+            self::RISK_SUB_REASON_BUSINESS_MODEL,
+            self::RISK_SUB_REASON_PROHIBITED,
+            self::RISK_SUB_REASON_MERCHANT_POLICY,
+            self::RISK_SUB_REASON_DOCUMENTS,
+            self::RISK_SUB_REASON_API_KEY_MISUSE,
+            self::RISK_SUB_REASON_CHINESE_MERCHANT,
+            self::RISK_SUB_REASON_BLACKLIST_MATCH,
+        ],
+        self::RISK_REASON_DEPT_PROCESS_LAPSES  =>   [
+            self::RISK_SUB_REASON_KYC_MISSING,
+            self::RISK_SUB_REASON_WRONG_MCC,
+            self::RISK_SUB_REASON_MERCHANT_POLICY,
+            self::RISK_SUB_REASON_BANK_MISMATCH,
+        ],
+        self::RISK_REASON_ANOMALY_TXN_PATTERN   =>  [
+            self::RISK_SUB_REASON_TXN_PATTERN,
+            self::RISK_SUB_REASON_TEST_TXN,
+            self::RISK_SUB_REASON_DORMANT,
+            self::RISK_SUB_REASON_HIGH_GMV,
+            self::RISK_SUB_REASON_TXN_SIZE,
+            self::RISK_SUB_REASON_CARD_ENCASHMENT,
+        ],
+        self::RISK_REASON_RAZORPAYX   =>  [
+            self::RISK_SUB_REASON_MULTI_PAYOUTS,
+            self::RISK_SUB_REASON_MULTI_VA,
+            self::RISK_SUB_REASON_FUND_LOADING,
+            self::RISK_SUB_REASON_PAYOUT_PATTERN,
+        ],
+        self::RISK_REASON_CHARGEBACK    =>  [
+            self::RISK_SUB_REASON_HIGH_FTS,
+            self::RISK_SUB_REASON_HIGH_CTS,
+            self::RISK_SUB_REASON_DISPUTE_SURGE,
+            self::RISK_SUB_REASON_CB_RECOVERY,
+            self::RISK_SUB_REASON_COMPLAINTS,
+        ],
+        self::RISK_REASON_EXTERNAL_FACTORS  =>  [
+            self::RISK_SUB_REASON_REGULATORY,
+            self::RISK_SUB_REASON_LEA,
+            self::RISK_SUB_REASON_BANK_ALERTS,
+            self::RISK_SUB_REASON_NETWORK_ALERTS,
+        ],
+        self::RISK_REASON_ABUSIVE_MERCHANTS =>  [
+            self::RISK_SUB_REASON_FREE_CREDITS,
+        ],
+        self::RISK_REASON_OTHERS    =>  [
+            self::RISK_SUB_REASON_NO_RESPONSE,
+            self::RISK_SUB_REASON_UNSATISFIED_RESP,
+            self::RISK_SUB_REASON_OTHERS,
+        ]
+    ];
 
     // Risk tags
     const RISK_TAG_RISK_REVIEW_SUSPEND          = 'risk_review_suspend';
@@ -132,10 +211,10 @@ class Constants
 
     const BULK_WORKFLOW_DETAILS_TPL = 'BULK_WORKFLOW_DETAILS:: MAKER: %s CHECKER: %s LINK: %s';
 
-    const CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR          = 'create_destructive_risk_attributes';
-    const CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR         = 'create_constructive_risk_attributes';
-    const CREATE_ENABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR = 'create_enable_international_risk_attributes';
-    const CREATE_DISABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR = 'create_disable_international_risk_attributes';
+    const CREATE_DESTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR              = 'create_destructive_risk_attributes';
+    const CREATE_CONSTRUCTIVE_RISK_ATTRIBUTES_VALIDATOR             = 'create_constructive_risk_attributes';
+    const CREATE_ENABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR     = 'create_enable_international_risk_attributes';
+    const CREATE_DISABLE_INTERNATIONAL_RISK_ATTRIBUTES_VALIDATOR    = 'create_disable_international_risk_attributes';
 
     // Risk workflow statuses
     const EXECUTED    = 'EXECUTED';

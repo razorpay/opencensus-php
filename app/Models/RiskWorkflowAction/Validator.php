@@ -3,6 +3,7 @@
 namespace RZP\Models\RiskWorkflowAction;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 class Validator extends Base\Validator
@@ -14,7 +15,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createDestructiveRiskAttributesRules         = [
-        Constants::RISK_REASON           => 'required|string|in:' . Constants::RISK_REASONS_CSV,
+        Constants::RISK_REASON           => 'required|string',
+        Constants::RISK_SUB_REASON       => 'required|string',
         Constants::RISK_SOURCE           => 'required|string|in:' . Constants::RISK_SOURCES_CSV,
         Constants::RISK_TAG              => 'sometimes|string|in:' . Constants::RISK_TAGS_CSV,
         Constants::TRIGGER_COMMUNICATION => 'required|string|in:0,1',
@@ -25,7 +27,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createDisableInternationalRiskAttributesRules              = [
-        Constants::RISK_REASON           => 'required|string|in:' . Constants::RISK_REASONS_CSV,
+        Constants::RISK_REASON           => 'required|string',
+        Constants::RISK_SUB_REASON       => 'required|string',
         Constants::RISK_SOURCE           => 'required|string|in:' . Constants::RISK_SOURCES_CSV,
         Constants::RISK_TAG              => 'sometimes|string|in:' . Constants::RISK_TAG_INTERNATIONAL_DISABLEMENT,
         Constants::TRIGGER_COMMUNICATION => 'required|string|in:0,1,2',
@@ -34,4 +37,20 @@ class Validator extends Base\Validator
     protected static $createEnableInternationalRiskAttributesRules = [
         ProductInternationalMapper::INTERNATIONAL_PRODUCTS => 'required|array',
     ];
+
+    public function validateRiskReasonAndSubReason($riskReason, $riskSubReason)
+    {
+        if (in_array($riskReason, array_keys(Constants::RISK_REASONS_MAP)) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException($riskReason . ' is not a valid risk reason');
+        }
+
+        $riskSubReasons = Constants::RISK_REASONS_MAP[$riskReason] ?? [];
+
+        if (in_array($riskSubReason, $riskSubReasons) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException($riskSubReason .
+             ' is not a valid risk sub-reason for the following risk reason: ' . $riskReason);
+        }
+    }
 }

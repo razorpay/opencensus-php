@@ -8,8 +8,9 @@ return [
                 'risk_attributes'   => [
                     'trigger_communication' => '1',
                     'risk_tag'	            => 'risk_review_suspend',
-                    'risk_source'          => 'high_fts',
-                    'risk_reason'          => 'high_fts'
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url' => '/merchants/10000000000000/action',
@@ -29,8 +30,9 @@ return [
                 'risk_attributes'   => [
                     'trigger_communication' => '1',
                     'risk_tag'	            => 'risk_review_suspend',
-                    'risk_source'          => 'high_fts',
-                    'risk_reason'          => 'high_fts'
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url' => '/merchants/10000000000000/action',
@@ -48,8 +50,9 @@ return [
                 'risk_attributes'   => [
                     'trigger_communication' => '1',
                     'risk_tag'	            => 'risk_review_suspend',
-                    'risk_source'          => 'high_fts',
-                    'risk_reason'          => 'high_fts'
+                    'risk_source'           => 'high_fts',
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url' => '/merchants/10000000000000/action',
@@ -70,7 +73,8 @@ return [
                     'trigger_communication' => '1',
                     'risk_tag'              => 'risk_review_suspend',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts'
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/merchants/10000000000000/action',
@@ -92,7 +96,8 @@ return [
                     'trigger_communication' => '1',
                     'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts'
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/merchants/10000000000000/action',
@@ -114,7 +119,8 @@ return [
                     'trigger_communication' => '2',
                     'risk_tag'              => 'risk_international_disablement',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts'
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/merchants/10000000000000/action',
@@ -136,7 +142,8 @@ return [
                     'trigger_communication' => '1',
                     'risk_tag'              => 'risk_review_suspend',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts'
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/merchants/10000000000000/action',
@@ -158,7 +165,8 @@ return [
                     'trigger_communication' => '2',
                     'risk_tag'              => 'risk_review_suspend',
                     'risk_source'           => 'high_fts',
-                    'risk_reason'           => 'high_fts'
+                    'risk_reason'           => 'chargeback_and_disputes',
+                    'risk_sub_reason'       => 'high_fts',
                 ],
             ],
             'url'     => '/merchants/10000000000000/action',

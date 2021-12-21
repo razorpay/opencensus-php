@@ -17,13 +17,11 @@ class Service extends Base\Service
     {
         $riskTags = explode(',', Constants::RISK_TAGS_CSV);
 
-        $riskReasons = explode(',', Constants::RISK_REASONS_CSV);
-
         $riskSources = explode(',', Constants::RISK_SOURCES_CSV);
 
         return [
             'risk_tags'     => $riskTags,
-            'risk_reasons'  => $riskReasons,
+            'risk_reasons'  => Constants::RISK_REASONS_MAP,
             'risk_sources'  => $riskSources,
         ];
     }
