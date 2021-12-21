@@ -6,6 +6,7 @@ import { fetchOngoingDowntimes } from './service';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { classList } from 'common/utils/rzp-utils';
+import { useClickOutSide } from 'common/utils/customHooks';
 import FailedStatus from './FailedStatus';
 import OverallStatus from './OverallStatus';
 import { downtimeAnalyticsTrack } from './utilities';
@@ -98,6 +99,8 @@ function StatusDetails(props) {
 
   const intervalForTime = useRef(null);
   const intervalForDebounce = useRef(null);
+  const statusDetailsRef = useRef();
+  const downtimeIconRef = useRef();
 
   const { openSlider: sliderOpen, AppMode } = props;
 
@@ -202,11 +205,11 @@ function StatusDetails(props) {
     setMode('summary');
   };
 
-  const hideSlider = useCallback(() => {
+  const hideSlider = () => {
     setMode('summary');
     endInterval();
     setIsSliderOpen(false);
-  }, []);
+  };
 
   const showSlider = () => {
     setOngoingDowntimes();
@@ -220,41 +223,22 @@ function StatusDetails(props) {
     downtimeAnalyticsTrack({ objectName: 'Downtime Status page visited', method: 'Summary' });
   };
 
-  const handleDocumentClick = useCallback(
-    (event) => {
-      const target = event.target;
-      const sliderContent = document.querySelector('.content-wrapper.status-details');
-      const sliderToggle = document.querySelector('.status-details-slide-toggle');
-      const statusDetails = document.querySelector(
-        '.panel.panel-default.SliderPanel.status-details--container',
-      );
-      if (
-        (sliderContent && sliderContent.contains(target)) ||
-        (sliderToggle && sliderToggle.contains(target)) ||
-        (statusDetails && statusDetails.contains(target))
-      ) {
-        return;
-      }
-      hideSlider();
-    },
-    [hideSlider],
-  );
-
-  useEffect(() => {
-    document.addEventListener('click', handleDocumentClick, true);
-
-    return () => document.removeEventListener('click', handleDocumentClick, true);
-  }, []);
-
   const handleSliderToggleClick = () => {
     return isSliderOpen ? hideSlider() : showSlider();
   };
+
+  /* callback method when we clicked outside */
+  const onOutSideClick = () => {
+    hideSlider();
+  };
+  //  using the out side click custom hook
+  useClickOutSide([statusDetailsRef, downtimeIconRef], onOutSideClick);
 
   return (
     <main className={classList('status-details', isSliderOpen && 'status-details--active')}>
       {/* Hidden the Bank Downtime from Test Mode*/}
       {AppMode === 'live' && (
-        <div className="status-details-slide-toggle">
+        <div className="status-details-slide-toggle" ref={downtimeIconRef}>
           {/*
               For not we will only use the icon not text so commented the text variant for
               Kept the code commented for future references
@@ -269,7 +253,10 @@ function StatusDetails(props) {
       {isSliderOpen ? (
         <Slider>
           <ErrorBoundary resetOnProps rank={Ranks.P1} team={Teams.BANKING}>
-            <div className="content-wrapper content-sm txn-details status-details">
+            <div
+              className="content-wrapper content-sm txn-details status-details"
+              ref={statusDetailsRef}
+            >
               <div className="panel panel-default SliderPanel">
                 <div className="panel-heading">
                   {mode === 'summary' ? (
