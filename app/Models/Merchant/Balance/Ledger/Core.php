@@ -27,6 +27,7 @@ class Core extends Base\Core
     const BANKING_ACCOUNT_ID    = 'banking_account_id';
 
     const MERCHANT_BALANCE_OPENING_BALANCE = 'merchant_balance_opening_balance';
+    const MERCHANT_REWARD_OPENING_BALANCE = 'merchant_reward_opening_balance';
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const UUID_FORMAT     = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
@@ -51,7 +52,7 @@ class Core extends Base\Core
      */
     public function createXLedgerAccount(Merchant $merchant, BankingAccount $bankingAccount,
                                          string   $mode, string $accountType = self::SHARED,
-                                         int $balanceAmount = 0)
+                                         int $balanceAmount = 0, int $creditBalance = 0)
     {
         $event = $accountType == self::SHARED ? self::SHARED_MERCHANT_ONBOARDING : self::DIRECT_MERCHANT_ONBOARDING;
 
@@ -77,6 +78,11 @@ class Core extends Base\Core
         if ($balanceAmount !== 0)
         {
             $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
+        }
+
+        if ($creditBalance !== 0)
+        {
+            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
         }
 
         $this->trace->info(TraceCode::LEDGER_ACCOUNT_STREAMING_STARTED, $payload);

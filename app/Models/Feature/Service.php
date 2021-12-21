@@ -14,6 +14,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Service extends Base\Service
 {
@@ -116,6 +117,17 @@ class Service extends Base\Service
             // Fetch Merchant banking account. Required to generate request body for account creation on ledger
             $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
 
+            // credit balance initialized (rewards)
+            $currentMerchantCredits = 0;
+
+            // Fetch Merchant Credit balance. And update the balance value if the credit has 1 element
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsForProductForDashboard($merchant->getId(), BalanceType::BANKING);
+
+            foreach ($creditBalances as $creditBalance)
+            {
+                $currentMerchantCredits += $creditBalance[BalanceEntity::BALANCE];
+            }
+
             $this->trace->info(TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
                 [
                     Constants::MERCHANT_ID => $merchant->getId(),
@@ -124,7 +136,13 @@ class Service extends Base\Service
                     'banking_account_id'   => $bankingAcc->getId(),
                 ]);
 
-            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAcc, $this->mode, AccountType::SHARED, $balance->getBalance());
+            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount(
+                $merchant,
+                $bankingAcc,
+                $this->mode,
+                AccountType::SHARED,
+                $balance->getBalance(),
+                $currentMerchantCredits);
         }
     }
 
