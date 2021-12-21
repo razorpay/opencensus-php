@@ -30,9 +30,10 @@ const WelcomeModal = ({
   hideCTAs,
   referee,
   trackEvents,
+  isActivationFormFullView,
 }) => {
   const getLandingProduct = getItem('merchant_landing_page') || getItem('default_product_page');
-
+  const activationFormUrl = isActivationFormFullView ? '/kyc' : '/activation';
   const isRecommendProduct =
     RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) && isProductRecommendationEnabled;
 
@@ -199,7 +200,9 @@ const WelcomeModal = ({
         <div className="welcome-modal-actions">
           <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
             <Link
-              to={isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : '/activation'}
+              to={
+                isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : activationFormUrl
+              }
               onClick={handleActivationClick}
               className="btn btn-primary"
             >

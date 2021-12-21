@@ -43,23 +43,25 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
                 {progress}% complete
               </Text>
             </View>
-            <Space padding={[0.5, 0]}>
-              <Link
-                onClick={() =>
-                  !data.submitted &&
-                  !isDedupe &&
-                  (data.poi_verification_status !== 'initiated' ||
-                    experiments.isL2AllowedForPoiInitiated)
-                    ? setIsSaveAndExitModalOpen(true)
-                    : history.push('/dashboard')
-                }
-                size="xsmall"
-                weight="bold"
-                color="primary.800"
-              >
-                Save and Exit
-              </Link>
-            </Space>
+            {!(!data.activation_form_milestone && experiments.isActivationFormFullView) && (
+              <Space padding={[0.5, 0]}>
+                <Link
+                  onClick={() =>
+                    !data.submitted &&
+                    !isDedupe &&
+                    (data.poi_verification_status !== 'initiated' ||
+                      experiments.isL2AllowedForPoiInitiated)
+                      ? setIsSaveAndExitModalOpen(true)
+                      : history.push('/dashboard')
+                  }
+                  size="xsmall"
+                  weight="bold"
+                  color="primary.800"
+                >
+                  Save and Exit
+                </Link>
+              </Space>
+            )}
           </StyledActivationProgressHeader>
         </Flex>
       </Space>

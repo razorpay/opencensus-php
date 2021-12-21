@@ -66,6 +66,7 @@ export default class InstantActivationAnnouncements extends Component {
       limitBreach,
       shouldShowTnCBannerForAxis = false,
     } = this.props;
+    const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
     const commonSettlementBanner = {
       theme: 'success',
       title: 'Account Activated',
@@ -117,7 +118,7 @@ export default class InstantActivationAnnouncements extends Component {
                 payments{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to="/activation" onClick={this.sendL2StartEvent}>
+              <Link to={activationUrl} onClick={this.sendL2StartEvent}>
                 Complete KYC
               </Link>
             </div>
@@ -136,7 +137,7 @@ export default class InstantActivationAnnouncements extends Component {
                   have been <b>temporarily paused </b> until you finish your KYC.{' '}
                 </div>
                 <div className="big-circle-seprator" />
-                <Link to="/activation" onClick={this.sendL2StartEvent}>
+                <Link to={activationUrl} onClick={this.sendL2StartEvent}>
                   Complete KYC
                 </Link>
               </div>
@@ -341,7 +342,7 @@ export default class InstantActivationAnnouncements extends Component {
                 to get your KYC approved{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to="/activation">Update details</Link>
+              <Link to={activationUrl}>Update details</Link>
             </div>
           );
           break;
@@ -356,7 +357,7 @@ export default class InstantActivationAnnouncements extends Component {
                 day, otherwise your settlements might get paused.{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to="/activation">Update details</Link>
+              <Link to={activationUrl}>Update details</Link>
             </div>
           );
           break;
@@ -371,7 +372,7 @@ export default class InstantActivationAnnouncements extends Component {
                 settlements{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to="/activation">Update details</Link>
+              <Link to={activationUrl}>Update details</Link>
             </div>
           );
           break;
@@ -386,7 +387,7 @@ export default class InstantActivationAnnouncements extends Component {
                 to get your KYC approved{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to="/activation">Update details</Link>
+              <Link to={activationUrl}>Update details</Link>
             </div>
           );
           break;
@@ -507,7 +508,7 @@ export default class InstantActivationAnnouncements extends Component {
             <span>
               You can start using our products to accept payments right away. Meanwhile we will
               await your KYC details to enable settlements for your account. &nbsp;
-              <Link to="/activation" onClick={this.sendL2StartEvent}>
+              <Link to={activationUrl} onClick={this.sendL2StartEvent}>
                 Fill KYC Form
               </Link>
             </span>
@@ -518,7 +519,7 @@ export default class InstantActivationAnnouncements extends Component {
             <span>
               You can continue accepting payments from your customers. However, you must complete
               KYC for the payments to be settled to your account. &nbsp;
-              <Link to="/activation" onClick={this.sendL2StartEvent}>
+              <Link to={activationUrl} onClick={this.sendL2StartEvent}>
                 Fill KYC Form
               </Link>
             </span>
@@ -529,7 +530,7 @@ export default class InstantActivationAnnouncements extends Component {
         content = (
           <span>
             In order to enable payments for your business model we need your KYC Details. &nbsp;
-            <Link to="/activation" onClick={this.sendL2StartEvent}>
+            <Link to={activationUrl} onClick={this.sendL2StartEvent}>
               Fill KYC Form
             </Link>
           </span>
@@ -540,7 +541,7 @@ export default class InstantActivationAnnouncements extends Component {
           <span>
             You can continue accepting payments from your customers. However, you must complete KYC
             for the payments to be settled to your account. &nbsp;
-            <Link to="/activation" onClick={this.sendL2StartEvent}>
+            <Link to={activationUrl} onClick={this.sendL2StartEvent}>
               Fill KYC Form
             </Link>
           </span>
@@ -558,7 +559,7 @@ export default class InstantActivationAnnouncements extends Component {
               Your PAN was successfully verified and you can start accepting domestic payments now.
               Meanwhile we will await your KYC details to enable settlements for your account.
               &nbsp;
-              <Link to="/activation" onClick={this.sendL2StartEvent}>
+              <Link to={activationUrl} onClick={this.sendL2StartEvent}>
                 Fill KYC Form
               </Link>
             </span>
@@ -571,7 +572,7 @@ export default class InstantActivationAnnouncements extends Component {
               Government’s PAN database seems to be down, we couldn’t verify your PAN Details.
               Please try again in a couple of minutes. &nbsp;
               <Link
-                to="/activation?auto-submit=l1-form"
+                to="/kyc?auto-submit=l1-form"
                 onClick={() => {
                   this.trackEvent('nav_try_again');
                 }}
@@ -592,7 +593,7 @@ export default class InstantActivationAnnouncements extends Component {
               Your PAN details did not match with the government PAN database. Please review and
               submit again. &nbsp;
               <Link
-                to="/activation"
+                to={activationUrl}
                 onClick={() => {
                   this.trackEvent('nav_review_details');
                   trackGoToActivationFromError();
@@ -628,7 +629,7 @@ export default class InstantActivationAnnouncements extends Component {
             <React.Fragment>
               Your KYC details require further clarifications. Update required details within 1 day,
               otherwise your settlements might get paused. &nbsp;
-              <Link to="/activation" style={{ 'font-weight': 'bold' }}>
+              <Link to={activationUrl} style={{ 'font-weight': 'bold' }}>
                 Update Details
               </Link>
               .

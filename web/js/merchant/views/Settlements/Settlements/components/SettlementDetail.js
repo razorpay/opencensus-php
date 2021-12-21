@@ -135,6 +135,7 @@ class SettlementDetail extends Component {
     const user = this.props.user;
     const isOnHold = this.isOnHold();
     const isOnTemporaryHold = this.isOnTemporaryHold();
+    const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
 
     if (
       (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) &&
@@ -153,7 +154,7 @@ class SettlementDetail extends Component {
             </a>
           </div>
 
-          <Link className="settlement-detail-button-wrapper" to="/activation">
+          <Link className="settlement-detail-button-wrapper" to={activationFormUrl}>
             <button
               type="button"
               className="btn btn-primary full-width"

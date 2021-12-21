@@ -444,7 +444,10 @@ class AnalyticsDesktop extends Component {
           {this.state.showNcPopup &&
             user.needsClarification &&
             !this.props.user.isInstantActivationEnabled && (
-              <NCModal onClose={this.onNcModalClose} />
+              <NCModal
+                isActivationFormFullView={this.props.user.isActivationFormFullView}
+                onClose={this.onNcModalClose}
+              />
             )}
 
           {!this.props.user.isInstantActivationEnabled &&

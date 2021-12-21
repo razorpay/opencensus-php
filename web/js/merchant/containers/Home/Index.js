@@ -1115,6 +1115,7 @@ export default class HomeContainer extends Component {
                     isProductRecommendationEnabled={user.isProductRecommendationEnabled}
                     hideCTAs={this.hideWelcomeModalCTAs}
                     referee={this.props.referee}
+                    isActivationFormFullView={user.isActivationFormFullView}
                   />
                 </ModalContent>
               </Modal>

@@ -10,9 +10,11 @@ import Input from 'common/new-ui/Input';
 
 const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
 
-const SaveAndNext = ({ next }) => (
+const SaveAndNext = ({ isActivationFormFullView, next }) => (
   <Button.Primary iconAfter="chevron-right" onClick={next}>
-    <span className="device--desktop">Save & Next</span>
+    <span className="device--desktop">
+      {isActivationFormFullView ? 'Save & Continue' : 'Save & Next'}
+    </span>
     <span className="device--mobile">Next</span>
   </Button.Primary>
 );
@@ -155,6 +157,7 @@ const Footer = ({
   isCheck,
   fetchData,
   onCheckboxChange,
+  isActivationFormFullView,
 }) => {
   const buttons = [];
 
@@ -171,12 +174,12 @@ const Footer = ({
     );
   }
 
-  if (footerButtons.includes(FOOTER_BUTTONS.SAVE)) {
+  if (footerButtons.includes(FOOTER_BUTTONS.SAVE) && !isActivationFormFullView) {
     buttons.push(<Save saveCurrentTab={saveCurrentTab} />);
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SAVE_AND_NEXT)) {
-    buttons.push(<SaveAndNext next={next} />);
+    buttons.push(<SaveAndNext isActivationFormFullView={isActivationFormFullView} next={next} />);
   }
 
   if (footerButtons.includes(FOOTER_BUTTONS.SUBMIT_L1_FORM)) {
@@ -201,7 +204,7 @@ const Footer = ({
   }
 
   return (
-    <footer>
+    <footer className="reverse-flex">
       <Loader isSaving={isSaving} defsaultMsg={defaultMsg} />
       <div className="footer-content">
         <FooterCheckBox

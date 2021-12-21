@@ -31,6 +31,8 @@ const SettlementsBanner = (props) => {
 
   const balance = current_balance.data.balance || 0;
 
+  const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+
   const handleContactSupport = () => {
     closeModal();
 
@@ -63,7 +65,7 @@ const SettlementsBanner = (props) => {
           <> Settlements will be processed. Once your KYC is submitted and approved. </>
         );
       actions = !user.isSubmitted && (
-        <Link to="/activation" className="action text-primary">
+        <Link to={activationFormUrl} className="action text-primary">
           Complete KYC
         </Link>
       );

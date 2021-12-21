@@ -26,6 +26,7 @@ const CurrentActivationProgress: React.FC<
   const { user, experiments } = useApp();
   const trackEvents = useTrackEvents();
   const isReferredMerchant = referee?.status === 'signup';
+  const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
 
   const onCTAClick = () => {
     history.push('/onboarding/steps');
@@ -59,7 +60,7 @@ const CurrentActivationProgress: React.FC<
   };
 
   const goToNcFlow = () => {
-    history.push('activation');
+    history.push(activationFormUrl);
   };
 
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;

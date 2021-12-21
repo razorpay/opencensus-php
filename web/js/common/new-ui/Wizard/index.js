@@ -1,4 +1,5 @@
 import { classList } from 'common/utils/rzp-utils';
+import sideBarBottomImage from '../../../../icons/merchant/sidebar-bottom.svg';
 
 /*
  * @props
@@ -23,64 +24,93 @@ export const ModalAsideNav = (_) => {
     disableTabCondition,
     isPanVerificationFailed = false,
     isBankVerificationFailed = false,
+    isActivationFormFullView = false,
+    activationFormMilestone,
+    saveAndExitForm = () => {},
   } = _;
 
+  const onLogoClick = () => {
+    const segmentObjectName = 'rzp logo';
+    saveAndExitForm(segmentObjectName);
+  };
+
   return (
-    <aside>
-      <side-title>{title}</side-title>
-      {description}
-      <ul>
-        {tabs.map((t, i) => {
-          const isTabValid = tabsValidity && tabsValidity[i];
+    <aside className="side-bar">
+      <div className="side-bar-container">
+        {isActivationFormFullView ? (
+          <div className="img-container">
+            {activationFormMilestone ? (
+              <a onClick={onLogoClick}>
+                <img src="/img/logo_black.png" />
+              </a>
+            ) : (
+              <img src="/img/logo_black.png" />
+            )}
+          </div>
+        ) : (
+          <>
+            <side-title>{title}</side-title>
+            {description}
+          </>
+        )}
+        <ul>
+          {tabs.map((t, i) => {
+            const isTabValid = tabsValidity && tabsValidity[i];
 
-          let isActiveClass = i == activeTab && 'active';
-          if (typeof activeTabContdition !== 'undefined') {
-            // Is defined and is true
-            isActiveClass = activeTabContdition && isActiveClass;
-          }
-          const canShowSuccessCheckbox =
-            isPanVerificationFailed && i === 2
-              ? i !== 2
-              : isBankVerificationFailed && i === 3
-              ? i !== 3
-              : true;
+            let isActiveClass = i == activeTab && 'active';
+            if (typeof activeTabContdition !== 'undefined') {
+              // Is defined and is true
+              isActiveClass = activeTabContdition && isActiveClass;
+            }
+            const canShowSuccessCheckbox =
+              isPanVerificationFailed && i === 2
+                ? i !== 2
+                : isBankVerificationFailed && i === 3
+                ? i !== 3
+                : true;
 
-          const isDisabled =
-            typeof disableTabCondition === 'function' ? disableTabCondition(i) : false;
+            const isDisabled =
+              typeof disableTabCondition === 'function' ? disableTabCondition(i) : false;
 
-          const hasError =
-            (isPanVerificationFailed && i === 2) || (isBankVerificationFailed && i === 3);
+            const hasError =
+              (isPanVerificationFailed && i === 2) || (isBankVerificationFailed && i === 3);
 
-          return (
-            <li
-              class={classList(
-                isActiveClass,
-                isTabValid && 'text-success',
-                hasError && 'text-danger',
-                isDisabled && 'disabled',
-              )}
-              key={i}
-              data-index={i}
-              onClick={isDisabled ? undefined : tabClickHandler}
-            >
-              {!isDisabled && isTabValid && canShowSuccessCheckbox && (
-                <i className="i-check text-success" />
-              )}
-              {hasError && <i className="i i-error text-danger" />}
-              {typeof t === 'object' ? (
-                <span class="li--broad">
-                  {t.title}
-                  <div class="description large">{t.desc}</div>
-                </span>
-              ) : (
-                t
-              )}
-              {i === activeTab && <i className="i i-chevron-right" />}
-            </li>
-          );
-        })}
-        {moreTabs}
-      </ul>
+            return (
+              <li
+                class={classList(
+                  isActiveClass,
+                  isTabValid && 'text-success',
+                  hasError && 'text-danger',
+                  isDisabled && 'disabled',
+                )}
+                key={i}
+                data-index={i}
+                onClick={isDisabled ? undefined : tabClickHandler}
+              >
+                {!isDisabled && isTabValid && canShowSuccessCheckbox && (
+                  <i className="i-check text-success" />
+                )}
+                {hasError && <i className="i i-error text-danger" />}
+                {typeof t === 'object' ? (
+                  <span class="li--broad">
+                    {t.title}
+                    <div class="description large">{t.desc}</div>
+                  </span>
+                ) : (
+                  t
+                )}
+                {i === activeTab && <i className="i i-chevron-right" />}
+              </li>
+            );
+          })}
+          {moreTabs}
+        </ul>
+        {isActivationFormFullView && (
+          <div className="footer-img-container">
+            <img src={sideBarBottomImage} />
+          </div>
+        )}
+      </div>
     </aside>
   );
 };

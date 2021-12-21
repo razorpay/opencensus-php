@@ -1442,6 +1442,13 @@ export default class User {
   get isUpdatedLiteOnboarding() {
     return this.getExpStatus('updated_lite_onboarding') && !!this.isOrgRZP;
   }
+
+  get isActivationFormFullView() {
+    if (this.isSourceRX) {
+      return false;
+    }
+    return this.getExpStatus('show_activation_form_full_view') && !!this.isOrgRZP;
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

@@ -27,6 +27,8 @@ class TestModeBanner extends Component {
 
     if (user.isOrgAxis) return null;
 
+    const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+
     return (
       /* For not as we have a seperarte Test Mode banner for m-web which is prominent so hiding this from m-web */
       <div className="TestModeBanner hidden-xs">
@@ -43,7 +45,7 @@ class TestModeBanner extends Component {
               <span>
                 {' '}
                 <Link
-                  to="/activation"
+                  to={activationFormUrl}
                   onClick={() => {
                     trackLinkClick('Go To - Activation Form');
                     tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.form_fill'));

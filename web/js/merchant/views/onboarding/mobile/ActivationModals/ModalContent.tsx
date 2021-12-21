@@ -43,6 +43,7 @@ export const getModalContent = (
   /* eslint-disable react-hooks/rules-of-hooks */
   const { user, experiments } = useApp();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
+  const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
 
   let title = '';
   let description: string | ReactNode = '';
@@ -265,7 +266,7 @@ export const getModalContent = (
           <Button
             onClick={() => {
               closeModal();
-              history.push('/activation');
+              history.push(activationFormUrl);
             }}
             icon="link"
             iconAlign="right"

@@ -2,20 +2,10 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import ProgressBar from 'common/ui/ProgressBar';
+import ActivationProgressBar from 'common/ui/ProgressBar';
 
-
-import {
-  ACTIVATION_URL,
-  CLARIFICATION_THROUGH_EMAIL,
-  TEST_MODE,
-  PERSONALISE_URL,
-} from './data';
-import {
-  trackGoToActivation,
-  trackGoToPersonalise,
-  trackSwitchToLive,
-} from './ga';
+import { ACTIVATION_URL, CLARIFICATION_THROUGH_EMAIL, TEST_MODE, PERSONALISE_URL } from './data';
+import { trackGoToActivation, trackGoToPersonalise, trackSwitchToLive } from './ga';
 import SwitchToMode from './SwitchToMode';
 
 const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
@@ -38,11 +28,7 @@ const Icon = ({ isActivated, isSubmitted, isRejected, needsClarification }) => {
 
 const SwitchToLive = ({ stepNum, ...props }) => {
   return (
-    <SwitchToMode
-      mode="live"
-      onSwitch={() => trackSwitchToLive(stepNum)}
-      {...props}
-    >
+    <SwitchToMode mode="live" onSwitch={() => trackSwitchToLive(stepNum)} {...props}>
       Switch To Live
     </SwitchToMode>
   );
@@ -61,6 +47,7 @@ const WrapperElement = ({
   needsClarification,
   hasPersonalised,
   stepNum,
+  isActivationFormFullView,
   ...otherProps
 }) => {
   /*
@@ -90,11 +77,12 @@ const WrapperElement = ({
    *    and theme color
    */
 
-  let linkTo = null,
-    trackFunction = null;
+  let linkTo = null;
+  let trackFunction = null;
+  const activationFormUrl = isActivationFormFullView ? '/kyc' : ACTIVATION_URL;
 
   if (!isSubmitted) {
-    linkTo = ACTIVATION_URL;
+    linkTo = activationFormUrl;
     trackFunction = trackGoToActivation;
   } else if (!hasPersonalised) {
     linkTo = PERSONALISE_URL;
@@ -124,7 +112,6 @@ const WrapperElement = ({
  */
 const Title = ({
   mode,
-  children,
   isActivated,
   isSubmitted,
   isRejected,
@@ -138,23 +125,21 @@ const Title = ({
           {isActivated ? (
             <span>
               Account Activated
-              {mode === 'live' &&
-                !hasKeyAccess && (
-                  <span>
-                    {' '}
-                    (Limited Access)
-                    <small>
-                      <i className="i i-info-circle text-fade" />
-                      <Popover align="top" followPointer={true} theme="dark">
-                        <PopoverBody>
-                          You can still use Payment Links and Invoices. Add your
-                          Website/App URL to get access to our API’s and other
-                          products like Route, Subscriptions etc.
-                        </PopoverBody>
-                      </Popover>
-                    </small>
-                  </span>
-                )}
+              {mode === 'live' && !hasKeyAccess && (
+                <span>
+                  {' '}
+                  (Limited Access)
+                  <small>
+                    <i className="i i-info-circle text-fade" />
+                    <Popover align="top" followPointer={true} theme="dark">
+                      <PopoverBody>
+                        You can still use Payment Links and Invoices. Add your Website/App URL to
+                        get access to our API’s and other products like Route, Subscriptions etc.
+                      </PopoverBody>
+                    </Popover>
+                  </small>
+                </span>
+              )}
             </span>
           ) : isRejected ? (
             <span>
@@ -163,9 +148,8 @@ const Title = ({
                 <i className="i i-info-circle text-fade" />
                 <Popover align="top" followPointer={true} theme="dark">
                   <PopoverBody>
-                    We would not be able to support your business as the bank
-                    has not approved your activation request. We have sent you
-                    an email with more details.
+                    We would not be able to support your business as the bank has not approved your
+                    activation request. We have sent you an email with more details.
                   </PopoverBody>
                 </Popover>
               </small>
@@ -175,16 +159,16 @@ const Title = ({
           ) : (
             <span>
               {/*
-                  * If account is not activated or rejected but submitted,
-                  * we show "Activation Form Submitted" with popover
-                  */}
+               * If account is not activated or rejected but submitted,
+               * we show "Activation Form Submitted" with popover
+               */}
               Activation Form Submitted{' '}
               <small>
                 <i className="i i-info-circle text-fade" />
                 <Popover align="top" followPointer={true} theme="dark">
                   <PopoverBody>
-                    Our team will review the form and submitted documents. We
-                    will reach out on your contact email for all updates.
+                    Our team will review the form and submitted documents. We will reach out on your
+                    contact email for all updates.
                   </PopoverBody>
                 </Popover>
               </small>
@@ -203,7 +187,6 @@ const Title = ({
  */
 const Text = ({
   mode,
-  children,
   merchantId,
   isActivated,
   isSubmitted,
@@ -253,10 +236,7 @@ const Text = ({
           <span>
             {mode === TEST_MODE ? (
               <span>
-                <Link
-                  to={PERSONALISE_URL}
-                  onClick={() => trackGoToPersonalise(stepNum)}
-                >
+                <Link to={PERSONALISE_URL} onClick={() => trackGoToPersonalise(stepNum)}>
                   Personalise
                 </Link>
                 <span>
@@ -291,16 +271,12 @@ const Text = ({
 const Progress = ({ progress }) => {
   return (
     <div className="activation-progress">
-      <ProgressBar type="success" max={100} value={progress} />
+      <ActivationProgressBar type="success" max={100} value={progress} />
     </div>
   );
 };
 
 export default class ActivationStep extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   getStep() {
     const { isActivated, isSubmitted } = this.props.user;
 
@@ -327,6 +303,7 @@ export default class ActivationStep extends Component {
       business_website: businessWebsite,
       has_key_access: hasKeyAccess,
       clarification_mode: clarificationMode,
+      isActivationFormFullView,
     } = user;
 
     const { hasPersonalised } = config;
@@ -343,6 +320,7 @@ export default class ActivationStep extends Component {
         needsClarification={needsClarification}
         hasPersonalised={hasPersonalised}
         stepNum={stepNum}
+        isActivationFormFullView={isActivationFormFullView}
       >
         <div className="media-icon">
           <Icon
@@ -368,17 +346,15 @@ export default class ActivationStep extends Component {
                   hasKeyAccess={hasKeyAccess}
                 />
               </b>
-              {!isActivated &&
-                !isSubmitted && (
-                  <span className="activation-progress-num">{progress}%</span>
-                )}
-            </div>
-            {!isActivated &&
-              !isSubmitted && (
-                <div>
-                  <Progress progress={progress} />
-                </div>
+              {!isActivated && !isSubmitted && (
+                <span className="activation-progress-num">{progress}%</span>
               )}
+            </div>
+            {!isActivated && !isSubmitted && (
+              <div>
+                <Progress progress={progress} />
+              </div>
+            )}
           </div>
           <div className="step-desc">
             <Text

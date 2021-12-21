@@ -118,6 +118,7 @@ const MerchantDetails = ({
   tracking,
   fetchWorkflowStatus,
 }) => {
+  const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
   const openNeedsClarificationModal = ({ workflowType, clarificationReason, onResponseSubmit }) => {
     analyticsTrack({
       objectName: 'needs clarification respond',
@@ -378,7 +379,7 @@ const MerchantDetails = ({
           value={() => (
             <span>
               <Link
-                to={isMobileDevice() ? '/onboarding/steps' : '/activation'}
+                to={isMobileDevice() ? '/onboarding/steps' : activationUrl}
                 onClick={() => {
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated(trackerName, {

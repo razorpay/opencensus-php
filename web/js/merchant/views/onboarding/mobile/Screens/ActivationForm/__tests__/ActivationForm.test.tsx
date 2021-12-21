@@ -105,6 +105,5 @@ test('ActivationForm Flow', async () => {
   await waitFor(() => fireEvent.click(screen.getByText('Submit KYC')));
   fireEvent.click(screen.getByTestId('backIcon'));
   fireEvent.click(screen.getByText('Business Overview'));
-  await waitFor(() => fireEvent.click(screen.getByText('Save and Exit')));
   await waitFor(() => fireEvent.click(screen.getByText('FAQs')));
 });

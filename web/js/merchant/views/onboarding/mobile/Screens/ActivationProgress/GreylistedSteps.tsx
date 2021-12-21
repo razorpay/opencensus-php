@@ -41,6 +41,7 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
     }),
     shallow,
   );
+  const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
@@ -53,7 +54,7 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
   };
 
   const goToNcFlow = () => {
-    history.push('/activation');
+    history.push(activationFormUrl);
   };
 
   const closeModal = () => {

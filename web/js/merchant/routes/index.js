@@ -175,6 +175,11 @@ const PlanNew = lazy(() =>
 const ActivationContainer = lazy(() =>
   import(/* webpackChunkName: "MerchantActivation" */ 'merchant/containers/Activation'),
 );
+const ActivationFullViewContainer = lazy(() =>
+  import(
+    /* webpackChunkName: "MerchantActivationNativeView" */ 'merchant/containers/Activation/ActivationNativeView'
+  ),
+);
 const NewRegistrationLink = lazy(() =>
   import(
     /* webpackChunkName: "RegistrationLinksNew" */ 'merchant/views/Subscriptions/RegistrationLinks/New'
@@ -535,6 +540,10 @@ const fullPageViewsMap = {
   '/onboarding/form': {
     component: ActivationForm,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
+  },
+  '/kyc': {
+    component: ActivationFullViewContainer,
+    additionalCondition: (user) => user.isActivationFormFullView,
   },
   '/app-store/:partner': {
     component: PartnerPage,

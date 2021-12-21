@@ -57,6 +57,7 @@ class ActivationCard extends Component {
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
     const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
     const isReferredMerchant = this.props.referee?.status === 'signup';
+    const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
 
     switch (activationState) {
       case 'L1_Start': {
@@ -87,7 +88,7 @@ class ActivationCard extends Component {
             )}
             <div>
               <Link
-                to="/activation"
+                to={activationFormUrl}
                 className="btn btn-primary"
                 onClick={() => {
                   track.activateAccount();
@@ -163,7 +164,7 @@ class ActivationCard extends Component {
             ) : null}
             <div>
               <Link
-                to="/activation"
+                to={activationFormUrl}
                 className="btn btn-primary"
                 onClick={() => {
                   track.activateAccount();

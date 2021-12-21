@@ -6,6 +6,7 @@ import { createSidetab, createPopup } from '@typeform/embed';
 import Loader from 'common/ui/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
+import { removeItem } from 'common/utils/localStorage';
 import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -302,6 +303,26 @@ class App extends Component {
         removeSplashLoader();
         this.setState({ isLoading: false });
       });
+
+    if (
+      !user.activation_form_milestone &&
+      !user.activated &&
+      this.props.user.isActivationFormFullView
+    ) {
+      if (isMobileDevice()) {
+        this.props.history.push('/onboarding/steps');
+      } else {
+        const firstStepToken = 'onboarding_first_step';
+        removeItem(`${firstStepToken}--${user.current}`);
+        this.props.history.push('/kyc');
+      }
+    } else if (
+      this.props.user.isActivationFormFullView &&
+      this.props.location.pathname === '/activation' &&
+      !isMobileDevice()
+    ) {
+      this.props.history.push('/kyc');
+    }
   }
 
   openRequestEmailPopup() {
@@ -336,7 +357,7 @@ class App extends Component {
         source: 'dashboard',
         email: `${user.email}`,
       };
-      if(user.showNPSSurvey() === true) {
+      if (user.showNPSSurvey() === true) {
         const GoLiveNPSEnableTypeForm = createSidetab(
           'Ym2oQE39', // go live survey
           {
@@ -363,7 +384,7 @@ class App extends Component {
         );
         this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
       }
-    })
+    });
     const user = window.rzp_user;
     if (user) {
       this.openRequestEmailPopup();
@@ -866,6 +887,7 @@ class App extends Component {
       isEmailMandatoryOnL1: user.isEmailMandatoryOnL1,
       isEmailNonMandatoryOnL1: user.isEmailNonMandatoryOnL1,
       isEmailNonMandatoryOnL2Form: user.isEmailNonMandatoryOnL2Form,
+      isActivationFormFullView: user.isActivationFormFullView,
     };
   };
 

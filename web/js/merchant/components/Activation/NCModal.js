@@ -2,7 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 
-const NCModal = ({ onClose }) => {
+const NCModal = ({ isActivationFormFullView, onClose }) => {
+  const activationUrl = isActivationFormFullView ? '/kyc' : '/activation';
   return (
     <ModalMask>
       <Modal className="nc-status-modal" onClose={onClose}>
@@ -20,7 +21,7 @@ const NCModal = ({ onClose }) => {
               </p>
             </div>
           </div>
-          <Link to="/activation">
+          <Link to={activationUrl}>
             <button className="btn btn-primary" onClick={onClose}>
               Add Clarifications
             </button>

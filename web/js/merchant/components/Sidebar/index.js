@@ -10,7 +10,6 @@ import * as EventsActions from 'merchant/reducers/trackEvents';
 import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reducers/home';
 
 import ActivationProgress from './ActivationProgress';
-import { trackGoToActivation, trackGoToConfig } from './ga';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
@@ -144,52 +143,27 @@ export default class Sidebar extends Component {
 
   onSidebarBannerClick = () => {
     const { user } = this.props;
-    const { showInstantActivation } = user;
-    let isAcceptPaymentsShown = false;
+    const isL1Submitted = user?.instantActivation?.isL1Submitted;
 
-    if (this.props.showMobileMenu) {
-      this.props.toggleMobileMenu();
-    }
+    const objectName = `${isL1Submitted ? 'L2' : 'L1'} Form`;
 
-    if (user.isSubmitted && user.activation_progress === 100) {
-      this.props.history.push('/config');
-    } else if (
-      user.activation_progress < 100 &&
-      user.instantActivation.isL1Submitted &&
-      user.isActivated &&
-      user.instantActivation.isWhitelistFlow
-    ) {
-      // if instantly activated and whitelisted, open accept payments modal
-      isAcceptPaymentsShown = true;
-      this.props.showAcceptPaymentsModal();
+    this.props.trackEvents({
+      objectName,
+      actionName: 'initiated',
+      screen: 'home page',
+      properties: {
+        ctaLabel: 'Account Activation',
+        ctaLocation: 'LHS_Nav_Bar',
+      },
+    });
+
+    if (user.isOnboardingV2Enabled && isMobileDevice()) {
+      this.props.history.push('/onboarding/steps');
+    } else if (user.isActivationFormFullView) {
+      this.props.history.push('/kyc');
     } else {
-      const isL1Submitted = user?.instantActivation?.isL1Submitted;
-
-      const objectName = `${isL1Submitted ? 'L2' : 'L1'} Form`;
-
-      this.props.trackEvents({
-        objectName,
-        actionName: 'initiated',
-        screen: 'home page',
-        properties: {
-          ctaLabel: 'Account Activation',
-          ctaLocation: 'LHS_Nav_Bar',
-        },
-      });
-      if (user.isOnboardingV2Enabled && isMobileDevice()) {
-        this.props.history.push('/onboarding/steps');
-      } else {
-        this.props.history.push('/activation');
-      }
+      this.props.history.push('/activation');
     }
-
-    return this.props.user.isSubmitted
-      ? trackGoToConfig(showInstantActivation)
-      : !isAcceptPaymentsShown &&
-          trackGoToActivation(
-            showInstantActivation &&
-              (user.instantActivation.isL1Submitted ? 'KYC Form' : 'L1 Form'),
-          );
   };
 
   hideSidebar() {

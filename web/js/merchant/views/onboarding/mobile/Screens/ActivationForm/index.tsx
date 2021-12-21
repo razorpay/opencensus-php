@@ -148,6 +148,15 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     ) {
       setActiveTabId('business_overview');
     }
+    trackEvents({
+      objectName: 'native full view activation form',
+      actionName: 'displayed',
+      screen: 'KYC Document',
+      properties: {
+        show_activation_form_full_view: 'true',
+        experiment_name: 'show_activation_form_full_view',
+      },
+    });
   }, []);
 
   useEffect(() => {
@@ -683,31 +692,33 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                 </View>
               </View>
             </Flex>
-            <Link
-              onClick={() => {
-                if (
-                  !submitted &&
-                  !isDedupe &&
-                  (data.poi_verification_status !== 'initiated' ||
-                    experiments.isL2AllowedForPoiInitiated)
-                ) {
-                  setIsSaveAndExitModalOpen(true);
-                } else {
-                  history.push('/dashboard');
-                }
+            {!(!data.activation_form_milestone && experiments.isActivationFormFullView) && (
+              <Link
+                onClick={() => {
+                  if (
+                    !submitted &&
+                    !isDedupe &&
+                    (data.poi_verification_status !== 'initiated' ||
+                      experiments.isL2AllowedForPoiInitiated)
+                  ) {
+                    setIsSaveAndExitModalOpen(true);
+                  } else {
+                    history.push('/dashboard');
+                  }
 
-                trackEvents({
-                  objectName: 'SignUp',
-                  actionName: 'form fill',
-                  screen: 'home page',
-                  eventAction: 'dropped',
-                });
-              }}
-              size="xsmall"
-              weight="bold"
-            >
-              Save and Exit
-            </Link>
+                  trackEvents({
+                    objectName: 'SignUp',
+                    actionName: 'form fill',
+                    screen: 'home page',
+                    eventAction: 'dropped',
+                  });
+                }}
+                size="xsmall"
+                weight="bold"
+              >
+                Save and Exit
+              </Link>
+            )}
           </StyledHeader>
         </Flex>
       </Space>

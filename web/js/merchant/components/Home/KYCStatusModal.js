@@ -61,8 +61,9 @@ const KYCStatusModal = ({
   };
 
   const goToActivationForm = () => {
+    const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
     onClose();
-    history.push('/activation');
+    history.push(activationUrl);
   };
 
   const openPaymentAcceptModal = () => {
@@ -88,7 +89,11 @@ const KYCStatusModal = ({
   const instantActivationModal = () => {
     if (['poi_verified', 'L1_instantly_activated'].includes(activationState)) {
       return (
-        <InstantActivationModal openPaymentAcceptModal={openPaymentAcceptModal} onClose={onClose} />
+        <InstantActivationModal
+          isActivationFormFullView={user.isActivationFormFullView}
+          openPaymentAcceptModal={openPaymentAcceptModal}
+          onClose={onClose}
+        />
       );
     }
     return null;
@@ -97,6 +102,7 @@ const KYCStatusModal = ({
   const args = {
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
     isUnregisteredBusiness: user.isUnregisteredBusiness,
+    isActivationFormFullView: user.isActivationFormFullView,
     onGoToDashboard,
     isActivated: user.isActivated,
     activationDuration,

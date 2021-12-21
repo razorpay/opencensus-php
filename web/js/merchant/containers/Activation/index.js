@@ -338,7 +338,7 @@ export default class ActivationContainer extends Component {
     };
     const isLoading = !data;
     // `onClose` is passed only when Modal is to be opened. In case of Account Details, onClose is passed.
-    const isModal = !!this.props.onClose;
+    const isModal = !!this.props.onClose && this.props.location.pathname !== '/kyc';
 
     let content = null;
     let modalClasses = ['animate-down'];
@@ -394,7 +394,13 @@ export default class ActivationContainer extends Component {
       </div>
     ) : (
       <div>
-        <div className="ActivationContainer kyc">
+        <div
+          className={
+            this.props.location.pathname === '/kyc'
+              ? 'ActivationContainer kyc fullViewFormContainer'
+              : 'ActivationContainer kyc'
+          }
+        >
           {showWelcomeBanner && (
             <div className="welcome-header">
               <div>Welcome {user.contact_name}</div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { formatNumberWithCommas } from 'common/utils/numerals';
@@ -34,7 +34,7 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
               details: {
                 index: 'payments',
                 column: 'base_amount',
-                mode: mode,
+                mode,
               },
             },
           },
@@ -65,7 +65,10 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
           ? 'You have reached the payments limit of  ₹15,000 for now. To extend the limit complete your KYC and get it approved'
           : 'You can accept payments upto ₹15,000 for now. To extend the limit complete your KYC and get it approved';
         activationFlowButton = (
-          <button className="btn btn-primary" onClick={() => history.push('/activation')}>
+          <button
+            className="btn btn-primary"
+            onClick={() => history.push(user.isActivationFormFullView ? '/kyc' : '/activation')}
+          >
             Complete KYC
           </button>
         );
@@ -140,12 +143,12 @@ const ProgressBarInfo = ({ accepted, credits }) => {
   );
 };
 
-const ProgressBar = ({ width, percent, backgroundColor, ProgressColor }) => {
+const ProgressBar = ({ width, percent, backgroundColor: bgColor, ProgressColor }) => {
   return (
     <div>
       <div
         className="progress-div"
-        style={{ width: width, backgroundColor: backgroundColor || 'rgb(233, 233, 233)' }}
+        style={{ width, backgroundColor: bgColor || 'rgb(233, 233, 233)' }}
       >
         <div
           style={{
@@ -161,5 +164,5 @@ const ProgressBar = ({ width, percent, backgroundColor, ProgressColor }) => {
 
 export default compose(
   withRouter,
-  RTracking(() => window.rzpQ.component('PaymentProgressBar')),
+  rTracking(() => window.rzpQ.component('PaymentProgressBar')),
 )(PaymentProgressBar);

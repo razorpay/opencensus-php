@@ -9,6 +9,7 @@ import { getCommonAnalyticsProperties, getCommonSegmentProperties } from 'common
 export const kycModalContent = (args = {}) => {
   const activationState = getActivationState(args.activationData, args.isUnregisteredBusiness);
   const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
+  const activationFormUrl = args.isActivationFormFullView ? '/kyc' : '/activation';
 
   switch (activationState) {
     case 'L2_dedupe_blocked':
@@ -353,7 +354,7 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <Link to="/activation" onClick={() => args.onClose()} className="btn btn-primary">
+          <Link to={activationFormUrl} onClick={() => args.onClose()} className="btn btn-primary">
             Update Details
           </Link>
         ),
@@ -371,7 +372,7 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <Link to="/activation" onClick={() => args.onClose()} className="btn btn-primary">
+          <Link to={activationFormUrl} onClick={() => args.onClose()} className="btn btn-primary">
             Update Details
           </Link>
         ),

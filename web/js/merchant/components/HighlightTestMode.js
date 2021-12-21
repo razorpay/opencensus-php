@@ -31,7 +31,7 @@ function HighlightTestMode(props) {
     });
   };
 
-  if (highlightMode === false || location.pathname === '/activation') return null;
+  if (highlightMode === false || ['/activation', '/kyc'].includes(location.pathname)) return null;
 
   const isPaymentPages = location.pathname === '/paymentpages/new';
 

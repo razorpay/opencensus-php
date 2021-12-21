@@ -42,6 +42,7 @@ const InstantActivationModal = ({
   handleProductQuickGuide: productQuickGuide,
   currentOnboarding,
   tracking,
+  isActivationFormFullView = false,
 }) => {
   const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
   const isPaymentLinkRecommendedProduct = getLandingProduct === 'payment_link';
@@ -74,7 +75,11 @@ const InstantActivationModal = ({
             }),
           );
           onClose();
-          history.push('/activation');
+          if (isActivationFormFullView) {
+            history.push('/kyc');
+          } else {
+            history.push('/activation');
+          }
         }}
         children="Complete KYC"
       />
