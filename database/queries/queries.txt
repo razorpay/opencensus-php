@@ -6472,6 +6472,9 @@ ALTER TABLE qr_code_config
 ALTER TABLE merchant_documents
     ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;
 
+ALTER TABLE cards
+    ADD COLUMN token_iin char(9) DEFAULT NULL;
+
 CREATE TABLE payouts_status_details
 (
     id char(14) COLLATE utf8mb4_bin NOT NULL PRIMARY KEY,

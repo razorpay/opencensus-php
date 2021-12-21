@@ -400,7 +400,8 @@ class Core extends Base\Core
         // Get details for this iin from card repository
         $iin = $this->repo->card->retrieveIinDetails($iinNumber);
 
-        $cardIin = $this->repo->card->retrieveIinDetails($card->getIin());
+        // Get details for this iin from card repository
+        $tokenIin = $this->repo->card->retrieveIinDetails($card->getIin());
 
         $type = null;
 
@@ -475,8 +476,14 @@ class Core extends Base\Core
         $card->setCategory($category);
 
         $this->checkCvvLength($card, $input);
+        
+        if ((empty($tokenIin) === false) and  
+            ($tokenIin->getIin() !== $iin->getIin()))
+        {
+            $card->tokenIinRelation()->associate($tokenIin);
+        }
 
-        return $cardIin;
+        return $iin;
     }
 
     protected function traceMissingIin($card)

@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE2          = 'reference2';
     const REFERENCE3          = 'reference3';
     const REFERENCE4          = 'reference4';
+    const TOKEN_IIN           = 'token_iin';
 
     /**
      * Number and cvv are never saved in the database
@@ -104,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_FINGERPRINT,
         self::INTERNATIONAL,
         self::IIN,
+        self::TOKEN_IIN,
     ];
 
     protected $guarded = [self::ID];
@@ -150,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::GLOBAL_FINGERPRINT,
         self::NETWORK_CODE,
         self::TRIVIA,
+        self::TOKEN_IIN,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -169,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRY_YEAR,
         self::FLOWS,
         self::SUBTYPE,
+        self::TOKEN_IIN,
     ];
 
     protected $fundAccount = [
@@ -200,13 +204,15 @@ class Entity extends Base\PublicEntity
         self::ISSUER         => null,
         self::COUNTRY        => null,
         self::TRIVIA         => null,
+        self::TOKEN_IIN      => null,
         self::CATEGORY       => null,
         self::NAME           => '',
         self::LENGTH         => 0,
     ];
 
     protected $casts = [
-        self::IIN            => 'string'
+        self::IIN            => 'string',
+        self::TOKEN_IIN      => 'string'
     ];
 
     public static $networkTokenCardUnsetAttributes = [
@@ -238,6 +244,11 @@ class Entity extends Base\PublicEntity
     public function iinRelation()
     {
         return $this->belongsTo('RZP\Models\Card\IIN\Entity', 'iin', 'iin');
+    }
+
+    public function tokeniinRelation()
+    {
+        return $this->belongsTo('RZP\Models\Card\IIN\Entity', 'token_iin', 'iin');
     }
 
     public function globalCard()
@@ -454,6 +465,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getTokenIin()
+    {
+        return $this->getAttribute(self::TOKEN_IIN);
+    }        
+
     public function getFirstName()
     {
         $name = $this->getAttribute(self::NAME);
@@ -602,6 +618,11 @@ class Entity extends Base\PublicEntity
     public function setCategory($category)
     {
         $this->setAttribute(self::CATEGORY, $category);
+    }
+
+    public function setTokenIin($tokenIin)
+    {
+        $this->setAttribute(self::TOKEN_IIN, $tokenIin);
     }
 
     public function setSubType($subtype)

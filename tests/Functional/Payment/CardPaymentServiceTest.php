@@ -1635,7 +1635,9 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('IN', $card['country']);
         $this->assertEquals('ICIC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
-        $this->assertEquals('404464', $card['iin']);
+
+        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('404464', $card['token_iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -1872,8 +1874,10 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('IN', $card['country']);
         $this->assertEquals('ICIC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
-        $this->assertEquals('404464', $card['iin']);
 
+        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('404464', $card['token_iin']);
+      
         $this->disbaleCpsConfig();
     }
 
@@ -2110,7 +2114,8 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('IN', $card['country']);
         $this->assertEquals('ICIC', $card['issuer']);
         $this->assertEquals('credit', $card['type']);
-        $this->assertEquals('404464', $card['iin']);
+        $this->assertEquals('400782', $card['iin']);
+        $this->assertEquals('404464', $card['token_iin']);
 
         $this->disbaleCpsConfig();
     }
