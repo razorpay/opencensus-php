@@ -13,6 +13,8 @@ use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Support\Facades\Redis;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Services\Raven as RavenService;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\User\Validator as Validator;
 use Illuminate\Support\Facades\Mail as Mail;
@@ -2565,6 +2567,52 @@ class UserTest extends TestCase
         $method->setAccessible(true);
 
         $response = $method->invoke($validatorMock, "url");
+
+        $this->assertEquals($successResponse, $response);
+    }
+
+    public function testRavenRequestWithTwoFailures()
+    {
+        $this->expectException(ServerErrorException::class);
+
+        $validatorMock = $this->getMockBuilder(RavenService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRavenRequestResponse'])
+            ->getMock();
+
+        $validatorMock->method('getRavenRequestResponse')
+            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while sending request to raven', 'operation timed out')),
+                $this->throwException(new \Requests_Exception('Error while sending request to raven', 'operation timed out'))));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('sendRavenRequest');
+
+        $method->setAccessible(true);
+
+        $method->invoke($validatorMock, []);
+    }
+
+    public function testRavenRequestWithOneFailureOneSuccess()
+    {
+        $successResponse = ["success => true"];
+
+        $validatorMock = $this->getMockBuilder(RavenService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getRavenRequestResponse'])
+            ->getMock();
+
+        $validatorMock->method('getRavenRequestResponse')
+            ->will($this->onConsecutiveCalls($this->throwException(new \Requests_Exception('Error while sending request to raven', 'operation timed out')),
+                $successResponse));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('sendRavenRequest');
+
+        $method->setAccessible(true);
+
+        $response = $method->invoke($validatorMock, []);
 
         $this->assertEquals($successResponse, $response);
     }

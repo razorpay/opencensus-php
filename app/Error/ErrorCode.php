@@ -1368,6 +1368,8 @@ class ErrorCode
     const SERVER_ERROR_HASH_MISMATCH                                                = 'SERVER_ERROR_HASH_MISMATCH';
     // Requests from api service to stork failed unexpectedly.
     const SERVER_ERROR_STORK_FAILURE                                                = 'SERVER_ERROR_STORK_FAILURE';
+    // Requests from api service to raven failed unexpectedly.
+    const SERVER_ERROR_RAVEN_FAILURE                                                = 'SERVER_ERROR_RAVEN_FAILURE';
 
     // Templating Service Error Codes
     const SERVER_ERROR_TEMPLATING_REQUEST_FAILURE                                   = 'SERVER_ERROR_TEMPLATING_REQUEST_FAILURE';

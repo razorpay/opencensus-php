@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Constants\Environment;
+use RZP\Exception\ServerErrorException;
 
 
 class Raven
@@ -27,6 +28,9 @@ class Raven
 
     // In test mode this otp is evaluated as true in verify.
     const TEST_VALID_OTP = '754081';
+
+    // To add retries for raven request
+    const MAX_ALLOWED_RAVEN_REQUEST_ATTEMPTS = 2;
 
     // Passing orgId into sms request raven service
     const RavenOrgIdSmsRequest = "raven_org_id_sms_request";
@@ -270,10 +274,46 @@ class Raven
         $this->trace->info(TraceCode::RAVEN_RESPONSE, $response);
     }
 
-    protected function sendRavenRequest($request)
+    protected function sendRavenRequest($request, int $maxAllowedAttempts = self::MAX_ALLOWED_RAVEN_REQUEST_ATTEMPTS)
     {
         $this->traceRequest($request);
 
+        $currentAttempt = 1;
+
+        while ($currentAttempt <= $maxAllowedAttempts)
+        {
+            try
+            {
+                $response = $this->getRavenRequestResponse($request);
+
+                if ($currentAttempt > 1)
+                {
+                    $this->trace->info(TraceCode::RAVEN_RETRY_SUCCESS, ['attempt' => $currentAttempt]);
+                }
+
+                return $response;
+            }
+            catch(\Requests_Exception $e)
+            {
+                if ($currentAttempt == $maxAllowedAttempts)
+                {
+                    throw new ServerErrorException(
+                        "Failed to complete request",
+                        ErrorCode::SERVER_ERROR_RAVEN_FAILURE,
+                        ['maxAllowedAttempts' => $maxAllowedAttempts],
+                        $e
+                    );
+                }
+            }
+
+            $currentAttempt++;
+        }
+
+        return $response;
+    }
+
+    protected function getRavenRequestResponse($request)
+    {
         $method = $request['method'];
 
         try
