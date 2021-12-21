@@ -137,7 +137,9 @@ class Netbanking extends NetbankingBase
                                 'payment_callback_post'
                             ),
                             'method'  => 'post',
-                            'content' => []
+                            'content' => [
+                                'encdata' => 'dummy_response_data',
+                            ]
                         ]
                     ]
                 ]
@@ -236,7 +238,9 @@ class Netbanking extends NetbankingBase
                                     'payment_callback_post'
                                 ),
                                 'method'  => 'post',
-                                'content' => []
+                                'content' => [
+                                    'encdata' => 'dummy_response_data',
+                                ]
                             ]
                         ]
                     ]

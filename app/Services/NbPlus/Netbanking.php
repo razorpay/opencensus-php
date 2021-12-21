@@ -60,6 +60,12 @@ class Netbanking extends Service
             return true;
         }
 
+        if(($this->action === Action::CALLBACK) and (empty($input['gateway']) === true))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);
+        }
+
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();

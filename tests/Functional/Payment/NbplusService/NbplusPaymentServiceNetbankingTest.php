@@ -438,4 +438,38 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
 
         $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
+
+    public function testEmptyCallback()
+    {
+        if($this->bank !== "ICIC")
+        {
+            $this->bank = 'ICIC';
+
+            $this->terminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+            $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        }
+
+        $paymentArray = $this->payment;
+
+        $this->mockServerContentFunction(function (&$content, $action = null)
+        {
+            if($action === NbPlusPaymentService\Action::AUTHORIZE)
+            {
+                $content['response']['data']['next']['redirect']['content'] = [];
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
+    }
+
 }
