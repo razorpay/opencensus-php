@@ -489,7 +489,8 @@ class Service extends Base\Service
                 }
                 catch (Throwable $e)
                 {
-                    $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR, $e->getTrace());
+                    $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
+                        ['error' => $e->getMessage()]);
                     $response = ['city' => '', 'state' => '', 'state_code' => ''];
                 }
 
