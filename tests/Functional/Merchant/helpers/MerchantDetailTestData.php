@@ -2390,7 +2390,7 @@ return [
         ],
     ],
 
-    'testPutPresignupDetailsWithContactMobileExists' => [
+    'testPutPresignupDetailsWithContactMobileExistsUniquenessExperimentOn' => [
         'request' => [
             'content' => [
                 'business_type' => '2',

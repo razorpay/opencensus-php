@@ -43,6 +43,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
@@ -1177,10 +1178,11 @@ We look forward to transacting with you!
 
         $this->verifyOnboardingEvent('banking');
 
-        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchantDetail = $this->fixtures->create('merchant_detail', [Entity::CONTACT_MOBILE => '1234567890']);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['response']['content'][Entity::CONTACT_EMAIL] =  $merchantDetail[Entity::CONTACT_EMAIL];
+        $testData['response']['content'][Entity::CONTACT_MOBILE] =  $merchantDetail[Entity::CONTACT_MOBILE];
 
         $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail['merchant_id']);
 
@@ -5721,8 +5723,38 @@ You can now start accepting payments from https://www.example.com.
 
     }
 
-    public function testPutPresignupDetailsWithContactMobileExists()
+    protected function enableRazorXTreatmentForUniqueMobile($variant)
     {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        if($variant === MerchantConstants::RAZORX_EXPERIMENT_ON)
+        {
+            $this->app->razorx->method('getTreatment')->will(
+                $this->returnCallback(
+                    function ($mid, $feature, $mode)
+                    {
+                        if ($feature === \RZP\Models\Feature\Constants::UNIQUE_MOBILE_ON_PRESIGNUP)
+                        {
+                            return 'on';
+                        }
+                        else
+                        {
+                            return 'control';
+                        }
+                    })
+            );
+        }
+    }
+
+    public function testPutPresignupDetailsWithContactMobileExistsUniquenessExperimentOn()
+    {
+        $this->enableRazorXTreatmentForUniqueMobile(MerchantConstants::RAZORX_EXPERIMENT_ON);
+
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
         $testData = &$this->testData[__FUNCTION__];
 
@@ -5748,9 +5780,25 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 
+    public function testPutPresignupDetailsWithContactMobileExistsUniquenessExperimentOff()
+    {
+        $this->enableRazorXTreatmentForUniqueMobile('anything');
+
+        $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
+
+        $this->fixtures->merchant_detail->createSane(['merchant_id' => $merchant['id'], 'contact_mobile' => '1234567890']);
+
+        $this->fixtures->user->createBankingUserForMerchant($merchant['id'], ['signup_via_email' => 1]);
+
+        $this->testPutPreSignupDetails();
+
+    }
+
     public function testPutPresignupDetailsWithContactMobileExistsWithCountryCode()
     {
-        $testData = &$this->testData['testPutPresignupDetailsWithContactMobileExists'];
+        $this->enableRazorXTreatmentForUniqueMobile(MerchantConstants::RAZORX_EXPERIMENT_ON);
+
+        $testData = &$this->testData['testPutPresignupDetailsWithContactMobileExistsUniquenessExperimentOn'];
 
         $merchant = $this->fixtures->create('merchant', ['signup_via_email' => 1]);
         $merchant2 = $this->fixtures->create('merchant', ['signup_via_email' => 1]);

@@ -230,7 +230,7 @@ class Validator extends Base\Validator
 
     protected static $preSignupRules = [
         Entity::NAME                  => 'sometimes|alpha_space|max:200',
-        Entity::CONTACT_MOBILE        => 'sometimes|max:15|contact_syntax|unique:users,contact_mobile',
+        Entity::CONTACT_MOBILE        => 'sometimes|max:15|contact_syntax',
         Entity::EMAIL                 => 'sometimes|email'
     ];
 

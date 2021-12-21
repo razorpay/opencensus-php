@@ -255,7 +255,7 @@ class Validator extends Base\Validator
         Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,7',
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
-        Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax|unique:merchant_details',
+        Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
     ];
@@ -471,25 +471,28 @@ class Validator extends Base\Validator
       Entity::CONTACT_MOBILE                            => 'filled|unique:merchant_details',
     ];
 
-    protected static $preSignupValidators = [
-        'unique_contact_mobile'
-    ];
-
     /**
      * @param $input
+     * @param $merchantId
      * @throws NumberParseException
      */
-    public function validateUniqueContactMobile($input)
+    public function validateUniqueContactMobile($input, $merchantId)
     {
-        if(isset($input[Entity::CONTACT_MOBILE]) === false)
-        {
-            return;
-        }
+        $uniqueMobileCheckEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+            $merchantId,
+            \RZP\Models\Feature\Constants::UNIQUE_MOBILE_ON_PRESIGNUP
+        );
 
-        $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
-        foreach ($validMobileNumberFormats as $mobileNumber)
+        if(
+            (isset($input[Entity::CONTACT_MOBILE]) === true)
+            and ($uniqueMobileCheckEnabled === true)
+        )
         {
-            $this->validateInput('unique_contact_mobile', [Entity::CONTACT_MOBILE => $mobileNumber]);
+            $validMobileNumberFormats = (new PhoneBook($input[Entity::CONTACT_MOBILE]))->getMobileNumberFormats();
+            foreach ($validMobileNumberFormats as $mobileNumber)
+            {
+                $this->validateInput('unique_contact_mobile', [Entity::CONTACT_MOBILE => $mobileNumber]);
+            }
         }
 
     }

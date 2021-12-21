@@ -1107,6 +1107,7 @@ class Service extends Base\Service
         $merchant = $this->app['basicauth']->getMerchant();
 
         (new Validator)->validateSignupViaChannel($input, $merchant);
+        (new Validator)->validateUniqueContactMobile($input, $merchant->getId());
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
         {

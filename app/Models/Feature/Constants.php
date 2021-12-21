@@ -1005,6 +1005,10 @@ class Constants
      */
     const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
 
+    // Feature flag to enable/disable mobile number uniqueness check on contact
+    // details page during pre-signup flow
+    const UNIQUE_MOBILE_ON_PRESIGNUP    = 'unique_mobile_on_presignup';
+
     const PAYOUT_ASYNC_INGRESS = 'payout_async_ingress';
     /**
      * One click checkout
