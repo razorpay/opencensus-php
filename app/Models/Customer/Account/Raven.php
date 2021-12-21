@@ -42,7 +42,8 @@ class Raven extends Base\Core
 
             $this->trace->error(TraceCode::RAVEN_ASYNC_REQUEST_FAILED, $traceData);
 
-            $success = false;
+            $success = true;
+
             $response = $this->raven->sendOtp($request);
 
             if (isset($response['sms_id']) === false)
@@ -83,9 +84,15 @@ class Raven extends Base\Core
             'receiver' => $input['contact'],
             'source' => 'api',
             'params' => [
-                'merchant_name' => $merchant->getBillingLabel()
+                'merchant_name' => strtoupper(substr($merchant->getBillingLabel(), 0, 19))
             ]
         );
+
+        if (isset($input['otp_reason']) === true and
+            $this->validateCheckoutOtpReason($input['otp_reason']) === true)
+        {
+          $request['template'] = $this->getTemplateByOtpReason($input['otp_reason']);
+        }
 
         if (isset($input['sms_hash']) === true)
         {
@@ -120,5 +127,44 @@ class Raven extends Base\Core
         );
 
         return $request;
+    }
+
+    private function getTemplateByOtpReason(string $otpReason): string
+    {
+        switch ($otpReason)
+        {
+            CASE 'verify_coupon':
+                return 'sms.checkout.verify_coupon_otp';
+
+            CASE 'mandatory_login':
+                return 'sms.checkout.mandatory_login_otp';
+
+            CASE 'access_address':
+                return 'sms.checkout.access_address_otp';
+
+            CASE 'save_address':
+                return 'sms.checkout.save_address_otp';
+
+            CASE 'access_card':
+                return 'sms.checkout.access_card_otp';
+
+            CASE 'save_card':
+                return 'sms.checkout.save_card_otp';
+
+            default:
+                return 'sms.otp';
+        }
+    }
+
+    private function validateCheckoutOtpReason($otpReason)
+    {
+        return in_array($otpReason, [
+            'verify_coupon',
+            'mandatory_login',
+            'access_address',
+            'save_address',
+            'access_card',
+            'save_card',
+        ]);
     }
 }

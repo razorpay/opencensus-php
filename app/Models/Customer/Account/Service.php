@@ -287,6 +287,12 @@ class Service extends Base\Service
                 {
                     $otpInput = array_merge($otpInput, ['sms_hash' => $input['sms_hash']]);
                 }
+
+                if (isset($input['otp_reason']) === true)
+                {
+                    $otpInput = array_merge($otpInput, ['otp_reason' => $input['otp_reason']]);
+                }
+
                 $this->sendOtp($otpInput);
 
                 return ['saved' => true];
@@ -351,6 +357,11 @@ class Service extends Base\Service
                 if (isset($input['sms_hash']) === true)
                 {
                     $otpInput = array_merge($otpInput, ['sms_hash' => $input['sms_hash']]);
+                }
+
+                if (isset($input['otp_reason']) === true)
+                {
+                    $otpInput = array_merge($otpInput, ['otp_reason' => $input['otp_reason']]);
                 }
 
                 $this->sendOtp($otpInput);
