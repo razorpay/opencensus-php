@@ -614,7 +614,7 @@ class Service extends Base\Service
 
             Document\Source::validateSource($documentSource);
 
-            $fileHandler = Factory::getFileStoreHandler($documentSource);
+            $fileHandler = Factory::getFileStoreHandler($documentSource, $this->ba->getMerchantId());
 
             $params[$type] = $fileHandler->uploadFile($documentUploadInput);
         }

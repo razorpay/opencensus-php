@@ -70,6 +70,8 @@ class Type
     const POA_IDENTIFICATION_NUMBER             = 'poa_identification_number';
     const IDENTIFICATION_NUMBER                 = 'identification_number';
 
+    const OTHER              = 'other';
+    const WEBSITE_SCREENSHOT = 'website_screenshot';
     //FIRS Documents
     const FIRS_FILE                             = 'firs_file';
     const FIRS_ZIP                              = 'firs_zip';
@@ -144,6 +146,9 @@ class Type
 
         self::FIRS_FILE,
         self::FIRS_ZIP,
+
+        self::WEBSITE_SCREENSHOT,
+        self::OTHER,
     ];
 
     const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
@@ -196,6 +201,9 @@ class Type
 
         self::FIRS_FILE                       => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ZIP                        => self::ADDITIONAL_DOCUMENTS,
+
+        self::OTHER                           => self::ADDITIONAL_DOCUMENTS,
+        self::WEBSITE_SCREENSHOT              => self::ADDITIONAL_DOCUMENTS,
     ];
 
     /**

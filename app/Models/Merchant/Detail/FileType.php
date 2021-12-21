@@ -10,7 +10,8 @@ class FileType
         'jpg',
         'jpeg',
         'zip',
-        'xml'
+        'xml',
+        'csv',
     ];
 
     const ALLOWED_MIMES = [
@@ -19,8 +20,10 @@ class FileType
        'application/pdf',
        'application/x-pdf',
        'application/zip',
-        'text/xml',
-        'application/xml',
-        'application/octet-stream'
+       'text/xml',
+       'application/xml',
+       'application/octet-stream',
+       'text/csv',
+       'text/plain',
     ];
 }

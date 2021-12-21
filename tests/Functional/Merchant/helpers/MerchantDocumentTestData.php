@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Merchant\Document\Type as DocumentType;
 
 return [
     'testDeleteDocumentIdNotValid' => [
@@ -38,6 +39,18 @@ return [
                 ],
             ]
         ]
+    ],
+
+    'testGetDocumentTypes' => [
+        'request'  => [
+            'url'    => '/merchant_document/types',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'count' => count(DocumentType::VALID_DOCUMENTS)
+            ]
+        ],
     ],
 
     'testDeleteDocumentError' => [
@@ -166,6 +179,22 @@ return [
 
                     ]
                 ],
+            ]
+        ]
+    ],
+
+    'testUploadFilesByAgent' => [
+        'request' => [
+            'url'     => '/merchant_document',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'promoter_address_url',
+                'merchant_id'   => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000'
             ]
         ]
     ],

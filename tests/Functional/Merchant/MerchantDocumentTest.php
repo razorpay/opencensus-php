@@ -95,6 +95,34 @@ class MerchantDocumentTest Extends TestCase
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
     }
 
+    public function testUploadFilesByAgent()
+    {
+        $this->ba->adminAuth();
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayHasKey('id',$content);
+
+        $this->assertArrayHasKey('file_store_id',$content);
+
+        $this->assertArrayHasKey('merchant_id',$content);
+
+        $this->assertArrayHasKey('upload_by_admin_id',$content);
+    }
+
+    public function testGetDocumentTypes()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testDocumentUploadToUFH()
     {
         $this->testDocumentUpload();

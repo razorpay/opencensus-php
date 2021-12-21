@@ -543,6 +543,7 @@ class Name
     const EDIT_MERCHANT_INTERNATIONAL_NEW     = 'edit_merchant_international_new';
     const UPLOAD_MERCHANT_DOCUMENT            = 'upload_merchant_document';
     const DELETE_MERCHANT_DOCUMENT            = 'delete_merchant_document';
+    const ADMIN_UPLOAD_MERCHANT_DOCUMENT      = 'admin_upload_merchant_document';
     const UPDATE_MERCHANT_BANK_ACCOUNT_STATUS = 'merchant_bank_account_change_status';
     const TOGGLE_TRANSACTION_HOLD_STATUS      = 'toggle_transaction_hold_status';
     const CREATE_PROMOTION_EVENT              = 'create_promotion_event';

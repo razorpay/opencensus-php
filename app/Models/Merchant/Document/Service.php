@@ -80,6 +80,49 @@ class Service extends Base\Service
             Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
+    public function uploadFilesByAgent(array $input)
+    {
+        (new Validator())->validateInput(__FUNCTION__, $input);
+
+        $merchantId = $input['merchant_id'];
+
+        (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $merchantCore = new Merchant\Core();
+
+        $merchant = $merchantCore->get($merchantId);
+
+        $documentType = $input[Entity::DOCUMENT_TYPE];
+
+        $param = [
+            $documentType => $input[Entity::FILE]
+        ];
+
+        $adminId = $this->auth->getAdmin()->getId();
+
+        $document = (new Entity)->generateId();
+
+        $document->setUploadByAdminId($adminId);
+
+        $document->merchant()->associate($merchant);
+
+        $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
+
+        $params = [$documentType => $fileAttributes[$documentType]];
+
+        $uploadedDocument = $this->core->storeInMerchantDocument($merchant, $merchant, $params, $document);
+
+        $documentMetaData = [
+            Entity::ID                 => $uploadedDocument[$documentType]->getId(),
+            Entity::FILE_STORE_ID      => $uploadedDocument[$documentType]->getFileStoreId(),
+            Entity::MERCHANT_ID        => $uploadedDocument[$documentType]->getMerchantId(),
+            Entity::UPLOAD_BY_ADMIN_ID => $uploadedDocument[$documentType]->getUploadByAdminId(),
+            Entity::CREATED_AT         => $uploadedDocument[$documentType]->getCreatedAt()
+        ];
+
+        return $documentMetaData;
+    }
+
     protected function uploadActivationFileByPartner(Merchant\Entity $account, Base\PublicEntity $entity, array $input)
     {
         return $this->mutex->acquireAndRelease(
@@ -103,6 +146,18 @@ class Service extends Base\Service
         return $this->core->fetchActivationFilesFromDocument($mid);
     }
 
+    public function merchantDocumentDelete(string $merchantId, string $id)
+    {
+        $merchant = (new Merchant\Core())->get($merchantId);
+
+        $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $merchant);
+
+        $this->repo->deleteOrFail($entity);
+
+        return [
+            'success' => true
+        ];
+    }
 
     public function delete(string $id)
     {
@@ -222,6 +277,13 @@ class Service extends Base\Service
 
             return [$stakeHolder, $account];
         }
+    }
+
+    public function getDocumentTypes()
+    {
+        $types = Type::VALID_DOCUMENTS;
+
+        return (new Base\PublicCollection($types))->toArrayWithItems();
     }
 
     //This function fetches all the FIRS documents for that merchant in a particular

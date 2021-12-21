@@ -47,6 +47,13 @@ class DocumentController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function merchantDocumentDelete(string $merchantId, string $id)
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->merchantDocumentDelete($merchantId, $id);
+
+        return ApiResponse::json($response);
+    }
+
     public function delete(string $id)
     {
         $response = $this->service(Entity::MERCHANT_DOCUMENT)->delete($id);
@@ -54,11 +61,26 @@ class DocumentController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getDocumentTypes()
+    {
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->getDocumentTypes();
+
+        return ApiResponse::json($response);
+    }
     public function fetchFIRSDocuments()
     {
         $input = Request::all();
 
         $response = $this->service(Entity::MERCHANT_DOCUMENT)->fetchFIRSDocuments($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function uploadFilesByAgent()
+    {
+        $input = Request::all();
+
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadFilesByAgent($input);
 
         return ApiResponse::json($response);
     }

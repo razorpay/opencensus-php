@@ -6450,6 +6450,9 @@ KEY `fund_loading_downtimes_start_time_end_time_index` (`start_time`,`end_time`)
 ALTER TABLE vpas
     ADD INDEX vpa_entity_id_entity_type_index (entity_id, entity_type);
 
+ALTER TABLE `merchant_documents`
+    ADD COLUMN `upload_by_admin_id` char(14) DEFAULT NULL;
+
 ALTER TABLE user_device_details
     ADD COLUMN signup_source varchar(50) DEFAULT NULL;
 

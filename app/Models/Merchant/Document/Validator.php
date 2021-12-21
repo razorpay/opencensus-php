@@ -29,6 +29,12 @@ class Validator extends Base\Validator
         Entity::DOCUMENT_DATE => 'sometimes|integer'
     ];
 
+    protected static $uploadFilesByAgentRules = [
+        Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
+        Entity::FILE          => 'required|file',
+        Entity::MERCHANT_ID   => 'required|string'
+    ];
+
     protected static $uploadDocumentRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png',

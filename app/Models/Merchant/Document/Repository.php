@@ -11,7 +11,8 @@ class Repository extends Base\Repository
     protected $entity             = 'merchant_document';
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID   => 'sometimes|alpha_num',
+        Entity::DOCUMENT_TYPE => 'sometimes|string|max:255'
     ];
 
     /**

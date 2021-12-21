@@ -23,13 +23,13 @@ class Factory
      * @return FileHandlerInterface
      * @throws LogicException
      */
-    public static function getFileStoreHandler(string $source): FileHandlerInterface
+    public static function getFileStoreHandler(string $source, $merchantId = null): FileHandlerInterface
     {
         switch ($source)
         {
             case Source::UFH :
 
-                return new UFHFileHandler();
+                return new UFHFileHandler($merchantId);
 
             case Source::API:
 

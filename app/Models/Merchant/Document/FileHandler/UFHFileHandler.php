@@ -13,11 +13,20 @@ class UFHFileHandler implements FileHandlerInterface
 {
     protected $ufhService;
 
-    public function __construct()
+    public function __construct($merchantId = null)
     {
         $app = App::getFacadeRoot();
 
-        $this->ufhService = $app['ufh.service'];
+        $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+
+        if ($ufhServiceMock === true)
+        {
+            $this->ufhService = new \RZP\Services\Mock\UfhService($app);
+        }
+        else
+        {
+            $this->ufhService = new UfhService($app, $app['basicauth']->getMerchantId());
+        }
     }
 
     public function uploadFile(array $input): array

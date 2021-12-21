@@ -11,15 +11,16 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const FILE_STORE_ID = 'file_store_id';
-    const DOCUMENT_TYPE = 'document_type';
-    const ENTITY_TYPE   = 'entity_type';
-    const SOURCE        = 'source';
-    const FILE          = 'file';
-    const SIGNED_URL    = 'signed_url';
-    const OCR_VERIFY    = 'ocr_verify';
-    const VALIDATION_ID = 'validation_id';
-    const ENTITY_ID     = 'entity_id';
+    const FILE_STORE_ID      = 'file_store_id';
+    const DOCUMENT_TYPE      = 'document_type';
+    const ENTITY_TYPE        = 'entity_type';
+    const SOURCE             = 'source';
+    const FILE               = 'file';
+    const SIGNED_URL         = 'signed_url';
+    const OCR_VERIFY         = 'ocr_verify';
+    const VALIDATION_ID      = 'validation_id';
+    const ENTITY_ID          = 'entity_id';
+    const UPLOAD_BY_ADMIN_ID = 'upload_by_admin_id';
 
     //When the document is accounted for
     const DOCUMENT_DATE = 'document_date';
@@ -37,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::SOURCE,
+        self::UPLOAD_BY_ADMIN_ID,
         self::DOCUMENT_DATE,
     ];
 
@@ -47,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::DOCUMENT_TYPE,
         self::OCR_VERIFY,
         self::SOURCE,
+        self::UPLOAD_BY_ADMIN_ID,
         self::DOCUMENT_DATE,
     ];
 
@@ -97,6 +100,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OCR_VERIFY);
     }
 
+    public function getUploadByAdminId()
+    {
+        return $this->getAttribute(self::UPLOAD_BY_ADMIN_ID);
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
@@ -110,6 +118,11 @@ class Entity extends Base\PublicEntity
     public function setEntityType(string $entityType = 'merchant')
     {
         $this->setAttribute(self::ENTITY_TYPE, $entityType);
+    }
+
+    public function setUploadByAdminId(string $adminId)
+    {
+        return $this->setAttribute(self::UPLOAD_BY_ADMIN_ID, $adminId);
     }
 
     public function setMerchantId(string $merchantId)

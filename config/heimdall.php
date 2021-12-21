@@ -188,6 +188,9 @@ return [
             Permission::VIEW_MERCHANT_DOCUMENT             => [
                 'assignable' => true,
             ],
+            Permission::ADMIN_UPLOAD_MERCHANT_DOCUMENT     => [
+                'assignable' => true,
+            ],
             Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES => '',
             Permission::VIEW_MERCHANT_LOGIN                 => '',
             Permission::VIEW_ACTIVITY                       => '',

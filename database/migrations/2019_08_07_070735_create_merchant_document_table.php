@@ -29,6 +29,8 @@ class CreateMerchantDocumentTable extends Migration
 
             $table->char(Document::ENTITY_ID, Document::ID_LENGTH)->nullable();
 
+            $table->char(Document::UPLOAD_BY_ADMIN_ID, Document::ID_LENGTH)->nullable();
+
             $table->string(Document::DOCUMENT_TYPE, 255);
 
             $table->string(Document::ENTITY_TYPE, 255);
