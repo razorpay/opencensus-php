@@ -23,7 +23,19 @@ class DowntimeNotification extends Mailable
 
     const RESOLVED  = 'RESOLVED';
 
-    public function __construct(array $downtime, string $status, $email=[], $lastSeverity=null)
+    const DOWNTIME_SEVERITY_TEXT_MAP = [
+        Severity::HIGH      => "high number of",
+        Severity::MEDIUM    => "some",
+        Severity::LOW       => "a few",
+    ];
+
+    const GRANULAR_DOWNTIME_SEVERITY_TEXT_MAP = [
+        Severity::HIGH      => "High Severity Downtime",
+        Severity::MEDIUM    => "Medium Severity Downtime",
+        Severity::LOW       => "Low Severity Downtime",
+    ];
+
+    public function __construct(array $downtime, string $status, bool $merchantDowntimesEnabled, $email=[], $cc=null, $lastSeverity=null)
     {
         parent::__construct();
 
@@ -32,6 +44,10 @@ class DowntimeNotification extends Mailable
         $this->status = $status;
 
         $this->data['last_severity'] = $lastSeverity;
+
+        // With this feature, merchant downtime communication has been enabled.
+        // Granular fields such as card type and upi flow can now be sent for merchant downtimes.
+        $this->data['merchant_downtimes_enabled'] = $merchantDowntimesEnabled;
 
         if (isset($this->data[Entity::ISSUER]) && $this->data['method'] != Method::WALLET)
         {
@@ -87,18 +103,17 @@ class DowntimeNotification extends Mailable
 
         $this->data['dimension'] = $dimension;
 
-        switch ($this->data[Entity::SEVERITY])
+        if(($this->data['merchant_downtimes_enabled'] === true)
+            && (isset($downtime[Entity::TYPE]) === true))
         {
-            case Severity::HIGH:
-                $this->data['severity_text'] = "high number of";
-                break;
-            case Severity::MEDIUM:
-                $this->data['severity_text'] = "some";
-                break;
-            case Severity::LOW:
-                $this->data['severity_text'] = "a few";
-                break;
+            $this->data['instrument'] = ucwords($downtime[Entity::TYPE] . " " . $downtime[Entity::METHOD]);
         }
+        else
+        {
+            $this->data['instrument'] = ucwords($downtime[Entity::METHOD]);
+        }
+
+        $this->data['severity_text'] = $this->getSeverityText($this->data[Entity::SEVERITY], $merchantDowntimesEnabled);
 
         if(isset($downtime[Entity::MERCHANT_ID]) === true)
         {
@@ -110,6 +125,8 @@ class DowntimeNotification extends Mailable
         }
 
         $this->data['email'] = $email;
+
+        $this->data['cc'] = $cc;
     }
 
     protected function addRecipients()
@@ -147,14 +164,23 @@ class DowntimeNotification extends Mailable
         return $this;
     }
 
+    protected function addCc()
+    {
+        if(isset($this->data['cc']) === true)
+        {
+            $this->cc($this->data['cc']);
+        }
+
+        return $this;
+    }
+
     protected function addSubject()
     {
         $method = $this->data[Entity::METHOD];
 
-        if($method === Method::CARD)
-        {
-            $method = 'cards';
-        }
+        $merchantDowntimesEnabled = $this->data['merchant_downtimes_enabled'];
+
+        $instrument = $this->data['instrument'];
 
         $subject = null;
         $internalSubject = null;
@@ -186,23 +212,16 @@ class DowntimeNotification extends Mailable
         {
             if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
             {
-                $internalSubject = 'Payments using ' . $method . ' are now back to normal';
+                $internalSubject = 'Payments using ' . $instrument . ' are now back to normal';
             }
             else
             {
-                $internalSubject = 'Payments using ' . $this->data['dimension'] . ' ' . $method . ' are now back to normal';
+                $internalSubject = 'Payments using ' . $this->data['dimension'] . ' ' . $instrument . ' are now back to normal';
             }
         }
         elseif($this->data['last_severity'] === null)
         {
-            if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
-            {
-                $internalSubject = ucwords($this->data['severity_text']) . ' declines observed in customer payments attempted by '  . $method;
-            }
-            else
-            {
-                $internalSubject = ucwords($this->data['severity_text']) . ' declines observed by ' .  $this->data['dimension'] . ' for payments attempted by ' . $method;
-            }
+            $internalSubject = $this->getFirstSubject($instrument, $this->data['dimension'], $this->getSeverityText($this->data[Entity::SEVERITY], false), false);
         }
         else
         {
@@ -210,22 +229,22 @@ class DowntimeNotification extends Mailable
             {
                 if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
                 {
-                    $internalSubject = 'Increased number of declines observed now for payments using ' . $method;
+                    $internalSubject = 'Increased number of declines observed now for payments using ' . $instrument;
                 }
                 else
                 {
-                    $internalSubject = 'Increased number of declines now by ' . $this->data['dimension'] . ' for payments using ' . $method;
+                    $internalSubject = 'Increased number of declines now by ' . $this->data['dimension'] . ' for payments using ' . $instrument;
                 }
             }
             elseif ( $this->data[Entity::SEVERITY] === Severity::MEDIUM && $this->data['last_severity'] === Severity::HIGH)
             {
                 if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
                 {
-                    $internalSubject = 'Lesser number of declines observed now for payments using ' . $method;
+                    $internalSubject = 'Lesser number of declines observed now for payments using ' . $instrument;
                 }
                 else
                 {
-                    $internalSubject = 'Lesser number of declines now by ' . $this->data['dimension'] . ' for payments using ' . $method;
+                    $internalSubject = 'Lesser number of declines now by ' . $this->data['dimension'] . ' for payments using ' . $instrument;
                 }
 
             }
@@ -233,11 +252,11 @@ class DowntimeNotification extends Mailable
             {
                 if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
                 {
-                    $internalSubject = 'Very few declines observed now for payments using ' . $method;
+                    $internalSubject = 'Very few declines observed now for payments using ' . $instrument;
                 }
                 else
                 {
-                    $internalSubject = 'Very few declines now by ' . $this->data['dimension'] . ' for payments using ' . $method;
+                    $internalSubject = 'Very few declines now by ' . $this->data['dimension'] . ' for payments using ' . $instrument;
                 }
             }
         }
@@ -246,7 +265,7 @@ class DowntimeNotification extends Mailable
 
         if ($firstSeverity === null)
         {
-            $subject = $internalSubject;
+            $subject = $this->getFirstSubject($instrument, $this->data['dimension'], $this->data['severity_text'], $merchantDowntimesEnabled);
         }
         else
         {
@@ -260,16 +279,9 @@ class DowntimeNotification extends Mailable
                 $subject = '[Updated] RE: ';
             }
 
-            $severity = $this->getSeverityText($firstSeverity);
+            $severityText = $this->getSeverityText($firstSeverity, $merchantDowntimesEnabled);
 
-            if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
-            {
-                $subject = $subject . ucwords($severity) . ' declines observed in customer payments attempted by '  . $method;
-            }
-            else
-            {
-                $subject = $subject . ucwords($severity) . ' declines observed by ' .  $this->data['dimension'] . ' for payments attempted by ' . $method;
-            }
+            $subject .= $this->getFirstSubject($instrument, $this->data['dimension'], $severityText, $merchantDowntimesEnabled);
         }
 
         $this->subject($subject);
@@ -351,21 +363,43 @@ class DowntimeNotification extends Mailable
         return MailTags::DOWNTIME_NOTIFICATION;
     }
 
-    /**
-     * @param string $severity
-     * @return string
-     */
-    protected function getSeverityText(string $severity)
+    protected function getSeverityText(string $severity, bool $merchantDowntimesEnabled)
     {
-        switch ($severity)
+        if($merchantDowntimesEnabled === true)
         {
-            case Severity::HIGH:
-                return "high number of";
-            case Severity::MEDIUM:
-                return "some";
-            case Severity::LOW:
-                return "a few";
+            return self::GRANULAR_DOWNTIME_SEVERITY_TEXT_MAP[$severity];
         }
 
+        return self::DOWNTIME_SEVERITY_TEXT_MAP[$severity];
+    }
+
+    protected function getFirstSubject($method, $dimension, $severityText, $newFormat)
+    {
+        $subject = ucwords($severityText);
+
+        $dimensionString = "";
+
+        if (!($dimension == null || $dimension == "All UPI instruments"))
+        {
+            $dimensionString = ucwords($dimension);
+        }
+
+        if($newFormat === true)
+        {
+            $subject .= ' | ';
+
+            if(empty($dimensionString) === false)
+            {
+                $subject .= $dimensionString . ' | ';
+            }
+        }
+        else
+        {
+            $subject .= ' declines observed for ' .  $dimensionString . ' payments attempted by ';
+        }
+
+        $subject .= ucwords($method);
+
+        return $subject;
     }
 }

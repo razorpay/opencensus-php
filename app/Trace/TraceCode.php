@@ -1991,6 +1991,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_DOWNTIMES_TO_ACTIVATE                         = 'PAYMENT_DOWNTIMES_TO_ACTIVATE';
     const PAYMENT_DOWNTIMES_TO_RESOLVE                          = 'PAYMENT_DOWNTIMES_TO_RESOLVE';
     const ENABLE_GRANULAR_DOWNTIMES                             = 'ENABLE_GRANULAR_DOWNTIMES';
+    const DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE                  = 'DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE';
 
     const PAYMENT_DOWNTIME_CREATE_EMAIL                         = 'PAYMENT_DOWNTIME_CREATE_EMAIL';
     const PAYMENT_DOWNTIME_RESOLVE_EMAIL                        = 'PAYMENT_DOWNTIME_RESOLVE_EMAIL';

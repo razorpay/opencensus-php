@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Downtime;
 use Mail;
 
 use Carbon\Carbon;
+use Redis;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Mail\Downtime;
@@ -360,11 +361,25 @@ class Service extends Base\Service
 
     public function emailDowntime(string $status, Entity $downtime, $lastSeverity=null)
     {
+        $merchantDowntimesEnabled = false;
+
+        $cc = null;
 
         if($downtime->getMerchantId() !== null)
         {
-            $this->trace->info(TraceCode::SKIP_MERCHANT_DOWNTIME_COMMUNICATION, ['merchantId' => $downtime->getMerchantId()]);
-            return;
+            $this->merchant = $this->repo->merchant->findOrFail($downtime->getMerchantId());
+
+            if (($this->shouldSendMerchantDowntimes(Constants::EMAILS) === true)
+                && ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
+            {
+                $merchantDowntimesEnabled = true;
+            }
+            else
+            {
+                $this->trace->info(TraceCode::SKIP_MERCHANT_DOWNTIME_COMMUNICATION, ['merchantId' => $downtime->getMerchantId()]);
+
+                return;
+            }
         }
 
         $downtimeArray = $downtime->toArray();
@@ -385,9 +400,16 @@ class Service extends Base\Service
             {
                 $recipientEmail = [
                     'product.onlinepayments@razorpay.com',
-                    'tech.onlinepayments.routing@razorpay.com',
+                    'tech.onlinepayments.core@razorpay.com',
                     'srm@razorpay.com'
                 ];
+            }
+
+            $cc = $this->getValueFromRedis(Constants::DOWNTIMES_EMAIL_CC . $downtime->getMerchantId());
+
+            if (isset($cc) === false)
+            {
+                $cc = 'keyaccounts@razorpay.com';
             }
         }
 
@@ -395,7 +417,7 @@ class Service extends Base\Service
         {
             if ($status === Constants::CREATED)
             {
-                $createEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::CREATED, $recipientEmail, $lastSeverity);
+                $createEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::CREATED, $merchantDowntimesEnabled, $recipientEmail, $cc, $lastSeverity);
 
                 Mail::send($createEmail);
 
@@ -408,7 +430,7 @@ class Service extends Base\Service
             }
             elseif ($status === Constants::RESOLVED)
             {
-                $resolveEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::RESOLVED, $recipientEmail);
+                $resolveEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::RESOLVED, $merchantDowntimesEnabled, $recipientEmail, $cc);
 
                 Mail::send($resolveEmail);
 
@@ -485,5 +507,23 @@ class Service extends Base\Service
         unset($downtimeArrayPublic[Entity::INSTRUMENT_SCHEMA]);
         unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::TYPE]);
         unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW]);
+    }
+
+    public function getValueFromRedis(string $key)
+    {
+        try
+        {
+            $redis = Redis::connection();
+
+            $value = $redis->get($key);
+
+            if ($value !== false) {
+                return $value;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE, ['Key' => $key,]);
+        }
     }
 }

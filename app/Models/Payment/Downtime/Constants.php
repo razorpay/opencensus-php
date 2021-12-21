@@ -41,10 +41,12 @@ class Constants
     const SECONDS_IN_A_DAY = 86400;
     const HISTORY_REFRESH_BATCH_SIZE = 7;
     const MAX_LOOKBACK_PERIOD        = 30;
+    const DOWNTIMES_EMAIL_CC = 'DOWNTIMES_EMAIL_CC_';
 
     // Send Merchant Downtimes Razorx
     const WEBHOOKS = 'WEBHOOKS';
     const FETCH_API = 'FETCH_API';
+    const EMAILS = 'EMAILS';
 
     public static function getMethodQueryInstrument($method)
     {

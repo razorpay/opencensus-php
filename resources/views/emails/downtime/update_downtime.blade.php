@@ -243,23 +243,23 @@
 
                                                                 @if($dimension == null || $dimension == 'All UPI instruments')
                                                                     @if($severity == 'high')
-                                                                        We are now observing a high increase in the number of declines for payments made by customers using {{ $method }}
+                                                                        We are now observing a high increase in the number of declines for payments made by customers using {{ $instrument }}
                                                                     @elseif($severity == 'medium' && $last_severity == 'low')
-                                                                        We are now observing a some increase in the number of declines for payments made by customers using {{ $method }}
+                                                                        We are now observing a some increase in the number of declines for payments made by customers using {{ $instrument }}
                                                                     @elseif($severity == 'medium' && $last_severity == 'high')
-                                                                        Things are getting better now and we are observing lesser declines for payments made by customers using {{ $method }}
+                                                                        Things are getting better now and we are observing lesser declines for payments made by customers using {{ $instrument }}
                                                                     @else
-                                                                        Things are getting better now and we are observing only a few declines for payments made by customers using {{ $method }}
+                                                                        Things are getting better now and we are observing only a few declines for payments made by customers using {{ $instrument }}
                                                                     @endif
                                                                 @else
                                                                     @if($severity == 'high')
-                                                                        We are now observing a high increase in the number of declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                        We are now observing a high increase in the number of declines by {{ $dimension }} for payments made by customers using {{ $instrument }}
                                                                     @elseif($severity == 'medium' && $last_severity == 'low')
-                                                                        We are now observing a some increase in the number of declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                        We are now observing a some increase in the number of declines by {{ $dimension }} for payments made by customers using {{ $instrument }}
                                                                     @elseif($severity == 'medium' && $last_severity == 'high')
-                                                                        Things are getting better now and we are observing lesser declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                        Things are getting better now and we are observing lesser declines by {{ $dimension }} for payments made by customers using {{ $instrument }}
                                                                     @else
-                                                                        Things are getting better now and we are observing only a few declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                        Things are getting better now and we are observing only a few declines by {{ $dimension }} for payments made by customers using {{ $instrument }}
                                                                     @endif
                                                                 @endif
 

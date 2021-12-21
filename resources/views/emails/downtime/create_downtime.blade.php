@@ -242,23 +242,23 @@
                                                             <br> <br>
 
                                                                 @if($dimension == null || $dimension == 'All UPI instruments')
-                                                                    {{ $method }} payments are facing
+                                                                    {{ $instrument }} payments are facing
                                                                 @elseif($method == 'card')
-                                                                    {{ $dimension }} {{ $method }} are facing
+                                                                    {{ $dimension }} {{ $instrument }} payments are facing
                                                                 @elseif($method == 'upi')
-                                                                    UPI payments using {{ $dimension }} are facing
+                                                                    {{$instrument}} payments using {{ $dimension }} are facing
                                                                 @else
-                                                                    {{ $method }} payments via {{ $dimension }} are facing
+                                                                    {{ $instrument }} payments via {{ $dimension }} are facing
                                                                 @endif
 
                                                                 @if($scheduled == false)
-                                                                    an Unscheduled
+                                                                    an unscheduled
                                                                 @else
-                                                                    a Scheduled
+                                                                    a scheduled
                                                                 @endif
 
                                                                 @if($dimension == null || $dimension == 'All UPI instruments')
-                                                                    downtime which means there are some issues your customers might face to complete payments using {{ $method }} method.
+                                                                    downtime which means there are some issues your customers might face to complete payments using {{ $instrument }} method.
                                                                 @else
                                                                     downtime which means there are some issues connecting to {{ $dimension }} to complete customer payments.
                                                                 @endif

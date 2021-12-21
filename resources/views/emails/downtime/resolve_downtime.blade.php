@@ -242,9 +242,9 @@
                                                             <br> <br>
 
                                                             @if($dimension == null || $dimension == 'All UPI instruments')
-                                                                        There are no declines anymore for payments made by customers using {{ $method }}.
+                                                                        There are no declines anymore for payments made by customers using {{ $instrument }}.
                                                             @else
-                                                                        There are no declines anymore by {{ $dimension }} for payments made by customers using {{ $method }}.
+                                                                        There are no declines anymore by {{ $dimension }} for payments made by customers using {{ $instrument }}.
                                                             @endif
 
                                                             <br> <br>
