@@ -33,6 +33,15 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
      */
     const JOB_DISPATCH_FAILED   = 'job_dispatch_failed';
 
+    // Queue config keys to throw error if any.
+    const PAYOUT_POST_CREATE_PROCESS              = 'payout_post_create_process';
+    const PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY = 'payout_post_create_process_low_priority';
+
+    protected $shouldThrowErrorOnFailure = [
+        self::PAYOUT_POST_CREATE_PROCESS,
+        self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY
+    ];
+
     /**
      * Overrides
      * {@inheritDoc}
@@ -55,7 +64,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
             app('trace')->traceException($e, Trace::CRITICAL, TraceCode::QUEUE_DISPATCH_JOB_FAILURE, $traceData);
 
             // Throwing error in case of failures in successfully dispatching message to queue. Normally exceptions caught here are not being thrown.
-            if (($this->queueConfigKey === 'payout_post_create_process_low_priority') and
+            if (($this->throwErrorOnFailure() === true) and
                 ($e->getMessage() === "Target class [rzp.mode] does not exist."))
             {
                 app('trace')->info(TraceCode::QUEUE_DISPATCH_JOB_FAILURE, ['queue_name' => $this->queueConfigKey, 'error' =>  "Dispatching Error"]);
@@ -77,7 +86,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
             app('trace')->count(self::JOB_DISPATCH_FAILED, $dimensions);
 
             // Throwing error in case of failures in successfully dispatching message to queue. Normally exceptions caught here are not being thrown.
-            if ($this->queueConfigKey === 'payout_post_create_process_low_priority')
+            if ($this->throwErrorOnFailure() === true)
             {
                 app('trace')->info(TraceCode::QUEUE_DISPATCH_JOB_FAILURE, ['queue_name' => $this->queueConfigKey, 'error' =>  "Dispatching Error"]);
                 throw $e;
@@ -138,5 +147,10 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         $default = config('queue.connections.sqs.queue');
 
         return config($key, $default);
+    }
+
+    protected function throwErrorOnFailure()
+    {
+        return in_array(strtolower($this->queueConfigKey), $this->shouldThrowErrorOnFailure, true);
     }
 }
