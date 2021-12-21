@@ -102,6 +102,7 @@ export default function NewSubscriptionLinkLinkDetails(props) {
         name="notes"
         label="Internal Notes"
         class="Input--vTop"
+        labelClass="Input-label"
         defaultValue={fields.notes}
         onChange={(_, field) => {
           analytics.track(

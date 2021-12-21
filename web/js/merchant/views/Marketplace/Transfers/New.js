@@ -230,7 +230,7 @@ class TransferNew extends Component {
               {isDirectTransferEnabled && <DirectTransferBanner />}
 
               <form
-                class="panel-body"
+                class="panel-body create-payment-transfer"
                 name="createPaymentTransfer"
                 onSubmit={handleSubmit(this.save)}
               >

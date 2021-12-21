@@ -109,6 +109,7 @@ export default (props) => {
         name="notes"
         label="Internal Notes"
         class="Input--vTop"
+        labelClass="Input-label"
         data-name="notes"
         onChange={handleNotesChange}
         onBlurTitle={() => onBlurElement(null, 'notes_key')}

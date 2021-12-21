@@ -184,6 +184,10 @@ $formHeight = 568px
     position: absolute
     bottom: 0px
     right: 0
+    @media screen and (max-width $screen-xs-max){
+      position relative
+      margin-top 10px
+    }
 
 .RouteBatch--dropdown
   
@@ -210,3 +214,11 @@ $formHeight = 568px
     background-color: #32374a
     margin-top: 5px
     float: right
+
+@media screen and (max-width $screen-xs-max)
+  .create-payment-transfer
+    padding 15px 0
+    > .pair-group-item .pair-label, 
+    > .pair-group-item .pair-value
+      width 100%
+      padding 0

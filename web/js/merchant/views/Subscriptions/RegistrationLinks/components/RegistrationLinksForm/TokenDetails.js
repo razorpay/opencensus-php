@@ -215,7 +215,7 @@ export default ({
         <Input
           type="number"
           size="big"
-          class="Input--Amount long-label"
+          class="Input--Amount"
           name="mandateMaxAmount"
           data-name="token_max_amount"
           label={() => (
