@@ -342,7 +342,7 @@ class Error extends Support\Fluent
      * @param $code
      * @param $method
      */
-    public function setDetailedError($code, $method)
+    public function setDetailedError($code, $method, $network = '')
     {
         if ($this->shouldModifyForNewBankingErrorCode() === true)
         {
@@ -350,13 +350,13 @@ class Error extends Support\Fluent
         }
         else
         {
-            $this->setErrorDetailsFromCentralRepo($code, $method);
+            $this->setErrorDetailsFromCentralRepo($code, $method, $network);
         }
 
         $this->setDescForLocale();
     }
 
-    protected function setErrorDetailsFromCentralRepo($code, $method = '')
+    protected function setErrorDetailsFromCentralRepo($code, $method = '', $network)
     {
         list($errorCodeJson, $this->errorFolder) = $this->errorMapper->getErrorMapping($code,$method);
 
@@ -369,6 +369,9 @@ class Error extends Support\Fluent
                 ]
             );
         }
+
+        if($network !== '')
+            $errorCodeJson['source'] = $network;
 
         $this->setErrorParams($errorCodeJson, $code, $method);
     }

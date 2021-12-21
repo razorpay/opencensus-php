@@ -5,6 +5,7 @@ namespace RZP\Error;
 class ErrorCode
 {
     const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT = 'BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT';
+
     /**
      * The error codes are named such that the first and the second word
      * tells the error category.
@@ -84,6 +85,8 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION                                  = 'GATEWAY_ERROR_INVALID_STATUS_DESCRIPTION';
     const GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED                         = 'GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED';
     const GATEWAY_ERROR_TIMED_OUT                                                   = 'GATEWAY_ERROR_TIMED_OUT';
+    const BAD_REQUEST_CARD_NOT_ELIGIBLE                                             = 'BAD_REQUEST_CARD_NOT_ELIGIBLE';
+    const REPO_FAILED_TO_FIND_BY_CONDITION                                          = 'REPO_FAILED_TO_FIND_BY_CONDITION';
     const GATEWAY_ERROR_INVALID_DATE_FORMAT                                         = 'GATEWAY_ERROR_INVALID_DATE_FORMAT';
     const GATEWAY_ERROR_INVALID_TIME_FORMAT                                         = 'GATEWAY_ERROR_INVALID_TIME_FORMAT';
     const GATEWAY_ERROR_SYSTEM_BUSY                                                 = 'GATEWAY_ERROR_SYSTEM_BUSY';
@@ -240,18 +243,23 @@ class ErrorCode
     const GATEWAY_ERROR_CRYPTO_ALOGRITHM_ERROR                                      = 'GATEWAY_ERROR_CRYPTO_ALOGRITHM_ERROR';
     const GATEWAY_ERROR_RSA_DECRYPTION_FAILED                                       = 'GATEWAY_ERROR_RSA_DECRYPTION_FAILED';
     const GATEWAY_ERROR_RSA_ENCRYPTION_FAILED                                       = 'GATEWAY_ERROR_RSA_ENCRYPTION_FAILED';
-
+    const BAD_REQUEST_INVALID_CARD_CVV                                              = 'BAD_REQUEST_INVALID_CARD_CVV';
     const GATEWAY_ERROR_ONBOARDING_FAILED                                           = 'GATEWAY_ERROR_ONBOARDING_FAILED';
     const GATEWAY_ERROR_TERMINAL_ONBOARDING_FAILED                                  = 'GATEWAY_ERROR_TERMINAL_ONBOARDING_FAILED';
     const GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH                                = 'GATEWAY_ERROR_BANK_NOT_SUPPORTED_BY_SWITCH';
     const BAD_REQUEST_CARD_PAYMENT_DECLINED_MODE_NOT_SUPPORTED                      = 'BAD_REQUEST_CARD_PAYMENT_DECLINED_MODE_NOT_SUPPORTED';
     const BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS                             = 'BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS';
+    const BAD_REQUEST_INVALID_CARD_NUMBER                                           = 'BAD_REQUEST_INVALID_CARD_NUMBER';
+    const BAD_REQUEST_INVALID_CARD_NAME                                             = 'BAD_REQUEST_INVALID_CARD_NAME';
+    const BAD_REQUEST_CARD_NOT_ALLOWED_BY_BANK                                      = 'BAD_REQUEST_CARD_NOT_ALLOWED_BY_BANK';
+    const BAD_REQUEST_CARD_EXPIRED                                                  = 'BAD_REQUEST_CARD_EXPIRED';
     const GATEWAY_ERROR_VERSION_ERROR                                               = 'GATEWAY_ERROR_VERSION_ERROR';
     const GATEWAY_ERROR_INVALID_DIGITAL_RECEIPT                                     = 'GATEWAY_ERROR_INVALID_DIGITAL_RECEIPT';
     const GATEWAY_ERROR_INVALID_TXN_LOG_STRING                                      = 'GATEWAY_ERROR_INVALID_TXN_LOG_STRING';
     const GATEWAY_ERROR_UNSUPPORTED_ACQUIRER                                        = 'GATEWAY_ERROR_UNSUPPORTED_ACQUIRER';
     const GATEWAY_ERROR_PARSE_ERROR                                                 = 'GATEWAY_ERROR_PARSE_ERROR';
     const GATEWAY_ERROR_FILE_ERROR                                                  = 'GATEWAY_ERROR_FILE_ERROR';
+    const BAD_REQUEST_INVALID_CARD_EXPIRY                                           = 'BAD_REQUEST_INVALID_CARD_EXPIRY';
     const GATEWAY_ERROR_SQL_ERROR                                                   = 'GATEWAY_ERROR_SQL_ERROR';
     const GATEWAY_ERROR_DELETING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
     const GATEWAY_ERROR_CREATING_TERMINAL                                           = 'GATEWAY_ERROR_CREATING_TERMINAL';
@@ -2057,7 +2065,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL                                      = 'BAD_REQUEST_INVALID_TOKEN_FOR_CANCEL';
     const BAD_REQUEST_INVALID_TOKEN_FOR_PAUSE                                       = 'BAD_REQUEST_INVALID_TOKEN_FOR_PAUSE';
     const BAD_REQUEST_INVALID_TOKEN_FOR_RESUME                                      = 'BAD_REQUEST_INVALID_TOKEN_FOR_RESUME';
-
+    const BAD_REQUEST_INVALID_TOKEN                                                 = 'BAD_REQUEST_INVALID_TOKEN';
     const BAD_REQUEST_D2C_WRONG_OTP                                                 = 'BAD_REQUEST_D2C_WRONG_OTP';
     const BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED                                = 'BAD_REQUEST_D2C_NON_OWNER_USER_NOT_ALLOWED';
     const BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT                    = 'BAD_REQUEST_D2C_CREDIT_BUREAU_INVALID_EMAIL_OR_CONTACT';
@@ -2447,11 +2455,21 @@ class ErrorCode
     const BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                   = 'BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED';
     const SERVER_ERROR_VERIFY_SIGNUP_OTP_REDIS_ERROR                                = 'SERVER_ERROR_VERIFY_SIGNUP_OTP_REDIS_ERROR';
     const BAD_REQUEST_INVALID_AFFORDABILITY_COMPONENT                               = 'BAD_REQUEST_INVALID_AFFORDABILITY_COMPONENT';
-
     const BAD_REQUEST_MERCHANT_NOT_FOUND                                            = 'BAD_REQUEST_MERCHANT_NOT_FOUND';
     const BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY                                   = 'BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY';
     const BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND                                       = 'BAD_REQUEST_OPEN_WORKFLOW_NOT_FOUND';
     const BAD_REQUEST_EMANDATE_INACTIVE                                             = 'BAD_REQUEST_EMANDATE_INACTIVE';
+    const BAD_REQUEST_CARD_INVALID                                                  = 'BAD_REQUEST_CARD_INVALID';
+    const BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION                            = 'BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION';
+    const BAD_REQUEST_CARD_NOT_ALLOWED                                              = 'BAD_REQUEST_CARD_NOT_ALLOWED';
+    const BAD_REQUEST_CARD_DECLINED                                                 = 'BAD_REQUEST_CARD_DECLINED';
+    const GATEWAY_ERROR_DUPLICATE_REQUEST                                           = 'GATEWAY_ERROR_DUPLICATE_REQUEST';
+    const BAD_REQUEST_TOKEN_INVALID_STATE                                           = 'BAD_REQUEST_TOKEN_INVALID_STATE';
+    const GATEWAY_ERROR_TOKEN_REFERENCE_NOT_FOUND                                   = 'GATEWAY_ERROR_TOKEN_REFERENCE_NOT_FOUND';
+    const GATEWAY_ERROR_PAN_REFERENCE_NOT_FOUND                                     = 'GATEWAY_ERROR_PAN_REFERENCE_NOT_FOUND';
+    const GATEWAY_ERROR_AUTHENTICATION_REFERENCE_INVALID                            = 'GATEWAY_ERROR_AUTHENTICATION_REFERENCE_INVALID';
+    const BAD_REQUEST_TOKEN_SUSPENDED_OR_DEACTIVATED                                = 'BAD_REQUEST_TOKEN_SUSPENDED_OR_DEACTIVATED';
+    const BAD_REQUEST_TOKEN_EXPIRED                                                 = 'BAD_REQUEST_TOKEN_EXPIRED';
 
     static function getConstants()
     {

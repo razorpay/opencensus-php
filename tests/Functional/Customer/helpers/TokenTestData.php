@@ -170,6 +170,52 @@ return [
         ],
     ],
 
+    'testCreateTokenAndTokenizeCardGatewayError' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+                'notes' => [
+                    'test1' => 'test2'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreateTokenAndTokenizeCardNotAllowed' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+                'notes' => [
+                    'test1' => 'test2'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreateTokenAndTokenizeCardMC' => [
         'request' => [
             'url' => '/tokens',
@@ -246,6 +292,20 @@ return [
             ],
         ],
     ],
+
+    'testFetchCryptogramLiveBadRequest' => [
+        'request' => [
+            'url' => '/tokens/service_provider_tokens/token_transactional_data',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
 
     'testFetchCryptogramLiveInvalidTokenId' => [
         'request' => [
@@ -333,6 +393,19 @@ return [
     ],
 
     'testTokenDeleteLive' => [
+        'request' => [
+            'url' => '/tokens/delete',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testTokenDeleteLiveExpiredCard' => [
         'request' => [
             'url' => '/tokens/delete',
             'method' => 'post',

@@ -3742,8 +3742,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
     const GATEWAY_CAPTURE_RAZORX_VARIANT                        = 'GATEWAY_CAPTURE_RAZORX_VARIANT';
     const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
-
+    const VAULT_SERVICE_DISABLING                               = 'VAULT_SERVICE_DISABLING';
+    const VAULT_SERVICE_INTERNAL_ERROR                          = 'VAULT_SERVICE_INTERNAL_ERROR';
     const CARD_PAYMENT_SERVICE_SWITCH_ROUTE                     = 'CARD_PAYMENT_SERVICE_SWITCH_ROUTE';
+    const ERROR_CODE_FOR_VAULT_RESPONSE                         = 'ERROR_CODE_FOR_VAULT_RESPONSE';
 
     // Card Payment Service traces
     const CARD_PAYMENT_SERVICE_REQUEST                          = 'CARD_PAYMENT_SERVICE_REQUEST';

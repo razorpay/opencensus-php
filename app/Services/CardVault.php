@@ -2,18 +2,19 @@
 
 namespace RZP\Services;
 
-
 use Requests_Hooks;
 use Aws\Kms\KmsClient;
-
+use RZP\Error\ErrorClass;
 use RZP\Exception;
+use RZP\Models\Card;
+use RZP\Error;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Card\Validator;
 use RZP\Http\Request\Requests;
-use RZP\Models\Card;
+use RZP\Models\Payment;
 
 class CardVault
 {
@@ -39,6 +40,8 @@ class CardVault
     const CARD      =   'card';
     const MPAN      =   'mpan';
     const RAZORPAYX =   'razorpayx';
+
+    const TOKENIZATION_ROUTES = array(Card\Constants::TOKENS_CRYPTOGRAM, Card\Constants::TOKENS, Card\Constants::TOKENS_MIGRATE, Card\Constants::TOKENS_FETCH, Card\Constants::TOKENS_DELETE, Card\Constants::TOKENS_UPDATE);
 
     protected $baseUrl;
 
@@ -118,7 +121,7 @@ class CardVault
                 ($vault === Card\Vault::RZP_ENCRYPTION))
             {
                 throw new Exception\RuntimeException(
-                    'card vault ping request failed', ['data' => $response]);
+                    'card vault ping request failed', [Error\Error::DATA => $response]);
             }
 
             return true;
@@ -173,7 +176,7 @@ class CardVault
         if (empty($response[self::TOKEN]) === true)
         {
             throw new Exception\RuntimeException(
-                'card vault request failed', ['data' => $response]);
+                'card vault request failed', [Error\Error::DATA => $response]);
         }
 
         $this->cardNumberToToken[$key] = $response[self::TOKEN];
@@ -194,7 +197,7 @@ class CardVault
         if (empty($response[self::TOKEN]) === true)
         {
             throw new Exception\RuntimeException(
-                'card vault request failed', ['data' => $response]);
+                'card vault request failed', [Error\Error::DATA => $response]);
         }
 
         return $response;
@@ -252,6 +255,8 @@ class CardVault
             $data[self::NAMESPACE]  =  $this->namespace;
         }
 
+        $tokenizationUrl = $url;
+
         // temporary code to debug
         if (($url === 'tokenize') or
             ($url === 'detokenize'))
@@ -297,8 +302,19 @@ class CardVault
 
         $response = $this->sendCardVaultRequest($request);
 
-        $this->checkErrors($response);
+        $network = '';
 
+        if(!empty($request["content"]["iin"]["network"]))
+        {
+            $network = $request["content"]["iin"]["network"];
+        }
+
+        if(in_array($tokenizationUrl, self::TOKENIZATION_ROUTES)) {
+            $this->handleVaultResponse($response,  $network);
+        }
+        else {
+            $this->checkErrors($response);
+        }
         return json_decode($response->body, true);
     }
 
@@ -344,9 +360,9 @@ class CardVault
                     $this->trace->info(
                         TraceCode::CARD_VAULT_RETRY,
                         [
-                            'message' => $e->getMessage(),
-                            'type'    => $e->getType(),
-                            'data'    => $e->getData()
+                            'message'           => $e->getMessage(),
+                            'type'              => $e->getType(),
+                            Error\Error::DATA   => $e->getData()
                         ]);
 
                     $retryCount++;
@@ -378,7 +394,7 @@ class CardVault
         if ($response->status_code >= 500)
         {
             throw new Exception\RuntimeException(
-                'Vault request failed', ['data' => $responseBody]);
+                'Vault request failed', [Error\Error::DATA => $responseBody]);
         }
 
         if ($success === false)
@@ -422,7 +438,7 @@ class CardVault
         if (empty($response[self::TOKEN]) === true)
         {
             throw new Exception\RuntimeException(
-                'Tokenize request failed', ['data' => $response]);
+                'Tokenize request failed', [Error\Error::DATA => $response]);
         }
 
         $this->trace->info(TraceCode::VAULT_TOKEN_CREATE_COMPLETE);
@@ -434,13 +450,7 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_CREATE_TOKEN);
 
-        $response = $this->sendRequest('tokens', 'post', $input);
-
-        if ($response[self::SUCCESS] === false)
-        {
-            throw new Exception\RuntimeException(
-                'Network Token create request failed', ['data' => $response]);
-        }
+        $response = $this->sendRequest(Card\Constants::TOKENS, 'post', $input);
 
         return $response;
     }
@@ -464,7 +474,7 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_TOKEN_RENEWAL_REQUEST);
 
-        $response = $this->sendRequest('token/renewal', 'post', null);
+        $response = $this->sendRequest(Card\Constants::TOKENS_RENEWAL, 'post', null);
 
         $this->trace->info(
             TraceCode::VAULT_TOKEN_RENEWAL_RESPONSE,
@@ -475,7 +485,7 @@ class CardVault
         if ($response[self::SUCCESS] === false)
         {
             throw new Exception\RuntimeException(
-                'Service Token renewal request failed', ['data' => $response]);
+                'Service Token renewal request failed', [Error\Error::DATA => $response]);
         }
 
         return $response;
@@ -514,13 +524,7 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_FETCH_CRYPTOGRAM);
 
-        $response = $this->sendRequest('tokens/cryptogram', 'post', $input);
-
-        if ($response[self::SUCCESS] === false)
-        {
-            throw new Exception\RuntimeException(
-                'Network Fetch cryptogram request failed', ['data' => $response]);
-        }
+        $response = $this->sendRequest(Card\Constants::TOKENS_CRYPTOGRAM, 'post', $input);
 
         return $response;
     }
@@ -529,13 +533,7 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_FETCH_TOKEN);
 
-        $response = $this->sendRequest('tokens/fetch', 'post', $input);
-
-        if ($response[self::SUCCESS] === false)
-        {
-            throw new Exception\RuntimeException(
-                'Network Fetch token request failed', ['data' => $response]);
-        }
+        $response = $this->sendRequest(Card\Constants::TOKENS_FETCH, 'post', $input);
 
         return $response;
     }
@@ -544,13 +542,7 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_DELETE_TOKEN);
 
-        $response = $this->sendRequest('tokens/delete', 'post', $input);
-
-        if ($response[self::SUCCESS] === false)
-        {
-            throw new Exception\RuntimeException(
-                'Network Delete token request failed', ['data' => $response]);
-        }
+        $response = $this->sendRequest(Card\Constants::TOKENS_DELETE, 'post', $input);
 
         return $response;
     }
@@ -559,17 +551,167 @@ class CardVault
     {
         $this->trace->info(TraceCode::VAULT_UPDATE_TOKEN);
 
-        $response = $this->sendRequest('tokens/update', 'post', $input);
-
-        if ($response[self::SUCCESS] === false)
-        {
-            throw new Exception\RuntimeException(
-                'Update token request failed', [
-                'data' => $response,
-                'id'   => $input['merchant_token'],
-            ]);
-        }
+        $response = $this->sendRequest(Card\Constants::TOKENS_UPDATE, 'post', $input);
 
         return $response;
+    }
+
+    protected function handleVaultResponse($response, $network = null)
+    {
+        if(empty($response) === true)
+        {
+            $this->trace->info(TraceCode::VAULT_SERVICE_INTERNAL_ERROR);
+
+            throw new Exception\GatewayErrorException(
+                'SERVER_ERROR_VAULT_TOKENIZE_FAILED'
+            );
+        }
+
+        try {
+
+            $this->checkForErrors($response);
+        }
+        catch(Exception\BaseException $e) {
+            $error = $e->getError();
+
+            $this->trace->info(TraceCode::ERROR_EXCEPTION, [$e->getError()]);
+
+            $internalErrorCode = $error->getInternalErrorCode();
+
+            $error->setDetailedError($internalErrorCode, Payment\Method::CARD, $network);
+
+            $error->setPaymentMethod(Payment\Method::CARD);
+
+            throw $e;
+        }
+    }
+
+    protected function checkForErrors($response)
+    {
+        $responsebody = json_decode($response->body, true);
+
+        if ((empty($responsebody['success']) === false) and
+            ($responsebody['success'] === true))
+        {
+            return;
+        }
+
+        $this->trace->info(
+            TraceCode::CARD_VAULT_RESPONSE,
+            [
+                'response'  => $this->getRedactedData($responsebody),
+                'namespace' => $this->namespace,
+                'status_code' => $response->status_code,
+            ]);
+
+        $error_code = '';
+
+        if(!empty($responsebody[self::ERROR][Error\Error::INTERNAL_ERROR_CODE]))
+        {
+            $error_code = $responsebody[self::ERROR][Error\Error::INTERNAL_ERROR_CODE];
+        }
+
+        $class = $this->getErrorClassFromErrorCode($error_code);
+
+        switch ($class)
+        {
+            case ErrorClass::GATEWAY:
+                $this->handleGatewayErrors($responsebody[self::ERROR], $responsebody);
+                break;
+
+            case ErrorClass::BAD_REQUEST:
+                $this->handleBadRequestErrors($responsebody[self::ERROR], $responsebody);
+                break;
+
+            case ErrorClass::SERVER:
+                $this->handleInternalServerErrors($responsebody[self::ERROR]);
+                break;
+
+            default:
+                throw new Exception\InvalidArgumentException('Not a valid error code class',
+                    ['errorClass' => $class]);
+        }
+    }
+
+   protected function getErrorClassFromErrorCode($code)
+   {
+       $pos = strpos($code, '_');
+
+       $class = substr($code, 0, $pos);
+
+       if ($class == 'BAD') {
+           $class = ErrorClass::BAD_REQUEST;
+       }
+
+       return $class;
+   }
+
+   protected  function handleGatewayErrors(array $error, array $response)
+   {
+       $errorCode = $error[Error\Error::INTERNAL_ERROR_CODE];
+
+       $gatewayErrorCode = $error[Error\Error::GATEWAY_ERROR_CODE] ?? null;
+
+       $gatewayErrorDescription = $error['gateway_error_description'] ?? null;
+
+       $this->trace->info(TraceCode::ERROR_CODE_FOR_VAULT_RESPONSE, [$error]);
+
+       switch ($errorCode)
+       {
+           case Error\ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+               throw new Exception\GatewayRequestException($errorCode);
+
+           case Error\ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+               throw new Exception\GatewayTimeoutException($errorCode);
+
+           default:
+               throw new Exception\GatewayErrorException($errorCode,
+                   $gatewayErrorCode,
+                   $gatewayErrorDescription
+               );
+       }
+   }
+
+    protected function handleBadRequestErrors(array $error, array $response)
+    {
+        $errorCode = $error[Error\Error::INTERNAL_ERROR_CODE];
+
+        $data = $response[Error\Error::DATA] ?? null;
+
+        $description = $error[Error\Error::DESCRIPTION] ?? null;
+
+        $this->trace->info(TraceCode::ERROR_CODE_FOR_VAULT_RESPONSE, [$errorCode]);
+
+        if (empty($error[Error\Error::GATEWAY_ERROR_CODE]) === false)
+        {
+            $this->handleGatewayErrors($error, $response);
+        }
+        else if ($errorCode !== '')
+        {
+            throw new Exception\BadRequestException($errorCode);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                $description,
+                $errorCode,
+                $data);
+        }
+    }
+
+    protected function handleInternalServerErrors(array $error)
+    {
+        $code = $error[Error\Error::INTERNAL_ERROR_CODE];
+
+        $data = $error[Error\Error::DATA] ?? null;
+
+        $description = $error[Error\Error::DESCRIPTION] ?? 'Vault request failed';
+
+        $this->trace->info(TraceCode::ERROR_CODE_FOR_VAULT_RESPONSE, [$code]);
+
+        throw new Exception\LogicException(
+            $description,
+            $code,
+            $data);
     }
 }
