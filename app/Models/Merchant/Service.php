@@ -866,11 +866,14 @@ class Service extends Base\Service
             $shortPasswordResetLink = $this->app['elfin']->shorten($passwordResetLink);
 
             $smsPayload = [
-                'receiver' => $submContactMobile,
-                'template' => 'sms.onboarding.partner_submerchant_invite',
-                'source'   => SmsTemplates::ONBOARDING_SOURCE,
+                'ownerId' => $subMerchant->getId(),
+                'ownerType' => 'merchant',
                 'sender'   => 'RZPAYX',
-                'params'   => [
+                'destination' => $submContactMobile,
+                'templateName' => 'sms.onboarding.partner_submerchant_invite',
+                'templateNamespace' => 'partnerships',
+                'language' => 'english',
+                'contentParams'   => [
                     'subMerchantName'   => $subMerchant->getName(),
                     'partnerName'       => $merchant->getName(),
                     'resetPasswordLink' => $shortPasswordResetLink
@@ -879,7 +882,7 @@ class Service extends Base\Service
 
             $this->trace->info(TraceCode::SEND_SUBMERCHANT_X_ONBOARDING_SMS, $tracePayload);
 
-            $this->app->raven->sendSms($smsPayload);
+            $this->app->stork_service->sendSms($this->mode, $smsPayload);
         }
         catch (\Throwable $e)
         {

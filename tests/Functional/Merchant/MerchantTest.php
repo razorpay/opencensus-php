@@ -3574,6 +3574,34 @@ IFSC Code  ICIC0001206
             });
     }
 
+    public function expectStorkSendSmsRequest($ravenMock, $templateName, $destination)
+    {
+        $ravenMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPayload) use ($templateName, $destination)
+                {
+                    if (($templateName !== $actualPayload['templateName']) or
+                        ($destination !== $actualPayload['destination']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }),  Mockery::on(function ($mockInTestMode)
+            {
+                if ($mockInTestMode === true)
+                {
+                    return false;
+                }
+                return true;
+            }))
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
+    }
+
     public function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver)
     {
         $ravenMock->shouldReceive('sendSms')

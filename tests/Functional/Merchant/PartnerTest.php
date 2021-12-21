@@ -1553,7 +1553,7 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testCreatePartnerSubmerchantWithValidContactMobile()
+    public function testCreatePartnerSubmerchantWithValidContactMobileForX()
     {
         $this->createPartnerAndUser();
 
@@ -1569,11 +1569,11 @@ class PartnerTest extends OAuthTestCase
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
 
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $this->app->instance('raven', $ravenMock);
+        $this->app->instance('stork_service', $storkMock);
 
-        (new MerchantTest())->expectRavenSendSmsRequest($ravenMock,'sms.onboarding.partner_submerchant_invite', '9999999999');
+        (new MerchantTest())->expectStorkSendSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9999999999');
 
         $this->startTest();
     }

@@ -867,7 +867,7 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
     }
 
-    public function testCreateSubMerchantWithMobileNoByAggregatorBatch()
+    public function testCreateSubMerchantWithMobileNoByAggregatorBatchForX()
     {
         Mail::fake();
 
@@ -893,11 +893,11 @@ class MerchantCreateTest extends TestCase
             ->method('isRazorxExperimentEnable')
             ->willReturn(true);
 
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $this->app->instance('raven', $ravenMock);
+        $this->app->instance('stork_service', $storkMock);
 
-        (new MerchantTest())->expectRavenSendSmsRequest($ravenMock,'sms.onboarding.partner_submerchant_invite', '9876543210');
+        (new MerchantTest())->expectStorkSendSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '9876543210');
 
         $this->startTest();
 
@@ -918,6 +918,8 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
 
         $this->assertEquals('9876543210', $submerchantUser['contact_mobile']);
+
+        $this->assertEquals('banking', $submerchantUser['product']);
 
         $submerchantDetail = $this->getLastEntity('merchant_detail', true);
 

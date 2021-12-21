@@ -1583,7 +1583,7 @@ return [
         ],
     ],
 
-    'testCreatePartnerSubmerchantWithValidContactMobile' => [
+    'testCreatePartnerSubmerchantWithValidContactMobileForX' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',

@@ -617,7 +617,7 @@ return [
         ],
     ],
 
-    'testCreateSubMerchantWithMobileNoByAggregatorBatch' => [
+    'testCreateSubMerchantWithMobileNoByAggregatorBatchForX' => [
         'request'  => [
             'url'     => '/submerchants/batch',
             'method'  => 'POST',
@@ -628,7 +628,8 @@ return [
                 'id'    => 'NewSubmerchant',
                 'name'  => 'Submerchant',
                 'email' => 'testsub@razorpay.com',
-                'contact_mobile' => '9876543210'
+                'contact_mobile' => '9876543210',
+                'product' => 'banking'
             ],
         ],
         'response' => [
