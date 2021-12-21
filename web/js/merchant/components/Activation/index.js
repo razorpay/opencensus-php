@@ -2242,7 +2242,7 @@ export default class ActivationWizard extends React.Component {
                   </div>
                 )}
               </div>
-              <div className="header-container">
+              <div className="header-container mobile-view-header">
                 <div className="header-title">Account Activation</div>
                 <div>
                   <a onClick={this.saveAndExitForm}>Save & Exit</a>
