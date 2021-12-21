@@ -2077,11 +2077,6 @@ class Constants
             'display_name'  => 'One click checkout tab on merchant dashboard',
             'documentation' => '',
         ],
-        self::ONBOARD_TOKENIZATION => [
-            'feature'       => self::ONBOARD_TOKENIZATION,
-            'display_name'  => 'Enable network tokenization for merchant',
-            'documentation' => '',
-        ],
         self::DISABLE_COLLECT_CONSENT => [
             'feature'       => self::DISABLE_COLLECT_CONSENT,
             'display_name'  => 'Disable tokenisation consent collection by Razorpay',
@@ -2139,7 +2134,6 @@ class Constants
         self::ONE_CC_COUPONS,
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_MERCHANT_DASHBOARD,
-        self::ONBOARD_TOKENIZATION,
         self::DISABLE_COLLECT_CONSENT,
     ];
 
