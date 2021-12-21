@@ -611,6 +611,8 @@ class Processor
 
             $this->preProcessForUpiIfApplicable($input);
 
+            $this->validate1CCFlow($input);
+
             $this->validateLavbBankPayments($input);
 
             if ($this->canRouteThroughRearchFlow($input) === true)
@@ -5840,6 +5842,29 @@ class Processor
                        Exception\Handler::constructErrorWithRetryMetadata($method, 'wallet', $e);
                     }
                 }
+            }
+        }
+    }
+
+    private function validate1CCFlow(array $input)
+    {
+        if(isset($input['order_id']) === true){
+            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+            $orderMeta = null;
+            foreach ($order->orderMetas as $oMeta) {
+                if ($oMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT) {
+                    $orderMeta = $oMeta;
+                    break;
+                }
+            }
+            if(empty($orderMeta) === true){
+                return;
+            }
+            if(isset($orderMeta->getValue()[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS]) === false){
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null);
             }
         }
     }

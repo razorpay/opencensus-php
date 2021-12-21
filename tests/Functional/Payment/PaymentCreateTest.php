@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Illuminate\Support\Facades\App;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
@@ -31,6 +33,7 @@ use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class PaymentCreateTest extends TestCase
@@ -6729,6 +6732,95 @@ class PaymentCreateTest extends TestCase
         $refund = $this->refundPayment($payment['id']);
 
         $this->assertEquals('processed', $refund['status']);
+    }
+
+    protected  function getOrderMetaValue()
+    {
+        $app = App::getFacadeRoot();
+        $shipping_address = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'in',
+            'type'          => 'shipping_address',
+            'primary'       => true
+        ];
+        $billing_address = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'in',
+            'type'          => 'billing_address',
+            'primary'       => true
+        ];
+        $customer = [
+            'contact'           =>'+919954246991',
+            'email'             =>'nikitesh.soneji@razorpay.com',
+            'shipping_address'  =>$shipping_address,
+            'billing_address'   =>$billing_address
+
+        ];
+        return [
+            'cod_fee'           => 100000,
+            'net_price'         => 1100000,
+            'sub_total'         => 1100000,
+            'shipping_fee'      => 10000,
+            'customer_details'  => $app['encrypter']->encrypt($customer),
+            'line_items_total'  => 1000000,
+        ];
+    }
+
+    public function test1CCOrderPaymentsWithCustomerDeatils(){
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => self::getOrderMetaValue(),
+                'type'     => 'one_click_checkout',
+            ]);
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $payment = $this->getDefaultPaymentArray();
+        $payment["order_id"] = 'order_'.$order->getId();
+        $payment["amount"] = $order->getAmount();
+        $testData['request']['content'] = $payment;
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
+    }
+
+    public function test1CCOrderPaymentsWithoutCustomerDeatils()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+        $order = $this->fixtures->order->create(['receipt' => 'receipt']);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value' => ['line_items_total' => $order->getAmount()],
+                'type' => 'one_click_checkout',
+            ]);
+        $this->ba->publicAuth();
+        $testData = $this->testData[__FUNCTION__];
+        $payment = $this->getDefaultPaymentArray();
+        $payment["order_id"] = 'order_' . $order->getId();
+        $payment["amount"] = $order->getAmount();
+        $testData['request']['content'] = $payment;
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage('Something went wrong, please try again after sometime.');
+
+        $response = $this->makeRequestParent($testData['request']);
+
+        $this->processAndAssertStatusCode($testData, $response);
+        $this->processAndAssertResponseData($testData, $response);
     }
 
     public function testUserConsentPageWithNewCard()

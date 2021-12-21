@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\App;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
@@ -381,12 +382,55 @@ class WebhookTest extends TestCase
                 'line_items_total' => 50000,
                 'receipt'          => 'random',
             ]);
+        $ordermeta = $this->getDbLastEntityToArray('order_meta');
+        $this->fixtures->edit('order_meta', $ordermeta['id'],['value'=> self::getOrderMetaValue(50000)]);
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
         $payment['amount'] = $order['amount'];
 
         $this->doAuthAndCapturePayment($payment);
+    }
+
+    protected  function getOrderMetaValue(int $amount)
+    {
+        $app = App::getFacadeRoot();
+        $shippingFee = 1000;
+        $shipping_address = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'in',
+            'type'          => 'shipping_address',
+            'primary'       => true
+        ];
+        $billing_address = [
+            'line1'         => 'some line one',
+            'line2'         => 'some line two',
+            'city'          => 'Bangalore',
+            'state'         => 'Karnataka',
+            'zipcode'       => '560001',
+            'country'       => 'in',
+            'type'          => 'billing_address',
+            'primary'       => true
+        ];
+        $customer = [
+            'contact'           =>'+919954246991',
+            'email'             =>'nikitesh.soneji@razorpay.com',
+            'shipping_address'  =>$shipping_address,
+            'billing_address'   =>$billing_address
+
+        ];
+        return [
+            'cod_fee'           => $shippingFee,
+            'net_price'         => $amount+$shippingFee,
+            'sub_total'         => 51000,
+            'shipping_fee'      => $amount+$shippingFee,
+            'customer_details'  => $app['encrypter']->encrypt($customer),
+            'line_items_total'  => $amount,
+        ];
     }
 
     protected function createOrder(array $input = [])

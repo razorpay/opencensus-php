@@ -860,6 +860,39 @@ return [
         ],
     ],
 
+    'test1CCOrderPaymentsWithCustomerDeatils' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'test1CCOrderPaymentsWithoutCustomerDeatils' => [
+        'request' => [
+            'url' => '/payments/create/ajax',
+            'method' => 'POST',
+          ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR
+            ],
+        ]
+    ],
+
     'testUserConsentPageWithNewCard' => [
         'response' => [
             'input' => [
