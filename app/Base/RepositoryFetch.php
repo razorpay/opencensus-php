@@ -138,21 +138,13 @@ trait RepositoryFetch
                           string $connectionType = null): PublicCollection
     {
         // Process params (sanitization, validation, modification, etc.)
+        $startTimeMs = round(microtime(true) * 1000);
+
         $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
-        $startTimeMs = round(microtime(true) * 1000);
-
         $query = $this->newQuery();
-
-        $endTimeMs = round(microtime(true) * 1000);
-
-        $queryDuration = $endTimeMs - $startTimeMs;
-
-        $this->trace->info(TraceCode::BUILD_QUERY_RESPONSE_DURATION, [
-                'duration_ms'    => $queryDuration,
-        ]);
 
         if ($this->baseQuery !== null)
         {
@@ -160,6 +152,14 @@ trait RepositoryFetch
         }
 
         $connection = null;
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::BUILD_QUERY_RESPONSE_DURATION, [
+            'duration_ms'    => $queryDuration,
+        ]);
 
         $startTimeMs = round(microtime(true) * 1000);
 
@@ -171,6 +171,14 @@ trait RepositoryFetch
             $query = $this->newQueryWithConnection($connection);
         }
 
+
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $this->setEsRepoIfExist();
+
         $endTimeMs = round(microtime(true) * 1000);
 
         $queryDuration = $endTimeMs - $startTimeMs;
@@ -179,12 +187,7 @@ trait RepositoryFetch
             'duration_ms'    => $queryDuration,
         ]);
 
-
-        $query = $query->with($expands);
-
-        $this->addCommonQueryParamMerchantId($query, $merchantId);
-
-        $this->setEsRepoIfExist();
+        $startTimeMs = round(microtime(true) * 1000);
 
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
@@ -194,7 +197,6 @@ trait RepositoryFetch
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
         // request error if we get mix of MySQL and es params. Later we might support
         // such thing.
-        $startTimeMs = round(microtime(true) * 1000);
 
         if (count($esParams) > 0)
         {
@@ -209,6 +211,8 @@ trait RepositoryFetch
             'duration_ms'    => $queryDuration,
         ]);
 
+        $startTimeMs = round(microtime(true) * 1000);
+
         // If above doesn't happen we build query for mysql fetch and return the
         // result.
         $query = $this->buildFetchQuery($query, $mysqlParams);
@@ -221,12 +225,11 @@ trait RepositoryFetch
         // generally and we might want to follow those when
         // exposing on private auth. SDKs _might_ have to fixed too.
         //
+
         if ($this->auth->isProxyAuth() === true)
         {
             return $this->getPaginated($query, $params);
         }
-
-        $startTimeMs = round(microtime(true) * 1000);
 
         $entities = $query->get();
 
