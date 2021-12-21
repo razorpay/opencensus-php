@@ -663,7 +663,7 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals('EUR', $payment['currency']);
         $this->assertEquals($inrAmount, $paymentMeta['gateway_amount']);
         $this->assertEquals('INR', $paymentMeta['gateway_currency']);
-        $this->assertEquals(6, $paymentMeta['dcc_mark_up_percent']);
+        $this->assertEquals(7, $paymentMeta['dcc_mark_up_percent']);
 
 
         //Payment entity fetch with Admin auth
@@ -865,7 +865,7 @@ class PaymentCreateDCCTest extends TestCase
         $fee = $cardCurrencyObject['fee'];
         $amount = $cardCurrencyObject['amount'];
         $baseAmount = $flowsData['content']['amount'];
-        $markup = 0.06;
+        $markup = 0.07;
         $feeExpected = $forexRate * $markup * $baseAmount;
         $feeExpected = number_format($feeExpected, 2, '.','');
 

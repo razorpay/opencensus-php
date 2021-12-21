@@ -387,7 +387,7 @@ class MerchantTest extends TestCase
         $result = $this->startTest();
 
         $this->assertNotNull($result['dcc_markup_percentage']);
-        $this->assertEquals(6, $result['dcc_markup_percentage']);
+        $this->assertEquals(7, $result['dcc_markup_percentage']);
     }
 
     public function testGetMerchantDccMarkup()
