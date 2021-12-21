@@ -5792,4 +5792,35 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function isRegularMerchant(Entity $merchant): bool
+    {
+        // RazorpayX
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            return false;
+        }
+
+        // Linked Accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        // Partnership Merchant
+        if ($merchant->isPartner() === true)
+        {
+            return false;
+        }
+
+        // Submerchant
+        $subMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+
+        if (empty($subMerchant) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

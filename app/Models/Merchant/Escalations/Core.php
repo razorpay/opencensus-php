@@ -382,6 +382,11 @@ class Core extends Base\Core
             return false;
         }
 
+        if ((new Merchant\Core)->isRegularMerchant($merchant) === false)
+        {
+            return false;
+        }
+
         $data = (new Store\Core())->fetchValuesFromStore($merchant->getMerchantId(),
             Store\ConfigKey::ONBOARDING_NAMESPACE,
             [Store\ConfigKey::MTU_COUPON_POPUP_COUNT],
@@ -395,8 +400,8 @@ class Core extends Base\Core
             return false;
         }
 
-        $isCouponCodeAlreadyApplied = (new Coupon\Core)->isCouponApplied(
-            $merchant, Coupon\Constants::MTU_COUPON);
+        $isCouponCodeAlreadyApplied = (new Coupon\Core)->isAnyCouponApplied(
+            $merchant);
 
         if ($isCouponCodeAlreadyApplied === true)
         {

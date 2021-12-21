@@ -2944,15 +2944,18 @@ class Core extends Base\Core
 
     private function isMerchantEligibleForMtuPopup(Merchant\Entity $merchant): bool
     {
-//        activated AND
-//        live AND
-//        first transaction is not done AND
-//    no. of days since instantly activated >= 2d AND
-//    org = rzp AND
-//    coupon already not applied
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
 
         if ($merchant->isActivated() === false or
             $merchant->isLive() === false)
+        {
+            return false;
+        }
+
+        if ((new Merchant\Core)->isRegularMerchant($merchant) === false)
         {
             return false;
         }
@@ -3001,13 +3004,8 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        $isCouponCodeAlreadyApplied = (new Coupon\Core)->isCouponApplied(
-            $merchant, Coupon\Constants::MTU_COUPON);
+        $isCouponCodeAlreadyApplied = (new Coupon\Core)->isAnyCouponApplied(
+            $merchant);
 
         if ($isCouponCodeAlreadyApplied === true)
         {

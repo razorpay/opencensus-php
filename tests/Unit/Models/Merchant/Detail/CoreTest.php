@@ -172,6 +172,71 @@ class CoreTest extends TestCase
         $this->assertTrue($isCouponApplied);
     }
 
+    public function testMtuCouponApplicationOnFirstTransactionExistingPromotion()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $p = $this->fixtures->on('live')->create('promotion', [
+            'name'          => 'RZPNEO',
+            'product'       => 'banking',
+            'credit_amount' => 0,
+            'iterations'    => 1
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_promotion', [
+            'merchant_id'           => $merchantId,
+            'promotion_id'          => $p['id'],
+            'start_time'            => time(),
+            'remaining_iterations'  => 1,
+            'expired'               => 0
+        ]);
+
+        $promotionAttributes = [
+            'pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
+        ];
+
+        $promotion = $this->fixtures->on('live')->create('promotion', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => Constants::MTU_COUPON
+        ];
+
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
+        $this->createPayment($merchantId, 10000);
+
+        $data = [
+            StoreConstants::NAMESPACE                    => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::MTU_COUPON_POPUP_COUNT       => 1
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
+
+        (new Escalations\Core)->handleMtuSegmentEvent();
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP],
+            StoreConstants::INTERNAL);
+
+        $this->assertNull($data[StoreConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP]);
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $isCouponApplied = (new Coupon\Core)->isCouponApplied($merchant, Coupon\Constants::MTU_COUPON);
+
+        $this->assertFalse($isCouponApplied);
+    }
+
     public function testNonRazorpayMerchantMtuCouponApplicationOnFirstTransaction()
     {
         $this->enableRazorXTreatmentForRazorX();

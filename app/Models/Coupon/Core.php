@@ -285,6 +285,13 @@ class Core extends Base\Core
         return $merchantPromotion !== null;
     }
 
+    public function isAnyCouponApplied(Merchant\Entity $merchant): bool
+    {
+        $merchantPromotion = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
+
+        return $merchantPromotion->isEmpty() === false;
+    }
+
     protected function shouldApplyPromotionPricing(Entity $coupon)
     {
         $couponCode = $coupon->getCode();
