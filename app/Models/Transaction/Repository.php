@@ -726,7 +726,7 @@ class Repository extends Base\Repository
             return;
         }
 
-        $batchedIds = array_chunk($txnIds, 1000);
+        $batchedIds = array_chunk($txnIds, 500);
 
         if ($logging === true)
         {

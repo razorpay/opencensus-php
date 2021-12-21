@@ -78,7 +78,7 @@ class ProcessSettlementServiceTxns extends Job
 
                 $startTime = microtime(true);
 
-                $txnIds = array_chunk($this->data[self::TRANSACTION_IDS], 1000);
+                $txnIds = array_chunk($this->data[self::TRANSACTION_IDS], 500);
 
                 foreach ($txnIds as $txnIdsChunk)
                 {
