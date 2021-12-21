@@ -377,7 +377,7 @@ class RawApiRequest
 
             $start_time = microtime(true);
 
-            $spanOptions = (new ApiRequestSpan())::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$this->path);
+            $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$this->path);
 
             $response = (new ApiRequestSpan($this->client))->wrapRequestInSpan(
                 $method,
