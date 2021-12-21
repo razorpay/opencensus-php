@@ -33,6 +33,8 @@ class RemindersController extends Controller
             '^configs$',
             '^configs\/[[:alnum:]]{14}$',
             '^batch\/service\/control$',
+            '^circuit_config$',
+            '^reminders_experiment\/[[:alnum:]]{100}$',
         ],
         self::POST => [
             '^batch$',
@@ -41,10 +43,14 @@ class RemindersController extends Controller
             '^configs$',
             '^batch\/service\/control$',
             '^service\/[[:alnum:]|_]{1,100}\/configure$',
+            '^circuit_config$',
+            '^reminders_experiment$',
         ],
         self::PUT => [
             '^merchant_config$',
             '^service\/[[:alnum:]|_]{1,100}\/configure$',
+            '^circuit_config$',
+            '^reminders_experiment$',
         ],
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
@@ -63,6 +69,8 @@ class RemindersController extends Controller
             '^configs$',
             '^configs\/[[:alnum:]]{14}$',
             '^batch\/service\/control$',
+            '^circuit_config$',
+            '^reminders_experiment\/[[:alnum:]]{100}$',
         ],
         self::POST => [
             '^batch$',
@@ -72,10 +80,14 @@ class RemindersController extends Controller
             '^namespace\/[[:alnum:]|_]{1,100}\/control$',
             '^batch\/service\/control$',
             '^service\/[[:alnum:]|_]{1,100}\/configure$',
+            '^circuit_config$',
+            '^reminders_experiment$',
         ],
         self::PUT => [
             '^configs\/[[:alnum:]]{14}$',
             '^service\/[[:alnum:]|_]{1,100}\/configure$',
+            '^circuit_config$',
+            '^reminders_experiment$',
         ],
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
