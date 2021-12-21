@@ -8987,8 +8987,12 @@ trait Authorize
      */
     protected function shouldRedirectDCC(Payment\Entity $payment): bool
     {
-        if (($this->app['api.route']->isS2SPaymentRoute() === false) or
-            ($this->app['basicauth']->isPrivateAuth() === false))
+        $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+
+        // For non S2S and non-custom checkout calls, this redirection should not happen
+
+        if ((($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false)) and $library !== Analytics\Metadata::RAZORPAYJS)
         {
             return false;
         }
@@ -9009,6 +9013,15 @@ trait Authorize
         }
 
         if($payment->getCurrency() === $payment->card->iinRelation->getIinCurrency())
+        {
+            return false;
+        }
+
+        //@todo: Condition for A/B testing on DCC for custom checkout, remove for full rollout
+        $variantFlag = (new Merchant\Core())->isRazorxExperimentEnable(
+            $payment->merchant->getPublicId(), Merchant\RazorxTreatment::DCC_ON_INTERNATIONAL);
+
+        if($library === Analytics\Metadata::RAZORPAYJS && $variantFlag === false)
         {
             return false;
         }
@@ -9090,10 +9103,12 @@ trait Authorize
             $this->cache->put($key, $encryptedPayload, self::REDIRECT_CACHE_TTL * 60);
 
             $redirectUrl = '';
+            $httpMethod = '';
 
             if ($redirectDcc === true)
             {
                 $redirectUrl = $this->route->getUrl('payment_redirect_to_dcc_info', ['id' => $trackId]);
+                $httpMethod = $this->route::getApiRoute('payment_redirect_to_dcc_info')[0];
             }
             else
             {
@@ -9119,6 +9134,13 @@ trait Authorize
                 'task_id'  => $this->request->getTaskId()
             ];
 
+            // Passing http-method additionally for custom checkout redirect
+            $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+            if($library === Analytics\Metadata::RAZORPAYJS && empty($httpMethod) !== true)
+            {
+                $data['request']['http_method'] = $httpMethod;
+            }
+
             if ($this->shouldAddOtpGenerateUrl($terminalGatewayInput) === true)
             {
                $data['request']['otp_generate_url'] = $this->route->getUrlWithPublicAuthInQueryParam('payment_otp_generate',
@@ -9127,6 +9149,7 @@ trait Authorize
                         'track_id' => $trackId,
                 ]);
             }
+
 
             $data['version'] = 1;
 

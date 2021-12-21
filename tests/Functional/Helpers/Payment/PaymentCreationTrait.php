@@ -275,6 +275,11 @@ trait PaymentCreationTrait
                     {
                         if ($content['type'] === 'first')
                         {
+                            $targetUrl = $content['request']['url'];
+                            if ($this->isRedirectToDCCInfoUrl($targetUrl) === true)
+                            {
+                                return $this->makeRedirectToDCCInfo($targetUrl);
+                            }
                             $gateway = $content['gateway'];
                         }
                         else if ($content['type'] === 'return')

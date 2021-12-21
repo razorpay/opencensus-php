@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Payment;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -30,6 +32,24 @@ class PaymentCreateDCCTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+    }
+
+    private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                {
+                    return $feature === $featureUnderTest ? $value : 'control';
+                }
+            ));
     }
 
     public function testPaymentCreateWithDCCS2SFeatureNotEnabled()
@@ -1068,5 +1088,57 @@ class PaymentCreateDCCTest extends TestCase
         $responseContent = json_decode($response->getContent(), true);
 
         $this->assertEquals(false, $responseContent['dcc']);
+    }
+
+    public function testPaymentCreateWithDCCCustomCheckout()
+    {
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCustomCheckoutDCCDisabledMerchants()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::DISABLE_NATIVE_CURRENCY]);
+        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
+
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentCustomCheckoutRazorXNegative()
+    {
+        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
+
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL, 'control');
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
 }
