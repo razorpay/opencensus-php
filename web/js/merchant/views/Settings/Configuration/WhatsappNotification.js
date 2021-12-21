@@ -21,6 +21,7 @@ function WhatsappNotification({
 }) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
   const whatsappEnableSection = useRef(null);
+  const [isWhatsAppOptPending, setIsWhatsAppOptPending] = useState(true);
   const [isWhatsappOrg, setWhatsappOrg] = useState(false);
   const [isWhatsappMid, setWhatsappMid] = useState(false);
 
@@ -108,15 +109,24 @@ function WhatsappNotification({
     } else {
       analytics('Disable');
     }
-
+    /*
+      Added the success check on the response data object because if the API is
+      getting timed out atleast the we will be able to properly communicate it 
+      to the user without throwing errror
+    */
     updateWhatsappOptin(whatsapp_optin_checked)
-      .then(() => {
-        cb(true);
-        setWhatsappOptin(whatsapp_optin_checked);
-        showNotification({
-          type: 'success',
-          message: 'Your preference was saved',
-        });
+      .then((data) => {
+        if (data?.data?.optin_status || data?.data?.length === 0) {
+          cb(true);
+          setWhatsappOptin(whatsapp_optin_checked);
+          showNotification({
+            type: 'success',
+            message: 'Your preference was saved',
+          });
+        } else {
+          cb(false);
+          setIsWhatsAppOptPending(true);
+        }
       })
       .catch(({ errors }) => {
         if (errors) {
@@ -130,30 +140,40 @@ function WhatsappNotification({
   };
 
   return (
-    <div class="panel panel-default" ref={whatsappEnableSection}>
-      <div class="panel-heading">
-        <span class="title">
+    <div className="panel panel-default whatsapp-notification" ref={whatsappEnableSection}>
+      <div className="panel-heading">
+        <span className="title">
           <TextHighlighter hashedWith={WHATSAPP_NOTIF}>WhatsApp Notifications</TextHighlighter>
         </span>
-        {(!isWhatsappOrg || (isWhatsappOrg && isWhatsappMid)) && (
-          <span class="toggler-btn">
-            <SwitchField
-              checked={!!whatsapp_optin}
-              onChange={(_, cb) => toggleWhatsappNotification(!whatsapp_optin, cb)}
-              type="prime"
-            />
-            {whatsapp_optin ? (
-              <b class="text-primary">Enabled</b>
-            ) : (
-              <b class="text-faded">Disabled</b>
-            )}
-          </span>
+        {isWhatsAppOptPending ? (
+          <div className="optin-pending-label">PENDING</div>
+        ) : (
+          (!isWhatsappOrg || (isWhatsappOrg && isWhatsappMid)) && (
+            <span className="toggler-btn">
+              <SwitchField
+                checked={!!whatsapp_optin}
+                onChange={(_, cb) => toggleWhatsappNotification(!whatsapp_optin, cb)}
+                type="prime"
+              />
+              {whatsapp_optin ? (
+                <b className="text-primary">Enabled</b>
+              ) : (
+                <b className="text-faded">Disabled</b>
+              )}
+            </span>
+          )
         )}
       </div>
 
-      <div class="panel-body">
-        <form class="form-horizontal">
-          <div class="description">
+      <div className="panel-body">
+        <form className="form-horizontal">
+          {isWhatsAppOptPending && (
+            <div className="optin-pending-description">
+              We have received your request. You will receive a text on WhatsApp when your request
+              is processed.
+            </div>
+          )}
+          <div className="description">
             Receive notifications from Razorpay via WhatsApp{' '}
             {currentUser.user && currentUser.user.contact_mobile && (
               <span>

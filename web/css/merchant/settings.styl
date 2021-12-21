@@ -363,7 +363,20 @@
   .modal-body
     .btn-link
       font-size: 12px;
-
+  .whatsapp-notification
+    .optin-pending-label, .optin-pending-description
+      color #CD8214
+    .optin-pending-label
+      font-weight 600
+      padding 3px 12px
+      background-color #cd82141a
+      border-radius 20px
+      @media screen and (min-width $screen-xs-max)
+        display inline-block
+        margin-left 20px
+        verticle-align middle
+      @media screen and (max-width:400px)
+        margin-top 10px
 .webhooks-secret-container {
   position: relative;
 
