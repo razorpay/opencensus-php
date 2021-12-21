@@ -132,6 +132,10 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
 
+        $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
+
         $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
 
         $this->assertEquals([], $response);
@@ -162,6 +166,10 @@ class DetailServiceTest extends TestCase
         $this->createMerchantTestDependencyMocks();
 
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
+
+        $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
 
         $actualResponse = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
 

@@ -646,23 +646,21 @@ class Core extends Base\Core
             $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
         }
 
-        $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
-
-        $response = $this->updateActivationProgress($merchant);
-
-        $response['auto_activated'] = $autoActivated;
-
         $eventAttributes = $merchant->toArrayEvent();
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
         $this->app['segment-analytics']->pushTrackEvent($merchant, [], SegmentEvent::L2_SUBMISSION);
 
-        $this->attemptPennyTesting($merchantDetails, $merchant); // async
-
         $this->triggerValidationRequests($merchant, $merchantDetails);
 
         $this->fireActivationTrigger($merchantDetails, $merchant);
+
+        $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
+
+        $response = $this->updateActivationProgress($merchant);
+
+        $response['auto_activated'] = $autoActivated;
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -2788,12 +2786,12 @@ class Core extends Base\Core
 
         switch ([$activationStatus , $bankDetailsVerificationStatus])
         {
-            case [Status::ACTIVATED , Merchant\BvsValidation\Constants::VERIFIED]:
+            case [Status::ACTIVATED, BvsValidationConstants::VERIFIED]:
             {
                 return AccountConstants::ACTIVATED;
             }
-            case [Status::ACTIVATED , Merchant\BvsValidation\Constants::INCORRECT_DETAILS]:
-            case [Status::ACTIVATED , Merchant\BvsValidation\Constants::NOT_MATCHED]:
+            case [Status::ACTIVATED, BvsValidationConstants::INCORRECT_DETAILS]:
+            case [Status::ACTIVATED, BvsValidationConstants::NOT_MATCHED]:
             {
                 return AccountConstants::VERIFICATION_FAILED;
             }
@@ -3314,15 +3312,21 @@ class Core extends Base\Core
             return;
         }
 
-        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false and
-                $merchant->isLinkedAccount() === false)
+        if (($merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED or
+             $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
+            $this->hasBankDetailsChanged($merchantDetails) === false)
         {
             return;
         }
 
         if (empty($merchantDetails->getBankAccountNumber()) === true or
-            empty($merchantDetails->getBankBranchIfsc()) === true or
-            empty($merchantDetails->getBankAccountName()) === true)
+            empty($merchantDetails->getBankBranchIfsc()) === true)
+        {
+            return;
+        }
+
+        if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false and
+                $merchant->isLinkedAccount() === false)
         {
             return;
         }
@@ -3352,7 +3356,7 @@ class Core extends Base\Core
         }
 
         if ($this->hasBankDetailsChanged($merchantDetails) or
-            $pennyTestingAttemptsCount == 0 or
+            ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted()===false) or
             $bankDetailsUpdated === true)
         {
             $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
@@ -3362,8 +3366,12 @@ class Core extends Base\Core
             $merchant->getId(),
             RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION);
 
-        if ($isKarzaVerificationEnabled === true)
+        if (($isKarzaVerificationEnabled === true and
+             $merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
         {
+            $this->trace->info(
+                TraceCode::MERCHANT_BVS_BANK_VERIFICATION,
+                ['merchant_id' => $merchant->getId()]);
             //call to bvs for Bank Account before L2 submission
             (new requestDispatcher\BankAccount($merchant, $merchantDetails))->triggerBVSRequest();
 
@@ -3374,8 +3382,7 @@ class Core extends Base\Core
     {
         $existingMerchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
 
-        if ($merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NAME) and
-            $merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
+        if ($merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
             $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER))
         {
             return false;
@@ -5147,7 +5154,10 @@ class Core extends Base\Core
                 return false;
             }
 
-            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, ['field' => $field,"merchant_id"=>$merchant->getId()]);
+            $this->trace->info(TraceCode::ONBOARDING_FIELD_VERIFICATION_REQUEST_RECEIVED, [
+                'field' => $field,
+                "merchant_id"=>$merchant->getId()
+            ]);
 
             $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$field];
 

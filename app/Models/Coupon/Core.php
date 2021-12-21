@@ -110,7 +110,6 @@ class Core extends Base\Core
         return $coupon;
     }
 
-
     public function apply(Merchant\Entity $merchant, array $input): array
     {
         $couponCode = $input[Entity::CODE] ?? '';
