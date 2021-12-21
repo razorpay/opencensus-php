@@ -1743,7 +1743,7 @@ trait Authorize
 
             $this->validateCardAndCvv($payment, $input);
 
-            $this->validateAddressIfPresent($payment, $input);
+            $this->validateAddressIfPresentWithoutRedirect($payment, $input);
 
             $this->validateRecurringIfApplicable($payment, $input);
 
@@ -2810,6 +2810,12 @@ trait Authorize
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
         $gatewayInput['payment_analytics'] = $payment->getMetadata('payment_analytics');
 
+        if(isset($gatewayInput['billing_address']) and
+            isset($payment['billing_address']) === false)
+        {
+            $gatewayInput['payment']['billing_address'] = $gatewayInput['billing_address'];
+        }
+
         // Bank such as Netbanking Canara enforces to send fee in request.
         // Adding fee calculation as part of gateway input only if applicable
         $this->addFeeIfApplicable($payment, $gatewayInput);
@@ -3286,7 +3292,8 @@ trait Authorize
         if (($this->shouldRedirect($payment) === true) or
             ($this->shouldRedirectV2($payment, []) === true) or
             ($this->shouldRedirectDCC($payment) === true) or
-            ($this->shouldRedirectRaasInternational($payment)=== true))
+            ($this->shouldRedirectRaasInternational($payment) === true) or
+            ($this->shouldRedirectForAddressCollection($payment) === true))
         {
             return;
         }
@@ -9029,6 +9036,36 @@ trait Authorize
         return true;
     }
     /**
+     * Check and return if Address collection is applicable for this s2s payment
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function shouldRedirectForAddressCollection(Payment\Entity $payment): bool
+    {
+        if (($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false))
+        {
+            return false;
+        }
+
+        if ($payment->isRecurring() === true)
+        {
+            return false;
+        }
+
+        //Check if address required is enabled
+        $addressRequired = false;
+
+        if (($payment->isInternational() === true) and
+            ($payment->isCard() === true) and
+            ($payment->card !== null))
+        {
+            $addressRequired = (new Payment\Service)->isAddressRequired($payment->card->iinRelation, $payment->merchant);
+        }
+
+        return $addressRequired;
+    }
+    /**
      * Check and return if RaaS is applicable for this payment and is of type International
      * @param Payment\Entity $payment
      * @return bool
@@ -9054,9 +9091,12 @@ trait Authorize
 
             $redirectDcc = $this->shouldRedirectDCC($payment);
 
+            $redirectAddressCollection = $this->shouldRedirectForAddressCollection($payment);
+
             if (($this->shouldRedirect($payment) === false) and
                 ($this->shouldRedirectV2($payment, $terminalGatewayInput) === false) and
-                ($redirectDcc === false))
+                ($redirectDcc === false) and
+                ($redirectAddressCollection === false))
             {
                 return null;
             }
@@ -9109,6 +9149,10 @@ trait Authorize
             {
                 $redirectUrl = $this->route->getUrl('payment_redirect_to_dcc_info', ['id' => $trackId]);
                 $httpMethod = $this->route::getApiRoute('payment_redirect_to_dcc_info')[0];
+            }
+            elseif ($redirectAddressCollection === true)
+            {
+                $redirectUrl = $this->route->getUrl('payment_redirect_to_address_collect', ['id' => $trackId]);
             }
             else
             {
@@ -9386,9 +9430,18 @@ trait Authorize
                 //DCC S2S Flow. Doing this inside mutex to avoid duplicate processing
                 $this->ValidateAndProcessDccInput($payment,$input);
 
+                //Address validation if required
+                $this->validateAddressIfPresent($payment,$input);
+
                 $key = $payment->getCacheRedirectInputKey();
 
                 $inputDetails = $this->getInputDetails($payment, $key);
+
+                if(isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
+                {
+                    $inputDetails[Payment\Entity::BILLING_ADDRESS] = $input[Payment\Entity::BILLING_ADDRESS];
+                    $inputDetails['gateway_input']['billing_address'] = $input[Payment\Entity::BILLING_ADDRESS];
+                }
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
@@ -9948,6 +10001,27 @@ trait Authorize
         return false;
     }
 
+    /**
+     * This method is used to validate address if re-direction
+     * is not required (in case of s2s we need to redirect for address collection
+     * without throwing validation error).
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    protected function validateAddressIfPresentWithoutRedirect(Payment\Entity $payment, array $input)
+    {
+        if (($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false))
+        {
+            try {
+                $this->validateAddressIfPresent($payment, $input);
+            } catch (Exception\BadRequestException $e) {
+                throw $e;
+            }
+        }
+    }
+
     protected function validateAddressIfPresent(Payment\Entity $payment, array $input)
     {
         $addressRequired = false;
@@ -10301,7 +10375,8 @@ trait Authorize
             if (($this->shouldRedirect($payment) === true) or
                 ($this->shouldRedirectV2($payment, []) === true) or
                 ($this->shouldRedirectDCC($payment) === true) or
-                ($this->shouldRedirectRaasInternational($payment)=== false))
+                ($this->shouldRedirectRaasInternational($payment) === false) or
+                ($this->shouldRedirectForAddressCollection($payment) === true))
             {
                 return ;
             }

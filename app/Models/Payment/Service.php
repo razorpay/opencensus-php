@@ -1754,6 +1754,47 @@ class Service extends Base\Service
 
         $data['dcc_info'] = $dccInfo;
 
+        //Check if Address is required for DCC transaction
+        $data['avs_required'] = $this->isAddressRequired($iin, $merchant);
+
+        return $data;
+    }
+
+    public function redirectToAddressCollect($id)
+    {
+        $data = [];
+
+        list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
+
+        if ( $payment->isCreated() === false )
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+            );
+        }
+
+        $route = $this->app['api.route'];
+
+        $data['type'] = 'address_collect';
+
+        $data['payment_id'] = $payment->getPublicId();
+        $data['amount'] = number_format(($payment->getAmount() / 100), 2);
+        $data['currency'] = $payment->getCurrency();
+        $data['formatted_amount'] = $payment->getFormattedAmount();
+        $data['gateway'] = '';
+
+        $data['request'] = [
+            'url'      => $route->getUrl('payment_update_and_redirect', ['id' => $payment->getId()]),
+            'method'   => 'post',
+            'content'  => []
+        ];
+        $data['version'] = 1;
+
+        $data['theme_color'] = $merchant->getBrandColorElseDefault();
+        $data['nobranding'] = $merchant->isFeatureEnabled(Feature\Constants::PAYMENT_NOBRANDING);
+        $data['merchant_id'] = $merchant->getId();
+        $data['merchant'] = $merchant->getBillingLabel();
+
         return $data;
     }
 

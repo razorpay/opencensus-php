@@ -210,13 +210,11 @@ class PaymentCreateAVSTest extends TestCase
         $payment = $this->getPaymentArray($billingAddressArray, 1);
         $payment['card']['number'] = '555555555555558';
         $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
-
         $this->fixtures->iin->create([
             'iin' => '555555',
             'country' => 'US',
             'network' => 'MasterCard',
         ]);
-
         $response = $this->doAuthPayment($payment);
 
         $paymentEntity = $this->getDbLastPayment();
@@ -244,6 +242,118 @@ class PaymentCreateAVSTest extends TestCase
 
         $this->validatePaymentBillingAddress($paymentEntity, $billingAddressArray);
         $this->validateCustomerTokenBillingAddress($paymentEntity, $billingAddressArray);
+    }
+
+    public function testPaymentCreateWithAddressCollectJson()
+    {
+        $payment = $this->getPaymentArray(null, 1);
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+        $this->fixtures->merchant->addFeatures(['address_required']);
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToAddressCollectUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAddressCollect($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertTrue($this->redirectToAddressCollect);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getDbLastPayment();
+        $this->validatePaymentBillingAddress($paymentEntity, $this->getDefaultBillingAddressArray());
+
+    }
+
+    public function testPaymentCreateS2SWithoutAVS()
+    {
+        $payment = $this->getPaymentArray(null, 1);
+
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+        $this->fixtures->merchant->removeFeatures(['avs']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToAuthorize($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertFalse($this->redirectToAddressCollect);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentAddressEntity = (new Repository)->fetchPrimaryAddressOfEntityOfType($paymentEntity, Type::BILLING_ADDRESS);
+        $this->assertNull($paymentAddressEntity);
+
+    }
+
+    public function testPaymentCreateWithAVSS2SRedirect()
+    {
+        $payment = $this->getPaymentArray(null, 1);
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+        $this->fixtures->merchant->addFeatures(['address_required']);
+
+        $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $this->assertTrue($this->redirectToAddressCollect);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getDbLastPayment();
+        $this->validatePaymentBillingAddress($paymentEntity, $this->getDefaultBillingAddressArray());
+
+    }
+
+    public function testPaymentCreateWithoutAVSS2SRedirect()
+    {
+        $payment = $this->getPaymentArray(null, 1);
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+        $this->fixtures->merchant->removeFeatures(['avs']);
+
+        $this->doS2SPrivateAuthAndCapturePayment($payment);
+
+        $this->assertFalse($this->redirectToAddressCollect);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentAddressEntity = (new Repository)->fetchPrimaryAddressOfEntityOfType($paymentEntity, Type::BILLING_ADDRESS);
+        $this->assertNull($paymentAddressEntity);
+
     }
 
     public function testCreateS2SPaymentAVSNotEnrolledCard()

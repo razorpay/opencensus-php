@@ -131,6 +131,13 @@ trait PaymentCreationTrait
         return (preg_match($pattern, $uri) === 1);
     }
 
+    protected function isRedirectToAddressCollectUrl($uri)
+    {
+        $pattern = '/payments\/[\w]+\/address_collect/';
+
+        return (preg_match($pattern, $uri) === 1);
+    }
+
     protected function isOtpFallbackUrl($uri)
     {
         $pattern = '/payments\/pay_[\w]+\/authentication\/redirect\?key_id=rzp_[\w]+/';
@@ -360,11 +367,20 @@ trait PaymentCreationTrait
             {
                 return $this->makeRedirectToDCCInfo($targetUrl);
             }
+            else if ($this->isRedirectToAddressCollectUrl($targetUrl) === true)
+            {
+                return $this->makeRedirectToAddressCollect($targetUrl);
+            }
         }
 
         if ($this->isRedirectToDCCInfoUrl($request['url']) === true)
         {
             return $this->makeRedirectToUpdateAndAuthorize($response);
+        }
+
+        if ($this->isRedirectToAddressCollectUrl($request['url']) === true)
+        {
+            return $this->makeRedirectToUpdateAndAuthorizeForAddress($response);
         }
 
         if ($request['url'] === '/payments/create/json')
@@ -453,6 +469,59 @@ trait PaymentCreationTrait
             'url'   => $url,
             'method' => $method,
             'content' => $content,
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
+
+        $this->resetSingletons();
+
+        return $this->handlePaymentCreationFlow($response, $request);
+    }
+
+    protected function makeRedirectToUpdateAndAuthorizeForAddress($response)
+    {
+        $content = $response->getContent();
+
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $this->assertTrue($this->isUpdateDCCAndRedirectToAuthorizeUrl($url));
+
+        $this->ba->directAuth();
+
+        $content['billing_address'] = $this->getDefaultBillingAddressArray();
+        $request = [
+            'url'   => $url,
+            'method' => $method,
+            'content' => $content,
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
+
+        $this->resetSingletons();
+
+        return $this->handlePaymentCreationFlow($response, $request);
+    }
+
+    protected function makeRedirectToAddressCollect($targetUrl)
+    {
+        $id = getTextBetweenStrings($targetUrl, '/payments/', '/address_collect');
+
+        $this->redirectToAddressCollect = true;
+
+        $url = $this->getPaymentRedirectToAddressCollectUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
         ];
 
         $response = $this->makeRequestParent($request);

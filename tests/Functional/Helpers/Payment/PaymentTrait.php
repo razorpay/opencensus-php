@@ -79,6 +79,8 @@ trait PaymentTrait
 
     protected $redirectToUpdateAndAuthorize = false;
 
+    protected $redirectToAddressCollect = false;
+
     /**
      * For certain payments, user has the option to fail it
      * on the bank page. If this property is set to true in
@@ -2247,6 +2249,18 @@ trait PaymentTrait
         ];
 
         $url = \URL::route('payment_update_and_redirect', $params, false);
+        $url = 'http://localhost' . $url;
+
+        return $url;
+    }
+
+    public function getPaymentRedirectToAddressCollectUrl($trackId)
+    {
+        $params = [
+            'id' => $trackId,
+        ];
+
+        $url = \URL::route('payment_redirect_to_address_collect', $params, false);
         $url = 'http://localhost' . $url;
 
         return $url;

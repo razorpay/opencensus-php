@@ -704,6 +704,33 @@ class PaymentCreateController extends Controller
             ->with('data', $response);
     }
 
+    public function getRedirectToAddressCollect($id)
+    {
+        $response = [];
+
+        $response['data'] = $this->service(E::PAYMENT)->redirectToAddressCollect($id);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $response['org_info'] = (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        $languageCode = App::getLocale() !== null ?
+            App::getLocale() :
+            LocaleCore::setLocale($response, $this->app['basicauth']->getMerchant()->getId());
+
+        $response['production'] = $this->app->environment() === Environment::PRODUCTION;
+        $response['cdn'] = $this->config->get('url.cdn.production');
+        $response['language_code'] = $languageCode;
+
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'address_collect view create via'   =>  'gateway.gatewayAddressForm',
+            ]);
+
+        return View::make('gateway.gatewayAddressForm')
+            ->with('data', $response);
+    }
+
     public function postRedirectToAuthorize($id)
     {
         $data = $this->service(E::PAYMENT)->redirectToAuthorize($id);
