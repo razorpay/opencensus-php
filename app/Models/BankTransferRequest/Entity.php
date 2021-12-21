@@ -294,6 +294,7 @@ class Entity extends Base\PublicEntity
 
                 break;
 
+            case 'bank_transfer_process_test_x_demo_cron':
             case 'bank_transfer_process_test':
             case 'bank_transfer_process_rbl_test':
                 $requestSource = [

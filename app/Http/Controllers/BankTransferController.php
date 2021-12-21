@@ -456,6 +456,16 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processBankTransferXDemoCron()
+    {
+        // Setting mode inside service layer does not work
+        $this->app['basicauth']->setModeAndDbConnection('test');
+
+        $response = $this->service()->processBankTransferXDemoCron();
+
+        return ApiResponse::json($response);
+    }
+
     private function getIciciResponse(array $input, string $failureReason, int $statusCode = 200)
     {
         $input = $input['Virtual_Account_Number_Verification_IN'][0];

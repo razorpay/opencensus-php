@@ -7,9 +7,11 @@ use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Http\RequestHeader;
+use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -432,6 +434,30 @@ class PayoutsBatchTest extends TestCase
         // We are not creating a payouts batch entity, to simulate a dashboard based bulk payout request
 
         $this->startTest($customTestCase);
+    }
+
+    public function testCreatePayoutBatchesXDemoCron()
+    {
+        $merchant_id = \RZP\Models\Merchant\Account::X_DEMO_PROD_ACCOUNT;
+
+        $x_demo_bank_account = \RZP\Constants\BankingDemo::BANK_ACCOUNT;
+
+        $this->fixtures->merchant->createAccount($merchant_id);
+
+        $this->fixtures->merchant->edit($merchant_id, ['business_banking' => 1]);
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            400000,$merchant_id);
+
+        $this->fixtures->on('test')->edit('balance',$bankingBalance['id'],[
+            'account_number' => $x_demo_bank_account
+        ]);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Features::PAYOUTS_BATCH,Features::PAYOUT], $merchant_id);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
     }
 
     protected function assertFileContents($fileContent)

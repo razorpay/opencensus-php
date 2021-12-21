@@ -409,4 +409,19 @@ return [
             ],
         ],
     ],
+
+    'testCreatePayoutBatchesXDemoCron' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_batch_x_demo_cron',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'payouts.batch',
+                'status' => 'Accepted'
+            ],
+        ],
+    ]
 ];

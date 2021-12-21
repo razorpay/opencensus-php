@@ -3,6 +3,8 @@
 namespace RZP\Models\BankTransfer;
 
 use Cache;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\SlackNotification;
@@ -779,5 +781,34 @@ class Service extends Base\Service
                 break;
         }
         return $input;
+    }
+
+    /**
+     * Add test balance periodically to X Demo account
+     */
+    public function processBankTransferXDemoCron()
+    {
+        $merchant_id = \RZP\Models\Merchant\Account::X_DEMO_PROD_ACCOUNT;
+
+        $x_demo_bank_account = \RZP\Constants\BankingDemo::BANK_ACCOUNT;
+
+        $this->app['basicauth']->setMerchantById($merchant_id);
+
+        $timestamp  = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $input = array(
+            Entity::MODE => \RZP\Models\BankTransfer\Mode::NEFT,
+            Entity::AMOUNT => 4000, // 1000 INR x 4 Demo payouts
+            Entity::PAYER_ACCOUNT => $x_demo_bank_account,
+            Entity::PAYEE_IFSC => 'RAZR0000001',
+            Entity::PAYEE_ACCOUNT => $x_demo_bank_account,
+            Entity::PAYER_IFSC => 'RAZR0000001',
+            Entity::PAYER_NAME => 'Acme Corp',
+            Entity::TIME => $timestamp,
+            Entity::REQ_UTR => 'RX-' . $merchant_id . '-' . $timestamp,
+            Entity::DESCRIPTION => 'NEFT payment of 4000 amount'
+        );
+
+        return $this->saveRequestAndProcess($input, 'dashboard', false, $input);
     }
 }

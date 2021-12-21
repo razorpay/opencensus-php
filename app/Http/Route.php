@@ -509,6 +509,7 @@ class Route
         'bank_transfer_process_rbl_test'           => ['post',     'ecollect/validate/rbl/test',                     'BankTransferController@processRblBankTransferTest'                 ],
         'bank_transfer_process_rbl_internal'       => ['post',     'ecollect/validate/rbl/internal',                 'BankTransferController@processRblBankTransferInternal'             ],
         'bank_transfer_process_test'               => ['post',     'ecollect/validate/test',                         'BankTransferController@processBankTransfer'                        ],
+        'bank_transfer_process_test_x_demo_cron'   => ['post',     'ecollect/validate/test/x-demo-cron',             'BankTransferController@processBankTransferXDemoCron'                        ],
         'bank_transfer_notify'                     => ['post',     'ecollect/pay',                                   'BankTransferController@notifyBankTransfer'                         ],
         'bank_transfer_refund_retry'               => ['post',     'bank_transfers/refunds/retry',                   'BankTransferController@retryBankTransferRefund'                    ],
         'bank_transfer_edit_payer_account'         => ['put',      'bank_transfers/{id}/payer_bank_account',         'BankTransferController@editPayerBankAccount'                       ],
@@ -1398,6 +1399,7 @@ class Route
         'payout_create_internal'                   => ['post',     'payouts_internal',                               'PayoutController@postFundAccountPayout'                            ],
         'payout_create_on_internal_contact'        => ['post',     'internalContactPayout',                          'PayoutController@postFundAccountOnInternalContact'                 ],
         'payouts_batch_create'                     => ['post',     'payouts_batch',                                  'PayoutsBatchController@create'                                     ],
+        'payouts_batch_create_x_demo_cron'         => ['post',     'payouts_batch_x_demo_cron',                      'PayoutsBatchController@createXDemoPayoutCron'                      ],
         'payout_bulk_create'                       => ['post',     'payouts/bulk',                                   'PayoutController@createPayoutBulk'                                 ],
         'payout_bulk_approve'                      => ['post',     'payouts/bulk_approve',                           'PayoutController@approvePayoutBulk'                                ],
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
@@ -4240,6 +4242,9 @@ class Route
         'get_affordability_suite',
 
         'update_shopify_1cc_config',
+
+        'bank_transfer_process_test_x_demo_cron',
+        'payouts_batch_create_x_demo_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -10956,6 +10961,9 @@ class Route
             'setl_optimizer_settlement_cron',
 
             'dispute_deduction_reversal_cron',
+
+            'bank_transfer_process_test_x_demo_cron',
+            'payouts_batch_create_x_demo_cron',
         ],
 
         'subscriptions' => [

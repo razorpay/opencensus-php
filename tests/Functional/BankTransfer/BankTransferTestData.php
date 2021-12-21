@@ -27,6 +27,19 @@ return [
         'content' => [],
     ],
 
+    'testBankTransferProcessXDemoCron' => [
+        'request' => [
+            'url'    => '/ecollect/validate/test/x-demo-cron',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'valid'   => true,
+                'message' => null,
+            ]
+        ],
+    ],
+
     'notifyBankTransfer' => [
         'url'     => '/ecollect/pay',
         'method'  => 'post',

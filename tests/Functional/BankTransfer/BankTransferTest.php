@@ -156,6 +156,29 @@ class BankTransferTest extends TestCase
         );
     }
 
+    public function testBankTransferProcessXDemoCron()
+    {
+        $merchant_id = \RZP\Models\Merchant\Account::X_DEMO_PROD_ACCOUNT;
+
+        $x_demo_bank_account = \RZP\Constants\BankingDemo::BANK_ACCOUNT;
+
+        $this->fixtures->merchant->createAccount($merchant_id);
+
+        $this->fixtures->on('test')->merchant->edit($merchant_id, ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->fixtures->on('test')->merchant->addFeatures(['virtual_accounts'], $merchant_id);
+        $this->fixtures->on('test')->merchant->enableMethod($merchant_id, 'bank_transfer');
+
+        $bankAccount = $this->createVirtualAccount('test',$merchant_id);
+        $this->fixtures->on('test')->edit('bank_account',$bankAccount['id'],[
+           'account_number' => $x_demo_bank_account
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
     public function testHidePayerDetailsWithFeatureFlag()
     {
         $this->testBankTransferProcess();
