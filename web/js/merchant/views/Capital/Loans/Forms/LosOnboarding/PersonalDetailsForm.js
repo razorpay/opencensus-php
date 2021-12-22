@@ -105,26 +105,28 @@ const PersonalDetailsForm = ({
     setMajorityStakeholder(value);
   };
 
-  const derivePromoterDetailsFormValues = (applicant) => {
+  const derivePromoterDetailsFormValues = (applicant = {}) => {
     const data = {
       first_name: applicant.kyc.first_name,
       second_name: applicant.kyc.second_name,
       date_of_birth: applicant.kyc.date_of_birth,
       gender: applicant.kyc.gender || GENDER_OPTIONS[0].name,
-      contact_number: applicant.phones[0].phone_number,
-      contact_email: applicant.emails[0].email_id,
-      address: applicant.addresses[0].address_line1 + (applicant.addresses[0].address_l2 || ''),
-      pincode: applicant.addresses[0].pincode,
-      city: applicant.addresses[0].city,
-      state: applicant.addresses[0].state || Object.entries(states)[0][0],
-      pan_number: applicant.kyc.pan_number,
+      contact_number: applicant?.phones?.[0]?.phone_number || '',
+      contact_email: applicant?.emails?.[0]?.email_id,
+      address:
+        (applicant?.addresses?.[0]?.address_line1 || '') +
+        (applicant?.addresses?.[0]?.address_l2 || ''),
+      pincode: applicant?.addresses?.[0]?.pincode || '',
+      city: applicant?.addresses?.[0]?.city || '',
+      state: applicant?.addresses?.[0]?.state || Object.entries(states)[0][0],
+      pan_number: applicant?.kyc?.pan_number || '',
     };
     setFormData(data);
   };
 
   function fetchDetails() {
     if (loanApplicationDetails.promoter_details.data.applicant) {
-      derivePromoterDetailsFormValues(loanApplicationDetails.promoter_details.data.applicant);
+      derivePromoterDetailsFormValues(loanApplicationDetails.promoter_details?.data?.applicant);
     } else {
       setFormData(initialFormValues);
     }
