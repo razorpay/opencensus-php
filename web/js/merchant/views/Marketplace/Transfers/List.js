@@ -36,18 +36,12 @@ const settlementStatus = {
   (state) => ({
     ...state.transfers,
     isDirectTransferEnabled: state.session.user.isDirectTransferEnabled,
-    isRouteTransferStateEnabled: state.session.user.isRouteTransferStateEnabled,
   }),
   { fetchAll },
 )
 export default class TransfersListContainer extends ListContainer {
   render() {
     const { props } = this;
-
-    let columns = [transferId, source, recipient, amount, createdAt];
-    if (props.isRouteTransferStateEnabled) {
-      columns = [...columns, transferStatus, settlementStatus];
-    }
 
     return (
       <div class="content-wrapper">
@@ -70,12 +64,19 @@ export default class TransfersListContainer extends ListContainer {
           form="transfersListFilter"
           count={this.state.count}
           onSubmit={this.search}
-          isRouteTransferStateEnabled={this.props.isRouteTransferStateEnabled}
         />
 
         <DataTable
           title="Transfers"
-          columns={columns}
+          columns={[
+            transferId,
+            source,
+            recipient,
+            amount,
+            createdAt,
+            transferStatus,
+            settlementStatus,
+          ]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

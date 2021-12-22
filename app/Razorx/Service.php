@@ -178,7 +178,6 @@ class Service extends Base\Service
             'rx_ca_portal',
             'pp_success_page',
             'bvs_get_gst_details',
-            'route_transfer_state',
             'status_page_enable',
             'pp_hostedpage_new_footer',
             'rx_gst_payments',

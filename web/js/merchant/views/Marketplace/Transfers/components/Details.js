@@ -46,42 +46,6 @@ const SETTLEMENT_STATUS_COLOR_MAP = {
 };
 
 const SettlementText = ({ data, transfer, onEdit }) => {
-  if (transfer.recipient_settlement && transfer.recipient_settlement.status) {
-    return <span>{titleCase(transfer.recipient_settlement.status)}</span>;
-  }
-
-  return (
-    <div>
-      <div>
-        {data.onHold === 'false' ? (
-          <span class="text-success">Pending</span>
-        ) : data.holdUntil ? (
-          <span class="text-warning transfer-scheduled-text">
-            Scheduled for&nbsp;
-            <Time value={data.date.toDate() / 1000} format="Do MMM YYYY" />
-          </span>
-        ) : (
-          <span class="text-danger">On Hold</span>
-        )}
-        <span>&nbsp;&nbsp;</span>
-        {
-          <ShowWhen additionalCondition={(user) => user.isAllowedEdit('payments')}>
-            <a href class="btn-link" onClick={onEdit}>
-              change
-            </a>
-          </ShowWhen>
-        }
-      </div>
-      {data.onHold === 'false' && (
-        <div class="text-fade">
-          Transfers scheduled to settle on bank holidays will get settled on the next working day.
-        </div>
-      )}
-    </div>
-  );
-};
-
-const SettlementTextV2 = ({ data, transfer, onEdit }) => {
   let status;
   let showBusinessHolidaysInfo = false;
   let showChangeButton = false;
@@ -308,17 +272,15 @@ export default class TransferDetails extends Component {
                   )}
                 />
 
-                {this.props.user.isRouteTransferStateEnabled && (
-                  <EntityDetailRow label="Transfer Status">
-                    <RouteTransfersStatusLabel status={transfer.status} />
-                    {transfer.status === 'failed' && transfer.error?.description && (
-                      <div class="text-danger m-t">{transfer.error.description}.</div>
-                    )}
-                    {transfer.status === 'failed' && ERROR_CODE_CTAS_MAP[transfer.error?.code] && (
-                      <div class="text-danger">{ERROR_CODE_CTAS_MAP[transfer.error.code]}</div>
-                    )}
-                  </EntityDetailRow>
-                )}
+                <EntityDetailRow label="Transfer Status">
+                  <RouteTransfersStatusLabel status={transfer.status} />
+                  {transfer.status === 'failed' && transfer.error?.description && (
+                    <div class="text-danger m-t">{transfer.error.description}.</div>
+                  )}
+                  {transfer.status === 'failed' && ERROR_CODE_CTAS_MAP[transfer.error?.code] && (
+                    <div class="text-danger">{ERROR_CODE_CTAS_MAP[transfer.error.code]}</div>
+                  )}
+                </EntityDetailRow>
 
                 {/* {transfer.transaction && this.props.user.isUxRevampPhase2Enabled && (
                   <EntityDetailRow label="Settlement Details">
@@ -439,8 +401,6 @@ export default class TransferDetails extends Component {
                         />
                       </div>
                     </form>
-                  ) : this.props.user.isRouteTransferStateEnabled ? (
-                    <SettlementTextV2 data={this.state} transfer={transfer} onEdit={this.onEdit} />
                   ) : (
                     <SettlementText data={this.state} transfer={transfer} onEdit={this.onEdit} />
                   )}

@@ -8,38 +8,33 @@ export default (props) => {
         <label>Transfer Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
+      <div class="form-group list-filter-item">
+        <label>Transfer Status</label>
+        <Field name="status" component="select" class="form-control input-sm">
+          <option value="">All</option>
+          <option value="created">Created</option>
+          <option value="pending">Pending</option>
+          <option value="processed">Processed</option>
+          <option value="failed">Failed</option>
+          <option value="reversed">Reversed</option>
+          <option value="partially_reversed">Partially Reversed</option>
+        </Field>
+      </div>
 
-      {props.isRouteTransferStateEnabled && (
-        <>
-          <div class="form-group list-filter-item">
-            <label>Transfer Status</label>
-            <Field name="status" component="select" class="form-control input-sm">
-              <option value="">All</option>
-              <option value="created">Created</option>
-              <option value="pending">Pending</option>
-              <option value="processed">Processed</option>
-              <option value="failed">Failed</option>
-              <option value="reversed">Reversed</option>
-              <option value="partially_reversed">Partially Reversed</option>
-            </Field>
-          </div>
+      <div class="form-group list-filter-item">
+        <label>Settlement Status</label>
+        <Field name="settlement_status" component="select" class="form-control input-sm">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="settled">Settled</option>
+          <option value="on_hold">On Hold</option>
+        </Field>
+      </div>
 
-          <div class="form-group list-filter-item">
-            <label>Settlement Status</label>
-            <Field name="settlement_status" component="select" class="form-control input-sm">
-              <option value="">All</option>
-              <option value="pending">Pending</option>
-              <option value="settled">Settled</option>
-              <option value="on_hold">On Hold</option>
-            </Field>
-          </div>
-
-          <div class="form-group list-filter-item">
-            <label>Recipient Id</label>
-            <Field name="recipient" component="input" class="form-control input-sm" />
-          </div>
-        </>
-      )}
+      <div class="form-group list-filter-item">
+        <label>Recipient Id</label>
+        <Field name="recipient" component="input" class="form-control input-sm" />
+      </div>
 
       <div class="form-group list-filter-item count">
         <label>Count</label>

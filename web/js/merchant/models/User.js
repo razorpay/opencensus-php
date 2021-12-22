@@ -1066,10 +1066,6 @@ export default class User {
     return this.getExpStatus('route_batch_upload');
   }
 
-  get isRouteTransferStateEnabled() {
-    return this.getExpStatus('route_transfer_state');
-  }
-
   get isSubscriptionPauseAndResumeEnabled() {
     return this.getExpStatus('pause_resume_enabled');
   }
