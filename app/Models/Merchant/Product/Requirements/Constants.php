@@ -9,7 +9,6 @@ use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Stakeholder\Entity;
-use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class Constants
 {
@@ -106,73 +105,5 @@ class Constants
         Document\Type::PERSONAL_PAN              => Detail\Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
         Document\Type::CANCELLED_CHEQUE          => Detail\Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS,
 
-    ];
-
-    const L1_DETAILS = [
-        Detail\BusinessType::LLP => [
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_CIN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::PROPRIETORSHIP => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::PARTNERSHIP => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::PRIVATE_LIMITED => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::COMPANY_CIN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::PUBLIC_LIMITED => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::COMPANY_CIN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::SOCIETY => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::TRUST => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::NGO => [
-            Detail\Entity::BUSINESS_NAME,
-            Detail\Entity::COMPANY_PAN,
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        Detail\BusinessType::NOT_YET_REGISTERED => [
-            Detail\Entity::PROMOTER_PAN,
-            Detail\Entity::PROMOTER_PAN_NAME
-        ],
-        MerchantConstants::DEFAULT => [
-            Detail\Entity::BUSINESS_CATEGORY,
-            Detail\Entity::BUSINESS_DBA,
-            Detail\Entity::BUSINESS_MODEL,
-            Detail\Entity::BUSINESS_WEBSITE,
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS,
-            Detail\Entity::BUSINESS_REGISTERED_PIN,
-            Detail\Entity::BUSINESS_REGISTERED_CITY,
-            Detail\Entity::BUSINESS_REGISTERED_STATE,
-            Detail\Entity::ACTIVATION_FORM_MILESTONE
-        ]
     ];
 }

@@ -10,8 +10,6 @@ use RZP\Models\Merchant\Methods;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\Stakeholder;
-use RZP\Models\Merchant\Repository;
-use RZP\Models\Merchant\Product\Entity;
 use RZP\Models\Merchant\Product\Metric;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -19,7 +17,6 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PaymentGatewayConfigTest extends OAuthTestCase
@@ -44,8 +41,6 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         parent::setUp();
 
         $this->terminalsServiceMock = $this->getTerminalsServiceMock();
-
-        $this->repo = new Repository();
 
         $this->fixtures->connection('test')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com']]);
         $this->fixtures->connection('live')->create('tnc_map', ['product_name' => 'all', 'content' => ['terms' => 'https://www.terms.com']]);
@@ -193,177 +188,6 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
 
         $this->assertTrue($metricCaptured);
-    }
-
-    /**
-     * This testcase validates the following
-     * 1. Create an unregistered account through V2 API
-     * 2. Create stakeholder for the account
-     * 3. Set poi verification status and pricing plan for merchant
-     * 4. Create default payment gateway configuration
-     * 5. Fetch and verify the requirements for unregistered account
-     * 6. Fetch and verify activation_status in db
-     */
-    public function testUpdateUnregisteredMerchantProductsIfApplicable()
-    {
-
-        Mail::fake();
-
-        $this->setupPrivateAuthForPartner();
-
-        $this->mockTerminalServiceResponse();
-
-        $this->testData['createUnregisteredBusinessTypeAccount']['request']['content']['apps'] = [
-            'websites' => [
-                'https://www.google.com/'
-            ]
-        ];
-
-        $this->testData['createUnregisteredBusinessTypeAccount']['response']['content']['apps'] = [
-            'websites' => [
-                'https://www.google.com/'
-            ]
-        ];
-
-        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
-
-        $accountResponse = $this->runRequestResponseFlow($testData);
-
-        $accountId = $accountResponse['id'];
-
-        $testData = $this->testData['testCreateStakeholderForThinRequest'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
-
-        $stakeholderResponse = $this->runRequestResponseFlow($testData);
-
-        $stakeholderId = $stakeholderResponse['id'];
-
-        $testData = $this->testData['testUpdateStakeholderDetails'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $merchantId = $accountId;
-
-        AccountEntity::verifyIdAndStripSign($merchantId);
-
-        $merchant = (new Repository())->findByPublicId($merchantId);
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        // set poi verification status here because bvs will verify asynchronously
-
-        $merchantDetails->setPoiVerificationStatus('verified');
-
-        // set pricing plan here because here is no partner linked for fetching default pricing plan
-
-        $merchant->setPricingPlan('1hDYlICobzOCYt');
-
-        (new Repository())->saveOrFail($merchant);
-
-        (new \RZP\Models\Merchant\Detail\Repository())->saveOrFail($merchantDetails);
-
-        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $merchantProductId = $response['id'];
-
-        $testData = $this->testData['testRequirements'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        Entity::verifyIdAndSilentlyStripSign($merchantProductId);
-
-        $merchantProduct = $this->getDbEntity('merchant_product',  ['id' => $merchantProductId]);
-
-        $this->assertTrue(($merchantProduct[Entity::ACTIVATION_STATUS] === 'instantly_activated'));
-    }
-
-    /**
-     * This testcase validates the following
-     * 1. Create an registered account through V2 API
-     * 2. Create stakeholder for the account
-     * 3. Set pricing plan for merchant
-     * 4. Create default payment gateway configuration
-     * 5. Fetch and verify the requirements for registered account
-     * 6. Fetch and verify activation_status in db
-     */
-    public function testUpdateRegisteredMerchantProductsIfApplicable()
-    {
-
-        Mail::fake();
-
-        $this->setupPrivateAuthForPartner();
-
-        $this->mockTerminalServiceResponse();
-
-        $this->testData['createRegisteredBusinessTypeAccount']['request']['content']['legal_info'] =  [
-            'pan'   =>  'AAACL1234C',
-            'cin'   =>  'U65999KA2018PTC114468'
-        ];
-        $this->testData['createRegisteredBusinessTypeAccount']['response']['content']['legal_info'] =  [
-            'pan'   =>  'AAACL1234C',
-            'cin'   =>  'U65999KA2018PTC114468'
-        ];
-
-        $testData = $this->testData['createRegisteredBusinessTypeAccount'];
-
-        $accountResponse = $this->runRequestResponseFlow($testData);
-
-        $accountId = $accountResponse['id'];
-
-        $testData = $this->testData['testCreateStakeholderForThinRequest'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
-
-        $stakeholderResponse = $this->runRequestResponseFlow($testData);
-
-        $stakeholderId = $stakeholderResponse['id'];
-
-        $testData = $this->testData['testUpdateStakeholderDetails'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $merchantId = $accountId;
-
-        AccountEntity::verifyIdAndStripSign($merchantId);
-
-        $merchant = (new Repository())->findByPublicId($merchantId);
-
-        // set pricing plan here because here is no partner linked for fetching default pricing plan
-
-        $merchant->setPricingPlan('1hDYlICobzOCYt');
-
-        (new Repository())->saveOrFail($merchant);
-
-        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $merchantProductId = $response['id'];
-
-        $testData = $this->testData['testRequirementsRegistered'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        Entity::verifyIdAndSilentlyStripSign($merchantProductId);
-
-        $merchantProduct = $this->getDbEntity('merchant_product',  ['id' => $merchantProductId]);
-
-        $this->assertTrue(($merchantProduct[Entity::ACTIVATION_STATUS] === 'instantly_activated'));
     }
 
     /**

@@ -13,10 +13,8 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\AccountV2;
-use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Util;
-use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
@@ -808,107 +806,5 @@ class PaymentProductsBaseService extends Base\Service
         $url = str_replace(Constants::MERCHANT_PRODUCT_ID_PLACEHOLDER, $merchantProduct->getPublicId(), $url);
 
         return $url;
-    }
-
-    public function getInstantActivationFields(string $businessType): array
-    {
-        $requiredInputFields = Constants::L1_DETAILS[Merchant\Constants::DEFAULT];
-
-        if(isset(Constants::L1_DETAILS[$businessType]) === true ) {
-            $requiredInputFields = array_merge($requiredInputFields,
-                Constants::L1_DETAILS[$businessType]);
-        }
-
-        if ($businessType !== BusinessType::NOT_YET_REGISTERED) {
-            $requiredInputFields = array_merge($requiredInputFields,[Detail\Entity::BUSINESS_OPERATION_ADDRESS]);
-        }
-
-        $this->trace->info(TraceCode::INSTANT_ACTIVATION_FIELDS_REQUIREMENTS,[
-                'business_type'     => $businessType,
-                'required_fields'   => $requiredInputFields,
-            ]
-        );
-
-        return $requiredInputFields;
-    }
-
-    public function preparePayload(Detail\Entity $merchantDetails)
-    {
-        $input = $merchantDetails->toArrayPublic();
-
-        $requiredFields = $this->getInstantActivationFields($merchantDetails->getBusinessType());
-
-        $input = array_only($input, $requiredFields);
-
-        return $input;
-    }
-
-    public function validateRequiredFieldsNonEmpty(Detail\Entity $merchantDetails): bool
-    {
-        $requiredFields = $this->getInstantActivationFields($merchantDetails->getBusinessType());
-
-        $missingFields = [];
-        foreach ($requiredFields as $field)
-        {
-            if (empty($merchantDetails->getAttribute($field)) === true)
-            {
-                array_push($missingFields, $field);
-            }
-        }
-
-        if (count($missingFields) > 0)
-        {
-            $this->trace->info(TraceCode::MISSING_FIELDS_FOR_INSTANT_ACTIVATION, [
-                    'merchant_id'       => $merchantDetails->getMerchantId(),
-                    'missing_fields'    => $missingFields,
-                ]
-            );
-            return false;
-        }
-
-        return true;
-    }
-
-    public function autoUpdateNonTerminalStatus(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
-    {
-        if ($merchantDetails->getActivationStatus() === Detail\Status::INSTANTLY_ACTIVATED){
-            $this->trace->info(TraceCode::MERCHANT_ALREADY_INSTANTLY_ACTIVATED,[
-                    'merchant_id'       => $merchant->getId(),
-                    'activation_status' =>  $merchantDetails->getActivationStatus()
-                ]
-            );
-            return false;
-        }
-
-        $merchantDetails->setActivationFormMilestone(Detail\Constants::L1_SUBMISSION);
-
-        if ($this->validateRequiredFieldsNonEmpty($merchantDetails) === false){
-            return false;
-        }
-
-        $input = $this->preparePayload($merchantDetails);
-
-        $merchantDetailsCore = new Core();
-
-        $this->trace->info(TraceCode::MERCHANT_STATUS_AUTO_UPDATE_ATTEMPTED,[
-                'merchant_id'                 => $merchant->getId(),
-                'attempted_activation_status' => Merchant\Constants::INSTANT_ACTIVATION,
-            ]
-        );
-
-        $response = $merchantDetailsCore->saveInstantActivationDetails($input, $merchant);
-
-        $this->trace->info(TraceCode::UPDATED_MERCHANT_ACTIVATION_STATUS,[
-                'merchant_id'               => $merchant->getId(),
-                'current_activation_status' => $response[Detail\Entity::ACTIVATION_STATUS],
-            ]
-        );
-
-        return true;
-    }
-
-    public function isNonTerminalStatusApplicable()
-    {
-        return false;
     }
 }

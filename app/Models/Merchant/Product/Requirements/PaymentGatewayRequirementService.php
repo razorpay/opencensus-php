@@ -9,7 +9,5 @@ class PaymentGatewayRequirementService extends PaymentProductsBaseService
         parent::__construct();
     }
 
-    public function isNonTerminalStatusApplicable() {
-        return true;
-    }
+    //Override requirements if any
 }
