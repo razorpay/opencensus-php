@@ -26,6 +26,11 @@ class Constants
     //verification retry constants
     const RETRY_DELAY_IN_SECONDS = 300;
 
+    // Input params for fetchMerchantAccountRecovery
+    const EMAIL = 'email';
+    const PHONE = 'phone';
+    const PAN   = 'pan';
+
     // Input params for cin verification
     const SIGNATORY_DETAILS = 'signatory_details';
     const COMPANY_CIN       = 'company_cin';

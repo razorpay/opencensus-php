@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\FreshdeskTicket;
 
+use Mockery;
 use Illuminate\Http\UploadedFile;
 use Mail;
 use RZP\Services\RazorXClient;
@@ -14,6 +15,8 @@ class FreshdeskTicketTest extends TestCase
     use RequestResponseFlowTrait;
 
     protected $ticketService;
+
+    protected $ravenMock;
 
     protected function setUp(): void
     {
@@ -64,7 +67,58 @@ class FreshdeskTicketTest extends TestCase
         $this->startTest();
     }
 
-    public function testOtpGenerateAndSend()
+    protected function mockRaven()
+    {
+        $this->ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+
+        $this->app->instance('raven', $this->ravenMock);
+    }
+
+    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver = '1234567890')
+    {
+        $ravenMock->shouldReceive('sendRequest')
+              ->with('otp/generate', 'post', Mockery::type('array'))
+                  ->andReturnUsing(function ()
+                  {
+                      return [
+                          'otp' => '123456',
+                          'attempts' => 0,
+                          'expires_at' => '1235456789',
+                      ];
+                  });
+        $ravenMock->shouldReceive('sendSms')
+                  ->times(1)
+                  ->with(
+                      Mockery::on(function ($actualPayload) use ($templateName, $receiver)
+                      {
+                          if (($templateName !== $actualPayload['template']) or
+                              ($receiver !== $actualPayload['receiver']))
+                          {
+                              return false;
+                          }
+
+                          return true;
+                      }),  true)
+                  ->andReturnUsing(function ()
+                  {
+                      return ['success' => true];
+                  });
+    }
+
+    public function testOtpGenerateAndSendForMobile()
+    {
+        $this->ba->directAuth();
+
+        $this->mockRaven();
+
+        $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.account_recovery_otp', '+919876543210');
+
+        $response = $this->startTest();
+
+        $this->assertEquals(True, $response['success']);
+    }
+
+    public function testOtpGenerateAndSendForMail()
     {
         Mail::fake();
 
@@ -109,6 +163,40 @@ class FreshdeskTicketTest extends TestCase
         $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
 
         $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
+
+        $this->startTest();
+    }
+
+    public function testPostTicketForAccountRecoveryForEmail()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['company_pan' => 'ABCCD1234A']);
+
+        $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], ['email' => '123@gmail.com']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->startTest();
+    }
+
+    public function testPostTicketForAccountRecoveryForMobile()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['company_pan' => 'ABCCD1234A']);
+
+        $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], ['contact_mobile' => '1234567890']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->generateOtpForMobile($testData['request']['content']['phone']);
 
         $this->startTest();
     }
@@ -171,6 +259,25 @@ class FreshdeskTicketTest extends TestCase
         $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
 
         $this->startTest();
+    }
+
+    protected function generateOtpForMobile($phone)
+    {
+        $request = [
+            'url'       => '/freshdesk/tickets/otp',
+            'method'    => 'POST',
+            'content'   => [
+                'phone' => $phone,
+            ]
+        ];
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($request);
+
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(True, $responseContent['success']);
     }
 
     protected function generateOtp($email)

@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use RZP\Services\Segment\EventCode as SegmentEvent;
 use Throwable;
 use Carbon\Carbon;
+use Lib\PhoneBook;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Error\ErrorCode;
@@ -40,6 +40,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;

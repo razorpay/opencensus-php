@@ -2761,6 +2761,7 @@ class Route
         'fd_consume_webhook'                      => ['post',      'fd/webhook/{event}',                                        'FreshdeskTicketController@postWebhook'                        ],
 
         'freshdesk_create_ticket'                 => ['post',      'freshdesk/tickets',                                          'FreshdeskTicketController@postTicket'                        ],
+        'freshdesk_account_recovery_create_ticket'=> ['post',      'freshdesk/account_recovery_ticket',                          'FreshdeskTicketController@postTicketForAccountRecovery'      ],
         'freshdesk_update_ticket_internal'        => ['patch',     'internal/freshdesk/ticket/{id}',                             'FreshdeskTicketController@patchTicketInternal'               ],
         'freshdesk_otp_send'                      => ['post',      'freshdesk/tickets/otp',                                      'FreshdeskTicketController@postOtp'                           ],
 
@@ -7597,6 +7598,7 @@ class Route
         'freshdesk_otp_send',
         'freshdesk_fetch_tickets',
         'freshdesk_raise_grievance',
+        'freshdesk_account_recovery_create_ticket',
 
         //Accounting Payouts Callback
         'accounting_payouts_callback',
@@ -8001,6 +8003,7 @@ class Route
             'freshdesk_fetch_tickets',
             'freshdesk_otp_send',
             'freshdesk_raise_grievance',
+            'freshdesk_account_recovery_create_ticket',
             'freshchat_get_chat_timings_config_proxy',
             'freshchat_get_chat_holidays_config_proxy',
             'fund_account_bulk_create',
@@ -9254,6 +9257,7 @@ class Route
             'freshdesk_fetch_tickets',
             'freshdesk_otp_send',
             'freshdesk_raise_grievance',
+            'freshdesk_account_recovery_create_ticket',
             'freshchat_put_chat_timings_config',
             'freshchat_get_chat_timings_config',
             'freshchat_put_chat_holidays_config',

@@ -45,6 +45,7 @@ use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Escalations as MerchantEscalation;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
@@ -114,6 +115,43 @@ class Core extends Base\Core
         $this->traceEmailOtpLoginRoute($input, TraceCode::USER_SEND_EMAIL_OTP_FOR_REGISTER);
 
         return array_only($otp, 'token');
+    }
+
+    public function getOwnerMidsWithEmailOrMobileAndPan($input)
+    {
+        if (empty($input[DetailConstants::EMAIL]) === true)
+        {
+            $phoneNumber = $input[DetailConstants::PHONE];
+
+            $phoneNumber = new PhoneBook($phoneNumber);
+
+            $phoneNumber = $phoneNumber->format(PhoneBook::DOMESTIC);
+
+            $user = $this->repo->user->getUserFromMobileOrFail($phoneNumber);
+        }
+        else
+        {
+            $user = $this->repo->user->getUserFromEmail($input[DetailConstants::EMAIL]);
+        }
+
+        if (empty($user) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        $ownerMerchantIds = $user->getIsOwnerMerchantIds();
+
+        foreach ($ownerMerchantIds as $merchantId)
+        {
+            $details = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+            if ($input[DetailConstants::PAN] == $details->getPan())
+            {
+                return $merchantId;
+            }
+        }
+
+        return null;
     }
 
     /**

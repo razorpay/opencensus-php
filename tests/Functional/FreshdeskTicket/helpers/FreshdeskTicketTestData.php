@@ -160,7 +160,7 @@ return [
         ],
     ],
 
-    'testOtpGenerateAndSend' => [
+    'testOtpGenerateAndSendForMail' => [
         'request' => [
             'url' => '/freshdesk/tickets/otp',
             'method' => 'POST',
@@ -171,6 +171,22 @@ return [
         'response' => [
             'status_code' => 200,
             'content' => [
+            ]
+        ],
+    ],
+
+    'testOtpGenerateAndSendForMobile' => [
+        'request' => [
+            'url' => '/freshdesk/tickets/otp',
+            'method' => 'POST',
+            'content' => [
+                'phone' => '9876543210',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'success' => true,
             ]
         ],
     ],
@@ -262,6 +278,44 @@ return [
                 'description_text' => "Some details on the issue ..."
             ]
         ]
+    ],
+
+    'testPostTicketForAccountRecoveryForEmail' => [
+        'request' => [
+            'url'     => '/freshdesk/account_recovery_ticket',
+            'method'  => 'POST',
+            'content' => [
+                'email'     => '8055@abc.com',
+                'old_email' => '123@gmail.com',
+                'otp'       => '0007',
+                'pan'       => 'ABCCD1234A',
+                'captcha'   => 'test'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPostTicketForAccountRecoveryForMobile' => [
+        'request' => [
+            'url'     => '/freshdesk/account_recovery_ticket',
+            'method'  => 'POST',
+            'content' => [
+                'phone'     => '1234567891',
+                'old_phone' => '1234567890',
+                'otp'       => '0007',
+                'pan'       => 'ABCCD1234A',
+                'captcha'   => 'test'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
     ],
 
     'testGetFreshdeskTicketsForCustomer' => [

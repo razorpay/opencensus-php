@@ -41,6 +41,15 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postTicketForAccountRecovery()
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postTicketForAccountRecovery($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * Create Freshdesk Ticket
      *

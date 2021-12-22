@@ -1,9 +1,11 @@
 <?php
 namespace RZP\Models\Merchant\FreshdeskTicket;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
@@ -35,6 +37,22 @@ class Validator extends Base\Validator
         'custom_fields.cf_requestor_subcategory' => 'required|string|max:100',
         'custom_fields.cf_transaction_id'        => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
         'custom_fields.cf_razorpay_payment_id'   => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+    ];
+
+    protected static $createMerchantAccountRecoveryTicketRules = [
+        'pan'                                    => 'required|max:255|companyPan',
+        'email'                                  => 'required_without:phone|email',
+        'phone'                                  => 'required_without:email|max:15|contact_syntax',
+        'old_email'                              => 'required_without:old_phone|email',
+        'old_phone'                              => 'required_without:old_email|max:15|contact_syntax',
+        'subject'                                => 'required|string',
+        'otp'                                    => 'required|string|min:4|max:6',
+        'custom_fields'                          => 'required|array',
+        'custom_fields.cf_requester_category'    => 'required|string|max:50',
+        'custom_fields.cf_requestor_subcategory' => 'required|string|max:100',
+        'attachments'                            => 'sometimes',
+        'attachments.*'                          => 'custom:attachment',
+        'captcha'                                => 'required|string|custom',
     ];
 
     protected static $raiseGrievanceRules = [
@@ -225,6 +243,44 @@ class Validator extends Base\Validator
         'description'           => 'required|string',
         'attachments'           => 'sometimes',
     ];
+
+    protected function validateCaptcha($attribute, $captchaResponse)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment('production') === false)
+        {
+            return;
+        }
+
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $app['request']->ip();
+
+        $noCaptchaSecret = config('app.customer_refund_details.nocaptcha_secret');
+
+        $input = [
+            'secret'   => $noCaptchaSecret,
+            'response' => $captchaResponse,
+            'remoteip' => $clientIpAddress,
+        ];
+
+        $captchaQuery = http_build_query($input);
+
+        $url = Constants::GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT. "?". $captchaQuery;
+
+        $response = \Requests::get($url);
+
+        $output = json_decode($response->body);
+
+        if ($output->success !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                null,
+                [
+                    'captcha' => $captchaResponse
+                ]);
+        }
+    }
 
     protected function validateType($attribute, $type)
     {

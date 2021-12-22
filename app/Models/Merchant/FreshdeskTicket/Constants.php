@@ -5,10 +5,15 @@ namespace RZP\Models\Merchant\FreshdeskTicket;
 class Constants
 {
     // Query params
-    const PAGE     = 'page';
-    const QUERY    = 'query';
-    const STATUS   = 'status';
-    const PER_PAGE = 'per_page';
+    const PAGE      = 'page';
+    const QUERY     = 'query';
+    const STATUS    = 'status';
+    const PER_PAGE  = 'per_page';
+    const PAN       = 'pan';
+    const EMAIL     = 'email';
+    const OLD_EMAIL = 'old_email';
+    const PHONE     = 'phone';
+    const OLD_PHONE = 'old_phone';
 
     const CC_EMAILS                 = 'cc_emails';
 
@@ -45,11 +50,14 @@ class Constants
     const TRANSACTION   = 'transaction';
     const TYPE          = 'type';
 
-    const OTP                         = 'otp';
-    const OTP_SOURCE                  = 'source';
-    const OTP_CONTEXT                 = 'context';
-    const OTP_RECEIVER                = 'receiver';
-    const OTP_CUSTOMER_SUPPORT_SOURCE = 'customer_support';
+    const OTP                                   = 'otp';
+    const OTP_SOURCE                            = 'source';
+    const OTP_CONTEXT                           = 'context';
+    const OTP_RECEIVER                          = 'receiver';
+    const OTP_CUSTOMER_SUPPORT_SOURCE           = 'customer_support';
+    const SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY = 'sms.support.account_recovery_otp';
+
+    const GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT = 'https://www.google.com/recaptcha/api/siteverify';
 
     const CAPITAL_QUERY               = 'Corporate Credit Cards';
     // Results
@@ -111,6 +119,13 @@ class Constants
     const ATTACHMENTS       = 'attachments';
     const BODY              = 'body';
     const DESCRIPTION       = 'description';
+    const SUBJECT           = 'subject';
+    const NAME              = 'name';
+
+    const NAME_NOT_PROVIDED = 'NAME NOT PROVIDED';
+    //description constants
+    const DESCRIPTION_CONTACT_DETAILS = 'New Contact Detail: ';
+    CONST DESCRIPTION_ERROR_MESSAGE   = "<b style='color:red;'> Error Message: </b>";
 
     const ROUTE             = 'route';
     const RESPONSE_CODE     = 'response_code';
@@ -124,6 +139,9 @@ class Constants
     const RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK  = 'Freshdesk_Customer_Ticket_Creation_Server_Pick';
     const RAZORX_FLAG_FRESHDESK_RZPSOL_RZP_MERGED                     = 'freshdesk_rzpsol_rzp_merged';
 
+    // values for account recovery flow
+    const MERCHANT          = 'Merchant';
+    const ACCOUNT_LOCKED    = 'Account Locked';
 
     // Default values for Activation Workflow Ticket Creation
     const SERVICE_REQUEST_TICKET_TYPE   = 'Service request';

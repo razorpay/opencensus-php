@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\FreshdeskTicket;
 
+use Lib\PhoneBook;
 use Illuminate\Support\Str;
 use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
@@ -11,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Notifications;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -23,7 +25,8 @@ use RZP\Models\Merchant\FreshdeskTicket\Processor as FreshdeskWebhookProcessor;
 class Service extends Base\Service
 {
     protected $otpRules = [
-        'email'     =>     'required|email',
+        'email'          => 'required_without:phone|email',
+        'phone'          => 'required_without:email|max:15|contact_syntax'
     ];
 
     /*
@@ -112,6 +115,124 @@ class Service extends Base\Service
         return "";
     }
 
+    protected function makeInputForPostTicketForAccountRecovery($input)
+    {
+        $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_CATEGORY] = Constants::MERCHANT;
+
+        $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] = Constants::ACCOUNT_LOCKED;
+
+        $input[Constants::SUBJECT] = Constants::ACCOUNT_LOCKED;
+
+        return $input;
+    }
+
+    public function verifyInputForAccountRecovery($input)
+    {
+        $request[Constants::PAN] = $input[Constants::PAN];
+
+        if (array_key_exists(Constants::OLD_PHONE, $input))
+        {
+            $request[Constants::PHONE] = $input[Constants::OLD_PHONE];
+
+            unset($input[Constants::OLD_PHONE]);
+        }
+        else
+        {
+            $request[Constants::EMAIL] = $input[Constants::OLD_EMAIL];
+
+            unset($input[Constants::OLD_EMAIL]);
+        }
+
+        try
+        {
+            $merchantId = (new User\Core())->getOwnerMidsWithEmailOrMobileAndPan($request);
+
+            if (empty($merchantId) === true)
+            {
+                throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_ACCOUNT_RECOVERY_PAN_DID_NOT_MATCH, 'pan');
+            }
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $input[Constants::NAME] = $merchant->getName();
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException($exception);
+
+            $input[Constants::DESCRIPTION] = Constants::DESCRIPTION_ERROR_MESSAGE . "<b style='color:red;'>" .$exception->getMessage() . "</b>";
+
+            $input[Constants::NAME] = Constants::NAME_NOT_PROVIDED;
+        }
+
+        return $input;
+    }
+
+    public function verifyOtpForAccountRecoveryAndAddDescription($input)
+    {
+        if (empty($input[Constants::PHONE]) === false)
+        {
+            $phoneNumber = $input[Constants::PHONE];
+
+            $phoneNumber = new PhoneBook($phoneNumber);
+
+            $phoneNumber = $phoneNumber->format(PhoneBook::E164);
+
+            (new Core)->verifyOtp($phoneNumber, $input[Constants::OTP]);
+
+            if(empty($input[Constants::DESCRIPTION]) === true)
+            {
+                $input[Constants::DESCRIPTION] = Constants::DESCRIPTION_CONTACT_DETAILS . $input[Constants::PHONE];
+            }
+            else
+            {
+                $input[Constants::DESCRIPTION] .= '<br>' . Constants::DESCRIPTION_CONTACT_DETAILS . $input[Constants::PHONE];
+            }
+        }
+        else
+        {
+            (new Core)->verifyOtp($input[Constants::EMAIL], $input[Constants::OTP]);
+
+            if(empty($input[Constants::DESCRIPTION]) === true)
+            {
+                $input[Constants::DESCRIPTION] = Constants::DESCRIPTION_CONTACT_DETAILS . $input[Constants::EMAIL];
+            }
+            else
+            {
+                $input[Constants::DESCRIPTION] .= '<br>' . Constants::DESCRIPTION_CONTACT_DETAILS . $input[Constants::EMAIL];
+            }
+        }
+
+        return $input;
+    }
+
+    public function postTicketForAccountRecovery(array $input)
+    {
+        $input = $this->makeInputForPostTicketForAccountRecovery($input);
+
+        (new Validator)->validateInput('create_merchant_account_recovery_ticket', $input);
+
+        unset($input['captcha']);
+
+        $input = $this->verifyInputForAccountRecovery($input);
+
+        $input = $this->verifyOtpForAccountRecoveryAndAddDescription($input);
+
+        $fdInstance = $this->getFdInstanceWhileCreatingTickets($input);
+
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+
+        unset($input[Constants::OTP]);
+
+        unset($input[Constants::PAN]);
+
+        $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
+
+        $ticketCreateResponse[Constants::FD_INSTANCE] = $fdInstance;
+
+        return $ticketCreateResponse;
+    }
+
     /**
      * @param array $input
      * @param array $return
@@ -156,9 +277,24 @@ class Service extends Base\Service
     {
         (new JitValidator)->rules($this->otpRules)->input($input)->validate();
 
-        (new Core)->generateAndSendCustomerOtp($input['email']);
+        if (empty($input[Constants::PHONE]) === false)
+        {
+            $phoneNumber = $input[Constants::PHONE];
 
-        return ['success' => true];
+            $phoneNumber = new PhoneBook($phoneNumber);
+
+            $phoneNumber = $phoneNumber->format(PhoneBook::E164);
+
+            (new Core)->generateAndSendCustomerOtpForMobile($phoneNumber);
+        }
+        else
+        {
+            (new Core)->generateAndSendCustomerOtpForEmail($input[Constants::EMAIL]);
+        }
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function fetchCustomerTickets($input)

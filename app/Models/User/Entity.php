@@ -552,4 +552,9 @@ class Entity extends Base\PublicEntity
     {
         return (new MerchantUser\Repository())->isOwnerForUserId($this->getId()) === true;
     }
+
+    public function getIsOwnerMerchantIds()
+    {
+        return (new MerchantUser\Repository())->fetchMerchantIdForUserIdAndRole($this->getId());
+    }
 }

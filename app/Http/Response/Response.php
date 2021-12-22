@@ -450,6 +450,7 @@ class Response
             'freshdesk_otp_send',
             'freshdesk_fetch_tickets',
             'freshdesk_raise_grievance',
+            'freshdesk_account_recovery_create_ticket',
             'splitz_preflight',
             'splitz_evaluate',
             'customer_flagging_post_grievance',

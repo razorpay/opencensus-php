@@ -75,24 +75,32 @@ class Core extends Base\Core
      * @param string $return
      * @throws BadRequestException
      */
-    public function generateAndSendCustomerOtp($email)
+    public function generateAndSendCustomerOtpForEmail($email)
     {
         $otpResponse = $this->generateOtp($email);
 
-        $this->sendOtp($otpResponse, $email);
+        $this->sendOtpForEmail($otpResponse, $email);
+    }
+
+    public function generateAndSendCustomerOtpForMobile($phone)
+    {
+        $otpResponse = $this->generateOtp($phone);
+
+        $this->sendOtpForMobile($otpResponse, $phone);
     }
 
     /**
-     * @param string $email
-     * @param array $return
+     * @param string $receiver
+     * @param array  $return
+     *
      * @throws BadRequestException
      */
-    protected function generateOtp($email): array
+    protected function generateOtp(string $receiver): array
     {
-        $context = Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $email;
+        $context = Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $receiver;
 
         $payload = [
-            Constants::OTP_RECEIVER => $email,
+            Constants::OTP_RECEIVER => $receiver,
             Constants::OTP_CONTEXT  => $context,
             Constants::OTP_SOURCE   => Constants::OTP_CUSTOMER_SUPPORT_SOURCE
         ];
@@ -130,7 +138,35 @@ class Core extends Base\Core
         return $otpStore;
     }
 
-    protected function sendOtp($otpResponse, $email)
+    protected function getPayloadForMobileOtp($phone, $otpResponse)
+    {
+        $payload = [
+            'template'      => Constants::SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY,
+            'receiver'      => $phone,
+            'source'        => Constants::OTP_CUSTOMER_SUPPORT_SOURCE,
+            'params'        => [
+                'otp'        => $otpResponse[Constants::OTP],
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function sendOtpForMobile($otpResponse, $phone)
+    {
+        $payload = $this->getPayloadForMobileOtp($phone, $otpResponse);
+
+        try
+        {
+            $this->app['raven']->sendSms($payload, true);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Logger::CRITICAL, TraceCode::FRESHDESK_SUPPORT_OTP_SMS_FAILED);
+        }
+    }
+
+    protected function sendOtpForEmail($otpResponse, $email)
     {
         $customerSupportTicketOtp = new CustomerSupportTicketOtp($email, $otpResponse['otp']);
 
@@ -144,26 +180,27 @@ class Core extends Base\Core
         }
     }
 
-    protected function getRedisKey($email): string
+    protected function getRedisKey($receiver): string
     {
-        return Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $email;
+        return Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $receiver;
     }
 
     /**
-     * @param string $email
-     * @param string $email
-     * @param void $return
+     * @param string $receiver
+     * @param string $otp
+     * @param void   $return
+     *
      * @throws BadRequestValidationFailureException
      */
-    public function verifyOtp($email, $otp): bool
+    public function verifyOtp($receiver, $otp): bool
     {
-        $otpResponse = $this->redis->get($this->getRedisKey($email));
+        $otpResponse = $this->redis->get($this->getRedisKey($receiver));
 
         $errorCode = '';
 
         if (empty($otpResponse) === false)
         {
-            $errorCode = $this->getOtpErrorCode($email, $otp, $otpResponse);
+            $errorCode = $this->getOtpErrorCode($receiver, $otp, $otpResponse);
         }
         else
         {
@@ -181,17 +218,17 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::FRESHDESK_SUPPORT_CUSTOMER_OTP_VALIDATED,
                 [
-                    'email' => $email
+                    'receiver' => $receiver
                 ]
             );
 
-            $this->redis->delete($this->getRedisKey($email));
+            $this->redis->delete($this->getRedisKey($receiver));
 
             return true;
         }
     }
 
-    protected function getOtpErrorCode($email, $otp, $otpResponse)
+    protected function getOtpErrorCode($receiver, $otp, $otpResponse)
     {
         if ($otpResponse['attempts'] > self::MAX_OTP_ATTEMPTS)
         {
@@ -205,7 +242,7 @@ class Core extends Base\Core
 
         $otpResponse['attempts'] = $otpResponse['attempts'] + 1;
 
-        $this->redis->set($this->getRedisKey($email), $otpResponse, self::CUSTOMER_SUPPORT_OTP_TTL);
+        $this->redis->set($this->getRedisKey($receiver), $otpResponse, self::CUSTOMER_SUPPORT_OTP_TTL);
 
         if ($otp !== $otpResponse['otp'])
         {
