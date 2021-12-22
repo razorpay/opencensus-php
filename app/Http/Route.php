@@ -2983,6 +2983,11 @@ class Route
             'merchant_risk_alerts/blacklist_country/identify',
             'MerchantRiskAlertController@identifyBlacklistCountryAlerts'
         ],
+        'merchant_risk_alerts_set_dedupe_key' => [
+            'post',
+            'merchant_risk_alerts/merchant/{mid}/dedupe',
+            'MerchantRiskAlertController@setMerchantDedupeKey'
+        ],
 
         // international enablement
         'merchant_international_enablement_preview' => [
@@ -4126,6 +4131,7 @@ class Route
         'merchant_risk_alerts_foh_workflow',
         'merchant_risk_alerts_details',
         'merchant_risk_alerts_dispute_details',
+        'merchant_risk_alerts_set_dedupe_key',
 
         // Mandate HQ
         'get_issuer_from_iin',
@@ -11478,6 +11484,7 @@ class Route
             'merchant_risk_alerts_foh_workflow',
             'merchant_risk_alerts_details',
             'merchant_risk_alerts_dispute_details',
+            'merchant_risk_alerts_set_dedupe_key',
         ],
 
         'care' => [

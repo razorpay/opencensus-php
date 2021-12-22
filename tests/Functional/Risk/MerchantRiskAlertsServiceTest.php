@@ -3,8 +3,10 @@
 namespace Functional\Risk;
 
 use RZP\Constants;
+use RZP\Services\RazorXClient;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Permission;
+use RZP\Models\MerchantRiskAlert;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -23,6 +25,8 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
     public function setUp(): void
     {
+        $this->testDataFilePath = __DIR__ . '/helpers/MerchantRiskAlertServiceTestData.php';
+
         parent::setUp();
 
         $this->ba->merchantRiskAlertsAppAuth();
@@ -354,5 +358,74 @@ class MerchantRiskAlertsServiceTest extends TestCase
                 'description' => 'Needs clarification email for RAS FoH workflow may only be triggered once',
             ]], $response);
 
+    }
+
+    protected function setMerchantDedupeKey()
+    {
+        $request = [
+            'method'  => 'post',
+            'url'     => '/merchant_risk_alerts/merchant/10000000000000/dedupe',
+            'content' => [],
+        ];
+
+        $this->ba->merchantRiskAlertsAppAuth();
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    protected function assertTagsAndFraudType($merchant)
+    {
+        $this->assertEquals('risk_review_suspend_tag', $merchant->merchantDetail->getFraudType());
+
+        $this->assertNotNull($this->app['cache']->connection()->hget(MerchantRiskAlert\Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, '10000000000000'));
+
+        $this->assertArraySelectiveEquals([
+                                              'Risk_review_suspend',
+                                              'Dedupe_blocked',
+                                          ], $merchant->tagNames());
+    }
+
+    public function testRasSignupFraudMerchant()
+    {
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', [
+            'pricing_plan_id' => '1hDYlICobzOCYt',
+        ]);
+
+        $this->setMerchantDedupeKey();
+
+        $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
+            'promoter_pan'      => 'EBPPK8222K',
+            'promoter_pan_name' => 'User 1',
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', [
+            'promoter_pan'      => 'EBPPK8222K',
+            'promoter_pan_name' => 'User 1',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $merchantUser['id']);
+
+        $this->startTest();
+
+        $this->assertTagsAndFraudType($merchant);
+
+        $this->assertFalse($merchant->merchantDetail->isLocked());
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'ok')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->onlyMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn($returnValue);
     }
 }

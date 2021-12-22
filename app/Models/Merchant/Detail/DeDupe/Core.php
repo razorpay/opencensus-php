@@ -9,6 +9,7 @@ use RZP\Models\Partner;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\MerchantRiskAlert;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use \RZP\Models\User\Entity as UserEntity;
@@ -92,6 +93,11 @@ class Core extends Base\Core
 
     public function isMerchantImpersonated(Merchant\Entity $merchant): bool
     {
+        if ((new MerchantRiskAlert\Service())->isRasSignupFraudMerchant($merchant->getId()) === true)
+        {
+            return true;
+        }
+
         if ($this->isDedupeRequired($merchant) === false)
         {
             return false;
@@ -107,6 +113,11 @@ class Core extends Base\Core
 
     public function isDedupeBlocked(Merchant\Entity $merchant): bool
     {
+        if ((new MerchantRiskAlert\Service())->isRasSignupFraudMerchant($merchant->getId()) === true)
+        {
+            return true;
+        }
+
         if ($this->isDedupeRequired($merchant) === false)
         {
             return false;
@@ -140,6 +151,11 @@ class Core extends Base\Core
 
     public function match(Merchant\Entity $merchant, $force = false): array
     {
+        if ((new MerchantRiskAlert\Service())->isRasSignupFraudMerchant($merchant->getId()) === true)
+        {
+            return [true, Constants::RAS_SIGNUP_LOCK];
+        }
+
         if ($this->isDedupeRequired($merchant, $force) === false)
         {
             return [false, null];
@@ -314,6 +330,7 @@ class Core extends Base\Core
         switch ($action)
         {
             case Constants::DEACTIVATE:
+            case Constants::RAS_SIGNUP_LOCK:
                 return Constants::DEDUPE_BLOCKED_TAG;
 
             case Constants::UNREG_DEACTIVATE:

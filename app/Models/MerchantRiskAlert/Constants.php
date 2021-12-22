@@ -158,6 +158,8 @@ class Constants
         self::RAS_TRIGGER_REASON_WEBSITE_CHECKER => 'risk:web_checker:reminder_map',
     ];
 
+    const REDIS_DEDUPE_SIGNUP_CHECKER_MAP = 'ras:signup_checker_fraud';
+
     const HEALTH_CHECKER_NC_DAYS_TO_FOH          = 7;
     const HEALTH_CHECKER_NC_REMINDER_DAYS_TO_FOH = 5;
 
@@ -171,4 +173,6 @@ class Constants
     const CREATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Create';
     const UPDATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Update';
     const DELETE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Delete';
+
+    const RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG = 'merchants_risk_trigger_sign_up_checker_post_actions';
 }

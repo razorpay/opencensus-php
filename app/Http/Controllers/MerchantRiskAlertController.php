@@ -83,4 +83,11 @@ class MerchantRiskAlertController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function setMerchantDedupeKey(string $mid)
+    {
+        $response = $this->service()->setMerchantDedupeKey($mid);
+
+        return ApiResponse::json($response);
+    }
 }

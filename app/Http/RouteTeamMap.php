@@ -336,6 +336,7 @@ class RouteTeamMap
         'merchant_risk_alerts_foh_workflow'               => [self::TEAM_PAYMENTS_RISK],
         'merchant_risk_alerts_details'                    => [self::TEAM_PAYMENTS_RISK],
         'merchant_risk_alerts_dispute_details'            => [self::TEAM_PAYMENTS_RISK],
+        'merchant_risk_alerts_set_dedupe_key'             => [self::TEAM_PAYMENTS_RISK],
         'payment_dispute_create'                          => [self::TEAM_PAYMENTS_RISK],
         'dispute_edit'                                    => [self::TEAM_PAYMENTS_RISK],
         'dispute_bulk_create'                             => [self::TEAM_PAYMENTS_RISK],

@@ -8,6 +8,7 @@ use Mockery;
 use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Services\MerchantRiskClient;
+use RZP\Models\MerchantRiskAlert;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -22,7 +23,7 @@ class DedupeTest extends OAuthTestCase
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
             ->setMethods(['getMerchantRiskScores'])
             ->getMock();
-        
+
         $mockMR->expects($this->any())
             ->method('getMerchantRiskScores')
             ->willReturn([
@@ -268,31 +269,62 @@ class DedupeTest extends OAuthTestCase
 
     }
 
-    public function testL2FormSubmitWithDedupeFalse()
+    public function l2FormSubmit($merchant, $dedupeFlag = true)
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
-        $merchant = $merchantDetail->merchant;
-
         $mocks = $this->createAndFetchMocks(true, ['match','isDedupeBlocked']);
 
-        $dedupeCoreMock = $mocks['dedupeCoreMock'];
         $detailCoreMock = $mocks['detailCoreMock'];
-
-        $dedupeCoreMock->expects($this->any())
-            ->method('match')
-            ->willReturn([false, null]);
-        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
-            ->willReturn(false);
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+        if ($dedupeFlag === false)
+        {
+            $dedupeCoreMock = $mocks['dedupeCoreMock'];
+
+            $dedupeCoreMock->expects($this->any())
+                           ->method('match')
+                           ->willReturn([false, null]);
+
+            $detailCoreMock->setDedupeCore($dedupeCoreMock);
+        }
 
         $input = ['submit' => '1'];
 
-        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+        return $detailCoreMock->saveMerchantDetails($input, $merchant);
+    }
+
+    public function testL2FormSubmitWithDedupeFalse()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $merchant = $merchantDetail->merchant;
+
+        $response = $this->l2FormSubmit($merchant, false);
 
         $this->assertNotNull($response['activation_status']);
+    }
+
+    public function testL2FormSubmitWithDedupeFalseForRASSignupFraud()
+    {
+        $this->mockRazorx('ok');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->app['cache']->connection()->hset(
+            MerchantRiskAlert\Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP,
+            $merchant->getId(),
+            now()->timestamp
+        );
+
+        $response= $this->l2FormSubmit($merchant);
+
+        $this->assertEquals('risk_review_suspend_tag', $merchant->merchantDetail->getFraudType());
+
+        $this->assertNotNull($this->app['cache']->connection()->hget(MerchantRiskAlert\Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchant->getId()));
+
+        $this->assertTrue($response['locked']);
     }
 
     public function testL2FormSubmitWithDedupeTrueAndDeactivateAction()
@@ -537,7 +569,7 @@ class DedupeTest extends OAuthTestCase
         return $subMerchant;
     }
 
-    private function mockRazorx()
+    private function mockRazorx($variant = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
@@ -548,8 +580,8 @@ class DedupeTest extends OAuthTestCase
 
         $this->app->razorx
             ->method('getTreatment')
-            ->will($this->returnCallback(function($mid, $feature, $mode) {
-                return 'on';
+            ->will($this->returnCallback(function($mid, $feature, $mode) use($variant) {
+                return $variant;
             }));
     }
 }

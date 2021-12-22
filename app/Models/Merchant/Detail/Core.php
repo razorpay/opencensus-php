@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\MerchantRiskAlert;
 use RZP\Models\Admin\Permission;
 use RZP\Encryption\AESEncryption;
 use RZP\Exception\LogicException;
@@ -556,7 +557,7 @@ class Core extends Base\Core
         $bvsValidation = (new AutoKyc\Bvs\Core())->verify($merchantDetails->getId(), $payload);
     }
 
-    public function canActivateMerchant(DetailEntity $merchantDetails, $isImpersonated)
+    public function canActivateMerchant(DetailEntity $merchantDetails, $isRiskyMerchant)
     {
         $activationFormMilestone = $merchantDetails->getActivationFormMilestone();
 
@@ -569,7 +570,7 @@ class Core extends Base\Core
                 $merchantDetails->merchant, $merchantDetails, null, false);
         }
 
-        if ($isImpersonated === true)
+        if ($isRiskyMerchant === true)
         {
             return false;
         }
@@ -604,9 +605,9 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        [$isImpersonated, $action] = $this->dedupeCore->match($merchant);
+        [$isRiskyMerchant, $action] = $this->dedupeCore->match($merchant);
 
-        if ($this->canActivateMerchant($merchantDetails, $isImpersonated) === true)
+        if ($this->canActivateMerchant($merchantDetails, $isRiskyMerchant) === true)
         {
             $merchant->activate();
 
@@ -620,9 +621,9 @@ class Core extends Base\Core
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
 
-        if ($isImpersonated === true)
+        if ($isRiskyMerchant === true)
         {
-            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails, $action);
+            $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action);
         }
 
         // If a merchant does not have website or app, we would need to activate them
@@ -1079,6 +1080,13 @@ class Core extends Base\Core
         return $this->transactionInstantActivationDetails($input, $merchantDetails, $merchant, $batchFlow, $sendActivationMail);
     }
 
+    public function isRasSignupFraudMerchant($merchantId): bool
+    {
+        return (empty($this->app['cache']->connection()->hget(
+            MerchantRiskAlert\Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
+            === false);
+    }
+
     /**
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
@@ -1088,16 +1096,16 @@ class Core extends Base\Core
      */
     protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
     {
-        [$isImpersonated, $action] = (new DeDupe\Core)->match($merchant);
+        [$isRiskyMerchant, $action] = (new DeDupe\Core)->match($merchant);
 
-        if ($isImpersonated === true)
+        if ($isRiskyMerchant === true)
         {
-            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails, $action);
+            $this->handleFlowForRiskyMerchant($merchant, $merchantDetails, $action);
         }
 
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
 
-        if ($isImpersonated === true)
+        if ($isRiskyMerchant === true)
         {
             return;
         }
@@ -1124,17 +1132,21 @@ class Core extends Base\Core
         }
     }
 
-    protected function handleFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action)
+    protected function handleFlowForRiskyMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action)
     {
         if ($merchantDetails->getActivationFormMilestone() !== DetailConstants::L1_SUBMISSION)
         {
-            $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+            if ($action !== DeDupe\Constants::RAS_SIGNUP_LOCK)
+            {
+                $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+            }
 
             if (empty($action) === false)
             {
                 switch ($action)
                 {
                     case DeDupe\Constants::DEACTIVATE:
+                    case DeDupe\Constants::RAS_SIGNUP_LOCK:
                         $merchant->merchantDetail->setLocked(true);
                         break;
 
@@ -1148,7 +1160,16 @@ class Core extends Base\Core
             }
         }
 
-        $merchant->deactivate();
+        if ($action === DeDupe\Constants::RAS_SIGNUP_LOCK)
+        {
+            (new Merchant\Core)->appendTag($merchant, 'risk_review_suspend');
+
+            $merchant->merchantDetail->setFraudType('risk_review_suspend_tag');
+        }
+        else
+        {
+            $merchant->deactivate();
+        }
 
         $dedupeTag = $this->dedupeCore->getDedupeTagForAction($merchantDetails, $action);
 

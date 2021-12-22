@@ -120,9 +120,9 @@ class DefaultStatusUpdater extends BaseStatusUpdater
                 return;
             }
 
-            $isImpersonated = (new Detail\DeDupe\Core())->isMerchantImpersonated($merchantDetails->merchant);
+            $isRiskyMerchant = (new Detail\DeDupe\Core())->isMerchantImpersonated($merchantDetails->merchant);
 
-            if ((new Detail\Core)->canActivateMerchant($merchantDetails, $isImpersonated) === true)
+            if ((new Detail\Core)->canActivateMerchant($merchantDetails, $isRiskyMerchant) === true)
             {
                 (new Detail\ActivationFlow\Whitelist())->process($merchant);
             }

@@ -12,6 +12,7 @@ class Constants
     const CLIENT_IP = 'client_ip';
     const DEACTIVATE            = 'deactivate';
     const UNREG_DEACTIVATE      = 'unreg_deactivate';
+    const RAS_SIGNUP_LOCK       = 'ras_signup_lock';
 
     const DEDUPE_BLOCKED_TAG    = 'dedupe_blocked';
     const DEDUPE_TAG            = 'dedupe_underreview';

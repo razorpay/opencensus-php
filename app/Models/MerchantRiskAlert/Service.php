@@ -1063,4 +1063,37 @@ class Service extends Base\Service
         $this->app['cache']->put($cacheKey, true, Constants::RAS_NC_WORKFLOW_CACHE_TTL);
     }
 
+    public function setMerchantDedupeKey($merchantId)
+    {
+        $this->app['cache']->connection()->hset(
+            Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP,
+            $merchantId,
+            now()->timestamp
+        );
+
+        $this->app['trace']->info(
+        TraceCode::MERCHANT_RISK_ALERT_SET_SIGNUP_CHECKER_DEDUPE_KEY,
+        [
+            'merchant_id' => $merchantId,
+        ]);
+    }
+
+    public function isRasSignupFraudMerchant($merchantId): bool
+    {
+        $mode = $this->mode ??  'live';
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Constants::RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG,
+            $mode);
+
+        if (strtolower($variant) !== 'ok')
+        {
+            return false;
+        }
+
+        return (empty($this->app['cache']->connection()->hget(
+                Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
+                === false);
+    }
 }
