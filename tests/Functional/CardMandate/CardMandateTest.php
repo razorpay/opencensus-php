@@ -973,4 +973,23 @@ class CardMandateTest extends TestCase
 
         $this->makeRequestAndGetRawContent($request);
     }
+
+    public function testMerchantIdHeaderAddition()
+    {
+
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mandateConfirm = 'true';
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+        $this->makeRequestAndGetContent($request);
+    }
 }

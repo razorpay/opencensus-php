@@ -57,16 +57,34 @@ class MandateHQ
 
     public function isBinSupported($bin): bool
     {
+        $header = [];
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if($merchant != null)
+        {
+            $header['x-mandate-merchant-id'] = $merchant->getId();
+        }
+
         $url = sprintf(self::MANDATE_HQ_URLS['check_bin'], $bin);
 
-        $response = $this->sendRequest($url, 'post', []);
+        $response = $this->sendRequest($url, 'post', [], $header);
 
         return $response['recurring_enabled'];
     }
 
     public function registerMandate($input)
     {
-        return $this->sendRequest(self::MANDATE_HQ_URLS['register_mandate'], 'post', $input);
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $header = [];
+
+        if($merchant != null)
+        {
+            $header['x-mandate-merchant-id'] = $merchant->getId();
+        }
+
+        return $this->sendRequest(self::MANDATE_HQ_URLS['register_mandate'], 'post', $input, $header);
     }
 
     public function createPreDebitNotification($mandateId, $input)
@@ -99,7 +117,7 @@ class MandateHQ
      * @throws Exception\RuntimeException
      * @throws \Requests_Exception
      */
-    public function sendRequest($url, $method, array $inputData = [])
+    public function sendRequest($url, $method, array $inputData = [],$headers = [])
     {
         $baseUrl = $this->baseUrl;
         $key = $this->key;
