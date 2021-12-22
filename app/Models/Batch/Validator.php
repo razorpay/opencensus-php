@@ -239,7 +239,7 @@ class Validator extends Base\Validator
     protected static $emandateCreateRules = [
         Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:emandate',
-        Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge,cancel_debit',
+        Entity::SUB_TYPE    => 'required|string|in:register,debit,acknowledge,cancel_debit,cancel',
         Entity::GATEWAY     => 'required|string',
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];

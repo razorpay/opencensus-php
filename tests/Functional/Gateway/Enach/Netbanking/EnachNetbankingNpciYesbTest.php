@@ -727,4 +727,61 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $this->markTestSkipped('not applicable');
     }
 
+    public function testMandateCancellationYesBankSuccessResponseFile()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('confirmed', $payment->localToken->getRecurringStatus());
+
+        $this->assertTrue($payment->isCreated());
+
+        $fileStatuses = [
+            'status'     => 'ACCEPTED',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertTrue($payment->isCaptured());
+
+        $response = $this->deleteCustomerToken(
+            'token_' . $payment['token_id'], 'cust_' . $payment['customer_id']);
+
+        $this->assertTrue($response['deleted']);
+
+        $batchFile = $this->getBatchFileToUploadForMandateCancelRes($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile,'cancel');
+
+        $token = $this->getTrashedDbEntityById('token', $payment->getTokenId());
+
+        $this->assertEquals('cancelled', $token['recurring_status']);
+    }
+
+    protected function getBatchFileToUploadForMandateCancelRes(Payment\Entity $payment): TestingFile
+    {
+        $tokenId = $payment->getTokenId();
+
+        $xmlData = file_get_contents(__DIR__ . '/MMS-CANCEL-YESB-NACH00000000056369-08122021-000008-INP-RES.xml');
+
+        $responseXml = strtr($xmlData, ['$tokenId' => $tokenId]);
+
+        $handle = tmpfile();
+        fwrite($handle, $responseXml);
+        fseek($handle, 0);
+
+        return (new TestingFile('MMS-CANCEL-YESB-NACH00000000056369-08122021-000008-INP-RES.xml', $handle));
+    }
 }

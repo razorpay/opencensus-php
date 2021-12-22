@@ -765,6 +765,20 @@ trait FileHandlerTrait
         return $data;
     }
 
+    protected function parseXmlFile(string $file)
+    {
+        $filePath = $file;
+
+        if ($file instanceof UploadedFile)
+        {
+            $filePath = $file->getRealPath();
+        }
+
+        $formattedXml = simplexml_load_file($filePath);
+
+        return json_decode(json_encode($formattedXml), true);
+    }
+
     protected function parseCsvFile(string $file, string $delimiter = ',')
     {
         $rows = $this->getFileLines($file);
