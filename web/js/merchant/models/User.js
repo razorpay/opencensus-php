@@ -727,7 +727,8 @@ export default class User {
   }
 
   getExpStatus(name) {
-    return ((this.experiments || {})[name] || {}).result === 'on';
+    const user = window.rzp_user;
+    return ((this.experiments || user?.experiments || {})[name] || {}).result === 'on';
   }
 
   get isAddProviderEnabled() {
