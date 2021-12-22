@@ -1034,10 +1034,6 @@ class Service extends Base\Service
             $merchantService = new Merchant\Service;
 
             // Fetch merchant details for current merchant
-            if($fetchMerchantDetails === "1")
-            {
-                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $currentMerchantId);
-            }
 
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
 
@@ -1144,6 +1140,12 @@ class Service extends Base\Service
                     $activated = true;
                 }
             }
+
+            if($fetchMerchantDetails === "1")
+            {
+                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $currentMerchantId, $activated);
+            }
+
         }
 
         // This is to stop leads assigning to sales poc on salesforce
@@ -1239,7 +1241,10 @@ class Service extends Base\Service
             // with mobile signup going live, only contact name is used
             // as a pre_signup completeness check
             // This is same as on UserController
-            $data['pre_signup_complete'] = (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0);
+            $data['pre_signup_complete'] = (
+                isset($data['pre_signup'][Merchant\Entity::CONTACT_NAME])
+                AND (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0)
+            );
             $merchantDetailService = new MerchantDetails\Service;
             // for non-registered check if pre_signup_complete done or not;
 
