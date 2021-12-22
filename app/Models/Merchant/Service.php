@@ -586,23 +586,14 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         // when the funds are released via bulk action then in that scenario
-        // need to call to the new settlement service for updating the disable feature status
-        // this is being done to have the data consistent within api and settlements service
-        $newSettlementService = (new Bucket\Core)->shouldProcessViaNewService($id);
-
+        // just process the data at API side. No settlement service will be called to
+        // update Disable feature.
         if(isset($input['hold_funds']) === true)
         {
             $action = $input['hold_funds'] == 1 ? Merchant\Action::HOLD_FUNDS : Merchant\Action::RELEASE_FUNDS;
             (new Validator())->validateRiskPermissionForAction($merchant, $action);
-            if($newSettlementService === true)
-            {
-                $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
-
-                $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
-
-                if ($action === Merchant\Action::RELEASE_FUNDS) {
-                    (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
-                }
+            if ($action === Merchant\Action::RELEASE_FUNDS) {
+                   (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
             }
         }
 
@@ -6712,6 +6703,7 @@ class Service extends Base\Service
 
         $merchantSettleToPartner = $this->core()->getPartnerBankAccountIdsForSubmerchants([$mid]);
 
+        // RSR-2002; global_hold_status & global_hold_reason will be provided to new settlement service as Global config.
         return [
             "active"               => $merchant->isActivated(),
             "parent"               => $this->settlementToPartner($mid),
@@ -6719,6 +6711,8 @@ class Service extends Base\Service
             "pan_details"          => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getPan() : null,
             "purpose_code"         => $merchant->getPurposeCode(),
             "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
+            "global_hold_status"   => $merchant->getHoldFunds(),
+            "global_hold_reason"   => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
         ];
     }
 

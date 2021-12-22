@@ -37,7 +37,6 @@ class Dashboard extends Base
     const TRANSFER_STATUS_UPDATE       = '/twirp/rzp.settlements.transfer.v1.TransferService/UpdateStatus';
 
     const MERCHANT_CONFIG_GET                      = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
-    const MERCHANT_CONFIG_EDIT_FEATURE             = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
     const MERCHANT_CONFIG_GET_SCHEDULABLE_ENTITIES = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/SchedulableEntities';
 
     const REPLAY_SETTLEMENTS_STATUS_UPDATE = '/twirp/rzp.settlements.settlement.v1.SettlementService/ReplaySettlementUpdate';
@@ -434,27 +433,6 @@ class Dashboard extends Base
     public function getChannelState() : array
     {
         return $this->makeRequest(self::CHANNEL_STATUS_GET, [], self::SERVICE_DASHBOARD);
-    }
-
-    /**
-     * This is used to update the disable feature from the admin dashboard
-     * @param $merchantId
-     * @param $reason
-     * @param null $mode
-     * @return array
-     * @throws RuntimeException
-     * @throws \Throwable
-     */
-    public function toggleMerchantHold($merchantId, $reason, $mode = null) : array
-    {
-        $input = [
-            'merchant_id'  => $merchantId,
-            'feature_name' => 'disable',
-            'status'       => $reason == null ? false : true,
-            'reason'       => $reason
-        ];
-
-        return $this->makeRequest(self::MERCHANT_CONFIG_EDIT_FEATURE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**

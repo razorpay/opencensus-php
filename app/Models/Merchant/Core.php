@@ -1253,22 +1253,6 @@ class Core extends Base\Core
             $this->triggerCommunicationIfApplicable($merchant,$action,$riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]);
         }
 
-        $fundsHoldToggleActions = [
-            Merchant\Action::HOLD_FUNDS,
-            Merchant\Action::RELEASE_FUNDS,
-        ];
-
-        $newSettlementService = (new Bucket\Core)->shouldProcessViaNewService($merchant->getId());
-
-        if ((in_array($action, $fundsHoldToggleActions) === true) and ($newSettlementService === true))
-        {
-            // since the merchant hold is updated in both the mode thus added this to have consistency
-            // in api and settlement service
-            $this->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
-
-            $this->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
-        }
-
         if ($action === Merchant\Action::RELEASE_FUNDS)
         {
             $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
@@ -1392,52 +1376,6 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'mode'        => $this->mode,
             ]);
-    }
-
-    /**
-     * This is used to change the features of the merchant in the new settlement service
-     * @param Entity $merchant
-     * @param $action
-     * @param $mode
-     */
-    public function toggleMerchantHoldInNewSettlementService(Merchant\Entity $merchant, $action, $mode)
-    {
-        try
-        {
-            $holdFunds = $action === Merchant\Action::HOLD_FUNDS ;
-
-            $holdFundsReason = null;
-
-            if ($holdFunds === true)
-            {
-                $holdFundsReason = $merchant->getHoldFundsReason() ?? 'merchant funds are on hold';
-            }
-
-            app('settlements_dashboard')->toggleMerchantHold($merchant->getId(), $holdFundsReason, $mode);
-        }
-        catch (\Throwable $e)
-        {
-            $data = [
-                'merchant_id'    => $merchant->getId(),
-                'action'         => $action,
-                'mode'           => $mode,
-            ];
-
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::SETTLEMENT_SERVICE_ON_MERCHANT_HOLD_TOGGLE_FAILED,
-                $data);
-
-            $operation = 'Merchant on hold toggle failed to update in new settlement service';
-
-            (new SlackNotification)->send(
-                $operation,
-                $data,
-                $e,
-                1,
-                Config::get('slack.channels.settlement_alerts'));
-        }
     }
 
     /**

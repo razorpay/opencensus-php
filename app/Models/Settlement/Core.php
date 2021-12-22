@@ -832,13 +832,6 @@ class Core extends Base\Core
             $response['config']['features']['block']['reason'] = 'merchants opted out on settlement';
         }
 
-        if ($merchant->isFundsOnHold() === true)
-        {
-            $response['config']['features']['disable']['status'] = true;
-            $response['config']['features']['disable']['reason'] =
-                $merchant->getHoldFundsReason() != null ? $merchant->getHoldFundsReason() : 'funds are on hold';
-        }
-
         $payoutSupportedChannels = [
             Channel::AXIS,
             Channel::YESBANK,
