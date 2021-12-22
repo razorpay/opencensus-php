@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Set github commit id
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
+          if [ "${{ github.event_name }}" = "push" || "${{ github.event_name }}" = "schedule" ]; then
             echo "githubCommit=${{ github.sha }}" >> $GITHUB_ENV
           fi
           exit 0
@@ -35,7 +35,7 @@ jobs:
         id: failed
         if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: |
-          # TODO : Need to mark as status as failed for failures, now forcing it to pass 
+          # TODO : Need to mark as status as failed for failures, now forcing it to pass
           echo 'Forcing Status check to pass as we dont want to fail now!'
           curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
           -d '{ "state" : "success" , "context" : "github/security-status-check" , "description" : "github/security-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
