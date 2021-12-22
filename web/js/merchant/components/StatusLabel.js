@@ -2,7 +2,9 @@ import { titleCase } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const statusLabel = (statusMap, statusDescriptionMap) => ({ status = '', className }) => (
-  <span class={`status-label label ${statusMap[status?.toLowerCase()]} ${className}`}>
+  <span
+    class={`status-label label ${statusMap ? statusMap[status?.toLowerCase()] : ''} ${className}`}
+  >
     {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
     {statusDescriptionMap && statusDescriptionMap[status] && (
       <i class="i i-info-circle status-label-info-icon">
