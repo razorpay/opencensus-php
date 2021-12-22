@@ -268,6 +268,9 @@ class ConfigKey
     // This will be used to get the utrs facing credit before debit issue.
     const BAS_CREDIT_BEFORE_DEBIT_UTRS = self::PREFIX . 'bas_credit_before_debit_utrs';
 
+    // This key will be a flag for creating a DB connection with master instead of slave
+    const USE_MASTER_DB_CONNECTION = self::PREFIX . 'use_master_db_connection';
+
 
     const PUBLIC_KEYS = [
         self::ASYNC_ESCALATION_HANDLING_ENABLED,
@@ -404,6 +407,7 @@ class ConfigKey
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING => [Name::SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS],
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS => [Name::EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS],
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES => [Name::SET_PAYER_ACCOUNT_INVALID_REGEX],
+        self::USE_MASTER_DB_CONNECTION => [Name::USE_MASTER_DB_CONNECTION],
     ];
 
     /**

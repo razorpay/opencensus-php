@@ -749,6 +749,13 @@ class Service extends Base\Service
             unset($input['mask_sources']);
         }
 
+        $useMasterConnection = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::USE_MASTER_DB_CONNECTION]);
+
+        if (empty($useMasterConnection) == true)
+        {
+            $useMasterConnection = false;
+        }
+
         // This is a temporary solution to hide junk data from X Demo accounts.
         if ($this->merchant->isXDemoAccount())
         {
@@ -759,7 +766,7 @@ class Service extends Base\Service
             $input['from'] = (string)$maxFrom;
         }
 
-        $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId());
+        $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId(), $useMasterConnection);
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
@@ -1902,7 +1909,7 @@ class Service extends Base\Service
                 unset($input[Entity::PENDING_ON_ME]);
             }
 
-            $pendingPayoutsViaWfs = $this->repo->payout->fetchMultiple($input, $this->merchant->getId());
+            $pendingPayoutsViaWfs = $this->repo->payout->fetchMultiple($input, $this->merchant->getId(), false);
         }
 
         $uniquePayouts = [];

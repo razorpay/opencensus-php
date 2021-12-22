@@ -1529,6 +1529,10 @@ return [
                 'description'   => 'Allows to set invalid regexes that might come as part of Payer Account Number in Fund Loading',
                 'assignable'    => true,
             ],
+            Permission::USE_MASTER_DB_CONNECTION => [
+                'description'   => 'Allows to use master db connection',
+                'assignable'    => true,
+            ],
         ],
 
         PermissionCategory::UPI => [

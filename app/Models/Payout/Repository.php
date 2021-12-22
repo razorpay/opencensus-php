@@ -64,9 +64,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMultiple(array $input, string $merchantId)
+    public function fetchMultiple(array $input, string $merchantId, bool $useMasterConnection = false)
     {
-        $this->setBaseQueryIfApplicable($merchantId);
+        $this->setBaseQueryIfApplicable($merchantId, $input, $useMasterConnection);
 
         if (array_key_exists(Entity::BALANCE_ID, $input))
         {
@@ -85,9 +85,19 @@ class Repository extends Base\Repository
         return parent::fetch($input, $merchantId);
     }
 
-    protected function setBaseQueryIfApplicable(string $merchantId)
+    protected function setBaseQueryIfApplicable(string $merchantId, array $input, bool $useMasterConnection)
     {
-        $this->baseQuery = $this->newQueryWithConnection($this->getSlaveConnection());
+        if (($useMasterConnection === true) &&
+            (array_key_exists(Entity::REFERENCE_ID, $input)))
+        {
+            $mode = $this->app['rzp.mode'];
+            $this->baseQuery = $this->newQueryWithConnection($mode)->useWritePdo();
+        }
+        else
+        {
+            $this->baseQuery = $this->newQueryWithConnection($this->getSlaveConnection());
+        }
+
     }
 
     public function fetchReversedPayouts(array $ids)

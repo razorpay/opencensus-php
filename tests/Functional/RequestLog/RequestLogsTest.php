@@ -653,7 +653,6 @@ class RequestLogsTest extends TestCase
          */
 
         $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
-
         $defaultPayoutId = '10000000000001';
 
         for($x = 0; $x <= 4; $x++)
@@ -670,6 +669,7 @@ class RequestLogsTest extends TestCase
         // Get response
         $responseContent = $this->makeRequestAndGetContent($request);
 
+        // Get current route name
         $route = $this->app['api.route']->getCurrentRouteName();
 
         if(! $this->checkIfRouteNameIsIncluded($route))
