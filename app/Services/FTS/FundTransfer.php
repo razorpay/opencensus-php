@@ -1387,6 +1387,16 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function manualOverride(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::MANUAL_OVERRIDE,
+            Requests::POST,
+            $input);
+    }
+
     public function createMerchantConfigurations(array $input)
     {
         $this->setAdminHeader();

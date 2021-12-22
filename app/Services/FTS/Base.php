@@ -106,6 +106,8 @@ class Base
 
     const SCHEDULE = '/channel_health_events/schedules';
 
+    const MANUAL_OVERRIDE = '/channel_health_events/manual-override';
+
     const SCHEDULE_GET_ROUTE = '/routing/schedules';
 
     const TRIGGER_STATUS_LOG_GET_ROUTE = '/routing/trigger_status_logs';
