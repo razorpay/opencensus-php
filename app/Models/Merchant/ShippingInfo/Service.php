@@ -12,7 +12,7 @@ use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Slab;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Validator;
-use RZP\Models\Merchant\Shopify1cc;
+use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
@@ -149,8 +149,12 @@ class Service extends Base\Service
 
         if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
         {
-            // replace with Shopify service in next PR
-            $decodedResponse = (new Shopify1cc\Service)->getShippingInfo($input);
+            // $orderId = $order->toArrayPublic()['notes']['storefront_id'];
+
+            $decodedResponse = (new Shopify\Service)->getShippingInfo([
+                'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
+                'addresses' => $nonCachedAddresses
+            ]);
         }
         else
         {

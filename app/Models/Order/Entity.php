@@ -552,6 +552,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PUBLIC_KEY, $publicKey);
     }
 
+    public function setReceipt($receipt)
+    {
+        $this->setAttribute(self::RECEIPT, $receipt);
+    }
+
     public function getLateAuthConfigId()
     {
         return $this->getAttribute(self::LATE_AUTH_CONFIG_ID);

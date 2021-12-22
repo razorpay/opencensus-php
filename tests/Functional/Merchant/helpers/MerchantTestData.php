@@ -11122,6 +11122,7 @@ return [
               "shop_id" => "hias",
               "api_key" => "abasc",
               "api_secret" => "def",
+              "oauth_token" => 'secret',
               "storefront_access_token" => "ghi"
             ],
         ],

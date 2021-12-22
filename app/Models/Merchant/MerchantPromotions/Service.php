@@ -11,7 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Validator;
-use RZP\Models\Merchant\Shopify1cc;
+use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\Merchant1ccConfig;
 
 class Service extends Base\Service
@@ -41,7 +41,9 @@ class Service extends Base\Service
 
         try
         {
-            $merchantOrderId = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant)->getReceipt();
+            $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            $merchantOrderId = $rzpOrder->getReceipt();
         }
         catch (Throwable $e)
         {
@@ -62,7 +64,10 @@ class Service extends Base\Service
 
         if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
         {
-            $decodedResponse = (new Shopify1cc\Service)->getPromotions($input);
+            // TODO: critical error if not found !
+            $input['order_id'] = $rzpOrder->toArrayPublic()['notes']['storefront_id'];
+
+            $decodedResponse = (new Shopify\Service)->getShopifyCoupons($input);
         }
         else
         {
@@ -142,7 +147,8 @@ class Service extends Base\Service
         $merchantOrderId = null;
         try
         {
-            $merchantOrderId = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant)->getReceipt();
+            $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+            $merchantOrderId = $rzpOrder->getReceipt();
         }
         catch (Throwable $e)
         {
@@ -157,8 +163,10 @@ class Service extends Base\Service
 
         if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
         {
-            // replace with Shopify service in next PR
-            $res = (new Shopify1cc\Service)->applyPromotion($input);
+            // TODO: critical error if not found !
+            $input['order_id'] = $rzpOrder->toArrayPublic()['notes']['storefront_id'];
+
+            $res = (new Shopify\Service)->applyShopifyCoupon($input);
 
             $decodedResponse = $res['response'];
 
@@ -262,7 +270,8 @@ class Service extends Base\Service
             $response = Requests::$method(
                 $request['url'],
                 $request['headers'],
-                $request['content']);
+                $request['content']
+            );
         }
         catch (Throwable $e)
         {

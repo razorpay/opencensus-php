@@ -19,9 +19,11 @@ class Validator extends Base\Validator
         Constants::SHOP_ID                  => 'required|max:255',
         Constants::API_KEY                  => 'required|max:255',
         Constants::API_SECRET               => 'required|max:255',
-        Constants::STOREFRONT_ACCESS_TOKEN  => 'required|max:255',
+        Constants::OAUTH_TOKEN              => 'required|max:255',
+        Constants::STOREFRONT_ACCESS_TOKEN  => 'required|max:255'
     ];
 
+    // NOTE: Decide whether we keep `.myshopify.com` in the value or not
     protected function sanitizeShopifyShopId($name)
     {
         return $name;

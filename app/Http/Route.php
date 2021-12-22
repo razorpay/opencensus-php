@@ -3161,11 +3161,22 @@ class Route
         'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
+
+        // 1 click checkout shopify integration
+        '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
+        '1cc_shopify_complete'                      => ['post',       '1cc/shopify/complete',                                  'OneClickCheckoutController@shopifyCompleteCheckout'                ],
+        '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
+        '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
+        'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                                 'MerchantController@updateShopify1ccConfig'                   ],
+
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
-        'update_shopify_1cc_config'               => ['post',          'merchant/1cc/shopify/config',                                 'MerchantController@updateShopify1ccConfig'                   ],
     ];
 
     public static $public = [
+        '1cc_shopify_checkout',
+        '1cc_shopify_complete',
+        '1cc_shopify_oauth_redirect',
+        '1cc_shopify_oauth_callback',
         'checkout',
         'payment_create',
         'payment_create_checkout',

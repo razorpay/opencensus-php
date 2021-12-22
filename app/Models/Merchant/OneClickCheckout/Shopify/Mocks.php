@@ -1,44 +1,19 @@
 <?php
 
-namespace RZP\Models\Merchant\Shopify1cc;
+namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Order;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Metric;
-use RZP\Models\Merchant\Validator;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
-class Service extends Base\Service
+class Mocks
 {
-    // get list of promotions from shopify
-    public function getPromotions(array $input): array
-    {
-        return $this->getShopifyMockListPromotions();
-    }
-
-    // apply promotion to storefront checkout
-    public function applyPromotion(array $input): array
-    {
-        return $this->getShopifyMockApplyPromotion($input['code']);
-    }
-
-    // remove promotion from storefront checkout
-    public function removePromotion(array $input): array
-    {
-        return $this->getShopifyMockListPromotions();
-    }
-
-    // get shipping packages from storefront checkout
-    public function getShippingInfo(array $input): array
-    {
-        return $this->getShopifyMockShippingInfo($input);
-    }
-
-    private function getShopifyMockListPromotions()
+    public function getShopifyMockListPromotions()
     {
       $promotions = [
           [
@@ -53,7 +28,7 @@ class Service extends Base\Service
       return ['promotions' => $promotions, 'status_code' => 200];
     }
 
-    private function getShopifyMockApplyPromotion($code)
+    public function getShopifyMockApplyPromotion($code)
     {
         if ($code === '50off')
         {
@@ -77,7 +52,7 @@ class Service extends Base\Service
         return ['response' => $response, 'status_code' => $statusCode];
     }
 
-    private function getShopifyMockShippingInfo(array $input): array
+    public function getShopifyMockShippingInfo(array $input): array
     {
         $addresses = $input['addresses'];
 
@@ -91,5 +66,33 @@ class Service extends Base\Service
         }
 
         return ['addresses' => $addresses];
+    }
+
+    public function getShopifyMockPlaceOrder(): array
+    {
+        return [
+          "order" => [
+            "buyer_accepts_marketing" => true,
+            "discount_codes" => [
+              [
+                "code" => "100OFF",
+                "amount" => "100",
+                "type" => "fixed_amount"
+              ]
+            ],
+            "line_items" => [
+              [
+                "name" => "fan",
+                "price" => "2200.00",
+                "product_id" => 42021089149155,
+                "quantity" => 1,
+                "title" => "fan"
+              ]
+            ],
+            "inventory_behaviour" => "decrement_obeying_policy",
+            "send_receipt" => false,
+            "test" => true
+          ]
+        ];
     }
 }
