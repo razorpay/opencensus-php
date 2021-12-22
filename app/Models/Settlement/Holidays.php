@@ -291,6 +291,43 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2022 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                19 => 'Chhatrapati Shivaji Maharaj Jayanti',
+            ],
+            3 => [
+                1  => 'Mahashivratri',
+                18 => 'Holi (Second Day)',
+            ],
+            4 => [
+                1  => 'Annual closing of banks',
+                2  => 'Gudhi Padwa/Telugu New Year’s Day',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Bengali New Year’s Day',
+                15 => 'Good Friday/Bengali New Year’s Day (Nababarsha)/Himachal Day/Vishu',
+            ],
+            5 => [
+                3  => 'Bhagvan Shree Parshuram Jayanti/Ramjan-Eid (Eid-UI-Fitra)/Basava Jayanti/Akshaya Tritiya',
+                16 => 'Buddha Pournima',
+            ],
+            8 => [
+                9  => 'Muharram (Ashoora)',
+                15 => 'Independence Day',
+                16 => 'Parsi New Year (Shahenshahi)',
+                31 => 'Samvatsari (Chaturthi Paksha)/Ganesh Chaturthi/Varasiddhi Vinayaka Vrata/Vinayakar Chathurthi',
+            ],
+            10 => [
+                5  => 'Dasara/Dusshera (Vijaya Dashmi)',
+                24 => 'Kali Puja/Deepavali/Diwali (Laxmi Pujan)/Naraka Chaturdashi',
+                26 => 'Govardhan Pooja/Vikram Samvant New Year Day/Bhai Bij/Bhai Duj/Diwali (Bali Pratipada)/Laxmi Puja',
+            ],
+            11 => [
+                8 => 'Guru Nanak jayanti',
+            ],
+        ],
     ];
 
     /**
