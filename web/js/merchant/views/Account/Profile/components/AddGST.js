@@ -115,7 +115,7 @@ class AddGST extends Component {
       method: `POST`,
     })
       .then((item) => {
-        const { updateSession: updateSessionFn, showNotification, closeModal } = this.props;
+        const { updateSession: updateSessionFn } = this.props;
         const user = new User({
           ...this.props.session.user,
           ...item.data,
@@ -126,13 +126,12 @@ class AddGST extends Component {
         this.setState({
           saved: true,
         });
-        showNotification({
-          type: 'success',
-          message: `Your GST details are added. ${GST_SUCCESS_MSG}`,
-        });
         // cleanup
         this.props.fetchStatus();
-        closeModal();
+        this.props.openModal({
+          size: 'small',
+          component: <ShowStatusMsg closeModal={this.props.closeModal} />,
+        });
       })
       .catch((err) => {
         this.setState({
@@ -155,9 +154,8 @@ class AddGST extends Component {
     });
 
   render() {
-    const { merchant_gst, session } = this.props;
+    const { merchant_gst } = this.props;
     const isNew = !merchant_gst.p_gstin && !merchant_gst.gstin;
-    const isEditable = isNew && session.user.isAllowedEdit('profile_gst');
     const title = merchant_gst.gstin ? `Update GST details` : `Add GST details`;
 
     return (
@@ -212,7 +210,6 @@ class AddGST extends Component {
                 autoFocus={true}
                 placeholder="19AAAAA1234Y1YY"
                 validator={validateGSTIN}
-                disabled={this.shouldGSTINBeDisabled(isEditable)}
                 onBlur={this.onInputFieldBlur}
                 required
               />
@@ -223,6 +220,19 @@ class AddGST extends Component {
                   </Banner>
                 </div>
               )}
+              <label className="label-required">GSTIN Certificate</label>
+              <Field
+                name="certificate"
+                component={FileUpload}
+                accept={['jpg', 'png', 'pdf']}
+                maxSize={2102000}
+                onBiggerFileSize={this.onBiggerFileSize}
+                onFileChange={this.onGstCertificateFileChange}
+                validate={required('Please upload GSTIN certificate')}
+                onCloseClick={this.onGstCertificateFileChange}
+                required
+              />
+              <br />
               <label>GSTIN Address</label>
               <div className="label-info">
                 <span>
@@ -238,18 +248,6 @@ class AddGST extends Component {
                   </Popover>
                 </span>
               </div>
-              <label className="label-required">GSTIN Certificate</label>
-              <Field
-                name="certificate"
-                component={FileUpload}
-                accept={['jpg', 'png', 'pdf']}
-                maxSize={2102000}
-                onBiggerFileSize={this.onBiggerFileSize}
-                onFileChange={this.onGstCertificateFileChange}
-                validate={required('Please upload GSTIN certificate')}
-                onCloseClick={this.onGstCertificateFileChange}
-                required
-              />
               <div class="Modal__actions">
                 <button
                   type="submit"
