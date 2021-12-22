@@ -1233,7 +1233,7 @@ class Selector extends Base\Core
             return false;
         }
 
-        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getGatewayCurrency();
+        $currency = $payment->getGatewayCurrency();
         $hasHitachiTerminal = (new TerminalService)->checkDirectTerminalForGateway(
             $allTerminals,
             Constants::HITACHI,
