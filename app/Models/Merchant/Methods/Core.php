@@ -80,7 +80,7 @@ class Core extends Base\Core
 
         $methods->setMethods($input);
 
-        $this->checkPricing($merchant, $methods, false);
+        $this->checkPricing($merchant, $methods, false, false);
 
         // Trigger workflow
         $workflow->setDirty($methods)->handle();
