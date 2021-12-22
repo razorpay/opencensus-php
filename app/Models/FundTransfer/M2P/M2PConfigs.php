@@ -1818,10 +1818,26 @@ class M2PConfigs
                     ]
                 ]
             ],
+            Network::VISA => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
         ],
 
         Issuer::RATN => [
             Network::MC => [
+                CardType::CREDIT => [
+                    self::DEFAULT_IIN => [
+                        Mode::CHANNEL => Mode::M2P,
+                        Mode::MODES   => [Mode::CT]
+                    ],
+                ]
+            ],
+            Network::VISA => [
                 CardType::CREDIT => [
                     self::DEFAULT_IIN => [
                         Mode::CHANNEL => Mode::M2P,
