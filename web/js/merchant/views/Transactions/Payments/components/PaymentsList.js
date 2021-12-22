@@ -37,10 +37,12 @@ export default class PaymentsListContainer extends ListContainer {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Payments',
-        eventAction: 'Go To - Payments',
-      });
+      if (window.rzpAnalytics) {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payments',
+          eventAction: 'Go To - Payments',
+        });
+      }
     }
     /*
      As we are only Showing the Failure Analysis on the Trasaction Tab
@@ -58,11 +60,13 @@ export default class PaymentsListContainer extends ListContainer {
       // Currently not tracking events from Route.
       const label = getKeysSeparatedByPipe(params);
       if (label && label.length > 0) {
-        window.rzpAnalytics({
-          eventCategory: 'Dashboard - Payments',
-          eventAction: 'Search - Payments',
-          eventLabel: label,
-        });
+        if (window.rzpAnalytics) {
+          window.rzpAnalytics({
+            eventCategory: 'Dashboard - Payments',
+            eventAction: 'Search - Payments',
+            eventLabel: label,
+          });
+        }
         analyticsTrack({
           objectName: 'payments search',
           actionName: 'clicked',
@@ -82,10 +86,12 @@ export default class PaymentsListContainer extends ListContainer {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.
-      window.rzpAnalytics({
-        eventCategory: 'Dashboard - Payments',
-        eventAction: 'Clear Search Params - Payments',
-      });
+      if (window.rzpAnalytics) {
+        window.rzpAnalytics({
+          eventCategory: 'Dashboard - Payments',
+          eventAction: 'Clear Search Params - Payments',
+        });
+      }
     }
   };
 
