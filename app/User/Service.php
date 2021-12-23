@@ -1033,10 +1033,23 @@ class Service extends Base\Service
 
             $merchantService = new Merchant\Service;
 
+
+            /**
+             * Currently we are assigning $activated = true, even if one merchant associated to the user is activated.
+             * The same $activated flag is being used to fill pre_signup_complete. (UI uses this flag to render pre signup page)
+             * Propagating the same to updateMerchantDetails() function so that it will not impact the existing functionality*
+             * Slack thread: https://razorpay.slack.com/archives/C2CP46QBW/p1639979762325500
+             */
+            foreach ($merchants as $merchant)
+            {
+                if (((bool)$merchant['activated']) === true) {
+                    $activated = true;
+                }
+            }
             // Fetch merchant details for current merchant
             if($fetchMerchantDetails === "1")
             {
-                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $currentMerchantId);
+                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $currentMerchantId, $activated);
             }
 
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
@@ -1139,10 +1152,6 @@ class Service extends Base\Service
                     }
                 }
 
-                if (((bool) $merchant['activated']) === true)
-                {
-                    $activated = true;
-                }
             }
         }
 
@@ -1239,7 +1248,11 @@ class Service extends Base\Service
             // with mobile signup going live, only contact name is used
             // as a pre_signup completeness check
             // This is same as on UserController
-            $data['pre_signup_complete'] = (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0);
+            $data['pre_signup_complete'] = (
+                isset($data['pre_signup'][Merchant\Entity::CONTACT_NAME])
+                AND (strlen($data['pre_signup'][Merchant\Entity::CONTACT_NAME]) !== 0)
+            );
+
             $merchantDetailService = new MerchantDetails\Service;
             // for non-registered check if pre_signup_complete done or not;
 

@@ -425,6 +425,15 @@ class Service extends Base\Service
             $data = (new MerchantDetails\Service)->getPresignupDetails($merchantId);
         }
 
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            ["action" => "GET_REFERRER_ATTRIBUTE",
+                "data" => [
+                    "referrer" => $referrer
+                ]
+            ]
+        );
+
         return $data;
     }
 

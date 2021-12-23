@@ -276,17 +276,9 @@ class Service extends Base\Service
         return self::WEBSITE_URLS;
     }
 
-    public function updateMerchantDetails($data, $merchantId = null)
+    public function updateMerchantDetails($data, $merchantId = null, $activated = false)
     {
-        $activated = false;
-
         $merchantDetails = $this->fetchDetails($merchantId);
-
-        if ((isset($data['activated'])) === true and
-            ((bool)$data['activated']) === true)
-        {
-            $activated = true;
-        }
 
         $data = $data + $merchantDetails;
 
