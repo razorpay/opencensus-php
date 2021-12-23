@@ -159,6 +159,7 @@ class Service extends Base\Service
             'instant-activations-functionality',
             'mandatory_aadhar_ekyc',
             'rx_email_integration_rollout',
+            'rx_vendor_portal_rollout',
             'rx_taxpayments_tin_change',
             'route_batch_upload',
             'email_self_serve',
