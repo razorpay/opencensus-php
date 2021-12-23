@@ -12,15 +12,17 @@ import { bindActionCreators } from 'redux';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Refunds',
-      eventAction: 'Go To - Refunds',
-    });
+    if (window.rzpAnalytics) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Refunds',
+        eventAction: 'Go To - Refunds',
+      });
+    }
   }
 
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
-    if (label && label.length > 0) {
+    if (label && label.length > 0 && window.rzpAnalytics) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Refunds',
         eventAction: 'Search - Refunds',
@@ -30,10 +32,12 @@ class RefundsListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
-      eventCategory: 'Dashboard - Refunds',
-      eventAction: 'Clear Search Params - Refunds',
-    });
+    if (window.rzpAnalytics) {
+      window.rzpAnalytics({
+        eventCategory: 'Dashboard - Refunds',
+        eventAction: 'Clear Search Params - Refunds',
+      });
+    }
   };
 
   render() {

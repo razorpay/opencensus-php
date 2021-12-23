@@ -35,7 +35,7 @@ function showPartnerIntent(props) {
 
   props.tracking.trackEvent(
     window.rzpQ.onbr().clicked('partnerships.appstore.partner.cta', {
-      merchantId: props.user.merchant.id,
+      merchantId: props.user?.current,
     }),
   );
 
@@ -52,7 +52,7 @@ function showPartnerIntent(props) {
 function trackMerchant(event, props) {
   props.tracking.trackEvent(
     window.rzpQ.onbr().clicked(event, {
-      merchantId: props.user.merchant.id,
+      merchantId: props.user?.current,
     }),
   );
 }
@@ -60,7 +60,7 @@ function trackMerchant(event, props) {
 function appTileClickHandler(props, appSlug) {
   props.tracking.trackEvent(
     window.rzpQ.onbr().clicked('partnerships.appstore.app', {
-      merchantId: props.user.merchant.id,
+      merchantId: props.user?.current,
       appName: appSlug,
     }),
   );
