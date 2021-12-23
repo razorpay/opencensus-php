@@ -57,9 +57,13 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
      */
     public function create(array $input, bool $shouldSync = false): Entity
     {
+        $tokenizationGateways = $input['tokenization_gateways'] ?? [];
+        unset($input['tokenization_gateways']);
+
         $feature = (new Entity)->build($input);
 
         $entityType = $input[Entity::ENTITY_TYPE];
@@ -164,7 +168,7 @@ class Core extends Base\Core
         {
            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
 
-           (new Token\Core())->onboardMerchant($merchant);
+           (new Token\Core())->onboardMerchant($merchant, $tokenizationGateways);
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

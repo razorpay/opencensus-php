@@ -11573,6 +11573,11 @@ class Route
         'affordability' => [
             'get_affordability_suite',
         ],
+
+        'tokenization' => [
+            'internal_feature_bulk_assign',
+            'internal_feature_bulk_remove',
+        ],
     ];
 
     //

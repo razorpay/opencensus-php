@@ -1499,13 +1499,33 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function onboardMerchant($merchant)
+    /**
+     * @param Merchant\Entity $merchant             The Merchant to onboard onto self::TokenizationGateways
+     * @param array           $tokenizationGateways Optional. Specific tokenization gateways the merchant needs to be onboarded onto.
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function onboardMerchant(Merchant\Entity $merchant, array $tokenizationGateways = []): void
     {
         $input = [
             Merchant\Entity::ORG_ID => $merchant->getOrgId()
         ];
 
-        foreach (self::TokenizationGateways as $gateway)
+        $gateways = self::TokenizationGateways;
+
+        if (!empty($tokenizationGateways)) {
+            // Check if valid network/gateway values are present in $tokenizationGateways
+            if (array_intersect($tokenizationGateways, self::TokenizationGateways) !== $tokenizationGateways) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_GATEWAY, 'tokenization_gateways', $tokenizationGateways
+                );
+            }
+            // Override if only specific tokenization gateways are requested
+            $gateways = $tokenizationGateways;
+        }
+
+        foreach ($gateways as $gateway)
         {
             $this->trace->info(
             TraceCode::TOKENIZATION_MERCHANT_ONBOARD,

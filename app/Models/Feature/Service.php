@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Feature;
 
+use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -328,19 +329,20 @@ class Service extends Base\Service
                     Entity::ENTITY_TYPE => $input[Entity::ENTITY_TYPE],
                     Entity::ENTITY_ID   => $entityId,
                     Entity::NAME        => $featureName,
+                    'tokenization_gateways' => Arr::wrap($input['tokenization_gateways'] ?? []),
                 ];
 
                 try
                 {
-                    $feature = (new Core)->create($featureParam, $shouldSync);
+                    $feature = (new Core())->create($featureParam, $shouldSync);
 
-                    array_push($successfulMerchant, $entityId);
+                    $successfulMerchant[] = $entityId;
 
                     $this->trace->count(FeatureMetric::FEATURE_ASSIGN_TOTAL, $dimension);
                 }
                 catch (\Exception $e)
                 {
-                    array_push($failedMerchant, $entityId);
+                    $failedMerchant[] = $entityId;
 
                     $this->trace->traceException($e);
 
