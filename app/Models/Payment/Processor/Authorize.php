@@ -2380,6 +2380,7 @@ trait Authorize
         $card = $payment->card;
 
         if((empty($payment->localToken) === false) and
+           (empty($payment->localToken->card) === false) and
            ($payment->localToken->card->isRzpSavedCard() === false))
         {
             $card = $payment->localToken->card;
@@ -4476,6 +4477,7 @@ trait Authorize
             $card = $payment->card;
 
             if((empty($payment->localToken) === false) and
+               (empty($payment->localToken->card) === false) and
                ($payment->localToken->card->isRzpSavedCard() === false))
             {
                 $card = $payment->localToken->card;
@@ -4497,6 +4499,7 @@ trait Authorize
             $card = $payment->card;
 
             if((empty($payment->localToken) === false) and
+               (empty($payment->localToken->card) === false) and
                ($payment->localToken->card->isRzpSavedCard() === false))
             {
                 $card = $payment->localToken->card;
