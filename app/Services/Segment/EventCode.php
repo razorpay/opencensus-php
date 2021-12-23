@@ -22,6 +22,12 @@ class EventCode
 
     const KYC_FORM_SAVED            = 'KYC Form Saved';
 
+    const KYC_STATUS_CHANGE         = 'KYC Status Change';
+
+    const PARTNER_HAVE_COMMISSION   = 'Partner Have Commission';
+
+    const AFFILIATE_ACCOUNT_ADDED   = 'Affiliate Account Added';
+
     const L1_SUBMISSION             = 'L1 Submission';
 
     const L2_SUBMISSION             = 'L2 Submission';

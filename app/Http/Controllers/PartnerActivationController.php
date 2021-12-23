@@ -61,4 +61,11 @@ class PartnerActivationController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function sendEventsOfPartnersWithCommissionPending()
+    {
+        $data = $this->service()->sendEventsOfPartnersWithPendingCommissionAndIncompleteKYC();
+
+        return ApiResponse::json($data);
+    }
 }

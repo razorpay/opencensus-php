@@ -127,4 +127,15 @@ class Repository  extends BaseRepository
 
         return $serialized;
     }
+
+    public function fetchPartnersWithIncompleteKyc()
+    {
+        $partnersWithIncompleteKyc =  $this->newQuery()
+                                           ->select(Entity::MERCHANT_ID)
+                                           ->where(Entity::ACTIVATION_STATUS,'=', Constants::NEEDS_CLARIFICATION)
+                                           ->orWhere(Entity::ACTIVATION_STATUS,'=',null)
+                                           ->get();
+
+        return $partnersWithIncompleteKyc->pluck(Entity::MERCHANT_ID)->toArray();
+    }
 }

@@ -473,6 +473,10 @@ class Repository extends Base\Repository
         return $merchant;
     }
 
+    public function fetchMerchantFromId($merchantId)
+    {
+        return  $this->findOrFail($merchantId);
+    }
     /**
      * Fetches merchant records which have features assigned in chunks of 200
      * records and passes that to the closure argument for processing

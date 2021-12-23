@@ -226,4 +226,12 @@ class Repository extends Base\Repository
             ->take($chunk)
             ->get();
     }
+
+    public function getSubMerchantCount(string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->distinct()
+                    ->count();
+    }
 }

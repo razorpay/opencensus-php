@@ -19,6 +19,7 @@ use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Mail\Merchant\PartnerActivationRejection as RejectionMail;
 use RZP\Mail\Merchant\PartnerActivationConfirmation as ActivationMail;
 use RZP\Mail\Merchant\PartnerNeedsClarificationEmail as ClarificationEmail;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class Core extends Base\Core
 {
@@ -523,6 +524,14 @@ class Core extends Base\Core
             $state = (new State\Core)->createForMakerAndEntity($stateData, $maker, $partnerActivation);
 
             $this->repo->saveOrFail($partnerActivation);
+
+            $properties = [
+                'partner_id'  =>  $merchant->getId(),
+                'kyc_status'  =>  $input[Entity::ACTIVATION_STATUS]
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, SegmentEvent::KYC_STATUS_CHANGE);
 
             if (empty($rejectionReasons) === false)
             {

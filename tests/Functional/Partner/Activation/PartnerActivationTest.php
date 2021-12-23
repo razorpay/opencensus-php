@@ -4,18 +4,24 @@ namespace Functional\Partner\Activation;
 
 use DB;
 use Mail;
+use RZP\Models\Partner;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant as Merchant;
 use Illuminate\Support\Facades\Artisan;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Mail\Merchant\PartnerActivationRejection;
 use RZP\Mail\Merchant\PartnerActivationConfirmation;
+use RZP\Models\Merchant\Balance\Core as BalanceCore;
 use RZP\Mail\Merchant\PartnerNeedsClarificationEmail;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Models\Partner\Activation\Core as ActivationCore;
 use RZP\Models\Admin\Permission\Repository as PermissionRepository;
 
 class PartnerActivationTest extends OAuthTestCase
@@ -26,6 +32,8 @@ class PartnerActivationTest extends OAuthTestCase
     use WorkflowTrait;
 
     const MERCHANT_ID = '1cXSLlUU8V9sXl';
+
+    const MERCHANT_ID_2 = '2cXSLlUU8V9sXl';
 
     protected function setUp(): void
     {
@@ -410,6 +418,138 @@ class PartnerActivationTest extends OAuthTestCase
 
     }
 
+    public function testSegmentEventPushForPartnerHavingCommissionBalance()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $this->createMerchant(self::MERCHANT_ID, false, 'needs_clarification');
+
+        $this->fixtures->merchant->edit(self::MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $merchant = (new Merchant\Repository())->fetchMerchantFromId(self::MERCHANT_ID);
+
+        $partnerActivation = (new ActivationCore())->createOrFetchPartnerActivationForMerchant($merchant,false);
+
+        $balance = (new BalanceCore())->createOrFetchCommissionBalance($merchant,'test');
+
+        $this->fixtures->base->editEntity('balance', $balance->getId(),
+           [
+               'balance'     => 1001,
+           ]
+       );
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        (new Partner\Service)->sendEventsOfPartnersWithPendingCommissionAndIncompleteKYC();
+    }
+
+    public function testSegmentEventSkipIfPartnersHaveNoCommissionBalance()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $this->createMerchant(self::MERCHANT_ID, false, 'needs_clarification');
+
+        $this->fixtures->merchant->edit(self::MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $merchant = (new Merchant\Repository())->fetchMerchantFromId(self::MERCHANT_ID);
+
+        $partnerActivation = (new ActivationCore())->createOrFetchPartnerActivationForMerchant($merchant,false);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        (new Partner\Service)->sendEventsOfPartnersWithPendingCommissionAndIncompleteKYC();
+    }
+
+    public function testSegmentEventPushSkipForActivePartnerHavingCommissionBalance()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $this->createMerchant(self::MERCHANT_ID, false, 'activated');
+
+        $this->fixtures->merchant->edit(self::MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $merchant = (new Merchant\Repository())->fetchMerchantFromId(self::MERCHANT_ID);
+
+        $partnerActivation = (new ActivationCore())->createOrFetchPartnerActivationForMerchant($merchant,true);
+
+        $balance = (new BalanceCore())->createOrFetchCommissionBalance($merchant,'test');
+
+        $this->fixtures->base->editEntity('balance', $balance->getId(),
+            [
+                'balance'     => 1000,
+            ]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        (new Partner\Service)->sendEventsOfPartnersWithPendingCommissionAndIncompleteKYC();
+    }
+
+    public function testSegmentEventSkipForPartnerHavingNegativeCommissionBalance()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(true);
+
+        $this->createMerchant(self::MERCHANT_ID, false, 'needs_clarification');
+
+        $this->fixtures->merchant->edit(self::MERCHANT_ID, ['partner_type' => 'fully_managed']);
+
+        $merchant = (new Merchant\Repository())->fetchMerchantFromId(self::MERCHANT_ID);
+
+        $partnerActivation = (new ActivationCore())->createOrFetchPartnerActivationForMerchant($merchant,false);
+
+        $balance = (new BalanceCore())->createOrFetchCommissionBalance($merchant,'test');
+
+        $this->fixtures->base->editEntity('balance', $balance->getId(),
+            [
+                'balance'     => -1001,
+            ]
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+
+        (new Partner\Service)->sendEventsOfPartnersWithPendingCommissionAndIncompleteKYC();
+    }
+
     private function updatePartnerActivationToNeedsClarification()
     {
         $this->createMerchant(self::MERCHANT_ID, false, null);
@@ -545,6 +685,21 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->fixtures->merchant_detail->onLive()->edit($merchantId, $payload);
         $this->fixtures->merchant_detail->onTest()->edit($merchantId, $payload);
+    }
+
+    protected function createAndFetchMocks()
+    {
+        $mockMC = $this->getMockBuilder(MerchantCore::class)
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
+
+        $mockMC->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        return [
+            "merchantCoreMock"    => $mockMC
+        ];
     }
 }
 

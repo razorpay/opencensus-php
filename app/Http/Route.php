@@ -2298,6 +2298,9 @@ class Route
         'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerActivationController@performAction'                         ],
         'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerActivationController@bulkAssignReviewer'                    ],
 
+        //route for sending events to partner with pending commission and Incomplete KYC
+        'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerActivationController@sendEventsOfPartnersWithCommissionPending'],
+
 
         // partner kyc access
         'partner_kyc_access_request'              => ['post',     'partner/kyc_access_request',                     'PartnerKycAccessController@createRequestForKyc'                     ],
@@ -4269,6 +4272,8 @@ class Route
 
         'bank_transfer_process_test_x_demo_cron',
         'payouts_batch_create_x_demo_cron',
+
+        'partner_commission_pending',
         
         // growth service cron
         'growth_filter_and_sync_cron',
@@ -10814,6 +10819,9 @@ class Route
 
             //Cron to push pending payouts notification to slack app : X
             'payout_notification_to_slack_app',
+
+            //Cron to push events for partners with pending commission balance and Incomplete KYC
+            'partner_commission_pending',
 
             'merchant_onboarding_escalations',
             'merchant_onboarding_notify',

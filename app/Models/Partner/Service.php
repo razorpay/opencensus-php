@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Partner;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class Service extends Base\Service
 {
@@ -131,5 +134,36 @@ class Service extends Base\Service
         $reviewerId = $input[Detail\Entity::REVIEWER_ID];
 
         return $this->activationCore->bulkAssignReviewer($reviewerId, $merchants);
+    }
+
+    public function sendEventsOfPartnersWithPendingCommissionAndIncompleteKYC(): array
+    {
+
+        $partnerIdsWithIncompleteKyc = $this->repo->partner_activation->fetchPartnersWithIncompleteKyc();
+
+        $month = Carbon::now(Timezone::IST)->month;
+
+        foreach($partnerIdsWithIncompleteKyc as $partnerId)
+        {
+            $partner = $this->repo->merchant->fetchMerchantFromId($partnerId);
+
+            $commissionBalance = $partner->commissionBalance;
+
+            if($commissionBalance !== null and ($commissionBalance->getBalance() > 0))
+            {
+                $properties = [
+                    'partner_id'     =>  $partnerId,
+                    'product_group'  =>  $partner[Merchant\Entity::PRODUCT],
+                    'month'          =>  $month,
+                    'commission'     =>  $commissionBalance->getBalance()
+                ];
+
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $partner, $properties, SegmentEvent::PARTNER_HAVE_COMMISSION);
+            }
+
+        }
+
+        return ['success' => 'true'];
     }
 }

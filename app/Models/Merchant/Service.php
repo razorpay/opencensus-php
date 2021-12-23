@@ -119,7 +119,7 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
-
+use RZP\Services\Segment\EventCode as SegmentEvent;
 class Service extends Base\Service
 {
     use Notify;
@@ -383,6 +383,17 @@ class Service extends Base\Service
         {
             $this->app->hubspot->trackLinkedAccountCreation($output['email'] ?? null);
         }
+
+        $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);
+
+        $properties = [
+            'partner_id'          =>  $data['partner_id'],
+            'count_of_affiliate'  =>  $count,
+            'product_group'       =>  $data['product_group']
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $properties, SegmentEvent::AFFILIATE_ACCOUNT_ADDED);
 
         return $output;
     }
