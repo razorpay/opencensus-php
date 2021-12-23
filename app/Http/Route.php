@@ -1486,8 +1486,23 @@ class Route
         'vendor_payment_get_invoice_zip_file'      => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                        ],
         'vendor_payment_get_quick_filter_amounts'  => ['get',      'vendor-payments/_meta/quick-filter-amounts',     'VendorPaymentController@getQuickFilterAmounts'                     ],
         'vendor_payment_email_integration_webhook' => ['post',     'vendor-payments/mailgun-webhook',                'VendorPaymentController@processIncomingMail'                       ],
-        'vendor_payment_get_auto_processed_invoice'=> ['get',      'vendor-payments/auto-processed-invoice/{id}',    'VendorPaymentController@getAutoProcessedInvoice'                            ],
+        'vendor_payment_get_auto_processed_invoice'=> ['get',      'vendor-payments/auto-processed-invoice/{id}',    'VendorPaymentController@getAutoProcessedInvoice'                   ],
         'vendor_payment_send_vendor_invite_ei'     => ['post',     'vendor-payments/invite-vendor',                  'VendorPaymentController@inviteVendor'                              ],
+
+        // Vendor Portal
+        'vendor_invoices_list'                     => ['get',      'vendor-portal/invite/{vendor_invite_id}/invoices',                     'VendorPortalController@listVendorInvoices'       ],
+        'vendor_invoice_get_by_id'                 => ['get',      'vendor-portal/invite/{vendor_invite_id}/invoices/{vendor_payment_id}', 'VendorPortalController@getVendorInvoice'         ],
+        'vendor_portal_list_tds_categories'        => ['get',      'vendor-portal/tds-categories',                                         'VendorPortalController@listTdsCategories'        ],
+        'vendor_portal_invoice_get_signed_url'     => ['get',      'vendor-portal/invite/{vendor_invite_id}/invoice-signed-url/{file_id}', 'VendorPortalController@getInvoiceSignedUrl'      ],
+        'vendor_portal_invites_list'               => ['get',      'vendor-portal/invites',                                                'VendorPortalController@listVendorPortalInvites'  ],
+        'vendor_invoice_create'                    => ['post',     'vendor-portal/invite/{vendor_invite_id}/invoices',                     'VendorPortalController@createVendorInvoice'      ],
+        'vendor_portal_upload_invoice'             => ['post',     'vendor-portal/invite/{vendor_invite_id}/upload-invoice',               'VendorPortalController@uploadInvoice'            ],
+        'vendor_portal_get_ocr_data'               => ['get',      'vendor-portal/invite/{vendor_invite_id}/get-ocr-data/{ocr_id}',        'VendorPortalController@getOcrData'               ],
+
+
+        // Routes common to x-apps
+        'x_apps_get_all_settings'                  => ['get',     'x-apps/settings/',                          'XAppsController@getAllSettings'                                          ],
+        'x_apps_add_or_update_settings'            => ['post',    'x-apps/settings/',                          'XAppsController@addOrUpdateSettings'                                     ],
 
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
@@ -1788,6 +1803,9 @@ class Route
         'banking_axis_invitations_send'            => ['post',     'banking_axis_invitations',                        'InvitationController@sendAxisInvitations'                         ],
         'draft_invitation_fetch'                   => ['get',      'banking_axis_invitations',                        'InvitationController@listDraftInvitations'                          ],
         'draft_invitation_accept'                  => ['put',      'draft_invitations/accept',                        'InvitationController@acceptDraftInvitations'                        ],
+
+        //Vendor portal invitation
+        'invite_to_vendor_portal'                  => ['post',     'vendor_portal_invitation',                        'InvitationController@createVendorPortalInvitation'                  ],
 
         // Risk Routes
         'customer_flagging_entity_details'         => ['get',      'customer_flagging/entity_details/{id}',          'RiskController@getEntityDetails'                                   ],
@@ -2382,8 +2400,8 @@ class Route
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
         'contact_get_internal'                     => ['get',      'contacts_internal/{id}',                         'ContactController@get'                                             ],
-        'contact_list_internal'                    => ['get',      'contacts_internal',                              'ContactController@list'                                             ],
-        'contact_update_internal'                  => ['post',     'contacts_internal/{id}',                        'ContactController@update'                                             ],
+        'contact_list_internal'                    => ['get',      'contacts_internal',                              'ContactController@list'                                            ],
+        'contact_update_internal'                  => ['post',     'contacts_internal/{id}',                         'ContactController@update'                                          ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
         'contact_create'                           => ['post',     'contacts',                                       'ContactController@create'                                          ],
         'contact_create_internal'                  => ['post',     'contacts_internal',                              'ContactController@create'                                          ],
@@ -4856,6 +4874,23 @@ class Route
         'vendor_payment_get_quick_filter_amounts',
         'vendor_payment_get_auto_processed_invoice',
 
+        // Vendor Portal Routes
+        'vendor_invoices_list',
+        'vendor_invoice_create',
+        'vendor_portal_list_tds_categories',
+        'vendor_invoice_get_by_id',
+        'vendor_portal_invites_list',
+        'vendor_portal_invoice_get_signed_url',
+        'vendor_portal_upload_invoice',
+        'vendor_portal_get_ocr_data',
+
+        // Apps routes
+        'x_apps_get_all_settings',
+        'x_apps_add_or_update_settings',
+
+        // Vendor Portal Invitation
+        'invite_to_vendor_portal',
+
         // Accounting Payouts
         'accounting_payouts_integration_status',
         'accounting_payouts_cash_flow_list_ba',
@@ -7285,6 +7320,17 @@ class Route
         'vendor_payment_bulk_invoice_download'         => Permission::GENERATE_VP_INVOICE_ZIP,
         'vendor_payment_get_invoice_zip_file'          => Permission::GENERATE_VP_INVOICE_ZIP,
         'vendor_payment_get_quick_filter_amounts'      => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_invoices_list'                         => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_invoice_create'                        => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_list_tds_categories'            => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_invoice_get_by_id'                     => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_invoice_get_signed_url'         => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_invites_list'                   => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_upload_invoice'                 => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_get_ocr_data'                   => Permission::VENDOR_PORTAL_PERMISSION,
+        'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+        'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+        'invite_to_vendor_portal'                      => Permission::INVITE_VENDOR,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -8766,6 +8812,17 @@ class Route
             'vendor_payment_update_invoice_file_id',
             'vendor_payment_get_quick_filter_amounts',
             'vendor_payment_get_auto_processed_invoice',
+            'vendor_invoices_list',
+            'vendor_invoice_create',
+            'vendor_portal_list_tds_categories',
+            'vendor_portal_upload_invoice',
+            'vendor_portal_get_ocr_data',
+            'vendor_invoice_get_by_id',
+            'vendor_portal_invoice_get_signed_url',
+            'vendor_portal_invites_list',
+            'x_apps_get_all_settings',
+            'x_apps_add_or_update_settings',
+            'invite_to_vendor_portal',
             'virtual_account_add_receivers',
             'virtual_account_add_allowed_payer',
             'virtual_account_delete_allowed_payer',
@@ -12165,6 +12222,20 @@ class Route
         'vendor_payment_get_invoice_zip_file',
         'vendor_payment_get_quick_filter_amounts',
         'vendor_payment_get_auto_processed_invoice',
+
+        'vendor_invoices_list',
+        'vendor_invoice_create',
+        'vendor_portal_list_tds_categories',
+        'vendor_portal_upload_invoice',
+        'vendor_portal_get_ocr_data',
+        'vendor_invoice_get_by_id',
+        'vendor_portal_invoice_get_signed_url',
+        'vendor_portal_invites_list',
+
+        'x_apps_get_all_settings',
+        'x_apps_add_or_update_settings',
+
+        'invite_to_vendor_portal',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',

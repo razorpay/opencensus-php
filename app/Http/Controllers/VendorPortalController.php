@@ -1,0 +1,53 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+class VendorPortalController extends Controller
+{
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->service = $this->app['vendor-portal'];
+    }
+
+    public function listVendorInvoices(string $vendorInviteId)
+    {
+        return $this->service->listVendorInvoices($this->ba->getUser(), $this->input, $vendorInviteId);
+    }
+
+    public function getVendorInvoice(string $vendorInviteId, string $vendorPaymentId)
+    {
+        return $this->service->getVendorInvoiceById($this->ba->getUser(), $vendorPaymentId, $vendorInviteId);
+    }
+
+    public function createVendorInvoice(string $vendorInviteId)
+    {
+        return $this->service->create($this->ba->getUser(), $this->input, $vendorInviteId);
+    }
+
+    public function listTdsCategories()
+    {
+        return $this->service->listTdsCategories();
+    }
+
+    public function getInvoiceSignedUrl(string $vendorInviteId, string $fileId)
+    {
+        return $this->service->getInvoiceSignedUrl($this->ba->getUser(), $vendorInviteId, $fileId);
+    }
+
+    public function listVendorPortalInvites()
+    {
+        return $this->service->listVendorPortalInvites($this->ba->getUser());
+    }
+
+    public function uploadInvoice(string $vendorInviteId)
+    {
+        return $this->service->uploadInvoice($vendorInviteId, $this->input, $this->ba->getUser());
+    }
+
+    public function getOcrData(string $vendorInviteId, string $ocrId)
+    {
+        return $this->service->getOcrData($vendorInviteId, $ocrId, $this->ba->getUser());
+    }
+}

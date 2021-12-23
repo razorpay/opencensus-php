@@ -77,6 +77,7 @@ use RZP\Services\Beam\Service as BeamService;
 use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\XPayroll\Service as XPayrollService;
+use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Base\EntityInstrumentationObserver;
 use RZP\Modules\Acs;
@@ -162,6 +163,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('accounting-payouts', function($app)
         {
             return new AccountingPayouts\Service($app);
+        });
+
+        $this->app->singleton('vendor-portal', function($app)
+        {
+            return new VendorPortalService($app);
         });
 
         $this->app->singleton('tax-payments', function($app)

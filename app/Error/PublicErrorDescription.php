@@ -1137,6 +1137,9 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_BATCH_TYPE_FOR_PAYOUT_LINK_CREATE_BATCH          = 'Invalid batch type for Payout Links Batch';
     const BAD_REQUEST_BATCH_ID_MISSING_FOR_PAYOUT_LINK_PROCESS_BATCH           = 'Batch ID missing for Payout Links Process Batch';
 
+    const BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION                        = 'Contact Id missing for vendor portal invitation';
+    const BAD_REQUEST_CONTACT_WITHOUT_EMAIL                                    = 'Contact does not have email id';
+
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance';
 

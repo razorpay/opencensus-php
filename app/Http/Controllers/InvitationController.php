@@ -92,4 +92,13 @@ class InvitationController extends Controller
 
         return ApiResponse::json((array)(string)$data);
     }
+
+    public function createVendorPortalInvitation()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createVendorPortalInvitation($this->ba->getMerchant(), $input);
+
+        return ApiResponse::json($data);
+    }
 }

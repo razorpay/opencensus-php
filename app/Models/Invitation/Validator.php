@@ -42,6 +42,12 @@ class Validator extends Base\Validator
 
         $merchant = $this->entity->merchant;
 
+        $vendorPortalMerchantId = app('config')->get('applications.vendor_payments.vendor_portal_merchant_id');
+
+        if ($merchant->getPublicId() == $vendorPortalMerchantId) {
+            return;
+        }
+
         if (($merchant->invitations
                       ->where(Entity::EMAIL, $email)
                       ->where(Entity::PRODUCT, $product)
@@ -91,6 +97,13 @@ class Validator extends Base\Validator
         if ($merchant->isTagAdded('enable_rbl_role') === true)
         {
             $dashboardRoles = array_merge($dashboardRoles, User\Role::RBL_ROLES);
+        }
+
+        $vendorPortalMerchantId = app('config')->get('applications.vendor_payments.vendor_portal_merchant_id');
+
+        if ($merchant->getPublicId() == $vendorPortalMerchantId)
+        {
+            $dashboardRoles = [User\BankingRole::VENDOR];
         }
 
         if (in_array($role, $dashboardRoles, true) === false)

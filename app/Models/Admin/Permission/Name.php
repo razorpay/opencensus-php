@@ -485,6 +485,7 @@ class Name
     const EDIT_VENDOR_PAYMENTS                = 'edit_vendor_payments';
     const CANCEL_VENDOR_PAYMENTS              = 'cancel_vendor_payments';
     const VIEW_VENDOR_PAYMENTS                = 'view_vendor_payments';
+    const VENDOR_PORTAL_PERMISSION            = 'vendor_portal_permission';
     const GET_SIGNED_URL                      = 'get_signed_url';
     const GENERATE_VP_INVOICE_ZIP             = 'generate_vp_invoice_zip';
     const MERCHANT_CONFIG_LOGO                = 'merchant_config_logo';

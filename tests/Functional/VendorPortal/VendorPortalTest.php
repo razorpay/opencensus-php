@@ -1,0 +1,141 @@
+<?php
+
+namespace RZP\Tests\Functional\VendorPortal;
+
+use App;
+use Mockery;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\TestCase;
+
+class VendorPortalTest extends TestCase
+{
+    use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
+
+    protected $config;
+
+    protected function setUp(): void
+    {
+        $this->testDataFilePath = __DIR__ . '/VendorPortalTestData.php';
+
+        parent::setUp();
+
+        $this->fixtures->create('user', [ 'id' => 'VendPortalUser' ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => 'VendPortalUser',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', 'VendPortalUser');
+
+        $this->config = App::getFacadeRoot()['config'];
+    }
+
+    public function testListVendorInvoices()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('listVendorInvoices')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listVendorInvoices');
+    }
+
+    public function testGetVendorInvoice()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('getVendorInvoiceById')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getVendorInvoiceById');
+    }
+
+    public function testListTdsCategories()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('listTdsCategories')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listTdsCategories');
+    }
+
+    public function testGetInvoiceSignedUrl()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('getInvoiceSignedUrl')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getInvoiceSignedUrl');
+    }
+
+    public function testListVendorPortalInvites()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('listVendorPortalInvites')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listVendorPortalInvites');
+    }
+
+    public function testCreate()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('create')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('create');
+    }
+
+    public function testUploadInvoice()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('uploadInvoice')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('uploadInvoice');
+    }
+
+    public function testGetOcrData()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('getOcrData')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getOcrData');
+    }
+}

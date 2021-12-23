@@ -844,7 +844,8 @@ return [
         // this same secret is used as the password to call APIs on the micro-service
         'secret' => env('VENDOR_PAYMENT_INTERNAL_APP_SECRET'),
         'timeout' => env('VENDOR_PAYMENT_TIMEOUT_SECS', 60),
-        'tax_payment_lite_fe_endpoint' => env('TAX_PAYMENT_LITE_FE_ENDPOINT', '')
+        'tax_payment_lite_fe_endpoint' => env('TAX_PAYMENT_LITE_FE_ENDPOINT', ''),
+        'vendor_portal_merchant_id' => env('VENDOR_PORTAL_MERCHANT_ID', '')
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),

@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const PAYMENT_TERMS   = 'payment_terms';
     const TDS_CATEGORY    = 'tds_category';
+    const VENDOR          = 'vendor';
 
     const GST_IN          = "gstin";
     const EXPENSE_ID      = "expense_id";
@@ -83,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::PAYMENT_TERMS,
         self::TDS_CATEGORY,
+        self::VENDOR,
         self::EXPENSE_ID,
         self::GST_IN,
     ];
@@ -114,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNTS,
         self::PAYMENT_TERMS,
         self::TDS_CATEGORY,
+        self::VENDOR,
         self::EXPENSE_ID,
         self::GST_IN,
     ];
@@ -140,6 +143,8 @@ class Entity extends Base\PublicEntity
     protected $paymentTerms = null;
 
     protected $tdsCategory = null;
+
+    protected $vendor = null;
 
     protected $expenseId = null;
 
@@ -211,6 +216,11 @@ class Entity extends Base\PublicEntity
         $this->tdsCategory = $tdsCategory;
     }
 
+    public function setVendor(array $vendorDetails)
+    {
+        $this->vendor = $vendorDetails;
+    }
+
     public function setExpenseId(string $expenseId = null)
     {
         $this->expenseId = $expenseId;
@@ -256,15 +266,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicPaymentTermsAttribute(array &$attributes)
     {
-        if ($attributes[self::TYPE] != Type::VENDOR)
-        {
-            return;
-        }
-
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        if ($basicAuth->isProxyAuth() === true)
+        if ($this->shouldVendorDetailsBeAdded($attributes))
         {
             $attributes[self::PAYMENT_TERMS] = $this->paymentTerms;
         }
@@ -272,15 +274,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicGstinAttribute(array &$attributes)
     {
-        if ($attributes[self::TYPE] != Type::VENDOR)
-        {
-            return;
-        }
-
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        if ($basicAuth->isProxyAuth() === true)
+        if ($this->shouldVendorDetailsBeAdded($attributes))
         {
             $attributes[self::GST_IN] = $this->gstIn;
         }
@@ -288,15 +282,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpenseIdAttribute(array &$attributes)
     {
-        if ($attributes[self::TYPE] != Type::VENDOR)
-        {
-            return;
-        }
-
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        if ($basicAuth->isProxyAuth() === true)
+        if ($this->shouldVendorDetailsBeAdded($attributes))
         {
             $attributes[self::EXPENSE_ID] = $this->expenseId;
         }
@@ -304,17 +290,17 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTdsCategoryAttribute(array &$attributes)
     {
-        if ($attributes[self::TYPE] != Type::VENDOR)
-        {
-            return;
-        }
-
-        /** @var BasicAuth $basicAuth */
-        $basicAuth = app('basicauth');
-
-        if ($basicAuth->isProxyAuth() === true)
+        if ($this->shouldVendorDetailsBeAdded($attributes))
         {
             $attributes[self::TDS_CATEGORY] = $this->tdsCategory;
+        }
+    }
+
+    public function setPublicVendorAttribute(array &$attributes)
+    {
+        if ($this->shouldVendorDetailsBeAdded($attributes))
+        {
+            $attributes[self::VENDOR] = $this->vendor;
         }
     }
 
@@ -360,4 +346,18 @@ class Entity extends Base\PublicEntity
     // -------------- Accessors --------------
 
     // ------------ End Accessors ------------
+
+    private function shouldVendorDetailsBeAdded(array &$attributes): bool
+    {
+        if ($attributes[self::TYPE] != Type::VENDOR)
+        {
+            return false;
+        }
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        return $basicAuth->isProxyAuth() === true;
+    }
+
 }

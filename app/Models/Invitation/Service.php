@@ -2,9 +2,14 @@
 
 namespace RZP\Models\Invitation;
 
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Models\User\Role;
+use RZP\Constants\Product;
 use RZP\Models\User\AxisUserRole;
-
+use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Service extends Base\Service
 {
@@ -139,6 +144,29 @@ class Service extends Base\Service
         return $invitation->toArrayPublic();
     }
 
+    public function createVendorPortalInvitation(MerchantEntity $merchant, array $request): array
+    {
+        // Validation check: Email id is mandatory
+        if (empty($request['contact_id'])) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, PublicErrorDescription::BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION);
+        }
+
+        $contact = $this->repo->contact->findByPublicIdAndMerchant($request['contact_id'], $merchant);
+
+        if (empty($contact->getEmail())) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, PublicErrorDescription::BAD_REQUEST_CONTACT_WITHOUT_EMAIL);
+        }
+
+        $input = [
+            Entity::EMAIL   => $contact->getEmail(),
+            Entity::ROLE    => Role::VENDOR,
+            Entity::PRODUCT => Product::BANKING,
+        ];
+
+        $invitation = $this->core()->createVendorPortalInvitation($input, $contact->getPublicId());
+
+        return $invitation->toArrayPublic();
+    }
 
     /**
      * Email Invitation Mail

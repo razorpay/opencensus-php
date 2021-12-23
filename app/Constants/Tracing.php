@@ -33,6 +33,8 @@ class Tracing
             Route::$internalApps['pg_router'],
             Route::$internalApps['care'],
             Route::$internalApps['account_service'],
+            Route::$internalApps['merchant_dashboard'],
+            Route::$internalApps['dashboard_guest'],
             Route::$internalApps['payouts_service']
         );
 

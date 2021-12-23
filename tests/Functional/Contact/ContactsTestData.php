@@ -45,6 +45,18 @@ return [
                 'type'          => 'vendor',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
+                'gstin'         => 'test_gstin',
+                'expense_id'    => '1',
+                'vendor'        => [
+                    'payment_terms'        => 10,
+                    'tds_category'         => 1,
+                    'gstin'                => 'test_gstin',
+                    'expense_id'           => '1',
+                    'pan'                  => 'test_pan',
+                    'vendor_portal_status' => 'INVITED',
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_1000000contact'
+                ]
             ],
         ],
     ],
@@ -158,6 +170,18 @@ return [
                         'type'          => 'vendor',
                         'payment_terms' => 10,
                         'tds_category'  => 1,
+                        'gstin'         => 'test_gstin',
+                        'expense_id'    => '1',
+                        'vendor'        => [
+                            'payment_terms'        => 10,
+                            'tds_category'         => 1,
+                            'gstin'                => 'test_gstin',
+                            'expense_id'           => '1',
+                            'pan'                  => 'test_pan',
+                            'vendor_portal_status' => 'INVITED',
+                            'id'                   => '2',
+                            'contact_id'           => 'cont_1000001contact'
+                        ]
                     ],
                 ],
             ],
@@ -562,6 +586,16 @@ return [
                 'contact'      => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
+                'vendor'        => [
+                    'payment_terms'        => 10,
+                    'tds_category'         => 1,
+                    'gstin'                => 'test_gstin',
+                    'expense_id'           => '1',
+                    'pan'                  => 'test_pan',
+                    'vendor_portal_status' => 'INVITED',
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_xyz'
+                ],
                 'notes'        => [
                     'test1' => 'One',
                 ],

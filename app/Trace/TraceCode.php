@@ -3322,6 +3322,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
     const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';
 
+    const VENDOR_PORTAL_REQUEST                                 = 'VENDOR_PORTAL_REQUEST';
+
     const ACCOUNTING_PAYOUTS_REQUEST                            = 'ACCOUNTING_PAYOUTS_REQUEST';
     const ACCOUNTING_PAYOUTS_RESPONSE                           = 'ACCOUNTING_PAYOUTS_RESPONSE';
 

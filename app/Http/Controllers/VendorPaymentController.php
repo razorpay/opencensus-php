@@ -267,7 +267,7 @@ class VendorPaymentController extends Controller
     {
         return $this->service->getAutoProcessedInvoice($this->ba->getMerchant(), $fileId);
     }
-    
+
     public function inviteVendor()
     {
         return $this->service->inviteVendor($this->ba->getMerchant(), $this->input);

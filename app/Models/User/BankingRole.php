@@ -22,6 +22,7 @@ class BankingRole
     const VIEW_ONLY            = Role::VIEW_ONLY;
     const OPERATIONS           = Role::OPERATIONS;
     const CHARTERED_ACCOUNTANT = Role::CHARTERED_ACCOUNTANT;
+    const VENDOR               = Role::VENDOR;
 
     //
     // Dynamic Roles:
@@ -128,6 +129,11 @@ class BankingRole
         $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles);
 
         return $bankingRoles;
+    }
+
+    public static function getVendorPortalRoles(): array
+    {
+        return [BankingRole::VENDOR];
     }
 
     public static function getDefaultRoles(): array

@@ -72,7 +72,16 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('getVendorByContactId')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1, 'expense_id' => '1', 'gstin' => 'test_gstin']);
+            ->willReturn([
+                'id'                   => '1',
+                'contact_id'           => 'cont_1000000contact',
+                'payment_terms'        => 10,
+                'tds_category'         => 1,
+                'expense_id'           => '1',
+                'gstin'                => 'test_gstin',
+                'pan'                  => 'test_pan',
+                'vendor_portal_status' => 'INVITED'
+            ]);
 
         $this->startTest();
     }
@@ -180,7 +189,16 @@ class ContactsTest extends TestCase
                     'entity' => 'collection',
                     'count' => 1,
                     'items' => [
-                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1]
+                        [
+                            'id'                   => '2',
+                            'contact_id'           => 'cont_1000001contact',
+                            'payment_terms'        => 10,
+                            'tds_category'         => 1,
+                            'expense_id'           => '1',
+                            'gstin'                => 'test_gstin',
+                            'pan'                  => 'test_pan',
+                            'vendor_portal_status' => 'INVITED'
+                        ]
                     ]
                 ]
             );
@@ -427,7 +445,16 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1]);
+            ->willReturn([
+                'id'                   => '1',
+                'contact_id'           => 'cont_xyz',
+                'payment_terms'        => 10,
+                'tds_category'         => 1,
+                'expense_id'           => '1',
+                'gstin'                => 'test_gstin',
+                'pan'                  => 'test_pan',
+                'vendor_portal_status' => 'INVITED'
+            ]);
 
         $this->startTest();
     }

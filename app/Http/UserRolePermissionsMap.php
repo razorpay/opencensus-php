@@ -442,6 +442,10 @@ class UserRolePermissionsMap
                  Permission::CREATE_USER_OTP,
                  Permission::VIEW_MERCHANT_PREFERENCE,
              ],
+
+             BankingRole::VENDOR => [
+                 Permission::VENDOR_PORTAL_PERMISSION,
+             ],
         ];
 
         $rolePermissions[BankingRole::FINANCE_L2] = $rolePermissions[BankingRole::FINANCE_L1];

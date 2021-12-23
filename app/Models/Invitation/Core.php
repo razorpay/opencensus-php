@@ -23,6 +23,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
+use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
 use RZP\Trace\Tracer;
 use RZP\Tests\P2p\Service\Base\Traits;
 
@@ -30,6 +31,18 @@ class Core extends Base\Core
 {
     use Traits\ExceptionTrait;
     use Traits\DbEntityFetchTrait;
+
+    /**
+     * @var \RZP\Services\VendorPortal\Service
+     */
+    protected $vendorPortalService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->vendorPortalService = $this->app['vendor-portal'];
+    }
 
     public function create(array $input): Entity
     {
@@ -123,6 +136,51 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invitation);
 
         $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
+
+        return $invitation;
+    }
+
+    public function createVendorPortalInvitation(array $input, string $contactId): Entity
+    {
+        $input[Entity::TOKEN] = str_random(40);;
+
+        $invitation = (new Entity);
+
+        $vendorPortalMerchantId = $this->app['config']['applications.vendor_payments']['vendor_portal_merchant_id'];
+
+        $vendorPortalMerchant = $this->getDbMerchantById($vendorPortalMerchantId);
+
+        $invitation->merchant()->associate($vendorPortalMerchant);
+
+        $invitation->build($input);
+
+        $invitedUser = $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL]));
+
+        if (empty($invitedUser) === false)
+        {
+            // Associate user only if it exists
+            $invitation->user()->associate($invitedUser);
+        }
+
+        // Call vendor-payments to check if it is a valid invite
+        $createParams = [
+            'contact_id'   => $contactId,
+            'invite_token' => $input[Entity::TOKEN],
+        ];
+
+        if (empty($invitedUser) === false)
+        {
+            $createParams['vendor_user_id'] = $invitedUser->getPublicId();
+        }
+
+        $this->vendorPortalService->createInvite($this->merchant, $createParams);
+
+        $this->repo->saveOrFail($invitation);
+
+        $invitedUserExists = (empty($invitedUser) === false);
+
+        // Send email
+        $this->sendVendorPortalInviteEmail($invitation, $contactId, $invitedUserExists);
 
         return $invitation;
     }
@@ -292,7 +350,20 @@ class Core extends Base\Core
 
         $this->handleCallBacks($user, $invitation);
 
-        $user = (new User\Core)->updateUserMerchantMapping($user, $updateParams);
+        try {
+            $user = (new User\Core)->updateUserMerchantMapping($user, $updateParams);
+        } catch (Exception\BadRequestException $ex) {
+
+            // For the vendor portal merchant, we expect to have multiple invites for same user-merchant combination
+            // We don't need to create a new entry in merchant_users table, we can just mark the invite as deleted.
+            $vendorPortalMerchantId = $this->app['config']['applications.vendor_payments']['vendor_portal_merchant_id'];
+
+            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS) ||
+                ($invitation->getMerchantId() !== $vendorPortalMerchantId))
+            {
+                throw $ex;
+            }
+        }
 
         // We need to update the user in the invitation entity
         // Case 1: Invitation created for existing user
@@ -380,28 +451,52 @@ class Core extends Base\Core
         }
     }
 
+    protected function sendVendorPortalInviteEmail(Entity $invitation, string $contactId, bool $invitedUserExists)
+    {
+        $inviteMailer = new VendorPortalInvitationMail($invitation->getId(), $contactId, $invitedUserExists, $this->merchant);
+
+        Mail::queue($inviteMailer);
+    }
+
     private function handleCallBacks(User\Entity $user, Entity $invitation) {
         $product = $invitation[Entity::PRODUCT] ?? $this->app['basicauth']->getRequestOriginProduct();
         $merchantId = $invitation[Entity::MERCHANT_ID];
 
         if ($product === Product::BANKING)
         {
-            $this->trace->info(
-                TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_REQUEST,
-                [
-                    'invitation' => $invitation->toArrayPublic(),
-                    'user'    => $user->toArrayPublic()
-                ]);
+            if ($invitation[Entity::ROLE] == User\Role::VENDOR)
+            {
+                $this->vendorInvitationAcceptCallback($user, $invitation);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_REQUEST,
+                    [
+                        'invitation' => $invitation->toArrayPublic(),
+                        'user'    => $user->toArrayPublic()
+                    ]);
 
-            $this->invitationAcceptCallback($user->getId(), $user->getEmail(), $merchantId);
+                $this->invitationAcceptCallback($user->getId(), $user->getEmail(), $merchantId);
 
-            $this->trace->info(
-                TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_RESPONSE,
-                [
-                    'invitation' => $invitation->toArrayPublic(),
-                    'user'    => $user->toArrayPublic()
-                ]);
+                $this->trace->info(
+                    TraceCode::CAPITAL_CARDS_INVITATION_ACCEPT_RESPONSE,
+                    [
+                        'invitation' => $invitation->toArrayPublic(),
+                        'user'    => $user->toArrayPublic()
+                    ]);
+            }
         }
+    }
+
+    public function vendorInvitationAcceptCallback(User\Entity $user, Entity $invitation)
+    {
+        $input = [
+            'vendor_user_id' => $user->getPublicId(),
+            'invite_token'   => $invitation->getToken(),
+        ];
+
+        $this->vendorPortalService->acceptInvite($input);
     }
 
     public function invitationAcceptCallback(string $userId, string $userEmail, string $merchantId) {

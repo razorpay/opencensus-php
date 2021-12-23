@@ -24,6 +24,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
+use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Support\Facades\Redis;
@@ -5347,6 +5348,64 @@ class UserTest extends TestCase
             $this->assertEquals('emails.user.otp_signup', $mail->view);
             return true;
         });
+    }
+
+    public function testUserRegisterFromVendorPortalInvitation()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invitation'] = $invitation['token'];
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['acceptInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('acceptInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        // Validate that invitation is accepted and deleted
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+
+        $this->assertNull($invite);
+
+        // User is created for given email
+        $user = \DB::table('users')
+            ->where('email', '=', 'vendorportal@razorpay.com')
+            ->first();
+
+        $this->assertNotNull($user);
+
+        // User is attached to given merchant on given role
+        $merchants = DB::table('merchant_users')
+            ->where('user_id', '=', $user->id)
+            ->where('merchant_id', '1DummyMerchant')
+            ->first();
+
+        $this->assertEquals('vendor', $merchants->role);
     }
 
     public function testUserRegisterSendSignupOtpViaEmailEmailExists()

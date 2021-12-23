@@ -821,4 +821,284 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVITATION_CREATE_FAILED,
         ],
     ],
+
+    'testSendVendorPortalInvitationToNewUser' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+            ]
+        ]
+    ],
+
+    'testSendVendorPortalInvitationToExistingUser' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+                'user_id'     => 'ExistingUserId'
+            ]
+        ]
+    ],
+
+    'testSendVendorPortalInviteWithoutContactId' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendVendorPortalInviteWithoutContactEmail' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_WITHOUT_EMAIL,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testSendVendorPortalInviteToAlreadyInvitedUser' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+                'user_id'     => 'ExistingUserId'
+            ]
+        ]
+    ],
+
+    'testSendVendorPortalInvitationToExistingUserWithPendingInvite' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+                'user_id'     => 'ExistingUserId'
+            ]
+        ]
+    ],
+
+    'testSendVendorPortalInvitationToNewUserWithPendingInvite' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+                'role'        => 'vendor',
+                'product'     => 'banking',
+            ]
+        ]
+    ],
+
+    'testSendVendorPortalInviteToAlreadyInvitedUserMicroServiceError' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'microservice error',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED,
+        ],
+    ],
+
+    'testAcceptVendorPortalInvite' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'role'        => 'vendor',
+                'user_id'     => '1000InviteUser',
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+            ]
+        ]
+    ],
+
+    'testAcceptRepeatVendorPortalInvite' => [
+        'request' => [
+            'url'     => '/invitations/8hd48md930kel3/accept',
+            'method'  => 'POST',
+            'content' => [
+                'user_id' => '1000InviteUser',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id'    => '1000InviteUser',
+                'HTTP_X-Dashboard-User-Email' => 'testteaminvite@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'role'        => 'vendor',
+                'user_id'     => '1000InviteUser',
+                'merchant_id' => '1DummyMerchant',
+                'email'       => 'vendorportal@razorpay.com',
+            ]
+        ]
+    ],
+
+    'testSendVendorPortalInvitationBadRequestException' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'microservice error',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED,
+        ],
+    ],
+
+    'testSendVendorPortalInvitationServerErrorException' => [
+        'request' => [
+            'url'    => '/vendor_portal_invitation',
+            'method' => 'POST',
+            'content' => [
+                'contact_id' => 'cont_1000000contact',
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
+        ],
+    ],
 ];

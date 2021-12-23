@@ -7,8 +7,13 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
+use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Services\RazorXClient;
+use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -961,4 +966,430 @@ class InvitationTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendVendorPortalInvitationToNewUser()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(VendorPortalInvite::class, function ($mail)
+        {
+            $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
+
+            $this->assertRegExp('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+
+            return true;
+        });
+    }
+
+    public function testSendVendorPortalInvitationToExistingUser()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(VendorPortalInvite::class, function ($mail)
+        {
+            $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
+
+            $this->assertRegExp('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+
+            return true;
+        });
+    }
+
+    public function testSendVendorPortalInviteWithoutContactId()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendVendorPortalInviteWithoutContactEmail()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => '']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendVendorPortalInviteToAlreadyInvitedUser()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'user_id'     => 'ExistingUserId',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+            'deleted_at'  => now()->timestamp,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '1DummyMerchant',
+            'user_id'     => 'ExistingUserId',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(VendorPortalInvite::class, function ($mail)
+        {
+            $this->assertEquals(VendorPortalInvite::REPEAT_VENDOR_PORTAL_INVITE, $mail->view);
+
+            $this->assertRegExp('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+
+            return true;
+        });
+    }
+
+    public function testSendVendorPortalInvitationToExistingUserWithPendingInvite()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'user_id'     => 'ExistingUserId',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(VendorPortalInvite::class, function ($mail)
+        {
+            $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
+
+            $this->assertRegExp('/\/vendor-portal\/login\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+
+            return true;
+        });
+    }
+
+    public function testSendVendorPortalInvitationToNewUserWithPendingInvite()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(VendorPortalInvite::class, function ($mail)
+        {
+            $this->assertEquals(VendorPortalInvite::NEW_VENDOR_PORTAL_INVITE, $mail->view);
+
+            $this->assertRegExp('/\/vendor-portal\/signup\?invitation=[a-zA-Z0-9]+/', $mail->viewData['invite_link']);
+
+            return true;
+        });
+    }
+
+    public function testSendVendorPortalInviteToAlreadyInvitedUserMicroServiceError()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'user_id'     => 'ExistingUserId',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+            'deleted_at'  => now()->timestamp,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '1DummyMerchant',
+            'user_id'     => 'ExistingUserId',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willThrowException(new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED, null, null, 'microservice error'));
+
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testAcceptVendorPortalInvite()
+    {
+        $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'vendorportal@razorpay.com'
+            ]);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'user_id'     => '1000InviteUser',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['acceptInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('acceptInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+
+        $this->assertNull($invite);
+
+        $merchants = DB::table('merchant_users')
+            ->where('user_id', '=', '1000InviteUser')
+            ->where('merchant_id', '1DummyMerchant')
+            ->first();
+
+        $this->assertEquals('vendor', $merchants->role);
+    }
+
+    public function testAcceptRepeatVendorPortalInvite()
+    {
+        $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'vendorportal@razorpay.com'
+            ]);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'user_id'     => '1000InviteUser',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+            'deleted_at'  => now()->timestamp,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '1DummyMerchant',
+            'user_id'     => '1000InviteUser',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'vendorportal@razorpay.com',
+            'user_id'     => '1000InviteUser',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => 'vendor',
+            'product'     => 'banking'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['acceptInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('acceptInvite')
+            ->willReturn([]);
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $invite = \DB::table('invitations')
+            ->where('id', '=', $invitation['id'])
+            ->whereNull('deleted_at')
+            ->first();
+
+        $this->assertNull($invite);
+
+        $merchants = DB::table('merchant_users')
+            ->where('user_id', '=', '1000InviteUser')
+            ->where('merchant_id', '1DummyMerchant')
+            ->first();
+
+        $this->assertEquals('vendor', $merchants->role);
+    }
+
+    public function testSendVendorPortalInvitationBadRequestException()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willThrowException(new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED, null, null, 'microservice error'));
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendVendorPortalInvitationServerErrorException()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'vendor', 'email' => 'vendorportal@razorpay.com']);
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $vendorPortalServiceMock = $this->getMockBuilder(VendorPortalService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createInvite'])
+            ->getMock();
+
+        $vendorPortalServiceMock->expects($this->once())
+            ->method('createInvite')
+            ->willThrowException(new ServerErrorException('microservice error', ErrorCode::SERVER_ERROR));
+
+        $this->app->instance('vendor-portal', $vendorPortalServiceMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

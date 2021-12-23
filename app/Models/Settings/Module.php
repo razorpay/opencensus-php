@@ -26,6 +26,7 @@ class Module
     const PAYOUT_PURPOSE        = 'payout_purpose';
     const PAYOUT_LINK           = 'payout_link';
     const TAX_PAYMENTS          = 'tax_payments';
+    const X_APPS                = 'x_apps';
     const CONTACT_TYPE          = 'contact_type';
     const D2C_BUREAU_CAMPAIGN   = 'd2c_bureau_campaign';
     const BALANCE               = 'balance';

@@ -24,6 +24,7 @@ class Role
     const RBL_AGENT             = 'rbl_agent';
     const VIEW_ONLY             = 'view_only';
     const CHARTERED_ACCOUNTANT  = 'chartered_accountant';
+    const VENDOR                = 'vendor';
     const AUTH_LINK_SUPERVISOR  = 'auth_link_supervisor';
     const AUTH_LINK_AGENT       = 'auth_link_agent';
 
@@ -132,7 +133,7 @@ class Role
                 break;
 
             case Product::BANKING:
-                $productRoles = BankingRole::getAllRoles();
+                $productRoles = array_merge(BankingRole::getAllRoles(), BankingRole::getVendorPortalRoles());
                 break;
 
             default:

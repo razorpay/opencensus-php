@@ -643,6 +643,7 @@ class Core extends Base\Core
 
             $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
             $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+            $contact->setVendor($vendor);
 
             if (isset($vendor[Entity::EXPENSE_ID]))
             {
@@ -693,6 +694,7 @@ class Core extends Base\Core
 
             $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
             $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+            $contact->setVendor($vendor);
         }
 
         return $contact;
@@ -729,6 +731,7 @@ class Core extends Base\Core
 
             $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
             $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+            $contact->setVendor($vendor);
         }
 
         return $contact;
@@ -797,6 +800,7 @@ class Core extends Base\Core
                 $vendor = $contactIdVendorMap[$contact->getPublicId()];
                 $contact->setPaymentTerms($vendor[Entity::PAYMENT_TERMS]);
                 $contact->setTdsCategory($vendor[Entity::TDS_CATEGORY]);
+                $contact->setVendor($vendor);
 
                 if (isset($vendor[Entity::EXPENSE_ID]))
                 {
@@ -807,7 +811,6 @@ class Core extends Base\Core
                 {
                     $contact->setGstIn($vendor[Entity::GST_IN]);
                 }
-
             }
         }
 
