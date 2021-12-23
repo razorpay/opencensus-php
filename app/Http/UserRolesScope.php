@@ -81,6 +81,7 @@ class UserRolesScope
                 Role::SELLERAPP,
                 Role::OPERATIONS,
                 Role::FINANCE,
+                Role::SUPPORT,
                 Role::LINKED_ACCOUNT_OWNER,
                 Role::LINKED_ACCOUNT_ADMIN,
             ], BankingRole::getAllRoles()),
