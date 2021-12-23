@@ -4,6 +4,7 @@ namespace RZP\Models\Card;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\P2p\Base\Libraries\Card;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 
@@ -167,10 +168,15 @@ class CardVault extends Base\Core
         }
     }
 
-    public function createTokenizedCard($card, $merchant, $iinInfo)
+    public function createTokenizedCard($tokenInput, $merchant, $iinInfo)
     {
-        $input['card']     = $card;
+        $input['card']     = $tokenInput['card'];
         $input['iin']      = $iinInfo;
+
+        if (empty($tokenInput['authentication']) === false)
+        {
+            $input['authentication'] = $tokenInput['authentication'];
+        }
 
         $input = $this->setMerchantDetails($input, $merchant);
 
@@ -181,12 +187,19 @@ class CardVault extends Base\Core
 
     public function migrateToTokenizedCard($card, $merchant, $iinInfo, $cardInput)
     {
-        $input['card']     = [
-            'vault_token'   => $card->getVaultToken(),
-            'expiry_month'  => strval($card->getExpiryMonth()),
-            'expiry_year'   => strval($card->getExpiryYear()),
-            'cvv'           => strval($cardInput['cvv']),
+        $input['card'] = [
+            'vault_token'                     => $card->getVaultToken(),
+            'expiry_month'                    => strval($card->getExpiryMonth()),
+            'expiry_year'                     => strval($card->getExpiryYear()),
+            'cvv'                             => strval($cardInput['cvv']),
         ];
+
+        if (empty($cardInput['authentication_reference_number']) === false)
+        {
+            $input['authentication'] = [
+                'authentication_reference_number' => $cardInput['authentication_reference_number'],
+            ];
+        }
 
         $input['iin'] = $iinInfo;
 

@@ -14,14 +14,16 @@ use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
 
 class Validator extends Base\Validator
 {
-    const CREATE_DIRECT                           = 'create_direct';
-    const CREATE_NETWORK_TOKEN                    = 'create_network_token';
-    const CREATE_NETWORK_CARD                     = 'create_network_card';
-    const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA = 'create_network_token_authentication_data';
-    const FETCH_CRYPTOGRAM                        = 'fetch_cryptogram';
-    const FETCH_TOKEN                             = 'fetch_token';
-    const DELETE_TOKEN                            = 'delete_token';
-    const GET_STATUS                              = 'get_status';
+    const CREATE_DIRECT                                 = 'create_direct';
+    const CREATE_NETWORK_TOKEN                          = 'create_network_token';
+    const CREATE_NETWORK_TOKEN_RUPAY                    = 'create_network_token_rupay';
+    const CREATE_NETWORK_CARD                           = 'create_network_card';
+    const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA       = 'create_network_token_authentication_data';
+    const CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY = 'create_network_token_authentication_data_rupay';
+    const FETCH_CRYPTOGRAM                              = 'fetch_cryptogram';
+    const FETCH_TOKEN                                   = 'fetch_token';
+    const DELETE_TOKEN                                  = 'delete_token';
+    const GET_STATUS                                    = 'get_status';
 
     /**
      * token epoch constrains :
@@ -77,6 +79,14 @@ class Validator extends Base\Validator
         Entity::NOTES                => 'sometimes|notes',
     ];
 
+    protected static $createNetworkTokenRupayRules = [
+        Entity::CARD                 => 'required|array',
+        Entity::CUSTOMER_ID          => 'sometimes|public_id',
+        Entity::METHOD               => 'required|in:card',
+        Entity::AUTHENTICATION       => 'required|array',
+        Entity::NOTES                => 'sometimes|notes',
+    ];
+
     protected static $createNetworkCardRules = [
         'number'       => 'required',
         'expiry_month' => 'required',
@@ -87,6 +97,12 @@ class Validator extends Base\Validator
     protected static $createNetworkTokenAuthenticationDataRules = [
         "provider"              => "string",
         "provider_reference_id" => "string",
+    ];
+
+    protected static $createNetworkTokenAuthenticationDataRupayRules = [
+        "provider"                        => "required|string",
+        "provider_reference_id"           => "required|string",
+        "authentication_reference_number" => "required|string",
     ];
 
     protected static $fetchCryptogramRules = [

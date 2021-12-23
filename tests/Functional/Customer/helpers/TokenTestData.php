@@ -236,6 +236,31 @@ return [
         ],
     ],
 
+    'testCreateTokenAndTokenizeCardRuPay' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '6071489111111111',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+                'authentication' => [
+                    'provider' => 'razorpay',
+                    'provider_reference_id' => 'pay_123wkejnsakd',
+                    'authentication_reference_number' => '100222021120200000000742753928',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreateTokenAndTokenizeCardValidationFailure' => [
         'request' => [
             'url' => '/tokens',

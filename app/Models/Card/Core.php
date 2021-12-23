@@ -57,7 +57,7 @@ class Core extends Base\Core
     {
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
-        return $this->createTokenizedCardEntity($input, $merchant, $response);
+        return $this->createTokenizedCardEntity($input['card'], $merchant, $response);
     }
 
     protected function createTokenizedCardEntity($input, $merchant, $response)
@@ -476,8 +476,8 @@ class Core extends Base\Core
         $card->setCategory($category);
 
         $this->checkCvvLength($card, $input);
-        
-        if ((empty($tokenIin) === false) and  
+
+        if ((empty($tokenIin) === false) and
             ($tokenIin->getIin() !== $iin->getIin()))
         {
             $card->tokenIinRelation()->associate($tokenIin);
@@ -704,7 +704,7 @@ class Core extends Base\Core
 
     protected function getTokenizedCardResponseFromVault($input, $merchant)
     {
-        $iinNumber  = substr($input['number'] ?? null, 0, 6);
+        $iinNumber  = substr($input['card']['number'] ?? null, 0, 6);
 
         $iin = $this->repo->card->retrieveIinDetails($iinNumber);
 

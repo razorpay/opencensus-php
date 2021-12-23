@@ -6346,9 +6346,11 @@ trait Authorize
      * after payment authorize processing and auto capturing, if applicable.
      *
      * @param Payment\Entity $payment
+     * @param null $callbackData
      * @return array
+     * @throws Exception\LogicException
      */
-    protected function postPaymentAuthorizeProcessing(Payment\Entity $payment): array
+    protected function postPaymentAuthorizeProcessing(Payment\Entity $payment, $callbackData = null): array
     {
         $this->updateLateAuthFlag($payment);
 
@@ -6375,12 +6377,12 @@ trait Authorize
 
         $this->postPaymentAuthorizeSubscriptionRegistrationProcessing($payment);
 
-        $this->migrateTokenIfApplicable($payment);
+        $this->migrateTokenIfApplicable($payment, $callbackData);
 
         return $this->processAuthorizeResponse($payment);
     }
 
-    protected function migrateTokenIfApplicable($payment)
+    protected function migrateTokenIfApplicable($payment, $callbackData)
     {
         try
         {
@@ -6412,18 +6414,29 @@ trait Authorize
                 return;
             }
 
+            [$authReferenceNumber, $isTokenizationAllowed] = $this->getAuthenticationReferenceNumber($callbackData);
+
+            if ($card->isRupay() === true)
+            {
+                if ($isTokenizationAllowed === false or $authReferenceNumber === '')
+                {
+                    return;
+                }
+            }
+
             $input['payment'] = $payment->toArrayGateway();
             $input['card'] = $payment->card->toArray();
 
             $this->setCardNumberAndCvv($input);
 
             $cardInput = [
-                'cvv'          => $input['card']['cvv'] ?? 123,
-                'last4'        => $input['card']['last4'] ?? "0000",
-                'expiry_month' => $input['card']['expiry_month'] ?? "0",
-                'expiry_year'  => $input['card']['expiry_year'] ?? "9999",
-                'emi'          => $input['card']['emi'] ?? false,
-                'iin'          => $input['card']['iin'] ?? 0
+                'cvv'                             => $input['card']['cvv'] ?? 123,
+                'last4'                           => $input['card']['last4'] ?? "0000",
+                'expiry_month'                    => $input['card']['expiry_month'] ?? "0",
+                'expiry_year'                     => $input['card']['expiry_year'] ?? "9999",
+                'emi'                             => $input['card']['emi'] ?? false,
+                'iin'                             => $input['card']['iin'] ?? 0,
+                'authentication_reference_number' => $authReferenceNumber,
             ];
 
             $core = (new Token\Core);
@@ -6438,6 +6451,30 @@ trait Authorize
                 'payment_id' => $payment->getId()
                 ]);
         }
+    }
+
+    protected function getAuthenticationReferenceNumber($callbackData)
+    {
+        $isTokenizationAllowed = false;
+
+        $authReferenceNumber = '';
+
+        if (isset($callbackData['additional_products_supported']) === true)
+        {
+            $additionalProductsSupportedArr = explode(",", $callbackData);
+
+            if (in_array("05", $additionalProductsSupportedArr) === true)
+            {
+                $isTokenizationAllowed = true;
+            }
+        }
+
+        if (isset($callbackData['authentication_reference_number']) === true)
+        {
+            $authReferenceNumber = $callbackData['authentication_reference_number'];
+        }
+
+        return [$isTokenizationAllowed, $authReferenceNumber];
     }
 
     protected function postPaymentAuthenticateProcessing(Payment\Entity $payment): array

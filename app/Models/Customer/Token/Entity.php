@@ -126,7 +126,7 @@ class Entity extends Base\PublicEntity
     /*
      * authentication data key in the input
      */
-    const AUTHENTICATION_DATA   = 'authenitaction_data';
+    const AUTHENTICATION_DATA   = 'authentication_data';
     const AUTHENTICATION        = 'authentication';
 
     /**

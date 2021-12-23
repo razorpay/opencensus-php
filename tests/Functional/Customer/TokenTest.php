@@ -602,6 +602,88 @@ class TokenTest extends TestCase
         $this->assertArrayNotHasKey('customer_id', $response);
     }
 
+    public function testCreateTokenAndTokenizeCardRuPay()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            if ($route === 'tokens/update')
+            {
+                return ['success' => true];
+            }
+
+            $response['success'] = true;
+
+            $token = base64_encode($input['card']['number']);
+            $response['token']  = $token;
+            $response['length'] = '16';
+
+            $response['fingerprint'] = strrev($token);
+            $token_iin = substr($input['card']['number'] ?? null, 0, 6);
+
+            $expiry_year = $input['card']['expiry_year'];
+            if (strlen($expiry_year) == 2)
+            {
+                $expiry_year = '20' . $expiry_year;
+            }
+
+            $response['service_provider_tokens'] = [
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'rupay',
+                    'status'                 => 'activated',
+                    'interoperable'          => true,
+                    'provider_data'  => [
+                        'token_reference_number' => $token,
+                        'card_reference_number'  => strrev($token),
+                        'token_expiry_month'     => $input['card']['expiry_month'],
+                        'token_expiry_year'      => $expiry_year,
+                        'token_iin'              => $token_iin,
+                        'token_number'           => $input['card']['number'],
+                        'cryptogram_value'       => '',
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '607148',
+            'country' => 'IN',
+            'issuer'  => 'UTIB',
+            'network' => 'RuPay',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+                'otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertNotNull($response['service_provider_tokens']);
+
+        $this->assertArrayNotHasKey('customer_id', $response);
+    }
+
     public function testCreateTokenAndTokenizeCardValidationFailure()
     {
         $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
@@ -1485,7 +1567,7 @@ class TokenTest extends TestCase
 
                 case 'tokens/migrate':
                     $response['success'] = true;
-                   
+
                     $response['provider'] = strtolower($input['iin']['network']);
 
                     $token = base64_encode($input['card']['vault_token']);

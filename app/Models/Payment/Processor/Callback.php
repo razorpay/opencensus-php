@@ -452,7 +452,7 @@ trait Callback
         {
             $this->updateAndNotifyPaymentAuthenticated($data);
 
-            return;
+            return $data;
         }
 
         $shouldLateAuthorize = false;
@@ -546,14 +546,14 @@ trait Callback
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
 
-                $this->processPaymentCallback($payment, $gatewayInput);
+                $callbackData = $this->processPaymentCallback($payment, $gatewayInput);
 
                 if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
                 {
                     return $this->postPaymentAuthenticateProcessing($payment);
                 }
 
-                return $this->postPaymentAuthorizeProcessing($payment);
+                return $this->postPaymentAuthorizeProcessing($payment, $callbackData);
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

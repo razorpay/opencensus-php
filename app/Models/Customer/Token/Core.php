@@ -1318,14 +1318,20 @@ class Core extends Base\Core
 
         (new Validator)->validateInput(Validator::CREATE_NETWORK_CARD, $input[Entity::CARD]);
 
+        if ($this->isNetworkRuPay($input[Entity::CARD]))
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
+
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY, $input[Token\Entity::AUTHENTICATION]);
+        }
+        else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
+        {
+            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
+        }
+
         if (strlen($input[Entity::CARD]['expiry_year']) === 2)
         {
             $input[Entity::CARD]['expiry_year'] = '20' . $input[Entity::CARD]['expiry_year'];
-        }
-
-        if (empty($input[Token\Entity::AUTHENTICATION_DATA]) === false)
-        {
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION_DATA]);
         }
 
         if (empty($input[Token\Entity::CUSTOMER_ID]) === false)
@@ -1333,7 +1339,7 @@ class Core extends Base\Core
             $customer = $this->repo->customer->findOrFailByPublicIdAndMerchant($input[Token\Entity::CUSTOMER_ID], $this->merchant);
         }
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input['card'], $this->merchant);
+        list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant);
 
          $this->trace->info(
             TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
@@ -1678,5 +1684,16 @@ class Core extends Base\Core
         $delimiter = '_';
 
         return substr($id, strlen($prefix . $delimiter));
+    }
+
+    protected function isNetworkRuPay($card)
+    {
+        $iin =  substr($card['number'] ?? 0, 0, 6);
+
+        $network = Card\Network::detectNetwork($iin);
+
+        $networkName = Card\Network::getFullName($network);
+
+        return ($networkName === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 }
