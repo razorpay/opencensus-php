@@ -71,6 +71,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import EndOfYearBanner from '../../components/Announcements/EndOfYearBanner';
 
@@ -641,6 +642,9 @@ class AnalyticsDesktop extends Component {
               cta2Link="paymentlinks/new"
               type="G"
             />
+            <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
+              <NitroCCCampaign productName="home" />
+            </ShowWhen>
           </ShowWhen>
 
           <ShowWhen
@@ -648,7 +652,7 @@ class AnalyticsDesktop extends Component {
               usr.isProjectNitroEnabled ||
               usr.isNitroIciciBrandedCampaignEnabled ||
               usr.isNitroIciciRemarketingCampaignEnabled ||
-              usr.isNitroCCCampaignEnabled
+              usr.isProjectNitroCorporateCard
             }
           >
             <EndOfYearBanner productName="home" />

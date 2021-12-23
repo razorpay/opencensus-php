@@ -20,6 +20,7 @@ import Textarea from 'common/ui/Forms/AutoResizeTextarea';
 import KeystoneModal from 'common/ui/OffersForYou/components/KeystoneModal';
 import NitroSelfServe from './Neostone/index';
 import EndOfYearModal from '../../../merchant/components/Announcements/EndOfYearBanner/EndOfYearModal';
+import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
 
 // const BENEFITS = {
 //   other: [
@@ -592,10 +593,10 @@ class DetailView extends React.Component {
 
     if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
     if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
-    if (user.isProjectNitroCorporateCard) return 'Nitro_Capital';
+    if (user.isProjectNitroCorporateCard) return 'Nitro_CardOfferNewYear';
     if (user.isNitroIciciBrandedCampaignEnabled || user.isNitroIciciRemarketingCampaignEnabled)
       return 'Nitro_ICICIBrandedNewYear';
-    if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOfferNewYear';
+    if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
     if (user.isProjectNitroEnabled) return 'Nitro_BaseNewYear';
     return nitroCampaignId(user).version;
   };
@@ -774,7 +775,15 @@ class DetailView extends React.Component {
         <KeystoneModal user={this.props.user} save={this.save} tracking={this.props.tracking} />
       );
     if (showNitroFormFields) return <InfoForm save={this.save} tracking={this.props.tracking} />;
-    return <EndOfYearModal save={this.save} user={this.props.user} />;
+    if (this?.props?.user?.isNitroCCCampaignEnabled)
+      return (
+        <NitroCCCampaignModal
+          user={this.props.user}
+          save={this.save}
+          tracking={this?.props?.tracking}
+        />
+      );
+    return <EndOfYearModal save={this.save} user={this?.props?.user} />;
     // return (
     //   <div className="razorpayx-announcement-details">
     //     <div className="section">
