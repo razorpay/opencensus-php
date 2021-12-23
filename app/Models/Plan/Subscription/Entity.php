@@ -654,6 +654,13 @@ class Entity extends Base\PublicEntity
         //
 
         if (($this->isExternal() === true) and
+            ($this->token !== null) and
+            $this->token->merchant->isShared() === false)
+        {
+            return false;
+        }
+
+        if (($this->isExternal() === true) and
             ($this->isGlobalCustomer() === true))
         {
             return true;

@@ -15,6 +15,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Modules\Subscriptions\Mock;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -506,6 +507,65 @@ class SubscriptionPaymentTest extends TestCase
         $order = $this->fixtures->create(
             'order',
             ['amount' => $this->cardPayment['amount']]);
+
+        $paymentArray = array_merge($this->cardPayment, [
+            'token' => $token->getPublicId(),
+            'order_id' => $order->getPublicId(),
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertTrue($payment->isRecurringTypeAuto());
+    }
+
+    public function testAutoPaymentLocalCustomerWithGlobalCustomerLink()
+    {
+        $this->fixtures->create('customer', [
+            'id' => '100002customer',
+            'global_customer_id' => '10000gcustomer',
+        ]);
+
+        $cardGlobalTokenAttributes = [
+            'id'               => '100000custcar1',
+            'token'            => '10000card1234',
+            'customer_id'      => '100002customer',
+            'merchant_id'      => '10000000000000',
+            'method'           => 'card',
+            'card_id'          => '100000000lcard',
+            'recurring_status' => 'confirmed',
+            'recurring'        => true,
+            'entity_id'  => '1000000000012',
+            'entity_type'  => 'subscription',
+        ];
+
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
+
+        $token = $this->fixtures->create('token', $cardGlobalTokenAttributes);
+
+        $this->subscription->setStatus(Subscription\Status::ACTIVE);
+        $this->subscription->recurring_type = 'auto';
+        $this->subscription->customer_id = '100002customer';
+        $this->subscription->global_customer = true;
+        $this->subscription->setTokenId('100000custcar1');
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'amount' => $this->cardPayment['amount'],
+            ]);
 
         $paymentArray = array_merge($this->cardPayment, [
             'token' => $token->getPublicId(),
