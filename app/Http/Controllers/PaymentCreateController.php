@@ -176,7 +176,17 @@ class PaymentCreateController extends Controller
 
         $tokenisationConsent = new TokenisationConsent();
 
-        if($tokenisationConsent->showTokenisationConsentView($input, $merchant) === true)
+        if ((isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true) or
+            (isset($input[Payment\Entity::RECURRING]) === true))
+        {
+            if($tokenisationConsent->showRecurringTokenisationConsentView($input, $merchant) === true)
+            {
+                $tokenisationConsent->logRecurringTokenisationConsentViewRequest($input);
+
+                return $tokenisationConsent->returnTokenisationConsentView($input);
+            }
+
+        } elseif ($tokenisationConsent->showTokenisationConsentView($input, $merchant) === true)
         {
             $tokenisationConsent->logTokenisationConsentViewRequest($input);
 

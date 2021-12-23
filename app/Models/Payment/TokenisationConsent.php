@@ -9,6 +9,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Customer\Token\Core as TokenCore;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class TokenisationConsent
 {
@@ -31,6 +32,110 @@ class TokenisationConsent
             'library'     => $input['_']['library'] ?? '',
             'checkout_id' => $input['_']['checkout_id'] ?? '',
         ]);
+    }
+
+    public function logRecurringTokenisationConsentViewRequest($input): void
+    {
+        $this->trace->info(TraceCode::TOKENISATION_CONSENT_VIEW_REQUEST_RECURRING, [
+            'library'     => $input['_']['library'] ?? '',
+            'checkout_id' => $input['_']['checkout_id'] ?? '',
+        ]);
+    }
+
+    /**
+     * @param $input
+     * @param $merchant
+     *
+     * @return bool
+     */
+    public function showRecurringTokenisationConsentView(array $input, $merchant): bool
+    {
+        /**
+         * Following checks to be passed if consent page to be shown
+         * 1. Library - custom checkout => razorpayjs / custom(comes from sdk)
+         * 2. Payment method - card, emi
+         * 3. Card CVV should be present
+         * 4. Customer id or subscription id should be present
+         * 5. For existing saved card token, fail the payment
+         * 6. for new card, if recurring and subscription id is present, trigger this
+         */
+
+        try
+        {
+            $paymentMethod            = $input[Payment\Entity::METHOD] ?? '';
+            $paymentMethodsUsingCards = [Payment\Entity::CARD, Payment\Entity::EMI];
+            $library                  = $input['_']['library'] ?? '';
+            $allowedLibraries         = [Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM];
+            $collectConsentEnabled    = $merchant->isCollectConsentEnabledForMerchant();
+
+            if ((in_array($paymentMethod, $paymentMethodsUsingCards, true) === false) or
+                (in_array($library, $allowedLibraries, true) === false) or
+                (empty($input['card']['cvv']) === true) or
+                ((empty($input[Payment\Entity::CUSTOMER_ID]) === true) and
+                    (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Not a valid input.'
+                );
+            }
+            $isNewCard = $this->checkIsNewCard($input);
+
+            if (($isNewCard === true) and (((empty($input[Payment\Entity::RECURRING]) === false) and
+                                                        ($input[Payment\Entity::RECURRING] === "1")) or
+                                            (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)))
+            {
+                return $this->showConsentViewExperimentResult($merchant, $library);
+            }
+            if (($isNewCard === false) or
+                (empty($input[Payment\Entity::TOKEN]) === false))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Card is required instead of token in input.'
+                );
+            }
+
+            if ($collectConsentEnabled === true)
+            {
+                if (isset($input['consent_to_save_card']) === false)
+                {
+                    return $this->showConsentViewExperimentResult($merchant, $library);
+
+                } elseif ($input['consent_to_save_card'] === true)
+                {
+                    return false;
+
+                } elseif ($input['consent_to_save_card'] === false)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'consent_to_save_card flag should be true.'
+                    );
+                }
+            } elseif ($collectConsentEnabled === false)
+            {
+                if (isset($input['consent_to_save_card']) === false)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'consent_to_save_card flag should be true.'
+                    );
+                } elseif ($input['consent_to_save_card'] === true)
+                {
+                    return false;
+
+                } elseif ($input['consent_to_save_card'] === false)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'consent_to_save_card flag should be true.'
+                    );
+                }
+            }
+            return true;
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->info(TraceCode::SHOW_TOKENISATION_CONSENT_VIEW_ERROR_RECURRING, []);
+
+            return false;
+        }
     }
 
     /**
@@ -134,9 +239,27 @@ class TokenisationConsent
      */
     public function returnTokenisationConsentView(array $input)
     {
+        $renderRecurringConsentPage = false;
+
+        if ((isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true) or
+                    (isset($input[Payment\Entity::RECURRING]) === true))
+        {
+            $renderRecurringConsentPage = true;
+        }
+
         $input = $this->encryptCardDetails($input);
 
         $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
+
+        if ($renderRecurringConsentPage == true) {
+
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            return View::make('tokenisation.recurringTokenisationConsentForm')
+                ->with('input', array_assoc_flatten($input, "%s[%s]"))
+                ->with('url', $url)
+                ->with('merchantName', $merchant['name']);
+        }
 
         return View::make('tokenisation.tokenisationConsentForm')
             ->with('input', array_assoc_flatten($input, "%s[%s]"))
