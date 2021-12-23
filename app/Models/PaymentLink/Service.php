@@ -106,7 +106,9 @@ class Service extends Base\Service
             return $this->core->create($input, $this->merchant, $this->user);
         });
 
-        return $entity->toArrayPublic();
+        return Tracer::inSpan(['name' => 'payment_page.create.to_public'], function() use ($entity) {
+            return $entity->toArrayPublic();
+        });
     }
 
     public function sendNotification(string $id, array $input)
@@ -273,11 +275,17 @@ class Service extends Base\Service
     {
         if (isset($input['razorpay_payment_id']) === true)
         {
-            $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+            $paymentLink = Tracer::inSpan(['name' => 'payment_page.append_amount.find_active_by_public_id'], function() use ($id) {
+                return $this->repo->payment_link->findActiveByPublicId($id);
+            });
 
-            $paymentId = Payment\Entity::verifyIdAndStripSign($input['razorpay_payment_id']);
+            $paymentId = Tracer::inSpan(['name' => 'payment_page.append_amount.verify_id_and_strip_sign'], function() use (& $input) {
+                return Payment\Entity::verifyIdAndStripSign($input['razorpay_payment_id']);
+            });
 
-            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+            $payment = Tracer::inSpan(['name' => 'payment_page.append_amount.find_or_fail_public'], function() use ($paymentId) {
+                return $this->repo->payment->findOrFailPublic($paymentId);
+            });
 
             if ($paymentLink->getId() === $payment->getPaymentLinkId())
             {

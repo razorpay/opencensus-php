@@ -39,7 +39,10 @@ class PaymentLinkController extends Controller
             return $this->service()->fetchWithDetailsForDashboard($id, $this->input);
         });
 
-        return ApiResponse::json($response);
+        return Tracer::inSpan(['name' => 'payment_page.get_details.response'], function() use($response)
+        {
+            return ApiResponse::json($response);
+        });
     }
 
     public function sendNotification(string $id)
@@ -119,6 +122,21 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function create()
+    {
+        $input = Tracer::inSpan(['name' => 'payment_page.controller.create.input'], function() {
+            return Request::all();
+        });
+
+        $entity = Tracer::inSpan(['name' => 'payment_page.controller.create.service_call'], function() use ($input) {
+            return $this->service()->create($input);
+        });
+
+        return Tracer::inSpan(['name' => 'payment_page.controller.create.response'], function() use ($entity) {
+            return ApiResponse::json($entity);
+        });
+    }
+
     /**
      * Renders the hosted view for Payment link with given id
      *
@@ -130,7 +148,9 @@ class PaymentLinkController extends Controller
     {
         try {
             // Fetch view name and payload
-            list ($view, $payload) = $this->service()->getViewNameAndPayload($id);
+            [$view, $payload] = Tracer::inSpan(['name' => 'payment_page.controller.view'], function() use ($id) {
+                return $this->service()->getViewNameAndPayload($id);
+            });
 
             // If request had an error string, append that to the payload separately for view to consume
             if (empty($error = Request::get(Entity::ERROR)) === false)
@@ -141,9 +161,13 @@ class PaymentLinkController extends Controller
             // Additionally, appends all request parameters too for view to consume
             $payload[Entity::REQUEST_PARAMS] = $this->input;
 
-            $this->service()->appendAmountIfPossible($id, $this->input, $payload);
+            Tracer::inSpan(['name' => 'payment_page.controller.view.append_amount'], function() use ($id, &$payload) {
+                $this->service()->appendAmountIfPossible($id, $this->input, $payload);
+            });
 
-            return View::make($view, $payload);
+            return Tracer::inSpan(['name' => 'payment_page.controller.view.response'], function() use ($view, $payload) {
+                return View::make($view, $payload);
+            });
         }
         catch(BadRequestException | BadRequestValidationFailureException $e)
         {
