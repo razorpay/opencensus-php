@@ -363,6 +363,12 @@ class Name
     const REFUNDS_BANK_FILE_UPLOAD            = 'refunds_bank_file_upload';
     const CAPITAL_LOS_CREATE_APPLICATION      = 'capital_los_create_application';
 
+    //permission to edit/execute bulk international disable/enable workflowAction
+    const EDIT_MERCHANT_DISABLE_INTERNATIONAL_BULK    = 'edit_merchant_disable_international_bulk';
+    const EDIT_MERCHANT_ENABLE_INTERNATIONAL_BULK     = 'edit_merchant_enable_international_bulk';
+    const EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK = 'execute_merchant_disable_international_bulk';
+    const EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK  = 'execute_merchant_enable_international_bulk';
+
     // Sub VA constants
     const ADMIN_SUB_VIRTUAL_ACCOUNT             = 'admin_sub_virtual_account';
     const MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT    = 'merchant_fetch_sub_virtual_account';

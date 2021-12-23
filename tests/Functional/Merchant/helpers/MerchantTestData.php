@@ -79,6 +79,103 @@ return [
         ],
     ],
 
+    'testEnableInternationalMerchantBulkNewFlow' => [
+        'responseWorkflowActionApproval' => [
+            'content' => [
+                'maker_id'      => "admin_RzrpySprAdmnId",
+                'maker_type'    => "admin",
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "execute_merchant_enable_international_bulk",
+                ],
+                'state'         => "executed",
+                'state_changer' => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'org_id'        => "org_100000razorpay",
+                'approved'      => true,
+            ]
+        ],
+    ],
+
+    'testDisableInternationalMerchantBulkNewFlow' => [
+        'responseWorkflowActionApproval' => [
+            'content' => [
+                'maker_id'      => "admin_RzrpySprAdmnId",
+                'maker_type'    => "admin",
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "execute_merchant_disable_international_bulk",
+                ],
+                'state'         => "executed",
+                'state_changer' => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'org_id'        => "org_100000razorpay",
+                'approved'      => true,
+            ]
+        ],
+    ],
+
+    'createBulkWorkflowAction' => [
+        'disable_international' => [
+            'request'  => [
+                'content' => [
+                    'action'          => 'disable_international',
+                    'merchant_ids'    => ['10000000000000'],
+                    'risk_attributes' => [
+                        'trigger_communication' => '1',
+                        'risk_tag'              => 'risk_international_disablement',
+                        'risk_source'           => 'high_fts',
+                        'risk_reason'           => 'chargeback_and_disputes',
+                        'risk_sub_reason'       => 'high_fts',
+                    ],
+                ],
+                'method'  => 'PUT',
+                'url'     => '/merchants/bulk',
+            ],
+            'response' => [
+                'status_code' => 200,
+                'content'     => [
+                    'entity_name'   => 'bulk_workflow_action',
+                    'state'         => "open",
+                    'maker_type'    => "admin",
+                    'org_id'        => "org_100000razorpay",
+                    'approved'      => false,
+                    'current_level' => 1,
+                ],
+            ],
+        ],
+        'enable_international'  => [
+            'request'  => [
+                'content' => [
+                    'action'          => 'enable_international',
+                    'merchant_ids'    => ['10000000000000'],
+                    'risk_attributes' => [
+                        "international_products" => ["payment_gateway", "payment_pages", "payment_links", "invoices"],
+                    ],
+                ],
+                'method'  => 'PUT',
+                'url'     => '/merchants/bulk',
+            ],
+            'response' => [
+                'status_code' => 200,
+                'content'     => [
+                    'entity_name'   => 'bulk_workflow_action',
+                    'state'         => "open",
+                    'maker_type'    => "admin",
+                    'org_id'        => "org_100000razorpay",
+                    'approved'      => false,
+                    'current_level' => 1,
+                ],
+            ],
+        ],
+    ],
+
     'testSuspendMerchantBulk' => [
         'request'  => [
             'method'  => 'PUT',

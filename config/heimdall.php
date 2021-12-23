@@ -1731,6 +1731,16 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
+            Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL_BULK             => [
+                'description' => 'Edit request for bulk International disablement',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL_BULK             => [
+                'description' => 'Edit request for bulk International disablement',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
             Permission::EXECUTE_MERCHANT_SUSPEND_BULK               => [
                 'description' => 'execute request for bulk suspend and unsuspend',
                 'assignable'  => true,
@@ -1743,6 +1753,16 @@ return [
             ],
             Permission::EXECUTE_MERCHANT_HOLD_FUNDS_BULK             => [
                 'description' => 'Edit request for bulk hold funds and release funds',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK             => [
+                'description' => 'Execute request for bulk International disablement',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+            Permission::EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK             => [
+                'description' => 'Execute request for bulk International Enablement',
                 'assignable'  => true,
                 'workflow'    => true,
             ],

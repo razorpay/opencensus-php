@@ -17,6 +17,8 @@ class Constants
         Action::RELEASE_FUNDS   => Permission::EXECUTE_MERCHANT_HOLD_FUNDS_BULK,
         Action::SUSPEND         => Permission::EXECUTE_MERCHANT_SUSPEND_BULK,
         Action::UNSUSPEND       => Permission::EXECUTE_MERCHANT_SUSPEND_BULK,
+        Action::ENABLE_INTERNATIONAL  => Permission::EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK,
+        Action::DISABLE_INTERNATIONAL => Permission::EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK,
     ];
 
     const BULK_WORKFLOW_ACTION_PERMISSION = [
@@ -40,6 +42,8 @@ class Constants
 
     const BULK_WORKFLOW_COMPLETED_TAG   = 'bulk_workflow_completed';
     const BULK_WORKFLOW_IN_PROGRESS_TAG = 'bulk_workflow_in_progress';
+
+    const RISK_ATTRIBUTES        = 'risk_attributes';
 
     const RISK_CONSTRUCTIVE_ACTION_PERMISSION_ERROR_MESSAGE = 'Merchant is tagged by risk team hence constructive action can be performed on this only by risk team';
 }

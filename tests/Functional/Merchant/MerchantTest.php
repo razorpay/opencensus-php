@@ -732,6 +732,141 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEnableInternationalMerchantBulkNewFlow()
+    {
+        $this->setMerchantMerchantDetailsAndPricing(false, 'whitelist');
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'product_international' => '0000000000']);
+
+        $this->initialSetupforBulkRiskActions('enable_international');
+
+        $workflowActionId = $this->createBulkWorkflowAction('enable_international');
+
+        //performing WorkflowAction
+        $response = $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionApproval']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals($workflowActionId, $response['id']);
+
+        //skipping batch file and hitting next route
+        $this->exectueRiskWorkflowAction($workflowActionId);
+
+        $this->assertMerchantForEnableInternational('1111000000','whitelist');
+    }
+
+    public function testDisableInternationalMerchantBulkNewFlow()
+    {
+        $this->fixtures->edit('merchant', '10000000000000',
+                              ['international' => true, 'product_international' => '1111000000']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'international_activation_flow' => 'whitelist']);
+
+        $this->initialSetupforBulkRiskActions('disable_international');
+
+        $workflowActionId = $this->createBulkWorkflowAction('disable_international');
+
+        //performing WorkflowAction
+        $response = $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionApproval']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals($workflowActionId, $response['id']);
+
+        //skipping batch file and hitting next route
+        $this->exectueRiskWorkflowAction($workflowActionId);
+
+        $this->assertMerchantForDisableInternational();
+    }
+
+    public function initialSetupforBulkRiskActions($action)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $permName1 = PermissionName::EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK;
+        $permName2 = PermissionName::EDIT_MERCHANT_DISABLE_INTERNATIONAL;
+
+        if ($action === 'enable_international')
+        {
+            $permName1 = PermissionName::EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK;
+            $permName2 = PermissionName::EDIT_MERCHANT_ENABLE_INTERNATIONAL;
+        }
+
+        $perm = $this->fixtures->create('permission', ['name' => $permName1]);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflows([
+                                  $permName1 => 'Execute international bulk',
+                                  $permName2 => 'edit international',
+                              ]);
+    }
+
+    public function createBulkWorkflowAction($action)
+    {
+        $this->enableRazorXTreatmentForFeature(
+            BulkActionConstants::BULK_RISK_ACTION_WORKFLOW_TRIGGER_FEATURE,'on');
+
+        $request = $this->testData[__FUNCTION__][$action]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData[__FUNCTION__][$action]['response']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        return $response['id'];
+    }
+
+    //this route is hit after the workflowAction is approved, using Batch file
+    public function exectueRiskWorkflowAction($workflowActionId)
+    {
+        $this->refreshEsIndices();
+        Action\Entity::verifyIdAndSilentlyStripSign($workflowActionId);
+        $this->ba->batchAppAuth();
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/risk-actions/execute',
+            'content' => [
+                'merchant_id'               => '10000000000000',
+                'bulk_workflow_action_id'   => $workflowActionId,
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('EXECUTED', $response['workflow_action_status']);
+    }
+
+    public function assertMerchantForDisableInternational($merchantId='10000000000000')
+    {
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals(false, $merchant['international']);
+        $this->assertEquals('0000000000', $merchant['product_international']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+        $this->assertEquals('blacklist', $merchantDetail['international_activation_flow']);
+    }
+
+    public function assertMerchantForEnableInternational($expectedProductInternational,$list,$merchantId='10000000000000')
+    {
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+        $this->assertEquals(true, $merchant['international']);
+        $this->assertEquals($expectedProductInternational, $merchant['product_international']);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+        $this->assertEquals($list, $merchantDetail['international_activation_flow']);
+    }
+
     public function testSuspendMerchantBulk()
     {
         $this->createMerchantsForSuspendMerchantBulkTest();

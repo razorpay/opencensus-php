@@ -91,7 +91,9 @@ class Validator extends Base\Validator
         Action::LIVE_DISABLE          => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
         Action::LIVE_ENABLE           => Permission::EDIT_MERCHANT_TOGGLE_LIVE_BULK,
         Action::HOLD_FUNDS            => Permission::EDIT_MERCHANT_HOLD_FUNDS_BULK,
-        Action::RELEASE_FUNDS         => Permission::EDIT_MERCHANT_HOLD_FUNDS_BULK
+        Action::RELEASE_FUNDS         => Permission::EDIT_MERCHANT_HOLD_FUNDS_BULK,
+        Action::DISABLE_INTERNATIONAL => Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL_BULK,
+        Action::ENABLE_INTERNATIONAL  => Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL_BULK,
     ];
 
     const MERCHANT_RISK_ATTRIBUTES = [

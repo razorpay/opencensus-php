@@ -2744,7 +2744,7 @@ class Service extends Base\Service
 
             (new Validator)->validateAdminPermissionForAction($action);
 
-            $riskActions = explode(',', RiskAction\Constants::RISK_ACTIONS_CSV_WITH_RISK_ATTRIBUTES);
+            $riskActions = explode(',', RiskAction\Constants::RISK_ACTIONS_CSV);
 
             if(in_array($action, $riskActions) === true)
             {
