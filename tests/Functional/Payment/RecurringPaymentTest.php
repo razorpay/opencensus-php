@@ -106,6 +106,56 @@ class RecurringPaymentTest extends TestCase
         $this->startTest();
     }
 
+    public function testCardRecurringAutoPaymentIfTokenStatusIsDeactivated()
+    {
+        $this->testRecurringFirstPaymentCreatePublicAuth();
+
+        $this->allowAllTerminalRazorx();
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+        $token->setStatus('deactivated');
+
+        $card = $token->card;
+        $card->setVault('visa');
+
+        $token->saveOrFail();
+        $card->saveOrFail();
+
+        $this->mockCardVaultWithCryptogram();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['customer_id'] = 'cust_' . $token->getCustomerId();
+
+        $this->startTest();
+    }
+
+    public function testCardRecurringAutoPaymentIfTokenStatusIsSuspended()
+    {
+        $this->testRecurringFirstPaymentCreatePublicAuth();
+
+        $this->allowAllTerminalRazorx();
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+        $token->setStatus('suspended');
+
+        $card = $token->card;
+        $card->setVault('visa');
+
+        $token->saveOrFail();
+        $card->saveOrFail();
+
+        $this->mockCardVaultWithCryptogram();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token->getPublicId();
+        $this->testData[__FUNCTION__]['request']['content']['customer_id'] = 'cust_' . $token->getCustomerId();
+
+        $this->startTest();
+    }
+
     public function testRecurringFirstPaymentCreatePrivateAuth()
     {
         $this->ba->privateAuth();

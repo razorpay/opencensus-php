@@ -3205,4 +3205,106 @@ trait PaymentTrait
         }
     }
 
+    protected function allowAllTerminalRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'card_payments_authorize_all_terminals')
+                    {
+                        return 'off';
+                    }
+
+                    return 'on';
+
+                }) );
+    }
+
+    protected function mockCardVaultWithCryptogram($callable = null)
+    {
+        $app = \App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $mpanVault = Mockery::mock('RZP\Services\CardVault', [$app, 'mpan'])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $mpanVault);
+
+        $callable = $callable ?: function ($route, $method, $input)
+        {
+            $response = [
+                'error' => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token'] = base64_encode($input['secret']);
+                    $response['fingerprint'] = strrev(base64_encode($input['secret']));
+                    $response['scheme'] = '0';
+                    break;
+
+                case 'detokenize':
+                    $response['value'] = base64_decode($input['token']);
+                    break;
+
+                case 'validate':
+                    if ($input['token'] === 'fail')
+                    {
+                        $response['success'] = false;
+                    }
+                    break;
+
+                case 'token/renewal' :
+                    $response['expiry_time'] = date('Y-m-d H:i:s', strtotime('+1 year'));
+                    break;
+
+                case 'delete':
+                    break;
+
+                case 'tokens/cryptogram':
+                    $response['service_provider_tokens'] = [
+                        [
+                            'type'  => 'network',
+                            'name'  => 'Visa',
+                            'provider_data'  => [
+                                'token_number' => '4044649165235890',
+                                'cryptogram_value' => 'test',
+                                'token_expiry_month' => 12,
+                                'token_expiry_year' => 2021,
+                            ],
+                        ]
+                    ];
+                    break;
+            }
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $mpanVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', null)
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+    }
 }
