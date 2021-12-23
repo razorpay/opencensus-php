@@ -200,6 +200,7 @@ class Constants
 
     const RISK_SOURCE_PREFIX      = 'risk_source_';
     const RISK_REASON_PREFIX      = 'risk_reason_';
+    const RISK_SUB_REASON_PREFIX  = 'risk_sub_reason_';
     const RISK_TAG_PREFIX         = 'risk_tag_';
 
     const BULK_WORKFLOW_GROUP_TAG_PREFIX = 'bulk_workflow_group_';

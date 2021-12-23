@@ -253,6 +253,11 @@ class Core extends Base\Core
             $tag[] = Constants::RISK_REASON_PREFIX . $riskAttributes[Constants::RISK_REASON];
         }
 
+        if(isset($riskAttributes[Constants::RISK_SUB_REASON]) === true)
+        {
+            $tag[] = Constants::RISK_SUB_REASON_PREFIX . $riskAttributes[Constants::RISK_SUB_REASON];
+        }
+
         return $tag;
     }
 }
