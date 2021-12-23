@@ -176,5 +176,14 @@ class GrowthTest extends TestCase
 
         $this->startTest();
     }
+    
+    public function testFilterAndSyncEventsFromPinot()
+    {
+        $this->mockGrowthTreatment([], [], 'filterAndSyncEventsFromPinot');
+        
+        $this->ba->cronAuth();
+        
+        $this->startTest();
+    }
 
 }

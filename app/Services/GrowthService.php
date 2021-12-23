@@ -23,6 +23,8 @@ class GrowthService extends Base\Service
     const GET_SUBCAMPAIGN_URL        = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Get';
 
     const SUBCAMPAIGN_ACTION_URL     = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Action';
+    
+    const FILTER_AND_SYNC_URL        = '/twirp/rzp.growth.counting.v1.CountingAPI/FilterAndSync';
 
     const ACTIVATED                  = 'ACTIVATED';
 
@@ -99,6 +101,11 @@ class GrowthService extends Base\Service
         }
 
         return ["status_code" => "200"];
+    }
+    
+    public function filterAndSyncEventsFromPinot()
+    {
+        return $this->sendRequest([], self::FILTER_AND_SYNC_URL, Requests::POST);
     }
 
 

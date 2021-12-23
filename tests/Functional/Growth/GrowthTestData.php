@@ -157,6 +157,16 @@ return [
                 "status_code" => "200",
             ]
         ]
-    ]
+    ],
+
+    "testFilterAndSyncEventsFromPinot" =>  [
+        'request'  => [
+            'url'     => '/growth/assets/sync',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 
 ];

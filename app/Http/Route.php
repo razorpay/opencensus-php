@@ -2176,6 +2176,7 @@ class Route
         // Growth service
         'growth_get_asset_details'                          => ['post',     'growth/assets',                                  'GrowthController@getAssetDetails'                                  ],
         'growth_downtime_for_x'                             => ['post',     'growth/assets/enable_downtime_for_x',                     'GrowthController@enableDowntimeNotificationForXDashboard' ],
+        'growth_filter_and_sync_cron'                       => ['post',     'growth/assets/sync',                             'GrowthController@filterAndSyncEventsFromPinot'            ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -4268,6 +4269,9 @@ class Route
 
         'bank_transfer_process_test_x_demo_cron',
         'payouts_batch_create_x_demo_cron',
+        
+        // growth service cron
+        'growth_filter_and_sync_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11003,6 +11007,7 @@ class Route
 
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
+            'growth_filter_and_sync_cron',
         ],
 
         'subscriptions' => [

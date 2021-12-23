@@ -20,13 +20,17 @@ trait MocksGrowth
 
             $this->app->instance('growthService', $this->growthMock);
         }
-
-        $this->growthMock
+        
+        $mock = $this->growthMock
             ->shouldReceive($methodName)
             ->atLeast()
-            ->once()
-            ->with($input)
-            ->andReturn($output);
+            ->once();
+        if(!empty($input))
+        {
+            $mock->with($input);
+        }
+
+        $mock->andReturn($output);
     }
 
 }

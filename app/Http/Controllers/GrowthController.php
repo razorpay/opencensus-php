@@ -60,4 +60,18 @@ class GrowthController extends Controller
 
         return $response;
     }
+    
+    public function filterAndSyncEventsFromPinot()
+    {
+        try {
+            $response = $this->app->growthService->filterAndSyncEventsFromPinot();
+            $response = ApiResponse::json($response);
+            
+        } catch (\Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+
+        }
+        return $response;
+    }
 }
