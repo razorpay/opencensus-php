@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::CVV                => 'sometimes|numeric|digits_between:3,4|nullable',
         Entity::NAME               => 'sometimes|regex:(^[a-zA-Z.\- 0-9\']+$)|max:100',
-        Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption,mastercard,visa',
+        Entity::VAULT              => 'sometimes|string|in:tokenex,rzpvault,rzpencryption,mastercard,visa,rupay',
         Entity::INTERNATIONAL      => 'sometimes',
         Entity::IS_CVV_OPTIONAL    => 'sometimes|boolean',
         Entity::IS_TOKENIZED_CARD  => 'sometimes|boolean',
