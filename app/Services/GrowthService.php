@@ -65,6 +65,8 @@ class GrowthService extends Base\Service
 
     protected $auth;
 
+    protected $skipPassport;
+
     public function __construct()
     {
         $app                  = App::getFacadeRoot();
@@ -74,6 +76,7 @@ class GrowthService extends Base\Service
         $this->baseUrl        = $growthConfig['url'];
         $this->key            = $growthConfig['username'];
         $this->secret         = $growthConfig['secret'];
+        $this->skipPassport   = $growthConfig['skip_jwt_passport'];
         $this->requestTimeout = $growthConfig['request_timeout'];
         $this->auth           = $app['basicauth'];
     }
@@ -143,8 +146,10 @@ class GrowthService extends Base\Service
             'timeout' => $this->requestTimeout,
         ];
 
-        $jwt = $this->auth->getPassportJwt($this->baseUrl);
-
+        $jwt = null;
+        if ($this->skipPassport == false) {
+            $jwt = $this->auth->getPassportJwt($this->baseUrl);
+        }
         if ($jwt == null) {
             $options['auth'] = [$this->key, $this->secret];
         }

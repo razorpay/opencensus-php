@@ -700,6 +700,7 @@ return [
         'username'        => 'api',
         'secret'          => env('GROWTH_SECRET'),
         'request_timeout' => env('GROWTH_REQUEST_TIMEOUT', 0.1),
+        'skip_jwt_passport'=> env('SKIP_PASSPORT_AUTH', false),
     ],
 
     'user_2fa' => [
