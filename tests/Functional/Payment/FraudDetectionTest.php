@@ -354,6 +354,11 @@ class FraudDetectionTest extends TestCase
                                                  'merchant_id'     => $merchant_id,
                                                  'referer_domain' => $testDomain
                                              ],
+                                             'stork' => [
+                                                 'context' => [
+                                                     'org_id' => '100000razorpay',
+                                                 ],
+                                             ],
                                          ], $input);
             });
         }

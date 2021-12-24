@@ -110,7 +110,12 @@ class DomainMismatch extends Base
                 'merchant_id'       => $this->merchant->getId(),
                 'referer_domain'    => $refererDomain,
                 'merchantName'      => $this->merchant->getName(),
-            ]
+            ],
+            'stork' => [
+                'context' => [
+                    'org_id' => $this->merchant->getOrgId(),
+                ],
+            ],
         ];
     }
 

@@ -356,7 +356,12 @@ class MerchantActionNotification
             'receiver' => $receiver,
             'template' => $smsTemplate,
             'source'   => Constants::SMS_SOURCE,
-            'params'   => $params
+            'params'   => $params,
+            'stork' => [
+                'context' => [
+                    'org_id' => $merchant->getOrgId(),
+                ],
+            ]
         ];
 
         $this->app['raven']->sendSms($payload);

@@ -31,8 +31,6 @@ class Service extends Base\Service
 {
     private $freshdeskConfig;
 
-    const EXCLUDE_EMAIL_FROM_CC_ON_RISK_EMAIL = "businessops@razorpay.com";
-
     public function __construct()
     {
         parent::__construct();
@@ -368,6 +366,11 @@ class Service extends Base\Service
             'template' => $template,
             'source'   => 'api.merchant.risk.alert',
             'params'   => $params,
+            'stork' => [
+                'context' => [
+                    'org_id' => $merchant->getOrgId(),
+                ],
+            ]
         ];
 
         try {

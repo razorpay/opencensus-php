@@ -4,6 +4,7 @@ namespace Functional\Risk;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
@@ -16,6 +17,7 @@ class MerchantActionNotificationTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use SalesforceTrait;
+    use EventsTrait;
 
     private $freshdeskConfig;
 
@@ -25,6 +27,18 @@ class MerchantActionNotificationTest extends TestCase
         'hold_funds'                      => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
         'disable_international_temporary' => 'Razorpay Account Review:  test merchant | 10000000000000 | International Payment Acceptance Paused',
         'disable_international_permanent' => 'Razorpay Account Review:  test merchant | 10000000000000 | International Disablement',
+    ];
+
+    const SMS_TEMPLATE_FOR_EMAIL_SIGNUP = [
+        'disable_live'                    => 'sms.merchant_risk_actions.disable_live',
+        'suspend'                         => 'sms.merchant_risk_actions.suspend',
+        'hold_funds'                      => 'sms.merchant_risk.generic.funds_on_hold.confirmation',
+        'disable_international_temporary' => 'sms.risk.international_disablement_email_signup',
+        'disable_international_permanent' => 'sms.risk.international_disablement_email_signup',
+    ];
+
+    const SMS_TEMPLATE_FOR_MOBILE_SIGNUP = [
+        'hold_funds'                      => 'sms.risk.foh_confirmation_mobile_signup',
     ];
 
     public function setUp(): void
@@ -42,6 +56,8 @@ class MerchantActionNotificationTest extends TestCase
         $this->fixtures->create('merchant_detail', [
             'merchant_id'   => '10000000000000',
             'contact_email' => 'merchant.email@gmail.com',
+            'contact_mobile' => '9991119991',
+            'business_name'  => 'test business',
         ]);
 
         $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
@@ -49,6 +65,8 @@ class MerchantActionNotificationTest extends TestCase
         $this->setUpFreshdeskClientMock();
 
         $this->setUpSalesforceMock();
+
+        $this->mockRaven();
     }
 
     public function testFOHEmailBulkWorkflow()
@@ -73,6 +91,8 @@ class MerchantActionNotificationTest extends TestCase
         ]);
 
         $this->startTest();
+
+        $this->assertRavenRequestForMerchantActionNotification('hold_funds');
     }
 
     public function testSuspendEmailBulkWorkflow()
@@ -106,6 +126,8 @@ class MerchantActionNotificationTest extends TestCase
                                                     $expectedContent, ['id' => '1234'], 1, true);
 
         $this->startTest();
+
+        $this->assertRavenRequestForMerchantActionNotification('hold_funds', true);
     }
 
     public function testDisableLiveEmailBulkWorkflow()
@@ -127,6 +149,8 @@ class MerchantActionNotificationTest extends TestCase
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();
+
+        $this->assertRavenRequestForMerchantActionNotification('disable_live');
     }
 
     public function testDisableInternationalTemporaryEmailBulkWorkflow()
@@ -148,6 +172,8 @@ class MerchantActionNotificationTest extends TestCase
         ]);
 
         $this->startTest();
+
+        $this->assertRavenRequestForMerchantActionNotification('disable_international_temporary');
     }
 
     public function testDisableInternationalPermanentEmailBulkWorkflow()
@@ -170,8 +196,10 @@ class MerchantActionNotificationTest extends TestCase
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->startTest();
-    }
 
+        $this->assertRavenRequestForMerchantActionNotification('disable_international_permanent');
+    }
+  
     public function testInternationalDisableBulkWorkflowFdTicketCreate()
     {
         $expectedContent = $this->getExpectedContentForFDTicket('disable_international_temporary');
@@ -230,6 +258,34 @@ class MerchantActionNotificationTest extends TestCase
         ];
     }
 
+    private function assertRavenRequestForMerchantActionNotification($action, $mobileSignUp = false)
+    {
+        $template = self::SMS_TEMPLATE_FOR_EMAIL_SIGNUP[$action];
+        if ($mobileSignUp)
+        {
+            $template = self::SMS_TEMPLATE_FOR_MOBILE_SIGNUP[$action];
+        }
+
+        $this->assertRavenRequest(function($input) use ($template)
+        {
+            $this->assertArraySubset([
+                'receiver' => '9991119991',
+                'source'   => 'api.bulk.risk.actions',
+                'template' => $template,
+                'params'   => [
+                    'merchant_id'   => '10000000000000',
+                    'merchant_name' => 'test merchant',
+                    'merchantName'  => 'test merchant',
+                    'business_name'  => 'test business',
+                ],
+                'stork'    => [
+                    'context' => [
+                        'org_id' => '100000razorpay',
+                    ],
+                ],
+                ], $input);
+        });
+    }
     public function getExpectedContentForFDTicket($action)
     {
         $tag = ['bulk_workflow_email'];

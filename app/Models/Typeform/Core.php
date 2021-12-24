@@ -578,7 +578,12 @@ class Core extends Base\Core
                 'merchantId'    => $merchant->getId(),
                 'merchantName'  => $merchant->getName(),
                 'business_name' => $merchant->merchantDetail->getBusinessName(),
-            ]
+            ],
+            'stork' => [
+                'context' => [
+                    'org_id' => $merchant->getOrgId(),
+                ],
+            ],
         ];
 
         if (isset($supportTicketLink) === true)

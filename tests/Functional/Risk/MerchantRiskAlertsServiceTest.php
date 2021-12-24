@@ -9,6 +9,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\MerchantRiskAlert;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
@@ -22,6 +23,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use SalesforceTrait;
+    use EventsTrait;
 
     public function setUp(): void
     {
@@ -38,6 +40,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->fixtures->create('merchant_detail', [
             'merchant_id'   => '10000000000000',
             'contact_email' => 'merchant.email@gmail.com',
+            'contact_mobile' => '9991119991',
         ]);
 
         $this->setUpFreshdeskClientMock();
@@ -135,9 +138,13 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
         $this->mockSalesforceRequest('10000000000000','businessops@razorpay.com');
 
+        $this->mockRaven();
+
         $response = $this->performWorkflowAction($workflowActionId, true);
 
         $this->assertContains('ras-managed-merchant', $response['tagged']);
+
+        $this->assertRavenRequestForRiskAlertService();
     }
 
     public function testExecuteFoHWorkflowShouldNotifyChargebackPoCAndSalesPOC()
@@ -163,9 +170,13 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
         $this->mockSalesforceRequest('10000000000000','sales.poc@gmail.com');
 
+        $this->mockRaven();
+
         $response = $this->performWorkflowAction($workflowActionId, true);
 
         $this->assertContains('ras-managed-merchant', $response['tagged']);
+
+        $this->assertRavenRequestForRiskAlertService();
     }
 
     public function testExecuteFoHWorkflowNotifyMobileSignup()
@@ -360,6 +371,26 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
     }
 
+    private function assertRavenRequestForRiskAlertService()
+    {
+
+        $this->assertRavenRequest(function($input)
+        {
+            $this->assertArraySubset([
+                'receiver' => '9991119991',
+                'source'   => 'api.merchant.risk.alert',
+                'params'   => [
+                    'merchantName'  => 'test merchant',
+                ],
+                'stork'    => [
+                    'context' => [
+                        'org_id' => '100000razorpay',
+                    ],
+                ],
+                ], $input);
+        });
+    }
+  
     protected function setMerchantDedupeKey()
     {
         $request = [
