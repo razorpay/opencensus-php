@@ -1200,6 +1200,14 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    protected static $netbankingTmbTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:netbanking_tmb',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
     protected static $netbankingNsdlTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_nsdl',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',

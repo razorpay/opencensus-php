@@ -95,6 +95,7 @@ class Gateway
     const NETBANKING_DLB         = 'netbanking_dlb';
     const NETBANKING_NSDL        = 'netbanking_nsdl';
     const NETBANKING_BDBL        = 'netbanking_bdbl';
+    const NETBANKING_TMB         = 'netbanking_tmb';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -545,6 +546,7 @@ class Gateway
         Payment\Gateway::CRED,
         Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::NETBANKING_DLB,
+        Payment\Gateway::NETBANKING_TMB,
         Payment\Gateway::TWID,
     ];
 
@@ -1354,6 +1356,7 @@ class Gateway
         Payment\Gateway::NETBANKING_UBI         => 1607059163,
         Payment\Gateway::NETBANKING_PNB         => 1609936200,
         Payment\Gateway::NETBANKING_DLB         => 1609936200,
+        Payment\Gateway::NETBANKING_TMB         => 1640249582,
         Payment\Gateway::NETBANKING_NSDL        => 1618511400,
         Payment\Gateway::NETBANKING_BDBL        => 1618511400,
     ];
@@ -1475,6 +1478,7 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_NSDL,
             self::NETBANKING_BDBL,
+            self::NETBANKING_TMB,
         ],
 
         //
@@ -2751,6 +2755,7 @@ class Gateway
         IFSC::DLXB         => Gateway::NETBANKING_DLB,
         IFSC::NSPB         => Gateway::NETBANKING_NSDL,
         IFSC::BDBL         => Gateway::NETBANKING_BDBL,
+        IFSC::TMBL         => Gateway::NETBANKING_TMB,
     ];
 
     /**
@@ -2820,6 +2825,7 @@ class Gateway
         IFSC::DLXB => Gateway::NETBANKING_DLB,
         IFSC::NSPB => Gateway::NETBANKING_NSDL,
         IFSC::BDBL => Gateway::NETBANKING_BDBL,
+        IFSC::TMBL => Gateway::NETBANKING_TMB,
     ];
 
     /**
@@ -3958,6 +3964,7 @@ class Gateway
             self::TWID,
             self::NETBANKING_BDBL,
             self::EMERCHANTPAY,
+            self::NETBANKING_TMB,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -4063,6 +4070,7 @@ class Gateway
             self::NETBANKING_PNB,
             self::NETBANKING_BDBL,
             self::EMERCHANTPAY,
+            Self::NETBANKING_TMB,
         ];
 
         $acquirerGateways = [
