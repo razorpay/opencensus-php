@@ -458,7 +458,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
 
   const dedupeStatus = isDedupe(activationData);
 
-  if (activation_status === 'activated' && !isHardLimitReached) {
+  if (activation_status === 'activated' && !merchant.hold_funds) {
     activationState = 'account_activated';
   } else if (!activation_form_milestone) {
     activationState = 'L1_Start';
@@ -477,7 +477,7 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
       } else activationState = 'payment_disabled';
     }
   } else if (activation_form_milestone === 'L2') {
-    if (dedupeStatus === 'blocked') {
+    if (dedupeStatus === 'blocked' && !activated) {
       activationState = 'L2_dedupe_blocked';
     } else if (activation_status === 'under_review') {
       if (dedupeStatus === 'partial') {

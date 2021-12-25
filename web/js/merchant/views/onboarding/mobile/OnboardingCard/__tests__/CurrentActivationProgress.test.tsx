@@ -251,6 +251,9 @@ test('should render correct message when merchant reached hard limit', async () 
     ...DataPieces.ActivationFlowWW,
     ...DataPieces.OnboardingMileStoneL2,
     isHardLimitReached: true,
+    merchant: {
+      hold_funds: true,
+    },
   });
   render(<App />, {});
   await waitForLoadingToFinish();

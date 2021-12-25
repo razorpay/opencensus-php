@@ -64,7 +64,8 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
         !canShowModals?.dedupe &&
         isDedupe &&
         !activationData.activated &&
-        activationData.activation_status !== 'rejected'
+        (activationData.activation_status !== 'rejected' ||
+          activationData.activation_status !== 'activated')
       ) {
         setModalType('dedupe');
         setIsModalOpen(true);
@@ -87,7 +88,11 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
         }
       }
       if (activationData.submitted && !isDedupe) {
-        if (activationData.isHardLimitReached && !canShowModals?.settlement_onhold) {
+        if (
+          activationData.merchant.hold_funds &&
+          activationData.isHardLimitReached &&
+          !canShowModals?.settlement_onhold
+        ) {
           setModalType('settelment_onhold');
           setIsModalOpen(true);
           setLocalStorage(`${user.current}--mweb_modal`, {

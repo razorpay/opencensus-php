@@ -11,7 +11,7 @@ import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import InstantActivationModal from './InstantActivationModal';
 
 const MODAL_CONTENT = {
@@ -72,7 +72,7 @@ const KYCStatusModal = ({
 
   const onCloseModal = () => {
     const shouldShowModal =
-      isDedupe(user) === 'blocked' ||
+      activationState === 'L2_dedupe_blocked' ||
       activationState === 'needs_clarification_mcc_pending' ||
       activationState === 'needs_clarification' ||
       activationState === 'poi_verified' ||

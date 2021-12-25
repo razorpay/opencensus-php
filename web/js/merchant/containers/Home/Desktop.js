@@ -57,7 +57,7 @@ import {
   showProductsModal,
 } from 'merchant/reducers/home';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
-import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
@@ -126,7 +126,7 @@ class AnalyticsDesktop extends Component {
 
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
     const shouldShowModal =
-      isDedupe(user) === 'blocked' ||
+      activationState === 'L2_dedupe_blocked' ||
       activationState === 'needs_clarification_mcc_pending' ||
       activationState === 'needs_clarification' ||
       activationState === 'funds_on_hold' ||

@@ -71,7 +71,7 @@ const CurrentActivationProgress: React.FC<
     dedupeStatus === 'blocked' &&
     (isL1Submitted(data.activation_form_milestone) || data.submitted) &&
     !data.activated &&
-    data.activation_status !== 'rejected'
+    (data.activation_status !== 'activated' || data.activation_status !== 'rejected')
   ) {
     return (
       <>
@@ -173,7 +173,7 @@ const CurrentActivationProgress: React.FC<
       );
     }
 
-    if (data.isHardLimitReached) {
+    if (data.isHardLimitReached && data.merchant.hold_funds) {
       const title = isInstantActivationEnabled
         ? Messages.HARD_LIMIT_REACHED.title
         : Messages.HARD_LIMIT_REACHED.old_title;
