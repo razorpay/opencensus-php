@@ -78,8 +78,6 @@ class MySqlConnector extends BaseMySqlConnector
             throw $e;
         }
 
-
-
         // Load PDO tracer here for automatically trace all db calls
         // It is placed here to be able to trace queries on multiple dbs separately
         if ((Tracing::isEnabled($this->app) === true) and
@@ -191,7 +189,7 @@ class MySqlConnector extends BaseMySqlConnector
         }
         catch(\Throwable $ex)
         {
-            if ($this->canReconnect($ex) === true)
+            if ($this->causedByLostConnection($ex) === true)
             {
                 $db->reconnect();
 
@@ -200,23 +198,12 @@ class MySqlConnector extends BaseMySqlConnector
                 return;
             }
 
-            $this->app['trace']->traceException($ex, null, TraceCode::WAIT_TIMEOUT_EXCEPTION,[
-                    'type' =>$type,
+            $this->app['trace']->traceException($ex, null, TraceCode::WAIT_TIMEOUT_EXCEPTION, [
+                'type' => $type,
             ]);
 
             throw $ex;
         }
-    }
-
-    protected function canReconnect($ex)
-    {
-        $message = $ex->getMessage();
-
-        return Str::contains($message, [
-            'server has gone away',
-            'Error while sending QUERY packet',
-            'query_wait_timeout'
-        ]);
     }
 
     protected function getDB($conn = '')
