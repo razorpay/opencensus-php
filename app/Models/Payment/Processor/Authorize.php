@@ -2375,18 +2375,7 @@ trait Authorize
     {
         $isInitialOrCardChange = ($payment->isRecurringTypeInitial() || $payment->isRecurringTypeCardChange());
 
-        // replacing "$payment->card" with "$payment->localToken->card" because in the case of tokenisation
-        // new card entity gets associated with the payment which has different card number
-        $card = $payment->card;
-
-        if((empty($payment->localToken) === false) and
-           (empty($payment->localToken->card) === false) and
-           ($payment->localToken->card->isRzpSavedCard() === false))
-        {
-            $card = $payment->localToken->card;
-        }
-
-        if ($card->isRecurringSupported($isInitialOrCardChange) === false)
+        if ($payment->card->isRecurringSupported($isInitialOrCardChange) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
@@ -2397,8 +2386,6 @@ trait Authorize
             $this->validateTokenExpiredAt($token);
 
             $this->validateTokenRecurringStatus($token, $payment);
-
-            $this->validateTokenStatus($token, $payment);
 
             if ($token->hasCardMandate() === true and $payment->isRecurringTypeAuto() === true)
             {
@@ -2671,25 +2658,6 @@ trait Authorize
                     'auth_type'         => $payment->getAuthType(),
                     'recurring_type'    => $payment->getRecurringType(),
                     'bank'              => $payment->getBank(),
-                ]);
-        }
-    }
-
-    protected function validateTokenStatus(Token\Entity $token, Payment\Entity $payment)
-    {
-        $card = $this->repo->card->fetchForToken($token);
-
-        if (($card->isRzpSavedCard() === false) and
-            ($token->getStatus() !== 'active') and
-            ($payment->isSecondRecurring() === true))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NON_ACTIVATED_TOKEN_PASSED_IN_RECURRING,
-                Payment\Entity::BANK,
-                [
-                    'token_status'  => $token->getStatus(),
-                    'payment'       => $payment->toArray(),
-                    'token'         => $token->toArray(),
                 ]);
         }
     }
@@ -4472,20 +4440,9 @@ trait Authorize
         {
             $recurring = false;
 
-            // replacing "$payment->card" with "$payment->localToken->card" because in the case of tokenisation
-            // new card entity gets associated with the payment which has different card number
-            $card = $payment->card;
-
-            if((empty($payment->localToken) === false) and
-               (empty($payment->localToken->card) === false) and
-               ($payment->localToken->card->isRzpSavedCard() === false))
-            {
-                $card = $payment->localToken->card;
-            }
-
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($card->isRecurringSupported(true) === true))
+                ($payment->card->isRecurringSupported(true) === true))
             {
                 $recurring = true;
             }
@@ -4494,20 +4451,9 @@ trait Authorize
         }
         else if ($this->isAutoRecurring($input) === true)
         {
-            // replacing "$payment->card" with "$payment->localToken->card" because in the case of tokenisation
-            // new card entity gets associated with the payment which has different card number
-            $card = $payment->card;
-
-            if((empty($payment->localToken) === false) and
-               (empty($payment->localToken->card) === false) and
-               ($payment->localToken->card->isRzpSavedCard() === false))
-            {
-                $card = $payment->localToken->card;
-            }
-
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($card->isRecurringSupported($payment->isRecurringTypeInitial()) === true))
+                ($payment->card->isRecurringSupported($payment->isRecurringTypeInitial()) === true))
             {
                 $payment->setRecurring(true);
             }

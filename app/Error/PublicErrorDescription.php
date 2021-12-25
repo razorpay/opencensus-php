@@ -549,7 +549,6 @@ class PublicErrorDescription
     const BAD_REQUEST_CORPORATE_CARD_INVALID_TOKEN                              = 'Token expired or invalid';
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
-    const BAD_REQUEST_NON_ACTIVATED_TOKEN_PASSED_IN_RECURRING                   = 'Token is not activated for recurring payments';
     const BAD_REQUEST_TOKEN_STATUS_ALREADY_PAID                                 = 'Payment has already been done for this token';
     const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Something went wrong, please try again after sometime.';
     const BAD_REQUEST_INPUT_VALIDATION_FAILURE                                  = 'Something went wrong, please try again after sometime.';

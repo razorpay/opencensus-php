@@ -5846,11 +5846,6 @@ class Processor
         }
     }
 
-    public function createCardForNetworkTokenCardMandate($card, $input)
-    {
-        return $this->createCardForNetworkToken($card, $input);
-    }
-
     private function validate1CCFlow(array $input)
     {
         if(isset($input['order_id']) === true){

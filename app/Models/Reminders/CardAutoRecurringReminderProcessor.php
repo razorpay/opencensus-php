@@ -17,7 +17,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         $processor = (new Payment\Processor\Processor($payment->merchant));
         $processor->setPayment($payment);
 
-        $gatewayInput = $this->getGatewayInputForPayment($payment, $processor);
+        $gatewayInput = $this->getGatewayInputForPayment($payment);
 
         if ((!$notification->isAfaRequired() and $notification->getStatus() !== CardMandateNotification\Status::NOTIFIED) ||
             ($notification->isAfaRequired() and $notification->getAfaStatus() !== CardMandateNotification\AfaStatus::APPROVED) ||
@@ -33,30 +33,21 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         return [];
     }
 
-    public function getGatewayInputForPayment(Payment\Entity $payment, Payment\Processor\Processor $processor)
+    public function getGatewayInputForPayment(Payment\Entity $payment)
     {
-        $token = $payment->localToken;
+        $card = $payment->card;
 
-        $card = $this->repo->card->fetchForToken($token);
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
 
         $iin = $this->app['repo']->iin->find($card['iin']);
 
-        if ($card->isRzpSavedCard() === false)
-        {
-            $cardInput = $processor->createCardForNetworkTokenCardMandate($card, []);
-        }
-        else
-        {
-            $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
-
-            $cardInput = array_merge(
-                $card->toArray(),
-                [
-                    'number'       => $cardNumber,
-                    'cvv'          => null,
-                    'message_type' => $iin['message_type'],
-                ]);
-        }
+        $cardInput = array_merge(
+            $card->toArray(),
+            [
+                'number' => $cardNumber,
+                'cvv' => null,
+                'message_type' => $iin['message_type'],
+            ]);
 
         return [
             'card' => $cardInput,
