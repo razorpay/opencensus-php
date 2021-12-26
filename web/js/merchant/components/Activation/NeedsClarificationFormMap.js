@@ -5,6 +5,7 @@ export const getNeedsClarificationTabsData = (
   allFieldsMap,
   activationDetails,
   clarificationReasons,
+  isActivationFormFullView = false,
 ) => {
   const allFieldsHash = {};
   const kycFieldsMap = {};
@@ -131,7 +132,7 @@ export const getNeedsClarificationTabsData = (
     //2. Field is altogether a new attribute, then it should be generated dynamically
     // LHS (KEYS) are server side attributes and reasons are read based on this key
     // RHS (VALUE) are key names of UI input component that would be rendered for getting user input
-    const mappedFields = {
+    let mappedFields = {
       cancelled_cheque: 'bank_proof_doc',
       bank_statement: 'bank_proof_doc',
       aadhar_front: 'address_proof_front',
@@ -146,6 +147,10 @@ export const getNeedsClarificationTabsData = (
       msme_certificate: 'business_proof_type_doc',
       shop_establishment_certificate: 'business_proof_type_doc',
     };
+    //if isActivationFormFullView is true, add business_website: 'payment_channels' for mapping new flow
+    if (isActivationFormFullView) {
+      mappedFields = { ...mappedFields, business_website: 'payment_channels' };
+    }
 
     if (Boolean(mappedFields[key]) || (Boolean(forceMap) && allFieldsHash[mappedFields[key]])) {
       return mappedFields[key];

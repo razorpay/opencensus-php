@@ -291,8 +291,13 @@ export default class ActivationWizard extends React.Component {
           FORM_TABS.push('Needs Clarification');
         }
         const ndcFields =
-          getNeedsClarificationTabsData(mainTabsContent, props.data, props.clarificationReasons) ||
-          [];
+          getNeedsClarificationTabsData(
+            mainTabsContent,
+            props.data,
+            props.clarificationReasons,
+            props.user.isActivationFormFullView,
+          ) || [];
+
         FORM_TABS_CONTENT.push(ndcFields);
         FORM_TABS_NAMES.push(ndcFields.map((f) => f?.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
@@ -2785,6 +2790,7 @@ export function ActivationField(field) {
     rest.physicalStore = dirty.physical_store || physical_store;
     rest.socialMedia = dirty.social_media || social_media;
     rest.sendErrorMessageToSegment = this.sendErrorMessageToSegment;
+    rest.isOnKYCTab = this.isOnKYCTab();
   }
 
   if (typeof rest.onBlur === 'function') {
@@ -2870,6 +2876,7 @@ export function ActivationField(field) {
     rest.name === 'business_category' ||
     rest.name === 'business_subcategory' ||
     rest.name === 'business_website' ||
+    rest.name === 'payment_channels' ||
     rest.name === 'business_type'
   ) {
     isNCFlowComponentDisabled = this.isOnKYCTab() ? true : false;

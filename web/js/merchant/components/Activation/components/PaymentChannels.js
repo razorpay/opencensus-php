@@ -13,65 +13,72 @@ const CustomPaymentsCahnnel = ({
   sendErrorMessageToSegment,
   physicalStore,
   socialMedia,
+  isOnKYCTab,
 }) => {
   return (
     <>
-      <div class="Input-label">Payment Channels</div>
-      <div className="Input-content channel_checkbox">
-        <div className="info-text">
-          This allows us to recommend a suitable product for your business
-        </div>
-        <Input.Check
-          name="physical_store"
-          fieldLabel="Store/In-person"
-          onChange={onChange}
-          autoRender={true}
-          className="Input-channels"
-          extraClassName="contents"
-          defaultValue={physicalStore}
-        />
-        <Input.Check
-          name="social_media"
-          fieldLabel="Social Media (e.g. WhatsApp)"
-          onChange={onChange}
-          autoRender={true}
-          className="Input-channels"
-          extraClassName="contents"
-          defaultValue={socialMedia}
-        />
-        <Input.Check
-          name="has_url"
-          fieldLabel="Live Website/App"
-          onChange={onChange}
-          autoRender={true}
-          className="Input-channels"
-          extraClassName="contents"
-          defaultValue={hasWebsiteAppURL}
-        />
-      </div>
-      {hasWebsiteAppURL === '1' && (
+      {!isOnKYCTab && (
         <>
-          <div className="Input-content channel_checkbox website-app">
+          <div class="Input-label">Payment Channels</div>
+          <div className="Input-content channel_checkbox">
+            <div className="info-text">
+              This allows us to recommend a suitable product for your business
+            </div>
             <Input.Check
-              name="app_website_url"
-              value="1"
-              fieldLabel="Accept payments on website"
+              name="physical_store"
+              fieldLabel="Store/In-person"
               onChange={onChange}
               autoRender={true}
               className="Input-channels"
               extraClassName="contents"
-              defaultValue={hasWebsiteURL}
+              defaultValue={physicalStore}
             />
             <Input.Check
-              name="app_url"
-              fieldLabel="Accept payments on app"
+              name="social_media"
+              fieldLabel="Social Media (e.g. WhatsApp)"
               onChange={onChange}
               autoRender={true}
               className="Input-channels"
               extraClassName="contents"
-              defaultValue={hasAppURL}
+              defaultValue={socialMedia}
+            />
+            <Input.Check
+              name="has_url"
+              fieldLabel="Live Website/App"
+              onChange={onChange}
+              autoRender={true}
+              className="Input-channels"
+              extraClassName="contents"
+              defaultValue={hasWebsiteAppURL}
             />
           </div>
+        </>
+      )}
+      {hasWebsiteAppURL === '1' && (
+        <>
+          {!isOnKYCTab && (
+            <div className="Input-content channel_checkbox website-app">
+              <Input.Check
+                name="app_website_url"
+                value="1"
+                fieldLabel="Accept payments on website"
+                onChange={onChange}
+                autoRender={true}
+                className="Input-channels"
+                extraClassName="contents"
+                defaultValue={hasWebsiteURL}
+              />
+              <Input.Check
+                name="app_url"
+                fieldLabel="Accept payments on app"
+                onChange={onChange}
+                autoRender={true}
+                className="Input-channels"
+                extraClassName="contents"
+                defaultValue={hasAppURL}
+              />
+            </div>
+          )}
           <div
             className="channel-inputs"
             style={{ justifyContent: hasWebsiteURL === '1' ? 'space-between' : 'flex-end' }}
@@ -80,6 +87,7 @@ const CustomPaymentsCahnnel = ({
               <Input
                 name="business_website"
                 placeholder="Website URL"
+                label={isOnKYCTab ? 'Website URL' : ''}
                 defaultValue={businessWebsite}
                 type="url"
                 className="Input--small website-input"
@@ -91,7 +99,7 @@ const CustomPaymentsCahnnel = ({
                 }}
               />
             )}
-            {hasAppURL === '1' && (
+            {hasAppURL === '1' && !isOnKYCTab && (
               <Input
                 name="playstore_url"
                 placeholder="App URL"
@@ -102,45 +110,47 @@ const CustomPaymentsCahnnel = ({
               />
             )}
           </div>
-          <div className="Input-content payment-channel-bullet">
-            The website should have the following pages/sections:
-            <div className="bullet-list-container">
-              <ul className="bullet-list bullet-list--left">
-                <li class="shallow"> About Us</li>
-                <li class="shallow"> Contact Us</li>
-                <li class="shallow"> Pricing</li>
-              </ul>
-              <ul className="bullet-list bullet-list--right">
-                <li>
-                  <a
-                    href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Terms & Conditions
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Cancellation/Refund Policy
-                  </a>
-                </li>
-              </ul>
+          {!isOnKYCTab && (
+            <div className="Input-content payment-channel-bullet">
+              The website should have the following pages/sections:
+              <div className="bullet-list-container">
+                <ul className="bullet-list bullet-list--left">
+                  <li class="shallow"> About Us</li>
+                  <li class="shallow"> Contact Us</li>
+                  <li class="shallow"> Pricing</li>
+                </ul>
+                <ul className="bullet-list bullet-list--right">
+                  <li>
+                    <a
+                      href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Privacy Policy
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Terms & Conditions
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Cancellation/Refund Policy
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </>
