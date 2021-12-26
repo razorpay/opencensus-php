@@ -76,6 +76,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchDataOfTypeAdjustmentInvoice(string $merchantId, int $month, int $year)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::YEAR, '=', $year)
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::TYPE, '=', Type::ADJUSTMENT)
+            ->get();
+    }
+
     public function fetchFeesDataToCheckInvoiceExists(string $merchantId, int $month, int $year, string $balanceId)
     {
         return $this->newQuery()

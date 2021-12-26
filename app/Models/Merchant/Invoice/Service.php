@@ -28,7 +28,7 @@ class Service extends Base\Service
 
     public function createMultipleInvoiceEntities(array $input)
     {
-        (new Core)->createMultipleInvoiceEntities($input);
+        (new Core)->dispatchForAdjustmentInvoiceEntityCreate($input);
     }
 
     public function updateGstin(string $merchantId, array $input): array

@@ -7,7 +7,14 @@
                 </td>
 
                 <td class="text-right">
-                    Invoice #: {{{$invoice_number}}}<br>
+                    @if($pageName === 'Tax Credit Note')
+                        Credit Note #: CRN{{{$invoice_number}}}<br>
+                    @elseif($pageName === 'Tax Debit Note')
+                        Debit Note #: DBN{{{$invoice_number}}}<br>
+                    @else
+                        Invoice #: {{{$invoice_number}}}<br>
+                    @endif
+
                     @if(isset($einvoice_data['e_invoice_complete_generation_date']))
                         Created: {{{$einvoice_data['e_invoice_complete_generation_date']}}} <br>
                     @else

@@ -64,7 +64,7 @@ class MerchantInvoiceTest extends TestCase
                         'merchant_id'   => '10000000000000',
                         'gstin'         => '29kjsngjk213900',
                         'amount'        => 50000,
-                        'tax'           => 400,
+                        'tax'           => 18,
                         'description'   => 'adding invoice for something',
                         'month'         => 8,
                         'year'          => 2017,
@@ -73,12 +73,13 @@ class MerchantInvoiceTest extends TestCase
                         'merchant_id'   => '10000000000000',
                         'gstin'         => '29kjsngjk213900',
                         'amount'        => -51100,
-                        'tax'           => -600,
+                        'tax'           => 18,
                         'description'   => 'adding invoice for something',
                         'month'         => 8,
                         'year'          => 2017,
                     ],
-                ]
+                ],
+                'force' => 1,
             ],
         ];
 
@@ -87,6 +88,51 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         $this->assertEquals(2, $entities['count']);
+
+        $this->assertEquals(substr($entities['items'][0]['invoice_number'], -4), '0817');
+
+        $this->assertEquals('-9198', $entities['items'][0]['tax']);
+
+        $this->assertEquals('9000', $entities['items'][1]['tax']);
+    }
+
+    public function testBulkCreateWithForceFlagFalse()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/bulk',
+            'method'  => 'POST',
+            'content' => [
+                'invoice_entities' => [
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'gstin'         => '29kjsngjk213900',
+                        'amount'        => 50000,
+                        'tax'           => 18,
+                        'description'   => 'adding invoice for something',
+                        'month'         => 8,
+                        'year'          => 2017,
+                    ],
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'gstin'         => '29kjsngjk213900',
+                        'amount'        => -51100,
+                        'tax'           => 0,
+                        'description'   => 'adding invoice for something',
+                        'month'         => 8,
+                        'year'          => 2017,
+                    ],
+                ],
+                'force' => 0,
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(1, $entities['count']);
 
         $this->assertEquals(substr($entities['items'][0]['invoice_number'], -4), '0817');
     }

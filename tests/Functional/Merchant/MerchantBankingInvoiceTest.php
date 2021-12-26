@@ -2342,7 +2342,7 @@ class MerchantBankingInvoiceTest extends TestCase
                         'merchant_id'   => '10000000000000',
                         'gstin'         => '29kjsngjk213900',
                         'amount'        => 50000,
-                        'tax'           => 400,
+                        'tax'           => 18,
                         'description'   => 'adding invoice for something from primary balance',
                         'month'         => 8,
                         'year'          => 2017,
@@ -2351,13 +2351,14 @@ class MerchantBankingInvoiceTest extends TestCase
                         'merchant_id'   => '10000000000000',
                         'gstin'         => '29kjsngjk213900',
                         'amount'        => -51100,
-                        'tax'           => -600,
+                        'tax'           => 18,
                         'description'   => 'adding invoice for something from banking balance',
                         'month'         => 8,
                         'year'          => 2017,
                         'balance_id'    => $balanceId,
                     ],
-                ]
+                ],
+                'force' => 1,
             ],
         ];
 

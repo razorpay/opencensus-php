@@ -17,6 +17,11 @@ class PgEInvoice extends Core
         DocumentTypes::CRN => InvoiceReport::TAX_CREDIT_NOTE,
     ];
 
+    public static $adjustmentDocumentType = [
+        DocumentTypes::DBN,
+        DocumentTypes::CRN,
+    ];
+
     public $eInvoiceData;
 
     public function getItemList(Entity $eInvoiceEntity)
@@ -74,6 +79,13 @@ class PgEInvoice extends Core
 
             $cgstAmount = $invoiceItem[InvoiceReport::CGST];
             $totalCgstValue += $cgstAmount;
+
+            // For sending the gst rate for CRN/DBN if tax amount is greater than 0
+            if ( (in_array($eInvoiceEntity->getDocumentType(), self::$adjustmentDocumentType) === true) and
+                (($invoiceItem[InvoiceReport::SGST] !== 0 and  $invoiceItem[InvoiceReport::CGST] !== 0) or ($invoiceItem[InvoiceReport::IGST] !== 0)))
+            {
+                $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+            }
 
             $items[] = [
                 Constants::PRODUCT_DESCRIPTION => $this->getModifiedProductDescription($invoiceItem[InvoiceReport::DESCRIPTION]),

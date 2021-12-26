@@ -40,8 +40,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $bulkCreateRules = [
-        'invoice_entities'      => 'required|array',
-        'invoice_entities.*'    => 'required|array',
+        'invoice_entities'       => 'required|array',
+        'invoice_entities.*'     => 'required|array',
+        'invoice_entities.*.tax' => 'required|in:0,18',
+        'force'                  => 'required|in:0,1'
     ];
 
     protected static $createValidators = [

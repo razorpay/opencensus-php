@@ -24,9 +24,11 @@ use RZP\Models\Merchant\FeeModel;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Merchant\Balance;
 use RZP\Jobs\EInvoice\XEInvoice;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Report\Types\InvoiceReport;
 use RZP\Models\BankingAccount\AccountType;
+use RZP\Jobs\AdjustmentInvoiceEntityCreate;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Jobs\EInvoice\PgEInvoice as PgEInvoiceJob;
@@ -135,32 +137,117 @@ class Core extends Base\Core
         return $invoiceEntity;
     }
 
-    public function createMultipleInvoiceEntities(array $input)
+    public function dispatchForAdjustmentInvoiceEntityCreate(array $input)
     {
         (new Validator)->validateInput('bulk_create', $input);
 
+        $force = (bool) $input['force'];
+
+        $mode = $this->mode;
+
+        $successCount = 0;
+
+        $failureCount = 0;
+
+        $totalCount = 0;
+
         foreach ($input['invoice_entities'] as $row)
         {
-            $this->trace->info(TraceCode::MERCHANT_INVOICE_BULK_CREATE, $row);
+            $totalCount++;
 
-            $row[Entity::TYPE] = Type::ADJUSTMENT;
-
-            /** @var Merchant\Entity $merchant */
-            $merchant = $this->repo->merchant->findOrFail($row[Entity::MERCHANT_ID]);
-
-            unset($row[Entity::MERCHANT_ID]);
-
-            $balance = $merchant->primaryBalance;
-
-            if (isset($row[Entity::BALANCE_ID]) === true)
+            try
             {
-                $balanceId = array_pull($row, Entity::BALANCE_ID);
+                $balanceId = (isset($row[Entity::BALANCE_ID]) === true) ? $row[Entity::BALANCE_ID] : "";
 
-                $balance = $this->repo->balance->findOrFailById($balanceId);
+                AdjustmentInvoiceEntityCreate::dispatch($row[Entity::MERCHANT_ID], $row[Entity::MONTH], $row[Entity::YEAR],
+                    $row[Entity::AMOUNT], $row[Entity::TAX], $row[Entity::DESCRIPTION],
+                    $balanceId, $force, $mode);
+
+                $successCount++;
             }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ADJUSTMENT_INVOICE_ENTITY_CREATION_SKIPPED,
+                    [
+                        'merchant'    => $row[Entity::MERCHANT_ID],
+                        'month'       => $row[Entity::MONTH],
+                        'year'        => $row[Entity::YEAR],
+                    ]);
 
-            $this->create($row, $merchant, $balance);
+                $failureCount++;
+            }
         }
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_INVOICE_ENTITY_CREATION_RESPONSE,
+            [
+                'success_count'  => $successCount,
+                'failure_count'  => $failureCount,
+                'total_count'    => $totalCount
+            ]);
+    }
+
+    public function createMultipleInvoiceEntities(string $merchantId, int $month, int $year,
+                                                  int $amount, int $tax, string $description,
+                                                  string $balanceId = null, bool $force = false)
+    {
+        if ($force === false)
+        {
+            $existingAdjustmentInvoices = $this->repo
+                                               ->merchant_invoice
+                                               ->fetchDataOfTypeAdjustmentInvoice($merchantId, $month, $year);
+
+            if ($existingAdjustmentInvoices->count() > 0)
+            {
+                 $this->trace->info(
+                     TraceCode::ADJUSTMENT_INVOICE_ENTITY_CREATION_SKIPPED,
+                     [
+                         'merchant'    => $merchantId,
+                         'month'       => $month,
+                         'year'        => $year,
+                     ]);
+
+                 return;
+            }
+        }
+
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
+
+        $type = Type::ADJUSTMENT;
+
+        $gstin = $merchant->getGstin();
+
+        $balance = $merchant->primaryBalance;
+
+        if (empty($balanceId) === false)
+        {
+            $balance = $this->repo->balance->findOrFailById($balanceId);
+        }
+
+        $params = [
+            Entity::MONTH           => $month,
+            Entity::YEAR            => $year,
+            Entity::TYPE            => $type,
+            Entity::GSTIN           => $gstin,
+            Entity::AMOUNT          => $amount,
+            Entity::TAX             => (int) round($amount * $tax/100),
+            Entity::DESCRIPTION     => $description
+        ];
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_INVOICE_ENTITY_CREATION_REQUEST,
+            [
+                'merchant'       => $merchantId,
+                'balance_id'     => $balance->getId(),
+                'params'         => $params,
+            ]);
+
+        $this->create($params, $merchant, $balance);
+
     }
 
     public function updateGstinForInvoice(array $input, Merchant\Entity $merchant): int
