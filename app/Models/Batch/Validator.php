@@ -61,6 +61,7 @@ class Validator extends Base\Validator
         . 'application/octet-stream,'
         . 'application/xml,'
         . 'text/csv,'
+        . 'text/xml,'
         . 'text/plain,'
         . 'application/cdfv2-unknown,'
         . 'application/vnd.ms-office,'

@@ -13,7 +13,7 @@ use RZP\Models\Batch\Processor\Nach\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
-    const TOKEN_ID      = 'token_id';
+    const PAYMENT_ID    = 'payment_id';
     const GATEWAY_TOKEN = 'gateway_token';
     const TOKEN_STATUS  = 'token_status';
 
@@ -25,7 +25,9 @@ class Base extends BaseProcessor
 
             $this->validateParsedData($parsedData);
 
-            $token = $this->fetchTokenEntity($parsedData);
+            $payment = $this->fetchPaymentEntity($parsedData);
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
 
             $this->updateTokenEntity($token, $parsedData);
 
@@ -43,9 +45,9 @@ class Base extends BaseProcessor
         }
     }
 
-    protected function fetchTokenEntity($data): Token\Entity
+    protected function fetchPaymentEntity($data): Payment\Entity
     {
-        return $this->repo->token->findOrFailTrashedById($data[self::TOKEN_ID]);
+        return $this->repo->payment->findOrFail($data[self::PAYMENT_ID]);
     }
 
     /**

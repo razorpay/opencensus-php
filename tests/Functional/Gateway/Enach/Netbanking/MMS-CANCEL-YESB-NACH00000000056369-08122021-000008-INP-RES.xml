@@ -22,7 +22,7 @@
         </GrpHdr>
         <UndrlygAccptncDtls>
             <OrgnlMsgInf>
-                <MsgId>$tokenId</MsgId>
+                <MsgId>$paymentId</MsgId>
                 <MsgNmId>pain.011.001.01</MsgNmId>
                 <CreDtTm>2021-12-07T17:10:26</CreDtTm>
             </OrgnlMsgInf>

@@ -18,7 +18,7 @@ class EnachNpciNetbanking extends Base
     {
         $undrlygAccptncDtls = $xmlObject['UndrlygAccptncDtls'];
 
-        $tokenId = $undrlygAccptncDtls['OrgnlMsgInf']['MsgId'];
+        $paymentId = $undrlygAccptncDtls['OrgnlMsgInf']['MsgId'];
 
         $accepted = $undrlygAccptncDtls['AccptncRslt']['Accptd'];
 
@@ -26,10 +26,10 @@ class EnachNpciNetbanking extends Base
 
         $umrn = $undrlygAccptncDtls['OrgnlMndt']['OrgnlMndtId'];
 
-        $tokenStatus = $this->getTokenStatus($accepted, $tokenId, $errorReason);
+        $tokenStatus = $this->getTokenStatus($accepted, $paymentId, $errorReason);
 
         return [
-            self::TOKEN_ID      => $tokenId,
+            self::PAYMENT_ID    => $paymentId,
             self::TOKEN_STATUS  => $tokenStatus,
             self::GATEWAY_TOKEN => $umrn,
         ];
@@ -39,7 +39,7 @@ class EnachNpciNetbanking extends Base
      * @throws BadRequestException
      * @throws GatewayErrorException
      */
-    protected function getTokenStatus($status, $tokenId, $error): string
+    protected function getTokenStatus($status, $paymentId, $error): string
     {
         if (Status::isRegistrationSuccess($status) === true)
         {
@@ -51,9 +51,9 @@ class EnachNpciNetbanking extends Base
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 null,
                 [
-                    'gateway'  => $this->gateway,
-                    'token_id' => $tokenId,
-                    'error'    => $error,
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $paymentId,
+                    'error'      => $error,
                 ]
             );
         }

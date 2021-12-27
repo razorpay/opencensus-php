@@ -772,11 +772,11 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
     protected function getBatchFileToUploadForMandateCancelRes(Payment\Entity $payment): TestingFile
     {
-        $tokenId = $payment->getTokenId();
+        $paymentId = $payment->getId();
 
         $xmlData = file_get_contents(__DIR__ . '/MMS-CANCEL-YESB-NACH00000000056369-08122021-000008-INP-RES.xml');
 
-        $responseXml = strtr($xmlData, ['$tokenId' => $tokenId]);
+        $responseXml = strtr($xmlData, ['$paymentId' => $paymentId]);
 
         $handle = tmpfile();
         fwrite($handle, $responseXml);
