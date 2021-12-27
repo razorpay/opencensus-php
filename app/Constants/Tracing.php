@@ -33,8 +33,6 @@ class Tracing
             Route::$internalApps['pg_router'],
             Route::$internalApps['care'],
             Route::$internalApps['account_service'],
-            Route::$internalApps['merchant_dashboard'],
-            Route::$internalApps['dashboard_guest'],
             Route::$internalApps['payouts_service']
         );
 
@@ -127,6 +125,18 @@ class Tracing
             'vendor_payment_send_vendor_invite_ei',
             'merchant_fetch_internal_users',
             'vendor_payment_get_auto_processed_invoice',
+
+            'vendor_invoices_list',
+            'vendor_invoice_get_by_id',
+            'vendor_portal_list_tds_categories',
+            'vendor_portal_invoice_get_signed_url',
+            'vendor_portal_invites_list',
+            'vendor_invoice_create',
+            'vendor_portal_upload_invoice',
+            'vendor_portal_get_ocr_data',
+            'x_apps_get_all_settings',
+            'x_apps_add_or_update_settings',
+            'invite_to_vendor_portal',
 
             // accounting-payouts API routes
             'accounting_payouts_integration_status',
