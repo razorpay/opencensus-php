@@ -1043,6 +1043,9 @@ class Constants
      */
     const ALLOW_COMPLETE_ERROR_DESC = 'allow_complete_error_desc';
 
+    // Feature to take mutex lock on linked account ID before transfer processing.
+    const TRANSFER_PROCESS_LA_MUTEX = 'transfer_process_la_mutex';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1460,6 +1463,7 @@ class Constants
         self::EDIT_SINGLE_VA                  => true,
         self::ADDRESS_NAME_REQUIRED           => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
+        self::TRANSFER_PROCESS_LA_MUTEX       => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
@@ -2085,7 +2089,12 @@ class Constants
             'feature'       => self::DISABLE_COLLECT_CONSENT,
             'display_name'  => 'Disable tokenisation consent collection by Razorpay',
             'documentation' => '',
-        ]
+        ],
+        self::TRANSFER_PROCESS_LA_MUTEX => [
+            'feature'       => self::TRANSFER_PROCESS_LA_MUTEX,
+            'display_name'  => 'Mutex lock on linked account ID before transfer processing',
+            'documentation' => '',
+        ],
     ];
 
     /**

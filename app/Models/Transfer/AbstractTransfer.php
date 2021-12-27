@@ -9,7 +9,9 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
+use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\App;
+use RZP\Models\Feature\Constants as Feature;
 use Razorpay\Spine\Exception\DbQueryException;
 
 abstract class AbstractTransfer
@@ -17,6 +19,8 @@ abstract class AbstractTransfer
     protected $payment;
 
     const MUTEX_LOCK_TIMEOUT = 600;
+
+    const PROCESS_TRANSFER_TO = 'process_transfer_to_%s';
 
     protected $mutex;
 
@@ -93,6 +97,13 @@ abstract class AbstractTransfer
 
             foreach ($transfers as $transfer)
             {
+                $acquireMutexLock = $mutexKey = null;
+
+                if ($this->merchant->isFeatureEnabled(Feature::TRANSFER_PROCESS_LA_MUTEX) === true)
+                {
+                    [$acquireMutexLock, $mutexKey] = $this->acquireMutexLock($transfer);
+                }
+
                 try
                 {
                     $transferProcessStartTime = microtime(true);
@@ -127,6 +138,11 @@ abstract class AbstractTransfer
                 finally
                 {
                     $transferProcessEndTime = microtime(true);
+
+                    if ($acquireMutexLock === true)
+                    {
+                        $this->mutex->release($mutexKey);
+                    }
 
                     (new Metric())->pushTransferProcessingTimeInWorkerMetrics(
                         $transfer->getSourceType(),
@@ -439,5 +455,41 @@ abstract class AbstractTransfer
         {
             (new Core())->eventTransferFailed($transfer);
         }
+    }
+
+    /**
+     * @param Entity $transfer
+     * @return array
+     * @throws LogicException
+     */
+    protected function acquireMutexLock(Entity $transfer) : array
+    {
+        $acquireMutexLock = ($transfer->isPaymentTransfer() === true) or ($transfer->isOrderTransfer() === true);
+
+        if ($acquireMutexLock === false)
+        {
+            return [false, null];
+        }
+
+        $linkedAccountId = $transfer->getToId();
+
+        $mutexKey = sprintf(self::PROCESS_TRANSFER_TO, $linkedAccountId);
+
+        $acquired = $this->mutex->acquire($mutexKey, 60, 0, 100, 200, true);
+
+        if ($acquired !== true)
+        {
+            throw new LogicException(
+                Constant::MUTEX_LOCK_ON_LINKED_ACCOUNT_ID_NOT_ACQUIRED,
+                null,
+                [
+                    'transfer_id'   => $transfer->getId(),
+                    'merchant_id'   => $transfer->getMerchantId(),
+                    'to_id'         => $transfer->getToId(),
+                ]
+            );
+        }
+
+        return [true, $mutexKey];
     }
 }

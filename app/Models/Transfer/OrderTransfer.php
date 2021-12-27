@@ -54,6 +54,11 @@ class OrderTransfer extends  AbstractTransfer
         }
         catch (\Exception $e)
         {
+            if ($e->getMessage() === Constant::MUTEX_LOCK_ON_LINKED_ACCOUNT_ID_NOT_ACQUIRED)
+            {
+                throw $e;
+            }
+
             $this->trace->traceException(
                 $e,
                 null,
