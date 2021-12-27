@@ -190,6 +190,7 @@ class Upi
     const SEWX = 'SEWX';
     const SIBL = 'SIBL';
     const SIDC = 'SIDC';
+    const SMCB = 'SMCB';
     const SNSX = 'SNSX';
     const SPCB = 'SPCB';
     const SPSX = 'SPSX';
@@ -418,6 +419,7 @@ class Upi
         self::SEWX,
         self::SIBL,
         self::SIDC,
+        self::SMCB,
         self::SNSX,
         self::SPCB,
         self::SPSX,
