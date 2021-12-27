@@ -58,7 +58,6 @@ class Service extends Base\Service
             'currency' => 'INR',
             'name' => $this->merchant->getBillingLabel(),
             'description' => $this->merchant->getBillingLabel(),
-            'force_cod' => true,
             'prefill' => [
                 'name'  => '',
                 'email' => '',
