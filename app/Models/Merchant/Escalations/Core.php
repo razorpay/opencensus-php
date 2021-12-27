@@ -759,16 +759,12 @@ class Core extends Base\Core
 
         list($from, $to) = $this->getTimeWindowForCron($input, Constants::NOT_MTU_IN_TWO_DAY_CACHE_KEY,2);
 
-        $merchantIdList = $this->repo->merchant->fetchAllLiveAndActivatedMerchants($from,$to);
-
-        $offerMTUCouponCode = $this->repo->coupon->fetchByCodeWithRelations(CouponCodeConstants::MTU_COUPON, MerchantAccount::SHARED_ACCOUNT);
+        $merchantIdList = $this->repo->merchant->fetchAllLiveAndActivatedRzpOrgMerchants($from,$to);
 
         $merchantList = $this->repo
             ->merchant_promotion
-            ->fetchMerchantsWithPromotion(
-                $offerMTUCouponCode->getId(),
-                $from,
-                $to
+            ->fetchMerchantIdsWithAnyPromotion(
+                $merchantIdList
             );
 
         $merchantList =  array_diff($merchantIdList, $merchantList);
@@ -778,19 +774,21 @@ class Core extends Base\Core
 
         $merchantIdList =  array_diff($merchantList, $filteredMerchants);
 
-        $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION, [
+        $this->trace->info(TraceCode::SEND_NOTIFICATION, [
             'merchants_count' => count($merchantIdList),
             'type'            => 'sendNotification',
             'to'              => $to,
-            'from'            => $from
+            'from'            => $from,
+            'event'           => Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU
         ]);
 
         if (empty($merchantIdList) === true)
         {
-            $this->trace->info(TraceCode::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU_NOTIFICATION_SKIPPED, [
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_SKIPPED, [
                 'merchants_count' => count($merchantIdList),
                 'type'            => 'sendNotification',
-                'reason'          => 'no merchants found'
+                'reason'          => 'no merchants found',
+                'event'           => Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU
             ]);
             return;
         }

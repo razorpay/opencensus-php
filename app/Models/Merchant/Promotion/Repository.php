@@ -34,6 +34,16 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchMerchantIdsWithAnyPromotion(array $merchantIdList)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+
     public function getCountByPromotionId(string $promotionId)
     {
         $count = $this->newQuery()
