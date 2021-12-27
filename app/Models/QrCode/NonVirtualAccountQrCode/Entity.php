@@ -32,6 +32,7 @@ class Entity extends QrCode\Entity
     const RESP_PAYMENTS_COUNT_RECEIVED = 'payments_count_received';
     const RESP_IMAGE_CONTENT           = 'image_content';
     const TAX_INVOICE                  = 'tax_invoice';
+    const REQUEST_SOURCE               = 'request_source';
 
     const SHARED_ID = 'FallbackQrCode';
 
@@ -54,6 +55,7 @@ class Entity extends QrCode\Entity
         self::CLOSE_REASON,
         self::MPANS_TOKENIZED,
         self::TAX_INVOICE,
+        self::REQUEST_SOURCE,
     ];
 
     protected $visible = [
@@ -130,6 +132,7 @@ class Entity extends QrCode\Entity
         self::DESCRIPTION              => null,
         self::CLOSE_BY                 => null,
         self::TAX_INVOICE              => [],
+        self::REQUEST_SOURCE           => null,
     ];
 
     protected static $generators = [
@@ -176,6 +179,13 @@ class Entity extends QrCode\Entity
         Status::checkStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setRequestSource(string $requestSource)
+    {
+        RequestSource::checkRequestSource($requestSource);
+
+        $this->setAttribute(self::REQUEST_SOURCE, $requestSource);
     }
 
     public function setClosedAt(int $closedAt)

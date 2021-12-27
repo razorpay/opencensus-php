@@ -66,6 +66,9 @@ class CreateQrCodeTable extends Migration
             $table->string(NonVaQrCode::STATUS, 6)
                   ->nullable();
 
+            $table->string(NonVaQrCode::REQUEST_SOURCE, 9)
+                  ->nullable();
+
             $table->text(NonVaQrCode::DESCRIPTION)
                   ->nullable();
 
