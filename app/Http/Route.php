@@ -2740,7 +2740,7 @@ class Route
 
         'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
         'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
-        'merchant_workflow_clarification'          => ['post',     'merchant/{workflowType}/clarification',                     'MerchantController@postMerchantWorkflowClarification'     ],
+        'merchant_workflow_clarification'          => ['post',     'merchant/submit_clarification/{workflowType}',              'MerchantController@postMerchantWorkflowClarification'     ],
 
 
         'add_additional_website_self_serve'        => ['post',      'merchant/additional_website/{urlType}',                     'MerchantController@postAddAdditionalWebsiteSelfServe'    ],
@@ -4292,7 +4292,7 @@ class Route
         'payouts_batch_create_x_demo_cron',
 
         'partner_commission_pending',
-        
+
         // growth service cron
         'growth_filter_and_sync_cron',
     ];

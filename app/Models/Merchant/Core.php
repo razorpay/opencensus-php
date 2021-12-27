@@ -5691,7 +5691,9 @@ class Core extends Base\Core
     public function postMerchantWorkflowClarification(WorkflowAction\Entity $action, array $input)
     {
         $this->repo->transactionOnLiveAndTest(function () use ($action, $input) {
-            $this->addMerchantWorkflowClarificationComments($action, $input[Constants::MERCHANT_WORKFLOW_CLARIFICATION], $input[Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS]);
+            $clarificationDocumentIds =  $input[Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS] ?? [];
+
+            $this->addMerchantWorkflowClarificationComments($action, $input[Constants::MERCHANT_WORKFLOW_CLARIFICATION], $clarificationDocumentIds);
 
             $action->untag(WorkflowAction\Constants::WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG);
 

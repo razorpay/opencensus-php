@@ -315,6 +315,8 @@ class Service extends Base\Service
 
         $commentEntity = $this->repo->transactionOnLiveAndTest(function() use ($workFlowAction, $input) {
 
+            $workFlowAction->untag(WorkflowActionConstants::WORKFLOW_MERCHANT_RESPONDED_TAG);
+
             $workFlowAction->tag(WorkflowActionConstants::WORKFLOW_NEEDS_MERCHANT_CLARIFICATION_TAG);
 
             $comment = $this->core()->addNeedClarificationComment($workFlowAction, $input);

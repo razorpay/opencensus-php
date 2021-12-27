@@ -2970,7 +2970,7 @@ return [
                 'merchant_workflow_clarification'       => ' Merchant test workflow clarification ',
                 'clarification_documents_ids'           =>  ['doc_randomId1']
             ],
-            'url'     => '/merchant/{workflowType}/clarification',
+            'url'     => '/merchant/submit_clarification/{workflowType}',
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',

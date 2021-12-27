@@ -5277,7 +5277,7 @@ You can now start accepting payments from https://www.example.com.
         $workflowAction->save();
 
         $testData                   =&  $this->testData[__FUNCTION__];
-        $testData['request']['url'] =   '/merchant/update_business_website/clarification';
+        $testData['request']['url'] =   '/merchant/submit_clarification/update_business_website';
 
         $this->startTest();
 
