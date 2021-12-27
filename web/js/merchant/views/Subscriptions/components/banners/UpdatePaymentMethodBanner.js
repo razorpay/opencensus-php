@@ -6,7 +6,8 @@ export default React.memo(({ url }) => {
   return (
     <AnnouncementBanner title="IMPORTANT UPDATE" canBeClosed={true} theme="warning">
       <span class="display-inline">
-        Your favourite payment method ‘Cards’ is back and live on Razorpay Subscriptions!
+        Activate your &#39;pending&#39; and &#39;halted&#39; subscriptions by updating payment
+        methods!
       </span>
       <DocLink class="btn btn-link" href={url} target="_blank">
         Click here to know more
