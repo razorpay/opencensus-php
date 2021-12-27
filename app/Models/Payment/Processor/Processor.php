@@ -426,6 +426,7 @@ class Processor
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('raas') === true) or
+                ($merchant->isFeatureEnabled('openwallet') === true) or
                 ($merchant->isMarketplace() === true))
             {
                 return false;
