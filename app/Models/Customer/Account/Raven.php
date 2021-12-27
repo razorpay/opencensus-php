@@ -84,7 +84,7 @@ class Raven extends Base\Core
             'receiver' => $input['contact'],
             'source' => 'api',
             'params' => [
-                'merchant_name' => strtoupper(substr($merchant->getBillingLabel(), 0, 19))
+                'merchant_name' => strtoupper(mb_substr($merchant->getBillingLabel(), 0, 19, 'UTF-8'))
             ]
         );
 
