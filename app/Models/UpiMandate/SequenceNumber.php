@@ -38,6 +38,16 @@ class SequenceNumber
     protected $toDate;
 
     /**
+     * The map to store frequency and cycle count mapping.
+     * This is handy while calculating sequence number per year.
+     */
+    protected $frequencyToCycleCount = [
+        Frequency::HALF_YEARLY => 2,
+        Frequency::QUARTERLY   => 4,
+        Frequency::BIMONTHLY   => 6,
+    ];
+
+    /**
      * SequenceNumber constructor.
      * @param $fromDate
      * @param $toDate
@@ -134,38 +144,148 @@ class SequenceNumber
         return ($this->toDate->endOfWeek())->diffInWeeks($this->fromDate->startOfWeek());
     }
 
+    /**
+     * Function to calculate sequence no. for bimonthly frequency
+     * There are 6 cycles in an year :
+     * Cycle 1 : Jan-Feb
+     * Cycle 2 : Mar-Apr
+     * Cycle 3 : May-June
+     * Cycle 4 : Jul-Aug
+     * Cycle 5 : Sep-Oct
+     * Cycle 6 : Nov-Dec
+     *
+     * @return int
+     */
     protected function bimonthly(): int
     {
-        $diff = $this->monthly();
+        $seqNumber = 0;
 
-        return floor($diff/2);
+        //sequence number calculation for the start and end months.
+        $endDateMonth = $this->toDate->month;
+        $startDateMonth = $this->fromDate->month;
+        $cycleCount = $this->getFrequencyToCycleCount();
+
+        $seqNumber += ($cycleCount - (int) ceil($startDateMonth/2));
+        $seqNumber += (int) ceil($endDateMonth/2);
+
+        /* sequence number calculation for years in between the start and end dates.
+        There are 6 cycles in bimonthly-calculated year. Since 6 cycles implies 6 sequence numbers per year,
+        we multiply the year diff by 6.
+        */
+        $seqDiffInYears = $this->getSeqNumberForYearDifference($cycleCount);
+
+        $seqNumber += $seqDiffInYears;
+
+        return $seqNumber;
     }
 
+    /**
+     * Function to calculate sequence no. for quarterly frequency
+     * There are 4 cycles in an year :
+     * Cycle 1 : Jan-Mar
+     * Cycle 2 : Apr-Jun
+     * Cycle 3 : Jul-Sept
+     * Cycle 4 : Oct-Dec
+     *
+     * @return int
+     */
     protected function quarterly(): int
     {
-        $diff = $this->monthly();
+        $seqNumber = 0;
 
-        return floor($diff/3);
+        //sequence number calculation for the start and end months.
+        $endDateMonth = $this->toDate->month;
+        $startDateMonth = $this->fromDate->month;
+        $cycleCount = $this->getFrequencyToCycleCount();
+
+        $seqNumber += ($cycleCount - (int) ceil($startDateMonth/3));
+        $seqNumber += (int) ceil($endDateMonth/3);
+
+        /* sequence number calculation for years in between the start and end dates.
+        There are 4 cycles in quarterly-calculated year. Since 4 cycles implies 4 sequence numbers per year,
+        we multiply the year diff by 4.
+        */
+        $seqDiffInYears = $this->getSeqNumberForYearDifference($cycleCount);
+
+        $seqNumber += $seqDiffInYears;
+
+        return $seqNumber;
     }
 
-
+    /**
+     * Function to calculate sequence no. for halfYearly frequency
+     * There are 2 cycles in an year :
+     * Cycle 1 : Jan-Jun
+     * Cycle 2 : Jul-Dec
+     *
+     * @return int
+     */
     protected function halfYearly(): int
     {
-        $diff = $this->monthly();
+        $seqNumber = 0;
 
-        return floor($diff/6);
+        //sequence number calculation for the start and end months.
+        $endDateMonth = $this->toDate->month;
+        $startDateMonth = $this->fromDate->month;
+        $cycleCount = $this->getFrequencyToCycleCount();
+
+        $startDateMonth <= 6 ? $seqNumber += 2 : $seqNumber += 1;
+        $seqNumber += (int) ceil($endDateMonth/6);
+
+        /* sequence number calculation for years in between the start and end dates.
+        There are 2 cycles in bimonthly-calculated year. Since 2 cycles implies 2 sequence numbers per year,
+        we multiply the year diff by 2.
+        */
+        $seqDiffInYears = $this->getSeqNumberForYearDifference($cycleCount);
+
+        $seqNumber += $seqDiffInYears;
+
+        return $seqNumber - 1;
     }
 
+    /**
+     * Function to calculate sequence no. for yearly frequency
+     *
+     * @return int
+     */
     protected function yearly(): int
     {
-        $diff = $this->monthly();
-
-        return floor($diff/12);
+        return ($this->toDate->endOfYear())->diffInYears($this->fromDate->startOfYear());
     }
 
     private function validateInput(): bool
     {
         return (Frequency::isValid($this->frequency)) and
                (($this->fromDate)->lessThanOrEqualTo($this->toDate));
+    }
+
+    /**
+     * Returns the sequence number based on year difference and number of cycles per year
+     * numberOfCycles is ->
+     * 2 for half yearly : 2 cycles of 6 months in a year
+     * 4 for quarterly : 4 cycles of 3 months in a year
+     * 6 for bimonthly : 2 cycles of 5
+     *
+     * @param int $numberOfCycles
+     *
+     * @return float|int
+     */
+    private function getSeqNumberForYearDifference(int $numberOfCycles)
+    {
+        $endYear   = $this->toDate->endOfYear()->year;
+        $startYear = $this->fromDate->startOfYear()->year;
+
+        $diffInYears    = $endYear - $startYear - 1;
+
+        return $diffInYears * $numberOfCycles;
+    }
+
+    /**
+     * This function returns the cycle count for the selected frequency.
+     * @return int
+     */
+    private function getFrequencyToCycleCount() : int
+    {
+        return $this->frequencyToCycleCount[$this->frequency];
     }
 }

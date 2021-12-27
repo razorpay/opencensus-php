@@ -158,38 +158,65 @@ class SequenceNumberTest extends TestCase
 
         /******************  Bimonthly *****************/
 
-        $testcases['bimonthy_base_case'] = [
+        $testcases['bimonthy_same_cycle'] = [
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2021, 8, 8),
             Carbon::createFromDate(2021, 8, 10),
             1,
         ];
 
-        $testcases['bimonthly_happy_flow'] = [
+        $testcases['bimonthly_next_cycle'] = [
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2021, 8, 8),
             Carbon::createFromDate(2021, 9, 30),
+            2,
+        ];
+
+        $testcases['bimonthy_same_dates'] = [
+            Frequency::BIMONTHLY,
+            Carbon::createFromDate(2021, 8, 8),
+            Carbon::createFromDate(2021, 8, 8),
             1,
         ];
 
-        $testcases['bimonthly_happy_flow_2'] = [
+        $testcases['bimonthly_next_cycle_last_month'] = [
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2021, 8, 8),
             Carbon::createFromDate(2021, 10, 1),
             2,
         ];
 
-        $testcases['bimonthly_start_date_as_last_day_of_cycle'] = [
+        $testcases['bimonthly_start_date_2nd_cycle_end_date_5th_cycle'] = [
+            Frequency::BIMONTHLY,
+            Carbon::createFromDate(2021, 3, 31),
+            Carbon::createFromDate(2021, 9, 1),
+            4,
+        ];
+
+        $testcases['bimonthly_year_gap'] = [
+            Frequency::BIMONTHLY,
+            Carbon::createFromDate(2021, 2, 1),
+            Carbon::createFromDate(2023, 9, 1),
+            17,
+        ];
+
+        $testcases['bimonthly_start_date_as_last_day_of_cycle_end_date_as_start_of_new_cycle'] = [
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2021, 8, 31),
             Carbon::createFromDate(2021, 10, 1),
             2,
         ];
 
-        $testcases['bimonthly_start_date_as_end_of_year'] = [
+        $testcases['bimonthly_start_date_as_end_of_year_end_date_as_next_year'] = [
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2020, 12, 31),
-            Carbon::createFromDate(2021, 2, 1),
+            Carbon::createFromDate(2021, 12, 1),
+            7,
+        ];
+        $testcases['bimonthly_start_date_as_end_of_year_end_date_as_start_of_next_year'] = [
+            Frequency::BIMONTHLY,
+            Carbon::createFromDate(2020, 12, 31),
+            Carbon::createFromDate(2021, 1, 1),
             2,
         ];
 
@@ -197,23 +224,77 @@ class SequenceNumberTest extends TestCase
             Frequency::BIMONTHLY,
             Carbon::createFromDate(2020, 2, 29),
             Carbon::createFromDate(2020, 7, 31),
-            3,
+            4,
         ];
 
         /******************  Quarterly *****************/
 
-        $testcases['quarterly_base_case'] = [
+        $testcases['quarterly_same_dates'] = [
             Frequency::QUARTERLY,
             Carbon::createFromDate(2021, 8, 8),
-            Carbon::createFromDate(2021, 8, 10),
+            Carbon::createFromDate(2021, 8, 8),
             1,
         ];
 
-        $testcases['quarterly_happy_flow'] = [
+        $testcases['quarterly_base_case_same_year_first_quarter'] = [
             Frequency::QUARTERLY,
-            Carbon::createFromDate(2021, 8, 8),
-            Carbon::createFromDate(2022, 7, 8),
+            Carbon::createFromDate(2021, 1, 1),
+            Carbon::createFromDate(2021, 3, 1),
+            1,
+        ];
+
+        $testcases['quarterly_base_case_same_year_second_quarter'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2021, 1, 1),
+            Carbon::createFromDate(2021, 5, 1),
+            2,
+        ];
+        $testcases['quarterly_base_case_same_year_third_quarter'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2021, 1, 1),
+            Carbon::createFromDate(2021, 8, 1),
+            3,
+        ];
+        $testcases['quarterly_base_case_same_year_fourth_quarter'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2021, 1, 1),
+            Carbon::createFromDate(2021, 10, 1),
             4,
+        ];
+
+        $testcases['quarterly_end_date_next_year'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2021, 1, 1),
+            Carbon::createFromDate(2022, 4, 1),
+            6,
+        ];
+
+        $testcases['quarterly_start_date_end_of_quarter_end_date_start_of_next_quarter'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2021, 3, 31),
+            Carbon::createFromDate(2021, 4, 1),
+            2,
+        ];
+
+        $testcases['quarterly_start_date_end_of_year_end_date_start_of_year'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2021, 12, 31),
+            Carbon::createFromDate(2022, 1, 1),
+            2,
+        ];
+
+        $testcases['quarterly_year_gap'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2020, 10, 8),
+            Carbon::createFromDate(2025, 12, 31),
+            21,
+        ];
+
+        $testcases['quarterly_start_date_feb_leap_year'] = [
+            Frequency::QUARTERLY,
+            Carbon::createFromDate(2020, 2, 29),
+            Carbon::createFromDate(2020, 7, 31),
+            3,
         ];
 
         $testcases['quarterly_start_date_as_last_day_of_cycle'] = [
@@ -223,85 +304,113 @@ class SequenceNumberTest extends TestCase
             2,
         ];
 
-        $testcases['quarterly_start_date_as_end_of_year'] = [
-            Frequency::QUARTERLY,
-            Carbon::createFromDate(2020, 12, 31),
-            Carbon::createFromDate(2021, 3, 1),
-            2,
-        ];
-
-        $testcases['quarterly_start_date_feb_leap_year'] = [
-            Frequency::QUARTERLY,
-            Carbon::createFromDate(2020, 2, 29),
-            Carbon::createFromDate(2020, 7, 31),
-            2,
-        ];
-
-        $testcases['quarterly_3_months_Gap'] = [
-            Frequency::QUARTERLY,
-            Carbon::createFromDate(2020, 2, 29),
-            Carbon::createFromDate(2020, 7, 31),
-            2,
-        ];
-
         /******************  Half-Yearly *****************/
 
-        $testcases['halfyearly_base_case'] = [
+        $testcases['halfyearly_same_dates'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2021, 8, 8),
+            Carbon::createFromDate(2021, 8, 8),
+            1,
+        ];
+
+        $testcases['halfyearly_start_date_end_date_in_same_year_first_cycle'] = [
             Frequency::HALF_YEARLY,
             Carbon::createFromDate(2021, 1, 1),
             Carbon::createFromDate(2021, 5, 1),
             1,
         ];
 
-        $testcases['halfyearly_happy_flow'] = [
+        $testcases['halfyearly_start_date_end_date_in_second_cycle'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2021, 8, 30),
+            Carbon::createFromDate(2021, 12, 1),
+            1,
+        ];
+
+        $testcases['halfyearly_end_date_same_year_second_cycle'] = [
             Frequency::HALF_YEARLY,
             Carbon::createFromDate(2021, 1, 1),
-            Carbon::createFromDate(2022, 8, 4),
+            Carbon::createFromDate(2021, 8, 1),
+            2,
+        ];
+
+        $testcases['halfyearly_end_date_next_year_second_cycle'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2021, 3, 1),
+            Carbon::createFromDate(2022, 11, 1),
             4,
         ];
 
-        $testcases['halfyearly_happy_flow_same_month_next_year'] = [
+        $testcases['halfyearly_start_date_second_cycle_end_date_next_year_second_cycle'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2021, 10, 31),
+            Carbon::createFromDate(2022, 8, 1),
+            3,
+        ];
+
+        $testcases['halfyearly_end_date_same_month_next_year'] = [
             Frequency::HALF_YEARLY,
             Carbon::createFromDate(2021, 1, 1),
             Carbon::createFromDate(2022, 1, 1),
             3,
         ];
 
-        $testcases['halfyearly_start_date_as_end_of_year'] = [
+        $testcases['halfyearly_more_than_1_year_gap'] = [
             Frequency::HALF_YEARLY,
-            Carbon::createFromDate(2021, 12, 31),
-            Carbon::createFromDate(2022, 11, 30),
-            2,
+            Carbon::createFromDate(2021, 6, 1),
+            Carbon::createFromDate(2024, 7, 1),
+            8,
         ];
 
         $testcases['halfyearly_start_date_feb_leap_year'] = [
             Frequency::HALF_YEARLY,
             Carbon::createFromDate(2020, 2, 29),
             Carbon::createFromDate(2022, 1, 31),
-            4,
+            5,
+        ];
+
+        $testcases['halfyearly_start_date_end_of_june_end_date_start_of_july'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2021, 6, 30),
+            Carbon::createFromDate(2021, 7, 1),
+            2,
+        ];
+
+        $testcases['halfyearly_start_date_as_end_of_year_end_date_as_start_of_next_year'] = [
+            Frequency::HALF_YEARLY,
+            Carbon::createFromDate(2021, 12, 31),
+            Carbon::createFromDate(2022, 01, 1),
+            2,
         ];
 
         /****************** Yearly *****************/
 
-        $testcases['yearly_base_case'] = [
+        $testcases['yearly_same_year'] = [
             Frequency::YEARLY,
-            Carbon::createFromDate(2021, 8, 8),
-            Carbon::createFromDate(2022, 7, 1),
+            Carbon::createFromDate(2021, 8, 1),
+            Carbon::createFromDate(2021, 10, 1),
             1,
         ];
 
-        $testcases['yearly_happy_flow'] = [
+        $testcases['yearly_next_year'] = [
             Frequency::YEARLY,
-            Carbon::createFromDate(2021, 8, 8),
-            Carbon::createFromDate(2022, 8, 8),
+            Carbon::createFromDate(2021, 8, 1),
+            Carbon::createFromDate(2022, 8, 1),
             2,
         ];
 
-        $testcases['yearly_start_date_as_end_of_year'] = [
+        $testcases['early_start_date_as_end_of_year_end_date_as_start_of_next_year'] = [
             Frequency::YEARLY,
             Carbon::createFromDate(2021, 12, 31),
-            Carbon::createFromDate(2024, 3, 1),
-            3,
+            Carbon::createFromDate(2022, 1, 1),
+            2,
+        ];
+
+        $testcases['yearly_year_gap'] = [
+            Frequency::YEARLY,
+            Carbon::createFromDate(2020, 12, 1),
+            Carbon::createFromDate(2030, 05, 1),
+            11,
         ];
 
         $testcases['yearly_start_date_feb_leap_year'] = [
@@ -374,6 +483,13 @@ class SequenceNumberTest extends TestCase
         ];
 
         $testcases['monthly_monthEnd_23:59PM_to_next_monthStart_12:01AM'] = [
+            Frequency::MONTHLY,
+            Carbon::createFromFormat('Y-m-d H:i:s' , '2020-12-31 23:59:59'),
+            Carbon::createFromFormat('Y-m-d H:i:s' , '2021-1-1 00:00:01'),
+            2,
+        ];
+
+        $testcases['yearly_yearEnd_23:59PM_to_next_yearStart_12:01AM'] = [
             Frequency::MONTHLY,
             Carbon::createFromFormat('Y-m-d H:i:s' , '2020-12-31 23:59:59'),
             Carbon::createFromFormat('Y-m-d H:i:s' , '2021-1-1 00:00:01'),
