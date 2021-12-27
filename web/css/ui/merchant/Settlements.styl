@@ -1,3 +1,5 @@
+$white-color = #ffffff
+
 .req-es-btn {
   padding-right: 0;
 
@@ -539,7 +541,7 @@ button.bw {
 }
 
 .box {
-  background-color: #ffffff;
+  background-color: $white-color;
   padding: 20px;
   padding-top: 10px;
   text-align: center;
@@ -1036,7 +1038,7 @@ i.settle-now {
   padding: 20px;
 
 .instant-settlement-payout-detail--section
-  background: #FFFFFF;
+  background: $white-color;
   box-shadow: 2px 2px 6px rgba(22, 47, 86, 0.06);
   border-radius: 4px;
   padding: 20px;
@@ -1128,13 +1130,13 @@ i.settle-now {
       color: rgba(255, 255, 255, 0.72);
 
 .instant-settlement-payout-detail--deductions-row-deductions
-  color: #FFFFFF;
+  color: $white-color;
   margin-bottom: 0px;
   padding-top: 6px;
   border-top: 1px solid rgba(173, 188, 201, 0.12);
   .rzp-amount
     .rzp-whole, .rzp-currency, .rzp-paise
-      color: #FFFFFF;
+      color: $white-color;
 
 .instant-settlement--panel-heading
   font-size: 14px;
@@ -1233,7 +1235,7 @@ i.settle-now {
       font-weight: bold;
 
   button
-    background: #ffffff;
+    background: $white-color;
     color: #0066DE;
     width: 100%;
     font-weight: bold;
@@ -1246,7 +1248,7 @@ i.settle-now {
     box-shadow 0 1px 4px #0000001a
 
   .content-wrapper
-    background-color #ffffff
+    background-color $white-color
     border 1px solid #e2e8ea
     border-radius 2px
     display flex
@@ -1414,3 +1416,98 @@ i.settle-now {
   flex-grow 1
   padding 15px 0
   justify-content space-between
+
+.settlement-cycle-overflow-box
+  margin 0 -42px
+  border 1px solid #adbcc92b
+  border-radius 2px
+  padding 10px
+  box-shadow 0 2px 6px #3e475421
+  background-color $white-color
+  max-height 456px
+  overflow scroll
+
+  ul
+    padding 14px 32px 4px
+
+  li
+    margin-bottom 12px
+
+  .schedule-info
+    color #162f568a
+    padding-top 8px
+    padding-left 12px
+    font-size 12px
+    line-height 18px
+
+  .payment-schedule-container
+    padding 12px
+    border 1px solid #E5E8EA
+    .btn-link
+      text-decoration none
+      cursor pointer
+
+    &:nth-child(1)
+      margin-top 8px
+
+    &:nth-child(2)
+      border-top 0
+
+  .default-cycle
+    display flex
+
+  .other-methods-container
+    background #162f560d
+    padding 12px
+    margin-top 12px
+    .other-methods-heading
+      color #7b819994
+
+  .schedule-row
+    display flex
+    .section
+      flex 0.5
+      font-size 12px
+      line-height 18px
+
+  .settlement-example
+    margin -10px
+    padding 12px 42px
+    background #ff9f001a
+    border-radius 2px
+
+    p
+      font-size 12px
+      line-height 18px
+
+    .grey
+      color #7B8199
+    
+    .yellow
+      color #ffbb00
+
+    .btn-link
+      text-decoration none
+      cursor pointer
+
+    .settlement-example-image
+      width 100%
+      background $white-color
+
+.settlement-cycle-btn-container
+  width 100%
+  display flex
+  align-items center
+  justify-content space-between
+  margin-top 24px
+
+  .button-wrapper
+    flex 0.5
+
+@media screen and (max-width: 359px)
+  .settlement-cycle-btn-container
+    .btn
+      white-space normal
+
+.capitalize
+  text-transform: capitalize
