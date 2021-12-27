@@ -4459,11 +4459,11 @@ class Terminal extends Base
             'gateway_secure_secret2' => 'emerchantpay_secret2',
             'gateway_terminal_id'    => 'emtrustly',
             'mode'                   => 3,
-            'enabled_apps'           => ['trustly'],
+            'enabled_apps'           => ['trustly','poli'],
         ];
 
         $attributes = array_merge($attributes, $override);
-        
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }

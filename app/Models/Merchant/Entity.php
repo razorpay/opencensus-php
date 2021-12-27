@@ -574,6 +574,7 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 7;
+    const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS      = 6;
 
     public function refresh()
     {
@@ -2318,6 +2319,11 @@ class Entity extends Base\PublicEntity
         $data = $dccPaymentConfigEntity->getFormattedConfig();
 
         return $data[self::DCC_MARKUP_PERCENTAGE];
+    }
+
+    public function getDccMarkupPercentageForApps()
+    {
+        return self::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS;
     }
 
     public function setDefaultMethodsBasedOnCategory()

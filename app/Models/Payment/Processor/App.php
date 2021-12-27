@@ -8,6 +8,7 @@ class App
     const TWID   = 'twid';
     const TRUSTLY  = 'trustly';
     const EMERCHANTPAY = 'emerchantpay';
+    const POLI = 'poli';
     /**
      * all apps are disabled by default
      * 0000000
@@ -18,18 +19,21 @@ class App
         self::CRED    => 'Cred',
         self::TWID    => 'Twid',
         self::TRUSTLY => 'Trustly',
+        self::POLI    => 'Poli',
     ];
 
     public static $appMap = [
         self::CRED  => 1,
         self::TWID  => 2,
         self::TRUSTLY => 4,
+        self::POLI => 8,
     ];
 
      public static $apps = [
         self::CRED,
         self::TWID,
         self::TRUSTLY,
+        self::POLI
     ];
 
     public static $supportedApps = [
@@ -40,7 +44,8 @@ class App
             self::TWID
         ],
         self::EMERCHANTPAY  =>  [
-            self::TRUSTLY
+            self::TRUSTLY,
+            self::POLI
         ],
     ];
 

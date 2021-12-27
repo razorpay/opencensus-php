@@ -1942,7 +1942,8 @@ class Service extends Base\Service
     public function updateCurrencyWrapperForAppsIfApplicable($input, $merchant, & $data)
     {
         if ((isset($input['provider']) !== true) or
-            (Gateway::isDCCRequiredApp($input['provider']) !== true))
+            (Gateway::isDCCRequiredApp($input['provider']) !== true) or
+            ($merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return;
         }
@@ -1960,8 +1961,8 @@ class Service extends Base\Service
             $amount   = $input['amount'];
             $currency = $input['currency'];
 
-            // Merchant Based Markup for DCC Payments Default as 6
-            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
+            // For Method APP Default DCC Markup is set as 6
+            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentageForApps());
 
             // First Currency in Currency Map is set as default currency for an app.
             $currencyInfo['app_currency'] = $enabledCurrencyList[0];

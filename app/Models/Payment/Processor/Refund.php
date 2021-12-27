@@ -84,6 +84,12 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,null, ['method' => $payment->getMethod()]);
         }
 
+        if (($payment->getMethod() === Method::APP) and (Payment\Gateway::isRefundNotSupportedByApp($payment->getWallet()) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,null, ['app' => $payment->getWallet()]);
+        }
+
         if ($payment->isDisputed() === true)
         {
             $openNonFraudDisputes = $this->repo->dispute->getOpenNonFraudDisputes($payment);

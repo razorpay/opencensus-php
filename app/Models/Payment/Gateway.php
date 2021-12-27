@@ -144,6 +144,7 @@ class Gateway
     const LAZYPAY            = 'lazypay';
     const TRUSTLY            = 'trustly';
     const EMERCHANTPAY       = 'emerchantpay';
+    const POLI               = 'poli';
 
 
     const ACQUIRER_HDFC         = 'hdfc';
@@ -388,6 +389,7 @@ class Gateway
      */
     const ADDRESS_REQUIRED_APPS= [
         self::TRUSTLY,
+        self::POLI,
     ];
 
     /**
@@ -396,6 +398,7 @@ class Gateway
      */
     const DCC_REQUIRED_APPS= [
         self::TRUSTLY,
+        self::POLI,
     ];
 
     /**
@@ -407,6 +410,11 @@ class Gateway
 
     const CURRENCIES_SUPPORTED_BY_APPS = [
         self::TRUSTLY => [Currency::EUR,Currency::GBP],
+        self::POLI => [Currency::AUD]
+    ];
+
+    const REFUND_NOT_SUPPORTED_APPS = [
+        self::POLI
     ];
 
     /**
@@ -2652,6 +2660,7 @@ class Gateway
     public static $internationalGateways = [
         Gateway::EMERCHANTPAY,
         Gateway::TRUSTLY,
+        Gateway::POLI
     ];
 
     /**
@@ -4140,6 +4149,11 @@ class Gateway
     public static function isDCCRequiredApp($app)
     {
         return (in_array($app, self::DCC_REQUIRED_APPS, true));
+    }
+
+    public static function isRefundNotSupportedByApp($app)
+    {
+        return (in_array($app, self::REFUND_NOT_SUPPORTED_APPS, true));
     }
 
     public static function getSupportedCurrenciesByApp($app) : array

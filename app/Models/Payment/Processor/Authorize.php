@@ -3895,7 +3895,9 @@ trait Authorize
 
     protected function preProcessAppCurrencyWrapper(array $input, Payment\Entity $payment)
     {
-        if (($input['method'] !== Method::APP) or (Gateway::isDCCRequiredApp($input['provider'])) !== true)
+        if (($input['method'] !== Method::APP) or
+            (Gateway::isDCCRequiredApp($input['provider']) !== true) or
+            ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return;
         }
@@ -3909,7 +3911,7 @@ trait Authorize
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage());
+                $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentageForApps());
 
             if (empty($requestedCurrencyData) === true)
             {

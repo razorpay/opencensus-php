@@ -2741,7 +2741,7 @@ return [
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 29,
+                        'count' => 30,
                         'rules' => [
                             [],
                         ],
@@ -2889,7 +2889,7 @@ return [
                     [
                         'name'   => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count'  => 29,
+                        'count'  => 30,
                         'rules'  => [
                             [],
                         ],
@@ -3021,7 +3021,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 29,
+                    'rules_count' => 30,
                     'type'        => 'pricing',
                 ],
             ],
@@ -3128,7 +3128,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 29,
+                    'rules_count' => 30,
                     'type'        => 'pricing',
                 ],
             ],

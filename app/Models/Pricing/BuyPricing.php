@@ -138,6 +138,7 @@ class BuyPricing
     const PAYLATER_ICICI                = 'paylater_icici';
 
     const TRUSTLY                       = 'trustly';
+    const POLI                          = 'poli';
 
     protected static $cardIssuers = [
         self::HDFC,
@@ -319,6 +320,7 @@ class BuyPricing
         self::CRED,
         self::TWID,
         self::TRUSTLY,
+        self::POLI,
     ];
 
     public static $upiNetworksNames = [

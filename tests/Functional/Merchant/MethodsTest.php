@@ -1041,4 +1041,31 @@ class MethodsTest extends TestCase
 
         $this->assertEquals(1, $merchantMethods['apps']['trustly']);
     }
+
+    public function testEnablePoliForMerchant()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'apps' => [
+                    'poli'  => 1,
+                ],
+            ] ,
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $merchantMethods = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $merchantMethods['apps']['poli']);
+    }
 }

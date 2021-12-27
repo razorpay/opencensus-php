@@ -59,6 +59,9 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
 
         $data[0]['Merchant Transaction Id'] = $payment['id'];
 
+        $payment_meta = $this->getDbLastEntityToArray(Entity::PAYMENT_META);
+        $data[0]['Amount'] = $payment_meta['gateway_amount'];
+
         $file = $this->writeToExcelFile($data, 'Sale Approved', 'files/filestore');
 
         $uploadedFile = $this->createUploadedFile($file, 'Sale Approved.xlsx');
@@ -116,6 +119,8 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $data[] = $this->testData[__FUNCTION__];
 
         $data[0]['Merchant Transaction Id'] = $refund['id'];
+        $payment_meta = $this->getDbLastEntityToArray(Entity::PAYMENT_META);
+        $data[0]['Amount'] = $payment_meta['gateway_amount'];
 
         $file = $this->writeToExcelFile($data, 'Refund Approved', 'files/filestore');
 

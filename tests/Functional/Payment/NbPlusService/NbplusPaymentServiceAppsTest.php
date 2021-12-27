@@ -6,6 +6,7 @@ use App;
 use Mockery;
 
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -192,6 +193,8 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
 
+        $this->assertEquals(6,$responseContent['dcc_mark_up_percent']);
+
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
@@ -270,6 +273,8 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
 
+        $this->assertEquals(6,$responseContent['dcc_mark_up_percent']);
+
         $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
 
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
@@ -328,6 +333,8 @@ class NbPlusPaymentServiceAppsTest extends TestCase
         $paymentMeta = $this->getLastEntity('payment_meta', true);
 
         $this->assertEquals("authorized", $payment['status']);
+
+        $this->assertNull($payment['dcc_offered']);
 
         $this->assertNull($paymentMeta);
 
@@ -414,6 +421,202 @@ class NbPlusPaymentServiceAppsTest extends TestCase
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
 
         $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
+    }
+
+    public function testAuthorizePoliPaymentWithINRCurrency()
+    {
+        $this->setConfigurationInternationalApp('poli');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'INR';
+        $flowsRequestData['content']['provider'] = 'poli';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'AUD';
+
+        $this->assertEquals("AUD", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
+
+        $paymentArray = $this->payment;
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("authorized", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals($customerSelectedCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($convertedCurrency, $paymentMeta['gateway_amount']);
+
+        //Payment entity fetch with Admin auth
+        $responseContent = $this->getEntityById('payment', $paymentMeta['payment_id'], true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($convertedCurrency, $responseContent['gateway_amount']);
+        $this->assertEquals($customerSelectedCurrency, $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
+
+        $this->assertEquals(6,$responseContent['dcc_mark_up_percent']);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
+        $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
+    }
+
+    public function testAuthorizePoliPaymentWithGatewaySupportedCurrency()
+    {
+        $this->setConfigurationInternationalApp('poli');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'AUD';
+        $flowsRequestData['content']['provider'] = 'poli';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'AUD';
+
+        $this->assertEquals("AUD", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $paymentArray = $this->payment;
+        $paymentArray['currency'] = 'AUD';
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("authorized", $payment['status']);
+
+        $this->assertNull($payment['dcc_offered']);
+
+        $this->assertNull($paymentMeta);
+
+        $this->assertEquals(Payment\Entity::NB_PLUS_SERVICE, $payment[Payment\Entity::CPS_ROUTE]);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
+        $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
+    }
+
+    public function testAuthorizeCaptureAndRefundPoliPayment()
+    {
+        $this->setConfigurationInternationalApp('poli');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'INR';
+        $flowsRequestData['content']['provider'] = 'poli';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'AUD';
+
+        $this->assertEquals("AUD", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $paymentArray = $this->payment;
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthCaptureAndRefundPayment($paymentArray);
+            },
+            BadRequestException::class);
+
     }
 
     public function testVerify()
