@@ -441,11 +441,7 @@ class Validator extends Base\Validator
     {
         if ($this->entity->getDeductAtOnset() === true)
         {
-            if ((isset($input[Entity::RECOVERY_METHOD]) === false))
-            {
-                return;
-            }
-            throw new BadRequestValidationFailureException('Recovery Method is not supported when Deduct at Onset');
+            return;
         }
 
         if ((isset($input[Entity::INTERNAL_STATUS]) === true) and

@@ -170,6 +170,26 @@ class DisputePresentmentTest extends TestCase
         $this->assertEquals(1, count($lifecycle));
     }
 
+    public function testAcceptDeductAtOnsetDispute()
+    {
+        Mail::fake();
+
+        $this->setUpForInitiateDraftEvidenceTest(['deduct_at_onset' => true, 'gateway_dispute_id' => 'DISPUTE123'],'payment:captured', ['method' => "card" ]);
+
+        $this->acceptDispute('disp_0123456789abcd');
+
+        [$disputeAfter] = $this->getEntitiesByTypeAndIdMultiple(
+            'dispute', '0123456789abcd'
+        );
+
+        $this->assertArraySelectiveEquals([
+            'internal_status' => 'lost_merchant_debited',
+            'status'          => 'lost',
+            ], $disputeAfter);
+
+        Mail::assertNotQueued(DisputePresentmentRiskOpsReview::class);
+    }
+
     protected function acceptDispute(string $disputeId)
     {
         return $this->makeRequestAndGetContent([

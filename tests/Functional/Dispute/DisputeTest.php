@@ -1412,17 +1412,6 @@ class DisputeTest extends TestCase
                     'description' => 'Recovery Method is not supported with Skip Deduction',
                 ],
             ],
-            'recovery method for Deduct At Onset' => [
-                'dispute_attributes' => ['status' => 'open', 'deduct_at_onset' => true],
-                'edit_input'         => [
-                    'status'          => 'lost',
-                    'internal_status' => 'lost_merchant_debited',
-                    'recovery_method' => "refund",
-                ],
-                'error'              => [
-                    'description' => 'Recovery Method is not supported when Deduct at Onset',
-                ],
-            ],
         ];
     }
 
