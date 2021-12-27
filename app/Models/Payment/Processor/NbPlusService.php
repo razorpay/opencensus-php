@@ -10,7 +10,11 @@ trait NbPlusService
     {
         $method = $payment->getMethod();
 
-        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NBPLUS_CALL_INITIATED, $payment);
+        $properties = [
+            'action' => $action,
+        ];
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NBPLUS_CALL_INITIATED, $payment, null, [], $properties);
 
         try
         {
@@ -19,12 +23,12 @@ trait NbPlusService
         }
         catch (\Exception $e)
         {
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NBPLUS_CALL_PROCESSED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NBPLUS_CALL_PROCESSED, $payment, $e, [], $properties);
 
             throw $e;
         }
 
-        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NBPLUS_CALL_PROCESSED, $payment, null);
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NBPLUS_CALL_PROCESSED, $payment, null, [], $properties);
 
         return $returnData;
     }
