@@ -2593,6 +2593,7 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::CRED,
         Gateway::ATOM,
+        Gateway::NETBANKING_RBL,
     ];
 
     /**
@@ -2609,6 +2610,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::NETBANKING_KOTAK,
         Gateway::NETBANKING_IBK,
+        Gateway::NETBANKING_RBL,
     ];
 
     /**
@@ -2717,6 +2719,7 @@ class Gateway
         Netbanking::KKBK_C => Gateway::NETBANKING_KOTAK,
         Netbanking::ANDB_C => Gateway::NETBANKING_UBI,
         Netbanking::IDIB_C => Gateway::NETBANKING_IBK,
+        Netbanking::RATN_C => Gateway::NETBANKING_RBL,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,

@@ -11,8 +11,9 @@ use RZP\Models\Gateway\File;
 use RZP\Excel\Import as ExcelImport;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
+use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
 
-class NbplusNetbankingRblCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
+class NbplusNetbankingRblCombinedFileTest extends StaticCallbackNbplusGatewayTest
 {
     /**
      * @var array
@@ -31,7 +32,7 @@ class NbplusNetbankingRblCombinedFileTest extends NbPlusPaymentServiceNetbanking
     {
         $this->testDataFilePath = __DIR__ . '/NetbankingRblGatewayTestData.php';
 
-        parent::setUp();
+        NbPlusPaymentServiceNetbankingTest::setUp();
 
         $this->bank = 'RATN';
 

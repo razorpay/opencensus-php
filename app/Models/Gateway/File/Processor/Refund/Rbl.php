@@ -17,7 +17,7 @@ class Rbl extends Base
     const EXTENSION              = FileStore\Format::XLSX;
     const FILE_TYPE              = FileStore\Type::RBL_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
-    const GATEWAY_CODE           = IFSC::RATN;
+    const GATEWAY_CODE           = [IFSC::RATN, Payment\Processor\Netbanking::RATN_C];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BASE_STORAGE_DIRECTORY = 'Rbl/Refund/Netbanking/';
 

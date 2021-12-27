@@ -151,6 +151,7 @@ class Netbanking
         self::KKBK_C,
         self::ANDB_C,
         self::IDIB_C,
+        self::RATN_C,
     ];
 
     protected static $selfTPV = [
@@ -918,6 +919,9 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::RATN,
+            ],
+            'corp' => [
+                self::RATN_C
             ]
         ],
         Gateway::NETBANKING_CSB => [

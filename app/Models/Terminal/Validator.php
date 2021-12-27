@@ -123,6 +123,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::NETBANKING_NSDL,
         Payment\Gateway::NETBANKING_DCB,
+        Payment\Gateway::NETBANKING_RBL,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::EMI_SBI,
         Payment\Gateway::WALLET_OLAMONEY,
@@ -1536,8 +1537,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:netbanking_rbl',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',   // for corporate secrets are in kube-stash
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingRblEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
+        Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
