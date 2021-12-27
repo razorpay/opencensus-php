@@ -169,3 +169,8 @@ Make sure that you install the plguin for your editor from <http://editorconfig.
 
 This will ensure that your editor respects our coding style. You can find the styles
 themselves at [.editorconfig](.editorconfig) file in the root of this repo
+
+
+# [Troubleshooting doc](https://docs.google.com/document/d/1TTF0eBD3G38-gVMvujuc8EP4-TmO8XfSH4hKzAih62A/edit?usp=sharing)
+
+Requesting engineers to keep this doc valid by updating the issues you faced when deploying API service, along with solutions.
