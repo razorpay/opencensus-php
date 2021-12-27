@@ -2045,7 +2045,7 @@ class Validator extends Base\Validator
 
         if ($validator->fails())
         {
-            $this->processValidationFailure($validator->messages(), $operation, $input);
+            $this->processValidationFailureWithCompleteMessage($validator->messages(), $operation, $input);
         }
 
         $operationFunctionVar = camel_case($operation) . 'Validators';
@@ -2353,7 +2353,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function processValidationFailure($messages, $operation, $input)
+    protected function processValidationFailureWithCompleteMessage($messages, $operation, $input)
     {
         if ($this->checkIfOperationIsAllowed($operation) === true)
         {

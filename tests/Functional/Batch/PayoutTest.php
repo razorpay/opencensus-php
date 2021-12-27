@@ -349,15 +349,13 @@ class PayoutTest extends TestCase
      */
     public function testValidateUtf8EncodingInBatchPayoutsCSV()
     {
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
-
         $entries = [
             [
                 // This entry has non utf-8 character in CONTACT_NAME_2 field
                 // and won't be parsed successfully.
-                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2!323230041626905',
                 Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10,
-                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_CURRENCY           => 'INRi',
                 Batch\Header::PAYOUT_MODE               => 'NEFT',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
@@ -367,7 +365,7 @@ class PayoutTest extends TestCase
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
                 Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
-                Batch\Header::CONTACT_NAME_2            => "Sagnik \xf8 Saha",
+                Batch\Header::CONTACT_NAME_2            => "Sagnik Saha",
                 Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
                 Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_EMAIL        => '',
@@ -474,15 +472,14 @@ class PayoutTest extends TestCase
             'notes[code],notes[place]';
 
         $expectedDataRow = [
-            "Invalid encoding of Contact Name. Non UTF-8 character(s) found.,2323230041626905,10,INR,".
+            "\"The razorpay x account number may only contain alphabets, digits and spaces.\"".",2!323230041626905,10,INRi,".
             "NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,," .
-            ",Sagnik \xf8 Saha,NarrationTest,,,employee,sagnik.saha@razorpay.com,,,test,Kolkata",
+            ",Sagnik Saha,NarrationTest,,,employee,sagnik.saha@razorpay.com,,,test,Kolkata",
             "Invalid encoding of Contact Email. Non UTF-8 character(s) found.,2323230041626905,20,INR,".
             "NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,," .
             ",Sagnik Saha,NarrationTest,,,employee,sagnik\xffsaha@razorpay.com,,,test,Kolkata",
             // Error Description in the third data row should state error in Contact Name only.
             "Invalid encoding of Contact Name. Non UTF-8 character(s) found.".
-            "\vInvalid encoding of Contact Email. Non UTF-8 character(s) found.".
             ",2323230041626905,30,INR,NEFT,refund,,bank_account,Sagnik Saha,SBIN0010720,100200300400,," .
             ",Sagnik \xf8 Saha,NarrationTest,,,employee,sagnik\xffsaha@razorpay.com,,,test,Kolkata",
             // No error in the last data row
