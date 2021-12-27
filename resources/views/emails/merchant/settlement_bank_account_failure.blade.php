@@ -136,7 +136,7 @@
             <div>
                 <p>
                     Settlements to your bank account account ending with {{$settlement['ba_number']}}
-                    for the Merchant id: {{$merchant['id']}} failed with the error: {{$settlement['failure_reason']}}.
+                    for your Razorpay Id: {{$merchant['id']}} failed with the error: {{$settlement['failure_reason']}}.
                 </p>
                 <p>
                     <strong>We will be unable to process further settlements until this is resolved.</strong>
