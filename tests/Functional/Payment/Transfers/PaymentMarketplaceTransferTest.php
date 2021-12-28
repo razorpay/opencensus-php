@@ -273,6 +273,32 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertArraySelectiveEquals($expected, $content);
     }
 
+    public function testPaymentTransferFetch()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $transfers = $this->transferPayment($this->payment['id'], $transfers);
+
+        $transfer = $transfers['items'][0];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/transfers';
+
+        $testData['response']['content']['items'][0] += [
+                    "id"                        => $transfer['id'],
+                    "source"                    => $this->payment['id']
+            ];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testTransferForSubMerchantCustomerFeeBearer()
     {
         $this->fixtures->create('pricing:standard_plan');

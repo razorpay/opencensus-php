@@ -319,6 +319,21 @@ class OrderTransferTest extends TestCase
         $this->runRequestResponseFlow($data);
     }
 
+    public function testGetOrderTransfersWithPaymentId()
+    {
+        $order = $this->testCreateOrderTransfers();
+
+        $payment = $this->capturePaymentProcessOrderTransfers($order);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['url'] = '/payments/' . $payment['id'] . '/transfers';
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
     public function testReverseOrderTransfer($order = null)
     {
         if ($order === null)

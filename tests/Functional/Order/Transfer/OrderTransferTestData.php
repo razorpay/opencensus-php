@@ -362,4 +362,31 @@ return [
             ],
         ],
     ],
+
+    'testGetOrderTransfersWithPaymentId' => [
+        'request' => [
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'items'  => [
+                    [
+                        'entity'                  => 'transfer',
+                        'recipient'               => 'acc_10000000000001',
+                        'amount'                  => 50000,
+                        'currency'                => 'INR',
+                        'status'                  => 'processed',
+                        'amount_reversed'         => 0,
+                        'notes'                   => [],
+                        'fees'                    => 0,
+                        'tax'                     => 0,
+                        'on_hold'                 => false,
+                        'on_hold_until'           => null,
+                        'recipient_settlement_id' => null,
+                        'linked_account_notes'    => [],
+                    ],
+                ],
+            ]
+        ],
+    ],
 ];
