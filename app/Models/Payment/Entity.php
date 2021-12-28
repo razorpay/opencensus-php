@@ -5221,4 +5221,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->isMethod(Payment\Method::APP)) and
             ($this->isInternationalGateway($this->getWallet()));
     }
+
+    public function getBatchId()
+    {
+        return $this->getAttribute(self::BATCH_ID);
+    }
 }

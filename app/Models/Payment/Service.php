@@ -1754,8 +1754,9 @@ class Service extends Base\Service
 
         $data['dcc_info'] = $dccInfo;
 
+        $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
         //Check if Address is required for DCC transaction
-        $data['avs_required'] = $this->isAddressRequired($iin, $merchant);
+        $data['avs_required'] = $this->isAddressRequired($library, $iin, $merchant);
 
         return $data;
     }
@@ -1837,7 +1838,9 @@ class Service extends Base\Service
 
         $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
 
-        $data['avs_required'] = $this->isAddressRequired($iinEntity, $merchant);
+        $library = isset($input['source']) === true ? $input['source']: "";
+
+        $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
 
         $data['address_name_required'] = $this->isAddressWithNameRequired($input, $merchant);
 
@@ -4057,11 +4060,12 @@ class Service extends Base\Service
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    public function isAddressRequired($iinEntity, Merchant\Entity $merchant):bool
+    public function isAddressRequired($library, $iinEntity, Merchant\Entity $merchant):bool
     {
-        if (($merchant !== null) and ($merchant->isInternational() === true)
-            and ($merchant->isAddressRequiredEnabled() === true))
-        {
+        if ($this->isLibrarySupportedForAddressCollection($library) and
+            ($merchant !== null) and ($merchant->isInternational() === true)
+            and ($merchant->isAddressRequiredEnabled() === true)
+        ) {
             if (($iinEntity !== null) and ($iinEntity->isInternational() === true)
                 and (empty($iinEntity->getCountry()) === false)
                 and ($iinEntity->getCountry() !== null)
@@ -4362,5 +4366,19 @@ class Service extends Base\Service
 
             throw $ex;
         }
+    }
+    
+    /*
+    * @param $library
+    * @return bool
+    */
+   public function isLibrarySupportedForAddressCollection($library): bool
+   {
+       if ((isset($library) === true) and
+           (in_array($library, Analytics\Metadata::ADDRESS_UNSUPPORTED_LIBRARIES) === false)
+       ) {
+           return true;
+       }
+       return false;
     }
 }

@@ -500,4 +500,21 @@ class PaymentCreateAVSTest extends TestCase
 
         $this->assertEquals(false, $responseContent['avs_required']);
     }
+
+    public function testAVSNotSupportedLibrary()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '4212345678901237';
+
+        $paymentArray['_']['library'] = 'razorpayjs';
+
+        $response = $this->doAuthPayment($paymentArray);
+       
+        $paymentEntity = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+        $paymentAddressEntity = (new Repository)->fetchPrimaryAddressOfEntityOfType($paymentEntity, Type::BILLING_ADDRESS);
+
+        $this->assertNull($paymentAddressEntity);
+    }
 }

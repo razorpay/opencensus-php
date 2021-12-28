@@ -154,6 +154,15 @@ class Metadata
         self::SHIELD_V2  => 4,
     ];
 
+    const ADDRESS_UNSUPPORTED_LIBRARIES = [
+        self::RAZORPAYJS,
+        self::CUSTOM,
+        self::DIRECT,
+        self::PUSH,
+        self::LEGACYJS,
+        self::EMBEDDED,
+    ];
+
     public static function getStringForValue($value, array $map)
     {
         if ($value === null)

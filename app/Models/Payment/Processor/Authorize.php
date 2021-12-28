@@ -9099,7 +9099,9 @@ trait Authorize
             ($payment->isCard() === true) and
             ($payment->card !== null))
         {
-            $addressRequired = (new Payment\Service)->isAddressRequired($payment->card->iinRelation, $payment->merchant);
+            $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+
+            $addressRequired = (new Payment\Service)->isAddressRequired($library, $payment->card->iinRelation, $payment->merchant);
         }
 
         return $addressRequired;
@@ -10068,8 +10070,14 @@ trait Authorize
         $addressRequiredWithName = false;
 
         if ($payment->isInternational() === true) {
+            if ($payment->isCard() === true and $payment->getBatchId() !== null) {
+                return;
+            }
+
             if (($payment->isCard() === true) and ($payment->card !== null)) {
-                $addressRequired = (new Payment\Service)->isAddressRequired($payment->card->iinRelation, $payment->merchant);
+                $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+
+                $addressRequired = (new Payment\Service)->isAddressRequired($library, $payment->card->iinRelation, $payment->merchant);
             }
 
             if (in_array($payment->getWallet(), Payment\Gateway::ADDRESS_REQUIRED_APPS) === true) {
