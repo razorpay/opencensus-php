@@ -1317,6 +1317,7 @@ class Gateway
         Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::NETBANKING_DLB,
+        Payment\Gateway::NETBANKING_TMB,
         Payment\Gateway::CCAVENUE,
         Payment\Gateway::NETBANKING_NSDL,
         Payment\Gateway::BAJAJFINSERV,

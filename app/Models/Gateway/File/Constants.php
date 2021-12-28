@@ -59,6 +59,7 @@ class Constants
     const AUBL             = 'aubl';
     const KOTAK_CORP       = 'kotak_corp';
     const DLB              = 'dlb';
+    const TMB              = 'tmb';
     const NSDL             = 'nsdl';
     const BDBL             = 'bdbl';
     const ICICI_EMI        = 'icici_emi';
@@ -146,6 +147,7 @@ class Constants
             self::AUBL,
             self::KOTAK_CORP,
             self::DLB,
+            self::TMB,
             self::NSDL,
             self::BDBL,
         ],
@@ -259,6 +261,7 @@ class Constants
             self::AUBL        => ['ausf-netbanking-refunds@razorpay.com'],
             self::KOTAK_CORP  => ['kotak-corp-netbanking-refunds@razorpay.com'],
             self::DLB         => ['dlb-netbanking-refunds@razorpay.com'],
+            self::TMB         => ['tmb-netbanking-refunds@razorpay.com'],
             self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
             self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com']
         ],

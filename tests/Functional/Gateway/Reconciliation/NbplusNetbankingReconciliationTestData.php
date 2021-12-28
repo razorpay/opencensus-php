@@ -138,6 +138,16 @@ return [
         'IBRefNo'                   => '1234',
     ],
 
+    'testTmbSuccessRecon' => [
+        'Merchant Code'             => '1',
+        'Merchant TRN'              => 'RAZORPG',
+        'Transaction Amount'        => '20210303',
+        'Payment Remarks'           => 'test remark',
+        'Bank Reference No'         => '12345678',
+        'TXN_DATE_TIME '            => '2021',
+        'RESPONSE_MESSAGE'          => 'test',
+    ],
+
     'testNsdlSuccessRecon' => [
         'REC_ID'        => '',
         'CHANNELID'     => '',

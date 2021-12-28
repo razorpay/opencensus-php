@@ -48,6 +48,7 @@ class Base extends BaseProcessor
         Constants::AUBL,
         Constants::KOTAK_CORP,
         Constants::DLB,
+        Constants::TMB,
         Constants::NSDL,
         Constants::INDUSIND,
         Constants::BDBL,

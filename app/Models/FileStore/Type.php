@@ -103,6 +103,8 @@ class Type
 
     const DLB_NETBAKING_REFUND              = 'dlb_netbanking_refund';
 
+    const TMB_NETBANKING_REFUND              = 'tmb_netbanking_refund';
+
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
     const INDUSIND_NETBANKING_CLAIM         = 'indusind_netbanking_claim';
@@ -368,6 +370,7 @@ class Type
             self::AUBL_NETBANKING_REFUND,
             self::AUBL_NETBANKING_COMBINED,
             self::DLB_NETBAKING_REFUND,
+            self::TMB_NETBANKING_REFUND,
             self::KOTAK_CORP_NETBANKING_REFUND,
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
@@ -537,6 +540,7 @@ class Type
         self::AUBL_NETBANKING_REFUND,
         self::AUBL_NETBANKING_COMBINED,
         self::DLB_NETBAKING_REFUND,
+        self::TMB_NETBANKING_REFUND,
         self::KOTAK_CORP_NETBANKING_REFUND,
         self::DATA_LAKE_SEGMENT_FILE,
         self::RECON_INPUT,
@@ -661,6 +665,7 @@ class Type
             self::JSB_NETBANKING_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::DLB_NETBAKING_REFUND,
+            self::TMB_NETBANKING_REFUND,
             self::NSDL_NETBANKING_REFUND,
             self::NSDL_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
