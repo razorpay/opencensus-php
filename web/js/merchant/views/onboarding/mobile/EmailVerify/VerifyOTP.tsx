@@ -130,7 +130,10 @@ const VerifyOTP = ({
       screen: 'contact tab',
       activationType: !data.activation_form_milestone ? 'act' : 'kyc',
       properties: {
-        optional: experiments.isEmailNonMandatoryOnL1 ? 'Yes' : 'NO',
+        optional:
+          experiments.isEmailNonMandatoryOnL1 || experiments.isEmailNonMandatoryOnL2Form
+            ? 'Yes'
+            : 'NO',
       },
     });
 

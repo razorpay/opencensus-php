@@ -178,12 +178,12 @@ const CustomEmail = ({
         actionName: 'clicked',
         screen: 'KYC Contact Info',
         properties: {
-          optional: isEmailNonMandatoryOnL1 ? 'Yes' : 'NO',
+          optional: isEmailNonMandatoryOnL1 || user.isEmailNonMandatoryOnL2Form ? 'Yes' : 'NO',
         },
       });
       tracking.trackEvent(
         window.rzpQ.onbr().clicked('act.email', {
-          optional: isEmailNonMandatoryOnL1 ? 'Yes' : 'NO',
+          optional: isEmailNonMandatoryOnL1 || user.isEmailNonMandatoryOnL2Form ? 'Yes' : 'NO',
         }),
       );
       verifyOTP();
