@@ -3149,6 +3149,7 @@ trait PaymentTrait
 
     protected function mockCheckBin()
     {
+
         $callable = function ()
         {
             return true;

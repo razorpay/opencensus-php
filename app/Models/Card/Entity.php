@@ -323,7 +323,7 @@ class Entity extends Base\PublicEntity
         if ((empty($input['tokenised']) === false) and
             (boolval($input['tokenised']) === true))
         {
-            $this->setAttribute(self::TRIVIA, "1");  
+            $this->setAttribute(self::TRIVIA, "1");
         }
     }
 
@@ -468,7 +468,7 @@ class Entity extends Base\PublicEntity
     public function getTokenIin()
     {
         return $this->getAttribute(self::TOKEN_IIN);
-    }        
+    }
 
     public function getFirstName()
     {
@@ -915,23 +915,16 @@ class Entity extends Base\PublicEntity
         // allow international IIN
         // allow domestic card if razorX is disabled
         // for fail safety, razorX retry count is 3
-        if (((($iin->isInternational() === false) and ($app['rzp.mode'] !== Mode::TEST))
-                or ($iin->isAmex() === true))
-            and ($isInitial === true))
-        {
+
+        if (((($iin->isInternational() === false) and ($app['rzp.mode'] !== Mode::TEST)) or ($iin->isAmex() === true))
+            and ($isInitial === true)) {
             if ($merchant->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE) === true)
             {
                 return $app->mandateHQ->isBinSupported($iin->getIin());
-            } else {
-                $variant  = app('razorx')->getTreatment($merchant->getId(),
-                    RazorxTreatment::RECURRING_CARD_NOT_ENABLED,
-                    app('rzp.mode'),
-                    3);
-
-                if (strtolower($variant) !== 'control')
-                {
-                    return false;
-                }
+            }
+            else
+            {
+                return false;
             }
         }
 

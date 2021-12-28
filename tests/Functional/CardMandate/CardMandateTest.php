@@ -992,4 +992,38 @@ class CardMandateTest extends TestCase
         ];
         $this->makeRequestAndGetContent($request);
     }
+
+    public function testBinNotSupported()
+    {
+        $this->mockCheckBin();
+
+        $callable = function ($input)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED);
+        };
+
+        $this->mockRegisterMandate($callable);
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $exception = false;
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED, $e->getCode());
+            $exception = true;
+        }
+
+        $this->assertTrue($exception);
+    }
 }
+
