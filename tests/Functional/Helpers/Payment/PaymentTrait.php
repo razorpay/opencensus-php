@@ -1948,6 +1948,40 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultUpiUnexpectedPaymentArray()
+    {
+        return [
+            'upi' => [
+                'npci_reference_id'     => '123456789012',
+                'status_code'           => 'success',
+                'gateway_payment_id'    => '4531245576',
+                'account_number'        => '12345778690',
+                'ifsc'                  => 'SBI0000230103',
+                'npci_txn_id'           => 'AXId27bf16312dc428ab7a305ea57e20393',
+                'merchant_reference'    => 'IShcnbF6tsOy',
+                'gateway_merchant_id'   => 'SBI0000000000119',
+                'vpa'                   => 'razor.pay@sbi',
+            ],
+            'payment' => [
+                'method'    => 'upi',
+                'amount'    => 50000,
+                'currency'  => 'INR',
+                'vpa'       => 'razor.pay@sbi',
+                'contact'   => '+919999999999',
+                'email'     => 'void@razorpay.com',
+
+            ],
+            'terminal' => [
+                'gateway'             => 'upi_sbi',
+                'gateway_merchant_id' => 'SBI0000000000119',
+            ],
+            'meta' => [
+                "art_request_id" => '123423454',
+                "version"        => 'api_v2',
+            ]
+        ];
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);

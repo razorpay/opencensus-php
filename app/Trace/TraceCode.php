@@ -1577,6 +1577,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UPI_QR_PAYMENT_PROCESSING_FAILED                      = 'UPI_QR_PAYMENT_PROCESSING_FAILED';
     const UPI_METRIC_DIMENSION_CREATE_FAILED                    = 'UPI_METRIC_DIMENSION_CREATE_FAILED';
+    const UPI_UNEXPECTED_PAYMENT_CREATED                        = 'UPI_UNEXPECTED_PAYMENT_CREATED';
+    const UPI_UNEXPECTED_PAYMENT_FAILED                         = 'UPI_UNEXPECTED_PAYMENT_FAILED';
+    const UPI_UNEXPECTED_PAYMENT_INITIATED                      = 'UPI_UNEXPECTED_PAYMENT_INITIATED';
 
     const UPI_TRANSFER_SAVE_REQUEST                             = 'UPI_TRANSFER_SAVE_REQUEST';
     const UPI_TRANSFER_REQUEST_SAVED                            = 'UPI_TRANSFER_REQUEST_SAVED';

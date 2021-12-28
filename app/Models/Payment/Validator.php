@@ -353,6 +353,32 @@ class Validator extends Base\Validator
         'range'
     ];
 
+    protected static $createUpiUnexpectedPaymentRules = [
+        'payment'                       => 'required|array',
+        'payment.vpa'                   => 'sometimes',
+        'payment.amount'                => 'required|integer',
+        'payment.method'                => 'required|string|in:upi',
+        'payment.currency'              => 'required|string',
+        'payment.contact'               => 'required',
+        'payment.email'                 => 'required|string',
+        'upi'                           => 'required|array',
+        'upi.npci_reference_id'         => 'required',
+        'upi.merchant_reference'        => 'required',
+        'upi.gateway_payment_id'        => 'sometimes',
+        'upi.gateway_merchant_id'       => 'required',
+        'upi.vpa'                       => 'required',
+        'upi.status_code'               => 'sometimes',
+        'upi.account_number'            => 'sometimes',
+        'upi.ifsc'                      => 'sometimes',
+        'terminal'                      => 'required|array',
+        'terminal.gateway_merchant_id'  => 'required',
+        'terminal.gateway'              => 'required|string|in:upi_sbi',
+        'meta'                          => 'required|array',
+        'meta.art_reason'               => 'sometimes|string',
+        'meta.art_request_id'           => 'sometimes',
+        'meta.version'                  => 'required',
+    ];
+
     protected function validateRange(array $input)
     {
         //Only query for last 7 days

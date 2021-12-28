@@ -106,6 +106,7 @@ class Route
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
         'payment_create_upi'                       => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_create_openwallet'                => ['post',     'payments/create/openwallet',                     'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_upi_unexpected'            => ['post',     'payments/create/upi/unexpected',                 'PaymentCreateController@postCreateUpiUnexpectedPayment'            ],
         'payment_update_and_redirect'              => ['post',     'payments/{id}/updateAndRedirect',                'PaymentCreateController@postUpdateAndRedirectToAuthorize'          ],
         'payment_redirect_to_dcc_info'             => ['get',      'payments/{id}/dcc_info',                         'PaymentCreateController@getRedirectToDCCInfo'                     ],
         'payment_redirect_to_address_collect'      => ['get',      'payments/{id}/address_collect',                  'PaymentCreateController@getRedirectToAddressCollect'               ],
@@ -4295,6 +4296,8 @@ class Route
 
         // growth service cron
         'growth_filter_and_sync_cron',
+
+        'payment_create_upi_unexpected',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -4345,6 +4348,7 @@ class Route
         'user_resend_verification_otp',
         'bank_transfer_process_icici',
         'bank_transfer_process_hdfc_ecms',
+
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
@@ -11651,6 +11655,10 @@ class Route
             'internal_feature_bulk_assign',
             'internal_feature_bulk_remove',
         ],
+
+        'recon' => [
+            'payment_create_upi_unexpected',
+        ]
     ];
 
     //

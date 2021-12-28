@@ -770,9 +770,27 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VALIDATE_PUSH);
 
-        $this->isDuplicateUnexpectedPayment($input);
+       // It checks if the version is V2,which is request from art
+        if ((empty($input['meta']['version']) === false) and ($input['meta']['version'] === 'api_v2'))
+        {
+           $this->isDuplicateUnexpectedPaymentV2($input);
 
-        $this->isValidUnexpectedPayment($input);
+           $this->isValidUnexpectedPaymentV2($input);
+
+           return ;
+        }
+
+        //It check if version is V1,unexpected callbacks
+        elseif (empty($input['data']['gateway_response']['pspRefNo']) === false)
+        {
+            $this->isDuplicateUnexpectedPayment($input);
+
+            $this->isValidUnexpectedPayment($input);
+
+            return;
+        }
+
+        throw new Exception\LogicException("Neither v2 nor v1");
     }
 
     protected function isDuplicateUnexpectedPayment($callbackData)
@@ -880,11 +898,147 @@ class Gateway extends Base\Gateway
             return $this->authorizePushOld($input);
         }
 
+        if ((empty($callbackData['meta']['version']) === false) and
+            ($callbackData['meta']['version'] === 'api_v2'))
+        {
+            return $this->authorizePushV2($input);
+        }
+
         $callbackData['payment']['id'] = $paymentId;
 
         parent::action($callbackData, Action::AUTHORIZE);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($callbackData['upi'], null, false);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA         => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16 => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
+    /**
+     * Check if its duplicate unexpected payment sent from art request
+     * @param array $callbackData
+     * @throws Exception\LogicException
+     */
+    protected function isDuplicateUnexpectedPaymentV2(array $callbackData)
+    {
+        $rrn = $callbackData['upi']['npci_reference_id'];
+
+        $gateway = $callbackData['terminal']['gateway'];
+
+        $upiEntity = $this->repo->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
+
+        if (empty($upiEntity) === false)
+        {
+            // TODO: To fix this logic later by freezing one rrn i.e updating old payment rrn and create new payment
+
+            if ($upiEntity->getAmount() === (int) ($callbackData['payment']['amount']))
+            {
+                throw new Exception\LogicException(
+                    'Duplicate Unexpected payment with same amount',
+                    null,
+                    [
+                        'callbackData' => $callbackData
+                    ]
+                );
+            }
+        }
+    }
+
+    /**
+     * Check if its a valid Unexpected Payment
+     * @param array $callbackData
+     * @throws Exception\LogicException
+     * @throws GatewayErrorException
+     */
+    protected function isValidUnexpectedPaymentV2(array $callbackData)
+    {
+        //
+        // Verifies if the payload specified in the server callback is valid.
+        //
+        $input = [
+            'payment' => [
+                'id'      => $callbackData['upi']['merchant_reference'],
+                'gateway' => 'upi_sbi',
+                'vpa'     => $callbackData['upi']['vpa'],
+                'amount'  => (int) ($callbackData['payment']['amount']),
+            ],
+            'terminal' => $this->terminal,
+        ];
+
+        $this->action = Action::VERIFY;
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $paymentAmount = $this->formatAmount($verify->input);
+
+        $content = $verify->verifyResponseContent;
+
+        // TODO: Amount could be different even for same merchant reference,
+        // because gateway can create two different payments for same merchant ref
+        // with different amount and RRN.
+        $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($paymentAmount, $actualAmount);
+
+        $status = $content[ResponseFields::STATUS];
+
+        $this->checkResponseStatus($status);
+    }
+
+
+    /**
+     * AuthorizePushV2 is triggered for reconciliation happening via ART
+     * @param array $input
+     * @return array[]
+     * @throws Exception\LogicException
+     */
+    protected function authorizePushV2(array $input)
+    {
+        list($paymentId, $callbackData) = $input;
+
+        $callbackData['payment']['id'] = $paymentId;
+
+        parent::action($callbackData, Action::AUTHORIZE);
+
+        $rrn = $callbackData['upi']['npci_reference_id'];
+
+        $gateway = $callbackData['terminal']['gateway'];
+
+        $upiEntity = $this->repo->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
+
+        $gatewayPayment = $this->repo->transaction(function () use ($upiEntity, $callbackData)
+        {
+            if (empty($upiEntity) === false)
+            {
+                // Checking this for duplicate payment
+                if ($upiEntity->getAmount() === (int)($callbackData['payment']['amount']))
+                {
+                    throw new Exception\LogicException(
+                        'Duplicate Unexpected payment with same amount',
+                        null,
+                        [
+                            'callbackData' => $callbackData
+                        ]
+                    );
+                }
+                // When upi entity is not empty and
+                // rrn already already exists with different payment amount
+                //Its a case of amount mismatch.
+                //Unsetting the rrn since amount tampered is a failed payment and creating new payment with recon rrn,
+                //so system will hold unique rrn per payment
+                $upiEntity->setNpciReferenceId('');
+
+                $this->repo->saveOrFail($upiEntity);
+            }
+
+            return $this->createGatewayPaymentEntity($callbackData['upi'], null, false);
+        });
 
         return [
             'acquirer' => [

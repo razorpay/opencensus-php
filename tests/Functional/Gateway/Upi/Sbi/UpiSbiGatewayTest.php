@@ -1272,6 +1272,157 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment->getStatus());
     }
 
+    /**
+     * Tests unexpected payment creation
+     */
+    public function testUnexpectedPaymentCreation()
+    {
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_Id']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    /**
+     * Tests the duplicate unexpected payment creation
+     * for recon edge cases invalid paymentId, rrn mismatch ,Multiple RRN.
+     * Amount mismatch case is handled in seperate testcase
+     */
+    public function testUnexpectedPaymentCreateForAmountMismatch()
+    {
+        $this->payment[Payment\Entity::VPA] = 'unexpectedPayment@sbi';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        $content['upi']['merchant_reference'] = $upi->getPaymentId();
+
+        $content['upi']['vpa'] = $upi->getVpa();
+
+        //Setting amount to different amount for validating payment creation for amount mismatch
+        $content['payment']['amount'] = 10000;
+        //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_Id']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    /**s
+     * Test unexpected payment request mandatory validation
+     */
+    public function testUnexpectedPaymentValidationFailure()
+    {
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        // Unsetting the npci_reference_id to mimic validation failure
+        unset($content['upi']['npci_reference_id']);
+        unset($content['terminal']['gateway_merchant_id']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url' => '/payments/create/upi/unexpected',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        },Exception\BadRequestValidationFailureException::class);
+    }
+
+    /**
+     * Tests the payment create for duplicate unexpected payment
+     * for amount mismatch cases
+     */
+    public function testDuplicateUnexpectedPaymentForAmountMismatch()
+    {
+        $this->payment[Payment\Entity::VPA] = 'unexpectedPayment@sbi';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        $content['upi']['merchant_reference'] = $upi->getPaymentId();
+
+        $content['upi']['vpa'] = $upi->getVpa();
+
+        //Setting amount to different amount for validating payment creation for amount mismatch
+        $content['payment']['amount'] = 10000;
+        //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_Id']);
+
+        $this->assertTrue($response['success']);
+        // Hitting the payment create again for same amount mismatch request
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertEmpty($response['payment_Id']);
+
+        $this->assertFalse($response['success']);
+    }
+
+    /**
+     * Verifies the unexpected payment request at gateway
+     * before creating unexpected payment
+     */
+    public function testInvalidUnexpectedPaymentCreation()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $upi = $this->getDbLastUpi();
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        $content['upi']['merchant_reference'] = $upi->getPaymentId();
+        //Passing different amount in art request to verify unexpected payment request at gateway
+        $content['payment']['amount'] = 10000;
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertEmpty($response['payment_Id']);
+
+        $this->assertFalse($response['success']);
+    }
+
     protected function makeDataCorrectionRequest($count, $filter = [])
     {
         $request = [
@@ -1470,4 +1621,16 @@ class UpiSbiGatewayTest extends TestCase
         return $this->mockServer()->decrypt(json_decode($json, true)['resp']);
     }
 
+    protected function makeUnexpectedPaymentAndGetContent(array $content)
+    {
+        $request = [
+            'url' => '/payments/create/upi/unexpected',
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

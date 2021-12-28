@@ -4289,4 +4289,78 @@ class Service extends Base\Service
         }
         return false;
     }
+
+    /**
+     * Create payment for post recon edge cases like
+     * amount mismatch,unexpected payment,rrn mismatch etc..
+     * @param array $input
+     * @return array
+     */
+    public function createUpiUnexpectedPayment(array $input)
+    {
+        $unexpectedPaymentId = null;
+
+        (new Payment\Validator)->validateInput('create_upi_unexpected_payment', $input);
+
+        $npciReferenceId = $input['upi']['npci_reference_id'];
+
+        $gateway = $input['terminal']['gateway'];
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::UPI_UNEXPECTED_PAYMENT_INITIATED,
+                [
+
+                    'npci_reference_id'         => $npciReferenceId,
+                    'unexpected_payment_ref_id' => $input['upi']['merchant_reference'],
+                    'gateway'                   => $gateway
+                ]);
+
+                $response = (new Payment\Service)->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
+
+                if (empty($response['payment_id']) === false)
+                {
+                    $unexpectedPaymentId = $response['payment_id'];
+
+                    $this->trace->info(
+                        TraceCode::UPI_UNEXPECTED_PAYMENT_CREATED,
+                        [
+                            'payment_id'            => $unexpectedPaymentId,
+                            'npci_reference_id'     => $npciReferenceId,
+                            'gateway'               => $gateway,
+
+                        ]);
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::UPI_UNEXPECTED_PAYMENT_FAILED,
+                        [
+                            'npci_reference_id'     => $npciReferenceId,
+                            'gateway'               => $gateway,
+
+                        ]);
+                }
+
+            return [
+                'payment_Id' => $unexpectedPaymentId,
+                'success' => (empty($unexpectedPaymentId) === false),
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::UPI_UNEXPECTED_PAYMENT_FAILED,
+                [
+                    'npci_reference_id'         => $npciReferenceId,
+                    'gateway'                   => $gateway,
+                ]
+            );
+
+            throw $ex;
+        }
+    }
 }

@@ -401,6 +401,21 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates unexpected payment for UPI
+     * @return mixed
+     */
+    public function postCreateUpiUnexpectedPayment()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::PAYMENT)->createUpiUnexpectedPayment($input);
+
+        $response['art_request_id'] = $input['meta']['art_request_id'];
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Creates a dummy payment and
      * returns corresponding fees and tax
      * Used where customer is the fee-bearer and the

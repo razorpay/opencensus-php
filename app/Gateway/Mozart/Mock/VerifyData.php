@@ -662,6 +662,11 @@ class VerifyData extends Base\Mock\Server
             $response['success'] = false;
             $response['error']['internal_error_code'] = 'BAD_REQUEST_PAYMENT_REJECTED';
         }
+        else if ($vpa === 'unexpectedPayment@sbi')
+        {
+            // Mocking amount for validating duplicating unexpected payment for amount mismatch
+            $response['data']['gateway_response']['amount'] = 100;
+        }
 
         return $response;
     }
