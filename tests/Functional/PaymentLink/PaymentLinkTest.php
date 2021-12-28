@@ -1940,30 +1940,21 @@ class PaymentLinkTest extends TestCase
 
     public function testPaymentHandleCreation()
     {
+        $this->activateMerchantToTriggerPaymentHandleCreation();
+
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
-        $gimli = $this->createMock(Gimli::class);
+        $ph = $this->getDbLastEntity('payment_link', MODE::LIVE);
 
-        $gimli->method('expandAndGetMetadata')->willReturn(null);
+        $this->assertNotNull($ph);
 
-        $elfin = $this->createMock(ElfinService::class);
+        $this->assertEquals('Test Label 123', $ph[Entity::TITLE]);
 
-        $elfin->method('driver')->willReturn($gimli);
-
-        $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/@testmerchant"
-        );
-
-        $this->app->instance('elfin', $elfin);
-
-        $this->app->instance('mode', 'live');
-
-        $this->startTest();
+        $this->assertEquals('@testlabel123', $ph->getSlugFromShortUrl());
     }
 
     public function testPaymentHandleUpdate()
     {
-
         $this->testPaymentHandleCreation();
 
         $pl = $this->getDbLastEntity('payment_link', 'live');
@@ -2028,22 +2019,22 @@ class PaymentLinkTest extends TestCase
 
     public function testPaymentHandleDeactivatedView()
     {
-        $this->testPaymentHandleCreation();
+        $this->activateMerchantToTriggerPaymentHandleCreation('ANC Corp');
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->app->instance('mode', 'live');
 
-//        activating merchant to make live request
+        // activating merchant to make live request
         $this->fixtures->merchant->activate('10000000000000');
 
         // getting pl id for handle
         $paymentHandle = $this->getDbLastEntity('payment_link', 'live');
 
-        $this->fixtures->on('live')->edit('payment_link', $paymentHandle->getId(), [ 'status' => 'inactive' , 'status_reason' => 'deactivated']);
+        $this->fixtures->on('live')->edit('payment_link', $paymentHandle[Entity::ID], [ 'status' => 'inactive' , 'status_reason' => 'deactivated']);
 
         // calling view get on deactivated payment handle
-        $view = $this->call('GET', "/v1/payment_pages/pl_" . $paymentHandle->getId() . "/view");;
+        $view = $this->call('GET', "/v1/payment_pages/pl_" . $paymentHandle[Entity::ID] . "/view");;
 
         $view->assertStatus(200);
 
@@ -2051,6 +2042,74 @@ class PaymentLinkTest extends TestCase
     }
 
     // -------------------- Protected methods --------------------
+
+    protected function activateMerchantToTriggerPaymentHandleCreation()
+    {
+        $gimli = $this->createMock(Gimli::class);
+
+        $gimli->method('expandAndGetMetadata')->willReturn(null);
+
+        $elfin = $this->createMock(ElfinService::class);
+
+        $elfin->method('driver')->willReturn($gimli);
+
+        $elfin->method('shorten')->willReturn(
+            "https://rzp.io/i/@testlabel123"
+        );
+
+        $this->app->instance('elfin', $elfin);
+
+        $this->app->instance('mode', 'live');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'promoter_pan'      => 'EBPPK8222K',
+            'promoter_pan_name' => 'User 1',
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
+
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Test Label 123']);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        // Activation request for instant activation
+        $content = [
+            'activation_form_milestone'   => 'L1',
+            'company_cin'                 => 'U65999KA2018PTC114468',
+            'business_category'           => 'ecommerce',
+            'business_subcategory'        => 'fashion_and_lifestyle',
+            'promoter_pan'                => 'ABCPE0000Z',
+            'business_name'               => 'business_name',
+            'business_dba'                => 'tsest123',
+            'business_type'               => 1,
+            'business_model'              => '1245',
+            'business_website'            => 'https://example.com',
+            'business_operation_address'  => 'My Addres is somewhere',
+            'business_operation_state'    => 'KA',
+            'business_operation_city'     => 'Bengaluru',
+            'business_operation_pin'      => '560095',
+            'business_registered_address' => 'Registered Address',
+            'business_registered_state'   => 'DL',
+            'business_registered_city'    => 'Delhi',
+            'business_registered_pin'     => '560050',
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => $content
+        ];
+
+        $activationResponse = $this->makeRequestAndGetRawContent($request);
+
+        $activationResponse->assertStatus(200);
+    }
 
     protected function assertDonationGoalTrackerRefundFlow(Entity $paymentLink, array $goalTrackerSubset, array $refundInput): void
     {

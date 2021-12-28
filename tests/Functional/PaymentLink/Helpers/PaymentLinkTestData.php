@@ -3015,24 +3015,6 @@ return [
         ],
     ],
 
-    'testPaymentHandleCreation'   => [
-        'request'  => [
-            'url'     => '/payment_handle',
-            'method'  => 'post',
-            'content' => [
-                'title'      =>    'sample title',
-                'slug'       =>    '@sampleHandle'
-            ]
-        ],
-        'response' => [
-            'content'  => [
-                'title'      => 'Test Merchant',
-                'slug'       => '@testmerchant',
-                'url'        => 'https://pages.razorpay.com/@testmerchant',
-            ]
-        ]
-    ],
-
     'testPaymentHandleFetch'       => [
         'request'  => [
             'url'     => '/payment_handle',
@@ -3040,9 +3022,9 @@ return [
         ],
         'response' => [
             'content'   => [
-                'title'      =>    'Test Merchant',
-                'slug'       =>    '@testmerchant',
-                'url'        =>    'https://pages.razorpay.com/@testmerchant'
+                'title'      =>    'Test Label 123',
+                'slug'       =>    '@testlabel123',
+                'url'        =>    'https://pages.razorpay.com/@testlabel123'
             ]
         ]
     ],
