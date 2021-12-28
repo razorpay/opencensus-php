@@ -8,12 +8,12 @@ use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Mail;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
 use RZP\Models\FundLoadingDowntime\Entity as Entity;
 use RZP\Mail\FundLoadingDowntime\FundLoadingDowntimeMail;
 use RZP\Models\FundLoadingDowntime\Constants as Constants;
 use RZP\Models\Merchant\MerchantNotificationConfig\NotificationType;
-use RZP\Models\Merchant\MerchantNotificationConfig\Entity as ConfigsEntity;
 
 class Notifications
 {
@@ -278,11 +278,11 @@ class Notifications
                 continue;
             }
 
-            $start = Carbon::createFromTimestamp($value[Entity::START_TIME], 'IST')->format("dM H:i A");
+            $start = Carbon::createFromTimestamp($value[Entity::START_TIME], Timezone::IST)->format("dM H:i A");
 
             if ($value[Entity::END_TIME] !== Constants::DEFAULT_END_TIME)
             {
-                $end = 'to ' . Carbon::createFromTimestamp($value[Entity::END_TIME], 'IST')->format("dM H:i A");
+                $end = 'to ' . Carbon::createFromTimestamp($value[Entity::END_TIME], Timezone::IST)->format("dM H:i A");
             }
             else
             {
@@ -319,11 +319,11 @@ class Notifications
 
         foreach ($downtime[Constants::DURATIONS_AND_MODES] as $duration)
         {
-            $start = Carbon::createFromTimestamp($duration[Entity::START_TIME], 'IST')->toDayDateTimeString();
+            $start = Carbon::createFromTimestamp($duration[Entity::START_TIME], Timezone::IST)->toDayDateTimeString();
 
             if ($duration[Entity::END_TIME] !== Constants::DEFAULT_END_TIME)
             {
-                $end = 'to ' . Carbon::createFromTimestamp($duration[Entity::END_TIME], 'IST')->toDayDateTimeString();
+                $end = 'to ' . Carbon::createFromTimestamp($duration[Entity::END_TIME], Timezone::IST)->toDayDateTimeString();
             }
             else
             {

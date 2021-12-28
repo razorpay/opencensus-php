@@ -2,15 +2,17 @@
 
 namespace Functional\FundLoadingDowntime;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use Illuminate\Support\Facades\Mail;
 use RZP\Models\FundLoadingDowntime\Entity;
+use RZP\Models\FundLoadingDowntime\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Mail\FundLoadingDowntime\FundLoadingDowntimeMail;
 
 class FundLoadingDowntimeTest extends TestCase
 {
@@ -471,7 +473,7 @@ class FundLoadingDowntimeTest extends TestCase
     {
         Mail::fake();
 
-        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com'], ['9468620910', '9468620911']);
 
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
 
@@ -522,6 +524,47 @@ class FundLoadingDowntimeTest extends TestCase
         $this->assertEquals(1, count($remainingDowntimes));
 
         $this->assertArraySelectiveEquals($attributes, $remainingDowntimes[0]);
+
+        // email related assertions
+        Mail::assertSent(FundLoadingDowntimeMail::class, function($mail)
+        {
+            $this->assertSame(Constants::CANCELLATION, $mail->flowType);
+
+            $expectedDowntimeParams = [
+                'type'                => "Scheduled Maintenance Activity",
+                'source'              => "Partner Bank",
+                'channel'             => "ICICI Bank",
+                'durations_and_modes' => [
+                    [
+                        'start_time' => "Thu, Sep 23, 2021 9:38 PM",
+                        'end_time'   => "to Fri, Sep 24, 2021 5:58 AM",
+                        'modes'      => "NEFT,IMPS",
+                    ]
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedDowntimeParams, $mail->downtimeParams);
+
+            $this->assertSame(
+                [
+                    'name'    => 'Team RazorpayX',
+                    'address' => 'x.support@razorpay.com'
+                ],
+                $mail->from[0]
+            );
+
+            $this->assertArraySelectiveEquals(
+                [
+                    'address' => "sagnik1@razorpay.com"
+                ],
+                $mail->to[0]
+            );
+
+            $this->assertSame('Update on Downtime communication for loading funds to RazorpayX virtual account',
+                              $mail->subject);
+
+            return true;
+        });
     }
 
     public function createMerchantConfigs($mid, $emails, $mobiles)

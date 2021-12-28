@@ -11,8 +11,8 @@ use RZP\Models\FundLoadingDowntime\Constants as Constant;
 class FundLoadingDowntimeMail extends Mailable
 {
     protected $merchantEmail;
-    protected $downtimeParams;
-    protected $flowType;
+    public $downtimeParams;
+    public $flowType;
 
     const SOURCE    = 'fund_loading_downtime';
     const NAMESPACE = 'razorpayx_payouts_core';
@@ -55,6 +55,24 @@ class FundLoadingDowntimeMail extends Mailable
     {
         $templateName = self::SOURCE . '.' . $this->flowType;
         $this->view($templateName);
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        switch ($this->flowType)
+        {
+            case Constant::CREATION:
+
+                $this->subject('Downtime communication for loading funds to RazorpayX virtual account');
+                break;
+
+            Default:
+
+                $this->subject('Update on Downtime communication for loading funds to RazorpayX virtual account');
+                break;
+        }
+
         return $this;
     }
 

@@ -513,7 +513,7 @@ return [
                     "failures"  => 0,
                 ],
                 'email'                => [
-                    "successes" => 2,
+                    "successes" => 1,
                     "failures"  => 0,
                 ],
                 'downtime_information' => [
@@ -522,8 +522,8 @@ return [
                     'channel'             => 'icicibank',
                     'durations_and_modes' => [
                         0 => [
-                            'start_time' => 1632413321,
-                            'end_time'   => 1632443321,
+                            'start_time' => 1632413321, // Sep 23, 2021 9:38 PM
+                            'end_time'   => 1632443321, // Sep 24, 2021 5:58 AM
                             "modes"      => "NEFT,IMPS",
                         ],
                     ],
