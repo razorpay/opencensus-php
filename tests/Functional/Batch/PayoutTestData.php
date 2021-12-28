@@ -17,7 +17,7 @@ return [
         'response' => [
             'content' => [
                 'processable_count' => 1,
-                'error_count'       => 3,
+                'error_count'       => 4,
                 'parsed_entries'    => [
                     [
                         Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',

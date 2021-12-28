@@ -142,6 +142,30 @@ class PayoutTest extends TestCase
                 Batch\Header::NOTES_CODE                => 'test',
                 Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
             ],
+            [                     // This entry has no errors and So this entry will be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 0,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Chirag Chiranjib",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "chirag.chiranjib@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+            ],
             [
                 // This entry has no errors and So this entry will be parsed successfully.
                 Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
@@ -203,9 +227,13 @@ class PayoutTest extends TestCase
             "\vInvalid encoding of Contact Email. Non UTF-8 character(s) found.,2323230041626905,30,INR,NEFT".
             ",refund,,bank_account,Chirag Chiranjib,SBIN0010720,100200300400,,,Chirag \xf8 Chiranjib,".
             "NarrationTest,,,employee,chirag\xffchiranjib@razorpay.com,,,test,Bhubaneswar",
-            // No error in the last data row
+            // Fourth Row : Show payout amount error
+            "The payout amount (in rupees) may not be less than 1.00".
+            ",2323230041626905,0,INR,NEFT,refund,,bank_account,Chirag Chiranjib,SBIN0010720,100200300400,,,Chirag Chiranjib,".
+            "NarrationTest,,,employee,chirag.chiranjib@razorpay.com,,,test,Bhubaneswar",
+            // Fifth Row : No errors
             ",2323230041626905,40,INR,NEFT,refund,,bank_account,Chirag Chiranjib,SBIN0010720,100200300400,,,Chirag Chiranjib,".
-            "NarrationTest,,,employee,chirag.chiranjib@razorpay.com,,,test,Bhubaneswar"
+            "NarrationTest,,,employee,chirag.chiranjib@razorpay.com,,,test,Bhubaneswar",
         ];
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));

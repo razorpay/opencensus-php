@@ -1953,6 +1953,8 @@ class Validator extends Base\Validator
             {
                 $this->validateInputByRules($operation, $entry, $rules);
 
+                $this->runValidators($operation, $entry);
+
                 $error[Header::ERROR_CODE]        = null;
                 $error[Header::ERROR_DESCRIPTION] = null;
             }
@@ -2046,13 +2048,6 @@ class Validator extends Base\Validator
         if ($validator->fails())
         {
             $this->processValidationFailureWithCompleteMessage($validator->messages(), $operation, $input);
-        }
-
-        $operationFunctionVar = camel_case($operation) . 'Validators';
-
-        if (isset(static::$$operationFunctionVar))
-        {
-            $this->runEachValidator(static::$$operationFunctionVar, $input);
         }
     }
 
