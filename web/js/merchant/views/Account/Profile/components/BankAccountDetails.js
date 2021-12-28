@@ -9,7 +9,7 @@ import TextHighlighter from 'common/ui/TextHighlighter';
 import { UPDATE_BANK_ACC } from '../deeplink-constants';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import NeedsClarificationModal from './WorkflowRequests/NeedsClarificationModal';
-import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
@@ -27,19 +27,19 @@ const BankAccountDetails = ({
 }) => {
   const bankAccountSectionRef = useRef(null);
 
-  const openNeedsClarificationModal = ({ workflowType }) => {
+  const openNeedsClarificationModal = (data) => {
     analyticsTrack({
       objectName: 'needs clarification respond',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
-        flowName: workflowType,
+        flowName: data.workflowType,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
     openModal({
       size: 'small',
-      component: <NeedsClarificationModal workflowType={workflowType} />,
+      component: <NeedsClarificationModal {...data} />,
     });
   };
 
@@ -117,12 +117,13 @@ const BankAccountDetails = ({
           ))}
         <WorkflowStatus
           roles={[rolesList.OWNER]}
-          workflowType={WORKFLOWS.BANK_DETAIL_UPDATE}
+          workflowType={WORKFLOW_TYPES.BANK_DETAIL_UPDATE}
           reviewStatus=" Your request to update your bank account has been received. Our team is going
                     through the information provided by you."
           onReplyClick={() =>
             openNeedsClarificationModal({
-              workflowType: WORKFLOWS.BANK_DETAIL_UPDATE,
+              workflowType: WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
+              worklowName: 'Update Bank Account Details',
             })
           }
         />
@@ -148,7 +149,7 @@ const mapStateToProps = (state) => ({
   bankAccountChangeStatus: state.profile.bankAccountChangeStatus,
   settlementConfig: state.settlement.config,
   workflows: state.workflows,
-  bank_detail_update_workflow: state.workflows[WORKFLOWS.BANK_DETAIL_UPDATE],
+  bank_detail_update_workflow: state.workflows[WORKFLOW_TYPES.BANK_DETAIL_UPDATE],
 });
 
 export default withRouter(

@@ -26,6 +26,7 @@ import {
   NC_INCREASE_TXN_LIMIT,
   NC_UPDATE_WEBSITE,
   NC_ADD_WEBSITE,
+  NC_ADD_ADDITIONAL_WEBSITE,
 } from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
@@ -36,7 +37,7 @@ import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/E
 import { isMobileDevice } from 'merchant/components/Home/data';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
-import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
 function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
@@ -119,25 +120,19 @@ const MerchantDetails = ({
   fetchWorkflowStatus,
 }) => {
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const openNeedsClarificationModal = ({ workflowType, clarificationReason, onResponseSubmit }) => {
+  const openNeedsClarificationModal = (data) => {
     analyticsTrack({
       objectName: 'needs clarification respond',
       actionName: 'clicked',
       screen: 'my account',
       properties: {
-        flowName: workflowType,
+        flowName: data.workflowType,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
     openModal({
       size: 'small',
-      component: (
-        <NeedsClarificationModal
-          workflowType={workflowType}
-          clarificationReason={clarificationReason}
-          onResponseSubmit={onResponseSubmit}
-        />
-      ),
+      component: <NeedsClarificationModal {...data} />,
     });
   };
 
@@ -169,7 +164,7 @@ const MerchantDetails = ({
         component: (
           <EditWebsiteDetailsModal
             onClose={closeModal}
-            onWebsiteAdd={() => fetchWorkflowStatus(WORKFLOWS.UPDATE_BUSINESS_WEBSITE)}
+            onWebsiteAdd={() => fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE)}
           />
         ),
       });
@@ -211,7 +206,7 @@ const MerchantDetails = ({
       size: 'small',
       component: (
         <UpdateTransactionLimit
-          onComplete={() => fetchWorkflowStatus(WORKFLOWS.INCREASE_TRANSACTION_LIMIT)}
+          onComplete={() => fetchWorkflowStatus(WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT)}
         />
       ),
     });
@@ -457,7 +452,7 @@ const MerchantDetails = ({
             )}
           />
 
-          <IntoView hashedWith={[NC_UPDATE_WEBSITE]}>
+          <IntoView hashedWith={[NC_UPDATE_WEBSITE, NC_ADD_WEBSITE]}>
             <DetailRow
               label={() => (
                 <div class="website-self-serve__listItem">
@@ -476,7 +471,7 @@ const MerchantDetails = ({
                   </small>
                   <WorkflowStatus
                     roles={[rolesList.OWNER]}
-                    workflowType={WORKFLOWS.UPDATE_BUSINESS_WEBSITE}
+                    workflowType={WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE}
                     reviewStatus={
                       user.has_key_access === true
                         ? 'Your request to update the website is under review.'
@@ -484,7 +479,12 @@ const MerchantDetails = ({
                     }
                     onReplyClick={() =>
                       openNeedsClarificationModal({
-                        workflowType: WORKFLOWS.UPDATE_BUSINESS_WEBSITE,
+                        workflowType: WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE,
+                        workflowName:
+                          workflows[WORKFLOW_TYPES.ADD_BUSINESS_WEBSITE].permission ===
+                          'edit_merchant_website_detail'
+                            ? 'Add Business Website'
+                            : 'Update Business Website',
                       })
                     }
                   />
@@ -495,7 +495,7 @@ const MerchantDetails = ({
               }
             />
           </IntoView>
-          <IntoView hashedWith={[NC_ADD_WEBSITE]}>
+          <IntoView hashedWith={[NC_ADD_ADDITIONAL_WEBSITE]}>
             <DetailRow
               label={() => (
                 <div class="website-self-serve__listItem">
@@ -514,11 +514,12 @@ const MerchantDetails = ({
                   </small>
                   <WorkflowStatus
                     roles={[rolesList.OWNER, rolesList.ADMIN]}
-                    workflowType={WORKFLOWS.ADD_ADDITIONAL_WEBSITE}
+                    workflowType={WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE}
                     reviewStatus="Your request to add the website is under review."
                     onReplyClick={() =>
                       openNeedsClarificationModal({
-                        workflowType: WORKFLOWS.ADD_ADDITIONAL_WEBSITE,
+                        workflowType: WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE,
+                        workflowName: 'Add Additional Website',
                       })
                     }
                   />
@@ -610,11 +611,12 @@ const MerchantDetails = ({
                 </small>
                 <WorkflowStatus
                   roles={[rolesList.OWNER]}
-                  workflowType={WORKFLOWS.INCREASE_TRANSACTION_LIMIT}
+                  workflowType={WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT}
                   reviewStatus="You request to increase to transaction limit has been received. Our team is going through the information provided by you."
                   onReplyClick={() =>
                     openNeedsClarificationModal({
-                      workflowType: WORKFLOWS.INCREASE_TRANSACTION_LIMIT,
+                      workflowType: WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT,
+                      workflowName: 'Increase Transaction Limit',
                     })
                   }
                 />

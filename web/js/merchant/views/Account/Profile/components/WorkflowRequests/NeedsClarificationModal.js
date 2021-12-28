@@ -8,7 +8,6 @@ import { compose } from 'redux';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { workflowNames } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -25,7 +24,9 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
  */
 const NeedsClarificationModal = ({
   workflowType,
+  workflowName,
   onResponseSubmit,
+  refetch = true,
   workflows,
   closeModal,
   showNotification,
@@ -134,7 +135,7 @@ const NeedsClarificationModal = ({
       clarification_documents_ids: documents.map((doc) => doc.id),
     };
     return merchantFetch({
-      url: `merchant/${workflowType}/clarification`,
+      url: `merchant/submit_clarification/${workflowType}`,
       method: 'post',
       mode: 'live',
       data: body,
@@ -152,9 +153,7 @@ const NeedsClarificationModal = ({
             },
           });
           fetchWorkflowStatus(workflowType);
-          if (onResponseSubmit) {
-            onResponseSubmit();
-          }
+          onResponseSubmit?.();
           closeModal();
         }
       })
@@ -188,12 +187,33 @@ const NeedsClarificationModal = ({
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    fetchWorkflowStatus(workflowType);
+    if (!refetch) return;
+    fetchWorkflowStatus(workflowType).then((res) => {
+      const workflow = res.data;
+      if (workflow?.tags?.includes('customer-responded')) {
+        showNotification({
+          type: 'error',
+          message: `You've already responded for ${workflowName} workflow`,
+        });
+        closeModal();
+      } else if (
+        !workflow ||
+        !workflow.workflow_exists ||
+        !['open', 'approved'].includes(workflow?.workflow_status) ||
+        !workflow?.needs_clarification
+      ) {
+        showNotification({
+          type: 'error',
+          message: `No clarification required for ${workflowName} worfklow`,
+        });
+        closeModal();
+      }
+    });
   }, []);
 
   return (
     <div>
-      <ModalHeader title={workflowNames[workflowType]} onCloseClick={closeModal} />
+      <ModalHeader title={workflowName} onCloseClick={closeModal} />
       <div class="modal-body needs-clarification-form">
         {workflows[workflowType].loading && (
           <center>

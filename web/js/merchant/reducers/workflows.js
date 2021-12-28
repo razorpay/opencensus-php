@@ -14,7 +14,8 @@ const initialState = {
     loading: true,
     error: null,
   },
-  update_business_website: {
+  // for add/update business website
+  additional_website: {
     loading: true,
     error: null,
   },
@@ -28,23 +29,12 @@ const initialState = {
   },
 };
 
-/**
- * Maps `WorflowType` -> workflow status API URL
- */
-const workflowURLs = {
-  increase_transaction_limit: 'merchant/increase_transaction_limit/details',
-  bank_detail_update: 'merchant/bank_detail_update/details',
-  add_additional_website: 'merchant/add_additional_website/details',
-  update_business_website: 'merchant/additional_website/details',
-  gstin_update_self_serve: 'merchant/gstin_update_self_serve/details',
-};
-
 //actions
 export const fetchWorkflowStatus = (workflowType) => {
   return {
     type: FETCH_WORKFLOW_STATUS,
     payload: merchantFetch({
-      url: workflowURLs[workflowType],
+      url: `merchant/${workflowType}/details`,
       method: 'GET',
       mode: 'live',
       headers: {

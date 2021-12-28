@@ -42,8 +42,8 @@ import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import {
-  workflowNames,
   getWorkflowTypeForRoute,
+  getWorkflowNameForRoute,
 } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import lazy from 'merchant/routes/LazyLoader';
@@ -102,7 +102,7 @@ class Profile extends Component {
     });
   }
 
-  openNeedsClarificationModal() {
+  async openNeedsClarificationModal() {
     const { location, openModal, fetchWorkflowStatus } = this.props;
 
     if (!this.isAdminOrOwner() || !location || !location.pathname) return;
@@ -110,28 +110,27 @@ class Profile extends Component {
     const needsClarification = location.pathname.includes('clarification');
     const workflowRoute = location.pathname.split('/').pop();
     const workflowType = getWorkflowTypeForRoute(workflowRoute);
+    const worfklowName = getWorkflowNameForRoute(workflowRoute);
 
-    if (needsClarification && workflowRoute && workflowType) {
-      fetchWorkflowStatus(workflowType).then((response) => {
-        const workflow = response?.data;
-        if (
-          workflow &&
-          workflow.workflow_exists &&
-          ['open', 'approved'].includes(workflow?.workflow_status) &&
-          workflow?.needs_clarification
-        ) {
-          if (workflow?.tags?.includes('awaiting-customer-response')) {
-            openModal({
-              size: 'small',
-              component: <NeedsClarificationModal workflowType={workflowType} />,
-            });
-          } else if (workflow?.tags?.includes('customer-responded')) {
-            this.props.showNotification({
-              type: 'success',
-              message: `You’ve already submitted response for ${workflowNames[workflowType]}`,
-            });
-          }
-        }
+    if (!needsClarification || !workflowRoute || !workflowType) return;
+    const response = await fetchWorkflowStatus(workflowType);
+    const workflow = response?.data;
+    if (
+      workflow &&
+      workflow.workflow_exists &&
+      ['open', 'approved'].includes(workflow?.workflow_status) &&
+      workflow?.needs_clarification &&
+      workflow?.tags?.includes('awaiting-customer-response')
+    ) {
+      openModal({
+        size: 'small',
+        component: (
+          <NeedsClarificationModal
+            workflowType={workflowType}
+            workflowName={worfklowName}
+            refetch={false}
+          />
+        ),
       });
     }
   }

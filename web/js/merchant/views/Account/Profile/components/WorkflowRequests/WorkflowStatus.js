@@ -21,7 +21,7 @@ import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/redu
 const WorkflowStatus = ({
   workflowType,
   onReplyClick,
-  roles,
+  roles = [],
   reviewWorkflowStatus = ['open', 'approved'],
   responseRequiredWorfklowStatus = ['open', 'approved'],
   respondedWorkflowStatus = ['open', 'approved'],
@@ -30,14 +30,17 @@ const WorkflowStatus = ({
   showResponseRequiredStatus = true,
   showRespondedStatus = true,
   showRejectedStatus = true,
+  showAddReplyButton = true,
   workflows,
   reviewStatus,
   fetchWorkflowStatus,
   user,
 }) => {
   useEffect(() => {
-    // Only fetch request if user is owner, other users shouldn't see the error
-    if (!roles || (roles && roles.includes(user.role))) fetchWorkflowStatus(workflowType);
+    // Only fetch request if user is owner, other users shouldn't see the workflow
+    if ((!roles.length || roles.includes(user.role)) && workflows[workflowType].loading) {
+      fetchWorkflowStatus(workflowType);
+    }
   }, []);
 
   return (
@@ -73,9 +76,11 @@ const WorkflowStatus = ({
         workflows[workflowType]?.tags?.includes('awaiting-customer-response') && (
           <div class="workflow-status rejected">
             {workflows[workflowType]?.needs_clarification}
-            <button class="btn btn-link" onClick={onReplyClick ? onReplyClick : null}>
-              Add Reply
-            </button>
+            {showAddReplyButton && (
+              <button class="btn btn-link" onClick={onReplyClick ? onReplyClick : null}>
+                Add Reply
+              </button>
+            )}
           </div>
         )}
     </>

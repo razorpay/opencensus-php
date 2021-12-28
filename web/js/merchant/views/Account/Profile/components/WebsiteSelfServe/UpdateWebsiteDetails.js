@@ -12,7 +12,7 @@ import { getCommonAnalyticsProperties, autoPrefixUrls } from 'common/utils/rzp-u
 import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 
 function WebsiteFields({
   flowType,
@@ -216,7 +216,7 @@ function UpdateWebsiteDetails(props) {
           message: `${type} submitted successfully`,
         });
 
-        props.fetchWorkflowStatus(WORKFLOWS.UPDATE_BUSINESS_WEBSITE);
+        props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE);
         props.closeModal();
         analyticsTrack({
           objectName: `Website submit result`,
@@ -297,7 +297,7 @@ function UpdateWebsiteDetails(props) {
           message: `${type} submitted successfully`,
         });
 
-        props.fetchWorkflowStatus(WORKFLOWS.ADD_ADDITIONAL_WEBSITE);
+        props.fetchWorkflowStatus(WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE);
         props.closeModal();
       }
     } catch ({ errors }) {

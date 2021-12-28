@@ -9,13 +9,13 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import ConfirmAddressUpdate from './ConfirmAddressUpdate';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { bindActionCreators, compose } from 'redux';
-import moment from 'moment';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { WORKFLOWS } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
-
-const THRESHOLD_DATE_GSTIN = `01/01/2021`;
+import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 
 class GSTDetails extends Component {
   state = {
@@ -24,8 +24,6 @@ class GSTDetails extends Component {
     newAddressFetchFailed: false,
     optOutSuccess: null,
     activationResponse: null,
-    selfServeStatusDetails: {},
-    isLoading: true,
   };
 
   GSTSection = React.createRef(null);
@@ -36,7 +34,6 @@ class GSTDetails extends Component {
 
   componentDidMount() {
     this.fetchNewAddress();
-    this.getSelfServeStatus();
 
     // scroll directly to GST section
     if (location.hash.startsWith('#gst') && this.GSTSection.current)
@@ -65,7 +62,7 @@ class GSTDetails extends Component {
           showGSTINSelfServe={this.showGSTINSelfServe}
           showNotification={this.props.showNotification}
           activationData={activationResponse}
-          fetchStatus={this.getSelfServeStatus}
+          fetchStatus={this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
         />
       ),
     });
@@ -93,7 +90,7 @@ class GSTDetails extends Component {
           showGSTINSelfServe={this.showGSTINSelfServe}
           showNotification={this.props.showNotification}
           activationData={activationResponse}
-          fetchStatus={this.getSelfServeStatus}
+          fetchStatus={this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
         />
       ),
     });
@@ -129,27 +126,6 @@ class GSTDetails extends Component {
       url: `merchants/me/features?features[suggested_address_opt_in]=0&should_sync=1`,
       method: 'POST',
     });
-
-  getSelfServeStatus = async () => {
-    try {
-      const response = await merchantFetch(`merchant/gstin_update_self_serve/details`);
-      if (response) {
-        this.setState({
-          selfServeStatusDetails: response?.data,
-          isLoading: false,
-        });
-      }
-    } catch (error) {
-      const msg = error?.errors?.join(' ');
-      this.props.showNotification({
-        type: 'error',
-        message: `${msg}`,
-      });
-      this.setState({
-        isLoading: false,
-      });
-    }
-  };
 
   updateOptOutSuccess = (value) => this.setState({ optOutSuccess: value });
 
@@ -198,12 +174,12 @@ class GSTDetails extends Component {
   };
 
   isWorkFlowRejected = () => {
-    const { selfServeStatusDetails } = this.state;
+    const { gstinWorfklow } = this.props;
 
     if (
-      selfServeStatusDetails.workflow_status &&
-      selfServeStatusDetails.workflow_status === 'rejected' &&
-      selfServeStatusDetails?.request_under_validation !== true
+      gstinWorfklow.workflow_status &&
+      gstinWorfklow.workflow_status === 'rejected' &&
+      gstinWorfklow?.request_under_validation !== true
     ) {
       return true;
     }
@@ -212,14 +188,14 @@ class GSTDetails extends Component {
   };
 
   isRequestUnderReview = () => {
-    const { selfServeStatusDetails } = this.state;
+    const { gstinWorfklow } = this.props;
 
     // request under validation
     if (
-      (selfServeStatusDetails?.workflow_status &&
-        ['open', 'approved'].includes(selfServeStatusDetails?.workflow_status) &&
-        !selfServeStatusDetails?.needs_clarification) ||
-      selfServeStatusDetails?.request_under_validation === true
+      (gstinWorfklow?.workflow_status &&
+        ['open', 'approved'].includes(gstinWorfklow?.workflow_status) &&
+        !gstinWorfklow?.needs_clarification) ||
+      gstinWorfklow?.request_under_validation === true
     ) {
       return true;
     }
@@ -228,13 +204,13 @@ class GSTDetails extends Component {
   };
 
   didCustomerRespond = () => {
-    const { selfServeStatusDetails } = this.state;
+    const { gstinWorfklow } = this.props;
 
     if (
-      selfServeStatusDetails?.workflow_status &&
-      ['open', 'approved'].includes(selfServeStatusDetails?.workflow_status) &&
-      selfServeStatusDetails?.needs_clarification &&
-      selfServeStatusDetails?.tags?.includes('customer-responded')
+      gstinWorfklow?.workflow_status &&
+      ['open', 'approved'].includes(gstinWorfklow?.workflow_status) &&
+      gstinWorfklow?.needs_clarification &&
+      gstinWorfklow?.tags?.includes('customer-responded')
     ) {
       return true;
     }
@@ -243,13 +219,13 @@ class GSTDetails extends Component {
   };
 
   isCustomerResponseAwaited = () => {
-    const { selfServeStatusDetails } = this.state;
+    const { gstinWorfklow } = this.props;
 
     if (
-      selfServeStatusDetails.workflow_status &&
-      ['open', 'approved'].includes(selfServeStatusDetails.workflow_status) &&
-      selfServeStatusDetails.needs_clarification &&
-      selfServeStatusDetails.tags?.includes('awaiting-customer-response')
+      gstinWorfklow.workflow_status &&
+      ['open', 'approved'].includes(gstinWorfklow.workflow_status) &&
+      gstinWorfklow.needs_clarification &&
+      gstinWorfklow.tags?.includes('awaiting-customer-response')
     ) {
       return true;
     }
@@ -258,8 +234,6 @@ class GSTDetails extends Component {
   };
 
   addClarification = () => {
-    const { selfServeStatusDetails } = this.state;
-
     analyticsTrack({
       objectName: 'Needs GSTIN clarification respond',
       actionName: 'Clicked',
@@ -273,9 +247,8 @@ class GSTDetails extends Component {
       size: 'small',
       component: (
         <NeedsClarificationModal
-          workflowType={WORKFLOWS.UPDATE_GSTIN}
-          clarificationReason={selfServeStatusDetails.needs_clarification}
-          onResponseSubmit={this.getSelfServeStatus}
+          workflowType={WORKFLOW_TYPES.UPDATE_GSTIN}
+          workflowName="Update GSTIN Details"
         />
       ),
     });
@@ -289,29 +262,16 @@ class GSTDetails extends Component {
       this.openAddGSTModal();
     }
 
-    if (hasGstin && user.isGstinEditFlowEnabled && this.signedUpAfterThreshold()) {
+    if (hasGstin && user.isGstinEditFlowEnabled) {
       this.openEditGSTModal();
     }
   };
 
-  signedUpAfterThreshold = () => {
-    return (
-      new Date(moment.unix(this.props.user.created_at).format('DD/MM/YYYY')) >=
-      new Date(THRESHOLD_DATE_GSTIN)
-    );
-  };
-
   render() {
     const { merchant_gst, rzp_gst, user } = this.props;
-    const {
-      business_suggested_address,
-      business_suggested_pin,
-      selfServeStatusDetails,
-      isLoading,
-    } = this.state;
+    const { business_suggested_address, business_suggested_pin } = this.props;
 
     const hasGstin = merchant_gst.gstin && true;
-    const isSignedUpAfterThreshold = this.signedUpAfterThreshold();
 
     return (
       <div className="panel panel-default gst-details-block" ref={this.GSTSection}>
@@ -323,7 +283,6 @@ class GSTDetails extends Component {
           >
             <span className="pull-right">
               {!hasGstin &&
-                isLoading === false &&
                 user.isGstinAddFlowEnabled &&
                 !this.isRequestUnderReview() &&
                 !this.isCustomerResponseAwaited() &&
@@ -331,51 +290,42 @@ class GSTDetails extends Component {
                 !this.isWorkFlowRejected() && <a onClick={this.openAddGSTModal}>Add GST details</a>}
 
               {hasGstin &&
-                isLoading === false &&
                 user.isGstinEditFlowEnabled &&
                 !this.isRequestUnderReview() &&
                 !this.isWorkFlowRejected() &&
                 !this.isCustomerResponseAwaited() &&
-                !this.didCustomerRespond() &&
-                isSignedUpAfterThreshold && (
+                !this.didCustomerRespond() && (
                   <a onClick={this.openEditGSTModal}>Update GST details</a>
                 )}
 
               {/* Request was rejected flow  */}
-              {this.isWorkFlowRejected() && isLoading === false && (
-                <a onClick={this.handleRetry}>Request rejected (retry)</a>
-              )}
+              {this.isWorkFlowRejected() ? (
+                (hasGstin && user.isGstinEditFlowEnabled) ||
+                (!hasGstin && user.isGstinAddFlowEnabled) ? (
+                  <a onClick={this.handleRetry}>Request rejected (retry)</a>
+                ) : (
+                  <span className="text-danger">Request Rejected</span>
+                )
+              ) : null}
 
               {/* Request is under review flow */}
-              {this.isRequestUnderReview() && isLoading === false && (
+              {this.isRequestUnderReview() && (
                 <span className="pull-right" style={{ opacity: '0.5' }}>
                   Request under review
                 </span>
               )}
 
               {/* Needs clarification flow */}
-              {this.isCustomerResponseAwaited() && isLoading === false && (
-                <a onClick={this.addClarification}>Add reply</a>
-              )}
+              {this.isCustomerResponseAwaited() && <a onClick={this.addClarification}>Add reply</a>}
             </span>
           </ShowWhen>
-          {this.isWorkFlowRejected() && (
-            <div className="workflow-status rejected">
-              {selfServeStatusDetails.rejection_reason_message}
-            </div>
-          )}
-          {this.isCustomerResponseAwaited() && isLoading === false && (
-            <div className="workflow-status rejected">
-              {selfServeStatusDetails.needs_clarification}
-            </div>
-          )}
-          {/* Customer has replied with clarification flow */}
-          {this.didCustomerRespond() && isLoading === false && (
-            <div className="workflow-status inprogress">
-              Thank you for providing us with further information. Our team is going through the
-              information provided by you and will help resolve this issue.
-            </div>
-          )}
+          <WorkflowStatus
+            roles={[rolesList.OWNER]}
+            workflowType={WORKFLOW_TYPES.UPDATE_GSTIN}
+            showReviewStatus={false}
+            showRejectedStatus={false}
+            showAddReplyButton={false}
+          />
         </div>
 
         <div className="list-group details-row-container">
@@ -428,11 +378,21 @@ const mapStateToProps = (state) => {
   return {
     ...state.profile,
     user: state.session.user,
+    gstinWorfklow: state.workflows[WORKFLOW_TYPES.UPDATE_GSTIN],
   };
 };
 
 const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ fetchGST, openModal, closeModal, showNotification }, dispatch);
+  bindActionCreators(
+    {
+      fetchGST,
+      openModal,
+      closeModal,
+      showNotification,
+      fetchWorkflowStatus: fetchWorkflowStatusReducer,
+    },
+    dispatch,
+  );
 
 export default compose(
   connect(mapStateToProps, mapDispatchToProps),

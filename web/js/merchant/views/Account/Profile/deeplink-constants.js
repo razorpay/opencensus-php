@@ -12,6 +12,7 @@ export const NC_INCREASE_TXN_LIMIT = 'clarification_increase_transaction_limit';
 export const NC_UPDATE_BANK_ACC = 'clarification_update_bank_account';
 export const NC_UPDATE_WEBSITE = 'clarification_update_website';
 export const NC_ADD_WEBSITE = 'clarification_add_website';
+export const NC_ADD_ADDITIONAL_WEBSITE = 'clarification_add_additional_website';
 export const NC_UPDATE_GSTIN = 'clarification_update_gstin';
 
 // Rejection Reason - routes for communication sent over for sms/email
