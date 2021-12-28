@@ -141,6 +141,11 @@ class Service extends Base\Service
             $this->trace->count(Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_REQUEST_COUNT);
             throw $e;
         }
+        if(Session()->has($this->mode . '_app_token') === false)
+        {
+            unset($input['email']);
+            unset($input['contact']);
+        }
 
         $orderId = $input['order_id'];
 

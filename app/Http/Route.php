@@ -7728,6 +7728,7 @@ class Route
     public static $session = [
         'checkout',
         'merchant_checkout_preferences',
+        'merchant_coupon_validity',
         'internal_merchant_checkout_preferences',
         'otp_verify',
         'customer_get_saved_status',
