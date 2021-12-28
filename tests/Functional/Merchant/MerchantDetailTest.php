@@ -3764,6 +3764,8 @@ Team Razorpay',
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe($registeredAddress);
 
+        $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
+
         $this->assertGstinSelfServeStatusAndRejectionReason([
             'workflow_exists'          =>  false,
             'request_under_validation' =>  true
@@ -3780,8 +3782,6 @@ Team Razorpay',
             'business_registered_city'    => 'Pune',
             'business_registered_state'   => 'MP'
         ], $merchantDetail);
-
-        Mail::assertNotQueued(MerchantDashboardEmail::class);
     }
 
     protected function processBvsResponseForGstinSelfServe($status = 'success')

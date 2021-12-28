@@ -1837,15 +1837,27 @@ class Service extends Base\Service
     {
         $input = $this->getGstinSelfServeInputFromCache();
 
-        $registeredBusinessAddressDetails =  $this->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($detail->getMerchantId(), $input[BvsConstant::VALIDATION_ID]);
+        try
+        {
+            $registeredBusinessAddressDetails =  $this->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($detail->getMerchantId(), $input[BvsConstant::VALIDATION_ID]);
 
-        $detail->edit(
-            array_merge([
-                    Entity::GSTIN => $input[Entity::GSTIN]
-                ],
-                $registeredBusinessAddressDetails
-            )
-        );
+            $detail->edit(
+                array_merge([
+                        Entity::GSTIN => $input[Entity::GSTIN]
+                    ],
+                    $registeredBusinessAddressDetails
+                )
+            );
+        }
+
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::GSTIN_SELF_SERVE_WORKFLOW_RAISED_AFTER_BVS_SUCCESS, []);
+
+            $this->handleGstinSelfServeCallbackFailure($detail);
+
+            return;
+        }
 
         $this->repo->merchant_detail->saveOrFail($detail);
 
@@ -1896,9 +1908,18 @@ class Service extends Base\Service
         return [
             Entity::BUSINESS_REGISTERED_PIN     => trim($components[$size - 1]),
             Entity::BUSINESS_REGISTERED_STATE   => $this->getStateCodeFromStateName(trim($components[$size - 2])),
-            Entity::BUSINESS_REGISTERED_CITY    => trim($components[$size - 3]),
+            Entity::BUSINESS_REGISTERED_CITY    => $this->getCityFromRegisteredAddress(trim($components[$size - 3])),
             Entity::BUSINESS_REGISTERED_ADDRESS => trim(implode(',', array_slice($components, 0, $size - 3)))
         ];
+    }
+
+    protected function getCityFromRegisteredAddress($cityName)
+    {
+        $cityName = preg_replace('/[^A-Za-z ]/', ' ', $cityName);
+
+        $cityName = preg_replace('/\s+/', ' ', $cityName);
+
+        return $cityName;
     }
 
     protected function getStateCodeFromStateName($stateName)
