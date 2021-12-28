@@ -246,6 +246,27 @@ return [
         ],
     ],
 
+    'testGetConversationsForRazorpayxTicket' => [
+        'request' => [
+            'url' => '/fd/support_dashboard_x/ticket/razorpayid0013/conversations',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'body'=> 'some random body1',
+                    'id'=> 'redacted',
+                    'ticket_id'=> 'razorpayid0013',
+                ],
+                [
+                    'body'=> 'some random body2',
+                    'id'=> 'redacted',
+                    'ticket_id'=> 'razorpayid0013',
+                ],
+            ],
+        ],
+    ],
+
     'testGetConversationsProhibitedShouldFail' => [
         'request' => [
             'url' => '/fd/support_dashboard/ticket/razorpayid0012',

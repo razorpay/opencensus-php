@@ -657,7 +657,7 @@ class Service extends Base\Service
 
         $fdInstance = $ticketEntity->getFdInstance();
 
-        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD,$fdInstance);
+        $url = $this->getFreshdeskUrlType($type, $fdInstance);
 
         $queryParams = [
             Constants::PAGE     => $input[Constants::PAGE],

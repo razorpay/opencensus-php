@@ -14,8 +14,9 @@ trait FreshdeskTrait
         $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
         $expectedUrlInd = $this->app['config']->get('applications.freshdesk.urlind') . '/' . $expectedPath;
         $expectedUrlCap = $this->app['config']->get('applications.freshdesk.urlcap') . '/' . $expectedPath;
+        $expectedUrlx = $this->app['config']->get('applications.freshdesk.urlx') . '/' . $expectedPath;
 
-        $expectedUrls = [ $expectedUrl2, $expectedUrlInd, $expectedUrlCap];
+        $expectedUrls = [ $expectedUrl2, $expectedUrlInd, $expectedUrlCap, $expectedUrlx];
 
         $this->freshdeskClientMock
             ->shouldReceive('getResponse')

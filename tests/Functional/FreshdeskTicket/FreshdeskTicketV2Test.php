@@ -353,6 +353,36 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testGetConversationsForRazorpayxTicket()
+    {
+        $ticketDetails["fd_instance"] = "rzpx";
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0013',
+            'ticket_id'      => '13',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard_x',
+            'ticket_details' => $ticketDetails,
+            'created_at'     => '1600000000',
+            'updated_at'     => '1600000000',
+        ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/13/conversations?', 'get', [], [
+            [
+                'id'       => 11119788088,
+                'body'     => 'some random body1',
+                'ticket_id'=> '13',
+            ],
+            [
+                'id'       => 11119788089,
+                'body'     => 'some random body2',
+                'ticket_id'=> '13',
+            ],
+        ]);
+
+        $this->startTest();
+    }
+
     public function testGetConversationsProhibitedShouldFail()
     {
         $this->shouldNotReceiveFresdeskRequest();
