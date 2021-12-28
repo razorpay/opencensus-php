@@ -14,7 +14,7 @@ class Repository extends Base\Repository
     protected $entity = 'user';
 
     protected $appFetchParamRules = [
-        Entity::EMAIL       => 'sometimes|email|max:255',
+        Entity::EMAIL               => 'sometimes|email|max:255'
     ];
 
     /**

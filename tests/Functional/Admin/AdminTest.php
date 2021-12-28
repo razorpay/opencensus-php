@@ -1578,6 +1578,73 @@ class AdminTest extends TestCase
         }
     }
 
+    /**
+     * Admin users can search for a user with contact_mobile attribute besides email
+     */
+    public function testAdminFetchUserByEmail()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $user = $this->fixtures->create('user', ['email' => 'random@random.com']);
+
+        $testData['response']['content']['items'][0] = $user->toArrayPublic();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+    }
+
+    /**
+     * Admin users can search for a user with contact_mobile attribute besides email
+     */
+    public function testAdminFetchUserByMobile()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $user = $this->fixtures->create('user', ['contact_mobile' => '9878909877']);
+
+        $testData['response']['content']['items'][0] = $user->toArrayPublic();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testAdminFetchUserByMobileMultipleMatches()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $user1 = $this->fixtures->create('user', ['contact_mobile' => '9878909876']);
+        $user2 = $this->fixtures->create('user', ['contact_mobile' => '9878909876']);
+
+        $testData['response']['content']['items'] = [$user2->toArrayPublic(), $user1->toArrayPublic()];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testAdminFetchUserByMobileNoMatches()
+    {
+        $this->fixtures->create('user', ['contact_mobile' => '9878909876']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testAdminFetchUserByMobileInvalidMobileNumberFormat()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
     public function testExternalAdminFetchEntityMultipleLimitedCount()
     {
         for ($i = 0; $i < 6; $i++)

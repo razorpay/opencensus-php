@@ -3643,6 +3643,10 @@ class AdminFetch
                     Fetch::LABEL  => 'Email',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'contact_mobile' => [
+                    Fetch::LABEL  => 'Contact Mobile',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::MERCHANT_REQUEST => [

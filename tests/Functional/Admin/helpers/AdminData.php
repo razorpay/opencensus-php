@@ -1530,4 +1530,102 @@ return [
             'success'     => true,
         ],
     ],
+
+    'testAdminFetchUserByEmail' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/user?email=random@random.com'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "count"=> 1,
+                "admin"=> true,
+                "items"=>
+                    [
+                        [
+                            "email"=> "random@random.com",
+                        ]
+                    ]
+            ]
+        ]
+    ],
+
+    'testAdminFetchUserByMobile' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/user?contact_mobile=9878909877'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "count"=> 1,
+                "admin"=> true,
+                "items"=>
+                    [
+                        [
+                            "contact_mobile"=> "9878909877",
+                        ]
+                    ]
+            ]
+        ]
+    ],
+
+    'testAdminFetchUserByMobileMultipleMatches' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/user?contact_mobile=9878909876'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "count"=> 2,
+                "admin"=> true,
+                "items"=>
+                    [
+                        [
+                            "contact_mobile"=> "9878909876",
+                        ],
+                        [
+                            "contact_mobile"=> "9878909876",
+                        ]
+                    ]
+            ]
+        ]
+    ],
+
+    'testAdminFetchUserByMobileNoMatches' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/user?contact_mobile=9878909877'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "count"=> 0,
+                "admin"=> true,
+                "items"=> []
+            ]
+        ]
+    ],
+
+    'testAdminFetchUserByMobileInvalidMobileNumberFormat' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/user?contact_mobile=666557'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
+        ],
+    ]
 ];
