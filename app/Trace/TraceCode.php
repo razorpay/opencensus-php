@@ -5888,6 +5888,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FIRS_DOCUMENT_PROCESSOR_JOB_DELETED               = 'FIRS_DOCUMENT_PROCESSOR_JOB_DELETED';
     const FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED             = 'FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED';
 
+    const PAYOUT_GET_EMPTY_RESPONSE                         = 'PAYOUT_GET_EMPTY_RESPONSE';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

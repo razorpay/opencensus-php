@@ -770,7 +770,19 @@ class Service extends Base\Service
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
-        return $this->mergePendingPayoutsViaWorkflowService($input, $payouts, $to_mask_sources);
+        $payoutsArr = $this->mergePendingPayoutsViaWorkflowService($input, $payouts, $to_mask_sources);
+
+        if (empty($payoutsArr) == true) {
+            $this->trace->info(
+                TraceCode::PAYOUT_GET_EMPTY_RESPONSE,
+                [
+                    Entity::MERCHANT_ID => $this->merchant->getId(),
+                    'is_reference_id_present' => array_key_exists(Entity::REFERENCE_ID, $input),
+                    'useMasterConnection' => $useMasterConnection
+                ]);
+        }
+
+        return $payoutsArr;
     }
 
     public function processReversedPayout(string $id)
