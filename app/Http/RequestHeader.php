@@ -51,6 +51,9 @@ class RequestHeader
      */
     const X_RAZORPAY_ACCOUNT            = 'X-Razorpay-Account';
 
+    // devstack header
+    const DEV_SERVE_USER             = 'rzpctx-dev-serve-user';
+
     // Generic
     const X_USER_AGENT                  = 'X-User-Agent';
     const X_IP_ADDRESS                  = 'X-IP-Address';

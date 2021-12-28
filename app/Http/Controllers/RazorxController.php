@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use Razorpay\Trace\Logger as Trace;
 
 class RazorxController extends Controller
@@ -175,6 +176,7 @@ class RazorxController extends Controller
         $method = Request::method();
 
         $headers = [];
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $parameters = [];
 

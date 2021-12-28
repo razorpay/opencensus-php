@@ -6,6 +6,7 @@ use Cache;
 use Request;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 
 class RazorXClient
@@ -483,6 +484,7 @@ class RazorXClient
         }
 
         $headers = [];
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $options = [
             'connect_timeout' => $this->requestTimeout,

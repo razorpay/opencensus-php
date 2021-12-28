@@ -4,9 +4,11 @@
 namespace RZP\Services;
 
 use App;
+use Request;
 use ApiResponse;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -142,6 +144,8 @@ class GrowthService extends Base\Service
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        
         $options = [
             'timeout' => $this->requestTimeout,
         ];
