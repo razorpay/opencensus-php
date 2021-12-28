@@ -333,13 +333,9 @@ class Service
 
                 return $response[Response::DATA];
             case self::PRE_PROCESS:
-                return $response['data'];
+                return $response[Response::DATA];
             case Payment\Action::CALLBACK:
-                return $response;
-            case self::PRE_PROCESS:
-                return $response['data'];
-            case Payment\Action::CALLBACK:
-                return $response;
+                return $this->processCallbackResponse($response);
             case Payment\Action::VERIFY:
             case Payment\Action::AUTHORIZE_FAILED:
                 return $this->processVerifyResponse($response);
@@ -349,6 +345,30 @@ class Service
                     null,
                     ['action' => $this->action]);
         }
+    }
+
+    /**
+     * processes the callback response
+     *
+     * @param array $response
+     * @return array
+     */
+    protected function processCallbackResponse(array $response): array
+    {
+        $data = $response[Response::DATA] ?? null;
+
+        if ((isset($response[Response::DATA]) === false) or
+            (isset($data[Payment\Entity::AMOUNT_AUTHORIZED]) === false))
+        {
+            throw new Exception\LogicException(
+                'received invalid callback response',
+                null,
+                ['response' => $response]);
+        }
+
+        $data[Payment\Entity::AMOUNT_AUTHORIZED] = (int) $data[Payment\Entity::AMOUNT_AUTHORIZED];
+
+        return $data;
     }
 
     /**
@@ -622,7 +642,10 @@ class Service
     protected function traceResponse($response)
     {
         // TODO: Add Action based tracing and response redaction
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RESPONSE, $response);
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RESPONSE, [
+            'response' => $response,
+            'action'   => $this->action
+        ]);
     }
 
     /**

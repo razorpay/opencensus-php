@@ -343,12 +343,15 @@ class UpiPaymentServiceTest extends TestCase
         // We should have received a successful response
         $this->assertEquals(['success' => true], $response);
 
+        $content = json_decode($content, true);
+
         $this->assertArraySubset(
             [
             Entity::STATUS          => Status::AUTHORIZED,
             Entity::GATEWAY         => 'upi_airtel',
             Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            Entity::REFERENCE16     => $content['rrn'],
             ], $payment->toArray()
         );
 

@@ -144,6 +144,15 @@ class PreProcess extends Base\Mock\Server
             ]);
         }
 
-        return $response->toArray();
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        if (empty($response['error']) === true)
+        {
+            unset($response['error']);
+        }
+
+        return $response;
     }
 }

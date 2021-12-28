@@ -182,7 +182,7 @@ class Service extends UpiPaymentService
     protected function callback(array $content): array
     {
         $data = $content['data']['data'];
-        $error = $content['data']['error'];
+        $error = $content['data']['error'] ?? null;
         $gateway = $content['gateway'];
         $statusCode = 200;
 
