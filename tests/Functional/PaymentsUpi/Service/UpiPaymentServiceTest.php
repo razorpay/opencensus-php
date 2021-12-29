@@ -577,6 +577,58 @@ class UpiPaymentServiceTest extends TestCase
         $this->assertNull($upiEntity);
     }
 
+    public function testPaymentReconciliationMultipleRrn()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $rrn = '22712135190';
+
+        $this->gateway = 'upi_airtel';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mockReconContentFunction(function (&$content) use ($payment)
+        {
+            if ($content['Till ID'] === $payment['id'])
+            {
+                $content = [];
+            }
+        });
+
+        // Changes a rrn of entity fetch response
+        $this->mockServerContentFunction(function (&$content)
+        {
+            $content['customer_reference'] = '1234567109';
+
+            return $content;
+        });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiAirtel');
+
+        $this->paymentReconAsserts($payment->toArray());
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiAirtel',
+                'status'          => 'processed',
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
     public function testPaymentReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

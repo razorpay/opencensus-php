@@ -32,6 +32,14 @@ class Service
     protected $app;
 
     /**
+     * App mode
+     * Live / Test
+     *
+     * @var string
+     */
+    protected $mode;
+
+    /**
      * Used for tracing
      *
      * @var mixed
@@ -72,6 +80,8 @@ class Service
 
     const PRE_PROCESS = 'pre_process';
 
+    const ENTITY_FETCH = 'entity_fetch';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -80,6 +90,11 @@ class Service
         $app = App::getFacadeRoot();
 
         $this->app = $app;
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
 
         $this->trace = $app['trace'];
 
@@ -206,6 +221,12 @@ class Service
                 $data = [
                     'data'      => $input,
                     'gateway'   => $input['payment']['gateway'],
+                ];
+                break;
+            case self::ENTITY_FETCH:
+                $data = [
+                    'data'      => $input,
+                    'gateway'   => $input['gateway'],
                 ];
                 break;
             default:
@@ -339,6 +360,8 @@ class Service
             case Payment\Action::VERIFY:
             case Payment\Action::AUTHORIZE_FAILED:
                 return $this->processVerifyResponse($response);
+            case self::ENTITY_FETCH:
+                return $response;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -676,6 +699,9 @@ class Service
             case Payment\Action::VERIFY:
             case Payment\Action::AUTHORIZE_FAILED:
                 $traceData += $this->getVerifyTraceData($request[Request::CONTENT]);
+                break;
+            case self::ENTITY_FETCH:
+                $traceData += $request[Request::CONTENT];
                 break;
             default:
                 throw new Exception\LogicException(
