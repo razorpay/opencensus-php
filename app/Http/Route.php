@@ -2928,6 +2928,8 @@ class Route
         'trusted_badge_merchant_status'           => ['put',      'trusted_badge/merchant_status',                          'TrustedBadgeController@updateMerchantStatus'                  ],
         'trusted_badge_blacklist'                 => ['post',     'trusted_badge/blacklist',                                'TrustedBadgeController@blacklistMerchants'                    ],
         'trusted_badge_redirect'                  => ['get',      'trusted_badge/redirect',                                 'TrustedBadgeController@redirectUrl'                           ],
+        'trusted_badge_get_experiment_list'       => ['get',      'trusted_badge/experiment_list',                          'TrustedBadgeController@fetchExperimentList'                   ],
+        'trusted_badge_put_experiment_list'       => ['put',      'trusted_badge/experiment_list',                          'TrustedBadgeController@putExperimentList'                     ],
 
         //Routes related to app framework
         'app_mapping_create'                      => ['post',    'app/mapping',                                             'ApplicationFrameworkController@createAppMapping'              ],
@@ -4285,6 +4287,10 @@ class Route
         'internal_pincode_get',
 
         'get_affordability_suite',
+
+        // trusted badge experiment internal auth
+        'trusted_badge_get_experiment_list',
+        'trusted_badge_put_experiment_list',
 
         'update_shopify_1cc_config',
 
@@ -11647,6 +11653,11 @@ class Route
 
         'affordability' => [
             'get_affordability_suite',
+        ],
+
+        'trusted_badge' => [
+            'trusted_badge_get_experiment_list',
+            'trusted_badge_put_experiment_list',
         ],
 
         'tokenization' => [

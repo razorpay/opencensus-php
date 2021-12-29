@@ -42,6 +42,8 @@ class Entity extends Base\PublicEntity
 
     const MIN_SUCCESSFUL_PAYMENTS_FOR_RTB = 700;
 
+    const REDIS_EXPERIMENT_KEY = 'RTB_experiment_merchants';
+
     protected $fillable = [
         self::MERCHANT_ID,
         self::STATUS,

@@ -11253,4 +11253,74 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testRTBExperimentOnNotLiveMerchants' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '+919999999999'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => false,
+            ],
+        ],
+    ],
+
+    'testGetRTBExperimentDetailsMerchantNotInExperimentList' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '+919999999999'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => true,
+                'rtb_experiment' => [
+                    'experiment' => false,
+                ],
+            ],
+        ],
+    ],
+
+    'testRTBExperimentMerchantList' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '+919999999999'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => true,
+                'rtb_experiment' => [
+                    'experiment' => false,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetRTBExperimentDetailsMerchantInExperimentList' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '+919999999999'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => true,
+                'rtb_experiment' => [
+                    'experiment' => true,
+                    'variant'   => 'old_user'
+                ],
+            ],
+        ],
+    ],
 ];

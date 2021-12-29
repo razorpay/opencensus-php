@@ -3,12 +3,14 @@
 namespace RZP\Models\TrustedBadge;
 
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redis;
 use RZP\Diag\EventCode;
 use RZP\Jobs\TrustedBadge;
 use RZP\Mail\TrustedBadge\OptinRequest;
 use RZP\Mail\TrustedBadge\OptoutNotify;
 use RZP\Mail\TrustedBadge\Welcome;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -173,6 +175,51 @@ class Core extends Base\Core
             ]);
 
             return false;
+        }
+    }
+
+    public function getRTBExperimentDetails($merchantId, $contact = '')
+    {
+        try
+        {
+            if($this->isRTBExperimentMerchant($merchantId) === false)
+            {
+                return [
+                    'experiment' => false,
+                ];
+            }
+
+            if(empty($contact) === true)
+            {
+                return [
+                    'experiment' => true,
+                ];
+            }
+
+            $isNewUser = $this->repo->payment->isNewCustomerToMerchant($merchantId, $contact);
+
+            if($isNewUser === false)
+            {
+                return [
+                    'experiment' => true,
+                    'variant'    => 'old_user',
+                ];
+            }
+
+            return [
+                'experiment' => true,
+                'variant'    => $this->getRTBSplitzVariant($merchantId),
+            ];
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::RTB_EXPERIMENT_DETAILS_ERROR, [
+                'merchantId' => $merchantId,
+            ]);
+
+            return [
+                'experiment' => false,
+            ];
         }
     }
 
@@ -375,5 +422,45 @@ class Core extends Base\Core
             }
             throw $ex;
         }
+    }
+
+    /**
+     * @param $merchantId
+     * @return string
+     */
+    protected function getRTBSplitzVariant($merchantId): string
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.rtb_splitz_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchantId,
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            return $response['response']['variant']['name'] ?? 'old_user';
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::RTB_SPLITZ_ERROR);
+
+            return 'old_user';
+        }
+    }
+
+    /**
+     * @param $merchantId
+     * @return bool
+     */
+    protected function isRTBExperimentMerchant($merchantId): bool
+    {
+        $redis = Redis::Connection();
+
+        return $redis->sismember(Entity::REDIS_EXPERIMENT_KEY, $merchantId);
     }
 }

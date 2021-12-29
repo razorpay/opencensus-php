@@ -362,4 +362,6 @@ return array(
     'payment_handle_hosted_base_url' => env('PAYMENT_HANDLE_HOSTED_BASE_URL'),
 
     'consent_view_splitz_experiment_id' => env('CONSENT_VIEW_SPLITZ_EXPERIMENT_ID'),
+
+    'rtb_splitz_experiment_id' => env('RTB_SPLITZ_EXPERIMENT_ID'),
 );

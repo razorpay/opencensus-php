@@ -120,6 +120,8 @@ use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateFo
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\TrustedBadge;
+
 class Service extends Base\Service
 {
     use Notify;
@@ -6742,8 +6744,16 @@ class Service extends Base\Service
             $preferredMethods['preferred_methods'] = $data['preferred_methods'];
         }
 
-        return $preferredMethods;
+        $isRTBLive = (new TrustedBadge\Core())->isTrustedBadgeLiveForMerchant($merchant->getId());
 
+        if($isRTBLive === true)
+        {
+            $contact = $input['contact'] ?? '';
+
+            $preferredMethods['rtb_experiment'] = (new TrustedBadge\Core())->getRTBExperimentDetails($merchant->getId(), $contact);
+        }
+
+        return $preferredMethods;
     }
 
     /**

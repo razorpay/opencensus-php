@@ -1163,6 +1163,10 @@ return [
         'secret' => env('AFFORDABILITY_SECRET'),
     ],
 
+    'trusted_badge' => [
+        'secret' => env('TRUSTED_BADGE_SECRET'),
+    ],
+
     'tokenisation' => [
         'flipkart_secure_key' => env('FLIPKART_SECURE_KEY'),
         'flipkart_secure_IV'  => env('FLIPKART_SECURE_IV'),

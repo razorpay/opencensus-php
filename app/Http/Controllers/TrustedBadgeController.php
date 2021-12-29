@@ -51,4 +51,20 @@ class TrustedBadgeController extends Controller
 
         return Redirect::away($data['url']);
     }
+
+    public function fetchExperimentList()
+    {
+        $data = $this->service()->fetchExperimentList();
+
+        return ApiResponse::json($data);
+    }
+
+    public function putExperimentList()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->putExperimentList($input);
+
+        return ApiResponse::json($data);
+    }
 }

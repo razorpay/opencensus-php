@@ -52,6 +52,8 @@ class Repository extends Base\Repository
 {
     use ExternalRepo, ExternalCore;
 
+    const SECONDS_IN_A_YEAR = 31536000;
+
     protected $entity = 'payment';
 
     protected $cardQueryKeys = [
@@ -2760,6 +2762,33 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $ids)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
+    }
+
+    public function isNewCustomerToMerchant($merchantId, $contact): bool
+    {
+        $minCreatedAt = Carbon::now()->subSeconds(self::SECONDS_IN_A_YEAR)->getTimestamp();
+
+        $startTime = millitime();
+
+        // check number of successful payments in last 12 months by contact.
+        $userPastPayments = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::CONTACT, $contact)
+                    ->where(Entity::CREATED_AT, '>=', $minCreatedAt)
+                    ->limit(1)
+                    ->get();
+
+        $userPastPayments = $userPastPayments->toArray();
+
+        $this->trace->info(TraceCode::RTB_NEW_CUSTOMER_QUERY_TIME,
+            [
+                'timeTaken' => millitime() - $startTime,
+                'count'     => count($userPastPayments),
+                'isNewUser' => empty($userPastPayments),
+            ]
+        );
+
+        return empty($userPastPayments);
     }
 
     protected function traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMs, $connectionForTrace, $didUseElasticSearch = false)

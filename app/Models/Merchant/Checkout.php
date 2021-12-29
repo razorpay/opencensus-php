@@ -148,6 +148,13 @@ class Checkout
     protected function fillRTBDetails(Entity $merchant, array & $data): void
     {
         $data['rtb'] = (new TrustedBadge\Core())->isTrustedBadgeLiveForMerchant($merchant->getId());
+
+        if($data['rtb'] === true)
+        {
+            $contact = $data['customer']['contact'] ?? '';
+
+            $data['rtb_experiment'] = (new TrustedBadge\Core())->getRTBExperimentDetails($merchant->getId(), $contact);
+        }
     }
 
     protected function fillCovidReliefDetails(Entity $merchant, array & $data, $mode)

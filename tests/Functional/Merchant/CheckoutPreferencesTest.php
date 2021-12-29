@@ -14,6 +14,7 @@ use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Functional\Merchant\Account\AccountTest;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Jobs\FundAccountValidation;
 use Illuminate\Cache\Events\CacheHit;
@@ -2248,6 +2249,136 @@ class CheckoutPreferencesTest extends TestCase
         $this->fixtures->edit('token', '100001custcard', ['acknowledged_at' => Carbon::now()->timestamp]);
 
         $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testRTBExperimentOnNotLiveMerchants()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('trusted_badge', [
+            TrustedBadge::STATUS          => TrustedBadge::INELIGIBLE,
+            TrustedBadge::MERCHANT_STATUS => TrustedBadge::WAITLIST,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $request = array(
+            'url'     => '/personalisation?contact=9999999999',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotContains('rtb_experiment', $response);
+    }
+
+    public function testGetRTBExperimentDetailsMerchantNotInExperimentList()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('trusted_badge', [
+            TrustedBadge::STATUS          => TrustedBadge::ELIGIBLE,
+            TrustedBadge::MERCHANT_STATUS => TrustedBadge::WAITLIST,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertNotContains('variant', $response['rtb_experiment']);
+
+        $request = array(
+            'url'     => '/personalisation?contact=9999999999',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(false, $response['rtb_experiment']['experiment']);
+        $this->assertNotContains('variant', $response['rtb_experiment']);
+    }
+
+    public function testGetRTBExperimentDetailsMerchantInExperimentList()
+    {
+        $this->fixtures->create('trusted_badge', [
+            TrustedBadge::STATUS          => TrustedBadge::ELIGIBLE,
+            TrustedBadge::MERCHANT_STATUS => TrustedBadge::WAITLIST,
+        ]);
+
+        $this->testRTBExperimentMerchantList();
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
+
+        $request = array(
+            'url'     => '/personalisation?contact=9999999999',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['rtb_experiment']['experiment']);
+
+        $this->assertEquals('old_user', $response['rtb_experiment']['variant']);
+    }
+
+    public function testRTBExperimentMerchantList()
+    {
+        $this->ba->trustedBadgeInternalAppAuth();
+
+        // empty redis key test
+        $request = array(
+            'url'     => '/trusted_badge/experiment_list',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals([], $response);
+
+        $request = array(
+            'url'     => '/trusted_badge/experiment_list',
+            'method'  => 'PUT',
+            'content' => [
+                'merchants' => ['10000000000001']
+            ]
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = array(
+            'url'     => '/trusted_badge/experiment_list',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(['10000000000001'], $response);
+
+        // test for the put api call should overwrite the redis key.
+        $request = array(
+            'url'     => '/trusted_badge/experiment_list',
+            'method'  => 'PUT',
+            'content' => [
+                'merchants' => ['10000000000000']
+            ]
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = array(
+            'url'     => '/trusted_badge/experiment_list',
+            'method'  => 'get',
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(['10000000000000'], $response);
     }
 
     protected function mockSession($appToken = 'capp_1000000custapp')

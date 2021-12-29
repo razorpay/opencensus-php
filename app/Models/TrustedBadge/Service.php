@@ -2,6 +2,7 @@
 
 namespace RZP\Models\TrustedBadge;
 
+use Illuminate\Support\Facades\Redis;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
@@ -156,5 +157,40 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function fetchExperimentList()
+    {
+        try
+        {
+            $redis = Redis::connection();
+
+            return $redis->smembers(Entity::REDIS_EXPERIMENT_KEY);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::TRUSTED_BADGE_EXPERIMENT_LIST , []);
+
+            return null;
+        }
+    }
+
+    public function putExperimentList($input)
+    {
+        try
+        {
+            $merchantList = $input['merchants'];
+            $redis = Redis::connection();
+
+            $redis->del(Entity::REDIS_EXPERIMENT_KEY);
+
+            return $redis->sadd(Entity::REDIS_EXPERIMENT_KEY, $merchantList);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::TRUSTED_BADGE_EXPERIMENT_LIST , ['input' => $input]);
+
+            return null;
+        }
     }
 }
