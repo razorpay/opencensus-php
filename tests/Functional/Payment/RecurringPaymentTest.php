@@ -364,18 +364,6 @@ class RecurringPaymentTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '4027902780181358';
 
-        $this->makeRequestAndCatchException(function () use ($payment) {
-            $this->doAuthPayment($payment);
-        }, \RZP\Exception\BadRequestException::class);
-
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
-
-        $this->makeRequestAndCatchException(function () use ($payment) {
-            $this->doAuthPayment($payment);
-        }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
-
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
-
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastPayment(true);
@@ -394,7 +382,6 @@ class RecurringPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
 
         $this->fixtures->iin->create([
             'iin' => '402400',
@@ -408,17 +395,11 @@ class RecurringPaymentTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '4024001104457538';
 
-        $this->makeRequestAndCatchException(function () use ($payment) {
-            $this->doAuthPayment($payment);
-        }, \RZP\Exception\RuntimeException::class, 'Terminal should not be null');
-
         $this->fixtures->create('terminal:hitachi_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
 
         $this->doAuthPayment($payment);
 
         $this->fixtures->terminal->disableTerminal('HitcRcg3DSN3DS');
-
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
 
         $this->doAuthPayment($payment);
 
@@ -726,7 +707,6 @@ class RecurringPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_DC_RECURRING]);
         $this->fixtures->merchant->addFeatures(['axis_express_pay', 'otp_auth_default']);
 
         $this->fixtures->iin->create([
@@ -749,8 +729,6 @@ class RecurringPaymentTest extends TestCase
         $this->doAuthPayment($payment);
 
         $this->fixtures->terminal->disableTerminal('HitcRcg3DSN3DS');
-
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
 
         $this->doAuthPayment($payment);
 
@@ -983,6 +961,10 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 
         $payment[Payment::TOKEN] = '10000cardtoken';
+
+        $this->fixtures->iin->edit('411111',[
+            'recurring' => 0
+        ]);
 
         unset($payment[Payment::CARD]);
 

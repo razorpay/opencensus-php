@@ -57,8 +57,6 @@ class CardTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(Constants::ALLOW_DC_RECURRING);
-
         $testData = $this->testData[__FUNCTION__];
 
         return $this->runRequestResponseFlow($testData);
@@ -68,8 +66,6 @@ class CardTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(Constants::ALLOW_DC_RECURRING);
-
         $testData = $this->testData[__FUNCTION__];
 
         return $this->runRequestResponseFlow($testData);
@@ -78,8 +74,6 @@ class CardTest extends TestCase
     public function testFetchCardRecurringForNonSupportedDebitBank()
     {
         $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures(Constants::ALLOW_DC_RECURRING);
 
         $testData = $this->testData[__FUNCTION__];
 

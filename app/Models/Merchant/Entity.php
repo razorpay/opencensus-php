@@ -935,11 +935,6 @@ class Entity extends Base\PublicEntity
         return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
     }
 
-    public function isDebitRecurringEnabled(): bool
-    {
-        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$debitRecurringFeatures) === true);
-    }
-
     public function isExposeARNRefundEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::EXPOSE_ARN_REFUND) === true);

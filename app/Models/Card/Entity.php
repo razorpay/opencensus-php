@@ -928,25 +928,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $type = $this->getType() ?? $iin->getType();
-
-        if ($type !== Type::DEBIT)
-        {
-            return true;
-        }
-
-        $issuer = $iin->getIssuer();
-
-        if ($issuer === IFSC::HDFC)
-        {
-            return (($merchant->isFeatureEnabled(Feature\Constants::HDFC_DEBIT_SI) === true) or
-                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-        }
-        else
-        {
-            return (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_DC_RECURRING) === true) or
-                ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) === true));
-        }
+        return true;
     }
 
     public function isBlocked()

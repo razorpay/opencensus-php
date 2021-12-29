@@ -1040,7 +1040,7 @@ return [
         'response' => [
             'content'    => [
                 'flows'   => [
-                    'recurring' => false,
+                    'recurring' => true,
                     'iframe'    => false,
                     'emi'       => true,
                 ],

@@ -346,7 +346,7 @@ class Core extends Base\Core
             }
         }
 
-        if ($merchant->isDebitRecurringEnabled() === true)
+        if ($methods->isDebitCardEnabled() === true)
         {
             $supportedIssuersForDebitCardRecurring = Payment\Gateway::getIssuersSupportedForDebitCardRecurring();
 

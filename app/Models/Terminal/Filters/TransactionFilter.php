@@ -306,28 +306,12 @@ class TransactionFilter extends Terminal\Filter
 
         if ($payment->isCard() === true)
         {
-            switch (true)
+            if(($payment->card->isDebit() !== true) and
+               ($payment->isSecondRecurring() === true) and
+               ($terminal->getGateway() === Gateway::HDFC) and
+               ($terminal->isDebitRecurring() === true))
             {
-                case $payment->card->isDebit():
-
-                    if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_ALL_DC_RECURRING) !== true) and
-                        ($terminal->isDebitRecurring() === false))
-                    {
-                        return false;
-                    }
-
-                    break;
-
-                default:
-
-                    if (($payment->isSecondRecurring() === true) and
-                        ($terminal->getGateway() === Gateway::HDFC) and
-                        ($terminal->isDebitRecurring() === true))
-                    {
-                        return false;
-                    }
-
-                    break;
+                return false;
             }
         }
 

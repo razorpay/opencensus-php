@@ -549,8 +549,6 @@ class SubscriptionPaymentTest extends TestCase
             'entity_type'  => 'subscription',
         ];
 
-        $this->fixtures->merchant->addFeatures([Feature::ALLOW_ALL_DC_RECURRING]);
-
         $token = $this->fixtures->create('token', $cardGlobalTokenAttributes);
 
         $this->subscription->setStatus(Subscription\Status::ACTIVE);
