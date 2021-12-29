@@ -1,0 +1,50 @@
+name: Labels Added
+
+on:
+  pull_request:
+    types: [  labeled, unlabeled, opened, synchronize, reopened]
+
+jobs:
+  check_ready_for_review_label:
+    name: PR Labels
+    runs-on: [ self-hosted ]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Fetch Github Users
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        id: githubUsers
+        run: |
+            USER_CHECK=$(sh ./.github/actions/getGithubusers.sh ${{github.actor}})
+            echo "::set-output name=flaguser::$USER_CHECK"
+
+      - name: Show Github Users Flag
+        env:
+          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
+        run: |
+            echo $USER_CHECK
+      - if: contains(github.event.pull_request.labels.*.name, 'ReadyForReview')
+        name: Set flag Ready
+        id: readyForReview
+        run: echo "::set-output name=flag::true"
+      - name: Ready For Review Label Added
+        env:
+          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
+          LABEL: 'Ready For Review'
+          LABEL_FLAG: ${{steps.readyForReview.outputs.flag}}
+        run: |
+          sh ./.github/actions/labelCheck.sh
+      - if: contains(github.event.pull_request.labels.*.name, 'DevTestingStarted')
+        name: Set flag Dev
+        id: devTestingStarted
+        run: echo "::set-output name=flag::true"
+      - uses: actions/checkout@v2
+      - name: Dev Testing Started Label Added
+        env:
+          USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
+          LABEL: 'Dev Testing Started'
+          LABEL_FLAG: ${{steps.devTestingStarted.outputs.flag}}
+        run: |
+          sh ./.github/actions/labelCheck.sh
