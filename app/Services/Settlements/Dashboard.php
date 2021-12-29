@@ -54,6 +54,7 @@ class Dashboard extends Base
     const FEATURES = 'features';
     const BLOCK = 'block';
     const DISABLE = 'disable';
+    const HOLD = 'hold';
     const STATUS = 'status';
 
     public function __construct($app)
@@ -231,6 +232,10 @@ class Dashboard extends Base
         if (isset($input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS]) === true)
         {
             $input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS] == true);
+        }
+        if (isset($input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS]) === true)
+        {
+            $input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS] == true);
         }
         return $this->makeRequest(self::MERCHANT_CONFIG_BULK_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
