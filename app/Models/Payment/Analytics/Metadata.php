@@ -119,6 +119,7 @@ class Metadata
     const WOOCOMMERCE_SUBSCRIPTION  = 'woocommerce-subscription';
     const EDD                       = 'edd';
     const QUICK_PAYMENT             = 'quick-payment';
+    const MAGENTO_SUBSCRIPTION      = 'magento-subscription';
 
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE               => 1,
@@ -134,6 +135,7 @@ class Metadata
         self::WOOCOMMERCE_SUBSCRIPTION  => 11,
         self::EDD                       => 12,
         self::QUICK_PAYMENT             => 13,
+        self::MAGENTO_SUBSCRIPTION      => 14,
     ];
 
     // fraud detection keys
