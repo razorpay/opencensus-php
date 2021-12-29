@@ -70,6 +70,7 @@ class AddGST extends Component {
       const response = await merchantFetch({
         url: `merchant/gstin_self_serve`,
         data: formData,
+        mode: 'live',
         method: `POST`,
       });
 
@@ -112,6 +113,7 @@ class AddGST extends Component {
     return merchantFetch({
       url: `merchant/gstin_self_serve`,
       data: formData,
+      mode: 'live',
       method: `POST`,
     })
       .then((item) => {

@@ -62,7 +62,7 @@ class GSTDetails extends Component {
           showGSTINSelfServe={this.showGSTINSelfServe}
           showNotification={this.props.showNotification}
           activationData={activationResponse}
-          fetchStatus={this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
+          fetchStatus={() => this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
         />
       ),
     });
@@ -90,7 +90,7 @@ class GSTDetails extends Component {
           showGSTINSelfServe={this.showGSTINSelfServe}
           showNotification={this.props.showNotification}
           activationData={activationResponse}
-          fetchStatus={this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
+          fetchStatus={() => this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
         />
       ),
     });
@@ -268,7 +268,7 @@ class GSTDetails extends Component {
   };
 
   render() {
-    const { merchant_gst, rzp_gst, user } = this.props;
+    const { merchant_gst, rzp_gst, user, gstinWorfklow } = this.props;
     const { business_suggested_address, business_suggested_pin } = this.props;
 
     const hasGstin = merchant_gst.gstin && true;
@@ -287,16 +287,16 @@ class GSTDetails extends Component {
                 !this.isRequestUnderReview() &&
                 !this.isCustomerResponseAwaited() &&
                 !this.didCustomerRespond() &&
-                !this.isWorkFlowRejected() && <a onClick={this.openAddGSTModal}>Add GST details</a>}
+                !this.isWorkFlowRejected() &&
+                !gstinWorfklow.loading && <a onClick={this.openAddGSTModal}>Add GST details</a>}
 
               {hasGstin &&
                 user.isGstinEditFlowEnabled &&
                 !this.isRequestUnderReview() &&
                 !this.isWorkFlowRejected() &&
                 !this.isCustomerResponseAwaited() &&
-                !this.didCustomerRespond() && (
-                  <a onClick={this.openEditGSTModal}>Update GST details</a>
-                )}
+                !this.didCustomerRespond() &&
+                !gstinWorfklow.loading && <a onClick={this.openEditGSTModal}>Update GST details</a>}
 
               {/* Request was rejected flow  */}
               {this.isWorkFlowRejected() ? (
