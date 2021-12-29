@@ -295,6 +295,9 @@ class Constants
     const LOGIN_OTP_ACTION                          = 'login_otp';
     const VERIFY_USER_ACTION                        = 'verify_user';
 
+    const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX = 'update_contact_mobile_attempts_%s';
+    const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT            = 3;
+
     //Email id used for banking demo mode
     const BANKING_DEMO_USER_EMAILS = [
         "razorpayx.demo@gmail.com",

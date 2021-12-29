@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use Mail;
 use Hash;
+use Cache;
 use Config;
 use Throwable;
 use Carbon\Carbon;
@@ -2343,9 +2344,42 @@ class Core extends Base\Core
             $this->repo->saveOrFail($user);
         });
 
+        $this->increaseCacheValueForThrottleContactMobile($user);
+
         $this->notifyUserAboutContactMobileUpdate($user, $merchant);
 
         return $user;
+    }
+
+    protected function getThrottleContactMobileCacheKey(Entity $user)
+    {
+        return sprintf(Constants::THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX, $user->getId());
+    }
+
+    protected function increaseCacheValueForThrottleContactMobile(Entity $user)
+    {
+        $cacheKey = $this->getThrottleContactMobileCacheKey($user);
+
+        $attempts = Cache::get($cacheKey, 0);
+
+        if($attempts === 0)
+        {
+            Cache::add($cacheKey, 1, Carbon::now()->addDays(30));
+
+            $this->trace->info(TraceCode::THROTTLE_UPDATE_CONTACT_MOBILE_KEY_CACHE_CREATED, [
+                'cache_key'   => $cacheKey,
+                'attempts'    => Cache::get($cacheKey)
+            ]);
+
+            return;
+        }
+
+        Cache::increment($cacheKey, 1);
+
+        $this->trace->info(TraceCode::UPDATED_CONTACT_MOBILE_CACHE_VALUE_INCREASE, [
+            'cache_key'   => $cacheKey,
+            'attempts'    => Cache::get($cacheKey)
+        ]);
     }
 
     public function verifyUserSecondFactorAuth(Entity $user, array $input): array

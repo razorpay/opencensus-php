@@ -1095,4 +1095,13 @@ class Validator extends Base\Validator
             return 0;
         }
     }
+
+    public function validateThrottleContactMobileLimit(int $attempts)
+    {
+        if ($attempts >= Constants::THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LIMIT_FOR_UPDATE_CONTACT_MOBILE_EXCEEDED);
+        }
+    }
 }

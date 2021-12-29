@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use Mail;
 use Hash;
+use Cache;
 use Config;
 use Carbon\Carbon;
 use RZP\Jobs\NotifyRas;
@@ -1591,17 +1592,35 @@ class Service extends Base\Service
      */
     public function sendOtpForContactMobileUpdate(array $input)
     {
+        $user = $this->user;
+
+        $cacheKey = $this->getThrottleContactMobileCacheKey($user);
+
+        $attempts = Cache::get($cacheKey, 0);
+
+        $this->trace->info(TraceCode::THROTTLE_CONTACT_MOBILE_KEY_CACHE_DETAIL, [
+            'cache_key'   => $cacheKey,
+            'attempts'    => $attempts
+        ]);
+
+        $this->validator->validateThrottleContactMobileLimit($attempts);
+
         $this->validator->validateInput('edit_contact_mobile', $input);
 
-        $this->validator->validateUniqueNumberExcludingCurrentUser($this->user, $input[Entity::CONTACT_MOBILE]);
+        $this->validator->validateUniqueNumberExcludingCurrentUser($user, $input[Entity::CONTACT_MOBILE]);
 
         $token = $input[Entity::OTP_AUTH_TOKEN];
 
-        $this->app['token_service']->verify($token, $this->user->getId());
+        $this->app['token_service']->verify($token, $user->getId());
 
-        $this->core()->sendOtpForContactMobileUpdate($input, $this->user);
+        $this->core()->sendOtpForContactMobileUpdate($input, $user);
 
-        return ['contact number' => $this->user->getContactMobile()];
+        return ['contact number' => $user->getContactMobile()];
+    }
+
+    protected function getThrottleContactMobileCacheKey(Entity $user)
+    {
+        return sprintf(Constants::THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX, $user->getId());
     }
 
     public function updateContactMobile(array $input)

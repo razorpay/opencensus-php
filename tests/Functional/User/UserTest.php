@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\User;
 
 use DB;
+use App;
 use Mail;
 use Hash;
 use Queue;
@@ -3751,6 +3752,68 @@ class UserTest extends TestCase
         $this->assertTrue($userDb->isContactMobileVerified());
 
         $this->assertEquals($userDb->getContactMobile(),"9123456789");
+
+        $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 1);
+    }
+
+    protected function assertCacheDataForUserContactMobileUpdate($userId, $expectedCacheData)
+    {
+        $app = App::getFacadeRoot();
+
+        $cacheKey = $this->getThrottleContactMobileCacheKey($userId);
+
+        $cacheData = $app['cache']->get($cacheKey);
+
+        $this->assertEquals($expectedCacheData, $cacheData);
+    }
+
+    protected function getThrottleContactMobileCacheKey($userId)
+    {
+        return sprintf(Constants::THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX, $userId);
+    }
+
+    public function testVerifyUpdateCacheValueForUpdateContactMobile()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $cacheKey = $this->getThrottleContactMobileCacheKey($user['id']);
+
+        $app = App::getFacadeRoot();
+
+        $this->app['cache']->put($cacheKey, 1);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($userDb->isContactMobileVerified());
+
+        $this->assertEquals($userDb->getContactMobile(),"9123456789");
+
+        $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 2);
+    }
+
+    public function testLimitForUpdateContactMobileExceeded()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->mockRedisSuccess(__FUNCTION__, $user->getId());
+
+        $cacheKey = $this->getThrottleContactMobileCacheKey($user['id']);
+
+        $app = App::getFacadeRoot();
+
+        $this->app['cache']->put($cacheKey, Constants::THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT);
+
+        $this->startTest();
     }
 
     public function testVerifyContactWithInvalidOtp()

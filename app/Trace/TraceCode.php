@@ -5903,6 +5903,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYOUT_GET_EMPTY_RESPONSE                         = 'PAYOUT_GET_EMPTY_RESPONSE';
 
+    const THROTTLE_CONTACT_MOBILE_KEY_CACHE_DETAIL          = 'THROTTLE_CONTACT_MOBILE_KEY_CACHE_DETAIL';
+    const THROTTLE_UPDATE_CONTACT_MOBILE_KEY_CACHE_CREATED  = 'THROTTLE_UPDATE_CONTACT_MOBILE_KEY_CACHE_CREATED';
+    const UPDATED_CONTACT_MOBILE_CACHE_VALUE_INCREASE       = 'UPDATED_CONTACT_MOBILE_CACHE_VALUE_INCREASE';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

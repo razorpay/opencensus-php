@@ -2767,6 +2767,51 @@ return [
         ],
     ],
 
+    'testVerifyUpdateCacheValueForUpdateContactMobile' => [
+        'request' => [
+            'url'     => '/users/verify/update/new/mobile',
+            'method'  => 'POST',
+            'content' => [
+                'receiver' => '9123456789',
+                'otp'      => '000007',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'id'                      => 'MerchantUser01',
+                'contact_mobile'          => '9123456789',
+                'contact_mobile_verified' => true,
+            ],
+        ],
+    ],
+
+    'testLimitForUpdateContactMobileExceeded' => [
+        'request'   => [
+            'url'     => '/users/contact/sendotp',
+            'method'  => 'post',
+            'content' => [
+                'contact_mobile' => '9876543210',
+                'otp_auth_token' => 'otp_auth_token',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_LIMIT_FOR_UPDATE_CONTACT_MOBILE_EXCEEDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LIMIT_FOR_UPDATE_CONTACT_MOBILE_EXCEEDED,
+        ],
+    ],
+
     'testVerifyContactWithInvalidOtp' => [
         'request' => [
             'url'     => '/users/verify_contact',

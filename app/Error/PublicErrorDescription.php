@@ -1548,6 +1548,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REDIS_KEY_THRESHOLD_EXCEEDED                                  = 'Bad request, redis key threshold exceeded.';
     const BAD_REQUEST_SIGNUP_OTP_VERIFICATION_THRESHOLD_EXHAUSTED                   = 'This account is suspended since you have exceeded maximum attempts for incorrect OTP. Please try again later.';
     const BAD_REQUEST_EMAIL_ASSOCIATED_WITH_ANOTHER_ACCOUNT                         = 'The email is already associated with another account, please give a new email';
+    const BAD_REQUEST_LIMIT_FOR_UPDATE_CONTACT_MOBILE_EXCEEDED                      = 'Contact number cannot be updated. Please reach out to the support team to get it updated';
 
     const PRE_SIGNUP_EMAIL_NOT_ALLOWED                                              = 'Email not acceptable here when signed up with email.';
     const PRE_SIGNUP_CONTACT_MOBILE_NOT_ALLOWED                                     = 'Contact mobile not acceptable here when signed up with contact mobile.';
