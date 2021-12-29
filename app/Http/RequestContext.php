@@ -556,7 +556,8 @@ final class RequestContext
         // In case of proxy auth(even for private routes), internal app is dashboard and the same needs to be set
         $this->setInternalAppNameByAuth();
 
-        if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or ($isProxyRoute === true))
+        if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or
+            (($isProxyRoute === true) and (str_contains($this->keyWithoutPrefix, 'partner_') === false)))
         {
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
