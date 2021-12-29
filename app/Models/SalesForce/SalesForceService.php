@@ -42,6 +42,8 @@ class SalesForceService {
                     'event_submission_date' => date($DATE_FORMAT)
                 ];
                 return array_merge($eventPayload, $salesForceEventRequestDTO->getEventProperties());
+            case 'RX_WEBSITE_SF_EVENTS':
+                return $salesForceEventRequestDTO->getEventProperties();
             default:
                 throw new InvalidArgumentException("Invalid Event Type");
         }

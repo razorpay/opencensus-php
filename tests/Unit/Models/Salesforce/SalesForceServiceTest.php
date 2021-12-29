@@ -77,6 +77,72 @@ class SalesForceServiceTest extends TestCase {
         $this->assertEquals($expectedPayload, $actualData);
     }
 
+    public function testEventPayloadIsGeneratedForWebsiteEvent() {
+        ////Given
+        $merchantData = [
+            'getId'             => 'midtestca123',
+            'getName'           => 'Aditya',
+            'getEmail'          => 'aditya@example.com',
+            'isActivated'       => true,
+            'getCreatedAt'      => 1597842772,
+            'getMerchantDetail' => $this->createConfiguredMock(\RZP\Models\Merchant\Detail\Entity::class, [
+                'getBusinessName' => 'NEW BIZ',
+                'getContactName'  => 'Aditya'
+            ])
+        ];
+
+        $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
+
+        $salesForceRequestDTO = new SalesForceEventRequestDTO();
+
+        $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('RX_WEBSITE_SF_EVENTS'));
+
+        $salesForceRequestDTO->setEventProperties([
+                                                      'merchant_id'             => 'midtestca123',
+                                                      'name'                    => 'Aditya',
+                                                      'email'                   => 'aditya@example.com',
+                                                      'contact_mobile'          => '9698988110',
+                                                      'business_registered_pin' => '641035',
+                                                      'business_type'           => 'Partnership',
+                                                      'business_subcategory'    => 'Education',
+                                                      'Ref_Website'             => 'razorpay.com/x',
+                                                      'Traffic_Campaign'        => 'XWebsite Lead form',
+                                                      'Traffic_Medium'          => 'Website',
+                                                      'Traffic_Source'          => 'Paid',
+                                                      'Product'                 => 'Current_Account'
+                                                  ]);
+
+        $actualData = null;
+
+        $this->salesForceClient->expects($this->any())
+                               ->method('sendEventToSalesForce')
+                               ->will($this->returnCallback(function (array $payload) use (&$actualData) {
+                                   $actualData = $payload;
+                                   return;
+                               }));
+
+        //When
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
+
+        //Then
+        $expectedPayload = [
+            'merchant_id'             => 'midtestca123',
+            'name'                    => 'Aditya',
+            'email'                   => 'aditya@example.com',
+            'contact_mobile'          => '9698988110',
+            'business_registered_pin' => '641035',
+            'business_type'           => 'Partnership',
+            'business_subcategory'    => 'Education',
+            'Ref_Website'             => 'razorpay.com/x',
+            'Traffic_Campaign'        => 'XWebsite Lead form',
+            'Traffic_Medium'          => 'Website',
+            'Traffic_Source'          => 'Paid',
+            'Product'                 => 'Current_Account'
+        ];
+
+        $this->assertEquals($expectedPayload, $actualData);
+    }
+
     public function testSalesForcePayloadIsParsedAndMerchantDetailIsConstructed() {
         //Given
         $merchantId = 'random-merchant-id';

@@ -45,6 +45,7 @@ class SalesForceEventRequestDTO {
 class SalesForceEventRequestType {
     private const CURRENT_ACCOUNT_INTEREST = 'CURRENT_ACCOUNT_INTEREST';
     private const LOS_NEW_APPLICATION = 'LOS_NEW_APPLICATION';
+    private const RX_WEBSITE_SF_EVENTS = 'RX_WEBSITE_SF_EVENTS';
 
     private $value;
 
