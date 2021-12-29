@@ -9762,6 +9762,7 @@ class Route
             'merchants_access_map_update',
             'merchants_risk_admin',
             'merchants_risk_service',
+            'merchant_workflow_details',
             'merchants_update_bank_account',
             'merchants_update_bulk',
             'merchants_update_channel',
