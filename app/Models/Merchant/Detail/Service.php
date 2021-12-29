@@ -1592,7 +1592,9 @@ class Service extends Base\Service
 
         $eventName = $input['event_name'] ?? '';
 
-        if(empty($eventName) or $eventName !== 'install')
+        $validEvents = ['install', 'Sign Up Create Account Result'];
+
+        if(empty($eventName) or in_array($eventName, $validEvents, true) === false)
         {
             return;
         }

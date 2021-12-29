@@ -28,7 +28,7 @@ class Core extends Base\Core
 {
     protected $cache;
 
-    const DATA_LAKE_WEB_ATTRIBUTION_QUERY = "select * from hive.aggregate_ba.marketing_attributions where merchant_id in (%s)";
+    const DATA_LAKE_WEB_ATTRIBUTION_QUERY = "select * from hive.aggregate_pa.mid_attribution where mid in (%s)";
 
     public function __construct()
     {
@@ -183,9 +183,9 @@ class Core extends Base\Core
 
         foreach ($lakeData as $data)
         {
-            $merchantId = $data['merchant_id'];
+            $merchantId = $data['mid'];
 
-            unset($data['merchant_id']);
+            unset($data['mid']);
 
             $segmentProperties = [];
 

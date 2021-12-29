@@ -9,6 +9,8 @@ use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\AbstractEventClient;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
+
 
 class SegmentAnalyticsClient extends AbstractEventClient
 {
@@ -131,6 +133,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
             Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
             Merchant\Entity::PARTNER_TYPE   => $merchant->getPartnerType(),
             Merchant\Entity::ORG_ID         => $merchant->getOrgId(),
+            Merchant\Entity::BUSINESS_BANKING => $merchant->isBusinessBankingEnabled(),
+            Constants::REGULAR_MERCHANT     => $this->isRegularMerchant($merchant)
         ];
 
         foreach (Constants::COMMON_MERCHANT_DETAIL_PROPERTIES as $attribute)
@@ -141,6 +145,28 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
 
         return $properties;
+    }
+
+    protected function isRegularMerchant(Merchant\Entity $merchant) {
+        if(empty($merchant->getParentId()) === false) {
+            return false;
+        }
+
+        if(empty($merchant->getPartnerType()) === false) {
+            return false;
+        }
+
+        if($merchant->getOrgId() != OrgEntity::RAZORPAY_ORG_ID) {
+            return false;
+        }
+
+        $subMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+
+        if(empty($subMerchant) === false) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function getIntegrations(Merchant\Entity $merchant)

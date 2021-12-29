@@ -33,4 +33,6 @@ class Constants
     const INTEGRATIONS  = 'integrations';
     const APPSFLYER     = 'AppsFlyer';
     const APPSFLYERID   = 'appsFlyerId';
+
+    const REGULAR_MERCHANT = "regular_merchant";
 }
