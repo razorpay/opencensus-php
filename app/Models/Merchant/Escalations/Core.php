@@ -28,7 +28,9 @@ class Core extends Base\Core
 {
     protected $cache;
 
-    const DATA_LAKE_WEB_ATTRIBUTION_QUERY = "select * from hive.aggregate_pa.mid_attribution where mid in (%s)";
+    const DATA_LAKE_WEB_ATTRIBUTION_QUERY               = "select * from hive.aggregate_pa.mid_attribution where mid in (%s)";
+
+    const DATA_LAKE_WEB_ATTRIBUTION_FIRST_TOUCH_QUERY   = "select * from hive.aggregate_pa.payments_product where merchant_id in (%s) and first_txn = 1";
 
     public function __construct()
     {
@@ -199,6 +201,53 @@ class Core extends Base\Core
             $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
         }
 
+        $this->app['segment-analytics']->buildRequestAndSend(true);
+    }
+
+    public function pushWebAttributionFirstTouchDetailsToSegmentCron()
+    {
+        $lastCronTime = $this->getLastCronTime(Constants::WEB_ATTRIBUTION_FIRST_TOUCH_CRON_CACHE_KEY);
+        /*
+         * Update last Cron time instantly, since processing of cron may take another 5-10 mins
+         * and during that time another payments can happen
+         */
+        $this->updateLastCronTime(Constants::WEB_ATTRIBUTION_FIRST_TOUCH_CRON_CACHE_KEY);
+
+        list($from, $to) = $this->getTimeWindowForCron([], Constants::WEB_ATTRIBUTION_FIRST_TOUCH_CRON_CACHE_KEY,1);
+
+        // Fetch all merchants that have been created since last time cron ran
+        $merchantIds = $this->repo->merchant->fetchMerchantsCreatedBetween($from, $to);
+
+        $this->trace->info(TraceCode::WEB_ATTRIBUTION_FIRST_TOUCH_DETAILS_CRON_TRACE, [
+            'last_cron_time'  => $lastCronTime,
+            'merchants_count' => count($merchantIds),
+        ]);
+
+        $merchantIdChunks = array_chunk($merchantIds, 1000);
+
+        foreach ($merchantIdChunks as $merchantIdChunk)
+        {
+            $strMerchantIds = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdChunk));
+
+            $dataLakeQuery = sprintf(self::DATA_LAKE_WEB_ATTRIBUTION_FIRST_TOUCH_QUERY, $strMerchantIds);
+
+            $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+            foreach ($lakeData as $data)
+            {
+                $merchantId = $data['merchant_id'];
+
+                $segmentProperties = [];
+
+                $segmentProperties['merchant_id'] = $merchantId;
+
+                $segmentProperties['first_touch_product']  = $data['product'];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+            }
+        }
         $this->app['segment-analytics']->buildRequestAndSend(true);
     }
 

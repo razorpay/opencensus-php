@@ -17,6 +17,7 @@ use RZP\Notifications\Onboarding\Events;
 
 class Constants
 {
+    const WEB_ATTRIBUTION_FIRST_TOUCH_CRON_CACHE_KEY        = 'web_attribution_first_touch_cron_timestamp';
     const WEB_ATTRIBUTION_CRON_CACHE_KEY                    = 'web_attribution_cron_timestamp';
     const TRANSACTION_CRON_CACHE_KEY                        = 'onboarding_transaction_cron_timestamp';
     const ESCALATION_CACHE_KEY                              = 'onboarding_escalation_timestamp';

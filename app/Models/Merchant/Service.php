@@ -7006,7 +7006,19 @@ class Service extends Base\Service
 
     public function handleSoftLimitBreachOnAutoKYC()
     {
-        return (new Escalations\Core())->handleSoftLimitBreach();
+        try
+        {
+            (new Merchant\Escalations\Core())->pushWebAttributionDetailsToSegmentCron();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'pushWebAttributionFirstTouchDetailsToSegmentCron',
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        (new Escalations\Core())->handleSoftLimitBreach();
     }
 
     public function handleHardLimitBreachOnAutoKYC()
