@@ -517,9 +517,13 @@ class Core extends Base\Core
             Entity::BENEFICIARY_NAME      => $details[DetailEntity::BANK_ACCOUNT_NAME],
             Entity::ACCOUNT_NUMBER        => $details[DetailEntity::BANK_ACCOUNT_NUMBER],
             Entity::BENEFICIARY_COUNTRY   => 'IN',
-            Entity::BENEFICIARY_EMAIL     => $details[DetailEntity::CONTACT_EMAIL],
             Entity::BENEFICIARY_MOBILE    => $details[DetailEntity::CONTACT_MOBILE],
         ];
+
+        if(is_null($details[DetailEntity::CONTACT_EMAIL]) === false)
+        {
+            $data[Entity::BENEFICIARY_EMAIL] = $details[DetailEntity::CONTACT_EMAIL];
+        }
 
         //
         // For Marketplace linked accounts, the bank fields set below are not
