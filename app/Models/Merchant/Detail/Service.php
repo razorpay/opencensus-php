@@ -1771,13 +1771,15 @@ class Service extends Base\Service
 
     public function updateGstinSelfServe($input)
     {
-        $this->validator->validateInput('gstin_self_serve', $input);
+        $isAddAction = $this->isAddGstinSelfServeAction($this->merchant->merchantDetail);
 
-        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED, [
+        $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_INITIATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_INITIATED;
+
+        $this->trace->info($traceCode, [
             Entity::GSTIN => $input[Entity::GSTIN]
         ]);
 
-        $isAddAction = $this->isAddGstinSelfServeAction($this->merchant->merchantDetail);
+        $this->validator->validateInput('gstin_self_serve', $input);
 
         // only activated merchants can update gstin detail
         if ($isAddAction === false)
@@ -1794,7 +1796,11 @@ class Service extends Base\Service
             throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
         }
 
-        $this->trace->info(TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED, $validation->toArrayPublic());
+        $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_VALIDATION_CREATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED;
+
+        $this->trace->info($traceCode, [
+            $validation->toArrayPublic()
+        ]);
 
         $fileId = $this->uploadGstInCertificateForGstinSelfServe(
             $input[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE],
@@ -1863,12 +1869,16 @@ class Service extends Base\Service
 
         $this->repo->merchant_detail->saveOrFail($detail);
 
+        $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
+
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
         $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity(), $input[DEConstants::IS_ADD_GSTIN_OPERATION]);
 
-        $this->sendNotificationForGstinUpdatedSelfServe($input[DEConstants::IS_ADD_GSTIN_OPERATION], true, $detail->merchant);
+        $this->sendNotificationForGstinUpdatedSelfServe($isAddOperation, true, $detail->merchant);
 
-        $this->trace->info(TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS, []);
+        $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADDED_WITH_REGISTERED_ADDRESS : TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS;
+
+        $this->trace->info($traceCode, []);
     }
 
     protected function getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchantId, $validationId)
@@ -1953,7 +1963,9 @@ class Service extends Base\Service
             Entity::GSTIN => $input[Entity::GSTIN],
         ]);
 
-        $permissionName = ($input[DetailConstants::IS_ADD_GSTIN_OPERATION]) ? Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL : Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL;
+        $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
+
+        $permissionName = ($isAddOperation) ? Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL : Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL;
 
         $this->app['workflow']
             ->setPermission($permissionName)
@@ -1982,6 +1994,13 @@ class Service extends Base\Service
             $oldDetailEntity,
             $permissionName
         );
+
+        $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_CREATED : TraceCode::GSTIN_UPDATE_WORKFLOW_CREATED;
+
+        $this->trace->info($traceCode, [
+            Constants::PERMISSION => $permissionName,
+            Constants::INPUT      => $input
+        ]);
     }
 
     protected function stopShowingRejectionReasonForGstInSelfServe($entityId, $entity, $isAddOperation)
@@ -2005,6 +2024,14 @@ class Service extends Base\Service
 
     public function updateMerchantGstinDetailsOnSelfServeWorkflowApprove($input)
     {
+        $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
+
+        $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_APPROVED : TraceCode::GSTIN_UPDATE_WORKFLOW_APPROVED;
+
+        $this->trace->info($traceCode, [
+            Constants::INPUT => $input
+        ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($input[Merchant\Entity::MERCHANT_ID]);
 
         $merchantDetails = $merchant->merchantDetail;
@@ -2016,7 +2043,7 @@ class Service extends Base\Service
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
 
-        $this->sendNotificationForGstinUpdatedSelfServe($input[DetailConstants::IS_ADD_GSTIN_OPERATION], false, $merchant);
+        $this->sendNotificationForGstinUpdatedSelfServe($isAddOperation, false, $merchant);
     }
 
     protected function storeGstinSelfServeInput($input)
