@@ -2778,7 +2778,7 @@ export function ActivationField(field) {
     const merchantBusinessDetail =
       this.props.data.merchant_business_detail || this.props.user.merchant_business_detail;
     const { live_website_or_app, social_media, physical_store } =
-      merchantBusinessDetail.website_details ?? {};
+      merchantBusinessDetail?.website_details ?? {};
 
     rest.hasWebsiteAppURL = has_url || live_website_or_app;
     rest.hasWebsiteURL = app_website_url;
