@@ -73,7 +73,7 @@ class Validator extends Base\Validator
     {
         if (IFSC::validate($value) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE, Util\Constants::IFSC_CODE);
         }
     }
 
