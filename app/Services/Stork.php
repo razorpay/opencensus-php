@@ -254,8 +254,8 @@ class Stork
                     'service'                     => $this->service,
                     'owner_id'                    => $input['ownerId'],
                     'owner_type'                  => $input['ownerType'],
-                    'org_id'                      => $input['orgId'] ?? '',
-                    'context'                     => $input['context'] ?? json_decode('{}'),
+                    'org_id'                      => $input['orgId'],
+                    'context'                     => $this->appendOrgIdInContext($input),
                     'sender'                      => $input['sender'],
                     'destination'                 => $input['destination'],
                     'template_name'               => $input['templateName'],
@@ -278,6 +278,21 @@ class Stork
                 );
             }
         }
+    }
+
+    /**
+     * If org id is not passed in stork context then copy from the orgId param.
+     * @param array $input
+     * @return mixed
+     */
+    private function appendOrgIdInContext(array $input)
+    {
+        if (empty($input['stork']['context']['org_id']) === true)
+        {
+            $input['stork']['context']['org_id'] = $input['orgId'];
+        }
+
+        return $input['stork']['context'];
     }
 
     /**

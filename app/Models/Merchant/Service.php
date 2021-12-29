@@ -868,14 +868,15 @@ class Service extends Base\Service
             $shortPasswordResetLink = $this->app['elfin']->shorten($passwordResetLink);
 
             $smsPayload = [
-                'ownerId' => $subMerchant->getId(),
-                'ownerType' => 'merchant',
-                'sender'   => 'RZPAYX',
-                'destination' => $submContactMobile,
-                'templateName' => 'sms.onboarding.partner_submerchant_invite',
+                'ownerId'           => $subMerchant->getId(),
+                'ownerType'         => 'merchant',
+                'orgId'             => $subMerchant->getOrgId(),
+                'sender'            => 'RZPAYX',
+                'destination'       => $submContactMobile,
+                'templateName'      => 'sms.onboarding.partner_submerchant_invite',
                 'templateNamespace' => 'partnerships',
-                'language' => 'english',
-                'contentParams'   => [
+                'language'          => 'english',
+                'contentParams'     => [
                     'subMerchantName'   => $subMerchant->getName(),
                     'partnerName'       => $merchant->getName(),
                     'resetPasswordLink' => $shortPasswordResetLink
