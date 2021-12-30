@@ -12,6 +12,8 @@ class EventCode
 
     const ACTIVATION_STATUS_CHANGE  = "Activation Status changed";
 
+    const BANKING_ACCOUNT_STATUS_CHANGE = "Banking Account Status Change";
+
     const DEDUPE                    = 'Dedupe';
 
     const ADVOCATE_REFERRAL_CREDITS          = 'Advocate Referral Credits';

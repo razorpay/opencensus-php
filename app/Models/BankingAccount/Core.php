@@ -39,6 +39,7 @@ use RZP\Models\Admin\Service as AdminService;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Models\BankingAccountStatement\Channel as BasChannel;
@@ -1198,6 +1199,179 @@ class Core extends Base\Core
         return $attributes;
     }
 
+    protected function getSegmentEventPropertiesForBankingAccountStatusChange(Entity $bankingAccount, $previousBankingAccountStatus, $previousBankingAccountSubStatus)
+    {
+        $bankingAccountStatus = $bankingAccount->getStatus();
+
+        $bankingAccountSubStatus = $bankingAccount->getSubStatus();
+
+        $properties = [
+            'banking_account_status'     => $bankingAccount->getStatus(),
+            'banking_account_sub_status'     => $bankingAccount->getSubStatus(),
+            'previous_banking_account_status' => $previousBankingAccountStatus,
+            'previous_banking_account_sub_status' => $previousBankingAccountSubStatus,
+        ];
+
+        if ($bankingAccountStatus === Status::REJECTED)
+        {
+            $properties['rejected'] = true;
+        }
+        if ($bankingAccountSubStatus === Status::DOCS_WALK_THROUGH_PENDING)
+        {
+            $properties['docs_walkthrough_pending'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NEEDS_CLARIFICATION_FROM_SALES)
+        {
+            $properties['needs_clarification_from_sales'] = true;
+        }
+        if ($bankingAccountSubStatus === Status::MERCHANT_NOT_AVAILABLE)
+        {
+            $properties['merchant_not_available'] = true;
+        }
+        if ($bankingAccountSubStatus === Status::READY_TO_SEND_TO_BANK)
+        {
+            $properties['ready_to_send_to_bank'] = true;
+        }
+        if($bankingAccountSubStatus === Status::UNSERVICEABLE__PINCODE)
+        {
+            $properties['unserviceable_|_pincode'] = true;
+        }
+        if($bankingAccountSubStatus === Status::UNSERVICEABLE__PINCODE)
+        {
+            $properties['unserviceable_|_pincode'] = true;
+        }
+        if($bankingAccountSubStatus === Status::UNSERVICEABLE__BUSINESS_TYPE)
+        {
+            $properties['unserviceable_|_business_type'] = true;
+        }
+        if($bankingAccountSubStatus === Status::UNSERVICEABLE__BUSINESS_MODEL)
+        {
+            $properties['unserviceable_|_business_model'] = true;
+        }
+        if($bankingAccountSubStatus === Status::UNSERVICEABLE__UNREGISTERED_BUSINESS)
+        {
+            $properties['unserviceable_|_unregistered_business'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__DID_NOT_HAVE_AN_INTENT)
+        {
+            $properties['not_interested_in_CA_|_did_not_have_an_intent'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_NEARBY_PHYSICAL_BRANCH)
+        {
+            $properties['not_interested_in_CA_|_looking_for_nearby_physical_branch'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_ZERO_BALANCE_CA)
+        {
+            $properties['not_interested_in_CA_|_looking_for_zero_balance_CA'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_RBL_BANK)
+        {
+            $properties['not_interested_in_CA_|_issue_with_RBL_bank'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_TAT)
+        {
+            $properties['not_interested_in_CA_|_issue_with_TAT'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_MAB_REQUIREMENT)
+        {
+            $properties['not_interested_in_CA_|_issue_with_MAB_requirement'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_RX_PRICING)
+        {
+            $properties['not_interested_in_CA_|_issue_with_RX_pricing'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_ONLY_PG_PRODUCTS)
+        {
+            $properties['not_interested_in_CA_|_looking_for_only_PG_products'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__OPENED_CA_WITH_OTHER_BANK)
+        {
+            $properties['not_interested_in_CA_|_opened_CA_with_other_Bank'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__WANT_TO_LINK_EXISTING_CA)
+        {
+            $properties['not_interested_in_CA_|_want_to_link_existing_CA'] = true;
+        }
+        if($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__OTHER)
+        {
+            $properties['not_interested_in_CA_|_other'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__PRODUCT_DEMO)
+        {
+            $properties['requires_sales_intervention_|_product_demo'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__RX_PRICING_DETAILS)
+        {
+            $properties['requires_sales_intervention_|_RX_pricing_details'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__DETAILS_ABOUT_CURRENT_ACCOUNT)
+        {
+            $properties['requires_sales_intervention_|_details_about_current_account'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_RX_PRODUCT)
+        {
+            $properties['requires_sales_intervention_|_unclear_on_RX_product'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_CA_PROCESS)
+        {
+            $properties['requires_sales_intervention_|_unclear_on_CA_process'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__PG_DETAILS)
+        {
+            $properties['requires_sales_intervention_|_PG_details'] = true;
+        }
+        if($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__OTHER)
+        {
+            $properties['requires_sales_intervention_|_other'] = true;
+        }
+        if($bankingAccountSubStatus === Status::CONNECTIVITY__DID_NOT_PICK_UP_THE_PHONE)
+        {
+            $properties['connectivity_|_did_not_pick_up_the_phone'] = true;
+        }
+        if($bankingAccountSubStatus === Status::CONNECTIVITY__DISCONNECTED_THE_CALL)
+        {
+            $properties['connectivity_|_disconnected_the_call'] = true;
+        }
+        if($bankingAccountSubStatus === Status::CONNECTIVITY__CONNECTIVITY_ISSUE)
+        {
+            $properties['connectivity_|_connectivity_issue'] = true;
+        }
+        if($bankingAccountSubStatus === Status::CONNECTIVITY__CONNECTIVITY_ISSUE)
+        {
+            $properties['connectivity_|_connectivity_issue'] = true;
+        }
+        if($bankingAccountSubStatus === Status::MERCHANT_NOT_AVAILABLE)
+        {
+            $properties['merchant_not_available'] = true;
+        }
+        if($bankingAccountSubStatus === Status::MERCHANT_PREPARING_DOCS)
+        {
+            $properties['merchant_preparing_docs'] = true;
+        }
+        if($bankingAccountSubStatus === Status::BANK_PICKED_UP_DOCS)
+        {
+            $properties['bank_picked_up_docs'] = true;
+        }
+        if($bankingAccountSubStatus === Status::BANK_OPENED_ACCOUNT)
+        {
+            $properties['bank_opened_account'] = true;
+        }
+        if($bankingAccountSubStatus === Status::DISCREPANCY_IN_DOCS)
+        {
+            $properties['discrepancy_in_docs'] = true;
+        }
+        if($bankingAccountSubStatus === Status::API_ONBOARDING_PENDING)
+        {
+            $properties['api_onboarding_pending'] = true;
+        }
+        if($bankingAccountSubStatus === Status::API_ONBOARDING_INITIATED)
+        {
+            $properties['api_onboarding_initiated'] = true;
+        }
+
+        return $properties;
+    }
+
     /**
      * @param Entity $bankingAccount
      * @param bool   $bankingAccountStatusChanged
@@ -1211,6 +1385,7 @@ class Core extends Base\Core
 
             $this->fireHubspotEventForStatusChange($bankingAccountStatusChanged, $bankingAccountSubStatusChanged, $bankingAccount, $channel);
         }
+
         else
         {
             if ($bankingAccountStatusChanged === true)
@@ -1224,6 +1399,17 @@ class Core extends Base\Core
                 $this->notifyForMerchantNotAvailableToSPOC($bankingAccount);
             }
         }
+
+        $merchant = $bankingAccount->merchant;
+
+        $currentBankingAccountStatus = $bankingAccount->getStatus();
+
+        $currentBankingAccountSubStatus = $bankingAccount->getSubStatus();
+
+        $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
+
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE);
+
     }
 
     /**

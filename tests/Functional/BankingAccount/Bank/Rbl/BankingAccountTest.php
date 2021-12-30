@@ -7,6 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -20,6 +21,7 @@ use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
+use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -2326,6 +2328,51 @@ class BankingAccountTest extends TestCase
                         }
                     }));
         }
+    }
+
+    protected function createAndFetchMocks()
+    {
+        $mockMC = $this->getMockBuilder(MerchantCore::class)
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
+
+        $mockMC->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        return [
+            "merchantCoreMock"    => $mockMC
+        ];
+    }
+
+    public function testSegmentEventPushForBankingAccountStatusChange()
+    {
+        $this->createAndFetchMocks();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushTrackEvent')
+            ->willReturn(true);
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+        ]);
+
+        $bankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ]
+        );
+
+        (new BankingAccount\Core)->notifyIfStatusChanged($bankingAccount,true,false);
+
     }
 
     public function testUpdateBankingAccountStatusAsProcessed()
