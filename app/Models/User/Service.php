@@ -1258,24 +1258,39 @@ class Service extends Base\Service
             }
         }
 
-        $isOrg2FaEnforcedEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
+        $isOrg2FaEnforcedExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
             $user->getId(),
             RazorxTreatment::ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY);
 
-        if (($isOrg2FaEnforcedEnabled === true) and
-            ($user->isOwner() === true) and
-            ($user->isAccountLocked() === true))
+        $orgId = $this->auth->getOrgId();
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $isOrg2FaEnforced = (
+            ($isOrg2FaEnforcedExperimentEnabled === true)
+            AND ($org->isMerchant2FaEnabled() === true)
+        );
+
+        $isUser2FaEnabled = (
+            ($user->isSecondFactorAuth() === true) or
+            ($user->isSecondFactorAuthEnforced() === true)
+        );
+
+        if (($isUser2FaEnabled === true) OR ($isOrg2FaEnforced === true))
         {
-            $this->trace->info(TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION, [
-                Entity::USER_ID => $user->getId(),
-                Entity::ACTION  => Constants::UNLOCK
-            ]);
+            if (($user->isOwner() === true) and
+                ($user->isAccountLocked() === true))
+            {
+                $this->trace->info(TraceCode::USER_ACCOUNT_LOCK_UNLOCK_ACTION, [
+                    Entity::USER_ID => $user->getId(),
+                    Entity::ACTION  => Constants::UNLOCK
+                ]);
 
-            $user->setWrong2faAttempts(0);
+                $user->setWrong2faAttempts(0);
 
-            $user->setAccountLocked(false);
+                $user->setAccountLocked(false);
 
-            $this->repo->saveOrFail($user);
+                $this->repo->saveOrFail($user);
+            }
         }
 
         return ['success' => true, 'user_id' => $user->getId()];

@@ -462,7 +462,7 @@ class Entity extends Base\Entity
 
     public function isMerchant2FaEnabled(): bool
     {
-        return $this->getAttribute(self::MERCHANT_SECOND_FACTOR_AUTH) === true;
+        return $this->getAttribute(self::MERCHANT_SECOND_FACTOR_AUTH) === 1;
     }
 
     public function getMerchantMaxWrong2FaAttempts()

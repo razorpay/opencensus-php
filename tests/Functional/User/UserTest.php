@@ -5155,11 +5155,54 @@ class UserTest extends TestCase
         $this->assertEquals('primary', $this->app['basicauth']->getRequestOriginProduct());
     }
 
-    public function testResetPasswordUnlocksAccountForOwner()
+    /**
+     * Scenario: if 2FA is not enabled for the user and neither is org level 2fa enforced, then owner users should
+     * not be able to unlock their accounts by resetting their password
+     */
+    public function testResetPasswordDoesNotUnlockOwnerUserIf2faNotEnabled()
     {
-        $this->enableRazorXTreatmentForRazorX();
+        $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 0]);
 
-        $resetAttributes = [
+        $userAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+            'password'              => 'hello123',
+            'account_locked'        => true,
+            'second_factor_auth'    => false,
+        ];
+
+        $user = $this->fixtures->create('user', $userAttributes);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertTrue($user->isAccountLocked());
+    }
+
+    /**
+     * Scenario: if 2FA is enabled for the user, then owner users should be able to
+     * unlock their accounts by resetting their password
+     */
+    public function testResetPasswordUnlocksAccountForOwner2FaEnabled()
+    {
+        $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 0]);
+
+        $userAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),
             'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
@@ -5168,7 +5211,84 @@ class UserTest extends TestCase
             'second_factor_auth'    => true,
         ];
 
-        $user = $this->fixtures->create('user', $resetAttributes);
+        $user = $this->fixtures->create('user', $userAttributes);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertFalse($user->isAccountLocked());
+    }
+
+    /**
+     * Scenario: if org level 2FA is enabled, then owner users should be able to
+     * unlock their accounts by resetting their password
+     */
+    public function testResetPasswordUnlocksAccountForOwnerOrgLevel2FaEnabled()
+    {
+        $this->enableRazorXTreatmentForRazorXForOrgLevel2Fa();
+
+        $this->fixtures->edit('org', '100000razorpay', [OrgEntity::MERCHANT_SECOND_FACTOR_AUTH => 1]);
+
+        $userAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+            'password'              => 'hello123',
+            'account_locked'        => true,
+            'second_factor_auth'    => true,
+        ];
+
+        $user = $this->fixtures->create('user', $userAttributes);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth();
+
+        $this->doTestPasswordResetByToken($user);
+
+        $user = $this->getDbEntityById('user', $user->getId());
+
+        $this->assertFalse($user->isAccountLocked());
+
+    }
+
+    public function testResetPasswordUnlocksAccountForOwner()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $userAttributes = [
+            'email'                 => 'resetpass@razorpay.com',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+            'password'              => 'hello123',
+            'account_locked'        => true,
+            'second_factor_auth'    => true,
+        ];
+
+        $user = $this->fixtures->create('user', $userAttributes);
 
         $merchant = $this->fixtures->create('merchant');
 
@@ -5194,7 +5314,7 @@ class UserTest extends TestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
-        $resetAttributes = [
+        $userAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),
             'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
@@ -5203,7 +5323,7 @@ class UserTest extends TestCase
             'second_factor_auth'    => true,
         ];
 
-        $user = $this->fixtures->create('user', $resetAttributes);
+        $user = $this->fixtures->create('user', $userAttributes);
 
         $merchant = $this->fixtures->create('merchant');
 
