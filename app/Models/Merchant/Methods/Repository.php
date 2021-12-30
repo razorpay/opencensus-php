@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Merchant;
@@ -51,6 +50,16 @@ class Repository extends Base\Repository
         }
 
         return $methods;
+    }
+
+    public function isUpiEnabledForMerchant(Merchant\Entity $merchant)
+    {
+        $query = $this->newQuery()
+                    ->select(Entity::UPI)
+                    ->where(Entity::MERCHANT_ID, $merchant->getId());
+
+        return $query->pluck(Entity::UPI)
+            ->first();
     }
 
     public function fetchMethodsToUpdateHdfcDebitEmiValue($count)

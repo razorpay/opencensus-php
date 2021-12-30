@@ -186,6 +186,22 @@ class Core extends Base\Core
         return $methods;
     }
 
+    private function getUpiPaymentMethod(Merchant\Entity $merchant)
+    {
+        return $this->repo->methods->isUpiEnabledForMerchant($merchant);
+    }
+
+    public function getUpiMethodForMerchant(Merchant\Entity $merchant)
+    {
+        $data = [
+            'entity'                    => E::METHODS,
+            Entity::UPI                 => false,
+        ];
+
+        $data[Payment\Method::UPI] = $this->getUpiPaymentMethod($merchant);
+        return $data;
+    }
+
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [

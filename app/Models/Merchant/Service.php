@@ -1249,6 +1249,8 @@ class Service extends Base\Service
 
             $supportDetails = $this->repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $merchant->getId());
 
+            $response[Entity::METHODS] = (new Methods\Core)->getUpiMethodForMerchant($merchant);
+
             if ($supportDetails !== null)
             {
                 $supportDetails = $supportDetails->toArrayPublic();
