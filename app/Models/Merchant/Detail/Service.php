@@ -209,6 +209,8 @@ class Service extends Base\Service
 
         $user = $this->user;
 
+        $merchant = $this->app['basicauth']->getMerchant();
+
         try
         {
             $emailUser = $this->repo->user->findByEmail($email);
@@ -227,17 +229,15 @@ class Service extends Base\Service
 
         if(empty($emailUser) === true)
         {
-            $userInput = [
-                User\Entity::EMAIL  => $input[User\Entity::EMAIL]
-            ];
+            $this->repo->transactionOnLiveAndTest(function() use ($user, $input) {
+                $user->setEmail($input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($user);
+            });
 
-            $merchantInput = [
-                User\Entity::EMAIL => $input[Merchant\Entity::EMAIL]
-            ];
-
-            (new User\Service())->edit($this->user->getId(), $userInput);
-
-            (new Merchant\Service())->edit($this->merchant->getId(),$merchantInput);
+            $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input) {
+                $merchant->setAttribute(User\Entity::EMAIL, $input[Merchant\Entity::EMAIL]);
+                $this->repo->saveOrFail($merchant);
+            });
 
             $merchantDetails = $this->merchant->merchantDetail;
 
