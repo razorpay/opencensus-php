@@ -14,53 +14,33 @@ import {
 } from '../Loans/constants';
 
 const getOfferData = (offerDetails, product) => {
-  switch (product) {
-    case CAPITAL_PRODUCT_CODES.LOAN: {
-      const offer = {
-        ...offerDetails.loan_attributes,
-        ...offerDetails.installment,
-        ...offerDetails.charges,
-      };
-      const {
-        credit_offered,
-        processing_fee_percentage,
-        tax_percentage,
-        tenure,
-        tenure_unit,
-        interest_rate,
-        amount: installment_amount,
-      } = offer;
-
-      return {
-        credit_offered,
-        processing_fee_percentage,
-        tax_percentage,
-        installment_tenure: tenure,
-        installment_tenure_unit: tenure_unit,
-        interest_rate,
-        installment_amount,
-      };
-    }
-
-    case CAPITAL_PRODUCT_CODES.CASH_ADVANCE: {
-      const {
-        max_credit_offered,
-        processing_fee_percentage,
-        tax_percentage,
-        interest_rate_daily: interest_rate,
-        tenure,
-        tenure_type,
-      } = offerDetails;
-
-      return {
-        credit_offered: max_credit_offered,
-        processing_fee_percentage,
-        tax_percentage,
-        installment_tenure: tenure,
-        installment_tenure_unit: tenure_type,
-        interest_rate,
-      };
-    }
+  if (!offerDetails) return {};
+  if (product === CAPITAL_PRODUCT_CODES.LOAN) {
+    const offer = {
+      ...offerDetails.loan_attributes,
+      ...offerDetails.installment,
+      ...offerDetails.charges,
+    };
+    return {
+      credit_offered: offer.credit_offered,
+      processing_fee_percentage: offer.processing_fee_percentage,
+      tax_percentage: offer.tax_percentage,
+      installment_tenure: offer.tenure,
+      installment_tenure_unit: offer.tenure_unit,
+      interest_rate: offer.interest_rate,
+      installment_amount: offer.amount,
+    };
+  } else if (product === CAPITAL_PRODUCT_CODES.CASH_ADVANCE) {
+    return {
+      credit_offered: offerDetails.max_credit_offered,
+      processing_fee_percentage: offerDetails.processing_fee_percentage,
+      tax_percentage: offerDetails.tax_percentage,
+      installment_tenure: offerDetails.tenure,
+      installment_tenure_unit: offerDetails.tenure_type,
+      interest_rate: offerDetails.interest_rate_daily,
+    };
+  } else {
+    return {};
   }
 };
 
@@ -206,7 +186,7 @@ const CreditOffer = ({
                   <i className="i i-info-outline" onMouseOver={() => trackMouseOver('ewi')} />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
-                      <div class="text-left">{TOOLTIP_DESCRIPTIONS['ewi']}</div>
+                      <div class="text-left">{TOOLTIP_DESCRIPTIONS.ewi}</div>
                     </PopoverBody>
                   </Popover>
                 </small>
@@ -234,7 +214,7 @@ const CreditOffer = ({
                   <i className="i i-info-outline" onMouseOver={() => trackMouseOver('tenure')} />
                   <Popover align="top" theme="dark">
                     <PopoverBody>
-                      <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['tenure']}</div>
+                      <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS.tenure}</div>
                     </PopoverBody>
                   </Popover>
                 </small>
