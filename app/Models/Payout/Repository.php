@@ -583,7 +583,6 @@ class Repository extends Base\Repository
         // as opposed to the expected eager-loaded balance entity
         /** @var BuilderEx $query */
         $query = $this->newQuery()
-                        ->from(\DB::raw(Table::PAYOUT.' USE INDEX (payouts_merchant_id_created_at_index)'))
                         ->select($this->getTableName() . ".*");
 
         $userRoleId = [];
@@ -996,8 +995,6 @@ class Repository extends Base\Repository
      */
     protected function addQueryParamPendingOnRoles(BuilderEx $query, array $params)
     {
-        $query->from(\DB::raw(Table::PAYOUT.' USE INDEX (payouts_merchant_id_created_at_index)'));
-
         $pendingOnRoles = $params[Entity::PENDING_ON_ROLES];
 
         $pendingRoleIds = $this->repo->role->fetchIdsByOrgIdNames(
@@ -1037,8 +1034,6 @@ class Repository extends Base\Repository
 
     protected function addQueryParamPendingOnMe(BuilderEx $query, array $params)
     {
-        $query->from(\DB::raw(Table::PAYOUT.' USE INDEX (payouts_merchant_id_created_at_index)'));
-
         $pendingOnMe = (bool) ($params[Entity::PENDING_ON_ME] ?? false);
 
         if ($pendingOnMe === false)
