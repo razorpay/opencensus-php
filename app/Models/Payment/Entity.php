@@ -170,6 +170,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
     const RECURRING_TOKEN       = 'recurring_token';
+    const NOTIFICATION_ID       = 'notification_id';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
@@ -4691,6 +4692,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function isRequiredToCreateNewTokenAlways($token = null): bool
     {
+        // for auto payment, card mandate notification will be present
+        if ($this->cardMandateNotification !== null)
+        {
+            return false;
+        }
+
         $card = $this->card;
 
         if (($card === null) and ($token !== null)) {

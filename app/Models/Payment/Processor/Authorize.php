@@ -2392,6 +2392,12 @@ trait Authorize
                 (new CardMandate\Core)->validateAutoPaymentCreation($token->cardMandate, $payment);
             }
         }
+
+        if ($payment->isRecurringTypeAuto() === true and
+            $payment->cardMandateNotification !== null)
+        {
+            (new CardMandate\CardMandateNotification\Core)->verifyNotification($payment);
+        }
     }
 
     protected function validateRecurringForEmandate(
@@ -4076,6 +4082,15 @@ trait Authorize
             }
         }
 
+        if ((empty($input[Payment\Entity::CUSTOMER_ID]) === true) and
+            (empty($input[Payment\Entity::RECURRING_TOKEN]) === false) and
+            (empty($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTIFICATION_ID]) === false) and
+            ($payment->cardMandateNotification !== null))
+        {
+            $cardMandate = $payment->cardMandateNotification->cardMandate;
+            $input[Payment\Entity::CUSTOMER_ID] = $cardMandate->token->customer->getPublicId();
+        }
+
         //
         // Appends dummy cvv if auth type of payment is skip. Validate merchant later
         // for moto feature else decline the payment.
@@ -4541,6 +4556,11 @@ trait Authorize
 
             if (($token === null) and
                 ($input['recurring'] === Payment\RecurringType::AUTO))
+            {
+                $type = Payment\RecurringType::AUTO;
+            }
+
+            if ($payment->hasCardMandateNotification() === true)
             {
                 $type = Payment\RecurringType::AUTO;
             }

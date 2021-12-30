@@ -32,7 +32,7 @@ class Core extends Base\Core
         $this->route = $this->app['api.route'];
     }
 
-    public function create(Payment\Entity $payment): Entity
+    public function create(Payment\Entity $payment, $input = []): Entity
     {
         $this->trace->info(TraceCode::CARD_MANDATE_CREATE_REQUEST, [
             'payment_id' => $payment->getId(),
@@ -49,9 +49,15 @@ class Core extends Base\Core
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForPayment($payment);
 
-        $mandate = $mandateHub->RegisterMandate($payment);
+        $mandate = $mandateHub->RegisterMandate($payment, $input);
 
         $this->fillDataFromMandateRegisterResponse($cardMandate, $mandate);
+
+        if ((empty($input[Entity::SKIP_SUMMARY_PAGE]) === false) and
+            ($input[Entity::SKIP_SUMMARY_PAGE] === true))
+        {
+            $cardMandate->setStatus(Status::MANDATE_APPROVED);
+        }
 
         $this->repo->saveOrFail($cardMandate);
 
@@ -78,7 +84,13 @@ class Core extends Base\Core
 
         $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
 
-        $cardMandateNotification = (new CardMandateNotification\Core)->create($payment, $cardMandate);
+        $cardMandateNotification = (new CardMandateNotification\Core)->create($cardMandate, [
+            CardMandateNotification\Entity::AMOUNT => $payment->getAmount(),
+        ], $payment);
+
+        $cardMandateNotification->payment()->associate($payment);
+
+        $cardMandateNotification->saveOrFail();
 
         $this->trace->info(TraceCode::CARD_MANDATE_PRE_DEBIT_NOTIFICATION_CREATED, [
             'payment_id'                   => $payment->getId(),
@@ -90,24 +102,33 @@ class Core extends Base\Core
 
     public function validateAutoPaymentCreation(Entity $cardMandate, Payment\Entity $payment)
     {
+        $errorCode = null;
+
         if ($cardMandate->getStatus() === Status::CANCELLED)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_CANCELLED);
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_CANCELLED;
         }
 
         if ($cardMandate->getStatus() === Status::PAUSED)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_PAUSED);
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_PAUSED;
         }
 
         if ($cardMandate->getStatus() === Status::COMPLETED)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_EXPIRED);
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_EXPIRED;
         }
 
         if ($payment->getCurrency() !== Currency::INR)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED;
+        }
+
+        if (empty($errorCode) === false)
+        {
+            throw new BadRequestException($errorCode, null, [
+                Payment\Entity::METHOD => Payment\Method::CARD,
+            ]);
         }
     }
 
@@ -368,6 +389,7 @@ class Core extends Base\Core
     {
         $cardMandate->setMandateId($mandate->getAttribute(Mandate::MANDATE_ID));
         $cardMandate->setMandateSummaryUrl($mandate->getAttribute(Mandate::MANDATE_SUMMARY_URL));
+        $cardMandate->setMandateCardId($mandate->getAttribute(Mandate::MANDATE_CARD_ID));
         $cardMandate->setMandateCardName($mandate->getAttribute(Mandate::MANDATE_CARD_NAME));
         $cardMandate->setMandateCardLast4($mandate->getAttribute(Mandate::MANDATE_CARD_LAST4));
         $cardMandate->setMandateCardNetwork($mandate->getAttribute(Mandate::MANDATE_CARD_NETWORK));

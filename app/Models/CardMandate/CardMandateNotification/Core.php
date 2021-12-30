@@ -15,24 +15,47 @@ use RZP\Models\Reminders;
 use RZP\Models\CardMandate;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
+use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
-    public function create(Payment\Entity $payment, CardMandate\Entity $cardMandate): Entity
+    public function create(CardMandate\Entity $cardMandate, $input = [], $payment = null): Entity
     {
         $cardMandateNotification = (new Entity)->build();
 
-        $cardMandateNotification->merchant()->associate($payment->merchant);
+        $cardMandateNotification->merchant()->associate($cardMandate->merchant);
         $cardMandateNotification->cardMandate()->associate($cardMandate);
-        $cardMandateNotification->payment()->associate($payment);
+
+        if ($payment !== null)
+        {
+            $cardMandateNotification->payment()->associate($payment);
+        }
 
         $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        $debitTime = $this->getDebitTime($payment);
+        if (empty($input[Entity::DEBIT_AT]) === true)
+        {
+            $input[Entity::DEBIT_AT] = $this->getDebitTime($input);
+        }
 
-        $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $payment, $debitTime);
+        $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $input);
 
         $cardMandateNotification->setNotificationId($notification->getId());
+
+        $cardMandateNotification->setAmount($input[Entity::AMOUNT]);
+
+        $currency = empty($input[Entity::CURRENCY]) ? Currency::INR : $input[Entity::CURRENCY];
+        $cardMandateNotification->setCurrency($currency);
+
+        if (empty($input[Entity::PURPOSE]) === false)
+        {
+            $cardMandateNotification->setPurpose($input[Entity::PURPOSE]);
+        }
+
+        if (empty($input[Entity::NOTES]) === false)
+        {
+            $cardMandateNotification->setNotes($input[Entity::NOTES]);
+        }
 
         $status = $this->getStatusFromNotificationStatus($notification->getStatus());
 
@@ -53,11 +76,12 @@ class Core extends Base\Core
             $cardMandateNotification->setAfaCompletedAt($notification->getAfaCompletedAt());
         }
 
-        $cardMandateNotification->setDebitAt($debitTime);
+        $cardMandateNotification->setDebitAt($input[Entity::DEBIT_AT]);
 
         $cardMandateNotification->saveOrFail();
 
-        if (!$cardMandateNotification->isAfaRequired() and
+        if ($payment !== null and
+            !$cardMandateNotification->isAfaRequired() and
             $cardMandateNotification->getStatus() === Status::NOTIFIED)
         {
             $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
@@ -67,7 +91,8 @@ class Core extends Base\Core
             $cardMandateNotification->saveOrFail();
         }
 
-        if ((!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
+        if (($payment !== null) and
+            (!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
             ($cardMandateNotification->isAfaRequired() and
                 ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
                     $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED)))
@@ -78,18 +103,93 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
+    public function validateAndAssociatePayment(Payment\Entity $payment, $notificationId): Entity
+    {
+        $cardMandateNotification = $this->repo
+                                        ->card_mandate_notification
+                                        ->findByPublicIdAndMerchant($notificationId, $payment->merchant);
+
+        $cardMandateNotification = $this->repo->card_mandate_notification->lockForUpdate($cardMandateNotification->getId());
+
+        $errorCode = null;
+
+        if ($cardMandateNotification->payment !== null)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_NOTIFICATION_ALREADY_USED;
+        }
+
+        if ($cardMandateNotification->getAmount() !== $payment->getAmount())
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_AMOUNT_MISMATCH;
+        }
+
+        $paymentCurrency = empty($payment->getCurrency()) ? Currency::INR : $payment->getCurrency();
+        if ($cardMandateNotification->getCurrency() !== $paymentCurrency)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_CURRENCY_MISMATCH;
+        }
+
+        $cardMandate = $cardMandateNotification->cardMandate;
+
+        if ($cardMandate->isActive() === false)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE;
+        }
+
+        if (!$cardMandateNotification->isAfaRequired() and
+            $cardMandateNotification->getStatus() !== Status::NOTIFIED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_NOTIFIED;
+        }
+
+        if ($cardMandateNotification->isAfaRequired() and
+            $cardMandateNotification->getAfaStatus() !== AfaStatus::APPROVED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED;
+        }
+
+        if (empty($errorCode) === false)
+        {
+            throw new Exception\BadRequestException($errorCode, null, [
+                'id' => $notificationId,
+                Payment\Entity::METHOD => Payment\Method::CARD,
+            ]);
+        }
+
+        $cardMandateNotification->setPaymentId($payment->getId());
+
+        $cardMandateNotification->saveOrFail();
+
+        return $cardMandateNotification;
+    }
+
     public function verifyNotification(Payment\Entity $payment): Entity
     {
         $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_REQUEST, [
             'payment_id' => $payment->getId(),
         ]);
 
+        if ($payment->cardMandateNotification === null)
+        {
+            throw new LogicException('card mandate notification for payment can\'t be null');
+        }
+
         $cardMandateNotification = $payment->cardMandateNotification;
+
+        $cardMandate = $cardMandateNotification->cardMandate;
+
+        $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
+
+        $validationResponse = $mandateHub->validatePayment($cardMandate->getMandateId(), [
+            CardMandate\MandateHubs\Notification::NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
+            CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount(),
+        ]);
 
         $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_RESPONSE, [
             'payment_id'                   => $payment->getId(),
             'card_mandate_notification_id' => $cardMandateNotification->getId(),
             'status'                       => $cardMandateNotification->getStatus(),
+            'response'                     => $validationResponse,
         ]);
 
         return $cardMandateNotification;
@@ -160,31 +260,35 @@ class Core extends Base\Core
 
         $payment = $cardMandateNotification->payment;
 
-        if (!$cardMandateNotification->isAfaRequired() and
-            $cardMandateNotification->getStatus() === Status::NOTIFIED)
+        if ($payment !== null)
         {
-            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
+            if ($cardMandateNotification->payment !== null and
+                !$cardMandateNotification->isAfaRequired() and
+                $cardMandateNotification->getStatus() === Status::NOTIFIED)
+            {
+                $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
 
-            $cardMandateNotification->setReminderId($reminderId);
+                $cardMandateNotification->setReminderId($reminderId);
 
-            $cardMandateNotification->saveOrFail();
-        }
-        else if (($cardMandateNotification->isAfaRequired() and
-            $cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED and
-            $isApproved === true) and ($payment->getStatus() === Payment\Status::CREATED))
-        {
-            $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
-            $paymentId  = $cardMandateNotification->payment->GetId();
-            (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
-        }
+                $cardMandateNotification->saveOrFail();
+            }
+            else if (($cardMandateNotification->isAfaRequired() and
+                    $cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED and
+                    $isApproved === true) and ($payment->getStatus() === Payment\Status::CREATED))
+            {
+                $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
+                $paymentId  = $cardMandateNotification->payment->GetId();
+                (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
+            }
 
-        if (((!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
-            ($cardMandateNotification->isAfaRequired() and
-                ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
-                    $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED))) and
-            ($payment->getStatus() === Payment\Status::CREATED))
-        {
-            $this->handleNotificationFailed($cardMandateNotification, $cardMandateNotification->payment);
+            if (((!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
+                    ($cardMandateNotification->isAfaRequired() and
+                        ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                            $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED))) and
+                ($payment->getStatus() === Payment\Status::CREATED))
+            {
+                $this->handleNotificationFailed($cardMandateNotification, $cardMandateNotification->payment);
+            }
         }
 
         $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_PROCESS_CALL_BACK, [
@@ -195,10 +299,10 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
-    protected function getDebitTime(Payment\Entity $payment)
+    protected function getDebitTime($input)
     {
         $time = Carbon::now();
-        if ($payment->getAmount() > Constants::WITHOUT_AFA_AMOUNT_LIMIT) {
+        if ($input[Payment\Entity::AMOUNT] > Constants::WITHOUT_AFA_AMOUNT_LIMIT) {
             $time->addDays(3);
         } else {
             $time->addDay();

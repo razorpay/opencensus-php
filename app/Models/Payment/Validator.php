@@ -111,7 +111,8 @@ class Validator extends Base\Validator
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
         'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
-        'recurring_token'               => 'sometimes_if:method,emandate,upi|associative_array|filled',
+        'recurring_token'               => 'sometimes_if:method,emandate,upi,card|associative_array|filled',
+        'recurring_token.notification_id' => 'sometimes_if:method,card|public_id',
         'recurring_token.max_amount'    => 'sometimes_if:method,emandate,upi|filled|integer|min:500',
         'recurring_token.expire_by'     => 'sometimes_if:method,emandate,upi|filled|epoch:946684800,9223372036854775807',
         'nach'                          => 'sometimes_if:method,nach|associative_array',
@@ -180,6 +181,16 @@ class Validator extends Base\Validator
     protected static $bulkCaptureRules = [
         'payment_ids'                => 'required|sequential_array',
         'payment_ids.*'              => 'required|public_id',
+    ];
+
+    protected static $authorizePaymentRules = [
+        'meta'                       => 'sometimes',
+        'recurring_token'            => 'sometimes|associative_array',
+        'recurring_token.max_amount' => 'sometimes|integer|min:1|mysql_signed_int',
+        'recurring_token.expire_by'  => 'sometimes|epoch:946684800,9223372036854775807',
+        'recurring_token.debit_type' => 'sometimes|in:fixed_amount,variable_amount',
+        'recurring_token.frequency'  => 'sometimes|in:daily,weekly,monthly,quarterly,yearly,bi_monthly,bi_yearly,as_presented',
+        'recurring_token.notes'      => 'sometimes|notes',
     ];
 
     protected static $bulkGatewayCaptureRules = [

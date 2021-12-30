@@ -19,6 +19,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class CardMandateTest extends TestCase
 {
@@ -105,6 +106,364 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
         $this->assertEquals('active', $cardMandate->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
+    public function testCreateSplitAuthenticatePayment($frequency = 'as_presented')
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $this->razorxValue = 'cardps';
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+                'recurring_3ds' => '1',
+                'recurring_non_3ds' => '1',
+            ]
+        ]);
+        $this->fixtures->merchant->addFeatures(['auth_split']);
+        $this->mockCps($terminal, 'callback_split');
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authenticated', $payment['status']);
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->mockCardVault();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->expressAuth();
+
+        $currentTime = Carbon::now();
+
+        $debitType = ($frequency === 'as_presented') ? 'variable_amount' : 'fixed_amount';
+
+        $request = [
+            "url" => "/payments/" . $payment['id'] . "/authorize",
+            "method" => "post",
+            "content" => [
+                "meta" => [
+                    "action_type"  => "capture",
+                    "reference_id" => $payment['id']
+                ],
+                'recurring_token' => [
+                    'expire_by' => $currentTime->addYear()->timestamp,
+                    'frequency' => $frequency,
+                    'max_amount' => '4000000',
+                    'debit_type' => $debitType,
+                    'notes'      => [
+                        'key1' => 'value1',
+                        'key2' => 'value2',
+                    ]
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('captured', $payment->getStatus());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+        $this->assertEquals(4000000, $cardMandate->max_amount);
+        $this->assertEquals($debitType, $cardMandate->debit_type);
+        $this->assertEquals(50000, $cardMandate->amount);
+        $this->assertEquals($request['content']['recurring_token']['expire_by'], $cardMandate->end_at);
+        $this->assertEquals($frequency, $cardMandate->frequency);
+        $this->assertEquals('mandate_hq', $cardMandate->mandate_hub);
+    }
+
+    public function testPreDebitNotify()
+    {
+        $this->testCreateSplitAuthenticatePayment();
+
+        $token = $this->getDbLastEntity('token');
+
+        $request = [
+            "url" => "/tokens/" . $token->getPublicId() . "/pre_debit/notify",
+            "method" => "post",
+            "content" => [
+                'debit_at' => Carbon::now()->addDays(2)->timestamp,
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'purpose'  => 'test debit',
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ]
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->mockCreatePreDebitNotification();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('notified', $response['status']);
+        $this->assertNotEmpty($response['id']);
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+
+        $this->assertNull($cardMandateNotification->reminder_id);
+    }
+
+    public function testCreateCardMandateAutoPaymentWithNotificationId()
+    {
+        $this->testPreDebitNotify();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $tokenId = $payment->localToken->getPublicId();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+
+        $request = [
+            "url" => "/payments/tokens/charge",
+            "method" => "post",
+            "content" => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'description'  => 'test debit',
+                'token' => $tokenId,
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+                'recurring_token' => [
+                    'notification_id' => $cardMandateNotification->getPublicId(),
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->mockValidatePayment();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('authenticated', $payment['status']);
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->mockCardVault();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->ba->expressAuth();
+
+        $request = [
+            "url" => "/payments/" . $payment['id'] . "/authorize",
+            "method" => "post",
+            "content" => [
+                "meta" => [
+                    "action_type"  => "capture",
+                    "reference_id" => $payment['id']
+                ],
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals($cardMandateNotification->getId(), $payment->cardMandateNotification->getId());
+
+        $token = $payment->localToken;
+        $this->assertEquals($token->getPublicId(), $tokenId);
+    }
+
+    public function testCreateCardMandateAutoPaymentWithNotificationIdCustomerNotApproved()
+    {
+        $this->testPreDebitNotify();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $tokenId = $payment->localToken->getPublicId();
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+        unset($paymentInput[Payment::CUSTOMER_ID]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $paymentInput[Payment::AMOUNT] = 50000;
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+
+        $cardMandateNotification->afa_required = 1;
+        $cardMandateNotification->afa_status = 'rejected';
+
+        $cardMandateNotification->saveOrFail();
+
+        $paymentInput[Payment::RECURRING_TOKEN][Payment::NOTIFICATION_ID] = $cardMandateNotification->getPublicId();
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndCatchException(function () use ($paymentInput) {
+            $this->doS2SRecurringPayment($paymentInput);
+        }, \RZP\Exception\BadRequestException::class, 'customer not approved the debit');
+    }
+
+    public function testCreateCardMandateAutoPaymentWithNotificationIdNotificationNotDelivered()
+    {
+        $this->testPreDebitNotify();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $tokenId = $payment->localToken->getPublicId();
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+        unset($paymentInput[Payment::CUSTOMER_ID]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $paymentInput[Payment::AMOUNT] = 50000;
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+
+        $cardMandateNotification->afa_required = 0;
+        $cardMandateNotification->status = 'failed';
+
+        $cardMandateNotification->saveOrFail();
+
+        $paymentInput[Payment::RECURRING_TOKEN][Payment::NOTIFICATION_ID] = $cardMandateNotification->getPublicId();
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndCatchException(function () use ($paymentInput) {
+            $this->doS2SRecurringPayment($paymentInput);
+        }, \RZP\Exception\BadRequestException::class, 'customer not notified');
+    }
+
+    public function testCreateCardMandateAutoPaymentWithNotificationIdAmountMismatch()
+    {
+        $this->testPreDebitNotify();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $tokenId = $payment->localToken->getPublicId();
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+        unset($paymentInput[Payment::CUSTOMER_ID]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $paymentInput[Payment::AMOUNT] = 50001;
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+
+        $cardMandateNotification->afa_required = 0;
+        $cardMandateNotification->status = 'notified';
+
+        $cardMandateNotification->saveOrFail();
+
+        $paymentInput[Payment::RECURRING_TOKEN][Payment::NOTIFICATION_ID] = $cardMandateNotification->getPublicId();
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50001,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $this->mockValidatePayment();
+
+        $this->makeRequestAndCatchException(function () use ($paymentInput) {
+            $this->doS2SRecurringPayment($paymentInput);
+        }, \RZP\Exception\BadRequestException::class, 'notification amount does not match with payment amount');
+    }
+
+    public function testPreDebitNotifyAmountMoreThanMaxAmount()
+    {
+        $this->testCreateSplitAuthenticatePayment();
+
+        $token = $this->getDbLastEntity('token');
+
+        $request = [
+            "url" => "/tokens/" . $token->getPublicId() . "/pre_debit/notify",
+            "method" => "post",
+            "content" => [
+                'debit_at' => Carbon::now()->addDays(2)->timestamp,
+                'amount'   => 11500000,
+                'purpose'  => 'test debit',
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $obj = $this;
+
+        $this->makeRequestAndCatchException(function () use ($request, $obj) {
+            $obj->makeRequestAndGetContent($request);
+        }, \RZP\Exception\BadRequestValidationFailureException::class, 'amount can\'t greater than max amount');
+    }
+
+    public function testPreDebitNotifyAmountNotMatchingForFixedTypeDebit()
+    {
+        $this->testCreateSplitAuthenticatePayment('monthly');
+
+        $token = $this->getDbLastEntity('token');
+
+        $request = [
+            "url" => "/tokens/" . $token->getPublicId() . "/pre_debit/notify",
+            "method" => "post",
+            "content" => [
+                'debit_at' => Carbon::now()->addDays(2)->timestamp,
+                'amount'   => 1500000,
+                'purpose'  => 'test debit',
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $obj = $this;
+
+        $this->makeRequestAndCatchException(function () use ($request, $obj) {
+            $obj->makeRequestAndGetContent($request);
+        }, \RZP\Exception\BadRequestValidationFailureException::class, 'amount has to be same as mandate\'s max amount for fixed amount debit type');
     }
 
     public function testCreateCardMandatePaymentWithMandateRegisterNotSupportingCard()
@@ -592,6 +951,7 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandateNotification->notified_at);
 
         $this->mockPostDebitNotification();
+        $this->mockValidatePayment();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
         $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
@@ -642,6 +1002,7 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
 
         $this->mockPostDebitNotification();
+        $this->mockValidatePayment();
 
         $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->notification_id;
 
@@ -696,6 +1057,8 @@ class CardMandateTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->notification_id;
 
+        $this->mockValidatePayment();
+
         $this->startTest();
 
         $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
@@ -745,9 +1108,7 @@ class CardMandateTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
         $this->ba->reminderAppAuth();
 
-        $cardMandate = $this->getDbLastEntity('card_mandate_notification');
-        $cardMandate->status = 'cancelled';
-        $cardMandate->saveOrFail();
+        $this->mockValidatePayment('mandate not active');
 
         $this->startTest();
 
@@ -882,6 +1243,22 @@ class CardMandateTest extends TestCase
         }
     }
 
+    protected function mockValidatePayment($errorCode = '')
+    {
+        $callable = function () use ($errorCode)
+        {
+            if (empty($errorCode) === false)
+            {
+                throw new BadRequestValidationFailureException($errorCode);
+            }
+
+            return [
+                'validation_id' => 'ttttttttttttt',
+            ];
+        };
+
+        return $this->mockMandateHQ($callable, 'validatePayment');
+    }
     protected function mockPostDebitNotification($success = true)
     {
         $callable = function () use ($success)
@@ -904,7 +1281,12 @@ class CardMandateTest extends TestCase
                     'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
                     'id' => "ratn_PP3VC146gmBVGG",
                     'status' => "created",
+                    'amount'     => $input['amount'],
+                    'debit_type' => $input['debit_type'],
+                    'start_at'   => $input['start_at'] ?? Carbon::now()->timestamp,
                     'max_amount' => $input['max_amount'],
+                    'frequency'  => $input['frequency'],
+                    'end_time'   => $input['end_time'],
                 ];
             };
         }
@@ -937,7 +1319,7 @@ class CardMandateTest extends TestCase
 
     protected function mockCreatePreDebitNotification($success = true, $afaRequired = false)
     {
-        $callable = function () use ($success, $afaRequired)
+        $callable = function ($mandateId, $input) use ($success, $afaRequired)
         {
             return [
                 'id' => 'ratn_PP3VC146gmBVGG',
@@ -946,6 +1328,10 @@ class CardMandateTest extends TestCase
                 'afa_status' => 'created',
                 'afa_required' => $afaRequired,
                 'afa_completed_at' => 0,
+                'currency' => empty($input['pre_debit_details']['currency']) ? 'INR' : $input['pre_debit_details']['currency'],
+                'amount' => $input['pre_debit_details']['amount'],
+                'purpose' => empty($input['pre_debit_details']['purpose']) ? null : $input['pre_debit_details']['purpose'],
+                'notes' => empty($input['notes']) ? null : $input['notes'],
             ];
         };
 
@@ -1024,6 +1410,151 @@ class CardMandateTest extends TestCase
         }
 
         $this->assertTrue($exception);
+    }
+    protected function mockCps($terminal, $responder)
+    {
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function(string $method, string $url, array $input) use ($terminal, $responder)
+            {
+                switch($responder)
+                {
+                    case 'callback_split':
+                        return $this->mockCpsCallbackSplit($method, $url, $input, $terminal);
+                }
+            });
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('GET', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal, $responder)
+            {
+                switch ($responder)
+                {
+                    case 'entity_fetch':
+                        return $this->mockCpsEntityFetch($url);
+                }
+            });
+    }
+
+    protected function mockCpsCallbackSplit($method, $url, $input, $terminal)
+    {
+        $input = $input['input'];
+        switch ($url) {
+            case 'action/authorize':
+            case 'action/callback' :
+                return [
+                    'data' => [
+                        'status' => 'authenticated',
+                    ],
+                ];
+            case 'action/pay':
+                if ((isset($input['iin']['iin']) === true) and ($input['iin']['iin'] === '556763'))
+                {
+                    return [
+                        'data'  => null,
+                        'error' => [
+                            'internal_error_code'       => 'BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE',
+                            'gateway_error_code'        => '',
+                            'gateway_error_description' => '',
+                            'description'               => 'Not sufficient funds'
+                        ],
+                        'payment' => [],
+                        'success' => false,
+                    ];
+                }
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'two_factor_auth' => 'Y'
+                    ],
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+            default:
+                return [
+                    'success' => true,
+                    'data' => [],
+                ];
+        }
+    }
+
+    protected function mockCpsEntityFetch($url)
+    {
+        switch ($url)
+        {
+            case 'entity/authentication/Flj85rfBFlPfVu':
+                return [
+                    'id' => 'Flj87LBAuB6JcE',
+                    'created_at' => 1602011616,
+                    'payment_id' => 'Flj85rfBFlPfVu',
+                    'merchant_id' => 'CCOhinUeUsT8HN',
+                    'attempt_id' => 'Flj87KPgVIXUjX',
+                    'status' => 'skip',
+                    'gateway' => 'visasafeclick',
+                    'terminal_id' => 'DfqXJH6OO9NEU5',
+                    'gateway_merchant_id' => 'escowrazcybs',
+                    'enrollment_status' => 'Y',
+                    'pares_status' => 'Y',
+                    'acs_url' => '',
+                    'eci' => '05',
+                    'commerce_indicator' => '',
+                    'xid' => 'ODUzNTYzOTcwODU5NzY3Qw==',
+                    'cavv' => '3q2+78r+ur7erb7vyv66vv\\/\\/8=',
+                    'cavv_algorithm' => '1',
+                    'notes' => '',
+                    'error_code' => '',
+                    'gateway_error_code' => '',
+                    'gateway_error_description' => '',
+                    'gateway_transaction_id1' => '',
+                    'gateway_reference_id1' => '',
+                    'success' => true
+                ];
+            case 'entity/authorization/Flj85rfBFlPfVu':
+                return [
+                    'id' => 'Flj87MbKrlsztd',
+                    'created_at' => 1602011616,
+                    'merchant_id' => 'CCOhinUeUsT8HN',
+                    'payment_id' => 'Flj85rfBFlPfVu',
+                    'verify_id' => 'Flj85rfBFlPfVu',
+                    'recon_id' => '',
+                    'acquirer' => 'hdfc',
+                    'gateway' => 'cybersource',
+                    'gateway_merchant_id' => 'escowrazcybs',
+                    'action' => 'authorize',
+                    'amount' => 100,
+                    'currency' => 'INR',
+                    'gateway_transaction_id' => 'Flj87MVvqSonRp',
+                    'gateway_reference_id1' => '6020116178806361104007',
+                    'cavv_algorithm' => '',
+                    'status' => 'failed',
+                    'notes' => '',
+                    'auth_code' => '052128',
+                    'rrn' => '',
+                    'arn' => '',
+                    'avs_response_code' => '',
+                    'cvc_response_code' => '',
+                    'risk_result' => '',
+                    'switch_response_code' => '',
+                    'error_code' => 'SERVER_ERROR_INVALID_ARGUMENT',
+                    'gateway_error_code' => '102',
+                    'gateway_error_description' => 'One or more fields in the request contains invalid data',
+                    'acs_transaction_id' => '',
+                    'gateway_payment_id' => '',
+                    'success' => true
+                ];
+            default:
+                return [
+                    'error' => 'CORE_FAILED_TO_FIND_MODEL',
+                    'success' => false,
+                ];
+        }
     }
 }
 

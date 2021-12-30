@@ -17,11 +17,41 @@ class MandateHQ
         'report_payment'                => 'v1/mandates/%s/payments',
         'check_bin'                     => 'v1/iins/%s',
         'cancel_mandate'                => 'v1/mandates/%s/cancel',
+        'validate_payment'              => 'v1/mandates/%s/payments/validate',
     ];
 
     const VALID_400_ERROR_DESCRIPTIONS = [
-        'invalid card number'                         => ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED,
-        'Pre-debit notification daily limit exceeds ' => ErrorCode::BAD_REQUEST_CARD_MANDATE_PRE_DEBIT_NOTIFICATION_MAXIMUM_LIMIT_REACHED,
+        // mandate registration
+        'invalid card number'                                             => ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED,
+        'card not supported'                                              => ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED,
+        'Issuing bank is not available for recurring'                     => ErrorCode::BAD_REQUEST_CARD_MANDATE_CARD_NOT_SUPPORTED,
+
+        // pre debit notification
+        'Pre-debit notification daily limit exceeds'                      => ErrorCode::BAD_REQUEST_CARD_MANDATE_PRE_DEBIT_NOTIFICATION_MAXIMUM_LIMIT_REACHED,
+        'Debit date out of range'                                         => ErrorCode::BAD_REQUEST_CARD_MANDATE_DEBIT_DATE_OUT_OF_RANGE,
+        'Maximum allowed debits in current cycle exceeded'                => ErrorCode::BAD_REQUEST_CARD_MANDATE_MAXIMUM_ALLOWED_DEBIT_EXCEEDED_IN_CURRENT_CYCLE,
+
+        // payment
+        'Minimum time gap between notification and payment not honoured'  => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_ATTEMPTED_BEFORE_MIN_GAP_OF_NOTIFICATION,
+        'Payment done before 24 hours from notification delivery time'    => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_ATTEMPTED_BEFORE_MIN_GAP_OF_NOTIFICATION,
+        'predebit notification has not sent before 24 hours'              => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_ATTEMPTED_BEFORE_MIN_GAP_OF_NOTIFICATION,
+        'Promised debit date not honoured'                                => ErrorCode::BAD_REQUEST_CARD_MANDATE_PROMISED_DEBIT_DATE_NOT_HONOURED,
+        'payment already done for the cycle'                              => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_DEBIT_NOT_AS_PER_FREQUENCY,
+        'captured at is not within mandate cycle'                         => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_DEBIT_NOT_AS_PER_FREQUENCY,
+        'Mandate not in appropriate state'                                => ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE,
+
+        // validate
+        '24 hours have not elapsed since pre debit notification delivery' => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_ATTEMPTED_BEFORE_MIN_GAP_OF_NOTIFICATION,
+        'notification AFA approval is rejected'                           => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED,
+        'notification AFA approval is expired'                            => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED,
+        'notification AFA approval is pending'                            => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED,
+        'mandate debit not as per frequency'                              => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_DEBIT_NOT_AS_PER_FREQUENCY,
+
+        // common
+        'Mandate not active'                                              => ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE,
+        'mandate has been paused by user'                                 => ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE,
+        'mandate has been cancelled by user'                              => ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE,
+        'Mandate not in appropriate state to perform action'              => ErrorCode::BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE,
     ];
 
     protected $app;
@@ -71,6 +101,13 @@ class MandateHQ
         $response = $this->sendRequest($url, 'post', [], $header);
 
         return $response['recurring_enabled'];
+    }
+
+    public function validatePayment($mandateId, $input)
+    {
+        $url = sprintf(self::MANDATE_HQ_URLS['validate_payment'], $mandateId);
+
+        return $this->sendRequest($url, 'post', $input);
     }
 
     public function registerMandate($input)
@@ -169,6 +206,7 @@ class MandateHQ
                         [
                             'response_body'        => $response->body ?? null,
                             'response_status_code' => $response->status_code,
+                            'method'               => 'card',
                         ]
                     );
                 }

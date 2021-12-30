@@ -818,6 +818,15 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function chargeToken()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->chargeToken($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getAuthenticateUrl($id)
     {
         $data = $this->service(E::PAYMENT)->getAuthenticateUrl($id);

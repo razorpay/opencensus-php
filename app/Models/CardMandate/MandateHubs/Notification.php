@@ -10,6 +10,10 @@ class Notification
     const AFA_REQUIRED     = 'afa_required';
     const AFA_STATUS       = 'afa_status';
     const AFA_COMPLETED_AT = 'afa_completed_at';
+    const AMOUNT           = 'amount';
+    const CURRENCY         = 'currency';
+    const PURPOSE          = 'purpose';
+    const NOTES            = 'notes';
 
     protected $attributes = [];
 
@@ -33,6 +37,22 @@ class Notification
 
     public function getId(): string {
         return $this->getAttribute(self::NOTIFICATION_ID);
+    }
+
+    public function getAmount(): string {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency(): string {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getPurpose(): string {
+        return $this->getAttribute(self::PURPOSE);
+    }
+
+    public function getNotes(): string {
+        return $this->getAttribute(self::NOTES);
     }
 
     public function getStatus(): string {

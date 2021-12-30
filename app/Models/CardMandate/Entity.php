@@ -35,6 +35,8 @@ class Entity extends Base\PublicEntity
     const CANCELLED_BY               = 'cancelled_by';
     const MANDATE_HUB                = 'mandate_hub';
 
+    const SKIP_SUMMARY_PAGE          = 'skip_summary_page';
+
     protected $entity = 'card_mandate';
 
     protected $generateIdOnCreate = true;
@@ -52,6 +54,18 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::MANDATE_ID,
+        self::MANDATE_HUB,
+        self::MANDATE_CARD_ISSUER,
+        self::STATUS,
+        self::DEBIT_TYPE,
+        self::MAX_AMOUNT,
+        self::AMOUNT,
+        self::START_AT,
+        self::END_AT,
+        self::TOTAL_CYCLES,
+        self::MANDATE_INTERVAL,
+        self::FREQUENCY,
         self::MANDATE_SUMMARY_URL,
         self::STATUS,
         self::CREATED_AT,
@@ -196,6 +210,11 @@ class Entity extends Base\PublicEntity
     public function getFrequency()
     {
         return $this->getAttribute(self::FREQUENCY);
+    }
+
+    public function getDebitType()
+    {
+        return $this->getAttribute(self::DEBIT_TYPE);
     }
 
     public function getPayType()

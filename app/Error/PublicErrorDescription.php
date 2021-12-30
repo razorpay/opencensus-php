@@ -86,6 +86,17 @@ class PublicErrorDescription
     const BAD_REQUEST_AMOUNT_GREATER_THAN_CARD_MANDATE_MAX_AMOUNT               = 'Payment amount is greater than card mandate\'s max amount';
     const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_PAUSED                         = 'Card mandate is not active, it is paused by user';
     const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_EXPIRED                        = 'Card mandate is not active, it is expired';
+    const BAD_REQUEST_CARD_MANDATE_MAXIMUM_ALLOWED_DEBIT_EXCEEDED_IN_CURRENT_CYCLE = 'Maximum allowed debits in current cycle exceeded';
+    const BAD_REQUEST_CARD_MANDATE_DEBIT_DATE_OUT_OF_RANGE                      = 'Debit date out of range';
+    const BAD_REQUEST_CARD_MANDATE_MANDATE_NOT_ACTIVE                           = 'Mandate not active';
+    const BAD_REQUEST_CARD_MANDATE_PROMISED_DEBIT_DATE_NOT_HONOURED             = 'Promised debit date not honoured';
+    const BAD_REQUEST_CARD_MANDATE_PAYMENT_ATTEMPTED_BEFORE_MIN_GAP_OF_NOTIFICATION = 'Payment done before 24 hours from notification delivery time';
+    const BAD_REQUEST_CARD_MANDATE_PAYMENT_DEBIT_NOT_AS_PER_FREQUENCY           = 'Mandate debit not as per frequency';
+    const BAD_REQUEST_CARD_MANDATE_NOTIFICATION_ALREADY_USED                    = 'notification already used';
+    const BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_AMOUNT_MISMATCH         = 'notification amount does not match with payment amount';
+    const BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_CURRENCY_MISMATCH       = 'notification currency does not match with payment currency';
+    const BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_NOTIFIED                        = 'customer not notified';
+    const BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED                        = 'customer not approved the debit';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED                        = 'The payment has already been either captured or voided';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Currency is not supported';

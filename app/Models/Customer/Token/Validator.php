@@ -128,6 +128,14 @@ class Validator extends Base\Validator
         'expiry_year'  => 'sometimes',
     ];
 
+    protected static $recurringTokenPreDebitNotifyRules = [
+        'debit_at' => 'required|epoch:946684800,9223372036854775807',
+        'amount'   => 'required|integer|min_amount',
+        'purpose'  => 'sometimes|string|max:512',
+        'currency' => 'sometimes|string|in:INR',
+        'notes'    => 'sometimes|notes',
+    ];
+
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)

@@ -6467,6 +6467,16 @@ ALTER TABLE qr_code_config
     ADD COLUMN deleted_at INTEGER DEFAULT NULL,
     ADD COLUMN cutoff_time INTEGER DEFAULT NULL;
 
+ALTER TABLE card_mandate_notifications
+    MODIFY COLUMN payment_id char(14),
+    ADD COLUMN amount BIGINT,
+    ADD COLUMN currency CHAR(3),
+    ADD COLUMN purpose text,
+    ADD COLUMN notes text;
+
+ALTER TABLE card_mandate_notifications
+    ADD INDEX `card_mandate_notification_payment_id_index` (`payment_id`);
+
 ALTER TABLE qr_code_config
     DROP COLUMN cutoff_time,
     ADD COLUMN config_key varchar(50) NOT NULL,

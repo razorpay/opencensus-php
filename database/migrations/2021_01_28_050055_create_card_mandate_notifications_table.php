@@ -28,9 +28,22 @@ class CreateCardMandateNotificationsTable extends Migration
 
             $table->char(Entity::CARD_MANDATE_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::PAYMENT_ID, Entity::ID_LENGTH);
+            $table->char(Entity::PAYMENT_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Entity::REMINDER_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->bigInteger(Entity::AMOUNT)
+                  ->nullable();
+
+            $table->char(Entity::CURRENCY, 3)
+                  ->nullable();
+
+            $table->text(Entity::PURPOSE)
+                  ->nullable();
+
+            $table->text(Entity::NOTES)
                   ->nullable();
 
             $table->string(Entity::STATUS, self::VARCHAR_LEN);
@@ -68,6 +81,8 @@ class CreateCardMandateNotificationsTable extends Migration
             $table->index(Entity::MERCHANT_ID);
 
             $table->index(Entity::NOTIFICATION_ID);
+
+            $table->index(Entity::PAYMENT_ID);
         });
     }
 

@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -17,6 +18,8 @@ use RZP\Models\CardMandate;
  */
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const CARD_MANDATE_ID  = 'card_mandate_id';
     const PAYMENT_ID       = 'payment_id';
     const NOTIFICATION_ID  = 'notification_id';
@@ -28,21 +31,24 @@ class Entity extends Base\PublicEntity
     const AFA_REQUIRED     = 'afa_required';
     const AFA_STATUS       = 'afa_status';
     const AFA_COMPLETED_AT = 'afa_completed_at';
+    const CURRENCY         = 'currency';
+    const AMOUNT           = 'amount';
+    const NOTES            = 'notes';
+    const PURPOSE          = 'purpose';
 
     protected $entity = 'card_mandate_notification';
 
     protected $generateIdOnCreate = true;
+
+    protected static $sign = 'cardmn';
 
     protected $fillable = [
     ];
 
     protected $public = [
         self::ID,
-        self::CARD_MANDATE_ID,
         self::STATUS,
-        self::NOTIFICATION_ID,
         self::NOTIFIED_AT,
-        self::VERIFIED_AT,
         self::CREATED_AT,
     ];
 
@@ -50,6 +56,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::CARD_MANDATE_ID,
+        self::AMOUNT,
+        self::CURRENCY,
         self::STATUS,
         self::NOTIFICATION_ID,
         self::REMINDER_ID,
@@ -58,6 +66,8 @@ class Entity extends Base\PublicEntity
         self::AFA_REQUIRED,
         self::AFA_STATUS,
         self::AFA_COMPLETED_AT,
+        self::PURPOSE,
+        self::NOTES,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -97,6 +107,26 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AFA_REQUIRED, $isRequired);
     }
 
+    public function setPaymentId($paymentId)
+    {
+        $this->setAttribute(self::PAYMENT_ID, $paymentId);
+    }
+
+    public function setAmount($value)
+    {
+        $this->setAttribute(self::AMOUNT, $value);
+    }
+
+    public function setCurrency($value)
+    {
+        $this->setAttribute(self::CURRENCY, $value);
+    }
+
+    public function setPurpose($value)
+    {
+        $this->setAttribute(self::PURPOSE, $value);
+    }
+
     public function setAfaStatus($status)
     {
         $this->setAttribute(self::AFA_STATUS, $status);
@@ -130,6 +160,16 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function getNotifiedAt()

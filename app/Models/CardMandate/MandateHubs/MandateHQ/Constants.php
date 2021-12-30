@@ -35,6 +35,9 @@ class Constants
     const INTERVAL                = 'interval';
     const PAUSED_BY               = 'paused_by';
     const CANCELLED_BY            = 'cancelled_by';
+    const SKIP_SUMMARY_PAGE       = 'skip_summary_page';
+
+    const NOTES = 'notes';
 
     const RECURRING_DEBIT_TYPE = 'recurring_debit_type';
     const PAYMENT_STATUS       = 'status';
@@ -63,6 +66,7 @@ class Constants
     const NOTIFICATION_TYPE                          = 'type';
     const NOTIFICATION_PRE_DEBIT_DETAILS             = 'pre_debit_details';
     const NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT      = 'amount';
+    const NOTIFICATION_PRE_DEBIT_DETAILS_PURPOSE     = 'purpose';
     const NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_DAY   = 'debit_day';
     const NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_MONTH = 'debit_month';
 

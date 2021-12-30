@@ -39,6 +39,7 @@ use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants;
+use RZP\Models\Customer;
 use RZP\Constants\MailTags;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
@@ -584,6 +585,74 @@ class Service extends Base\Service
         }
     }
 
+    public function chargeToken($input)
+    {
+        $id = empty($input[Payment\Entity::TOKEN]) ? null : $input[Payment\Entity::TOKEN];
+
+        if (empty($id) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('token is required');
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_CHARGE_TOKEN_REQUEST,
+            [
+                'token_id'    => $id,
+            ]);
+
+        $token = $this->repo->token->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $customer = $token->customer;
+
+        $additionalInput = [
+            Payment\Entity::RECURRING   => '1',
+            Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
+            Payment\Entity::CONTACT     => $customer->getContact(),
+            Payment\Entity::EMAIL       => $customer->getEmail(),
+        ];
+
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            $orderInput = [
+                Order\Entity::AMOUNT          => $input[Payment\Entity::AMOUNT],
+                Order\Entity::CURRENCY        => $input[Payment\Entity::CURRENCY],
+                Order\Entity::PAYMENT_CAPTURE => true,
+                Order\Entity::NOTES           => $input[Payment\Entity::NOTES] ?? [],
+            ];
+
+            $this->trace->info(
+                TraceCode::PAYMENT_CHARGE_TOKEN_CREATE_ORDER,
+                [
+                    'token_id'     => $id,
+                    'orderInput'   => $orderInput,
+                ]
+            );
+
+            $orderCore = new Order\Core();
+
+            $input[Payment\Entity::ORDER_ID] = $orderCore->create($orderInput, $this->merchant)->getPublicId();
+        }
+
+        $input = array_merge($additionalInput, $input);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CHARGE_TOKEN,
+            [
+                'token_id'     => $id,
+                'paymentInput' => $input,
+            ]
+        );
+
+        $paymentProcessor = $this->getNewProcessor($this->merchant);
+
+        // todo: currently express service is passing key_id in url. remove this once it is fixed in express
+        if (empty($input['key_id']) === false)
+        {
+            unset($input['key_id']);
+        }
+
+        return $paymentProcessor->process($input);
+    }
+
     public function authorizePayment($input, $id)
     {
        $this->trace->info(TraceCode::PAYMENT_AUTHORIZATION_REQUEST,
@@ -597,9 +666,27 @@ class Service extends Base\Service
        {
             $payment = $this->repo->payment->findOrFail($id);
 
-            $response = $this->getNewProcessor($payment->merchant)->processPaymentAuthorize($payment, $input);
+           (new Payment\Validator)->validateInput('authorize_payment', $input);
 
-            return $response;
+           $processor = $this->getNewProcessor($payment->merchant);
+
+           if (($payment->isAuthenticated() === true) and
+               ($payment->isCard() === true) and
+               (empty($input[Payment\Entity::RECURRING_TOKEN]) === false))
+           {
+               try
+               {
+                   $this->handleInitialCardRecurringAuthorizeIfApplicable($payment, $input);
+               }
+               catch (BadRequestException $e)
+               {
+                   $processor->failMandateCreationFailedCardInitialRecurringPayment($payment, $e);
+
+                   throw $e;
+               }
+           }
+
+            return $processor->processPaymentAuthorize($payment, $input);
        }
        catch (\Throwable $e)
        {
@@ -611,6 +698,65 @@ class Service extends Base\Service
 
             throw $e;
        }
+    }
+
+    protected function handleInitialCardRecurringAuthorizeIfApplicable(Payment\Entity $payment, $input)
+    {
+        $payment->setRecurring(true);
+
+        $payment->setRecurringType(Payment\RecurringType::INITIAL);
+
+        if ($payment->card->isRecurringSupported(true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+        }
+
+        $tokenCreateInput = [
+            Token\Entity::METHOD      => $payment->getMethod(),
+            Token\Entity::CARD_ID     => $payment->getCardId(),
+        ];
+
+        if (empty($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT]) === false)
+        {
+            $tokenCreateInput[Token\Entity::MAX_AMOUNT] = $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT];
+        }
+
+        if (empty($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY]) === false)
+        {
+            $tokenCreateInput[Token\Entity::EXPIRED_AT] = $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY];
+        }
+
+        $customer = $payment->customer;
+
+        if (empty($customer) === true)
+        {
+            $customer = (new Customer\Core)->createLocalCustomer([
+                Customer\Entity::CONTACT       => $payment->getContact(),
+                Customer\Entity::EMAIL         => $payment->getEmail(),
+            ], $payment->merchant, false);
+        }
+
+        $newToken = (new Token\Core)->Create($customer, $tokenCreateInput, null, false);
+
+        $payment->localToken()->associate($newToken);
+
+        if (empty($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTES]) === false)
+        {
+            $payment->appendNotes($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTES]);
+        }
+
+        $payment->saveOrFail();
+
+        $cardMandateCreateInput = $input[Payment\Entity::RECURRING_TOKEN];
+
+        $cardMandateCreateInput[CardMandate\Entity::SKIP_SUMMARY_PAGE] = true;
+
+        $cardMandate = (new CardMandate\Core)->create($payment, $cardMandateCreateInput);
+
+        $newToken->cardMandate()->associate($cardMandate->getId());
+
+        $newToken->saveOrFail();
     }
 
     protected function checkMultipleRedirectionAndReturnResponse(string $trackId)

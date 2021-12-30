@@ -64,4 +64,13 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function recurringTokenPreDebitNotify($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->recurringTokenPreDebitNotify($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

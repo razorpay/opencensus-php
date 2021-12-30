@@ -4,6 +4,7 @@ namespace RZP\Models\Reminders;
 
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\CardMandate\CardMandateNotification;
 
 class CardAutoRecurringReminderProcessor extends ReminderProcessor
@@ -12,23 +13,34 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
     {
         $payment = (new Payment\Core)->retrievePaymentById($id);
 
-        $notification = (new CardMandateNotification\Core)->verifyNotification($payment);
-
         $processor = (new Payment\Processor\Processor($payment->merchant));
         $processor->setPayment($payment);
 
-        $gatewayInput = $this->getGatewayInputForPayment($payment);
-
-        if ((!$notification->isAfaRequired() and $notification->getStatus() !== CardMandateNotification\Status::NOTIFIED) ||
-            ($notification->isAfaRequired() and $notification->getAfaStatus() !== CardMandateNotification\AfaStatus::APPROVED) ||
-            $notification->cardMandate->isActive() === false)
+        $verified = false;
+        try
         {
+            (new CardMandateNotification\Core)->verifyNotification($payment);
+
+            $verified = true;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                null,
+                TraceCode::CARD_MANDATE_NOTIFICATION_PAYMENT_VERIFY_FAILED,
+                ["payment_id" => $id]);
+
             $processor->failNotificationVerifyFailedCardAutoRecurringPayment($payment);
         }
-        else
+
+        if ($verified === false)
         {
-            $processor->gatewayRelatedProcessing($payment, [], $gatewayInput);
+            return [];
         }
+
+        $gatewayInput = $this->getGatewayInputForPayment($payment);
+
+        $processor->gatewayRelatedProcessing($payment, [], $gatewayInput);
 
         return [];
     }

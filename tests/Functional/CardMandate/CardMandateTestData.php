@@ -87,7 +87,13 @@ return [
                             "delivered_at"=> 1630693800,
                             "afa_required"=> true,
                             "afa_status"=> "approved",
-                            "afa_completed_at"=> 1630693800
+                            "afa_completed_at"=> 1630693800,
+                            "amount" => 5000,
+                            "currency" => "INR",
+                            "purpose" => "test",
+                            "notes" => [
+                                "key" => "value",
+                            ],
                         ]
                     ]
                 ],
@@ -221,7 +227,13 @@ return [
                             "delivered_at"=> 1630693800,
                             "afa_required"=> true,
                             "afa_status"=> "approved",
-                            "afa_completed_at"=> 1630693800
+                            "afa_completed_at"=> 1630693800,
+                            "amount" => 5000,
+                            "currency" => "INR",
+                            "purpose" => "test",
+                            "notes" => [
+                                "key" => "value",
+                            ],
                         ]
                     ]
                 ],

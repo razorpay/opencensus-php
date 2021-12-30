@@ -69,6 +69,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\OtpPaymentTest;
+use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
@@ -3595,6 +3596,8 @@ class Processor
 
         $this->validateUpiRecurringIfApplicable($payment, $input);
 
+        $this->validateAndProcessCardRecurringIfApplicable($payment, $input);
+
         $this->setApplicationIfApplicable($payment, $input);
 
         $this->setGooglePayMethodsIfApplicable($payment, $input);
@@ -4135,6 +4138,27 @@ class Processor
                 $payment->setNotes($invoice->getNotes()->toArray());
             }
         }
+    }
+
+    protected function validateAndProcessCardRecurringIfApplicable(Payment\Entity $payment, array &$input)
+    {
+        if ($payment->isCardRecurring() === false)
+        {
+            return;
+        }
+
+        if (empty($input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTIFICATION_ID]) === false)
+        {
+            if (($this->merchant->isFeatureEnabled(Feature::AUTH_SPLIT) === false))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'recurring_token.notification is not required');
+            }
+
+            (new CardMandateNotification\Core)->validateAndAssociatePayment($payment,
+                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::NOTIFICATION_ID]);
+        }
+
     }
 
     protected function validateUpiRecurringIfApplicable(Payment\Entity $payment, array $input)

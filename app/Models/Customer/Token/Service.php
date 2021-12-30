@@ -24,6 +24,8 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\PaymentsUpi;
+use RZP\Models\CardMandate;
+use RZP\Models\CardMandate\CardMandateNotification;
 
 class Service extends Base\Service
 {
@@ -379,6 +381,38 @@ class Service extends Base\Service
         ];
 
         return $summary;
+    }
+
+    public function recurringTokenPreDebitNotify($id, $input)
+    {
+        (new Validator)->validateInput('recurring_token_pre_debit_notify', $input);
+
+        $token = $this->repo->token->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token->isCard() === false or
+            $token->isRecurring() === false or
+            $token->hasCardMandate() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('token does not support pre debit notify');
+        }
+
+        $cardMandate = $token->cardMandate;
+
+        if ($cardMandate->getMaxAmount() < $input[CardMandateNotification\Entity::AMOUNT])
+        {
+            throw new Exception\BadRequestValidationFailureException('amount can\'t greater than max amount');
+        }
+
+        if ($cardMandate->getDebitType() === CardMandate\Constants::DEBIT_TYPE_FIXED_AMOUNT and
+            $input[CardMandateNotification\Entity::AMOUNT] !== $cardMandate->getMaxAmount())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'amount has to be same as mandate\'s max amount for fixed amount debit type');
+        }
+
+        $cardMandateNotification = (new CardMandateNotification\Core)->create($token->cardMandate, $input);
+
+        return $cardMandateNotification->toArrayPublic();
     }
 
     public function createTokensUpiVpaBulk($input)

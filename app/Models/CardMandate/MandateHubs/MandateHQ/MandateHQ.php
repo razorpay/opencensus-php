@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\CardMandate;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
+use RZP\Models\Currency\Currency;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
@@ -36,9 +37,9 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return self::getMandateFromMandateHqResponse($response);
     }
 
-    public function RegisterMandate(Payment\Entity $payment): Mandate
+    public function RegisterMandate(Payment\Entity $payment, $input = []): Mandate
     {
-        $mandateHqInput = $this->getRegisterInput($payment);
+        $mandateHqInput = $this->getRegisterInput($payment, $input);
 
         $response = $this->app->mandateHQ->registerMandate($mandateHqInput);
 
@@ -59,13 +60,18 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return $this->app->mandateHQ->reportPayment($cardMandate->getMandateId(), $mandateHqInput);
     }
 
-    public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, Payment\Entity $payment, $debitTime): Notification
+    public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, $input): Notification
     {
-        $mandateHqInput = $this->getCreatePreDebitNotificationInput($payment, $debitTime);
+        $mandateHqInput = $this->getCreatePreDebitNotificationInput($input);
 
         $response = $this->app->mandateHQ->createPreDebitNotification($cardMandate->getMandateId(), $mandateHqInput);
 
         return self::getNotificationFromMandateHqResponse($response);
+    }
+
+    public function validatePayment($mandateId, $input)
+    {
+        return $this->app->mandateHQ->validatePayment($mandateId, $input);
     }
 
     public static function getMandateFromMandateHqResponse($response): Mandate {
@@ -104,22 +110,32 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             Notification::AFA_STATUS       => $response['afa_status'],
             Notification::AFA_REQUIRED     => $response['afa_required'],
             Notification::AFA_COMPLETED_AT => $response['afa_completed_at'],
+            Notification::AMOUNT           => $response['amount'] ?? 0,
+            Notification::CURRENCY         => $response['currency'] ?? null,
+            Notification::PURPOSE          => $response['purpose'] ?? null,
+            Notification::NOTES            => $response['notes'] ?? [],
         ];
 
         return (new Notification($notificationAttributes));
     }
 
-    protected function getCreatePreDebitNotificationInput(Payment\Entity $payment, $debitTime)
+    protected function getCreatePreDebitNotificationInput($input)
     {
-        $debitTimeCarbon = Carbon::createFromTimestamp($debitTime, Timezone::IST);
+        $debitTimeCarbon = Carbon::createFromTimestamp($input['debit_at'] ?? Carbon::now()->addDay()->timestamp,
+            Timezone::IST);
+
+        $currency = empty($input['currency']) ? Currency::INR : $input['currency'];
 
         return [
-            Constants::NOTIFICATION_TYPE => Constants::NOTIFICATION_TYPE_PRE_DEBIT,
+            Constants::NOTIFICATION_TYPE              => Constants::NOTIFICATION_TYPE_PRE_DEBIT,
             Constants::NOTIFICATION_PRE_DEBIT_DETAILS => [
-                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT => $payment->getAmount(),
-                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_DAY => $debitTimeCarbon->day,
+                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT      => $input['amount'],
+                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_PURPOSE     => $input['purpose'] ?? null,
+                Constants::NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_DAY   => $debitTimeCarbon->day,
                 Constants::NOTIFICATION_PRE_DEBIT_DETAILS_DEBIT_MONTH => $debitTimeCarbon->month,
-            ]
+                Constants::CURRENCY                                   => $currency,
+            ],
+            Constants::NOTES                          => empty($input['notes']) ? null : $input['notes'],
         ];
     }
 
@@ -211,7 +227,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         ];
     }
 
-    protected function getRegisterInput(Payment\Entity $payment): array
+    protected function getRegisterInput(Payment\Entity $payment, $input = []): array
     {
         $url = $this->getRedirectUrlForPayment($payment->getPublicId());
 
@@ -227,7 +243,8 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         }
 
         $startTime = $token->getStartTime();
-        if ($startTime === null) {
+        if ($startTime === null)
+        {
             $startTime = Carbon::now()->addDay()->getTimestamp();
         }
 
@@ -237,23 +254,43 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             $endTime = $token->card->getExpiryTimestamp();
         }
 
+        $frequency = Constants::FREQUENCY_AS_PRESENTED;
+        if (empty($input['frequency']) === false)
+        {
+            $frequency = $input['frequency'];
+        }
+
+        $debitType = Constants::DEBIT_TYPE_VARIABLE_AMOUNT;
+        if (empty($input['debit_type']) === false)
+        {
+            $debitType = $input['debit_type'];
+        }
+
+        $skipSummaryPage = false;
+        if (empty($input['skip_summary_page']) === false)
+        {
+            $skipSummaryPage = $input['skip_summary_page'];
+        }
+
         return [
             Constants::AMOUNT       => $payment->getAmount(),
             Constants::CURRENCY     => $payment->getCurrency(),
             Constants::METHOD       => Constants::METHOD_CARD,
-            Constants::DEBIT_TYPE   => Constants::DEBIT_TYPE_VARIABLE_AMOUNT,
+            Constants::DEBIT_TYPE   => $debitType,
             Constants::BUSINESS     => $payment->merchant->getName(),
             Constants::MAX_AMOUNT   => $maxAmount,
             Constants::START_TIME   => $startTime,
             Constants::END_TIME     => $endTime,
-            Constants::FREQUENCY    => Constants::FREQUENCY_AS_PRESENTED,
+            Constants::FREQUENCY    => $frequency,
             Constants::CALLBACK_URL => $url,
+            Constants::SKIP_SUMMARY_PAGE => $skipSummaryPage,
             Constants::CARD         => [
                 Constants::CARD_NUMBER       => $this->getCardNumber($card),
                 Constants::CARD_NAME         =>  $card->getName(),
                 Constants::CARD_EXPIRY_MONTH => stringify($card->getExpiryMonth()),
                 Constants::CARD_EXPIRY_YEAR  => substr(stringify($card->getExpiryYear()), -2)
             ],
+            Constants::NOTES       => empty($input['notes']) ? null : $input['notes'],
         ];
     }
 
