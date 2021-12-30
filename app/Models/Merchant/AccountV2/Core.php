@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AccountV2;
 
 use RZP\Exception;
 use RZP\Models\User;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -12,6 +13,7 @@ use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
@@ -131,6 +133,22 @@ class Core extends Merchant\Core
 
         $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
 
+        $noDocOnboarding = $input['no_doc_onboarding'] ?? false;
+
+        if($noDocOnboarding == true)
+        {
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
+            {
+                   $this->addSubmerchantNoDocOnboardingFeature($subMerchantId);
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBM_NO_DOC_ONBOARDING_NOT_ENABLED_FOR_PARTNER
+                );
+            }
+        }
+
         $subMerchantInput = InputHelper::getSubMerchantInput($input);
 
         $merchantCore = new Merchant\Core;
@@ -157,6 +175,19 @@ class Core extends Merchant\Core
         $this->updateNCFieldsAcknowledgedIfApplicable($detailInput, $subMerchant);
 
         return $subMerchant;
+    }
+
+    private function addSubmerchantNoDocOnboardingFeature(string $submerchantId)
+    {
+        $featureName = Feature\Constants::NO_DOC_ONBOARDING;
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $submerchantId,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => $featureName,
+        ];
+
+        (new Feature\Core())->create($featureParams, true);
     }
 
     public function updateNCFieldsAcknowledgedIfApplicable(array $input, Merchant\Entity $subMerchant)

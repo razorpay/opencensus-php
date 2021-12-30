@@ -2,12 +2,15 @@
 
 namespace Functional\Merchant;
 
+use RZP\Models\Feature\Core;
+use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccountV2\Metric;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -88,6 +91,75 @@ class AccountV2Test extends TestCase
         $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
 
         $this->assertNotNull($merchant);
+    }
+
+    public function testCreateSubmerchantWithNoDocFeature()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams,true);
+
+        $response = $this->startTest();
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $this->assertNotNull($merchant);
+
+        $feature = $this->getDbEntity('feature', ['name' => 'no_doc_onboarding', 'entity_id' => $accountId, 'entity_type' => 'merchant']);
+
+        $this->assertNotNull($feature);
+    }
+
+    public function testCreateSubmerchantWithNoDocFeatureDisabled()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->startTest();
+    }
+
+    public function testEditSubmerchantAccountNoDocFeature()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountId = $result['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $feature = $this->getDbEntity('feature', ['name' => 'no_doc_onboarding', 'entity_id' => $accountId, 'entity_type' => 'merchant']);
+
+        $this->assertNull($feature);
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams,true);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+
+        $feature = $this->getDbEntity('feature', ['name' => 'no_doc_onboarding', 'entity_id' => $accountId, 'entity_type' => 'merchant']);
+
+        $this->assertNotNull($feature);
     }
 
     public function testEditAccountV2ProfileAddress()

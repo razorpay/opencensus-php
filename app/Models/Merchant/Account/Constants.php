@@ -78,6 +78,7 @@ class Constants
     const CREATED_AT         = 'created_at';
     const OWNER_INFO         = 'owner_info';
     const CONTACT_INFO       = 'contact_info';
+    const NO_DOC_ONBOARDING  = 'no_doc_onboarding';
 
     // external ids
     const EXTERNAL_ID       = 'external_id';

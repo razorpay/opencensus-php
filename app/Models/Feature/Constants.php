@@ -253,6 +253,15 @@ class Constants
      */
     const RETAIN_SUB_MERCHANT_NAME    = 'retain_sub_merchant_name';
 
+    /**
+     * This feature will enable
+     * partners to onboard sub-merchants without uploading their verification documents.
+     */
+    const SUBM_NO_DOC_ONBOARDING    = 'subm_no_doc_onboarding';
+
+    //this will be assigned to submerchant if partner has no_doc_onboarding enabled.
+    const NO_DOC_ONBOARDING = 'no_doc_onboarding';
+
     // to get nach form direct download url
     const NACH_FORM_DIRECT_DOWNLOAD = 'nach_form_direct_download';
 
@@ -1453,6 +1462,8 @@ class Constants
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
         self::EDIT_SINGLE_VA                  => true,
         self::ADDRESS_NAME_REQUIRED           => true,
+        self::NO_DOC_ONBOARDING               => true,
+        self::SUBM_NO_DOC_ONBOARDING           => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
     ];
