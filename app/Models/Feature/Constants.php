@@ -1033,6 +1033,12 @@ class Constants
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
     /**
+     * Flags to send notifications to beneficiary  when payout is processed
+     */
+    const BENE_EMAIL_NOTIFICATION = 'bene_email_notification';
+    const BENE_SMS_NOTIFICATION   = 'bene_sms_notification';
+
+    /**
      * Flag to enable the new granular downtimes apis & webhooks.
      * To send type and flow keys in instrument along with instrument_schema if applicable.
      */
@@ -1446,6 +1452,8 @@ class Constants
         self::CREATE_SOURCE_V2                => true,
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
+        self::BENE_EMAIL_NOTIFICATION         => true,
+        self::BENE_SMS_NOTIFICATION           => true,
         self::ALLOW_NETWORK_TOKENS            => true,
         self::DISABLE_PAYPAL_AS_BACKUP        => true,
         self::PAYOUT_ASYNC_INGRESS            => true,
@@ -2055,6 +2063,16 @@ class Constants
         self::HIGH_TPS_COMPOSITE_PAYOUT => [
             'feature'       => self::HIGH_TPS_COMPOSITE_PAYOUT,
             'display_name'  => 'Feature to have a separate composite API for High TPS merchants',
+            'documentation' => '',
+        ],
+        self::BENE_EMAIL_NOTIFICATION => [
+            'feature'       => self::BENE_EMAIL_NOTIFICATION,
+            'display_name'  => 'Feature to enable email notification to bene',
+            'documentation' => '',
+        ],
+        self::BENE_SMS_NOTIFICATION => [
+            'feature'       => self::BENE_SMS_NOTIFICATION,
+            'display_name'  => 'Feature to enable sms notification to bene',
             'documentation' => '',
         ],
         self::NEW_SETTLEMENT_SERVICE => [

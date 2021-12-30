@@ -2158,6 +2158,9 @@ class Core extends Base\Core
             (new PayoutsStatusDetailsCore())->create($payout);
 
             $this->app->events->dispatch('api.payout.processed', [$payout]);
+
+            (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION,
+                                                     $payout)->notify();
         }
 
         $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);

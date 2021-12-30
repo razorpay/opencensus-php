@@ -5688,6 +5688,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const  MERCHANT_DOWNTIME_CREATION                                   = 'MERCHANT_DOWNTIME_CREATION';
     const INPUT_OTP_TOKEN_CHECK                                         = 'INPUT_OTP_TOKEN_CHECK';
 
+    const PAYOUT_SEND_SMS_FAILED                                        = 'PAYOUT_SEND_SMS_FAILED';
+    const PAYOUT_SEND_EMAIL_INIT                                        = 'PAYOUT_SEND_EMAIL_INIT';
+    const PAYOUT_SEND_EMAIL_FINISHED                                    = 'PAYOUT_SEND_EMAIL_FINISHED';
+    const PAYOUT_SEND_SMS_INIT                                          = 'PAYOUT_SEND_SMS_INIT';
+    const PAYOUT_SEND_SMS_FINISHED                                      = 'PAYOUT_SEND_SMS_FINISHED';
+
     // GooglePay payment
     const GOOGLEPAY_PAYMENT_METHOD_UPDATE                       = 'GOOGLEPAY_PAYMENT_METHOD_UPDATE';
 

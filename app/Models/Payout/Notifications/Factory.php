@@ -35,6 +35,9 @@ class Factory
 
             case Type::PAYOUT_FAILED:
                 return (new Failed($payout));
+
+            case Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION:
+                return (new PayoutProcessedContactCommunication($payout));
         }
     }
 }

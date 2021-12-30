@@ -12,6 +12,7 @@ use Mockery;
 use Requests_Response;
 
 use Carbon\Carbon;
+use RZP\Services\Raven;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Artisan;
 
@@ -73,7 +74,9 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Mail\Payout\PayoutProcessedContactCommunication;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\Payout\Notifications\PayoutProcessedContactCommunication as PayoutProcessedNotification;
 
 class PayoutTest extends OAuthTestCase
 {
@@ -16389,6 +16392,110 @@ class PayoutTest extends OAuthTestCase
         $this->slackAppMock->shouldAllowMockingProtectedMethods();
 
         $this->unitTestCase->setPrivateProperty($this->payoutService, 'slackAppService', $this->slackAppMock);
+    }
+
+    public function testBeneNotificationOnPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
+                                                Feature\Constants::BENE_SMS_NOTIFICATION]);
+
+        $attributes = [
+            'bas_business_id'   => '10000000000000',
+            'merchant_id'       => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class, function ($mail)
+        {
+            $mail->build();
+            $this->assertEquals($mail->subject, '[Notification] Test Merchant has successfully transferred to you.');
+
+            $this->assertArrayHasKey('payout_amount', $mail->viewData);
+            $this->assertArrayHasKey('merchant_name', $mail->viewData);
+            $this->assertArrayHasKey('merchant_billing_label', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_logo', $mail->viewData);
+            $this->assertArrayHasKey('merchant_brand_color', $mail->viewData);
+            $this->assertArrayHasKey('merchant_contrast_color', $mail->viewData);
+            $this->assertArrayHasKey('payout_status', $mail->viewData);
+            $this->assertArrayHasKey('payout_utr', $mail->viewData);
+            $this->assertArrayHasKey('payout_reference_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_mode', $mail->viewData);
+            $this->assertArrayHasKey('payout_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_processed_at', $mail->viewData);
+            $this->assertArrayHasKey('merchant_website', $mail->viewData);
+            $this->assertArrayHasKey('learn_more_url', $mail->viewData);
+
+            $mail->hasTo('naruto@gmail.com');
+
+            return true;
+        });
+    }
+
+    public function testBeneNotificationOnPayoutProcessedNotSentWhenFeatureIsNotEnabled()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+
+    }
+
+    public function testBeneNotificationOnPayoutProcessedNotSentWhenContactEmailIsNotSet()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
+                                                Feature\Constants::BENE_SMS_NOTIFICATION]);
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => null, 'contact' => '919999188882']);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+
     }
 
 }
