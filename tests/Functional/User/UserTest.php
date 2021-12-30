@@ -28,6 +28,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Services\SalesForceClient;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
@@ -234,6 +235,150 @@ class UserTest extends TestCase
                                             ])->pluck('name')->toArray();
 
         $this->assertContains(Features::NEW_BANKING_ERROR, $featuresArray);
+    }
+
+    public function createEntitiesForProductSwitch()
+    {
+        $this->fixtures->on('live')->edit('terminal', 'BANKACC3DSN3DT',
+            ['gateway_merchant_id' => '3434']);
+        $this->fixtures->on('live')->edit('terminal', 'BANKACC3DSN3DZ',
+            ['gateway_merchant_id' => '232323']);
+        $this->fixtures->on('test')->edit('terminal', 'BANKACC3DSN3DT',
+            ['gateway_merchant_id' => '3434']);
+        $this->fixtures->on('test')->edit('terminal', 'BANKACC3DSN3DZ',
+            ['gateway_merchant_id' => '232323']);
+    }
+
+    public function mockLookerEvent()
+    {
+        $diagMock = Mockery::mock('RZP\Services\DiagClient');
+
+        $diagMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
+    }
+
+    public function testProductSwitchToXForUserWithoutEmail()
+    {
+        $this->createEntitiesForProductSwitch();
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+            'id' => '2abcd000000000',
+            'email' => null,
+        ]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => false, 'email' => null]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $this->mockSalesforceEventTracked('captureInterestOfPrimaryMerchantInBanking');
+
+        $this->mockHubSpotClient('trackHubspotEvent',0);
+
+        $this->mockLookerEvent();
+
+        $this->startTest();
+
+        $testBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'test');
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNotNull($testBankingAccount);
+
+        $this->assertNull($liveBankingAccount);
+
+    }
+
+    public function testVerifyOTPForAddEmailInX()
+    {
+        $this->createEntitiesForProductSwitch();
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+            'id' => '2abcd000000000',
+            'email' => null,
+        ]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => false,'email' => null, 'signup_source' => 'primary']);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id'], 'owner');
+
+        $this->mockSalesforceEventTracked('captureInterestOfPrimaryMerchantInBanking',true);
+
+        $this->mockHubSpotClient('trackHubspotEvent');
+
+        $this->mockLookerEvent();
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNotNull($liveBankingAccount);
+    }
+
+
+    public function mockSalesforceEventTracked(string $methodName, $afterEmailVerified = false)
+    {
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods([$methodName])
+            ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        if ($afterEmailVerified)
+        {
+            $salesforceClientMock->expects($this->exactly(2))
+                ->method($methodName);
+        }
+        else
+        {
+            $salesforceClientMock->expects($this->exactly(1))
+                ->method($methodName);
+        }
     }
 
     public function testPreSignupCampaignInfoStoredAfterRegistrationInSmallCap()

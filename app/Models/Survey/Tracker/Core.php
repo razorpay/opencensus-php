@@ -224,16 +224,19 @@ class Core extends Base\Core
         /** @var HubspotClient $hubspotClient */
         $hubspotClient = $this->app->hubspot;
 
-        $hubspotClient->trackHubspotEvent($hubspotInput[Entity::SURVEY_EMAIL], [
-            Entity::NPS_SURVEY                  => $hubspotInput[Entity::SURVEY_ID],
-            Entity::SURVEY_TYPE                 => $hubspotInput[Entity::SURVEY_TYPE],
-            Entity::MID                         => $hubspotInput[Entity::MID],
-            Entity::X_UID                       => $hubspotInput[Entity::USER_ID],
-            SurveyEntity::SURVEY_URL            => $hubspotInput[SurveyEntity::SURVEY_URL],
-            SurveyResponseEntity::TRACKER_ID    => $hubspotInput[Entity::ID],
-            Entity::X_CONTACT_TYPE              => $hubspotInput[Entity::CONTACT_TYPE],
-            Entity::X_CA_ACCOUNT_STATUS         => $hubspotInput[Entity::ACCOUNT_STATUS]
-        ]);
+        if (empty($hubspotInput[Entity::SURVEY_EMAIL]) === false)
+        {
+            $hubspotClient->trackHubspotEvent($hubspotInput[Entity::SURVEY_EMAIL], [
+                Entity::NPS_SURVEY => $hubspotInput[Entity::SURVEY_ID],
+                Entity::SURVEY_TYPE => $hubspotInput[Entity::SURVEY_TYPE],
+                Entity::MID => $hubspotInput[Entity::MID],
+                Entity::X_UID => $hubspotInput[Entity::USER_ID],
+                SurveyEntity::SURVEY_URL => $hubspotInput[SurveyEntity::SURVEY_URL],
+                SurveyResponseEntity::TRACKER_ID => $hubspotInput[Entity::ID],
+                Entity::X_CONTACT_TYPE => $hubspotInput[Entity::CONTACT_TYPE],
+                Entity::X_CA_ACCOUNT_STATUS => $hubspotInput[Entity::ACCOUNT_STATUS]
+            ]);
+        }
     }
 
     public function edit(Entity $surveyTracker, array $input): Entity

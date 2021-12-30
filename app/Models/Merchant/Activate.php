@@ -155,7 +155,7 @@ class Activate extends Base\Core
                 $merchantCore->addMerchantEmailToMailingList($merchant);
             }
 
-            $this->activateBusinessBankingIfApplicable($merchant, true);
+            $this->activateBusinessBankingIfApplicable($merchant);
         });
         //
         // Activate Promotions/Coupons for Merchant if applicable.
@@ -312,7 +312,7 @@ class Activate extends Base\Core
             }
         });
 
-        $this->activateBusinessBankingIfApplicable($merchant, true);
+        $this->activateBusinessBankingIfApplicable($merchant);
 
         //
         // Live transactions get disabled if the activation_status changes to 'rejected'.
@@ -412,9 +412,12 @@ class Activate extends Base\Core
 
         (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations', $merchant);
 
-        $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), [
-            'settlement_enabled' => true
-        ]);
+        if (empty($merchant->getEmail() === false))
+        {
+            $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), [
+                'settlement_enabled' => true
+            ]);
+        }
     }
 
     /**
@@ -646,7 +649,7 @@ class Activate extends Base\Core
      * @return Entity
      * @throws Throwable
      */
-    public function activateBusinessBankingIfApplicable(Entity $merchant, bool $sendActivationSms = false): Entity
+    public function activateBusinessBankingIfApplicable(Entity $merchant): Entity
     {
         // VA should not be activated for unregistered business in case of PG KYC approval
         if (($merchant->isBusinessBankingEnabled() === false) or
@@ -684,11 +687,6 @@ class Activate extends Base\Core
         });
 
         $this->setDbAndModelConnectionWithMode($originalMode, $merchant);
-
-        if ($sendActivationSms === true)
-        {
-            $this->sendBankingVaActivationSmsIfApplicable($merchant);
-        }
 
         // publish message on the metro topic business-banking-enabled
         $data = array(
@@ -767,7 +765,7 @@ class Activate extends Base\Core
                                                                                             $seriesPrefix);
 
             // Create Banking Account
-            $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
+            [$bankingAccount, $baCreatedNow] = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
 
             // Call Ledger Entity method which will take care of creating the account for this balance in Ledger.
             // Flow will come here only if balance is created successfully in API DB.
@@ -814,6 +812,12 @@ class Activate extends Base\Core
 
             //create activated TPV
             (new BankingAccountTpv\Core())->createAutoApprovedTpvForActivatedMerchants($merchant, $mode);
+
+            if (($mode === Mode::LIVE) and
+                ($baCreatedNow === true))
+            {
+                $this->sendBankingVaActivationSmsIfApplicable($merchant);
+            }
         }
     }
 
@@ -915,7 +919,8 @@ class Activate extends Base\Core
 
     protected function onBoardMerchantOnRazorpayxInLiveMode(Entity $merchant)
     {
-        return ($merchant->isActivated() === true);
+        return (($merchant->isActivated() === true) and
+            (empty($merchant->getEmail()) === false));
         // This was done for YesBank moratorium. Not required now.
         // and ($this->blockRxActivationIfApplicable($merchant) === false));
     }

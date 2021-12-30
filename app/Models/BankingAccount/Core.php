@@ -95,7 +95,7 @@ class Core extends Base\Core
         $this->notifier = new Notifier;
     }
 
-    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): Entity
+    public function createOrFetchSharedBankingAccountFromVA(VirtualAccount\Entity $virtualAccount): array
     {
         // Virtual account has to be with receiver_type bank account
         if ($virtualAccount->hasBankAccount() === false)
@@ -142,7 +142,7 @@ class Core extends Base\Core
 
         if ($existingBankingAcc !== null)
         {
-            return $existingBankingAcc;
+            return [$existingBankingAcc, false];
         }
 
         $bankingAccountInput = [
@@ -185,7 +185,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        return $bankingAccount;
+        return [$bankingAccount, true];
     }
 
     /**

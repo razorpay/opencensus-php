@@ -156,6 +156,37 @@ return [
         ]
     ],
 
+    'testProductSwitchToXForUserWithoutEmail' => [
+        'request' => [
+            'url' => '/merchants/product-switch',
+            'method'  => 'POST',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testVerifyOTPForAddEmailInX' => [
+        'request' => [
+            'url' => '/users/email/update/verify',
+            'method'  => 'POST',
+            'content' => [
+                "otp"=> '000007',
+                "email"=> 'someuser@some.com'
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testPreSignupSourceInfoStoredAfterRegistrationForBankingWithExtraQuotesInCookie' => [
         'request' => [
             'url' => '/users/register',

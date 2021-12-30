@@ -4651,12 +4651,12 @@ class Core extends Base\Core
     /**
      * @param array $input
      * @param Entity $user
-     * @return array
+     * @return Entity
      * @throws BadRequestException
      * @throws BadRequestValidationFailureException
      * @throws Exception\ServerErrorException|Throwable
      */
-    public function verifyOtpForAddEmail(array $input, Entity $user): array
+    public function verifyOtpForAddEmail(array $input, Entity $user): Entity
     {
         $this->validateAddEmailAllowed($input[Entity::EMAIL], $user);
 
@@ -4692,7 +4692,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant_detail);
         });
 
-        return $user->toArrayPublic();
+        return $user;
 
     }
 

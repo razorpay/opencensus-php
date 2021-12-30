@@ -5977,7 +5977,7 @@ class Service extends Base\Service
             (Merchant\Detail\BusinessType::isUnregisteredBusiness($businessType) === false));
     }
 
-    public function switchProductMerchant($product = null)
+    public function switchProductMerchant($product = null, $afterEmailVerified = false)
     {
         // TODO: remove this once Yesbank issue is resolved
         $merchant = $this->auth->getMerchant();
@@ -6005,7 +6005,7 @@ class Service extends Base\Service
         $wasSwitchToPG = false;
 
         $this->repo->transactionOnLiveAndTest(function() use
-            ($product, &$wasBankingEnabledNow, &$wasSwitchToPG, $merchant)
+            ($product, &$wasBankingEnabledNow, &$wasSwitchToPG, $merchant, &$afterEmailVerified)
         {
             $user = $this->addMerchantUserMappingOnProduct($merchant, $product);
 
@@ -6028,7 +6028,8 @@ class Service extends Base\Service
 
             $this->repo->saveOrFail($merchant);
 
-            if ($wasBankingEnabledNow === true)
+            if (($wasBankingEnabledNow === true) or
+                ($afterEmailVerified === true))
             {
                 Tracer::inSpan(['name' => 'product_switch.captureEventOfInterestOfPrimaryMerchantInBanking'], function() use($merchant) {
                     $this->captureEventOfInterestOfPrimaryMerchantInBanking($merchant);
@@ -6049,7 +6050,7 @@ class Service extends Base\Service
             // }
 
             Tracer::inSpan(['name' => 'product_switch.activateBusinessBankingIfApplicable'] , function() use($merchant, $wasBankingEnabledNow) {
-                (new Activate)->activateBusinessBankingIfApplicable($merchant, $wasBankingEnabledNow);
+                (new Activate)->activateBusinessBankingIfApplicable($merchant);
             });
 
 
@@ -6070,9 +6071,12 @@ class Service extends Base\Service
             'wasBankingEnabledNow' => $wasBankingEnabledNow
         ]);
 
-        if ($wasBankingEnabledNow or $wasSwitchToPG) {
+        if ($wasBankingEnabledNow or
+            $wasSwitchToPG or
+            $afterEmailVerified)
+        {
             Tracer::inSpan(['name' => 'product_switch.postProductSwitchActions'] , function() use($merchant, $wasSwitchToPG, $wasBankingEnabledNow) {
-                $this->postProductSwitchActions($wasSwitchToPG, $wasBankingEnabledNow, $merchant);
+                $this->postProductSwitchActions($merchant, $wasBankingEnabledNow);
             });
         }
 
@@ -6180,7 +6184,7 @@ class Service extends Base\Service
         return false;
     }
 
-    private function postProductSwitchActions(bool $wasSwitchtoPG, bool  $wasBankingEnabledNow, Merchant\Entity $merchant){
+    public function postProductSwitchActions(Merchant\Entity $merchant, bool  $wasBankingEnabledNow = false){
 
         // Keeping this for only PG -> X for now, since the current event dashboard are built with that assumption
         // need to change this once the expectation is clear.
@@ -7523,7 +7527,10 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'The provided Email Id does not belongs to the merchant');
         }
 
-        $this->app->hubspot->trackHubspotEvent($merchantEmail, $input);
+        if (empty($merchantEmail === false))
+        {
+            $this->app->hubspot->trackHubspotEvent($merchantEmail, $input);
+        }
 
         $this->trace->info(
             TraceCode::PUSHED_EVENT_TO_HUBSPOT,

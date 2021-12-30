@@ -1479,9 +1479,13 @@ class Service extends Base\Service
 
         /** @var HubspotClient $hubspotClient */
         $hubspotClient = $this->app->hubspot;
-        $hubspotClient->trackHubspotEvent($this->merchant->getEmail(), [
-            'contact_verified' => true
-        ]);
+
+        if (empty($this->merchant->getEmail() === false))
+        {
+            $hubspotClient->trackHubspotEvent($this->merchant->getEmail(), [
+                'contact_verified' => true
+            ]);
+        }
 
         return $this->user->toArrayPublic();
     }
@@ -1889,7 +1893,26 @@ class Service extends Base\Service
     {
         $this->validator->validateInput('add_email_verify', $input);
 
-        return $this->core()->verifyOtpForAddEmail($input, $this->user);
+        $user = $this->core()->verifyOtpForAddEmail($input, $this->user);
+
+        //if the user signs up on PG with mobile number and does not enter email id and then
+        // makes a product switch from PG->X, he needs to add his email id to be able to create VA
+        //in live mode
+
+        $merchant = $this->auth->getMerchant();
+
+        $isBankingRequest = $this->auth->isProductBanking();
+
+        //entities will be created and events will get fired only if the product switch is from PG to
+        //X, the email is verified and it is a banking request.
+        if (($isBankingRequest === true) and
+            ($merchant->getSignupSource() === Product::PRIMARY) and
+            ($user->getEmailVerifiedAttribute() === true))
+        {
+            $this->merchantService->switchProductMerchant(null,true);
+        }
+
+        return $user->toArrayPublic();
     }
 
     public function getUserByVerifiedContact(array $input) {
