@@ -26,6 +26,8 @@ class Core extends \RZP\Models\AppStore\Base\Core
 
     const PAYMENT_LINK_URL = 'payment_link_url';
 
+    const PAYMENT_LINK_REQUESTER = 'whatsapp_bot';
+
     /**
      * @var mixed
      */
@@ -240,6 +242,7 @@ class Core extends \RZP\Models\AppStore\Base\Core
             'Accept'            => self::CONTENT_TYPE_JSON,
             'Content-Type'      => self::CONTENT_TYPE_JSON,
             'X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
+            'X-Razorpay-Requester' => PAYMENT_LINK_REQUESTER
         ];
 
         $headers['X-Razorpay-MerchantId'] = $merchant->getMerchantId();
