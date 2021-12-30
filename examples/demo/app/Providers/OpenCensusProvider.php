@@ -23,6 +23,7 @@ use OpenCensus\Trace\Exporter\FileExporter;
 use OpenCensus\Trace\Exporter\StackdriverExporter;
 use OpenCensus\Trace\Integrations\Grpc;
 
+use OpenCensus\Trace\Integrations\Postgres;
 use OpenCensus\Trace\Integrations\Redis;
 use OpenCensus\Trace\Tracer;
 use OpenCensus\Trace\Integrations\Laravel;
@@ -44,6 +45,7 @@ class OpenCensusProvider extends ServiceProvider
         //Redis::load();
         PDO::load();
         Grpc::load();
+        Postgres::load();
 
         // Start the request traci ng for this request
         Tracer::start(new FileExporter('spans.json'));
