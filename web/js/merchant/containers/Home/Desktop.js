@@ -42,6 +42,7 @@ import {
   handleNegativeBalanceLimit,
   getCommonAnalyticsProperties,
   getFormattedAmountNew,
+  checkHTML5APIvalidity,
 } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -415,6 +416,12 @@ class AnalyticsDesktop extends Component {
               limitBreach={limitBreach}
               shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             />
+          )}
+          {checkHTML5APIvalidity() && (
+            <AnnouncementBanner title="Outdated Browser" theme="warning">
+              Please update your web browser. We recommend you to download the latest version of
+              Google Chrome, Edge, Safari, Firefox.
+            </AnnouncementBanner>
           )}
           {user.isPaymentsEnabled &&
           this.props.transactionAmount <= 0 &&

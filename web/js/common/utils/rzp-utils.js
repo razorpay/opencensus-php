@@ -1365,3 +1365,8 @@ export const linkFromSource = (link = '', source = '') => {
 };
 
 export const isLoggedInViaMobile = () => localStorage?.getItem('loggedInVia') === 'contact_mobile';
+
+// Add all list of html5 apis here to check
+export const htmlApiList = ['URLSearchParams'];
+
+export const checkHTML5APIvalidity = () => htmlApiList.find((apiName) => !window[apiName]);

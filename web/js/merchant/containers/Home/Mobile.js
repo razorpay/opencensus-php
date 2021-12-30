@@ -32,7 +32,7 @@ import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 
@@ -167,6 +167,12 @@ class AnalyticsMobile extends Component {
             Welcome to your dashboard, {user.contact_name}!
           </Text>
         </Space>
+        {checkHTML5APIvalidity() && (
+          <AnnouncementBanner title="Outdated Browser" theme="warning">
+            Please update your web browser. We recommend you to download the latest version of
+            Google Chrome, Edge, Safari, Firefox.
+          </AnnouncementBanner>
+        )}
         <div
           ref={(node) => onExtraContentMount(node)}
           className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
