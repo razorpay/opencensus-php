@@ -12,12 +12,20 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 const UPDATE_USER_SEGMENT_DATA = 'UPDATE_USER_SEGMENT_DATA';
+const UPDATE_MERCHANT = 'UPDATE_MERCHANT';
 
 const UPDATE_HIGHLIGHT_MODE = 'UPDATE_HIGHLIGHT_MODE';
 
 export const updateSession = (payload) => {
   return {
     type: UPDATE_SESSION,
+    payload,
+  };
+};
+
+export const updateMerchant = (payload) => {
+  return {
+    type: UPDATE_MERCHANT,
     payload,
   };
 };
@@ -157,6 +165,9 @@ export default function sessionReducer(state = initialState, action) {
         user_segment_data: action.payload,
       });
 
+    case UPDATE_MERCHANT:
+      return onUpdateMerchant(state, action.payload);
+
     default:
       return state;
   }
@@ -188,6 +199,15 @@ function onUpdateUserFeatures(state, data) {
 
         return featureData;
       }),
+    }),
+  });
+}
+
+function onUpdateMerchant(state, data) {
+  return merge(state, {
+    user: new User({
+      ...state.user,
+      merchant: { ...state.user.merchant, ...data },
     }),
   });
 }

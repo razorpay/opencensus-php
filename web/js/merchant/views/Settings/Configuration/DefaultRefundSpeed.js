@@ -24,6 +24,7 @@ import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { REFUND_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { updateMerchant as updateMerchantReducer } from 'merchant/reducers/session';
 
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
@@ -144,6 +145,7 @@ class DefaultRefundSpeed extends Component {
         default_refund_speed: speed,
       })
       .then(() => {
+        this.props.updateMerchant({ default_refund_speed: speed });
         this.setState(
           {
             default_refund_speed: speed,
@@ -193,6 +195,8 @@ class DefaultRefundSpeed extends Component {
 
   render() {
     const { isInstantRefundOrg, isInstantRefundMid } = this.state;
+
+    const feeBearerValue = this.props.user.merchant.fee_bearer;
 
     return (
       <div id="default-refund-container" className="panel panel-default refund-panel">
@@ -294,7 +298,8 @@ class DefaultRefundSpeed extends Component {
                 <div
                   className={`refund-panel-col ${
                     this.state.default_refund_speed == 'optimum' ? 'active' : ''
-                  }`}
+                  }
+                  ${feeBearerValue === 'customer' ? 'disabled' : ''}`}
                   id="instant-refund-panel-col"
                 >
                   <h4>
@@ -304,16 +309,20 @@ class DefaultRefundSpeed extends Component {
                     {!showWhenUtil({
                       featureEnabled: 'disable_instant_refunds',
                     }) ? (
-                      <input
-                        type="radio"
-                        className="radio-pointer refund-speed-change-permission"
-                        checked={this.state.default_refund_speed == 'optimum'}
-                        name="default_instant"
-                        onChange={(e) => {
-                          const speed = e.target.checked ? 'optimum' : 'normal';
-                          this.checkDefaultRefundSpeed(speed);
-                        }}
-                      />
+                      feeBearerValue === 'customer' ? (
+                        <i className="i i-outline-lock" />
+                      ) : (
+                        <input
+                          type="radio"
+                          className="radio-pointer refund-speed-change-permission"
+                          checked={this.state.default_refund_speed == 'optimum'}
+                          name="default_instant"
+                          onChange={(e) => {
+                            const speed = e.target.checked ? 'optimum' : 'normal';
+                            this.checkDefaultRefundSpeed(speed);
+                          }}
+                        />
+                      )
                     ) : null}
                   </h4>
                   <p>
@@ -381,6 +390,11 @@ class DefaultRefundSpeed extends Component {
                     </p>
                   )}
                 </div>
+                {feeBearerValue === 'customer' && (
+                  <span className="instant-refund-disabled-text">
+                    Locked when convenience fee model is selected
+                  </span>
+                )}
               </div>
             )}{' '}
           </div>
@@ -410,6 +424,7 @@ export default compose(
       fetchRefundPricing,
       createLateAuthConfig,
       fetchFeatureStatus,
+      updateMerchant: updateMerchantReducer,
     },
   ),
   // eslint-disable-next-line babel/new-cap

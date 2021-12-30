@@ -7,12 +7,14 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import LoaderDots from 'common/ui/LoaderDots';
+import { updateMerchant as updateMerchantReducer } from 'merchant/reducers/session';
 
 function FeeBearerSelfserve(props) {
   const [feeBearer, setfeeBearer] = useState(props.user.merchant.fee_bearer);
   const [showLoader, setshowLoader] = useState(false);
 
   const handleToggle = async (type) => {
+    const { updateMerchant } = props;
     // Track fee bearer toggle
     analyticsTrack({
       objectName: 'Fee bearer',
@@ -40,6 +42,7 @@ function FeeBearerSelfserve(props) {
       if (response) {
         setshowLoader(false);
         setfeeBearer(type);
+        updateMerchant({ fee_bearer: type });
         props.showNotification({
           type: 'success',
           message: `Configuration updated successfully`,
@@ -76,6 +79,8 @@ function FeeBearerSelfserve(props) {
       });
     }
   };
+
+  const defaultRefundSpeedValue = props.user.merchant.default_refund_speed;
 
   return (
     <div class="panel panel-default fee-bearer-section">
@@ -114,13 +119,19 @@ function FeeBearerSelfserve(props) {
             </div>
           </div>
           <div class="col-sm-6 p5">
-            <div class={`fee-bearer-panel-col ${feeBearer === 'customer' ? 'active' : null}`}>
+            <div
+              class={`fee-bearer-panel-col ${feeBearer === 'customer' ? 'active' : null} ${
+                defaultRefundSpeedValue === 'optimum' ? 'disabled' : null
+              }`}
+            >
               <h4>
                 <b>Convenience fee model</b>
                 {showLoader && feeBearer === 'platform' ? (
                   <div class="panel-loader">
                     <LoaderDots />
                   </div>
+                ) : defaultRefundSpeedValue === 'optimum' ? (
+                  <i className="i i-outline-lock" />
                 ) : (
                   <input
                     type="radio"
@@ -133,6 +144,11 @@ function FeeBearerSelfserve(props) {
               <p>You charge a convenience fee to your customer.</p>
               <br />
             </div>
+            {defaultRefundSpeedValue === 'optimum' && (
+              <span className="customer-fee-bearer-disabled">
+                Locked when instant refunds is active
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -143,5 +159,6 @@ export default connect(
   (state) => ({
     user: state.session.user,
   }),
-  (dispatch) => bindActionCreators({ showNotification }, dispatch),
+  (dispatch) =>
+    bindActionCreators({ showNotification, updateMerchant: updateMerchantReducer }, dispatch),
 )(FeeBearerSelfserve);
