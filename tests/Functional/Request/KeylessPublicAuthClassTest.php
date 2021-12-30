@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Request;
 
+use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
@@ -91,7 +92,7 @@ class KeylessPublicAuthClassTest extends TestCase
      */
     public function testPublicRouteWithInvalidXEntityId2()
     {
-        $this->expectException(BadRequestException::class);
+        $this->expectException(\RZP\Exception\DbQueryException::class);
 
         $this->createOrder();
 
