@@ -289,7 +289,7 @@ class Base
             'beneficiary_state'   => $ba->getBeneficiaryState() ?? '',
             'beneficiary_country' => $ba->getBeneficiaryCountry() ?? '',
             'beneficiary_email'   => $ba->getBeneficiaryEmail() ?? '',
-            'beneficiary_mobile'  => $ba->getBeneficiaryMobile() ?? '',
+            'beneficiary_mobile'  => strval($ba->getBeneficiaryMobile()) ?? '',
             'accepted_currency'   => Currency::INR,
             'extra_info'          => [
                 'via' => $via
