@@ -111,8 +111,7 @@ class DopplerProcessor implements ProcessorInterface
         if (hash_equals($apiKey, $token) === false)
         {
             $this->trace->error(
-                TraceCode::GATEWAY_DOWNTIME_DOPPLER_INVALID_TOKEN,
-                ['token' => $input['token'], 'computed' => md5($apiKey)]);
+                TraceCode::GATEWAY_DOWNTIME_DOPPLER_INVALID_TOKEN, []);
 
             throw new Exception\BadRequestValidationFailureException(
                 'Doppler token validation failure.');

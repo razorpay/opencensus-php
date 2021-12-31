@@ -228,8 +228,7 @@ class StatusCakeProcessor implements ProcessorInterface
         if (hash_equals(md5($key), $token) === false)
         {
             $this->trace->warning(
-                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN,
-                ['token' => $token, 'computed' => md5($key)]);
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN, []);
 
             throw new Exception\BadRequestValidationFailureException(
                 'StatusCake token validation failure.');
