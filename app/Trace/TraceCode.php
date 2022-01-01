@@ -2633,6 +2633,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EVIDENCE_DOCUMENT_CREATE_VERIFYING_DOC_ID            = 'EVIDENCE_DOCUMENT_CREATE_VERIFYING_DOC_ID';
     const EVIDENCE_DOCUMENT_CREATE_VERIFIED_DOC_ID             = 'EVIDENCE_DOCUMENT_CREATE_VERIFIED_DOC_ID';
 
+    // DEBIT NOTE
+    const DEBIT_NOTE_BATCH_CREATE_INPUT                        = 'DEBIT_NOTE_BATCH_CREATE_INPUT';
+    const DEBIT_NOTE_CREATE_INPUT                              = 'DEBIT_NOTE_CREATE_INPUT';
+    const DEBIT_NOTE_CREATED                                   = 'DEBIT_NOTE_CREATED';
+    const DEBIT_NOTE_DETAIL_CREATE_INPUT                       = 'DEBIT_NOTE_DETAIL_CREATE_INPUT';
+    const DEBIT_NOTE_DETAIL_CREATED                            = 'DEBIT_NOTE_DETAIL_CREATED';
+
 
     const FRESHCHAT_REQUEST                                     = 'FRESHCHAT_REQUEST';
     const FRESHCHAT_RESPONSE                                    = 'FRESHCHAT_RESPONSE';

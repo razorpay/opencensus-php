@@ -40,6 +40,11 @@ class MerchantActionNotification
 
     private $freshdeskConfig;
 
+    protected static $sendSmsViaStork = [
+        'sms.risk.debit_note_email_signup',
+        'sms.risk.debit_note_mobile_signup',
+    ];
+
     public function __construct()
     {
         $this->app   = App::getFacadeRoot();
@@ -158,7 +163,7 @@ class MerchantActionNotification
         $this->trace->info(TraceCode::MERCHANT_RISK_ACTIONS_NOTIFICATIONS_CRON_END);
     }
 
-    private function sendEmail(Merchant\Entity $merchant, $viewTemplate, $subject, $data, $action)
+    private function sendEmail(Merchant\Entity $merchant, $viewTemplate, $subject, $data, $action, $requestParams)
     {
         try
         {
@@ -176,6 +181,8 @@ class MerchantActionNotification
                 Action::LIVE_DISABLE                    => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                 Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                 Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP  => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
             ];
 
             $emailConfigIdMapping = [
@@ -184,6 +191,9 @@ class MerchantActionNotification
                 Action::LIVE_DISABLE                    => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
                 Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
                 Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP  => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+
             ];
 
             $tag = $this->getTagsForAction($action);
@@ -192,7 +202,7 @@ class MerchantActionNotification
                 'subject'         => $mailSubject,
                 'description'     => $mailBody,
                 'status'          => 6,
-                'type'            => 'Question',
+                'type'            => $requestParams['type'] ?? 'Question',
                 'tags'            => $tag,
                 'priority'        => 1,
                 'email'           => $merchantEmail,
@@ -209,6 +219,11 @@ class MerchantActionNotification
             if (empty($ccEmails) === false)
             {
                 $fdOutboundEmailRequest['cc_emails'] = $ccEmails;
+            }
+
+            if (isset($requestParams['attachments']) === true)
+            {
+                $fdOutboundEmailRequest['attachments'] = $requestParams['attachments'];
             }
 
             $response = $this->app['freshdesk_client']->sendOutboundEmail(
@@ -236,7 +251,7 @@ class MerchantActionNotification
         }
     }
 
-    public function sendMerchantRiskActionNotifications(Entity $merchant, String $action)
+    public function sendMerchantRiskActionNotifications(Entity $merchant, String $action, $params = [], $requestParams = [])
     {
         try
         {
@@ -252,33 +267,43 @@ class MerchantActionNotification
                 ]
             );
 
-            $params = [
+            $params = array_merge([
                 'merchant_id'   => $merchantId,
                 'business_name' => $merchantDetail->getBusinessName(),
                 'merchant_name' => $merchant->getName(),
                 'merchantName'  => $merchant->getName()
-            ];
+            ], $params);
 
             $templates = Constants::MERCHANT_RISK_ACTIONS_TEMPLATE_MAP[$action];
+
+            $groupIdMapping = [
+                Action::HOLD_FUNDS                       =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::SUSPEND                          =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::LIVE_DISABLE                     =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP   =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP  =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::DISABLE_INTERNATIONAL_PERMANENT   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::DISABLE_INTERNATIONAL_TEMPORARY   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+            ];
+
+            $requestParams = array_merge([
+                'type'          =>  'Question',
+                'tags'          =>  $this->getTagsForAction($action),
+                'groupId'       =>  (int) $groupIdMapping[$action],
+                'subCategory'   =>  Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+            ], $requestParams);
 
             if (RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
             {
                 $templates = Constants::MERCHANT_RISK_ACTIONS_MOBILE_SIGNUP_TEMPLATE_MAP[$action];
 
-                $groupIdMapping = [
-                    Action::HOLD_FUNDS      =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-                    Action::SUSPEND         =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                    Action::LIVE_DISABLE    =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                    Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                    Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                ];
-
-                $requestParams = [
+                $requestParams = array_merge([
                     'type'          =>  'Question',
                     'tags'          =>  $this->getTagsForAction($action),
                     'groupId'       =>  (int) $groupIdMapping[$action],
                     'subCategory'   =>  Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
-                ];
+                ], $requestParams);
+
 
                 $fdTicket = (new RiskMobileSignupHelper())->createFdTicket($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $requestParams);
 
@@ -288,7 +313,7 @@ class MerchantActionNotification
             }
             else
             {
-                $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $action);
+                $this->sendEmail($merchant, $templates[Constants::EMAIL_TEMPLATE], $templates[Constants::EMAIL_SUBJECT], $params, $action, $requestParams);
             }
 
             $this->sendSms($merchant, $templates[Constants::SMS_TEMPLATE], $params);
@@ -352,19 +377,38 @@ class MerchantActionNotification
             return;
         }
 
-        $payload = [
-            'receiver' => $receiver,
-            'template' => $smsTemplate,
-            'source'   => Constants::SMS_SOURCE,
-            'params'   => $params,
-            'stork' => [
-                'context' => [
-                    'org_id' => $merchant->getOrgId(),
-                ],
-            ]
-        ];
+        if (in_array($smsTemplate, static::$sendSmsViaStork) === true)
+        {
+            $payload = [
+                'ownerId'               => $merchant->getId(),
+                'ownerType'             => Constants::MERCHANT,
+                'orgId'                 => $merchant->getOrgId(),
+                'templateName'          => $smsTemplate,
+                'templateNamespace'     => $params['template_namespace'],
+                'language'              => 'english',
+                'sender'                => 'RZRPAY',
+                'destination'           => $receiver,
+                'contentParams'         => $params,
+            ];
 
-        $this->app['raven']->sendSms($payload);
+            $this->app['stork_service']->sendSms(Mode::LIVE, $payload);
+        }
+        else
+        {
+            $payload = [
+                'receiver' => $receiver,
+                'template' => $smsTemplate,
+                'source'   => Constants::SMS_SOURCE,
+                'params'   => $params,
+                'stork' => [
+                    'context' => [
+                        'org_id' => $merchant->getOrgId(),
+                    ],
+                ]
+            ];
+
+            $this->app['raven']->sendSms($payload);
+        }
     }
 
     /**
@@ -393,7 +437,7 @@ class MerchantActionNotification
             'params'        => $params
         ];
 
-        (new Stork)->sendWhatsappMessage(
+        $this->app['stork_service']->sendWhatsappMessage(
             $this->mode,
             $whatappTemplate,
             $receiver,
@@ -408,6 +452,12 @@ class MerchantActionNotification
         {
             $tags = ['bulk_workflow_email', 'international_disablement'];
         }
+
+        if ($action === Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP)
+        {
+            return ['bulk_debit_note', 'chargeback_debit_note'];
+        }
+
         return $tags;
     }
 }

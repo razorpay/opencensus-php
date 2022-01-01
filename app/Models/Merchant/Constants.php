@@ -622,10 +622,25 @@ final class Constants
     const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_international_disablement_email_signup';
     const DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused on your Razorpay account due to a risk alert raised by our banking partners. Please check your registered email ID for more details';
 
+
+    //Debit note created
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_SMS_TEMPLATE            = 'sms.risk.debit_note_email_signup';
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_TEMPLATE          = 'emails.merchant.risk.debit_note.created';
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_SUBJECT           = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | Pending Recoveries';
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_WHATSAPP_TEMPLATE_NAME  = 'whatsapp_risk_debit_note_email_signup';
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP_WHATSAPP_TEMPLATE       = 'Hi {merchant_name}, we wish to notify you regarding pending recoveries on your Razorpay Account. We request you to transfer the due amount to our Nodal account. Please check registered email for more details.';
+
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_SMS_TEMPLATE           = 'sms.risk.debit_note_mobile_signup';
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_TEMPLATE         = 'emails.merchant.risk.debit_note.created';
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_SUBJECT          = 'Razorpay Account Review:  {merchant_name} | {merchant_id} | Pending Recoveries';
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_debit_note_mobile_signup';
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE      = 'Hi {merchant_name}, we wish to notify you regarding pending recoveries on your Razorpay Account. We request you to transfer the due amount to our Nodal account. Please check link {supportTicketLink} for more details.';
+
     //Disable International Mobile Signup Templates
     const DISABLE_INTERNATIONAL_SMS_TEMPLATE_MOBILE_SIGNUP           = 'sms.risk.international_disablement_mobile_signup';
     const DISABLE_INTERNATIONAL_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP = 'whatsapp_risk_international_disablement_email_signup';
     const DISABLE_INTERNATIONAL_WHATSAPP_TEMPLATE_MOBILE_SIGNUP      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused due to a risk alert raised by our banking partners. Please check link {supportTicketLink} for more details';
+
 
 
 
@@ -671,6 +686,15 @@ final class Constants
             self::EMAIL_SUBJECT              => self::DISABLE_LIVE_EMAIL_SUBJECT,
         ],
 
+
+        Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP => [
+            self::SMS_TEMPLATE           => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE         => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT          => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE      => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE,
+        ],
+
         Action::DISABLE_INTERNATIONAL_TEMPORARY => [
             self::SMS_TEMPLATE               => self::DISABLE_INTERNATIONAL_SMS_TEMPLATE_MOBILE_SIGNUP,
             self::WHATSAPP_TEMPLATE_NAME     => self::DISABLE_INTERNATIONAL_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP,
@@ -685,6 +709,7 @@ final class Constants
             self::WHATSAPP_TEMPLATE          => self::DISABLE_INTERNATIONAL_WHATSAPP_TEMPLATE_MOBILE_SIGNUP,
             self::EMAIL_TEMPLATE             => self::DISABLE_INTERNATIONAL_PERMANENT_EMAIL_TEMPLATE,
             self::EMAIL_SUBJECT              => self::DISABLE_INTERNATIONAL_PERMANENT_EMAIL_SUBJECT,
+
         ],
     ];
 
@@ -727,6 +752,22 @@ final class Constants
             self::EMAIL_SUBJECT          => self::DISABLE_INTERNATIONAL_PERMANENT_EMAIL_SUBJECT,
             self::WHATSAPP_TEMPLATE_NAME => self::DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE_NAME,
             self::WHATSAPP_TEMPLATE      => self::DISABLE_INTERNATIONAL_PERMANENT_WHATSAPP_TEMPLATE,
+        ],
+
+        Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP => [
+            self::SMS_TEMPLATE           => self::DEBIT_NOTE_CREATE_EMAIL_SIGNUP_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE         => self::DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT          => self::DEBIT_NOTE_CREATE_EMAIL_SIGNUP_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME => self::DEBIT_NOTE_CREATE_EMAIL_SIGNUP_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE      => self::DEBIT_NOTE_CREATE_EMAIL_SIGNUP_WHATSAPP_TEMPLATE,
+        ],
+
+        Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP => [
+            self::SMS_TEMPLATE           => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_SMS_TEMPLATE,
+            self::EMAIL_TEMPLATE         => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_TEMPLATE,
+            self::EMAIL_SUBJECT          => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_EMAIL_SUBJECT,
+            self::WHATSAPP_TEMPLATE_NAME => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE_NAME,
+            self::WHATSAPP_TEMPLATE      => self::DEBIT_NOTE_CREATE_MOBILE_SIGNUP_WHATSAPP_TEMPLATE,
         ],
     ];
 

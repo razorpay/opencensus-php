@@ -1980,6 +1980,15 @@ final class FactoryData
             'notes'       => null,
         ]);
 
+        $factory(\RZP\Models\Dispute\DebitNote\Entity::class, [
+            'id'                => $faker->uniqueid,
+        ]);
+
+        $factory(\RZP\Models\Dispute\DebitNote\Detail\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'debit_note_id'     => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\PayoutsStatusDetails\Entity::class, [
            'id'           => $faker->uniqueid,
            'payout_id'    => 'factory:\RZP\Models\Payout\Entity',

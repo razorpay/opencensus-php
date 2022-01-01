@@ -45,6 +45,8 @@ class Entity
     const DISPUTE                    = 'dispute';
     const DISPUTE_EVIDENCE           = 'dispute_evidence';
     const DISPUTE_EVIDENCE_DOCUMENT  = 'dispute_evidence_document';
+    const DEBIT_NOTE                 = 'debit_note';
+    const DEBIT_NOTE_DETAIL          = 'debit_note_detail';
     const ADDRESS                    = 'address';
     const BALANCE                    = 'balance';
     const CREDITS                    = 'credits';
@@ -751,6 +753,8 @@ class Entity
         self::DISPUTE                   => \RZP\Models\Dispute::class,
         self::DISPUTE_EVIDENCE          => \RZP\Models\Dispute\Evidence::class,
         self::DISPUTE_EVIDENCE_DOCUMENT => \RZP\Models\Dispute\Evidence\Document::class,
+        self::DEBIT_NOTE                => \RZP\Models\Dispute\DebitNote::class,
+        self::DEBIT_NOTE_DETAIL         => \RZP\Models\Dispute\DebitNote\Detail::class,
         self::CUSTOMER                  => \RZP\Models\Customer::class,
         self::EMI_PLAN                  => \RZP\Models\Emi::class,
         self::MERCHANT                  => \RZP\Models\Merchant::class,

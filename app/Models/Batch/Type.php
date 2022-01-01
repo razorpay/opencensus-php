@@ -190,6 +190,8 @@ class Type
 
     const WHITELISTED_DOMAIN  =  'whitelisted_domain';
 
+    const DEBIT_NOTE          = 'debit_note';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -251,6 +253,7 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
+        self::DEBIT_NOTE,
     ];
 
     /**
@@ -506,6 +509,7 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
+        self::DEBIT_NOTE,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -558,6 +562,7 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
         self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN          => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
+        self::DEBIT_NOTE                         => Name::CREATE_DEBIT_NOTE,
     ];
 
     public static $workflowApplicableBatchTypes = [

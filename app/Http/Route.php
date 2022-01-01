@@ -2024,6 +2024,7 @@ class Route
         'patch_dispute_contest_by_id'              => ['patch',    'disputes/{id}/contest',                          'DisputeController@patchDisputeContestById',                        ],
         'post_dispute_accept_by_id'                => ['post',     'disputes/{id}/accept',                           'DisputeController@postDisputeAcceptById'                           ],
 
+        'debit_note_batch'                         => ['post',     'debit_note/batch',                               'DebitNoteController@postBatch',                                    ],
 
         // This is a different route from /payouts since we need a different auth (internal) for this
         // Hence, created two different routes - one for customer and another for merchant.
@@ -4291,6 +4292,7 @@ class Route
         'internal_pincode_get',
 
         'get_affordability_suite',
+        'debit_note_batch',
 
         // trusted badge experiment internal auth
         'trusted_badge_get_experiment_list',
@@ -11434,6 +11436,7 @@ class Route
             'onboard_old_accounts_to_ledger',
             'chargeback_poc',
             'whitelisted_domain',
+            'debit_note_batch',
         ],
 
         'stork' => [

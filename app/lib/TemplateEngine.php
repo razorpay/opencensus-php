@@ -26,6 +26,10 @@ class TemplateEngine
         $result = $template;
         foreach($params as $key => $value)
         {
+            if (is_array($value))
+            {
+                continue;
+            }
             $result = str_replace($this->arg($key), $value, $result);
         }
 

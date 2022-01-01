@@ -43,6 +43,8 @@ class Table
     const DISPUTE                      = 'disputes';
     const DISPUTE_EVIDENCE             = 'dispute_evidence';
     const DISPUTE_EVIDENCE_DOCUMENT    = 'dispute_evidence_document';
+    const DEBIT_NOTE                   = 'debit_note';
+    const DEBIT_NOTE_DETAIL            = 'debit_note_detail';
     const ADDRESS                      = 'addresses';
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';

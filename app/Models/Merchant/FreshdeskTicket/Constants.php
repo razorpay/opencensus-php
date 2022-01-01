@@ -155,6 +155,7 @@ class Constants
 
     const SUBCATEGORY_CAPITAL = 'Capital';
     const QUESTION_TICKET_TYPE  = 'Question';
+    const INCIDENT_TICKET_TYPE  = 'Incident';
 
     // Sub Categories
     const FD_SUB_CATEGORY_FUNDS_ON_HOLD             = 'Funds on hold';

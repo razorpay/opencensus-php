@@ -1226,6 +1226,10 @@ class Header
 
     const ONBOARD_TO_LEDGER = 'onboard_to_ledger';
 
+    // Debit note
+    const DEBIT_NOTE_PAYMENT_IDS           = 'payment_ids';
+    const DEBIT_NOTE_SKIP_VALIDATION       = 'skip_validation';
+
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS = [
         Header::FUND_ACCOUNT_TYPE,
@@ -4127,6 +4131,14 @@ class Header
                 self::STATUS,
                 self::ERROR_MESSAGE,
                 self::COMMENT,
+            ],
+        ],
+
+        Type::DEBIT_NOTE => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::DEBIT_NOTE_PAYMENT_IDS,
+                self::DEBIT_NOTE_SKIP_VALIDATION,
             ],
         ],
     ];

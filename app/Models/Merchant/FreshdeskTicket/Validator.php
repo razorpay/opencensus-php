@@ -390,6 +390,7 @@ class Validator extends Base\Validator
         return [
             Constants::SERVICE_REQUEST_TICKET_TYPE,
             Constants::QUESTION_TICKET_TYPE,
+            Constants::INCIDENT_TICKET_TYPE,
         ];
     }
 

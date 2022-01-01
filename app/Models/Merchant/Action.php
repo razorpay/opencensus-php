@@ -35,6 +35,8 @@ class Action
     */
     const DISABLE_INTERNATIONAL_TEMPORARY = 'disable_international_temporary';
     const DISABLE_INTERNATIONAL_PERMANENT = 'disable_international_permanent';
+    const DEBIT_NOTE_CREATE_EMAIL_SIGNUP  = 'debit_note_create_email_signup';
+    const DEBIT_NOTE_CREATE_MOBILE_SIGNUP = 'debit_note_create_mobile_signup';
 
     const RISK_ACTIONS_LIST_FOR_SETTING_FRAUD_TYPE = [
         self::SUSPEND,

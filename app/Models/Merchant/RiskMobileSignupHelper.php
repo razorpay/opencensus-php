@@ -88,6 +88,11 @@ class RiskMobileSignupHelper
                 ],
             ];
 
+            if (isset($requestParams['attachments']) === true)
+            {
+                $postTicketRequest['attachments'] = $requestParams['attachments'];
+            }
+
             $response = (new FreshdeskTicket\Service())->postTicketOnMerchantBehalf(
                 $postTicketRequest, $merchant->getId(), true);
 
