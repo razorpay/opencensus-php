@@ -3,6 +3,7 @@
 namespace Functional\FreshdeskTicket;
 
 use Mockery;
+use Carbon\Carbon;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
@@ -40,6 +41,10 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_CREATE_TICKET_HTML_TAGS          = 'rzp_create_ticket_html_tags';
 
     const RZP_GET_TICKET_BY_ID                 = 'rzp_get_ticket_by_id';
+
+    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET                          = 'rzp_fetch_ticket_filter_agent_created_ticket';
+    const RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET                = 'rzp_fetch_ticket_filter_paginated_agent_created_ticket';
+    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED                   = 'rzp_fetch_ticket_filter_agent_created_ticket_mapped';
 
     protected function setUp(): void
     {
@@ -1235,6 +1240,86 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertGreaterThanOrEqual($now, $firstResponseTimeData[0]['created_at']);
     }
 
+    public function testFreshdeskSchedulerGetAgentCreatedTicket()
+    {
+        $testcases = [
+            [
+                'name'                          => 'pagination',
+                'function_name'                 => 'setupTestDataGetAgentCreatedTickets'
+            ],
+            [
+                'name'                          => 'general',
+                'function_name'                 => 'setupTestDataGetAgentCreatedTickets'
+            ],
+        ];
+
+        $fixedTime = (new Carbon())->timestamp(1583548200);
+
+        Carbon::setTestNow($fixedTime);
+
+        foreach ($testcases as $testcase)
+        {
+
+            $functionName = $testcase['function_name'];
+
+            $this->$functionName($testcase['name']);
+
+            $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+            $this->ba->cronAuth();
+
+            $this->startTest();
+
+            $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+            $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
+        }
+    }
+
+    public function testFreshdeskSchedulerGetAgentCreatedTicketMappedAlready()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testFreshdeskSchedulerGetAgentCreatedTicket'];
+
+        $fixedTime = (new Carbon())->timestamp(1583548200);
+
+        Carbon::setTestNow($fixedTime);
+
+        $ticketDetails["fd_instance"] = "rzpind";
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razoridind0017',
+            'ticket_id'      => '17',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $ticketDetails["fd_instance"] = "rzpcap";
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razoridcap0017',
+            'ticket_id'      => '17',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $this->ba->cronAuth();
+
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED);
+
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22created_at%3A%272020-03-07%27+AND+custom_string%3A%27agent%27%22&page=1', 'get',
+                                                    $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+
+        $this->startTest();
+
+        $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
+    }
+
     public function testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataExist()
     {
         $ticketCreatedAt = time() - 2 * self::DAY;
@@ -1951,6 +2036,84 @@ class FreshdeskTicketV2Test extends TestCase
 
                 ]];
         }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => "13",
+                            'body'      => 'some random body 13',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "10000000000000"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => "34",
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "10000000000000"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                    ],
+
+                ]];
+        }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => "13",
+                            'body'      => 'some random body',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "10000000000000"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                    ],
+
+                ]];
+        }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => "17",
+                            'body'      => 'some random body 17',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "10000000000000"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ]
+                    ],
+
+                ]];
+        }
     }
 
     protected function createTicketsToFetch()
@@ -1992,5 +2155,92 @@ class FreshdeskTicketV2Test extends TestCase
             'created_at'     => '1700000000',
             'updated_at'     => '1700000000',
         ]);
+    }
+
+    private function setupTestDataGetAgentCreatedTickets($testcaseName)
+    {
+        if ($testcaseName === 'pagination')
+        {
+            $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET);
+
+            $pageOneTickets = [];
+
+            $singleTicket = $expectedRequestResponse['response']['results'][0];
+
+            for ($i=0;$i<30;$i++)
+            {
+                $singleTicket['id'] = stringify($i+1000);
+
+                $this->expectFreshdeskRequestAndRespondWith('tickets/'.$singleTicket['id'], 'PUT',
+                                                            [
+                                                                'custom_fields'=> [
+                                                                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000'
+                                                                ]
+                                                            ],
+                                                            [
+                                                                'id'            => $singleTicket['id'],
+                                                            ],2);
+
+                array_push($pageOneTickets, $singleTicket);
+            }
+
+            $expectedRequestResponse['response']['results'] = $pageOneTickets;
+
+            $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22created_at%3A%272020-03-07%27+AND+custom_string%3A%27agent%27%22&page=1', 'get',
+                                                        $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+
+            $pageTwoTickets = [];
+
+            for ($i=0;$i<2;$i++)
+            {
+                $singleTicket['id'] = stringify($i+2000);
+
+                $this->expectFreshdeskRequestAndRespondWith('tickets/'.$singleTicket['id'], 'PUT',
+                                                            [
+                                                                'custom_fields'=> [
+                                                                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000'
+                                                                ]
+                                                            ],
+                                                            [
+                                                                'id'            => $singleTicket['id'],
+                                                            ],2);
+
+                array_push($pageTwoTickets, $singleTicket);
+            }
+
+            $expectedRequestResponse['response']['results'] = $pageTwoTickets;
+
+            $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22created_at%3A%272020-03-07%27+AND+custom_string%3A%27agent%27%22&page=2', 'get',
+                                                        $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+
+        }
+        else if ($testcaseName === 'general')
+        {
+            $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET);
+
+            $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22created_at%3A%272020-03-07%27+AND+custom_string%3A%27agent%27%22&page=1', 'get',
+                                                        $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+
+            $this->expectFreshdeskRequestAndRespondWith('tickets/13', 'PUT',
+                                                        [
+                                                            'custom_fields'=> [
+                                                                'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000'
+                                                            ]
+                                                        ],
+                                                        [
+                                                            'id'            => '12',
+                                                        ],2);
+
+            $this->expectFreshdeskRequestAndRespondWith('tickets/34', 'PUT',
+                                                        [
+                                                            'custom_fields'=> [
+                                                                'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000'
+                                                            ]
+                                                        ],
+                                                        [
+                                                            'id'            => '12',
+                                                        ],2 );
+        }
+
     }
 }

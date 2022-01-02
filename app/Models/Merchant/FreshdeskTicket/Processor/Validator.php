@@ -54,6 +54,8 @@ class Validator extends BaseValidator
         SupportNotifications\Events::validateEvent($value);
     }
 
+    protected static $getAgentCreatedTicketRules = [];
+
     protected function validateCreatedBy($attribute, string $createdBy)
     {
         if (TicketCreatedBy::isValidCreatedBy($createdBy) === false)

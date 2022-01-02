@@ -41,14 +41,6 @@ class Service extends Base\Service
 
     const X_SALESFORCE_EMAIL_ID         = 'X-Salesforce-Email-Id';
 
-    const FRESHDESK_INSTANCES = [
-        Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX,
-                                      Constants::RZPCAP => Constants::URLCAP],
-        Type::SUPPORT_DASHBOARD   => [Constants::RZPIND => Constants::URLIND,
-                                      Constants::RZPSOL => Constants::URL2,
-                                      Constants::RZPCAP => Constants::URLCAP]
-    ];
-
     const FD_INSTANCE_VS_SUBCATEGORIES = [
         Constants::RZPSOL => ['Technical support', 'Integrations'],
         Constants::RZPCAP => ['Corporate card related','Instant Settlements', 'Cash Advance', 'Working Capital Loan'],
@@ -220,7 +212,7 @@ class Service extends Base\Service
 
         $fdInstance = $this->getFdInstanceWhileCreatingTickets($input);
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $url = Constants::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
         unset($input[Constants::OTP]);
 
@@ -395,7 +387,7 @@ class Service extends Base\Service
 
         $fdInstances = [Constants::RZPIND];
 
-        $urls = [self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[0]]];
+        $urls = [Constants::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[0]]];
 
         $ticketFound = false;
 
@@ -613,7 +605,7 @@ class Service extends Base\Service
             Constants::PAGE  => $input[Constants::PAGE],
         ];
 
-        $allTickets = $this->getTicketsFromType($queryParams, $type);
+        $allTickets = $this->getTicketsFromTypeOrFdInstances($queryParams, $type);
 
         // Filter on category
         $allTickets = $this->additionalFilterOnKey($allTickets, $input[Constants::CF_REQUESTOR_CATEGORY] ?? "",Constants::CUSTOM_FIELDS.'.'.Constants::CF_REQUESTOR_CATEGORY);
@@ -899,11 +891,23 @@ class Service extends Base\Service
     }
 
 
-    protected function getTicketsFromType(array $queryParams, $type): array
+    protected function getTicketsFromTypeOrFdInstances(array $queryParams, $type, $fdInstances = []): array
     {
-        $instances = self::FRESHDESK_INSTANCES[$type];
+        $instances = [];
+
+        if (empty($type) === true && empty($fdInstances) === false)
+        {
+            $instances = $fdInstances;
+        }
+        else
+        {
+            $instances = Constants::FRESHDESK_INSTANCES[$type];
+        }
+
         $allTickets = [];
-        foreach ($instances as $fdInstance => $url) {
+
+        foreach ($instances as $fdInstance => $url)
+        {
             $response = $this->app[Constants::FRESHDESK_CLIENT]->getTickets($queryParams, $url);
 
             $results = $response[Constants::RESULTS] ?? [];
@@ -1492,7 +1496,7 @@ class Service extends Base\Service
 
     protected function getTypeFromFdInstance ($fdInstance)
     {
-        foreach (self::FRESHDESK_INSTANCES as $typeName => $fdInstanceArray)
+        foreach (Constants::FRESHDESK_INSTANCES as $typeName => $fdInstanceArray)
         {
             if (array_key_exists($fdInstance, $fdInstanceArray) === true)
             {
@@ -1545,7 +1549,7 @@ class Service extends Base\Service
             $this->merchant = $merchant;
         }
 
-        return $this->postTicketV2(TYPE::SUPPORT_DASHBOARD, $input, $keepHtmlTags);
+        return $this->postTicketV2(Type::SUPPORT_DASHBOARD, $input, $keepHtmlTags);
     }
 
     protected function appendTagsToTicket($ticketId, $fdInstance, array $tagsToAdd)
@@ -1699,7 +1703,7 @@ class Service extends Base\Service
         }
         else
         {
-            return self::FRESHDESK_INSTANCES[$type][$fdInstance];
+            return Constants::FRESHDESK_INSTANCES[$type][$fdInstance];
         }
 
     }
@@ -1732,5 +1736,22 @@ class Service extends Base\Service
         {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
         }
+    }
+
+    protected function setCfMerchantIdDashboardForTicket(Entity $ticket)
+    {
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $ticket->getFdInstance());;
+
+        $data = [
+            Constants::CUSTOM_FIELDS => [
+                Constants::CF_MERCHANT_ID_DASHBOARD  => $this->getQueryParamMerchantIdForSearchAPI($ticket->merchant),
+            ],
+        ];
+
+        $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2(
+            $ticket->getTicketId(),
+            $data,
+            $url
+        );
     }
 }

@@ -757,6 +757,20 @@ return [
         ],
     ],
 
+    'testFreshdeskSchedulerGetAgentCreatedTicket' => [
+        'request'   => [
+            'url'           => '/fd/webhook/get_agent_created_ticket',
+            'method'        => 'POST',
+            'content'       => [
+            ],
+        ],
+        'response' => [
+            'content'       => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataExist' => [
         'request'   => [
             'url'           => '/fd/webhook/support_ticket_first_agent_reply',

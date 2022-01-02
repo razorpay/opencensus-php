@@ -10879,6 +10879,7 @@ class Route
         ],
 
         'cron' => [
+            'fd_consume_webhook',
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.
             'gstin_e_invoice_cron',

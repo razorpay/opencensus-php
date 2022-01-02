@@ -90,6 +90,14 @@ class Constants
     const RZPX   = 'rzpx';
     const URLX   = 'urlx';
 
+    const FRESHDESK_INSTANCES = [
+        Type::SUPPORT_DASHBOARD_X => [self::RZPX   => self::URLX,
+                                      self::RZPCAP => self::URLCAP],
+        Type::SUPPORT_DASHBOARD   => [self::RZPIND => self::URLIND,
+                                      self::RZPSOL => self::URL2,
+                                      self::RZPCAP => self::URLCAP]
+    ];
+
     // Active tickets and work in progress tickets
     const ACTIVE_STATUSES = [2, 3, 8, 9, 10, 11];
 
@@ -168,4 +176,6 @@ class Constants
     // Categories
     const RISK_REPORT_CATEGORY               = 'Risk Report_Merchant';
     const CHARGEBACKS_CATEGORY               = 'Chargebacks';
+
+    const FRESHDESK_DEFAULT_PAGE_SIZE        = 30;
 }

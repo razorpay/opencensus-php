@@ -36,21 +36,4 @@ class TicketCreateCallback extends Base
 
         return [Constants::SUCCESS => true];
     }
-
-    protected function setCfMerchantIdDashboardForTicket(Entity $ticket)
-    {
-        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $ticket->getFdInstance());;
-
-        $data = [
-            Constants::CUSTOM_FIELDS => [
-                Constants::CF_MERCHANT_ID_DASHBOARD  => $this->getQueryParamMerchantIdForSearchAPI($ticket->merchant),
-            ],
-        ];
-
-        $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2(
-            $ticket->getTicketId(),
-            $data,
-            $url
-        );
-    }
 }
