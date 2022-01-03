@@ -602,6 +602,18 @@ class Validator extends Base\Validator
         Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS     => 'sometimes|array'
     ];
 
+    public function validateSmartDashboardMerchantEditInput(array $input)
+    {
+        foreach ($input as $key => $value)
+        {
+            if (in_array($key, Constants::immutableSmartDashboardMerchantDetailsFields) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'field ' . $key . ' is immutable');
+            }
+        }
+    }
+
     public function validateMerchantForProductInternational(Entity $merchant)
     {
         $merchant = $merchant?: $this->entity;

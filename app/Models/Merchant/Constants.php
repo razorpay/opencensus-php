@@ -7,6 +7,7 @@ use \RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
+use RZP\Models\Merchant\Document\Type;
 
 /**
  * General constants for Merchant Model.
@@ -868,5 +869,492 @@ final class Constants
         self::MERCHANT         => self::BUSINESS_FAILURE,
         self::PROVIDER         => self::OTHER_FAILURE,
         self::INTERNAL         => self::OTHER_FAILURE,
+    ];
+
+    // Smart Dashboard Merchant Details Constants.
+    const MERCHANT_DETAILS  = 'Merchant Details';
+    const WEBSITE_DETAILS   = 'Website and App Details';
+    const DOCUMENTS         = 'Documents';
+    const SUBCATEGORY       = 'subcategory';
+    const MERCHANT_CATEGORY = 'Merchant Category';
+    const MERCHANTNAME      = 'Merchant Name';
+    const PAN_NUMBER        = 'PAN Number';
+    const BUSINESS_DOE      = 'Business DOE';
+    const CONTACT_NUMBER    = 'Contact Number';
+    const BUSINESSTYPE      = 'Business Type';
+    const CONTACT_NAME      = 'Contact Name';
+    const CONTACT_EMAIL     = 'Contact Email';
+    const GSTIN_NUMBER      = 'GSTIN Number';
+    const WEBSITE_LINK      = 'Website Link';
+    const PRICING_POLICY    = 'Pricing Policy';
+    const TERMS             = 'Terms & Conditions';
+    const PRIVACY_POLICY    = 'Privacy Policy';
+    const CONTACT_DETAILS   = 'Contact Details';
+    const REFUND_POLICY     = 'Refund Policy';
+    const CANCELLATION_POLICY   = 'Cancellation Policy';
+    const PLAYSTORE_URL     = 'Playstore URL';
+    const APPSTORE_URL      = 'Appstore URL';
+
+    const BUSINESS_DESCRIPTION = 'Business Description';
+    const BUSINESS_OPERATION_ADDRESS  = 'Business Operation Address';
+    const BUSINESS_REGISTERED_ADDRESS = 'Business Registered Address';
+    const FIELDS            = 'fields';
+    const NAME              = 'name';
+    const VALUE             = 'value';
+
+
+    // Mapping is used for smart dashboard merchant details.
+    const SMART_DASHBOARD_MERCHANT_DETAILS_MAP = [
+        self::MERCHANT_DETAILS => [
+            [
+                self::SUBCATEGORY => self::MERCHANT_CATEGORY,
+                self::FIELDS      => [
+                    'merchant_details|merchant|category',
+                    'merchant_details|merchant|category2',
+                    'merchant_details|business_category',
+                    'merchant_details|business_subcategory',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::MERCHANTNAME,
+                self::FIELDS      => [
+                    'merchant_details|merchant|billing_label',
+                    'merchant_details|business_dba',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::PAN_NUMBER,
+                self::FIELDS      => [
+                    'merchant_details|company_pan',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => 'Name on PAN Number',
+                self::FIELDS      => [
+                    'merchant_details|company_pan_name',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::CONTACT_NUMBER,
+                self::FIELDS      => [
+                    'merchant_details|contact_mobile',
+                    'merchant_details|contact_landline',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::BUSINESSTYPE,
+                self::FIELDS      => [
+                    'merchant_details|business_type',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::BUSINESS_OPERATION_ADDRESS,
+                self::FIELDS      => [
+                    'merchant_details|business_operation_address',
+                    'merchant_details|business_operation_address_l2',
+                    'merchant_details|business_operation_country',
+                    'merchant_details|business_operation_state',
+                    'merchant_details|business_operation_city',
+                    'merchant_details|business_operation_district',
+                    'merchant_details|business_operation_pin',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::CONTACT_NAME,
+                self::FIELDS      => [
+                    'merchant_details|contact_name',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => 'Owner PAN Number',
+                self::FIELDS      => [
+                    'merchant_details|promoter_pan',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::CONTACT_EMAIL,
+                self::FIELDS      => [
+                    'merchant_details|contact_email',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::BUSINESS_REGISTERED_ADDRESS,
+                self::FIELDS      => [
+                    'merchant_details|business_registered_address',
+                    'merchant_details|business_registered_address_l2',
+                    'merchant_details|business_registered_country',
+                    'merchant_details|business_registered_state',
+                    'merchant_details|business_registered_city',
+                    'merchant_details|business_registered_district',
+                    'merchant_details|business_registered_pin',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::GSTIN_NUMBER,
+                self::FIELDS      => [
+                    'merchant_details|gstin',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => 'Authorised Signatory Residential Address',
+                self::FIELDS      => [
+                    'merchant_details|authorized_signatory_residential_address',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::BUSINESS_DOE,
+                self::FIELDS      => [
+                    'merchant_details|business_doe',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::BUSINESS_DESCRIPTION,
+                self::FIELDS      => [
+                    'merchant_details|business_description',
+                ]
+            ],
+        ],
+        self::WEBSITE_DETAILS => [
+            [
+                self::SUBCATEGORY => self::WEBSITE_LINK,
+                self::FIELDS      => [
+                    'merchant_details|merchant|website',
+                    'merchant_details|business_website',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::PRICING_POLICY,
+                self::FIELDS      => [
+                    'merchant_details|website_pricing',
+                    'merchant_details|merchant_business_detail|website_details|pricing',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::TERMS,
+                self::FIELDS      => [
+                    'merchant_details|website_terms',
+                    'merchant_details|merchant_business_detail|website_details|terms',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::PRIVACY_POLICY,
+                self::FIELDS      => [
+                    'merchant_details|website_privacy',
+                    'merchant_details|merchant_business_detail|website_details|privacy',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::CONTACT_DETAILS,
+                self::FIELDS      => [
+                    'merchant_details|website_contact',
+                    'merchant_details|merchant_business_detail|website_details|contact',
+                    'merchant_details|website_about',
+                    'merchant_details|merchant_business_detail|website_details|about',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::REFUND_POLICY,
+                self::FIELDS      => [
+                    'merchant_details|website_refund',
+                    'merchant_details|merchant_business_detail|website_details|refund',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::CANCELLATION_POLICY,
+                self::FIELDS      => [
+                    'merchant_details|merchant_business_detail|website_details|cancellation',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::PLAYSTORE_URL,
+                self::FIELDS      => [
+                    'merchant_details|playstore_url',
+                    'merchant_details|merchant_business_detail|app_urls|playstore_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::APPSTORE_URL,
+                self::FIELDS      => [
+                    'merchant_details|appstore_url',
+                    'merchant_details|merchant_business_detail|app_urls|appstore_url',
+                ]
+            ],
+        ],
+        self::DOCUMENTS => [
+            [
+                self::SUBCATEGORY => Type::SEBI_REGISTRATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sebi_registration_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::IRDAI_REGISTRATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|irdai_registration_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::FFMC_LICENSE,
+                self::FIELDS      => [
+                    'merchant_details|documents|ffmc_license',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::NBFC_REGISTRATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|nbfc_registration_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::AMFI_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|amfi_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SLA_SEBI_REGISTRATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sla_sebi_registration_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SLA_IRDAI_REGISTRATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sla_irdai_registration_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SLA_FFMC_LICENSE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sla_ffmc_license',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SLA_NBFC_REGISTRATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sla_nbfc_registration_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SLA_AMFI_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sla_amfi_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SLA_IATA_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|sla_iata_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::AFFILIATION_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|affiliation_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::IATA_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|iata_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PPI_LICENSE,
+                self::FIELDS      => [
+                    'merchant_details|documents|ppi_license',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::DRIVER_LICENSE_FRONT,
+                self::FIELDS      => [
+                    'merchant_details|documents|driver_license_front',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::DRIVER_LICENSE_BACK,
+                self::FIELDS      => [
+                    'merchant_details|documents|driver_license_back',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::AADHAR_FRONT,
+                self::FIELDS      => [
+                    'merchant_details|documents|aadhar_front',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::AADHAR_BACK,
+                self::FIELDS      => [
+                    'merchant_details|documents|aadhar_back',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::AADHAR_ZIP,
+                self::FIELDS      => [
+                    'merchant_details|documents|aadhar_zip',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::AADHAR_XML,
+                self::FIELDS      => [
+                    'merchant_details|documents|aadhar_xml',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PASSPORT_FRONT,
+                self::FIELDS      => [
+                    'merchant_details|documents|passport_front',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PASSPORT_BACK,
+                self::FIELDS      => [
+                    'merchant_details|documents|passport_back',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::VOTER_ID_FRONT,
+                self::FIELDS      => [
+                    'merchant_details|documents|voter_id_front',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::VOTER_ID_BACK,
+                self::FIELDS      => [
+                    'merchant_details|documents|voter_id_back',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::CANCELLED_CHEQUE,
+                self::FIELDS      => [
+                    'merchant_details|documents|cancelled_cheque',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::BUSINESS_PROOF_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|business_proof_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::BUSINESS_OPERATION_PROOF_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|business_operation_proof_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::BUSINESS_PAN_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|business_pan_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::ADDRESS_PROOF_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|address_proof_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PROMOTER_PROOF_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|promoter_proof_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PROMOTER_PAN_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|promoter_pan_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PROMOTER_ADDRESS_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|promoter_address_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::FORM_12A_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|form_12a_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::FORM_80G_URL,
+                self::FIELDS      => [
+                    'merchant_details|documents|form_80g_url',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::MEMORANDUM_OF_ASSOCIATION,
+                self::FIELDS      => [
+                    'merchant_details|documents|memorandum_of_association',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::ARTICLE_OF_ASSOCIATION,
+                self::FIELDS      => [
+                    'merchant_details|documents|article_of_association',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::BOARD_RESOLUTION,
+                self::FIELDS      => [
+                    'merchant_details|documents|board_resolution',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::PERSONAL_PAN,
+                self::FIELDS      => [
+                    'merchant_details|documents|personal_pan',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::SHOP_ESTABLISHMENT_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|shop_establishment_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::GST_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|gst_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::MSME_CERTIFICATE,
+                self::FIELDS      => [
+                    'merchant_details|documents|msme_certificate',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::BANK_STATEMENT,
+                self::FIELDS      => [
+                    'merchant_details|documents|bank_statement',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::FIRS_FILE,
+                self::FIELDS      => [
+                    'merchant_details|documents|firs_file',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => Type::FIRS_ZIP,
+                self::FIELDS      => [
+                    'merchant_details|documents|firs_zip',
+                ]
+            ],
+        ]
+    ];
+
+    const immutableSmartDashboardMerchantDetailsFields = [
+        'merchant_details|merchant|category',
+        'merchant_details|merchant|category2',
+        'merchant_details|business_category',
+        'merchant_details|business_subcategory',
+        'merchant_details|merchant|billing_label',
+        'merchant_details|business_dba',
+        'merchant_details|business_type',
     ];
 }

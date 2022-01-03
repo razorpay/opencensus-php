@@ -4300,6 +4300,60 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getSmartDashboardMerchantDetails()
+    {
+        $this->trace->info(TraceCode::SMART_DASHBOARD_MERCHANT_FETCH);
+
+        $merchantDetails = $this->getMerchantDetails();
+
+        $smartDashboardMerchantDetailMap = MerchantConstants::SMART_DASHBOARD_MERCHANT_DETAILS_MAP;
+
+        foreach ([MerchantConstants::MERCHANT_DETAILS, MerchantConstants::WEBSITE_DETAILS, MerchantConstants::DOCUMENTS] as $detail)
+        {
+            $detailMap = &$smartDashboardMerchantDetailMap[$detail];
+
+            foreach ($detailMap as $key => $value)
+            {
+                $fieldMap = [];
+
+                array_walk($value[MerchantConstants::FIELDS], function ($value) use (&$fieldMap, $merchantDetails)
+                {
+                    $fieldMap[] = $this->smartDashboardMerchantDetailsField($value, $merchantDetails);
+                });
+
+                $detailMap[$key][MerchantConstants::FIELDS] = $fieldMap;
+            }
+        }
+
+        return $smartDashboardMerchantDetailMap;
+    }
+
+    private function smartDashboardMerchantDetailsField($key, $merchantDetails)
+    {
+        $value = $merchantDetails;
+
+        foreach (explode("|", $key) as $v)
+        {
+            if (isset($value) === false)
+            {
+                break;
+            }
+
+            if (is_array($value) === false)
+            {
+                $value = $value->toArray();
+            }
+
+            $value = $value[$v] ?? null;
+        }
+
+        return [
+            'name'     => $key,
+            'value'    => $value,
+            'editable' => false,
+        ];
+    }
+
     /**
      * returns merchant info along with merchant details
      */

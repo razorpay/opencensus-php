@@ -28,6 +28,7 @@ use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\BusinessDetail;
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
@@ -371,6 +372,74 @@ class Service extends Base\Service
         $merchantDetails = $this->core()->patchMerchantDetails($this->merchant, $input);
 
         return $merchantDetails->toArrayPublic();
+    }
+
+    public function patchSmartDashboardMerchantDetails(array $input): array
+    {
+        $this->trace->info(TraceCode::SMART_DASHBOARD_MERCHANT_EDIT, [
+            'input' => array_keys($input),
+        ]);
+
+        if (empty($this->merchant) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
+        }
+
+        (new Merchant\Validator)->validateSmartDashboardMerchantEditInput($input);
+
+        $merchant = $this->merchant;
+
+        $merchantEditInput = [];
+        $merchantDetailEditInput = [];
+        $merchantBusinessDetailEditInput = [];
+        $merchantDocumentEditInput = [];
+
+        foreach ($input as $key => $value)
+        {
+            $keyString = explode("|", $key);
+
+            $attribute = $keyString[2] ?? null;
+
+            switch ($keyString[1])
+            {
+                case 'merchant':
+                    $merchantEditInput[$attribute] = $value;
+                    break;
+                case 'merchant_business_detail':
+                    $merchantBusinessDetailEditInput[$attribute] = [$keyString[3] => $value];
+                    break;
+                case 'documents':
+                    $merchantDocumentEditInput[$attribute] = $value;
+                    break;
+                default:
+                    $merchantDetailEditInput[$keyString[1]] = $value;
+            }
+        }
+
+        $merchantDetailCore = $this->core;;
+
+        if (count($merchantEditInput) > 0)
+        {
+            (new Merchant\Core)->edit($merchant, $merchantEditInput);
+        }
+
+        if (count($merchantBusinessDetailEditInput) > 0)
+        {
+            (new BusinessDetail\Core)->editBusinessDetail($merchant->merchantDetail, $merchantBusinessDetailEditInput);
+        }
+
+        if (count($merchantDocumentEditInput) > 0)
+        {
+            $this->uploadActivationFile($merchant, $merchantDocumentEditInput);
+        }
+
+        if (count($merchantDetailEditInput) > 0)
+        {
+            $merchantDetailCore->editMerchantDetailFields($merchant, $merchantDetailEditInput);
+        }
+
+        return (new Merchant\Service)->getSmartDashboardMerchantDetails();
     }
 
     /**

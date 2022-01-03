@@ -508,6 +508,24 @@ return [
         ],
     ],
 
+    'testSmartDashboardMerchantDetailsPatch' => [
+        'request'  => [
+            'content' => [
+                'merchant_details|business_operation_address'                      => 'Test address',
+                'merchant_details|business_operation_state'                        => 'KA',
+                'merchant_details|business_operation_city'                         => 'Bengaluru',
+                'merchant_details|business_operation_pin'                          => '560030',
+                'merchant_details|merchant|website'                                => 'https://www.test.com',
+                'merchant_details|merchant_business_detail|app_urls|playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy'
+            ],
+            'url'     => '/smart_dashboard/merchants/details',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testMerchantDetailsPatchShouldUpdateMethodsBasedOnCategory' => [
         'request' => [
             'raw' => json_encode([
@@ -1126,6 +1144,20 @@ return [
                 'max_payment_amount'        => 50000000,
                 'suspended_at'              => null,
             ],
+        ],
+    ],
+
+    'testSmartDashboardMerchantDetailsFetch' => [
+        'request' => [
+            'url'       => '/smart_dashboard/merchants/details',
+            'method'    => 'GET',
+            'content'   => [],
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000155',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 

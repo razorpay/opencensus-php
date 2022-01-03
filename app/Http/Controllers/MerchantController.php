@@ -1449,11 +1449,27 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getSmartDashboardMerchantDetails()
+    {
+        $response = $this->service()->getSmartDashboardMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
     public function patchMerchantDetails()
     {
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->patchMerchantDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function patchSmartDashboardMerchantDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->patchSmartDashboardMerchantDetails($input);
 
         return ApiResponse::json($response);
     }

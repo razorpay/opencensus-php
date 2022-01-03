@@ -585,6 +585,100 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals($merchantDetails->getInternationalActivationFlow(), 'whitelist');
     }
 
+    public function testSmartDashboardMerchantDetailsPatch()
+    {
+        $this->markTestSkipped();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $response = $this->startTest();
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::BUSINESS_OPERATION_ADDRESS,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|business_operation_address',
+                    'value'    => 'Test address',
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_operation_address_l2',
+                    'value'    => null,
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_operation_country',
+                    'value'    => null,
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_operation_state',
+                    'value'    => 'KA',
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_operation_city',
+                    'value'    => 'Bengaluru',
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_operation_district',
+                    'value'    => null,
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_operation_pin',
+                    'value'    => '560030',
+                    'editable' => true
+                ],
+            ],
+        ], $response[MerchantConstants::MERCHANT_DETAILS][6]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::WEBSITE_LINK,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|merchant|website',
+                    'value'    => 'https://www.test.com',
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|business_website',
+                    'value'    => 'https://www.test.com',
+                    'editable' => true
+                ]
+            ]
+        ], $response[MerchantConstants::WEBSITE_DETAILS][0]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::PLAYSTORE_URL,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|playstore_url',
+                    'value'    => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                    'editable' => true
+                ],
+                [
+                    'name'     => 'merchant_details|merchant_business_detail|app_urls|playstore_url',
+                    'value'    => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                    'editable' => true
+                ]
+            ]
+        ], $response[MerchantConstants::WEBSITE_DETAILS][7]);
+    }
+
     public function testMerchantDetailsFetchAccountService()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail', ['business_category' => 'financial_services']);
@@ -1135,6 +1229,126 @@ We look forward to transacting with you!
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
+    }
+
+    public function testSmartDashboardMerchantDetailsFetch()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000155',
+            'email' => 'razorpay@razorpay.com']);
+
+        $merchantDetailData = [
+            'merchant_id'        => '10000000000155',
+            'business_type'      => "1",
+            'transaction_volume' => "5",
+            'department'         => "6",
+            'contact_mobile'     => "8722627189",
+            'contact_email'      => "razorpay@razorpay.com",
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+            'app_urls' => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url' => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'promoter_address_url',
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchant->getId(),
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $merchant->admins()->attach($admin);
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $response = $this->startTest();
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::BUSINESSTYPE,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|business_type',
+                    'value'    => '1',
+                    'editable' => false
+                ]
+            ],
+        ], $response[MerchantConstants::MERCHANT_DETAILS][5]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::CONTACT_NUMBER,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|contact_mobile',
+                    'value'    => '8722627189',
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::MERCHANT_DETAILS][4]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::CONTACT_EMAIL,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|contact_email',
+                    'value'    => 'razorpay@razorpay.com',
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::MERCHANT_DETAILS][9]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::PLAYSTORE_URL,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|playstore_url',
+                    'value'    => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                    'editable' => false
+                ],
+                [
+                    'name'     => 'merchant_details|merchant_business_detail|app_urls|playstore_url',
+                    'value'    => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::WEBSITE_DETAILS][7]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::APPSTORE_URL,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|appstore_url',
+                    'value'    => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+                    'editable' => false
+                ],
+                [
+                    'name'     => 'merchant_details|merchant_business_detail|app_urls|appstore_url',
+                    'value'    => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::WEBSITE_DETAILS][8]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => 'promoter_address_url',
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|documents|promoter_address_url',
+                    'value'    => [
+                        [
+                            'file_store_id' => '123123',
+                            'merchant_id'   => '10000000000155'
+                        ]
+                    ],
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::DOCUMENTS][31]);
     }
 
     public function testGetPreSignupDetails()
