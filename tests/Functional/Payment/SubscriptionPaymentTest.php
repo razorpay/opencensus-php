@@ -2,6 +2,8 @@
 
 namespace Functional\Payment;
 
+use RZP\Models\Address\Repository;
+use RZP\Models\Address\Type;
 use RZP\Modules;
 use RZP\Models\Offer;
 use RZP\Models\Order;
@@ -205,6 +207,79 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals($this->customer->getId(), $payment->customer_id);
         $this->assertEquals($payment->getTokenId(), $token->getId());
         $this->assertTrue($payment->isRecurringTypeAuto());
+    }
+
+    public function testAutoPaymentCardWithAVSFeature()
+    {
+        $this->fixtures->iin->create([
+            'iin'       => '555555',
+            'country'   => 'US',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->cardPayment;
+        $payment['card']['number'] = '5555555555554444';
+        $payment['currency'] = 'USD';
+
+        $payment['order_id'] = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount'],
+                'currency' => 'USD'])->getPublicId();
+
+        $this->fixtures->merchant->addFeatures(['address_required']);
+        $this->fixtures->merchant->addFeatures(['avs']);
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $payment,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $this->subscription->setStatus(Subscription\Status::AUTHENTICATED);
+        $this->subscription->recurring_type = 'auto';
+        $this->subscription->global_customer = true;
+        $this->subscription->status = 'halted';
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount'],
+                'currency' => 'USD']);
+
+        $paymentArray = array_merge($this->cardPayment, [
+            'token' => $token->getPublicId(),
+            'order_id' => $order->getPublicId(),
+            'currency' => 'USD'
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertEquals($this->customer->getId(), $payment->customer_id);
+        $this->assertEquals($payment->getTokenId(), $token->getId());
+        $this->assertTrue($payment->isRecurringTypeAuto());
+
+        $paymentAddressEntity = (new Repository)->fetchPrimaryAddressOfEntityOfType($payment, Type::BILLING_ADDRESS);
+        $this->assertNull($paymentAddressEntity);
     }
 
     public function testFetchPaymentWithSubscriptionEmailAndContactNotNull()

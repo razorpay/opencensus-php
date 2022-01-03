@@ -712,7 +712,8 @@ trait Authorize
 
             if (isset($gatewayResponse) === false ||
                 isset($gatewayResponse['avs_result']) === false ||
-                in_array($gatewayResponse['avs_result'], $failureAvsResponses) === false) {
+                in_array($gatewayResponse['avs_result'], $failureAvsResponses) === false ||
+                $payment->isRecurring() === true) {
                 return;
             }
 
@@ -10087,8 +10088,10 @@ trait Authorize
      */
     protected function validateAddressIfPresentWithoutRedirect(Payment\Entity $payment, array $input)
     {
-        if (($this->app['api.route']->isS2SPaymentRoute() === false) or
-            ($this->app['basicauth']->isPrivateAuth() === false))
+
+        if ((($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false)) and
+            $payment->isRecurring() !== true)
         {
             try {
                 $this->validateAddressIfPresent($payment, $input);
