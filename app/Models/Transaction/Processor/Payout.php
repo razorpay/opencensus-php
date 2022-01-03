@@ -40,9 +40,9 @@ class Payout extends Base
     /**
      * We are overriding this because base function was written very badly. (`hasTransaction`)
      */
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
-        $this->setTransaction($this->createNewTransaction());
+        $this->setTransaction($this->createNewTransaction($txnId));
     }
 
     public function fillDetails()

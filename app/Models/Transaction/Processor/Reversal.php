@@ -31,9 +31,9 @@ class Reversal extends Base
      *
      * @see Base::setTransactionForSource()
      */
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
-        $this->setTransaction($this->createNewTransaction());
+        $this->setTransaction($this->createNewTransaction($txnId));
     }
 
     /**

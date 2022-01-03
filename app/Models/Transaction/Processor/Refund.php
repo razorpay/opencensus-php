@@ -16,13 +16,13 @@ use RZP\Trace\TraceCode;
 
 class Refund extends Base
 {
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
         $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->source);
 
         if ($txn === null)
         {
-            $txn = $this->createNewTransaction();
+            $txn = $this->createNewTransaction($txnId);
         }
 
         $this->setTransaction($txn);

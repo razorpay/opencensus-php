@@ -3,9 +3,12 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
-use RZP\Models\Adjustment\Entity;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Adjustment\Entity;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
@@ -90,5 +93,94 @@ class Adjustment extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * Create Journal function for adjustments
+     *
+     * @param array $payload
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function createJournalEntry(array $payload)
+    {
+        try
+        {
+            $response = parent::createJournalEntry($payload);
+        }
+        catch (BadRequestException $e)
+        {
+            // If it's an insufficient balance case, throw a new exception with a new error code
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE)
+            {
+                throw new BadRequestException(
+                    Errorcode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
+                    null,
+                    $e->getData()
+                );
+            }
+            else
+            {
+                // We don't want to miss any other form of BadRequestException, just that their error code
+                // will be unchanged.
+                throw $e;
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Create payload for Journal function for adjustment
+     *
+     * @param Entity $bankTransfer
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function createPayloadForJournalEntry(Entity $adjustment,
+                                                 string $transactorEvent)
+    {
+
+        $notes = [
+            self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($adjustment->getBalanceId()),
+            self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($adjustment->getTransactionId())
+        ];
+
+        $identifiers = [
+            self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
+        ];
+
+        $payload = [
+            self::TENANT             => self::X,
+            self::MODE               => $this->mode,
+            self::IDEMPOTENCY_KEY    => Uuid::uuid1()->toString(),
+            self::MERCHANT_ID        => $adjustment->getMerchantId(),
+            self::CURRENCY           => $adjustment->getCurrency(),
+            self::AMOUNT             => (string) abs($adjustment->getAmount()),
+            self::BASE_AMOUNT        => (string) abs($adjustment->getAmount()),
+//            self::COMMISSION         => (string) $adjustment->transaction->getFee(), // TODO: check if we can send empty as no txn present
+//            self::TAX                => (string) $adjustment->transaction->getTax(),
+            self::TRANSACTOR_ID      => $adjustment->getPublicId(),
+            self::NOTES              => $notes,
+            self::TRANSACTOR_EVENT   => $transactorEvent,
+            self::TRANSACTION_DATE   => $adjustment->getCreatedAt(),
+            self::IDENTIFIERS        => $identifiers,
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * Create payload for Journal function for adjustment
+     *
+     * @param string $entityId
+     *
+     */
+    public function createPayloadForTransactionEntry(string $entityId, string $entityName, array $ledgerResponse)
+    {
+        // Todo: check if can be removed so called goes directly to base method
+        return parent::createPayloadForTransactionEntry($entityId, $entityName, $ledgerResponse);
     }
 }

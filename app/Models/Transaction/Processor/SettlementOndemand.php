@@ -22,9 +22,9 @@ class SettlementOndemand extends Base
     /** @var OndemandModel\Entity $source*/
     protected $source;
 
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
-        $this->setTransaction($this->createNewTransaction());
+        $this->setTransaction($this->createNewTransaction($txnId));
     }
 
     public function setFeeDefaults()

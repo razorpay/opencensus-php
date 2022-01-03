@@ -86,7 +86,7 @@ abstract class Base extends BaseCore
         $this->txn = $txn;
     }
 
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
         $txn = null;
 
@@ -96,16 +96,30 @@ abstract class Base extends BaseCore
         }
         else
         {
-            $txn = $this->createNewTransaction();
+            $txn = $this->createNewTransaction($txnId);
         }
 
         $this->setTransaction($txn);
     }
 
-    public function createTransaction()
+    public function createTransactionWithIdAndUpdateBalance(string $txnId, int $balance)
+    {
+        list ($txn, $feeSplit) = $this->createTransaction($txnId);
+
+        // update balances
+        $this->txn->setBalance($balance);
+
+        // update balance entity's balance
+        $this->merchantBalance->setBalance($balance);
+        $this->txn->accountBalance()->associate($this->merchantBalance);
+
+        return [$this->txn, $feeSplit];
+    }
+
+    public function createTransaction($txnId = null)
     {
         // Creates new or fetches existing transaction entity for the source entity
-        $this->setTransactionForSource();
+        $this->setTransactionForSource($txnId);
 
         // set transaction attributes from the source entity
         $this->setSourceDefaults();
@@ -144,6 +158,7 @@ abstract class Base extends BaseCore
                     $this->trace->info(TraceCode::MERCHANT_BALANCE_UPDATE_LOCK_INIT);
 
                     $lockStartTime = microtime(true);
+
                     // update merchant credits an balances
                     $this->setMerchantBalanceLockForUpdate();
 
@@ -287,11 +302,11 @@ abstract class Base extends BaseCore
         list($this->fees, $this->tax, $this->feesSplit) = (new Pricing\Fee)->calculateMerchantFees($this->source);
     }
 
-    protected function createNewTransaction()
+    protected function createNewTransaction($txnId = null)
     {
         $txn = new Transaction\Entity;
 
-        $txn->generateId();
+        $txnId != null ? $txn->setId($txnId) : $txn->generateId();
 
         //
         // Ideally we should have used build() here but not doing to avoid

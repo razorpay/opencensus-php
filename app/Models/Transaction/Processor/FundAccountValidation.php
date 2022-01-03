@@ -13,9 +13,9 @@ use RZP\Models\Transaction\Processor\Base as BaseProcessor;
 
 class FundAccountValidation extends BaseProcessor
 {
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
-        $this->setTransaction($this->createNewTransaction());
+        $this->setTransaction($this->createNewTransaction($txnId));
     }
 
     public function updateTransaction()

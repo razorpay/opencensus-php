@@ -89,7 +89,7 @@ class Payment extends Base
         }
     }
 
-    public function createTransaction()
+    public function createTransaction($txnId = null)
     {
         //
         // We have the check on captured_at because of the following reason:
@@ -204,7 +204,7 @@ class Payment extends Base
 
     }
 
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
         if ($this->source->isExternal() === true)
         {
@@ -218,7 +218,7 @@ class Payment extends Base
             }
         }
 
-        parent::setTransactionForSource();
+        parent::setTransactionForSource($txnId);
     }
 
     public function fillDetails()

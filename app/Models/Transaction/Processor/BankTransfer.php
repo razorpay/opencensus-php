@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction\Processor;
 
 use RZP\Models\Settlement;
+use RZP\Trace\TraceCode;
 
 /**
  * For business banking we directly create transaction against bank transfer,
@@ -14,9 +15,9 @@ class BankTransfer extends Base
     /**
      * {@inheritDoc}
      */
-    protected function setTransactionForSource()
+    protected function setTransactionForSource($txnId = null)
     {
-        $this->setTransaction($this->createNewTransaction());
+        $this->setTransaction($this->createNewTransaction($txnId));
     }
 
     /**

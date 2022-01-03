@@ -3,11 +3,15 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\BankTransfer\Entity;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankTransfer\Entity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
+use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
 
 class FundLoading extends Base
 {
@@ -95,5 +99,97 @@ class FundLoading extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * Create Journal function for fundloading
+     *
+     * @param array $payload
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function createJournalEntry(array $payload)
+    {
+        try
+        {
+            $response = parent::createJournalEntry($payload);
+        }
+        catch (BadRequestException $e)
+        {
+            // If it's an insufficient balance case, throw a new exception with a new error code
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE)
+            {
+                throw new BadRequestException(
+                    Errorcode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+                    null,
+                    $e->getData()
+                );
+            }
+            else
+            {
+                // We don't want to miss any other form of BadRequestException, just that their error code
+                // will be unchanged.
+                throw $e;
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Create payload for Journal function for fundloading
+     *
+     * @param Entity $bankTransfer
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function createPayloadForJournalEntry(Entity $bankTransfer,
+                                                 string $terminalId,
+                                                 $terminalAccountType)
+    {
+
+        $notes = [
+            self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($bankTransfer->getBalanceId()),
+        ];
+
+        $terminalAccountType = $terminalAccountType ?? self::DEFAULT_TERMINAL_ACCOUNT_TYPE;
+
+        $identifiers = [
+            self::TERMINAL_ID           => $terminalId,
+            self::TERMINAL_ACCOUNT_TYPE => $terminalAccountType,
+            self::BANKING_ACCOUNT_ID    => $bankTransfer->balance->bankingAccount->getPublicId(),
+        ];
+
+        $payload = [
+            self::TENANT                => self::X,
+            self::MODE                  => $this->mode,
+            self::IDEMPOTENCY_KEY       => Uuid::uuid1()->toString(),
+            self::MERCHANT_ID           => $bankTransfer->getMerchantId(),
+            self::CURRENCY              => Currency::INR,
+            self::AMOUNT                => (string) $bankTransfer->getAmount(),
+            self::BASE_AMOUNT           => (string) $bankTransfer->getAmount(),
+            self::COMMISSION            => (string) $bankTransfer->getTransactionFee(),
+            self::TAX                   => (string) $bankTransfer->getTransactionTax(),
+            self::NOTES                 => $notes,
+            self::TRANSACTOR_ID         => $bankTransfer->getPublicId(),
+            self::TRANSACTOR_EVENT      => LedgerFundLoading::FUND_LOADING_PROCESSED,
+            self::TRANSACTION_DATE      => $bankTransfer->getCreatedAt(),
+            self::IDENTIFIERS           => $identifiers,
+        ];
+
+        return $payload;
+    }
+
+    /**
+     * Create payload for Journal function for fundloading
+     *
+     * @param string $entityId
+     *
+     */
+    public function createPayloadForTransactionEntry(string $entityId, string $entityName, array $ledgerResponse)
+    {
+        return parent::createPayloadForTransactionEntry($entityId, $entityName, $ledgerResponse);
     }
 }

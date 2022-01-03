@@ -3,9 +3,11 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
@@ -151,6 +153,42 @@ class FundAccountValidation extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * Create Journal function for fund account validations
+     *
+     * @param array $payload
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function createJournalEntry(array $payload)
+    {
+        try
+        {
+            $response = parent::createJournalEntry($payload);
+        }
+        catch (BadRequestException $e)
+        {
+            // If it's an insufficient balance case, throw a new exception with a new error code
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE)
+            {
+                throw new BadRequestException(
+                    Errorcode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+                    null,
+                    $e->getData()
+                );
+            }
+            else
+            {
+                // We don't want to miss any other form of BadRequestException, just that their error code
+                // will be unchanged.
+                throw $e;
+            }
+        }
+
+        return $response;
     }
 
     protected function getFtsSourceAccountData(array $ftsSourceAccountInformation = [])

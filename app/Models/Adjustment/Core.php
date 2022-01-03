@@ -3,6 +3,7 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Exception;
+use RZP\Jobs\Transactions;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Models\Feature;
@@ -14,10 +15,14 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
+use Exception as DefaultException;
+use RZP\Constants as DefaultConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Transaction\Processor\Ledger;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as BankingChannel;
+use RZP\Models\Transaction\Processor\Ledger\Adjustment as LedgerAdjustment;
 
 class Core extends Base\Core
 {
@@ -134,8 +139,6 @@ class Core extends Base\Core
 
                     (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $merchantInvoiceInput);
 
-                    $this->processLedgerAdjustment($adjustment);
-
                     return $adjustment;
                 }
             );
@@ -146,7 +149,16 @@ class Core extends Base\Core
             (new Balance\NegativeReserveBalanceMailers())->sendReserveBalanceActivatedMail($merchant, $balance);
         }
 
-        $this->processLedgerAdjustment($adjustment);
+        if ($adjustment->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->processLedgerAdjustment($adjustment);
+        } else {
+            // reverse shadow enabled case
+            if ($adj->isBalanceTypeBanking() === true)
+            {
+                $this->processLedgerForReverseShadow($adjustment);
+            }
+        }
 
         return $adjustment;
     }
@@ -311,7 +323,7 @@ class Core extends Base\Core
         return [true, $data];
     }
 
-    protected function createAdjInTransaction($adj, $merchant): Entity
+    protected function createAdjInTransaction(Entity $adj, $merchant): Entity
     {
         $this->repo->assertTransactionActive();
 
@@ -340,13 +352,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($adj);
 
-        $txn = (new Transaction\Core)->createFromAdjustment($adj);
+        // if not RX case (OR) RX but no reverse shadow case
+        if (($adj->isBalanceTypeBanking() === false) || ($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false))
+        {
+            $txn = (new Transaction\Core)->createFromAdjustment($adj);
+            $this->repo->saveOrFail($txn);
 
-        $this->repo->saveOrFail($txn);
-
-        $this->repo->saveOrFail($adj);
-
-        (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+            $this->repo->saveOrFail($adj);
+            (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+        }
 
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_SUCCESS,
@@ -529,8 +543,6 @@ class Core extends Base\Core
             );
         }
 
-        $this->processLedgerAdjustment($adjustment);
-
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_RESPONSE_SUB_BALANCE,
             [
@@ -599,7 +611,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function createAdjInTransactionWithoutNotification($adj, $merchant): Entity
+    protected function createAdjInTransactionWithoutNotification(Entity $adj, $merchant): Entity
     {
         $this->repo->assertTransactionActive();
 
@@ -634,5 +646,75 @@ class Core extends Base\Core
             $adj->toArrayPublic());
 
         return $adj;
+    }
+
+    /**
+     * @param  Entity $adj
+     *
+     *
+     * This function proceses txn in reverse shadow mode
+     * We call ledger in sync and use ledger response to
+     * create txn in api db in async
+     */
+    protected function processLedgerForReverseShadow(Entity $adj)
+    {
+        // Fetching terminal to get the terminal_id which will be the identifier to uniquely
+        // identify accounts in case of fund loading.
+        $ledgerResponse = [];
+        $event = self::getLedgerEventBasedOnAdjustment($adj);
+        $ledgerPayload = (new LedgerAdjustment)->createPayloadForJournalEntry($adj, $event);
+        try {
+            $ledgerResponse = (new LedgerAdjustment)->createJournalEntry($ledgerPayload);
+        }
+        catch (DefaultException $ex)
+        {
+            // Create api txn manually for credit case and Todo: send slack alert
+            if ($adj->getAmount() >= 0) {
+                $tempAdj = $adj;
+                $txn = $this->repo->transaction(
+                    function () use ($tempAdj) {
+                        $adj = clone $tempAdj;
+                        $txn = (new Transaction\Core)->createFromAdjustment($adj);
+                        $this->repo->saveOrFail($txn);
+                        $this->repo->saveOrFail($adj);
+                        (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+                        return $txn;
+                    });
+            }
+
+            $alertPayload = [
+                'adjustment_id'         => $adj->getId(),
+                'ledger_payload'        => $ledgerPayload,
+                'txn_id'                => $txn->getId(),
+                'mode'                  => $this->mode
+            ];
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW,
+                $alertPayload
+            );
+
+            // send slack alert as ledger entry needs to be created
+            (new SlackNotification)->send(TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW, $alertPayload, $ex, 1, 'platform-ledger-alerts');
+
+            return;
+        }
+
+        // Push txn to sqs
+        try {
+            // push to ledger transaction sqs
+            Transactions::dispatch($this->mode, $adj->getId(), DefaultConstants\Entity::ADJUSTMENT, $ledgerResponse);
+        }
+        catch (DefaultException $ex)
+        {
+            $this->trace->info(
+                TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
+                [
+                    'bank_transfer_id'          => $adj->getId(),
+                    'entity_name'               => DefaultConstants\Entity::ADJUSTMENT,
+                    'ledgerResponse'            => $ledgerResponse,
+                ]);
+        }
     }
 }

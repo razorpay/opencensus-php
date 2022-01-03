@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Adjustment;
 
 use Mail;
 
+use Queue;
+use RZP\Jobs\Transactions;
 use RZP\Models\Feature;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -1052,6 +1054,55 @@ class AdjustmentTest extends TestCase
         }
     }
 
+    public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowEnabled()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        Queue::fake();
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        $this->assertNull($newAdjustments['transaction_id']);
+
+        Queue::assertPushed(Transactions::class);
+    }
 
     public function testLedgerSnsForNegativeAdjustmentCreationOnLiveMode()
     {
@@ -1141,6 +1192,56 @@ class AdjustmentTest extends TestCase
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
         }
+    }
+
+    public function testForNegativeAdjustmentCreationOnLiveModeWhenLedgerReverseShadowEnabled()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        Queue::fake();
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForNegativeAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        $this->assertNull($newAdjustments['transaction_id']);
+
+        Queue::assertPushed(Transactions::class);
     }
 
     public function testAddAdjustmentOnCapitalBalance()

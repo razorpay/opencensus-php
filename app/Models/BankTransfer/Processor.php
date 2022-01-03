@@ -9,12 +9,14 @@ use Config;
 use Request;
 use Exception;
 use Carbon\Carbon;
+use RZP\Constants as DefaultConstants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\Transactions;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
@@ -25,7 +27,6 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
-use RZP\Models\BankTransfer\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
@@ -237,15 +238,109 @@ class Processor extends VirtualAccount\Processor
 
         }, $deadlockRetryAttempts);
 
+        // feature flag based
+        if ($this->virtualAccount->isBalanceTypeBanking() === true) {
+            $this->processLedgerForReverseShadow($bankTransfer);
+        }
+
         // Currently dispatches transaction.created only for bank transfer on banking balance.
-        $this->dispatchEventForTransactionCreated($bankTransfer);
+        $this->sendEventForTransactionCreated($bankTransfer);
 
         $this->refundOrCapturePayment($bankTransfer);
 
         return $bankTransfer;
     }
 
-    protected function dispatchEventForTransactionCreated(Base\PublicEntity $bankTransfer)
+    /**
+     * @param  Entity $adj
+     *
+     *
+     * This function proceses txn in reverse shadow mode
+     * We call ledger in sync and use ledger response to
+     * create txn in api db in async
+     */
+    protected function processLedgerForReverseShadow(Entity $bankTransfer)
+    {
+        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            return;
+        }
+
+        // create journal in sync
+
+        // Fetching terminal to get the terminal_id which will be the identifier to uniquely
+        // identify accounts in case of fund loading.
+        $ledgerResponse = [];
+        $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+
+        $ledgerPayload = (new LedgerFundLoading)->createPayloadForJournalEntry($bankTransfer,$terminal->getPublicId(), $terminal->getAccountType());
+        try {
+            $ledgerResponse = (new LedgerFundLoading)->createJournalEntry($ledgerPayload);
+        }
+        catch (Exception $ex)
+        {
+            // Create api txn manually and Todo: send slack alert
+            $tempBankTransfer = $bankTransfer;
+            $txn = $this->repo->transaction(function() use ($tempBankTransfer)
+            {
+                $bankTransfer = clone $tempBankTransfer;
+                // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
+                list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
+                $this->repo->saveOrFail($txn);
+                return $txn;
+            });
+
+            $this->dispatchEventForTransactionCreated($bankTransfer, $txn);
+            $alertPayload = [
+                'bank_transfer_id'      => $bankTransfer->getId(),
+                'ledger_payload'        => $ledgerPayload,
+                'txn_id'                => $txn->getId(),
+                'mode'                  => $this->mode
+            ];
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW,
+                $alertPayload
+            );
+
+            // send slack alert as ledger entry needs to be created
+            (new SlackNotification)->send(TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW, $alertPayload, $ex, 1, 'platform-ledger-alerts');
+
+            return;
+        }
+
+        // Push txn to sqs
+        try {
+            // push to ledger transaction sqs
+            Transactions::dispatch($this->mode, $bankTransfer->getId(), DefaultConstants\Entity::BANK_TRANSFER, $ledgerResponse);
+        }
+        catch (Exception $ex)
+        {
+            // Todo: retry this ?
+            $this->trace->traceException(
+                $ex,
+                TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
+                [
+                    'bank_transfer_id'          => $bankTransfer->getId(),
+                    'entity_name'               => DefaultConstants\Entity::BANK_TRANSFER,
+                    'ledgerResponse'            => $ledgerResponse,
+                ]);
+        }
+
+    }
+
+    protected function sendEventForTransactionCreated(Entity $bankTransfer)
+    {
+        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            if ($bankTransfer->isBalanceTypeBanking() === true) {
+                $this->dispatchEventForTransactionCreated($bankTransfer, $bankTransfer->transaction);
+            }
+        }
+    }
+
+    public function dispatchEventForTransactionCreated(Base\PublicEntity $bankTransfer,Transaction\Entity $transaction)
     {
         if ($bankTransfer->isBalanceTypeBanking() === true)
         {
@@ -253,11 +348,11 @@ class Processor extends VirtualAccount\Processor
 
             if ($this->isLiveMode() === true)
             {
-                $transactionCore->dispatchEventForTransactionCreated($bankTransfer->transaction);
+                $transactionCore->dispatchEventForTransactionCreated($transaction);
             }
             else
             {
-                $transactionCore->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($bankTransfer->transaction);
+                $transactionCore->dispatchEventForTransactionCreatedWithoutEmailOrSmsNotification($transaction);
             }
         }
     }
@@ -357,10 +452,14 @@ class Processor extends VirtualAccount\Processor
                 Entity::REQUEST_SOURCE  => $bankTransfer->getRequestSource() ?? '',
             ]);
 
-        // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
-        list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
+        // In case reverse shadow feature is false, we create transaction entry in sync
+        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
+            list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
 
-        $this->repo->saveOrFail($txn);
+            $this->repo->saveOrFail($txn);
+        }
 
         // Updates virtual account's stats.
         $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
@@ -400,25 +499,27 @@ class Processor extends VirtualAccount\Processor
             );
         }
 
-        try
+        // In case reverse shadow feature is false, we push to ledger sns for async ledger creation
+        if ($bankTransfer->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
         {
-            // Fetching terminal to get the terminal_id which will be the identifier to uniquely
-            // identify accounts in case of fund loading.
-            $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+            try
+            {
+                // Fetching terminal to get the terminal_id which will be the identifier to uniquely
+                // identify accounts in case of fund loading.
+                $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
 
-            // Pushing transaction to ledger which will create this transaction in ledger DB.
-            $this->processLedgerFundLoading($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::LEDGER_JOURNAL_FUND_LOADING_TERMINAL_ID_NOT_FOUND,
-                [
-                    'error'                => $ex->getMessage(),
-                    self::BANK_TRANSFER_ID => $bankTransfer->getId(),
-                ]);
+                // Pushing transaction to ledger which will create this transaction in ledger DB.
+                $this->processLedgerFundLoading($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
+            } catch (\Throwable $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_JOURNAL_FUND_LOADING_TERMINAL_ID_NOT_FOUND,
+                    [
+                        'error' => $ex->getMessage(),
+                        self::BANK_TRANSFER_ID => $bankTransfer->getId(),
+                    ]);
+            }
         }
 
         try

@@ -48,6 +48,8 @@ class Ledger
 
     const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
 
+    const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
+
     const URLS = [
         'create'                            => 'Create',
         'createOnEvent'                     => 'CreateOnEvent',
@@ -470,6 +472,11 @@ class Ledger
         $headers[self::X_REQUEST_ID]         = $this->request->getId();
 
         $this->headers = $headers;
+    }
+
+    public function setIdempotencyKey(string $key)
+    {
+        $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $key;
     }
 
     /**

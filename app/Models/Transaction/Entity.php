@@ -230,6 +230,7 @@ class Entity extends Base\PublicEntity
         // source entities e.g. BankTransfer do not contain later kind of columns
         // in them, is unnecessary.
         //
+
         if ($entity->transaction() instanceof BelongsTo)
         {
             $entity->transaction()->associate($this);

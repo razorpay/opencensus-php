@@ -3,10 +3,15 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use App;
+use Ramsey\Uuid\Uuid;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
+use RZP\Exception\BadRequestException;
+use RZP\Services\Ledger as LedgerService;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends Core
 {
@@ -36,6 +41,11 @@ class Base extends Core
     const IDENTIFIERS           = 'identifiers';
     const ADDITIONAL_PARAMS     = 'additional_params';
 
+    // For txn sqs
+    const ENTITY_ID                 = 'entity_id';
+    const ENTITY_NAME               = 'entity_name';
+    const LEDGER_RESPONSE           = 'ledger_response';
+
     // For Fee Credit accounting
     const FEE_ACCOUNTING        = 'fee_accounting';
     const REWARD                = 'reward';
@@ -56,6 +66,15 @@ class Base extends Core
     const X = 'X';
 
     const LEDGER_TRANSACTION_CREATE = 'ledger_transaction_create';
+
+    // For Ledger merchant balance
+    const LEDGER_ENTRY      = 'ledger_entry';
+    const ACCOUNT_ENTITIES  = 'account_entities';
+    const ACCOUNT_TYPE      = 'account_type';
+    const FUND_ACCOUNT_TYPE = 'fund_account_type';
+    const PAYABLE           = 'payable';
+    const MERCHANT_VA       = 'merchant_va';
+    const BALANCE           = 'balance';
 
     /**
      * @param array $payload
@@ -85,6 +104,102 @@ class Base extends Core
                 TraceCode::LEDGER_JOURNAL_STREAMING_FAILED,
                 $payload);
         }
+    }
+
+    /**
+     * This function is used to call the Ledger service for any transactor event.
+     * This call shall tell ledger to create a new journal entry, ledger entry and adjust the balance/Chart of Accounts
+     * Please extend this function in child classes if exceptions are to be handled in a custom way.
+     *
+     * @param array $payload
+     *
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    public function createJournalEntry(array $payload)
+    {
+        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST, $payload);
+
+        try
+        {
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->setIdempotencyKey(Uuid::uuid1());
+            $response = $ledgerService->createJournal($payload, true);
+        }
+        catch (\RZP\Exception\RuntimeException $e)
+        {
+            $exceptionData = $e->getData();
+
+            // If it's an insufficient balance case, convert to a new BadRequestException
+            if (strpos($exceptionData['msg'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
+
+                throw new BadRequestException(
+                    Errorcode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+                    null,
+                    $exceptionData
+                );
+            }
+            // If it's a validation failure, convert to a new BadRequestValidationFailureException
+            else if (strpos($exceptionData['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
+
+                throw new BadRequestValidationFailureException(
+                    Errorcode::BAD_REQUEST_VALIDATION_FAILURE,
+                    null,
+                    $exceptionData
+                );
+            }
+            else
+            {
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
+
+                throw $e;
+            }
+        }
+
+        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $response);
+
+        return $response;
+    }
+
+    /**
+     * Get merchant balance from ledger response
+     *
+     * @param array $ledgerResponse
+     *
+     */
+    public function getMerchantBalanceFromLedger(array $ledgerResponse)
+    {
+        foreach ($ledgerResponse[self::LEDGER_ENTRY] as $key => $value) {
+            if (isset($value[self::ACCOUNT_ENTITIES]) && isset($value[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE]) && isset($value[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE])) {
+                if (($value[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE][0] == self::PAYABLE) && ($value[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0] == self::MERCHANT_VA)) {
+                    return $value[self::BALANCE];
+                }
+            }
+        }
+
+        // throw error if reaches here
+        throw new BadRequestValidationFailureException(
+            Errorcode::LEDGER_MERCHANT_BALANCE_GET_ERROR,
+            null,
+            $ledgerResponse
+        );
+    }
+
+    /**
+     * Create payload for Journal function for fundloading
+     *
+     * @param string $entityId
+     *
+     */
+    public function createPayloadForTransactionEntry(string $entityId, string $entityName, array $ledgerResponse)
+    {
+        return [$entityId, $entityName, $ledgerResponse];
     }
 
     /***

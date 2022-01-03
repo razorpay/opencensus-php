@@ -3,6 +3,8 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
+use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payout\Mode;
@@ -10,7 +12,8 @@ use RZP\Models\Payout\Entity;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
@@ -138,6 +141,42 @@ class Payout extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * Create Journal function for payouts
+     *
+     * @param array $payload
+     *
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function createJournalEntry(array $payload)
+    {
+        try
+        {
+            $response = parent::createJournalEntry($payload);
+        }
+        catch (BadRequestException $e)
+        {
+            // If it's an insufficient balance case, throw a new exception with a new error code
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE)
+            {
+                throw new BadRequestException(
+                    Errorcode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+                    null,
+                    $e->getData()
+                );
+            }
+            else
+            {
+                // We don't want to miss any other form of BadRequestException, just that their error code
+                // will be unchanged.
+                throw $e;
+            }
+        }
+
+        return $response;
     }
 
     protected function updatePayloadForPrePaidSourceAccounts(array &$payload,

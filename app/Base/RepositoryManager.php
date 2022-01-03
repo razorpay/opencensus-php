@@ -27,6 +27,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Repository                          $merchant
  * @property Models\Batch\Repository                             $batch
  * @property Models\BankAccount\Repository                       $bank_account
+ * @property Models\Adjustment\Repository                        $adjustment
  * @property Models\BankTransfer\Repository                      $bank_transfer
  * @property Models\External\Repository                          $external
  * @property Models\Merchant\Account\Repository                  $account
