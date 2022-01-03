@@ -133,7 +133,7 @@ export function sortRepayments(repayments) {
 }
 
 export function getGroupedRepayments(repayments, n) {
-  const sortedRepayments = sortRepayments(repayments).reverse();
+  const sortedRepayments = [...repayments].reverse();
   const groupedRepayments = {};
   const payment_mode_key = {
     PAYMENT_MODE_MANUAL: 'manual',
