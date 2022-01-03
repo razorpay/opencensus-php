@@ -224,7 +224,7 @@ class Service extends Base\Service
 
             foreach ($merchantIds as $merchantId)
             {
-                $this->trace->count(Metric::DOWNTIME_WEBHOOK_ATTEMPTED_COUNT, ['$downtimeType' => $downtimeType]);
+                $this->trace->count(Metric::DOWNTIME_WEBHOOK_ATTEMPTED_COUNT, ['downtime_type' => $downtimeType, 'status' => Status::STARTED]);
 
                 $eventPayload = [
                     ApiEventSubscriber::MAIN        => $downtime,
@@ -232,7 +232,16 @@ class Service extends Base\Service
                     ApiEventSubscriber::WITH        => $sendMerchantDowntimesInWebhooks
                 ];
 
-                $this->app['events']->dispatch('api.payment.downtime.started', $eventPayload);
+                try
+                {
+                    $this->app['events']->dispatch('api.payment.downtime.started', $eventPayload);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_DOWNTIME_CREATE_WEBHOOK_FAILED, ["merchant_id" => $merchantId, "exception" => $e]);
+
+                    $this->trace->count(Metric::DOWNTIME_WEBHOOK_FAILED_COUNT, ['downtime_type' => $downtimeType, 'status' => Status::STARTED]);
+                }
             }
         }
         catch (\Exception $e)
@@ -240,13 +249,15 @@ class Service extends Base\Service
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::PAYMENT_DOWNTIME_CREATE_WEBHOOK_FAILED
+                TraceCode::PAYMENT_DOWNTIME_CREATE_WEBHOOK_JOB_FAILED
             );
         }
     }
 
     public function eventDowntimeResolved(Entity $downtime, $lastSeverity=null)
     {
+        $downtimeType = ($downtime->getMerchantId() === null) ? DowntimeService::PLATFORM : DowntimeService::MERCHANT;
+
         try {
             $merchantIds = [];
             // @see getMerchantsSubscribingToWebhookEvent method.
@@ -269,13 +280,24 @@ class Service extends Base\Service
 
             foreach ($merchantIds as $merchantId)
             {
+                $this->trace->count(Metric::DOWNTIME_WEBHOOK_ATTEMPTED_COUNT, ['downtime_type' => $downtimeType, 'status' => Status::RESOLVED]);
+
                 $eventPayload = [
                     ApiEventSubscriber::MAIN        => $downtime,
                     ApiEventSubscriber::MERCHANT_ID => $merchantId,
                     ApiEventSubscriber::WITH        => $sendMerchantDowntimesInWebhooks
                 ];
 
-                $this->app['events']->dispatch('api.payment.downtime.resolved', $eventPayload);
+                try
+                {
+                    $this->app['events']->dispatch('api.payment.downtime.resolved', $eventPayload);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_DOWNTIME_RESOLVE_WEBHOOK_FAILED, ["merchant_id" => $merchantId, "exception" => $e]);
+
+                    $this->trace->count(Metric::DOWNTIME_WEBHOOK_FAILED_COUNT, ['downtime_type' => $downtimeType, 'status' => Status::RESOLVED]);
+                }
             }
         }
         catch (\Exception $e)
@@ -283,7 +305,7 @@ class Service extends Base\Service
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::PAYMENT_DOWNTIME_RESOLVE_WEBHOOK_FAILED
+                TraceCode::PAYMENT_DOWNTIME_RESOLVE_WEBHOOK_JOB_FAILED
             );
         }
     }

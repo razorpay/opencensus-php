@@ -11,7 +11,7 @@ use RZP\Models\Payment\Downtime;
 
 class PaymentDowntimeEvent extends Job
 {
-    const MAX_ALLOWED_ATTEMPTS = 5;
+    const MAX_ALLOWED_ATTEMPTS = 2; // Previously 5
     const RELEASE_WAIT_SECS = 10;
 
     /** {@inheritDoc} */
