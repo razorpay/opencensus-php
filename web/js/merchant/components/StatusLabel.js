@@ -152,6 +152,7 @@ export const tokenStatusMap = {
   initiated: 'label-info',
   rejected: 'label-danger',
   cancelled: 'label-danger',
+  paused: 'label-yellow',
 };
 
 export const offerStatusMap = {
