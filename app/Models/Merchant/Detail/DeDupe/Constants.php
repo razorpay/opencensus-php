@@ -21,6 +21,11 @@ class Constants
     const BLACKLIST = 'blacklist';
     const HIGH_RISK_LIST = 'high_risk_list';
     const AUTHORITIES_LIST = 'authorities_list';
+    const AUTHORITIES_CIN_LIST = 'authorities_CIN_list';
+    const AUTHORITIES_PPAN_LIST = 'authorities_PPAN_list';
+    const AUTHORITIES_CPAN_LIST = 'authorities_CPAN_list';
+    const AUTHORITIES_GSTIN_LIST = 'authorities_GSTIN_list';
+    const AUTHORITIES_BANK_ACCOUNT_LIST = 'authorities_bank_account_list';
 
     const EXACT_MATCH = 'exact_match';
     const FUZZY_MATCH = 'fuzzy_match';
@@ -36,30 +41,35 @@ class Constants
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
                 self::BLACKLIST,
+                self::AUTHORITIES_PPAN_LIST,
             ],
             'config_key' => 'promoter_pan'
         ],
         Detail\Entity::COMPANY_PAN => [
             'lists' => [
                 self::BLACKLIST,
+                self::AUTHORITIES_CPAN_LIST,
             ],
             'config_key' => 'company_pan'
         ],
         Detail\Entity::COMPANY_CIN => [
             'lists' => [
                 self::BLACKLIST,
+                self::AUTHORITIES_CIN_LIST,
             ],
             'config_key' => 'cin'
         ],
         Detail\Entity::GSTIN => [
             'lists' => [
                 self::BLACKLIST,
+                self::AUTHORITIES_GSTIN_LIST,
             ],
             'config_key' => 'gstin'
         ],
         Detail\Entity::BANK_ACCOUNT_NUMBER => [
             'lists' => [
                 self::BLACKLIST,
+                self::AUTHORITIES_BANK_ACCOUNT_LIST,
             ],
             'config_key' => 'bank_account_number'
         ],
@@ -130,8 +140,26 @@ class Constants
         ],
         [
             'keysToCheck' => [
+                Detail\Entity::PROMOTER_PAN => [
+                    'list' => self::AUTHORITIES_PPAN_LIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
                 Detail\Entity::COMPANY_PAN => [
                     'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::COMPANY_PAN => [
+                    'list' => self::AUTHORITIES_CPAN_LIST,
                     'matchType'=> self::EXACT_MATCH,
                 ]
             ],
@@ -148,8 +176,26 @@ class Constants
         ],
         [
             'keysToCheck' => [
+                Detail\Entity::COMPANY_CIN => [
+                    'list' => self::AUTHORITIES_CIN_LIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
                 Detail\Entity::GSTIN => [
                     'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::GSTIN => [
+                    'list' => self::AUTHORITIES_GSTIN_LIST,
                     'matchType'=> self::EXACT_MATCH,
                 ]
             ],
@@ -165,6 +211,15 @@ class Constants
                     'list' => self::BLACKLIST,
                     'matchType'=> self::EXACT_MATCH,
                 ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BANK_ACCOUNT_NUMBER => [
+                    'list' => self::AUTHORITIES_BANK_ACCOUNT_LIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ],
             ],
             self::ACTION => self::DEACTIVATE
         ],
