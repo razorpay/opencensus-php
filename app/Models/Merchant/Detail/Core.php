@@ -2509,6 +2509,10 @@ class Core extends Base\Core
      */
     public function sendNeedsClarificationEmail(Merchant\Entity $merchant)
     {
+        if($merchant->getEmail() == null){
+            return;
+        }
+
         $notificationBlocked = (new PartnerCore())->isSubMerchantNotificationBlocked($merchant->getId());
 
         if ($notificationBlocked === true)
@@ -3842,6 +3846,10 @@ class Core extends Base\Core
 
     public function sendRejectionEmail($merchant)
     {
+        if($merchant->getEmail() == null){
+            return;
+        }
+
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
         $data = [
