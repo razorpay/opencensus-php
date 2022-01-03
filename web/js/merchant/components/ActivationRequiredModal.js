@@ -12,6 +12,7 @@ export default ({ onCloseClick, user }) => {
   } else {
     modalTitle = `${activationName} Required`;
   }
+  const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
 
   let modalBody = (
     <div>
@@ -22,7 +23,7 @@ export default ({ onCloseClick, user }) => {
           : `Please fill and submit the ${activationName} Form to access live mode.`}
         {!user.isOrgAxis ? (
           <div class="Modal__actions text-right">
-            <NavLink to="/activation" onClick={onCloseClick}>
+            <NavLink to={activationUrl} onClick={onCloseClick}>
               <button class="btn btn-primary btn-block">Fill {activationName} Form</button>
             </NavLink>
           </div>

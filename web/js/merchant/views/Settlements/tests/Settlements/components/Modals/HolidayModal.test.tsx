@@ -40,5 +40,5 @@ test('should render heading and action button, holiday list and close on clickin
   await delay();
   const rowsLength = container.getElementsByTagName('tr').length;
 
-  expect(rowsLength).toBe(SettlementsDB.holidaysList[2021].length + 1);
+  expect(rowsLength).toBe(SettlementsDB.holidaysList[2022].length + 1);
 });

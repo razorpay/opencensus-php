@@ -350,7 +350,8 @@ export default class ActivationContainer extends React.Component {
                     this.props.updateSession({ mode: 'live' });
                   }
                   this.updateSession(res.data);
-                  this.props.setActivationFormLoadingState(); //false loading state
+                  if (!this.props.isModalView) this.props.closeModal();
+                  else this.props.setActivationFormLoadingState(); //false loading state
                   this.setState({ showSuccessScreen: true });
                 } else if (
                   res?.data &&
@@ -359,7 +360,8 @@ export default class ActivationContainer extends React.Component {
                   )
                 ) {
                   this.updateSession(res.data);
-                  this.props.setActivationFormLoadingState(); //false loading state
+                  if (!this.props.isModalView) this.props.closeModal();
+                  else this.props.setActivationFormLoadingState(); //false loading state
                   if (this.props.user.autoOpenL2Form && res?.data && !res.data.activated) {
                     this.props.trackEvents({
                       objectName: 'Auto Open L2 form on not instantly activated',
@@ -378,7 +380,8 @@ export default class ActivationContainer extends React.Component {
                   }
                 } else {
                   this.updateSession(res.data);
-                  this.props.setActivationFormLoadingState(); //false lodaing state
+                  if (!this.props.isModalView) this.props.closeModal();
+                  else this.props.setActivationFormLoadingState(); //false loading state
                   // if poi status not changed reload the page
                   this.props.history.replace(`/`);
                 }

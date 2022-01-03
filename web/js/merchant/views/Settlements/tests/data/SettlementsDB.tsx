@@ -159,17 +159,17 @@ const settlementsListRefundData = [
 ];
 
 const holidaysList = {
-  2021: [
+  2022: [
     {
-      date: '26/01/2021',
+      date: '26/01/2022',
       description: 'Republic Day',
     },
     {
-      date: '19/02/2021',
+      date: '19/02/2022',
       description: 'Chhatrapati Shivaji Maharaj Jayanti',
     },
     {
-      date: '25/12/2021',
+      date: '25/12/2022',
       description: 'Christmas',
     },
   ],

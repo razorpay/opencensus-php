@@ -1695,8 +1695,13 @@ const uploadFields = [
     required: (activation) => isAdditonalDocRequired(activation.state, activation.props),
   },
   {
+    getLabel: (activation) => (activation.isOnKYCTab() ? 'Contact Email' : ''),
     name: 'contact_email',
+    type: 'email',
+    info: () =>
+      this.isOnKYCTab() ? 'We will reach out to this email for any account related issues.' : '',
     customField: (activation) =>
+      !activation.isOnKYCTab() &&
       activation.props.user.isEmailNonMandatoryOnL2Form &&
       !activation.props.user.user?.signup_via_email,
     _autoRenderImpure: true,
@@ -1713,10 +1718,11 @@ const uploadFields = [
     _when: (activation) => {
       const { user } = activation.props;
       return (
-        !activation.isOnKYCTab() &&
-        (user.activation_form_milestone === 'L1' || (user?.submitted && user.user?.confirmed)) &&
-        user.isEmailNonMandatoryOnL2Form &&
-        !user.user?.signup_via_email
+        (activation.isNeedsClarificationMode() && activation.isOnKYCTab()) ||
+        (!activation.isOnKYCTab() &&
+          (user.activation_form_milestone === 'L1' || (user?.submitted && user.user?.confirmed)) &&
+          user.isEmailNonMandatoryOnL2Form &&
+          !user.user?.signup_via_email)
       );
     },
   },
