@@ -11,7 +11,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\App;
-use RZP\Models\Feature\Constants as Feature;
 use Razorpay\Spine\Exception\DbQueryException;
 
 abstract class AbstractTransfer
@@ -97,12 +96,7 @@ abstract class AbstractTransfer
 
             foreach ($transfers as $transfer)
             {
-                $acquireMutexLock = $mutexKey = null;
-
-                if ($this->merchant->isFeatureEnabled(Feature::TRANSFER_PROCESS_LA_MUTEX) === true)
-                {
-                    [$acquireMutexLock, $mutexKey] = $this->acquireMutexLock($transfer);
-                }
+                [$acquireMutexLock, $mutexKey] = $this->acquireMutexLock($transfer);
 
                 try
                 {
