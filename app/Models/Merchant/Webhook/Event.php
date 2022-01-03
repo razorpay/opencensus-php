@@ -497,11 +497,11 @@ class Event
         self::ZAPIER_PAYMENT_PAGE_PAID_V1                 => 40,
         self::PAYMENT_PENDING                             => 41,
         self::PAYOUT_LINK_EXPIRED                         => 42,
-        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1             => 43,
         self::TOKEN_SERVICE_PROVIDER_ACTIVATED            => 43,
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => 44,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => 45,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => 46,
+        self::SHIPROCKET_PAYMENT_PAGE_PAID_V1             => 47,
     ];
 
     /**
