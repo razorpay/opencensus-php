@@ -11318,7 +11318,7 @@ return [
                 'rtb' => true,
                 'rtb_experiment' => [
                     'experiment' => true,
-                    'variant'   => 'old_user'
+                    'variant'   => 'not_applicable'
                 ],
             ],
         ],

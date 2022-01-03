@@ -202,7 +202,7 @@ class Core extends Base\Core
             {
                 return [
                     'experiment' => true,
-                    'variant'    => 'old_user',
+                    'variant'    => 'not_applicable',
                 ];
             }
 
@@ -443,13 +443,13 @@ class Core extends Base\Core
 
             $response = $this->app['splitzService']->evaluateRequest($properties);
 
-            return $response['response']['variant']['name'] ?? 'old_user';
+            return $response['response']['variant']['name'] ?? 'not_applicable';
         }
         catch(\Exception $e)
         {
             $this->trace->traceException($e, null, TraceCode::RTB_SPLITZ_ERROR);
 
-            return 'old_user';
+            return 'not_applicable';
         }
     }
 

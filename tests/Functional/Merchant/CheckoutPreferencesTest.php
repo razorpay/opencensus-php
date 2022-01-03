@@ -2324,7 +2324,7 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertEquals(true, $response['rtb_experiment']['experiment']);
 
-        $this->assertEquals('old_user', $response['rtb_experiment']['variant']);
+        $this->assertEquals('not_applicable', $response['rtb_experiment']['variant']);
     }
 
     public function testRTBExperimentMerchantList()
