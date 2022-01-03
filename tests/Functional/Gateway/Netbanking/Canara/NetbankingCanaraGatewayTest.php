@@ -37,6 +37,8 @@ class NetbankingCanaraGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_canara_terminal');
+
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
     }
 
     public function testPayment()
