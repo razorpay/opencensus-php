@@ -319,9 +319,16 @@ class Service extends Base\Service
 
     public function closeVirtualAccountsByCloseBy()
     {
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CLOSE_REQUEST);
+
         $virtualAccountIds = $this->repo
                                 ->virtual_account
                                 ->fetchVirtualAccountsToBeClosed();
+
+        $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CLOSE_ACCOUNTS_FETCHED,
+                           [
+                               'count' => sizeof($virtualAccountIds),
+                           ]);
 
         $success = $failure = 0;
 
