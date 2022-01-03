@@ -67,7 +67,7 @@ class UserRoleBasedResponseFilter
         {
             $routeName = $this->router->currentRouteName();
 
-            $userRole =  Role::OWNER;
+            $userRole =  $this->ba->getUserRole()??Role::OWNER;
 
             if ($this->isFilterRequired($routeName, $userRole))
             {
@@ -99,6 +99,8 @@ class UserRoleBasedResponseFilter
         $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
                                                RazorxTreatment::RESPONSE_FIELDS_FILTERING_FOR_ROLES,
                                                $this->ba->getMode(), 2);
+
+        $this->trace->info(TraceCode::FILTER_RESPONSE_BASED_ON_ROLE,['variant'=>$variant,'userRole'=>$userRole]);
 
         if ((strtolower($variant) === 'on')===false)
         {

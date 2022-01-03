@@ -1099,6 +1099,9 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
             Role::ADMIN,
             Role::MANAGER,
             Role::OPERATIONS,
+            Role::FINANCE,
+            Role::SUPPORT,
+            Role::SELLERAPP
         ],
         self::MERCHANT_ENTITY                          => [
             Role::OWNER,
@@ -1686,7 +1689,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
-            Role::SELLERAPP
         ],
         self::IS_SUB_MERCHANT                          => [
             Role::OWNER,
@@ -1901,6 +1903,15 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_SUB_STATUS               => [
+            Role::OWNER,
+            Role::ADMIN,
+            Role::MANAGER,
+            Role::OPERATIONS,
+            Role::FINANCE,
+            Role::SUPPORT,
+            Role::SELLERAPP
+        ],
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES                 => [
             Role::OWNER,
             Role::ADMIN,
             Role::MANAGER,

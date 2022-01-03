@@ -296,7 +296,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function acceptInvite(array $user, array $invitation = null)
+    protected function acceptInvite($user, array $invitation = null)
     {
         $invitationAcceptInput = [
             Invitation\Entity::USER_ID => $user[Entity::ID],
