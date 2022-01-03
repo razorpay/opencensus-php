@@ -3462,6 +3462,8 @@ class DisputeTest extends TestCase
 
     public function testPaymentIdNotFound()
     {
+        $this->testData[__FUNCTION__]['request']['content'][0]['txn_date'] = date("d/m/Y");
+
         $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('741107512600331562950201')"],
                                 [null, []]);
 
