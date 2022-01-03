@@ -56,10 +56,22 @@ class Metrics
         return [
             Constants::LABEL_HTTP_REQUESTS_PRODUCT     => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
             Constants::LABEL_HTTP_REQUESTS_METHOD      => $request->getMethod()                         ?? 'unknown_method',
-            Constants::LABEL_HTTP_REQUESTS_STATUS      => $response->getStatusCode()                    ?? 'unknown_status',
+            Constants::LABEL_HTTP_REQUESTS_STATUS      => $this->getStatusCode($response),
             Constants::LABEL_HTTP_REQUESTS_ROUTE       => $request->route() !== null ? $request->route()->getName() : 'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_CONTROLLER  => $request->route() !== null ? $request->route()->getAction()['controller']  : 'unknown_controller',
         ];
+    }
+
+    protected function getStatusCode($response)
+    {
+        $data = method_exists($response, 'getData') ? $response->getData() : null;
+
+        if (isset($data->http_status_code) === true)
+        {
+           return $data->http_status_code;
+        }
+
+        return  $response->getStatusCode() ?? 'unknown_status';
     }
 
     static function millitime(): int

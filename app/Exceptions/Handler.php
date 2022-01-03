@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -120,9 +121,9 @@ class Handler extends ExceptionHandler
         {
             $response = Response::json(self::RESPONSE_404, 404);
         }
-        else if ($e instanceof MethodNotFoundException)
+        else if ($e instanceof MethodNotAllowedHttpException)
         {
-            $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]]);
+            $response = Response::json(['success' => false, 'errors' => [self::METHOD_NOT_ALLOWED]], 405);
         }
         else if ($e instanceof AuthorizationException)
         {
@@ -151,7 +152,11 @@ class Handler extends ExceptionHandler
         }
         else if ($e instanceof BadRequestError)
         {
-            $response = Response::json(['success' => false, 'errors' => [$e->getMessage()]]);
+            $response = Response::json([
+                'http_status_code' => $e->getHttpStatusCode(),
+                'success'          => false,
+                'errors'           => [$e->getMessage()]]
+            );
         }
         else
         {
@@ -165,10 +170,24 @@ class Handler extends ExceptionHandler
             // Debugging Unauthorized exception
             $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context]);
 
+            // adding this status to push status code on prometheus
+            $data['http_status_code'] = $this->getStatusCodeForUnhandledException($e);
+
             $response = Response::json($data);
         }
 
         return $response;
+    }
+
+    protected function getStatusCodeForUnhandledException(Exception $e)
+    {
+        if (($e instanceof Exception) and 
+            ($e->getMessage() === 'Unauthorized Access'))
+        {
+            return 401;
+        }
+
+        return 500;
     }
 
     protected function isDebug()
