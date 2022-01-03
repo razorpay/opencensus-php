@@ -46,6 +46,8 @@ export default {
           skip,
           product_entity_reference_id,
           product_entity_type: COLLECTIONS_PRODUCT_ENTITY_TYPE.DISBURSAL,
+          order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
+          order_by_type: 'ORDER_BY_TYPE_ASC',
         },
       },
       'get',
