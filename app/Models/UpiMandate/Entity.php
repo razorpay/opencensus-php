@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
 
     // Input keys
     const VPA                  = 'vpa';
+    const FLOW                 = 'flow';
 
     protected $entity = 'upi_mandate';
 
@@ -209,6 +210,28 @@ class Entity extends Base\PublicEntity
         $gatewayData = $this->getGatewayData();
 
         $gatewayData[self::VPA] = $value;
+
+        return $this->setGatewayData($gatewayData);
+    }
+
+    /**
+     * Sets the FLOW in Gateway Data
+     *
+     * @param  string|null $flow
+     * @return mixed|Entity|void
+     */
+    public function setFlow(?string $flow)
+    {
+        if (is_null($flow) === true)
+        {
+            return;
+        }
+
+        // As of now we do not have any other field to save FLOW for Mandate, which is very
+        // important for analytics and debugging, thus we will save FLOW in Gateway Data for now
+        $gatewayData = $this->getGatewayData();
+
+        $gatewayData[self::FLOW] = $flow;
 
         return $this->setGatewayData($gatewayData);
     }

@@ -2294,6 +2294,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                ($this->isSecondRecurring()));
     }
 
+    /**
+     * @return bool
+     */
+    public function isUpiIntentRecurring(): bool
+    {
+        return (($this->isUpiRecurring()) and
+                ($this->isFlowIntent()));
+    }
+
     public function isUpiOtm(): bool
     {
         if ($this->isUpi() === false)

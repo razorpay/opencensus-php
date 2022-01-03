@@ -2,8 +2,14 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart\Upi;
 
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base;
+use RZP\Models\UpiMandate;
+use RZP\Models\Customer\Token;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Payment\UpiMetadata\Entity as MetaData;
 
 class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 {
@@ -42,6 +48,33 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
                 'account_number'    =>  '12345678921',
                 'ifsc'              =>  'ICIC0001183'
             ]
+        );
+    }
+
+    public function testRecurringMerchantIdLengths()
+    {
+        //A test to avoid any human error in merchantIDs list updation.
+        $merchantIds = $this->app['config']->get('gateway.upi_icici.intent_recurring_test_merchants');
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->assertEquals(strlen($merchantId), 14);
+        }
+    }
+
+    // The below testcase is added temporarily to verify the merchant id check works as expected
+    public function testMerchantFilterForRecurringIntent()
+    {
+        $this->app['config']->set('gateway.upi_icici.intent_recurring_test_merchants', ['10000000000001']);
+
+        $this->goWithTheFlow(
+            [
+                'class'     => BadRequestValidationFailureException::class,
+                'message'   => 'Upi recurring does not support intent flow'
+            ],
+            function() {
+                $this->testRecurringMandateCreateViaIntent(false, false, []);
+            }
         );
     }
 
@@ -117,6 +150,91 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
         $this->assertUpiDbLastEntity('payment', [
             'status'    => 'failed'
         ]);
+    }
+
+    // For failure response from Mandate QR API
+    public function testRecurringMandateCreateViaIntentFailed()
+    {
+        // Mock error from Mozart Gateway
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'auth_init')
+            {
+                $content['success'] = false;
+                $content['error'] = [
+                    'internal_error_code'       => ErrorCode::GATEWAY_ERROR_SYSTEM_UNAVAILABLE,
+                    'description'               => 'Service unavailable.',
+                    'gateway_error_code'        => '5009',
+                    'gateway_error_description' => 'Service unavailable.',
+                    'gateway_status_code'       =>  200
+                ];
+                $content['data']['intent_url'] = '';
+                $content['data']['upi']['status_code'] = '5009';
+            }
+        });
+
+        $this->goWithTheFlow(
+            [
+                'class'     => GatewayErrorException::class,
+                'message'   => 'Payment processing failed due to error at bank or wallet gateway'.PHP_EOL.
+                               'Gateway Error Code: 5009'.PHP_EOL.
+                               'Gateway Error Desc: Service unavailable.'
+            ],
+            function() {
+                $this->testRecurringMandateCreateViaIntent(false, false, []);
+            }
+        );
+
+
+        $token = $this->getDbLastEntity('token');
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertArraySubset([
+            MetaData::INTERNAL_STATUS   => 'pending_for_authenticate',
+            MetaData::FLOW              => 'intent',
+            MetaData::VPA               => null
+        ], $upiMetadata->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => null,
+            Token\Entity::VPA_ID           => null
+        ], $token->toArray());
+
+        $this->assertArraySubset([
+            UpiMandate\Entity::CUSTOMER_ID     => '100000customer',
+            UpiMandate\Entity::FREQUENCY       => 'monthly',
+            UpiMandate\Entity::RECURRING_VALUE => 31,
+            UpiMandate\Entity::RECURRING_TYPE  => 'before',
+            UpiMandate\Entity::STATUS          => UpiMandate\Status::CREATED,
+            UpiMandate\Entity::TOKEN_ID        => $token['id'],
+            UpiMandate\Entity::USED_COUNT      => 1,
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'intent',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::VPA           => null,
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'create',
+                'ano'       => 1,
+                'sno'       => 1,
+            ]
+        ], $upi->toArray());
+
+        // Payment should be marked as failed
+        $this->assertArraySubset([
+            Payment\Entity::STATUS              => 'failed',
+            Payment\Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+            Payment\Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_SYSTEM_UNAVAILABLE'
+        ], $payment->toArray());
     }
 
     protected function enableRecurringTpv()

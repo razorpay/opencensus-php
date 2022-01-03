@@ -894,6 +894,25 @@ class Terminal extends Base
         return $this->createSharedUpiIciciTerminal($attributes);
     }
 
+    public function createSharedIciciRecurringIntentTerminal(array $attributes = [])
+    {
+        $termId = Shared::UPI_ICICI_RECURRING_INTENT_TERMINAL;
+
+        $default = [
+            'id'   => $termId,
+            'type' => [
+                Type::RECURRING_3DS     => '1',
+                Type::RECURRING_NON_3DS => '1',
+                Type::PAY               => '1'
+            ],
+            'tpv' => 2
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createSharedUpiIciciTerminal($attributes);
+    }
+
     public function createSharedOlamoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;

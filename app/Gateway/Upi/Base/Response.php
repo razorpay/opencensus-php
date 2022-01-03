@@ -6,11 +6,12 @@ use Illuminate\Support\Collection;
 
 class Response extends Collection
 {
-    const MANDATE   = 'mandate';
-    const UPI       = 'upi';
-    const TERMINAL  = 'terminal';
-    const PAYMENT   = 'payment';
-    const META      = 'meta';
+    const MANDATE       = 'mandate';
+    const UPI           = 'upi';
+    const TERMINAL      = 'terminal';
+    const PAYMENT       = 'payment';
+    const META          = 'meta';
+    const INTENT_URL    = 'intent_url';
 
     const VERSION = 'version';
 
@@ -88,6 +89,19 @@ class Response extends Collection
         }
 
         return $attributes;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIntentUrl(): string
+    {
+        if ($this->isV2() === true)
+        {
+            return $this->get(self::INTENT_URL, '');
+        }
+
+        return '';
     }
 
     public function toArrayTrace(): array

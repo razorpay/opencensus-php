@@ -29,6 +29,8 @@ class Core extends Base\Core
             'new_internal_status'   => $dirty[Entity::INTERNAL_STATUS] ?? null,
             'old_remind_at'         => $original[Entity::REMIND_AT] ?? null,
             'new_remind_at'         => $dirty[Entity::REMIND_AT] ?? null,
+            'old_vpa'               => $original[Entity::VPA] ?? null,
+            'new_vpa'               => $dirty[Entity::VPA] ?? null,
         ];
 
         $this->repo->saveOrFail($metadata);

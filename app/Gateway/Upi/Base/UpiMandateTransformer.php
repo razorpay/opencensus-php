@@ -78,9 +78,7 @@ class UpiMandateTransformer extends UpiTransanformer
                 //$this->item->setStatus(Status::INITIATED);
             }
 
-            $this->item->setUmn($this->response(Mandate::UMN))
-                       ->setRrn($this->response(Mandate::RRN))
-                       ->setNpciTxnId($this->response(Mandate::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse();
         }
         else if ($this->context->getAction() === Action::CALLBACK)
         {
@@ -101,9 +99,7 @@ class UpiMandateTransformer extends UpiTransanformer
                 }
             }
 
-            $this->item->setUmn($this->response(Mandate::UMN))
-                       ->setRrn($this->response(Mandate::RRN))
-                       ->setNpciTxnId($this->response(Mandate::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse();
         }
         else if ($this->context->getAction() === Action::VERIFY)
         {
@@ -114,9 +110,7 @@ class UpiMandateTransformer extends UpiTransanformer
                 $this->item->setStatus(Status::CONFIRMED);
             }
 
-            $this->item->setUmn($this->response(Mandate::UMN))
-                       ->setRrn($this->response(Mandate::RRN))
-                       ->setNpciTxnId($this->response(Mandate::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse();
         }
         else
         {
@@ -127,5 +121,19 @@ class UpiMandateTransformer extends UpiTransanformer
     protected function processResponseForAuthorize()
     {
 
+    }
+
+    /**
+     * Sets the value of UMN, RRN, and NPCI Transaction ID from the response
+     *
+     * @return UpiTransanformer
+     */
+    protected function updateMetadataFromResponse(): UpiTransanformer
+    {
+        $this->item->setUmn($this->response(Mandate::UMN))
+             ->setRrn($this->response(Mandate::RRN))
+             ->setNpciTxnId($this->response(Mandate::NPCI_TXN_ID));
+
+        return $this;
     }
 }

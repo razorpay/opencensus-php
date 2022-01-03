@@ -5465,9 +5465,11 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::UPI;
 
-            $vpa = $this->createVpaEntity($input);
-
-            $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
+            if ($payment->isUpiIntentRecurring() === false)
+            {
+                $vpa = $this->createVpaEntity($input);
+                $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
+            }
 
             // These fields will be set for upi recurring payments. We dont need to have a check for recurring because
             // we are checking if the fields exist. If not values for these in token will be null.
@@ -5567,9 +5569,11 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::UPI;
 
-            $vpa = $this->createVpaEntity($input);
-
-            $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
+            if ($payment->isUpiIntentRecurring() === false)
+            {
+                $vpa = $this->createVpaEntity($input);
+                $saveMethodInput[Token\Entity::VPA_ID] = $vpa[PaymentsUpi\Vpa\Entity::ID];
+            }
 
             // These fields will be set for upi recurring payments. We dont need to have a check for recurring because
             // we are checking if the fields exist. If not values for these in token will be null.
@@ -6019,6 +6023,17 @@ trait Authorize
         {
             $token->setRecurring(true);
             $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
+
+            if (($payment->isFlowIntent() === true) and
+                (is_null($token->getVpaId()) === true) and
+                (empty($data[Entity::UPI][Entity::VPA]) === false))
+            {
+                $vpa = $this->createVpaEntity([
+                    Entity::VPA => $data[Entity::UPI][Entity::VPA]
+                ]);
+
+                $token->setVpaId($vpa[PaymentsUpi\Vpa\Entity::ID]);
+            }
         }
 
         // Not required as we only use terminals through

@@ -633,6 +633,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    /**
+     * Sets the VPA ID
+     *
+     * @param string|null $vpaId
+     */
+    public function setVpaId(?string $vpaId)
+    {
+        if (empty($vpaId) === true)
+        {
+            return;
+        }
+
+        $this->setAttribute(self::VPA_ID, $vpaId);
+    }
+
     public function setRecurringStatus($recurringStatus)
     {
         RecurringStatus::validateRecurringStatus($recurringStatus);

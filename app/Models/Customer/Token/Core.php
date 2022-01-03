@@ -664,6 +664,11 @@ class Core extends Base\Core
             }
         }
 
+        if (is_null($input[Entity::VPA_ID]) === false)
+        {
+            $token->setVpaId($input[Entity::VPA_ID]);
+        }
+
         $this->repo->saveOrFail($token);
 
         $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);

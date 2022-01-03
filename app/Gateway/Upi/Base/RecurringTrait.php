@@ -400,8 +400,13 @@ trait RecurringTrait
             }
         }
 
+        // For first debit (intent) - retrieve the customer VPA from input (i.e. mandate create callback data),
+        // since payment will not have it. This vpa is passed in the $processed array and used to set the vpa
+        // in the payment entity while processing the first debit callback
+        $vpa = $input['payment']['vpa'] ?? $input['upi']['vpa'] ?? null;
+
         $attr = [
-            Entity::VPA           => $input['payment']['vpa'] ?? null,
+            Entity::VPA           => $vpa,
             Entity::TYPE          => $input['upi']['flow'] ?? null,
             Entity::STATUS_CODE   => 'pending',
             Entity::GATEWAY_DATA  => [

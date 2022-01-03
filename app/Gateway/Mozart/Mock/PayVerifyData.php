@@ -857,9 +857,9 @@ class PayVerifyData extends Base\Mock\Server
                 'amount'             => $entities['payment']['amount'],
                 'status'             => 'callback_successful',
                 'umn'                => $entities['payment']['id'] . '@icici',
-                'rrn'                => '012345678912',
+                'rrn'                => $entities['gateway']['redirect']['BankRRN'],
                 'npci_txn_id'        => 'HDFC00001124',
-                'npci_reference_id'  => "011300040570",
+                'npci_reference_id'  => $entities['gateway']['redirect']['BankRRN'],
                 'gateway_data'       => [
                     'id'             => $entities['gateway']['redirect']['merchantTranId'],
                 ]

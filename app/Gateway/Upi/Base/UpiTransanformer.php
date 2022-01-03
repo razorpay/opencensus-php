@@ -44,6 +44,8 @@ abstract class UpiTransanformer
 
     abstract protected function getResponseArray(): array;
 
+    abstract protected function updateMetadataFromResponse(): UpiTransanformer;
+
     public function __construct(Gateway $context, Anomalies $anomalies)
     {
         $this->context = $context;

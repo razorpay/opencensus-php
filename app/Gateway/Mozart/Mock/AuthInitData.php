@@ -103,6 +103,33 @@ class AuthInitData extends Base\Mock\Server
         assertTrue(isset($entities['upi']['remark']));
         assertTrue($entities['upi']['remark'] === 'Test Merchant random description');
 
+        if ($entities['upi']['flow'] === 'intent')
+        {
+            $response = [
+                'data' => [
+                    'terminal' => [
+                        'gateway' => 'upi_icici',
+                    ],
+                    'payment' => [
+                        'currency' => 'INR'
+                    ],
+                    'mandate' => [],
+                    'upi' => [
+                        'status_code' => '0'
+                    ],
+                    'version' => 'v2',
+                    'intent_url' => 'upi://mandate?pa=invaciauat@icici&pn=Invacia Labs&tr=EZM2021082712290200025685&am=1.00&cu=INR&orgid=400011&mc=5411&purpose=14&tn=Mandate787Request&validitystart=20092021&validityend=27082022&amrule=MAX&Recur=ASPRESENTED&Recurvalue=&Recurtype=&Rev=Y&Share=Y&Block=N&umn=null&txnType=CREATE&mode=11'
+                ],
+                'error' => null,
+                'success' => true,
+                'mozart_id' => 'DUMMY_MOZART_ID',
+                'external_trace_id' => 'DUMMY_REQUEST_ID',
+                'next' => [],
+            ];
+
+            return $response;
+        }
+
         $response = [
             'data' =>
                 [

@@ -64,28 +64,35 @@ class UpiMetadataTransformer extends UpiTransanformer
     {
         if ($this->context->getAction() === Action::AUTHENTICATE)
         {
-            $this->item->setVpa($this->upi->getVpa())
-                       ->setUmn($this->response(Metadata::UMN))
-                       ->setRrn($this->response(Metadata::RRN))
-                       ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse()
+                 ->setVpa();
 
             if ($this->isSuccess() === true)
             {
                 $this->item->setInternalStatus(InternalStatus::AUTHENTICATE_INITIATED);
 
-                $this->dataBlock = [
-                    // This is the merchant VPA not the customer VPA which is supposed to
-                    // sent to merchant/customer in the request co proto.
-                    Entity::VPA => $this->response('terminal.vpa'),
-                ];
+                if ($this->isTypeIntent() === true)
+                {
+                    $this->dataBlock = [
+                        // This is the mandate url that needs to be sent in the response
+                        // in case of intent flow for recurring
+                        'intent_url' => $this->response->getIntentUrl()
+                    ];
+                }
+                else
+                {
+                    $this->dataBlock = [
+                        // This is the merchant VPA not the customer VPA which is supposed to
+                        // sent to merchant/customer in the request co proto.
+                        Entity::VPA => $this->response('terminal.vpa'),
+                    ];
+                }
             }
         }
         else if ($this->context->getAction() === Action::CALLBACK)
         {
-            $this->item->setVpa($this->upi->getVpa())
-                       ->setUmn($this->response(Metadata::UMN))
-                       ->setRrn($this->response(Metadata::RRN))
-                       ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse()
+                 ->setVpa();
 
             if ($this->isSuccess() === true)
             {
@@ -100,10 +107,8 @@ class UpiMetadataTransformer extends UpiTransanformer
         }
         else if ($this->context->getAction() === Action::VERIFY)
         {
-            $this->item->setVpa($this->upi->getVpa())
-                ->setUmn($this->response(Metadata::UMN))
-                ->setRrn($this->response(Metadata::RRN))
-                ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse()
+                 ->setVpa();
 
             if ($this->isSuccess() === true)
             {
@@ -122,9 +127,8 @@ class UpiMetadataTransformer extends UpiTransanformer
     {
         if ($this->context->getAction() === Action::DEBIT)
         {
-            $this->item->setUmn($this->response(Metadata::UMN))
-                ->setRrn($this->response(Metadata::RRN))
-                ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse()
+                 ->setVpa();
 
             if ($this->isSuccess() === true)
             {
@@ -138,9 +142,8 @@ class UpiMetadataTransformer extends UpiTransanformer
         }
         else if ($this->context->getAction() === Action::CALLBACK)
         {
-            $this->item->setUmn($this->response(Metadata::UMN))
-                       ->setRrn($this->response(Metadata::RRN))
-                       ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse()
+                 ->setVpa();
 
             if ($this->isSuccess() === true)
             {
@@ -154,9 +157,8 @@ class UpiMetadataTransformer extends UpiTransanformer
         }
         else if ($this->context->getAction() === Action::VERIFY)
         {
-            $this->item->setUmn($this->response(Metadata::UMN))
-                ->setRrn($this->response(Metadata::RRN))
-                ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+            $this->updateMetadataFromResponse()
+                 ->setVpa();
 
             if ($this->isSuccess() === true)
             {
@@ -175,8 +177,9 @@ class UpiMetadataTransformer extends UpiTransanformer
     {
         if ($this->context->getAction() === Action::PRE_DEBIT)
         {
+            $this->setVpa();
+
             $this->item->setUmn($this->response(Metadata::UMN))
-                       ->setVpa($this->upi->getVpa())
                        ->setRrn($this->upi->getNpciReferenceId())
                        ->setNpciTxnId($this->upi->getNpciTransactionId());
 
@@ -239,6 +242,21 @@ class UpiMetadataTransformer extends UpiTransanformer
         return Carbon::now()->addMinutes($remindAfter)->getTimestamp();
     }
 
+    /**
+     * Updates the following attributes of UPI Metadata:
+     *  UMN, RRN, and NPCI Transaction ID
+     *
+     * @return UpiTransanformer
+     */
+    protected function updateMetadataFromResponse(): UpiTransanformer
+    {
+        $this->item->setUmn($this->response(Metadata::UMN))
+             ->setRrn($this->response(Metadata::RRN))
+             ->setNpciTxnId($this->response(Metadata::NPCI_TXN_ID));
+
+        return $this;
+    }
+
     public function toArray()
     {
         $array = parent::toArray();
@@ -258,5 +276,47 @@ class UpiMetadataTransformer extends UpiTransanformer
     public function getDataBlock()
     {
         return $this->dataBlock;
+    }
+
+    /**
+     * @return bool
+     */
+    private function isTypeIntent(): bool
+    {
+        return ($this->upi->getType() === Type::INTENT);
+    }
+
+    /**
+     * @return bool
+     */
+    private function isTypeCollect(): bool
+    {
+        return ($this->upi->getType() === Type::COLLECT);
+    }
+
+    /**
+     * @return UpiTransanformer
+     */
+    private function setVpa(): UpiTransanformer
+    {
+        $vpa = $this->upi->getVpa() ?? $this->response('upi.vpa') ?? null;
+
+        // VPA should not be null in the following cases:
+        //  if the flow is collect
+        //  if the flow is intent and the transaction is beyond mandate create response
+        if (is_null($vpa))
+        {
+            if (($this->isTypeCollect() === true) or
+                ($this->isTypeIntent() === true and $this->context->getAction() !== Action::AUTHENTICATE))
+            {
+                $this->anomalies->missing(Entity::VPA);
+            }
+
+            $vpa = '';
+        }
+
+        $this->item->setVpa($vpa);
+
+        return $this;
     }
 }

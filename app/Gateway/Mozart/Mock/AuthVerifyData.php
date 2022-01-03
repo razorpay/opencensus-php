@@ -70,6 +70,9 @@ class AuthVerifyData extends Base\Mock\Server
                 'npci_txn_id'     => 'HDFC00001124',
                 'gateway_data'    => [
                     'id'          => $entities['gateway']['redirect']['merchantTranId'],
+                ],
+                'upi'             => [
+                    'vpa'           => $entities['gateway']['redirect']['PayerVA']
                 ]
             ],
         ];

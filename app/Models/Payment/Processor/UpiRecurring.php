@@ -15,6 +15,7 @@ use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\PaymentsUpi\Vpa as Vpa;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Models\UpiMandate\Entity as Mandate;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
@@ -1068,6 +1069,10 @@ trait UpiRecurring
 
         $status = array_pull($attributes, 'status');
 
+        $metadata = $payment->getUpiMetadata();
+
+        $vpa = $data['upi'][UpiMetadata\Entity::VPA] ?? null;
+
         $upiMandate->edit($attributes);
 
         if ($status !== null)
@@ -1078,7 +1083,7 @@ trait UpiRecurring
             if (($prevStatus === UpiMandate\Status::CREATED) and
                 ($status === UpiMandate\Status::CONFIRMED))
             {
-                $upiMandate->setVpa($data['upi'][UpiMetadata\Entity::VPA] ?? null);
+                $upiMandate->setVpa($vpa);
                 $upiMandate->setLateConfirmed($wasFailed);
                 $confirmed = true;
             }
@@ -1088,6 +1093,10 @@ trait UpiRecurring
             {
                 $tokenRejected = true;
             }
+
+            $flow = $metadata->getFlow();
+
+            $this->updateUpiMandateFlowIfApplicable($upiMandate, $flow);
         }
 
         (new UpiMandate\Core)->update($upiMandate);
@@ -1121,9 +1130,12 @@ trait UpiRecurring
             $newStatus = UpiMetadata\InternalStatus::FAILED;
         }
 
+        $vpaId = $this->updateMetadataAndCreateVpaEntityIfApplicable($metadata, $token, $vpa);
+
         if ($tokenInitiated === true)
         {
             (new Token\Core)->updateTokenForUpi($token, [
+                Token\Entity::VPA_ID            => $vpaId,
                 Token\Entity::RECURRING_STATUS  => Token\RecurringStatus::INITIATED,
             ]);
         }
@@ -1131,19 +1143,66 @@ trait UpiRecurring
         else if ($tokenRejected === true)
         {
             (new Token\Core)->updateTokenForUpi($token, [
+                Token\Entity::VPA_ID                   => $vpaId,
                 Token\Entity::RECURRING_STATUS         => Token\RecurringStatus::REJECTED,
                 Token\Entity::RECURRING_FAILURE_REASON => $payment->getErrorDescription(),
+            ]);
+        }
+        else if ((is_null($token->getVpaId()) === true) and
+                 (is_null($vpaId) === false))
+        {
+            (new Token\Core)->updateTokenForUpi($token, [
+                Token\Entity::VPA_ID            => $vpaId,
+                Token\Entity::RECURRING_STATUS  => $token->getRecurringStatus(),
             ]);
         }
 
         if (is_null($newStatus) === false)
         {
-            $metadata = $payment->getUpiMetadata();
-
             $metadata->setInternalStatus($newStatus);
+        }
 
+        // Since the internal_status and flow in metadata are updated separately,
+        // so we'll make the DB call only in case some value was updated
+        if ($metadata->isDirty() === true)
+        {
             (new UpiMetadata\Core)->update($metadata);
         }
+    }
+
+    /**
+     * If the flow is Intent:
+     * - Creates VPA Entity and returns the VPA ID, if Token Entity has no VPA associated to it
+     * - Saves the customer VPA in the UPI Metadata Entity, if not present already
+     *
+     * @param Metadata $metadata
+     * @param Token\Entity $token
+     * @param string|null $vpa
+     * @return mixed|null VPA ID (only if the VPA Entity is created)
+     */
+    protected function updateMetadataAndCreateVpaEntityIfApplicable(UpiMetadata\Entity $metadata, Token\Entity $token, ?string $vpa)
+    {
+        $vpaId = null;
+
+        if (($metadata->isFlowIntent() === true) and
+            (empty($vpa) === false))
+        {
+            if (empty($metadata->getVpa()) === true)
+            {
+                $metadata->setVpa($vpa);
+            }
+
+            if (is_null($token->getVpaId()) === true)
+            {
+                $vpaEntity = $this->createVpaEntity([
+                    Vpa\Entity::VPA => $vpa
+                ]);
+
+                $vpaId = $vpaEntity[Vpa\Entity::ID];
+            }
+        }
+
+        return $vpaId;
     }
 
     protected function processUpiRecurringFailureIfApplicable(Entity $payment, $data)
@@ -1188,5 +1247,22 @@ trait UpiRecurring
         }
 
         $input['upi']['expiry_time'] = 5;
+    }
+
+    /**
+     * Sets the Flow in GatewayData in UPI Mandate, if not already set
+     *
+     * @param Mandate $upiMandate
+     * @param string|null $flow
+     */
+    protected function updateUpiMandateFlowIfApplicable(UpiMandate\Entity $upiMandate, ?string $flow): void
+    {
+        $gatewayData = $upiMandate->getGatewayData() ?? [];
+
+        if ((isset($flow) === true) and
+            (isset($gatewayData[UpiMandate\Entity::FLOW]) === false))
+        {
+            $upiMandate->setFlow($flow);
+        }
     }
 }

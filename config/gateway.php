@@ -436,14 +436,15 @@ return [
     ],
 
     'upi_icici' => [
-        'test_merchant_id'              => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_public_key'               => env('UPI_ICICI_TEST_PUBLIC_KEY'),
-        'test_private_key'              => env('UPI_ICICI_TEST_PRIVATE_KEY'),
-        'live_merchant_id'              => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
-        'live_public_key'               => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
-        'live_private_key'              => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
-        'ut_test_private_key'           => env('UPI_ICICI_UPI_TRANSFER_TEST_PRIVATE_KEY'),
-        'ut_live_private_key'           => env('UPI_ICICI_UPI_TRANSFER_LIVE_PRIVATE_KEY'),
+        'test_merchant_id'                  => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_public_key'                   => env('UPI_ICICI_TEST_PUBLIC_KEY'),
+        'test_private_key'                  => env('UPI_ICICI_TEST_PRIVATE_KEY'),
+        'live_merchant_id'                  => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_public_key'                   => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
+        'live_private_key'                  => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
+        'ut_test_private_key'               => env('UPI_ICICI_UPI_TRANSFER_TEST_PRIVATE_KEY'),
+        'ut_live_private_key'               => env('UPI_ICICI_UPI_TRANSFER_LIVE_PRIVATE_KEY'),
+        'intent_recurring_test_merchants'   => ['FBYspBmKlWefX9', '10000000000000'],
     ],
 
     'upi_axis' => [

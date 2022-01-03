@@ -131,6 +131,8 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
     public function testCreateIntentRecurringPayment()
     {
+        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_intent_terminal');
+
         $orderId = $this->createUpiRecurringOrder();
 
         $payment = $this->getDefaultUpiRecurringPaymentArray();
@@ -141,12 +143,32 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         $payment['_']['flow'] = 'intent';
 
-        $data = $this->testData[__FUNCTION__];
+        $response = $this->doAuthPayment($payment);
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        // Just to validate that a proper coproto is being send
+        $this->assertArraySubset([
+            'type'      => 'intent',
+            'request'   => [
+                'method' => 'get'
+            ],
+        ], $response);
 
-            $this->doAuthPayment($payment);
-        });
+        $this->assertFalse(empty($response['data']['intent_url']), 'Intent URL not set in the response');
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertEquals($upiMandate['token_id'], $token['id']);
+
+        $this->assertEquals($upiMandate['customer_id'], $token['customer_id']);
+
+        $this->assertEquals('intent', $upiMetadata['flow']);
+
+        $this->assertEquals('created', $upiMandate['status']);
+
     }
 
     public function testCreateRecurringWithInvalidOrder()

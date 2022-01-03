@@ -172,7 +172,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',
             'reference1'    => 'HDFC00001124',
-            'reference16'   => '011300040570',
+            'reference16'   => '019721040510',
         ], false);
 
         $this->assertUpiDbLastEntity('upi', [
@@ -181,6 +181,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_payment_id'    => 'GatewayPaymentIdDebit',
             'status_code'           => '0',
             'npci_txn_id'           => 'HDFC00001124',
+            'npci_reference_id'     => '019721040510',
         ]);
     }
 
@@ -433,7 +434,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',
             'reference1'    => 'HDFC00001124',
-            'reference16'   => '011300040570',
+            'reference16'   => '019721040510',
         ], false);
 
 
@@ -450,6 +451,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_payment_id'    => 'GatewayPaymentIdDebit',
             'status_code'           => '0',
             'npci_txn_id'           => 'HDFC00001124',
+            'npci_reference_id'     => '019721040510',
         ]);
     }
 
@@ -1151,7 +1153,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',
             'reference1'    => 'HDFC00001124',
-            'reference16'   => '011300040570',
+            'reference16'   => '019721040510',
         ], false);
 
         $this->assertUpiDbLastEntity('upi', [
@@ -1160,6 +1162,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_payment_id'    => 'GatewayPaymentIdDebit',
             'status_code'           => '0',
             'npci_txn_id'           => 'HDFC00001124',
+            'npci_reference_id'     => '019721040510',
         ]);
 
         $this->assertUpiDbLastEntity('upi_mandate', [
@@ -1364,7 +1367,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->assertUpiDbLastEntity('payment', [
             'status'        => 'captured',
             'reference1'    => 'HDFC00001124',
-            'reference16'   => '011300040570',
+            'reference16'   => '019721040510',
         ], false);
 
         $this->assertUpiDbLastEntity('upi', [
@@ -1373,6 +1376,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'gateway_payment_id'    => 'GatewayPaymentIdDebit',
             'status_code'           => '0',
             'npci_txn_id'           => 'HDFC00001124',
+            'npci_reference_id'     => '019721040510',
         ]);
 
         $this->assertUpiDbLastEntity('upi_mandate', [

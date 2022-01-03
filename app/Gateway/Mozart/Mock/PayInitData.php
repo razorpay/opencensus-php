@@ -897,7 +897,6 @@ class PayInitData extends Base\Mock\Server
                     'npci_txn_id'           => 'HDF542de25ds56ad9896ac96cef89475623', // txnId
                     'npci_reference_id'     => '011300040570',                        // custRefNo
                     'gateway_payment_id'    => 'GatewayPaymentIdDebit',
-                    'vpa'                   => $entities['payment']['vpa'] ?? 'some@hdfcbank',           // payerVPA
                     'mandateStatus'         => 'PENDING',
                     'reqStatus'             => 'S',
                     'message'               => 'Mandate Request Initiated to NPCI',
