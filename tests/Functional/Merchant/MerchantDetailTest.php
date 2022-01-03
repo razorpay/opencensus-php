@@ -8,9 +8,11 @@ use Config;
 use Mockery;
 
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Core;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
@@ -3322,6 +3324,148 @@ We look forward to transacting with you!
         ];
 
         $this->checkCanSubmitForAutoKycVerificationStatus($input, 'testSubmit');
+    }
+
+    protected function createMerchantDataForGstinSelfServe($merchantCreated = false)
+    {
+        if ($merchantCreated === true)
+        {
+            $this->fixtures->edit('merchant', '10000000000000', [
+                'activated'    => 1,
+                'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+                'invoice_code' => 'hello1234567',
+            ]);
+
+            $this->fixtures->on('live')->create('methods:default_methods', [
+                'merchant_id' => '1cXSLlUU8V9sXl'
+            ]);
+
+            $this->fixtures->create('merchant_detail', [
+                'merchant_id'                 => '10000000000000',
+                'promoter_pan_name'           => 'randomLegalName',
+                'gstin'                       => 'abcdefghijklmno',
+                'business_name'               => 'randomTradeName',
+                'business_registered_address' => '1302, 13, Test, 18 B G KHER ROAD',
+                'business_registered_pin'     => '451111',
+                'business_registered_city'    => 'Pune',
+                'business_registered_state'   => 'MP'
+            ]);
+
+            $this->fixtures->create(
+                'payout',
+                [
+                    'channel'         => 'icici',
+                    'amount'          => 1000,
+                    'pricing_rule_id' => '1nvp2XPMmaRLxb',
+                ]);
+
+            $this->ba->privateAuth();
+
+            // NB payment
+            $this->fixtures->create('terminal:shared_netbanking_pnb_terminal');
+        }
+
+        // Card payment less than 2k
+        $p1 = $this->getDefaultPaymentArray();
+
+        $p1['amount'] = 50000;
+
+        $p1 = $this->doAuthAndCapturePayment();
+
+        $this->fixtures->edit('payment', $p1['id'], [
+            'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
+        ]);
+
+        // Card payment greater than 2k
+        $p2 = $this->getDefaultPaymentArray();
+
+        $p2['amount'] = 234000;
+
+        $p2 = $this->doAuthAndCapturePayment($p2);
+
+        $this->fixtures->edit('payment', $p2['id'], [
+            'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
+        ]);
+    }
+
+    protected function createMerchantAndInvoiceData()
+    {
+        $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createMerchantDataForGstinSelfServe();
+
+        $newDateTime = Carbon::create(2018, 2, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($newDateTime);
+
+        $this->createMerchantDataForGstinSelfServe(true);
+
+        Carbon::setTestNow();
+
+        $this->ba->cronAuth();
+
+        $newDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($newDateTime);
+
+        $request = [
+            'url'    => '/merchants/invoice/create',
+            'method' => 'POST',
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $currentTime = Carbon::create(2018, 3, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->fixtures->merchant->addFeatures('gstin_self_serve');
+
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user['id']);
+
+        Config::set('services.bvs.mock', true);
+    }
+
+    public function testUpdateGstinSelfServeWithGSTInvoices()
+    {
+        $this->createMerchantAndInvoiceData();
+
+        $this->initiateGstinSelfServe();
+
+        $this->setBvsValidationDetailForGstinUpdateSelfServe();
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+                                                                'workflow_exists'          => false,
+                                                                'request_under_validation' => true
+                                                            ]);
+
+        $this->processBvsResponseForGstinSelfServe();
+
+        $this->assertCacheDataNullForGstinSelfServe('10000000000000');
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(5, $entities['count']);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $this->assertEquals('10000000000000', $file['merchant_id']);
+
+        $this->assertEquals('merchant_pg_invoices/2018/2/10000000000000', $file['name']);
     }
 
     public function testUpdateGstinSelfServe()

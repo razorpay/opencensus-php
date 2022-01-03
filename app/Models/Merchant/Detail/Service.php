@@ -61,6 +61,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
+use RZP\Models\Merchant\Invoice\Service as MerchantInvoiceService;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -1914,9 +1915,21 @@ class Service extends Base\Service
     {
         $input = $this->getGstinSelfServeInputFromCache();
 
+        $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
+
         try
         {
             $registeredBusinessAddressDetails =  $this->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($detail->getMerchantId(), $input[BvsConstant::VALIDATION_ID]);
+
+            // This method is used for backfilling(storing in S3) the PG merchant invoices PDFs for the months on or before Dec-2020 before the merchant details are updated.
+            if (($isAddOperation === false) and
+                ($detail->getCreatedAt() < strtotime("01-01-2021")))
+            {
+                $result = (new MerchantInvoiceService())->
+                backFillMerchantInvoiceB2cPDFs([$detail->getMerchantId()], "7", "2017", "2020", "12");
+
+                $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS, [$result]);
+            }
 
             $detail->edit(
                 array_merge([
@@ -1937,8 +1950,6 @@ class Service extends Base\Service
         }
 
         $this->repo->merchant_detail->saveOrFail($detail);
-
-        $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
 
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
         $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity(), $input[DEConstants::IS_ADD_GSTIN_OPERATION]);
@@ -2104,6 +2115,16 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($input[Merchant\Entity::MERCHANT_ID]);
 
         $merchantDetails = $merchant->merchantDetail;
+
+        // This method is used for backfilling(storing in S3) the PG merchant invoices PDFs for the months on or before Dec-2020 before the merchant details are updated.
+        if (($isAddOperation === false) and
+            ($merchantDetails->getCreatedAt() < strtotime("01-01-2021")))
+        {
+            $result = (new MerchantInvoiceService())->
+            backFillMerchantInvoiceB2cPDFs([$merchant->getId()], "7", "2017", "2020", "12");
+
+            $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS, [$result]);
+        }
 
         $merchantDetails->edit([
                 Entity::GSTIN => $input[Entity::GSTIN],
