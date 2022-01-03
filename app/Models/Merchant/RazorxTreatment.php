@@ -45,6 +45,9 @@ final class RazorxTreatment
 
     const REGISTERED_ONBOARDING_AUTO_KYC = 'registered_onboarding_auto_kyc';
 
+    // Experiment to enable UFH Cloudfront for merchant documents upload
+    const PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP = 'pg_onboarding_client_cloudfront_exp';
+
     const OLD_TO_NEW_IFSC_FOR_MERGED_BANK = 'old_to_new_ifsc_for_merged_bank';
 
     //

@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -16,6 +17,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 use Razorpay\Ufh\Client as UfhClient;
 
@@ -96,7 +98,9 @@ class UfhService
      */
     protected $repo;
 
-    public function __construct($app, $merchantId = null)
+    protected $clientType;
+
+    public function __construct($app, $merchantId = null, $clientType = null)
     {
         $this->trace           = $app['trace'];
 
@@ -111,6 +115,8 @@ class UfhService
         $this->merchantId      = $this->ba->getMerchantId();
 
         $this->app             = $app;
+
+        $this->clientType      = $clientType;
 
         if (($this->ba->isAdminAuth() === true))
         {
@@ -129,9 +135,27 @@ class UfhService
 
     protected function createUfhClient()
     {
+        /*
+         * Client user name is a way of distinguishing different teams in API code base connecting to UFH
+         * This is done to migrate merchant onboarding doc uploads to clou front.
+         */
+        $clientUsername = $this->config['auth']['username'];
+
+        if(empty($this->clientType) === false)
+        {
+            if($this->merchantId != null) {
+                $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable(
+                    $this->merchantId, RazorxTreatment::PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP);
+
+                if($isExperimentEnabled == true) {
+                    $clientUsername = $this->clientType;
+                }
+            }
+        }
+
         $config = [
             'base_uri'      => $this->config['url'],
-            'username'      => $this->config['auth']['username'],
+            'username'      => $clientUsername,
             'password'      => $this->config['auth']['password'],
             'headers'       => [
                 'X-Merchant-Id' => $this->merchantId,

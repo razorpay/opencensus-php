@@ -8,6 +8,7 @@ use RZP\Models\FileStore;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\Document\Constants;
+use RZP\Services\Mock\UfhService as MockUfhService;
 
 class UFHFileHandler implements FileHandlerInterface
 {
@@ -17,15 +18,20 @@ class UFHFileHandler implements FileHandlerInterface
     {
         $app = App::getFacadeRoot();
 
+        $this->setUfhService($app);
+    }
+
+    protected function setUfhService($app)
+    {
         $ufhServiceMock = $app['config']->get('applications.ufh.mock');
 
-        if ($ufhServiceMock === true)
+        if($ufhServiceMock === true)
         {
-            $this->ufhService = new \RZP\Services\Mock\UfhService($app);
+            $this->ufhService = new MockUfhService($app);
         }
         else
         {
-            $this->ufhService = new UfhService($app, $app['basicauth']->getMerchantId());
+            $this->ufhService = new UfhService($app, $app['basicauth']->getMerchantId(), "pg_onboarding");
         }
     }
 
@@ -59,7 +65,7 @@ class UFHFileHandler implements FileHandlerInterface
 
         $signedUrl = $this->ufhService->getSignedUrl($ufhPublicId, [], $merchantId);
 
-        return $signedUrl['signed_url'] ?? null;
+        return $signedUrl['signed_url'] ?? '';
     }
 
     public function getSource(): string
