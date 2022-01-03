@@ -17,6 +17,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -423,6 +424,20 @@ class Base extends BaseProcessor
         }
 
         return $data;
+    }
+
+    /**
+     * @param string $fileType
+     *
+     * @return array|mixed Bucket Config containing file name and bucket region
+     */
+    protected function getBucketConfig(string $fileType)
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName($fileType, $this->env);
+
+        return $config[$bucketType];
     }
 
     /**

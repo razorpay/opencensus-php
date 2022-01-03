@@ -82,15 +82,6 @@ class IciciEmi extends Base
         return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d/m/Y');
     }
 
-    protected function getBucketConfig()
-    {
-        $config = $this->app['config']->get('filestore.aws');
-
-        $bucketType = Bucket::getBucketConfigName(self::FILE_TYPE, $this->env);
-
-        return $config[$bucketType];
-    }
-
     protected function pushEmiFileToBeam(string $jobName)
     {
         try {
@@ -98,7 +89,7 @@ class IciciEmi extends Base
 
             $fileInfo = [$fullFileName];
 
-            $bucketConfig = $this->getBucketConfig();
+            $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
 
             $data = [
                 Service::BEAM_PUSH_FILES => $fileInfo,

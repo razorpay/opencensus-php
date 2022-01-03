@@ -789,8 +789,10 @@ class UpiSbiGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->format('dmY_Hi');
 
         $this->assertEquals('file_store', $file['entity']);
-        $this->assertEquals('SBI0000000000232_' . $time .'.csv', $file['location']);
-        $this->assertEquals('SBI0000000000232_' . $time, $file['name']);
+        $this->assertEquals('rzp-1415-prod-sftp', $file['bucket']);
+        $this->assertEquals('ap-south-1', $file['region']);
+        $this->assertEquals('upi/upi_sbi/refund/normal_refund_file/SBI0000000000232_' . $time .'.csv', $file['location']);
+        $this->assertEquals('upi/upi_sbi/refund/normal_refund_file/SBI0000000000232_' . $time, $file['name']);
 
         $refundFileRows = (new ExcelImport)->toArray('storage/files/filestore/'.$file['location'])[0];
 

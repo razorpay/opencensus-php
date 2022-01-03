@@ -30,6 +30,8 @@ class UpiSbi extends Base
     const GATEWAY         = Payment\Gateway::UPI_SBI;
     const BEAM_FILE_TYPE  = 'refund';
 
+    const BASE_STORAGE_DIRECTORY = 'upi/upi_sbi/refund/normal_refund_file/';
+
     /**
      * @param int $begin
      * @param int $end
@@ -186,9 +188,13 @@ class UpiSbi extends Base
 
         $fileInfo = [$fullFileName];
 
+        $bucketConfig = $this->getBucketConfig(self::FILE_TYPE);
+
         $data =  [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::SBI_UPI_REFUND_FILE_JOB_NAME
+            BeamService::BEAM_PUSH_FILES            => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME          => BeamConstants::SBI_UPI_REFUND_FILE_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME      => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION    => $bucketConfig['region'],
         ];
 
         // In seconds
@@ -249,7 +255,7 @@ class UpiSbi extends Base
     {
         $dt = Carbon::now(Timezone::IST)->format('dmY_Hi');
 
-        return static::FILE_NAME . '_' . $dt;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $dt;
     }
 
     protected function getH2HMetadata()

@@ -572,7 +572,6 @@ class Type
 
         self::H2H_BUCKET_CONFIG => [
             self::FIRST_DATA_PARES_FILE,
-            self::SBI_UPI_REFUND,
         ],
 
         self::RECON_BUCKET_CONFIG => [
@@ -696,6 +695,7 @@ class Type
             self::ENACH_NPCI_NB_DEBIT,
             self::ENACH_NPCI_NB_CANCEL,
             self::BDBL_NETBANKING_REFUND,
+            self::SBI_UPI_REFUND,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [
