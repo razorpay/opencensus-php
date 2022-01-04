@@ -366,6 +366,9 @@ class Service extends Base\Service
             );
         }
 
+        $user = Auth::guard('user')->user();
+        $user->confirmed = true;
+
         return [$error, $data];
     }
 
