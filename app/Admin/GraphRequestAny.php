@@ -86,7 +86,7 @@ class GraphRequestAny
         {
             $errors = [$exception->getMessage()];
 
-            return [$errors, null];
+            return [$errors, []];
         }
         catch(\Exception $exception)
         {
