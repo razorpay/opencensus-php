@@ -159,6 +159,7 @@ class Validator extends Base\Validator
         Payment\Gateway::BILLDESK_SIHUB,
         Payment\Gateway::MANDATE_HQ,
         Payment\Gateway::NETBANKING_BDBL,
+        Payment\Gateway::NETBANKING_UCO,
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::EMERCHANTPAY,
     ];
@@ -1700,6 +1701,21 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingUcoTerminalRules = [
+        Entity::GATEWAY                 => 'required|in:netbanking_uco',
+        Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingUcoEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
+        Entity::CORPORATE               => 'sometimes|int|in:0,1,2',
+        Entity::TPV                     => 'sometimes|in:0,1,2',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                    => 'sometimes|array',
     ];
 
     protected static $cardFssTerminalRules = [

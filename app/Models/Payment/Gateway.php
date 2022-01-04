@@ -95,6 +95,7 @@ class Gateway
     const NETBANKING_DLB         = 'netbanking_dlb';
     const NETBANKING_NSDL        = 'netbanking_nsdl';
     const NETBANKING_BDBL        = 'netbanking_bdbl';
+    const NETBANKING_UCO         = 'netbanking_uco';
     const NETBANKING_TMB         = 'netbanking_tmb';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
@@ -506,6 +507,7 @@ class Gateway
         self::TWID,
         self::NETBANKING_CSB,
         self::NETBANKING_BDBL,
+        self::NETBANKING_UCO,
     ];
 
     /**
@@ -1368,6 +1370,7 @@ class Gateway
         Payment\Gateway::NETBANKING_TMB         => 1640249582,
         Payment\Gateway::NETBANKING_NSDL        => 1618511400,
         Payment\Gateway::NETBANKING_BDBL        => 1618511400,
+        Payment\Gateway::NETBANKING_UCO         => 1618511400,
     ];
 
     public static $channels = [
@@ -1487,6 +1490,7 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_NSDL,
             self::NETBANKING_BDBL,
+            self::NETBANKING_UCO,
             self::NETBANKING_TMB,
         ],
 
@@ -2611,6 +2615,7 @@ class Gateway
         Gateway::ESIGNER_LEGALDESK,
         Gateway::NETBANKING_KOTAK,
         Gateway::NETBANKING_IBK,
+        Gateway::NETBANKING_UCO,
         Gateway::NETBANKING_RBL,
     ];
 
@@ -2768,6 +2773,7 @@ class Gateway
         IFSC::DLXB         => Gateway::NETBANKING_DLB,
         IFSC::NSPB         => Gateway::NETBANKING_NSDL,
         IFSC::BDBL         => Gateway::NETBANKING_BDBL,
+        IFSC::UCBA         => Gateway::NETBANKING_UCO,
         IFSC::TMBL         => Gateway::NETBANKING_TMB,
     ];
 
@@ -3976,6 +3982,7 @@ class Gateway
             self::NETBANKING_KVB,
             self::TWID,
             self::NETBANKING_BDBL,
+            self::NETBANKING_UCO,
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::NETBANKING_CANARA,
@@ -4083,6 +4090,7 @@ class Gateway
             self::TWID,
             self::NETBANKING_PNB,
             self::NETBANKING_BDBL,
+            self::NETBANKING_UCO,
             self::EMERCHANTPAY,
             Self::NETBANKING_TMB,
         ];

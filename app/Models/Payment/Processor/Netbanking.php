@@ -140,6 +140,7 @@ class Netbanking
         IFSC::NSPB,
         IFSC::VIJB,
         IFSC::BDBL,
+        IFSC::UCBA,
         IFSC::TMBL,
     ];
 
@@ -185,6 +186,7 @@ class Netbanking
         IFSC::DLXB,
         self::PUNB_R,
         IFSC::BDBL,
+        IFSC::UCBA,
         IFSC::CNRB,
         IFSC::DCBL,
         IFSC::TMBL,
@@ -1035,6 +1037,14 @@ class Netbanking
             ],
             'tpv'    => [
                 IFSC::BDBL,
+            ]
+        ],
+        Gateway::NETBANKING_UCO => [
+            'retail' => [
+                IFSC::UCBA,
+            ],
+            'tpv' => [
+                IFSC::UCBA,
             ]
         ],
         Gateway::NETBANKING_TMB => [
