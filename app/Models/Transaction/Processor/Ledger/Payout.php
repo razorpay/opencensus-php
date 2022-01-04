@@ -23,10 +23,12 @@ class Payout extends Base
     const PAYOUT_INITIATED = "payout_initiated";
     const PAYOUT_PROCESSED = "payout_processed";
     const PAYOUT_REVERSED  = "payout_reversed";
+    const PAYOUT_FAILED    = "payout_failed";
 
     const INTER_ACCOUNT_PAYOUT_INITIATED = "inter_account_payout_initiated";
     const INTER_ACCOUNT_PAYOUT_PROCESSED = "inter_account_payout_processed";
     const INTER_ACCOUNT_PAYOUT_REVERSED  = "inter_account_payout_reversed";
+    const INTER_ACCOUNT_PAYOUT_FAILED    = "inter_account_payout_failed";
 
     public function pushTransactionToLedger(Entity $payout,
                                             string $transactorEvent,
@@ -52,6 +54,21 @@ class Payout extends Base
                     ]);
 
                 return;
+            }
+
+            if (($transactorEvent === self::PAYOUT_REVERSED) and
+                ($this->mode === \RZP\Constants\Mode::LIVE) and
+                (empty($ftsSourceAccountInformation[self::FTS_FUND_ACCOUNT_ID]) === true or
+                 empty($ftsSourceAccountInformation[self::FTS_ACCOUNT_TYPE]) === true))
+            {
+                $transactorEvent = self::PAYOUT_FAILED;
+            }
+            else if (($transactorEvent === self::INTER_ACCOUNT_PAYOUT_REVERSED) and
+                     ($this->mode === \RZP\Constants\Mode::LIVE) and
+                     (empty($ftsSourceAccountInformation[self::FTS_FUND_ACCOUNT_ID]) === true or
+                      empty($ftsSourceAccountInformation[self::FTS_ACCOUNT_TYPE]) === true))
+            {
+                $transactorEvent = self::INTER_ACCOUNT_PAYOUT_FAILED;
             }
 
             $payload = $this->getDefaultPayload($payout);
@@ -87,6 +104,17 @@ class Payout extends Base
                     }
 
                     $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+
+                    break;
+
+                case self::INTER_ACCOUNT_PAYOUT_FAILED:
+                case self::PAYOUT_FAILED:
+                    if ($reversal !== null){
+                        $transactorDate = $reversal->getCreatedAt();
+                        $transactorId = $reversal->getPublicId();
+                        $transactionId = $reversal->getTransactionId();
+                        $apiTransactionId = $reversal->getTransactionId();
+                    }
 
                     break;
 
