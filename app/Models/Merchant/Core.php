@@ -5632,13 +5632,14 @@ class Core extends Base\Core
         );
     }
 
-    public function associateMerchant1ccConfig(string $type, string $value)
+    public function associateMerchant1ccConfig(string $type, string $value, array $value_json=[])
     {
         $input = [
             'config' => $type,
             'value'  => $value,
+            'value_json' => $value_json,
         ];
-        $this->transaction(
+        return $this->transaction(
             function () use ($input)
             {
                 $config = $this->repo->merchant_1cc_configs->findByMerchantAndConfigType(
@@ -5649,7 +5650,7 @@ class Core extends Base\Core
                 {
                     $config->delete();
                 }
-                (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
+                return (new Merchant1ccConfig\Core())->createAndSaveConfig($this->merchant, $input);
             }
         );
     }

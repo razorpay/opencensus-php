@@ -6571,3 +6571,5 @@ CREATE TABLE merchant_1cc_auth_configs
     PRIMARY KEY (id),
     ADD INDEX merchant_1cc_auth_configs_merchant_id_index (merchant_id)
 );
+
+ALTER TABLE merchant_1cc_configs ADD COLUMN value_json json DEFAULT NULL;

@@ -998,6 +998,14 @@ class UserRolesScope
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
             'm2m_referral_link_get'                     => Role::READER_ROLES,
+            'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN],
+            'shipping_provider_post'                              => [Role::OWNER, Role::ADMIN],
+            'shipping_provider_patch'                             => [Role::OWNER, Role::ADMIN],
+            'shipping_provider_delete'                            => [Role::OWNER, Role::ADMIN],
+            'shipping_method_provider_list'                       => [Role::OWNER, Role::ADMIN],
+            'shipping_method_provider_post'                       => [Role::OWNER, Role::ADMIN],
+            'shipping_method_provider_patch'                      => [Role::OWNER, Role::ADMIN],
+            'shipping_method_provider_delete'                     => [Role::OWNER, Role::ADMIN],
         ];
 
         /*

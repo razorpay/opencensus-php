@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID = 'merchant_id';
     const CONFIG      = 'config';
     const VALUE       = 'value';
+    const VALUE_JSON  = 'value_json';
 
     protected $entity = 'merchant_1cc_configs';
 
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CONFIG,
         self::VALUE,
+        self::VALUE_JSON,
     ];
 
     protected $public = [
@@ -35,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CONFIG,
         self::VALUE,
+        self::VALUE_JSON,
     ];
 
     protected $dates = [
@@ -42,6 +45,15 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DELETED_AT,
     ];
+
+    protected $casts              = [
+        self::VALUE_JSON  => 'array',
+    ];
+
+    protected $defaults           = [
+        self::VALUE_JSON  => [],
+    ];
+
 
     public function merchant(): BelongsTo
     {
@@ -56,6 +68,11 @@ class Entity extends Base\PublicEntity
     public function getValue()
     {
         return $this->getAttributeValue(self::VALUE);
+    }
+
+    public function getValueJson()
+    {
+        return $this->getAttributeValue(self::VALUE_JSON);
     }
 
     public function setConfig(string $value)

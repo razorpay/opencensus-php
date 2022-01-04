@@ -1503,6 +1503,15 @@ class Entity extends Base\PublicEntity
             );
     }
 
+    public function getShippingMethodProvider()
+    {
+        return (new Merchant1ccConfig\Repository())
+            ->findByMerchantAndConfigType(
+                $this->getId(),
+                Merchant1ccConfig\Type::SHIPPING_METHOD_PROVIDER
+            );
+    }
+
     public function setBrandColor($brandColor)
     {
         $this->setAttribute(self::BRAND_COLOR, $brandColor);

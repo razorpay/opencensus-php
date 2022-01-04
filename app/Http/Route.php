@@ -3207,6 +3207,17 @@ class Route
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                                 'MerchantController@updateShopify1ccConfig'                   ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
+
+        'shipping_provider_list'                   => ['get',      '1cc/shipping_providers',                              'ShippingProviderController@list'                           ],
+        'shipping_provider_post'                   => ['post',     '1cc/shipping_providers',                              'ShippingProviderController@create'                           ],
+        'shipping_provider_patch'                  => ['put',      '1cc/shipping_providers/{id}',                        'ShippingProviderController@update'                           ],
+        'shipping_provider_delete'                 => ['delete',   '1cc/shipping_providers/{id}',                        'ShippingProviderController@delete'                           ],
+
+        'shipping_method_provider_list'                   => ['get',      '1cc/shipping_method_providers',                              'ShippingMethodProviderController@list'                           ],
+        'shipping_method_provider_post'                   => ['post',     '1cc/shipping_method_providers',                              'ShippingMethodProviderController@create'                           ],
+        'shipping_method_provider_patch'                  => ['put',      '1cc/shipping_method_providers/{id}',                         'ShippingMethodProviderController@update'                           ],
+        'shipping_method_provider_delete'                 => ['delete',   '1cc/shipping_method_providers/{id}',                         'ShippingMethodProviderController@delete'                           ],
+
     ];
 
     public static $public = [
@@ -4425,6 +4436,14 @@ class Route
     ];
 
     public static $proxy = [
+        'shipping_provider_list',
+        'shipping_provider_post',
+        'shipping_provider_patch',
+        'shipping_provider_delete',
+        'shipping_method_provider_list',
+        'shipping_method_provider_post',
+        'shipping_method_provider_patch',
+        'shipping_method_provider_delete',
         'corporate_card_get',
         'corporate_card_update',
         'corporate_card_list',
@@ -7820,6 +7839,14 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'shipping_provider_list',
+            'shipping_provider_post',
+            'shipping_provider_patch',
+            'shipping_provider_delete',
+            'shipping_method_provider_list',
+            'shipping_method_provider_post',
+            'shipping_method_provider_patch',
+            'shipping_method_provider_delete',
             'qr_configs_create',
             'qr_configs_fetch',
             'qr_configs_delete',

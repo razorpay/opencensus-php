@@ -1172,6 +1172,13 @@ return [
         'flipkart_secure_IV'  => env('FLIPKART_SECURE_IV'),
     ],
 
+    'shipping_service' => [
+        'url'           => env('APP_SHIPPING_SERVICE_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_SHIPPING_SERVICE_SECRET'),
+        'timeout'       => env('APP_SHIPPING_SERVICE_TIMEOUT', 3),
+    ],
+
     'tokenization' => [
         'secret' => env('TOKENIZATION_SECRET'),
     ],

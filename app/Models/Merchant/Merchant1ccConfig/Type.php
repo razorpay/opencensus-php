@@ -14,4 +14,7 @@ class Type {
     const WOOCOMMERCE       = 'woocommerce';
     const SHOPIFY           = 'shopify';
     const MAGENTO           = 'magento';
+
+    //shipping_method_provider, eventually move to 1cc-shipping-service
+    const SHIPPING_METHOD_PROVIDER = 'shipping_method_provider';
 }

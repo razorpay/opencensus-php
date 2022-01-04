@@ -28,6 +28,9 @@ class CreateMerchant1ccConfigsTable extends Migration
 
             $table->string(Entity::VALUE, 255);
 
+            $table->json(Entity::VALUE_JSON)
+                ->nullable();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

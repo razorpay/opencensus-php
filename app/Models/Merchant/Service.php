@@ -8213,6 +8213,22 @@ class Service extends Base\Service
     }
 
     /**
+     * Add/Update Merchant Shipping Method Config
+     * @param array $input
+     * @throws \Throwable
+     */
+    public function updateShippingMethodProviderConfig(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_SHIPPING_METHOD_PROVIDER_REQUEST, $input);
+
+        return (new Merchant\Core)->associateMerchant1ccConfig(
+            Merchant1ccConfig\Type::SHIPPING_METHOD_PROVIDER,
+            "",
+            $input
+        );
+    }
+
+    /**
     * Add/Update Merchant Platform Type
     * @param array $input
     * @return void

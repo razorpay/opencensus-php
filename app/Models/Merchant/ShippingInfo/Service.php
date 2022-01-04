@@ -158,36 +158,48 @@ class Service extends Base\Service
         }
         else
         {
-            $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
-
-            if ($serviceabilityUrlConfig === null)
+            $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
+            if ($shippingMethodProviderConfig !== null)
             {
-                throw new Exception\BadRequestException(
-                  ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
+
+                $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
+                    $nonCachedAddresses, $orderId);
+
             }
-
-            $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
-
-            try
+            else
             {
-                $response = $this->sendMerchantShippingInfoRequest($merchantOrderId, $nonCachedAddresses, $serviceabilityUrl, $mockResponse);
 
-                $decodedResponse = json_decode($response->body, true);
-            }
-            catch(Throwable $exception)
-            {
-                // Swallowing the exception to allow the request to go through in case merchant call fails
-                $this->trace->info($exception->getMessage());
+                $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
 
-                $decodedResponse = ['addresses' => []];
-            }
+                if ($serviceabilityUrlConfig === null)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
+                }
 
-            if (json_last_error() !== JSON_ERROR_NONE || $response->status_code !== 200)
-            {
-                $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+                $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
 
-                $decodedResponse = ['addresses' => []];
+                try
+                {
+                    $response = $this->sendMerchantShippingInfoRequest($merchantOrderId, $nonCachedAddresses, $serviceabilityUrl, $mockResponse);
+
+                    $decodedResponse = json_decode($response->body, true);
+                }
+                catch(Throwable $exception)
+                {
+                    // Swallowing the exception to allow the request to go through in case merchant call fails
+                    $this->trace->info($exception->getMessage());
+
+                    $decodedResponse = ['addresses' => []];
+                }
+
+                if (json_last_error() !== JSON_ERROR_NONE || $response->status_code !== 200)
+                {
+                    $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                        ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+
+                    $decodedResponse = ['addresses' => []];
+                }
             }
         }
 
@@ -258,6 +270,26 @@ class Service extends Base\Service
         $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime);
 
         return [self::SHIPPING_INFO_ADDRESSES => array_merge($nonCachedAddresses, $cachedAddresses)];
+    }
+
+    protected function getShippingInfoForShippingMethodProvider($shippingMethodProviderEntity, $addresses, $orderId): array
+    {
+        if (count($addresses) > 1)
+        {
+            return ['addresses' => []];
+        }
+
+        $shippingMethodProvider = $shippingMethodProviderEntity->getValueJson();
+        $merchantId = $this->merchant->getId();
+        $input = [
+            'order_id' => $orderId,
+            'address' => $addresses[0]
+        ];
+        $shippingInfo = $this->app['shipping_method_provider_service']
+            ->getShippingInfoForAddress($shippingMethodProvider, $input, $merchantId);
+
+        $res = array_merge($input['address'], $shippingInfo);
+        return ['addresses'=> [$res]];
     }
 
     protected function getFeeFromSlab(int $amount, string $type): int
