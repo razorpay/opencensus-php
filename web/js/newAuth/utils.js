@@ -29,8 +29,20 @@ export const BANK_NAMES = {
 export const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts[1].split(';')[0];
-  return null;
+  let cookieValue = null;
+  if (parts.length === 2) {
+    cookieValue = parts[1].split(';')[0];
+  }
+
+  if (!cookieValue) {
+    return cookieValue;
+  }
+
+  try {
+    return decodeURIComponent(cookieValue);
+  } catch {
+    return cookieValue;
+  }
 };
 
 //No using rzp utils as it impacts the signup bundle perfromce
