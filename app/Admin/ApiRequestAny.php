@@ -16,6 +16,7 @@ use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Errors as RZPErrors;
 use Lcobucci\JWT\Parser as JWTParser;
 use App\Admin\Service as AdminService;
+use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 
@@ -214,6 +215,14 @@ class ApiRequestAny
                 {
                     $currentMerchant = $user->currentMerchant();
 
+                    if (empty($currentMerchant) === true)
+                    {
+                        throw new BadRequestError(
+                            'Invalid merchant request.',
+                            \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                            400);
+                    }
+
                     $twoFaVerified = Session::get(UserConstants::TWO_FA_VERIFIED, false);
 
                     $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
@@ -256,7 +265,7 @@ class ApiRequestAny
 
                 if (empty($adminUser) === true)
                 {
-                    throw new \Razorpay\Api\Errors\BadRequestError(
+                    throw new BadRequestError(
                         'Invalid admin request.',
                         \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
                         400);
