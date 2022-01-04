@@ -1225,17 +1225,9 @@ class Processor extends Base\Core
 
             $merchant_id = $setl->getMerchantId();
 
-            $variant = $this->app->razorx->getTreatment($merchant_id,
-                MerchantModel\RazorxTreatment::SETTLEMENT_FAILED_NOTIFICATION,
-                $this->mode
-            );
-
-            if (strtolower($variant) === 'on')
+            if (isset($input['trigger_failed_notification']) === true)
             {
-                if (isset($input['trigger_failed_notification']) === true)
-                {
-                    $failedNotification = $input['trigger_failed_notification'];
-                }
+                $failedNotification = $input['trigger_failed_notification'];
             }
 
             (new Core)->triggerSettlementWebhook($setl, $input['redacted_ba'], $failedNotification, $failedNotification);

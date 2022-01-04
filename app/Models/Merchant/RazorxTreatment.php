@@ -198,9 +198,6 @@ final class RazorxTreatment
     // experiment for opting out of settlement notification
     const SETTLEMENT_NOTIFICATION_OPT_OUT = 'settlement_notification_opt_out';
 
-    // experiment for failed settlement notification
-    const SETTLEMENT_FAILED_NOTIFICATION = 'settlement_failed_notification';
-
     const TOKENIZE_QR_STRING_MPANS = 'tokenize_qr_string_mpans';
 
     const BANK_TRANSFER_QUEUE = 'bank_transfer_queue';
