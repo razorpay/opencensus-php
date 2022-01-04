@@ -10,7 +10,7 @@
 |
 */
 
-Route::get('/status', 'AdminController@getStatus');
+Route::get('/status', 'AdminController@getStatus')->name('status');
 
 Route::get('/ext/{all?}', 'UserController@getBrowserExtensionIndex')->name('extension_catchall')->where(['all' => '.*']);
 
@@ -40,7 +40,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/', 'UserController@getIndex')->name('dashboard');
         Route::get('/signup', 'UserController@getIndex')->name('signup');
         Route::get('/signin', 'UserController@getIndex')->name('signin');
-        Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard')
+        Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard_app')
             ->where(['path' => '.*']);
 
         Route::get('/tnc/{id}', 'UserController@getTnc')->name('tnc');
@@ -92,17 +92,17 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
-        Route::post('/pre_signup', 'MerchantController@postSignup');
+        Route::post('/pre_signup', 'MerchantController@postSignup')->name('user_pre_signup');
         Route::post('/verify_email', 'UserController@verifyEmailOtp');
         Route::post('/resend_email_otp', 'UserController@resendEmailOtp');
         Route::post('/resend', 'MerchantController@postResendConfirmation');
-        Route::get('/keepalive', 'UserController@getKeepAlive');
-        Route::post('/logout', 'UserController@getLogout');
+        Route::get('/keepalive', 'UserController@getKeepAlive')->name('user_keep_alive');
+        Route::post('/logout', 'UserController@getLogout')->name('user_logout');
 
         // This returns all the needed information
-        Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
+        Route::get('/', 'UserController@getUserDetailsV2')->name('user_details'); //ePOS
         Route::get('/mobile', 'UserController@getUserDetailsForMobile');
-        Route::get('/details', 'UserController@getUserDetailsV2');
+        Route::get('/details', 'UserController@getUserDetailsV2')->name('get_user_details');
 
         Route::post('/coupons/validate', 'MerchantController@validateCoupon');
         Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn');
@@ -113,7 +113,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments');
         Route::get('/merchant/features', 'MerchantController@getMerchantFeatures');
         Route::get('/merchant/splitzexperiments', 'MerchantController@getSplitzExperiments');
-        Route::get('/merchant/details', 'MerchantController@getMerchantDetails');
+        Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('merchant_details');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()

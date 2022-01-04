@@ -45,6 +45,7 @@ class Constants
   const LABEL_HTTP_REQUESTS_ROUTE                   = 'route';
   const LABEL_HTTP_REQUESTS_STATUS                  = 'status';
   const LABEL_HTTP_REQUESTS_CONTROLLER              = 'controller';
+  const LABEL_RZP_TEAM                              = 'rzp_team';
 
   /* Possible Login actions */
   //when user sigin after enterin OTP

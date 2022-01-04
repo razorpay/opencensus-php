@@ -3,11 +3,13 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\ApiUrl;
-use App\Metrics\Constants;
-use App\Trace\TraceCode;
-use Closure;
 use Route;
+use Closure;
+use App\Http\ApiUrl;
+use App\Trace\TraceCode;
+use App\Metrics\Constants;
+use App\Http\RouteTeamMap;
+
 
 class Metrics
 {
@@ -53,12 +55,15 @@ class Metrics
 
     protected function getMetricDimensions($request, $response)
     {
+        $routeName = $request->route() !== null ? $request->route()->getName() : 'unknown_route';
+
         return [
             Constants::LABEL_HTTP_REQUESTS_PRODUCT     => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
             Constants::LABEL_HTTP_REQUESTS_METHOD      => $request->getMethod()                         ?? 'unknown_method',
+            Constants::LABEL_HTTP_REQUESTS_ROUTE       => $routeName,
             Constants::LABEL_HTTP_REQUESTS_STATUS      => $this->getStatusCode($response),
-            Constants::LABEL_HTTP_REQUESTS_ROUTE       => $request->route() !== null ? $request->route()->getName() : 'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_CONTROLLER  => $request->route() !== null ? $request->route()->getAction()['controller']  : 'unknown_controller',
+            Constants::LABEL_RZP_TEAM                  => RouteTeamMap::getTeamNamesForRoute($routeName),
         ];
     }
 
