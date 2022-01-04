@@ -46,6 +46,7 @@ class Table
     const DEBIT_NOTE                   = 'debit_note';
     const DEBIT_NOTE_DETAIL            = 'debit_note_detail';
     const ADDRESS                      = 'addresses';
+    const RAW_ADDRESS                  = 'raw_addresses';
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';
     const PARTNER_ACTIVATION           = 'partner_activation';

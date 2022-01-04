@@ -162,6 +162,8 @@ class Entity
     const UPI_TRANSFER_REQUEST       = 'upi_transfer_request';
     const BANKING_ACCOUNT_COMMENT    = 'banking_account_comment';
     const ORDER_META                 = 'order_meta';
+    const RAW_ADDRESS                = 'raw_address';
+
 
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
     const BANK_TRANSFER_HISTORY      = 'bank_transfer_history';
@@ -743,6 +745,7 @@ class Entity
         self::OFFER                     => \RZP\Models\Offer::class,
         self::ORDER                     => \RZP\Models\Order::class,
         self::ORDER_META                => \RZP\Models\Order\OrderMeta::class,
+        self::RAW_ADDRESS               => \RZP\Models\RawAddress::class,
         self::TOKEN                     => \RZP\Models\Customer\Token::class,
         self::GEO_IP                    => \RZP\Models\GeoIP::class,
         self::REFUND                    => \RZP\Models\Payment\Refund::class,

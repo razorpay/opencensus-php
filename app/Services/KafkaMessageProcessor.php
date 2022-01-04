@@ -14,6 +14,7 @@ class KafkaMessageProcessor
 {
     // Topic name constants to map job
     const API_BVS_EVENTS = 'api-bvs-validation-result-events';
+    const ADDRESS_DEDUPE_EVENT = 'event.address_dedupe_response.test';
 
     /** @var Application $app */
     protected $app;
@@ -60,6 +61,7 @@ class KafkaMessageProcessor
                 return false;
             }
         } catch (\Exception $e) {
+
             $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
@@ -107,6 +109,8 @@ class KafkaMessageProcessor
         switch ($topic) {
             case self::API_BVS_EVENTS:
                 return new KafkaJobs\BvsValidationJob($payload['data'], $mode);
+            case self::ADDRESS_DEDUPE_EVENT:
+                return new BulkUploadConsumer($payload, $mode);
             default:
                 return null;
         }

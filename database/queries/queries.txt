@@ -6572,4 +6572,28 @@ CREATE TABLE merchant_1cc_auth_configs
     ADD INDEX merchant_1cc_auth_configs_merchant_id_index (merchant_id)
 );
 
+CREATE TABLE raw_addresses
+(
+    id char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    merchant_id char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    batch_id char(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+    contact char(13) NOT NULL,
+    name varchar(50) NOT NULL,
+    line1 varchar(255) NOT NULL,
+    line2 varchar(255) DEFAULT NULL,
+    zipcode varchar(12) NOT NULL,
+    city varchar(100) NOT NULL,
+    state varchar(100) NOT NULL,
+    country varchar(100) NOT NULL,
+    tag varchar(50) DEFAULT NULL,
+    landmark varchar(255) DEFAULT NULL,
+    status varchar(20) DEFAULT 'pending',
+    created_at int NOT NULL,
+    deleted_at int DEFAULT NULL,
+    updated_at int NOT NULL,
+    PRIMARY KEY (id),
+    KEY raw_addresses_contact_index ('contact'),
+    KEY raw_addresses_created_at_index ('created_at)
+);
+
 ALTER TABLE merchant_1cc_configs ADD COLUMN value_json json DEFAULT NULL;

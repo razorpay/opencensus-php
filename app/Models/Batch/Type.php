@@ -11,6 +11,7 @@ class Type
 {
     const REFUND                    = 'refund';
     const PAYMENT_LINK              = 'payment_link';
+    const RAW_ADDRESS               = 'raw_address';
 
     // Merchant Onboarding
     const MERCHANT_ONBOARDING       = 'merchant_onboarding';
@@ -438,6 +439,7 @@ class Type
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::REFUND,
+        self::RAW_ADDRESS,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
@@ -493,6 +495,7 @@ class Type
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
         self::REFUND,
+        self::RAW_ADDRESS,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,

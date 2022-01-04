@@ -3,6 +3,7 @@
 namespace RZP\Models\Address;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Customer;
 
 class Repository extends Base\Repository
@@ -115,6 +116,16 @@ class Repository extends Base\Repository
         }
 
         return $query->firstOrFailPublic();
+    }
+
+    public function fetchAddressesForContact(string $contact)
+    {
+        $contactCol = $this->dbColumn(Entity::CONTACT);
+
+        return $this->newQuery()
+                    ->selectRaw(Table::ADDRESS . '.*')
+                    ->where($contactCol,$contact)
+                    ->get();
     }
 
 }

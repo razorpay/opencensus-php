@@ -11,6 +11,7 @@ class Type
     const PAYMENT           = 'payment';
     const TOKEN             = 'token';
     const STAKEHOLDER       = 'stakeholder';
+    const RAW_ADDRESS       = 'raw_address';
 
     const SHIPPING_ADDRESS  = 'shipping_address';
     const BILLING_ADDRESS   = 'billing_address';
@@ -21,6 +22,7 @@ class Type
         self::PAYMENT,
         self::TOKEN,
         self::STAKEHOLDER,
+        self::RAW_ADDRESS,
     ];
 
     protected static $validTypes = [
@@ -36,6 +38,9 @@ class Type
         ],
         self::STAKEHOLDER => [
             self::RESIDENTIAL,
+        ],
+        self::RAW_ADDRESS => [
+            self::SHIPPING_ADDRESS,
         ],
     ];
 

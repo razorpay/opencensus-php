@@ -178,6 +178,7 @@ class Type
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
     const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
+    const BULK_RAW_ADDRESS_FILE             = 'bulk_raw_address_file';
 
     const BATCH_INPUT                           = 'batch_input';
     const BATCH_OUTPUT                          = 'batch_output';
@@ -365,6 +366,7 @@ class Type
             self::ISG_SUMMARY,
             self::FIRST_DATA_PARES_FILE,
             self::BULK_DISPUTES_FILE,
+            self::BULK_RAW_ADDRESS_FILE,
             self::PAYOUT_SAMPLE,
             self::AUBL_NETBANKING_CLAIM,
             self::AUBL_NETBANKING_REFUND,

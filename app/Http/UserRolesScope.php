@@ -998,6 +998,7 @@ class UserRolesScope
             'accounting_integration_put_chart_of_accounts'  => [Role::OWNER, Role::ADMIN],
             'accounting_integration_get_chart_of_accounts'  => [Role::OWNER, Role::ADMIN],
 
+            'raw_address_failed_file'                             => [Role::OWNER, Role::ADMIN],
             'update_serviceability_url'                           => [Role::OWNER, Role::ADMIN],
             'update_coupon_validity_url'                          => [Role::OWNER, Role::ADMIN],
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],

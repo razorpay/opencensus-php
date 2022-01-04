@@ -62,6 +62,20 @@ class Header
     const REFUND_TRANSFER_MODE      = 'Transfer Mode';
 
     //
+    // RawAddress Headers
+    //
+    const RAW_ADDRESS_BULK_NAME = 'name';
+    const RAW_ADDRESS_BULK_CONTACT = 'contact';
+    const RAW_ADDRESS_BULK_LINE1 = 'line1';
+    const RAW_ADDRESS_BULK_LINE2 = 'line2';
+    const RAW_ADDRESS_BULK_LANDMARK = 'landmark';
+    const RAW_ADDRESS_BULK_CITY = 'city';
+    const RAW_ADDRESS_BULK_STATE = 'state';
+    const RAW_ADDRESS_BULK_ZIPCODE = 'zipcode';
+    const RAW_ADDRESS_BULK_COUNTRY = 'country';
+    const RAW_ADDRESS_BULK_TAG = 'tag';
+    const RAW_ADDRESS_BULK_STATUS = 'status';
+    //
     // Payment Link Headers
     //
     const INVOICE_NUMBER           = 'Invoice Number';
@@ -1276,6 +1290,17 @@ class Header
         Header::PAYOUT_PURPOSE,
     ];
 
+    // Following is a list of columns that are mandatory headers in the raw address batch file
+    const MANDATORY_HEADERS_FOR_RAW_ADDRESS_BULK = [
+        Header::RAW_ADDRESS_BULK_NAME,
+        Header::RAW_ADDRESS_BULK_CONTACT,
+        Header::RAW_ADDRESS_BULK_CITY,
+        Header::RAW_ADDRESS_BULK_LINE1,
+        Header::RAW_ADDRESS_BULK_STATE,
+        Header::RAW_ADDRESS_BULK_COUNTRY,
+        Header::RAW_ADDRESS_BULK_ZIPCODE,
+    ];
+
 
     /**
      * Input and output file headers
@@ -1453,6 +1478,34 @@ class Header
                 self::ERROR_DESCRIPTION,
                 self::SPEED
             ],
+        ],
+
+        Type::RAW_ADDRESS => [
+            self::INPUT => [
+                self::RAW_ADDRESS_BULK_NAME,
+                self::RAW_ADDRESS_BULK_CONTACT,
+                self::RAW_ADDRESS_BULK_LINE1,
+                self::RAW_ADDRESS_BULK_LINE2,
+                self::RAW_ADDRESS_BULK_LANDMARK,
+                self::RAW_ADDRESS_BULK_CITY,
+                self::RAW_ADDRESS_BULK_STATE,
+                self::RAW_ADDRESS_BULK_ZIPCODE,
+                self::RAW_ADDRESS_BULK_COUNTRY,
+                self::RAW_ADDRESS_BULK_TAG,
+            ],
+            self::OUTPUT => [
+                self::RAW_ADDRESS_BULK_NAME,
+                self::RAW_ADDRESS_BULK_CONTACT,
+                self::RAW_ADDRESS_BULK_LINE1,
+                self::RAW_ADDRESS_BULK_LINE2,
+                self::RAW_ADDRESS_BULK_LANDMARK,
+                self::RAW_ADDRESS_BULK_CITY,
+                self::RAW_ADDRESS_BULK_STATE,
+                self::RAW_ADDRESS_BULK_ZIPCODE,
+                self::RAW_ADDRESS_BULK_COUNTRY,
+                self::RAW_ADDRESS_BULK_TAG,
+                self::RAW_ADDRESS_BULK_STATUS,
+            ]
         ],
 
         Type::PAYMENT_LINK => [
@@ -4280,6 +4333,12 @@ class Header
             $expectedHeaders[] = self::CONTACT_MOBILE;
         }
 
+        if ( $type === Type::RAW_ADDRESS)
+        {
+            self::validateRawAddressBulkHeaders($expectedHeaders, $actualHeaders);
+            return;
+        }
+
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.
@@ -4509,6 +4568,46 @@ class Header
     public static function validatePayoutLinkBulkHeaders(array $expectedHeaders, array $actualHeaders)
     {
         $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_PAYOUT_LINK_BULK;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
+    }
+
+    public static function validateRawAddressBulkHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_RAW_ADDRESS_BULK;
 
         foreach ($actualHeaders as $actualHeader)
         {

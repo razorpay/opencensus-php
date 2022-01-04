@@ -278,6 +278,10 @@ class Route
         'scrooge_entities_fetch'                   => ['post',     'scrooge/entities_fetch',                         'RefundController@scroogeFetchEntitiesV2'                           ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
+        'raw_address_create_batch_service'        => ['post',     'raw_address/batch_service',                     'RawAddressController@postCreateBatch'                             ],
+        'raw_address_kafka_cron'                  => ['post',     'raw_address/kafka_upload',                      'RawAddressController@uploadAddressesToKafka'                      ],
+        //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
+        'raw_address_failed_file'                 => ['get',      'raw_address/file/{batch_id}',                   'RawAddressController@getFailedAddressFile'                      ],
 
         // TODO: Add rate limiting on this route!
         'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
@@ -4267,6 +4271,9 @@ class Route
         'ledger_fetch_multiple_transactions',
         'onboard_old_accounts_to_ledger',
 
+        'raw_address_create_batch_service',
+        'raw_address_kafka_cron',
+
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
         'merchant_action_notification_cron',
 
@@ -4462,6 +4469,8 @@ class Route
     ];
 
     public static $proxy = [
+        'raw_address_create_batch_service',
+        'raw_address_failed_file',
         'shipping_provider_list',
         'shipping_provider_post',
         'shipping_provider_patch',
@@ -8982,6 +8991,8 @@ class Route
             'update_merchant_platform',
             'country_fetch',
             'state_fetch',
+
+            'raw_address_failed_file',
         ],
 
         'admin_dashboard' => [
@@ -10861,6 +10872,8 @@ class Route
             'firs_document_download',
             'country_fetch',
             'state_fetch',
+
+            'raw_address_failed_file',
         ],
 
         //
@@ -11177,6 +11190,7 @@ class Route
 
             'dispute_deduction_reversal_cron',
 
+            'raw_address_kafka_cron',
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',
@@ -11524,6 +11538,7 @@ class Route
             'create_exec_risk_action',
             'bulk_risk_action_status_comment',
             'onboard_old_accounts_to_ledger',
+            'raw_address_create_batch_service',
             'chargeback_poc',
             'whitelisted_domain',
             'debit_note_batch',

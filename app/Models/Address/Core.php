@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Customer;
+use RZP\Models\RawAddress;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -51,6 +52,11 @@ class Core extends Base\Core
         if($entityType === Type::CUSTOMER)
         {
             return $this->createForCustomer($entity, $input);
+        }
+
+        if($entityType === Type::RAW_ADDRESS)
+        {
+            return $this->createForRawAddress($entity, $input);
         }
 
         $address = (new Entity)->build($input);
@@ -116,6 +122,17 @@ class Core extends Base\Core
         $address = (new Entity)->buildForCustomer($input);
 
         $address->sourceAssociate($customer);
+
+        $this->repo->saveOrFail($address);
+
+        return $address;
+    }
+
+    protected function createForRawAddress(RawAddress\Entity $rawAddress, array $input)
+    {
+        $address = (new Entity)->buildForCustomer($input);
+
+        $address->sourceAssociate($rawAddress);
 
         $this->repo->saveOrFail($address);
 

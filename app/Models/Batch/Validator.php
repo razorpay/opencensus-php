@@ -25,6 +25,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Http\UserRolesScope;
 use RZP\Models\Payment\Refund;
+use RZP\Models\RawAddress;
 use RZP\Exception\BaseException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payout\BatchHelper;
@@ -780,6 +781,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $refundCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+    protected static $rawAddressCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
