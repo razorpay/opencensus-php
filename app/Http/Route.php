@@ -12814,7 +12814,7 @@ class Route
         'transfer_fetch'                                    => HeartbeatLagChecker::MASTER,
         'merchant_product_switch'                           => HeartbeatLagChecker::MASTER,
         'card_check_recurring'                              => HeartbeatLagChecker::MASTER,
-        'customer_fetch_tokens'                             => HeartbeatLagChecker::SLAVE,
+        'customer_fetch_tokens'                             => HeartbeatLagChecker::HEARTBEAT,
         'customer_create'                                   => HeartbeatLagChecker::HEARTBEAT,
         'merchant_fetch_config'                             => HeartbeatLagChecker::SLAVE,
         'merchant_fetch_config_internal'                    => HeartbeatLagChecker::SLAVE,
