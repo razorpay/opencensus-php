@@ -8,6 +8,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
 use RZP\Models\Base;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
@@ -85,7 +86,7 @@ class Service extends Base\Service
         return $order;
     }
 
-    public function canRouteOrderCreationToPGRouter($input)
+    public function canRouteOrderCreationToPGRouter($input, $merchant)
     {
         if ((app()->isEnvironmentProduction() === true) and
             ($this->mode === Mode::TEST))
@@ -103,7 +104,12 @@ class Service extends Base\Service
             return false;
         }
 
-        $result = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
+        if ($merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === true)
+        {
+            return false;
+        }
+
+        $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
 
         return ($result === 'on');
     }
@@ -112,7 +118,7 @@ class Service extends Base\Service
     {
         $this->checkRouteIsAccessible($input);
 
-        $routeToPGRouter = $this->canRouteOrderCreationToPGRouter($input);
+        $routeToPGRouter = $this->canRouteOrderCreationToPGRouter($input, $this->merchant);
 
         if ($routeToPGRouter === true)
         {
@@ -521,7 +527,7 @@ class Service extends Base\Service
     // This function is being used by Create Payment Link flow with options containing an Order
     public function createOrderFromOptionsForPaymentLinks(array $input, bool $enablePartialPayment = false)
     {
-        $routeToPGRouter = $this->canRouteOrderCreationToPGRouter($input);
+        $routeToPGRouter = $this->canRouteOrderCreationToPGRouter($input, $this->merchant);
 
         if ($routeToPGRouter === true)
         {

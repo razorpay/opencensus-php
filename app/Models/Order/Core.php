@@ -39,7 +39,7 @@ class Core extends Base\Core
      */
     public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false, $dummyProcessing=false)
     {
-        $routeToPGRouter = (new Service())->canRouteOrderCreationToPGRouter($input);
+        $routeToPGRouter = (new Service())->canRouteOrderCreationToPGRouter($input, $merchant);
 
         if ($routeToPGRouter === true)
         {
