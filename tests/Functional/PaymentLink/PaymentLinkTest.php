@@ -1942,7 +1942,7 @@ class PaymentLinkTest extends TestCase
     {
         $this->activateMerchantToTriggerPaymentHandleCreation();
 
-        $this->ba->proxyAuth('rzp_live_10000000000000');
+        $this->ba->proxyAuthLive();
 
         $ph = $this->getDbLastEntity('payment_link', MODE::LIVE);
 
@@ -1951,6 +1951,24 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('Test Label 123', $ph[Entity::TITLE]);
 
         $this->assertEquals('@testlabel123', $ph->getSlugFromShortUrl());
+    }
+
+    public function testPaymentHandleCreationWithDashInBillingLabel()
+    {
+        // billing label with -
+        $billingLabel = 'Test Label-123';
+
+        $this->activateMerchantToTriggerPaymentHandleCreation($billingLabel);
+
+        $this->ba->proxyAuthLive();
+
+        $ph = $this->getDbLastEntity('payment_link', MODE::LIVE);
+
+        $this->assertNotNull($ph);
+
+        $this->assertEquals('Test Label-123', $ph[Entity::TITLE]);
+
+        $this->assertEquals('@testlabel-123', $ph->getSlugFromShortUrl());
     }
 
     public function testPaymentHandleUpdate()
@@ -2043,8 +2061,10 @@ class PaymentLinkTest extends TestCase
 
     // -------------------- Protected methods --------------------
 
-    protected function activateMerchantToTriggerPaymentHandleCreation()
+    protected function activateMerchantToTriggerPaymentHandleCreation(string $billingLabel = 'Test Label 123')
     {
+        $handle = $this->createHandleFromBillingLabel($billingLabel);
+
         $gimli = $this->createMock(Gimli::class);
 
         $gimli->method('expandAndGetMetadata')->willReturn(null);
@@ -2054,7 +2074,7 @@ class PaymentLinkTest extends TestCase
         $elfin->method('driver')->willReturn($gimli);
 
         $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/@testlabel123"
+            "https://rzp.io/i/" . $handle
         );
 
         $this->app->instance('elfin', $elfin);
@@ -2071,7 +2091,7 @@ class PaymentLinkTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000000');
 
-        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => 'Test Label 123']);
+        $this->fixtures->merchant->edit('10000000000000', ['billing_label' => $billingLabel]);
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
@@ -2261,5 +2281,14 @@ class PaymentLinkTest extends TestCase
             null,
             true
         );
+    }
+
+    protected function createHandleFromBillingLabel(string $billingLabel)
+    {
+        $handle = preg_replace('/[^a-zA-Z0-9-]+/', '', $billingLabel);
+
+        $handle = '@' . strtolower(str_replace(' ', '', $billingLabel));
+
+        return $handle;
     }
 }

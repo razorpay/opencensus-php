@@ -2265,7 +2265,7 @@ class Core extends Base\Core
         $merchantBillingLabel = $merchant->getBillingLabel();
 
         // Remove all characters other than a-z, A-Z, 0-9 and space
-        $merchantBillingLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+        $merchantBillingLabel = preg_replace('/[^a-zA-Z0-9-]+/', '', $merchantBillingLabel);
 
         // removes spaces
         $merchantBillingLabel = '@' . strtolower(str_replace(' ', '', $merchantBillingLabel));
