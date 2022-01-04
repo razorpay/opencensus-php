@@ -321,8 +321,8 @@ class Core extends Base\Core
         $lastCronTime = $this->getLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
 
         $from = Carbon::createFromTimestamp($lastCronTime)
-            ->subHour()
-            ->getTimestamp();
+                      ->subHour()
+                      ->getTimestamp();
 
         $to = Carbon::now()->subHour()->getTimestamp();
 
@@ -369,20 +369,17 @@ class Core extends Base\Core
             {
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                // fetch merchants first transaction details
-                $merchantsTransaction = $this->repo->transaction->fetchFirstTransactionDetails($merchantId);
-
                 $previousActivationStatus = $this->repo->state->getPreviousActivationStatus($merchant->getId());
 
-                $isM2MReferral = (new M2MService())->sendMtuEventIfApplicable($merchant, $merchantsTransaction);
+                $code = (new M2MService())->getReferralCodeIfApplicable($merchant);
 
                 $properties = [
                     'mtu'                         => true,
                     'first_transaction_timestamp' => Carbon::now()->getTimestamp(),
                     'activation_status'           => $merchant->merchantDetail->getActivationStatus(),
                     'previous_activation_status'  => $previousActivationStatus['name'],
-                    'is_m2m_referral'             => $isM2MReferral,
-                    'amount'                      => $merchantsTransaction['amount']
+                    'referral_code'               => $code,
+                    'is_m2m_referral'             => $code != null
                 ];
 
                 $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);

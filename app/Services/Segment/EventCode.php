@@ -22,6 +22,8 @@ class EventCode
 
     const MTU_TRANSACTED            = 'MTU Transacted';
 
+    const PURCHASE_EVENT_SENT            = 'Purchase Event Sent';
+
     const KYC_FORM_SAVED            = 'KYC Form Saved';
 
     const KYC_STATUS_CHANGE         = 'KYC Status Change';

@@ -26,6 +26,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\M2MReferral\FriendBuy\Constants as FB;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\M2MReferral\Constants as M2MConstants;
 use RZP\Models\Merchant\M2MReferral\FriendBuy\FriendBuyService;
 use RZP\Models\Coupon\Entity as CouponEntity;
 use RZP\Models\Coupon\Core as CouponCore;
@@ -145,7 +146,7 @@ class Service extends Base\Service
      *
      * @return void
      */
-    public function sendMtuEventIfApplicable(MerchantEntity $merchant, $input): bool
+    public function sendPurchaseEventIfApplicable(MerchantEntity $merchant, $input)
     {
         try
         {
@@ -163,9 +164,9 @@ class Service extends Base\Service
 
                 $m2mReferral = $this->core->editM2MReferral($m2mReferral, $input);
 
-                $this->sendMtuEvent($m2mReferral);
+                $this->sendPurchaseEvent($m2mReferral);
 
-                return true;
+                return $m2mReferral->getValueFromMetaData(M2MConstants::REFERRAL_CODE);
             }
         }
         catch (\Exception $e)
@@ -178,10 +179,32 @@ class Service extends Base\Service
 
         }
 
-        return false;
+        return null;
     }
+    public function getReferralCodeIfApplicable(MerchantEntity $merchant)
+    {
+        try
+        {
+            $m2mReferral = $this->entityRepo->getReferralDetailsFromMerchantId($merchant->getId());
 
-    protected function sendMtuEvent($m2mReferral)
+            if (empty($m2mReferral) === false)
+            {
+                return $m2mReferral->getValueFromMetaData(M2MConstants::REFERRAL_CODE);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::SEND_MTU_EVENT_FAILED,
+                                         [
+                                             DEConstants::MERCHANT_ID => $merchant->getId()]);
+
+        }
+
+        return null;
+    }
+    protected function sendPurchaseEvent($m2mReferral)
     {
 
         $fbresponse = (new FriendBuyService())->postMtuEvent(new FriendBuy\MtuEventRequest($m2mReferral));
@@ -469,7 +492,7 @@ class Service extends Base\Service
             $m2mReferralInput[Constants::MOBILE] = $data[UserEntity::CONTACT_MOBILE];
         }
 
-        $this->trace->info(TraceCode::FRIEND_BUY_REWARD_VALIDATION_FAILED, [
+        $this->trace->info(TraceCode::FRIEND_BUY_SIGNUP, [
             'params' => $m2mReferralInput,
         ]);
 

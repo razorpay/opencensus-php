@@ -25,8 +25,10 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use Illuminate\Auth\Access\AuthorizationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Models\Merchant\M2MReferral\Constants as M2MConstants;
 use RZP\Models\Merchant\M2MReferral\FriendBuy\FriendBuyClient;
+use RZP\Models\Merchant\Onboarding\Cron\FriendBuySendPurchaseEvents;
 use RZP\Models\Merchant\M2MReferral\FriendBuy\Constants as FBConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
@@ -47,20 +49,6 @@ class M2MReferralTest extends TestCase
         $this->enableRazorXTreatmentForRazorX();
     }
 
-    private function createTransaction(string $merchantId, string $type, int $amount, int $createdAt = null)
-    {
-        if ($createdAt === null)
-        {
-            $createdAt = Carbon::now()->getTimestamp();
-        }
-
-        $transaction = $this->fixtures->create('transaction', [
-            'type'        => $type,
-            'amount'      => $amount * 100,   // in paisa
-            'merchant_id' => $merchantId,
-            'created_at'  => $createdAt
-        ]);
-    }
 
     private function createMerchant($merchantId)
     {
@@ -83,6 +71,33 @@ class M2MReferralTest extends TestCase
             'merchant_id' => $merchantId,
             'created_at'  => $createdAt
         ]);
+
+        $transaction = $this->fixtures->create('transaction', [
+            'type'        => 'payment',
+            'amount'      => $amount * 100,   // in paisa
+            'merchant_id' => $merchantId,
+            'created_at'  => $createdAt
+        ]);
+    }
+    public function mockDruid($merchantId,$amount)
+    {
+
+        config(['services.druid.mock' => true]);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+                             ->setConstructorArgs([$this->app])
+                             ->setMethods(['getDataFromDruid'])
+                             ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = [
+            'merchant_lifetime_gmv'           => $amount,
+            'merchant_details_merchant_id'    => $merchantId
+        ];
+
+        $druidService->method('getDataFromDruid')
+                     ->willReturn([null, [$dataFromDruid]]);
     }
 
     protected function mockHubSpotClient($methodName, $times = 1)
@@ -306,31 +321,22 @@ class M2MReferralTest extends TestCase
         $this->assertNotNull($data);
         $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
 
-        $createdAt = Carbon::now()->subHour()->getTimestamp();
+        $transaction = $this->createPayment($m2mReferral->getAttribute('merchant_id'),1000);
 
-        $transaction = $this->fixtures->create('payment', [
-            'amount'      => 1000 * 100,   // in paisa
-            'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => $createdAt
-        ]);
-        $transaction = $this->fixtures->create('transaction', [
-            'type'        => 'payment',
-            'amount'      => 1000 * 100,   // in paisa
-            'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => $createdAt
-        ]);
-        $transaction = $this->fixtures->create('payment', [
-            'amount'      => 50 * 100,   // in paisa
-            'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => $createdAt
-        ]);
-        $transaction = $this->fixtures->create('transaction', [
-            'type'        => 'payment',
-            'amount'      => 50 * 100,   // in paisa
-            'merchant_id' => $m2mReferral->getAttribute('merchant_id'),
-            'created_at'  => $createdAt
-        ]);
-        (new \RZP\Models\Merchant\Escalations\Core)->handleMtuSegmentEvent();
+        (new FriendBuySendPurchaseEvents())->execute(null);
+        $m2mReferral = $this->getDbLastEntity('m2m_referral');
+        $this->assertEquals(M2MEntityStatus::SIGNUP_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
+        $data = [
+            StoreConstants::NAMESPACE => StoreConfigKey::ONBOARDING_NAMESPACE
+        ];
+        $data = (new StoreCore())->fetchMerchantStore($m2mReferral->getAttribute('merchant_id'), $data,StoreConstants::INTERNAL);
+        $this->assertNotNull($data);
+        $this->assertEquals(true, $data[StoreConfigKey::IS_SIGNED_UP_REFEREE]);
+
+        $transaction = $this->createPayment($m2mReferral->getAttribute('merchant_id'),1000);
+
+
+        (new FriendBuySendPurchaseEvents())->execute(null);
         $m2mReferral = $this->getDbLastEntity('m2m_referral');
         $this->assertEquals(M2MEntityStatus::MTU_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
         $data = [

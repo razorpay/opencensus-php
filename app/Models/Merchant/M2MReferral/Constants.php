@@ -37,11 +37,12 @@ class Constants
     const REWARD_ID        = 'reward_id';
     const SIGN_UP_EVENT_ID = 'sign_up_event_id';
 
-    const M2M_REFERRAL_SUCCESS_POPUP_COUNT = 'M2M_REFERRAL_SUCCESS_POPUP_COUNT';
-    const REFERRER                         = "referrer";
-    const REFEREE                          = "referee";
-    const REFEREE_DETAILS                  = "referee";
-    const REFERRAL_LINK                    = 'referral_link';
+    const M2M_REFERRAL_SUCCESS_POPUP_COUNT    = 'M2M_REFERRAL_SUCCESS_POPUP_COUNT';
+    const M2M_REFERRAL_MIN_TRANSACTION_AMOUNT = 'M2M_REFERRAL_MIN_TRANSACTION_AMOUNT';
+    const REFERRER                            = "referrer";
+    const REFEREE                             = "referee";
+    const REFEREE_DETAILS                     = "referee";
+    const REFERRAL_LINK                       = 'referral_link';
 
     const CREDITS_RECEIVED = 'creditsReceived';
     const REFERRAL_MID     = "referralMID";

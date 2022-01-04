@@ -19,6 +19,7 @@ class Route
 {
     protected static $apiRoutes = [
         //friend buy
+        'friendbuy_purchase_events' => ['post', 'friendbuy/purchase_events',  'ReferralController@sendPurchaseEvents' ],
         'friend_buy_reward_validation'  =>  ['post',    'friendbuy/reward_validation',  'ReferralController@performRewardValidation' ],
 
         // Dev routes
@@ -4074,6 +4075,7 @@ class Route
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
         'enable_m2m_referrals_cron',
+        'friendbuy_purchase_events',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
         'credits_create_bulk_batch',
@@ -6117,6 +6119,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'friendbuy_purchase_events'                 => Permission::EDIT_MERCHANT,
         'm2m_referral_link_get'                     => Permission::VIEW_MERCHANT,
         'm2m_referral_link_get_public'              => Permission::VIEW_MERCHANT,
         'admin_merchant_post_preferences'           => Permission::UPDATE_MERCHANT_PREFERENCE,
@@ -11057,6 +11060,7 @@ class Route
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update',
             'enable_m2m_referrals_cron',
+            'friendbuy_purchase_events',
             'retry_penny_testing_cron',
             'payment_links_bulk_expire',
             'fee_recovery_payout_process',

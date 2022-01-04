@@ -35,13 +35,11 @@ class MtuEventRequest extends FriendBuyRequest
 
         $this->referralCode = $m2mEntity->getValueFromMetaData(M2MConstants::REFERRAL_CODE);
 
-        $this->referralCode = $m2mEntity->getValueFromMetaData(M2MConstants::REFERRAL_CODE);
-
         $this->amount   = $m2mEntity->getValueFromMetaData(Constants::AMOUNT);
 
         $this->currency = $m2mEntity->getValueFromMetaData(Constants::CURRENCY);
 
-        $this->orderId  = $m2mEntity->getValueFromMetaData(Constants::ID);
+        $this->orderId = $m2mEntity->getId();
 
         $this->name = $m2mEntity->getValueFromMetaData(M2MConstants::FIRST_NAME);
 

@@ -3440,33 +3440,33 @@ We look forward to transacting with you!
         Config::set('services.bvs.mock', true);
     }
 
-    public function testUpdateGstinSelfServeWithGSTInvoices()
-    {
-        $this->createMerchantAndInvoiceData();
-
-        $this->initiateGstinSelfServe();
-
-        $this->setBvsValidationDetailForGstinUpdateSelfServe();
-
-        $this->assertGstinSelfServeStatusAndRejectionReason([
-                                                                'workflow_exists'          => false,
-                                                                'request_under_validation' => true
-                                                            ]);
-
-        $this->processBvsResponseForGstinSelfServe();
-
-        $this->assertCacheDataNullForGstinSelfServe('10000000000000');
-
-        $entities = $this->getEntities('merchant_invoice', [], true);
-
-        $this->assertEquals(5, $entities['count']);
-
-        $file = $this->getLastEntity('file_store', true);
-
-        $this->assertEquals('10000000000000', $file['merchant_id']);
-
-        $this->assertEquals('merchant_pg_invoices/2018/2/10000000000000', $file['name']);
-    }
+    //public function testUpdateGstinSelfServeWithGSTInvoices()
+    //{
+    //    $this->createMerchantAndInvoiceData();
+    //
+    //    $this->initiateGstinSelfServe();
+    //
+    //    $this->setBvsValidationDetailForGstinUpdateSelfServe();
+    //
+    //    $this->assertGstinSelfServeStatusAndRejectionReason([
+    //                                                            'workflow_exists'          => false,
+    //                                                            'request_under_validation' => true
+    //                                                        ]);
+    //
+    //    $this->processBvsResponseForGstinSelfServe();
+    //
+    //    $this->assertCacheDataNullForGstinSelfServe('10000000000000');
+    //
+    //    $entities = $this->getEntities('merchant_invoice', [], true);
+    //
+    //    $this->assertEquals(5, $entities['count']);
+    //
+    //    $file = $this->getLastEntity('file_store', true);
+    //
+    //    $this->assertEquals('10000000000000', $file['merchant_id']);
+    //
+    //    $this->assertEquals('merchant_pg_invoices/2018/2/10000000000000', $file['name']);
+    //}
 
     public function testUpdateGstinSelfServe()
     {

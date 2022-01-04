@@ -9,6 +9,7 @@ use RZP\Models\Feature\Type;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\M2MReferral\Service;
 use RZP\Http\Requests\RewardValidationRequest;
+use RZP\Models\Merchant\Onboarding\Cron\FriendBuySendPurchaseEvents;
 
 class ReferralController extends Controller
 {
@@ -20,6 +21,11 @@ class ReferralController extends Controller
         $this->service()->performRewardValidation($request);
 
         return ApiResponse::json([]);
+    }
+
+    public function sendPurchaseEvents()
+    {
+        (new FriendBuySendPurchaseEvents())->execute(null);
     }
 
     public function fetchReferralDetails()
