@@ -2769,4 +2769,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json([]);
     }
+
+    public function getFUXDetailsForPartner()
+    {
+        $response = $this->service()->getFUXDetailsForPartner();
+
+        return ApiResponse::json($response);
+    }
 }

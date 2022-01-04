@@ -2626,4 +2626,13 @@ class Repository extends Base\Repository
                     ->take($paymentCountThreshold)
                     ->get();
     }
+
+    public function fetchCommissionPayoutsCount(array $commissionIds) : int
+    {
+        return $this->newQuery()
+                    ->where($this->dbColumn(Entity::TYPE), Type::COMMISSION)
+                    ->where($this->dbColumn(Entity::ON_HOLD), false)
+                    ->whereIn($this->dbColumn(Entity::ENTITY_ID), $commissionIds)
+                    ->count();
+    }
 }

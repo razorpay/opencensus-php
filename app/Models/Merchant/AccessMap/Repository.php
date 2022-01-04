@@ -234,4 +234,11 @@ class Repository extends Base\Repository
                     ->distinct()
                     ->count();
     }
+
+    public function isSubmerchantPresentForPartner(string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->exists();
+    }
 }

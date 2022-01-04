@@ -122,6 +122,8 @@ use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPar
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\TrustedBadge;
+use RZP\Models\Partner\Commission\Core as PartnerCommissionCore;
+use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 
 class Service extends Base\Service
 {
@@ -8433,5 +8435,24 @@ class Service extends Base\Service
         $input['error_message'] = $errorMsg;
 
         return $input;
+    }
+
+    public function getFUXDetailsForPartner() : array
+    {
+        (new Merchant\Validator)->validateIsPartner($this->merchant);
+
+        $partnerId = $this->merchant->getId();
+
+        $response = [];
+
+        $response['first_submerchant_added'] = $this->repo->merchant_access_map->isSubmerchantPresentForPartner($partnerId);
+
+        $response['first_earning_generated'] = $this->repo->commission->isEarningsPresentForPartner($partnerId);
+
+        $response['first_commission_payout'] = $this->repo->commission->isCommissionPayoutPresentForPartner($partnerId);
+
+        $response['api_integration'] = $this->repo->entity_origin->isOriginApplicationPresentForPartner($partnerId);
+
+        return $response;
     }
 }

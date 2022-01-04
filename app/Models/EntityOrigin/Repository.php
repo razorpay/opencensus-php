@@ -4,6 +4,8 @@ namespace RZP\Models\EntityOrigin;
 
 use RZP\Constants;
 use RZP\Models\Base\Repository as BaseRepository;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
+use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
 
 class Repository extends BaseRepository
 {
@@ -22,5 +24,17 @@ class Repository extends BaseRepository
                     ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->first();
+    }
+
+    public function isOriginApplicationPresentForPartner(string $partnerId)
+    {
+        $merchantApplicationIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::APPLICATION_ID);
+        $originIdColumn = $this->dbColumn(Entity::ORIGIN_ID);
+        $merchantIdColumn = $this->repo->merchant_application->dbColumn(MerchantApplicationsEntity::MERCHANT_ID);
+        return $this->newQuery()
+                    ->join(Constants\Table::MERCHANT_APPLICATION, $originIdColumn, '=', $merchantApplicationIdColumn)
+                    ->where(Entity::ORIGIN_TYPE, EntityOriginConstants::APPLICATION)
+                    ->where($merchantIdColumn, '=', $partnerId)
+                    ->exists();
     }
 }

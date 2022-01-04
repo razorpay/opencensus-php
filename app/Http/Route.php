@@ -2313,6 +2313,7 @@ class Route
         'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+        'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'              ],
 
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerActivationController@updatePartnerActivationStatus'         ],
@@ -4839,6 +4840,7 @@ class Route
         'd2c_bureau_details_otp_submit',
         'd2c_bureau_reports_patch',
         'update_partner_type',
+        'fetch_partner_first_user_experience',
         'offer_create',
         'offer_update',
         'offer_fetch_multiple',
@@ -6738,6 +6740,7 @@ class Route
         'oauth_application_fetch_multiple'         => Permission::VIEW_PARTNERS,
         'merchant_associated_accounts_fetch'       => Permission::VIEW_PARTNERS,
         'fetch_merchant_products'                  => Permission::VIEW_PARTNERS,
+        'fetch_partner_first_user_experience'      => Permission::VIEW_PARTNERS,
         'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
         'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
         'product_tnc_map_create'                   => Permission::ADMIN_MANAGE_PARTNERS,
@@ -8816,6 +8819,7 @@ class Route
             'update_merchant_options_admin',
             'update_partner_intent',
             'update_partner_type',
+            'fetch_partner_first_user_experience',
             'update_survey_tracker',
             'increase_transaction_limit_self_serve',
             'merchant_workflow_details',

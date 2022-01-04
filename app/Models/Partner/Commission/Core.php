@@ -50,7 +50,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates partner commission entities from a captured payment 
+     * Creates partner commission entities from a captured payment
      *
      * @param Payment\Entity $payment
      *

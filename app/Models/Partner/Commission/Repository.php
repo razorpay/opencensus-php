@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Commission;
 
+use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
@@ -9,6 +10,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Partner\Config\CommissionModel;
 use RZP\Models\Base\Repository as BaseRepository;
 use Carbon\Carbon;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 
 class Repository extends BaseRepository
 {
@@ -116,6 +118,30 @@ class Repository extends BaseRepository
             'nonzero_tax_primary' => $nonZeroTaxDetailsPrimary,
             'nonzero_tax_banking' => $nonZeroTaxDetailsBanking,
         ];
+    }
+
+    public function isEarningsPresentForPartner(string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SOURCE_TYPE, Constants::PAYMENT)
+                    ->where(Entity::PARTNER_ID, $partnerId)
+                    ->exists();
+    }
+
+    public function isCommissionPayoutPresentForPartner(string $partnerId)
+    {
+        $commissionIdColumn = $this->dbColumn(Entity::ID);
+        $entityIdColumn = $this->repo->transaction->dbColumn(TransactionEntity::ENTITY_ID);
+        $typeColumn = $this->repo->transaction->dbColumn(Entity::TYPE);
+        $onHoldColumn = $this->repo->transaction->dbColumn(TransactionEntity::ON_HOLD);
+
+        return $this->newQuery()
+                    ->join(Table::TRANSACTION, $entityIdColumn, '=', $commissionIdColumn)
+                    ->where(Entity::SOURCE_TYPE, Constants::PAYMENT)
+                    ->where(Entity::PARTNER_ID, $partnerId)
+                    ->where($typeColumn, \RZP\Models\Transaction\Type::COMMISSION)
+                    ->where($onHoldColumn, false)
+                    ->exists();
     }
 
     /**

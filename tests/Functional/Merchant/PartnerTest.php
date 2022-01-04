@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
