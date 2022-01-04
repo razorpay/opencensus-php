@@ -1487,6 +1487,12 @@ class AdminFetch
             ],
             Entity::PAYOUTS_PAYOUTS => [
             ],
+            Entity::PAYOUTS_REVERSALS => [
+            ],
+            Entity::PAYOUTS_PAYOUT_LOGS => [
+            ],
+            Entity::PAYOUTS_PAYOUT_SOURCES => [
+            ],
         ];
     }
 

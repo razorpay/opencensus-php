@@ -12,6 +12,12 @@ class AdminFetch extends Base
 
     const FETCH_PAYOUTS_URI = self::FETCH_PAYOUTS_BASE_URI . '/payouts';
 
+    const FETCH_REVERSALS_URI = self::FETCH_PAYOUTS_BASE_URI . '/reversals';
+
+    const FETCH_PAYOUT_LOGS_URI = self::FETCH_PAYOUTS_BASE_URI . '/payout_logs';
+
+    const FETCH_PAYOUT_SOURCES_URI = self::FETCH_PAYOUTS_BASE_URI . '/payout_sources';
+
     // payout create service name for singleton class
     const PAYOUT_SERVICE_ADMIN_FETCH = 'payout_service_admin_fetch';
 
@@ -29,20 +35,20 @@ class AdminFetch extends Base
 
     protected function getEntity(string $entity, array $input)
     {
-        $methodName = 'get' . studly_case($entity);
+        $urlConstantName = 'FETCH_' . strtoupper($entity) . "_URI";
 
-        if (method_exists($this, $methodName) === true)
+        $urlConstant = __CLASS__ . '::' . strtoupper($urlConstantName);
+
+        if (defined($urlConstant) === true)
         {
-            return $this->$methodName($input);
+            return $this->modifyAndSendRequestAndGetContent($input, constant($urlConstant));
         }
 
         return [];
     }
 
-    protected function getPayouts(array $input)
+    protected function modifyAndSendRequestAndGetContent(array $input, $url)
     {
-        $url = self::FETCH_PAYOUTS_URI;
-
         $this->modifyUriAndContentIfApplicable($input, $url);
 
         $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];

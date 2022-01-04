@@ -140,7 +140,6 @@ class PayoutServiceTest extends TestCase
         $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
     }
 
-
     public function mockPayoutServiceGetAnalytics($fail = false, $request = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
@@ -244,8 +243,6 @@ class PayoutServiceTest extends TestCase
                                             return $this->adminGetResponseForService($entity, $id);
                                         }
                                     );
-
-        //$this->app->instance(PayoutServiceAdminFetch::PAYOUT_SERVICE_ADMIN_FETCH, $payoutServiceAdminFetchMock);
     }
 
     public function mockPayoutServiceStatus($status, $fail = false)
@@ -1658,12 +1655,59 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('pout_Gg7sgBZgvYjlSB', $response['id']);
     }
 
+    public function testAdminFetchReversalsViaService()
+    {
+        $this->mockPayoutServiceAdminFetch();
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+
+        $this->assertEquals('rev_Gg7sgBZgvYjlSB', $response['id']);
+    }
+
+    public function testAdminFetchPayoutLogsViaService()
+    {
+        $this->mockPayoutServiceAdminFetch();
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+
+        $this->assertEquals('poutlog_Gg7sgBZgvYjlSB', $response['id']);
+    }
+
+    public function testAdminFetchPayoutSourcesViaService()
+    {
+        $this->mockPayoutServiceAdminFetch();
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertTrue(is_array($response));
+
+        $this->assertNotEmpty($response);
+
+        $this->assertEquals('poutsrc_Gg7sgBZgvYjlSB', $response['id']);
+    }
+
     public function adminGetResponseForService($entity, $id)
     {
         if (empty($entity) === true)
         {
             return [];
         }
+
+        $entity = str_replace('_', '', $entity);
 
         $function = 'getAdminFetchFor' . ucfirst($entity) . 'ViaService';
 
@@ -1675,6 +1719,36 @@ class PayoutServiceTest extends TestCase
         if (empty($id) === false)
         {
             return $this->getAdminFetchForPayoutsByIdViaService();
+        }
+
+        return [];
+    }
+
+    protected function getAdminFetchForReversalsViaService($id)
+    {
+        if (empty($id) === false)
+        {
+            return $this->getAdminFetchForReversalsByIdViaService();
+        }
+
+        return [];
+    }
+
+    protected function getAdminFetchForPayoutLogsViaService($id)
+    {
+        if (empty($id) === false)
+        {
+            return $this->getAdminFetchForPayoutLogsByIdViaService();
+        }
+
+        return [];
+    }
+
+    protected function getAdminFetchForPayoutSourcesViaService($id)
+    {
+        if (empty($id) === false)
+        {
+            return $this->getAdminFetchForPayoutSourcesByIdViaService();
         }
 
         return [];
@@ -1703,6 +1777,63 @@ class PayoutServiceTest extends TestCase
                 "failure_reason"    =>   null,
                 "created_at"        =>   1614325826,
                 "fee_type"          =>   null
+            ];
+
+        return $response;
+    }
+
+    protected function getAdminFetchForReversalsByIdViaService()
+    {
+        $response =
+            [
+                "id"             => "rev_Gg7sgBZgvYjlSB",
+                "entity"         => "reversal",
+                "amount"         => 100,
+                "currency"       => "INR",
+                "payout_id"      => "Gg7sgBZgvYjlSC",
+                "merchant_id"    => "10000000000000",
+                "balance_id"     => "10000000000000",
+                "notes"          => "",
+                "fees"           => 0,
+                "tax"            => 0,
+                "utr"            => "",
+                "transaction_id" => "Fg7sgBZgvYjlSB",
+                "created_at"     => 1614325826,
+                "channel"        => "yesbank",
+            ];
+
+        return $response;
+    }
+
+    protected function getAdminFetchForPayoutLogsByIdViaService()
+    {
+        $response =
+            [
+                "id"           => "poutlog_Gg7sgBZgvYjlSB",
+                "entity"       => "payout_log",
+                "payout_id"    => "Gg7sgBZgvYjlSC",
+                "triggered_by" => "",
+                "mode"         => 0,
+                "to"           => "processed",
+                "from"         => "initiated",
+                "event"        => "txn_Fg7sgBZgvYjlSB",
+                "created_at"   => 1614325826,
+            ];
+
+        return $response;
+    }
+
+    public function getAdminFetchForPayoutSourcesByIdViaService()
+    {
+        $response =
+            [
+                "id"          => "poutsrc_Gg7sgBZgvYjlSB",
+                "entity"      => "payout_source",
+                "payout_id"   => "Gg7sgBZgvYjlSC",
+                "source_id"   => "vp_Gg7sgBZgvYjlSJ",
+                "source_type" => "vendor_payment",
+                "priority"    => 1,
+                "created_at"  => 1614325826,
             ];
 
         return $response;

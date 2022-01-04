@@ -767,4 +767,43 @@ return [
             ],
         ],
     ],
+
+    'testAdminFetchReversalsViaService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/payouts.reversals/Gg7sgBZgvYjlSB',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testAdminFetchPayoutLogsViaService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/payouts.payout_logs/Gg7sgBZgvYjlSB',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testAdminFetchPayoutSourcesViaService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/admin/payouts.payout_sources/Gg7sgBZgvYjlSB',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

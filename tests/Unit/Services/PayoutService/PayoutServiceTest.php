@@ -29,74 +29,57 @@ class PayoutServiceTest extends TestCase
     // functionality before the fetch function is called and what happens after it's response.
     public function testAdminFetchViaServiceForPayouts()
     {
-        $payoutServiceAdminFetchMock = Mockery::mock('RZP\Services\PayoutService\AdminFetch',
-                                                     [$this->app])->makePartial();
+        $entityId = 'Gg7sgBZgvYjlSB';
 
-        $payoutId = "Gg7sgBZgvYjlSB";
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('payouts', $entityId);
 
-        $payoutServiceAdminFetchMock->shouldReceive('sendRequest')
-                                    ->withArgs(
-                                        function($request) use ($payoutId) {
-                                            try
-                                            {
-                                                if (empty($request['url']) === false)
-                                                {
-                                                    return (substr($request['url'], -37) ===
-                                                            '/payouts/admin/payouts/' . $payoutId);
-                                                }
+        $response = $payoutServiceAdminFetchMock->fetch('payouts', $entityId, []);
 
-                                                return false;
-                                            }
-                                            catch (\Throwable $e)
-                                            {
-                                                return false;
-                                            }
-                                        })
-                                    ->andReturnUsing(
-                                        function() use ($payoutId) {
-                                            return $this->adminGetResponseForService('payouts', $payoutId);
-                                        }
-                                    );
+        $this->assertEquals('pout_' . $entityId, $response['id']);
+    }
 
-        $response = $payoutServiceAdminFetchMock->fetch('payouts', $payoutId, []);
+    public function testAdminFetchViaServiceForReversals()
+    {
+        $entityId = 'Gg7sgBZgvYjlSB';
 
-        $this->assertEquals('pout_' . $payoutId, $response['id']);
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('reversals', $entityId);
+
+        $response = $payoutServiceAdminFetchMock->fetch('reversals', $entityId, []);
+
+        $this->assertEquals('rev_' . $entityId, $response['id']);
+    }
+
+    public function testAdminFetchViaServiceForPayoutLogs()
+    {
+        $entityId = 'Gg7sgBZgvYjlSB';
+
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('payout_logs', $entityId);
+
+        $response = $payoutServiceAdminFetchMock->fetch('payout_logs', $entityId, []);
+
+        $this->assertEquals('poutlog_' . $entityId, $response['id']);
+    }
+
+    public function testAdminFetchViaServiceForPayoutSources()
+    {
+        $entityId = 'Gg7sgBZgvYjlSB';
+
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('payout_sources', $entityId);
+
+        $response = $payoutServiceAdminFetchMock->fetch('payout_sources', $entityId, []);
+
+        $this->assertEquals('poutsrc_' . $entityId, $response['id']);
     }
 
     public function testAdminFetchViaServiceForPayoutsWithServiceFailure()
     {
-        $payoutServiceAdminFetchMock = Mockery::mock('RZP\Services\PayoutService\AdminFetch',
-                                                     [$this->app])->makePartial();
+        $entityId = 'Gg7sgBZgvYjlSB';
 
-        $payoutId = "Gg7sgBZgvYjlSB";
-
-        $payoutServiceAdminFetchMock->shouldReceive('sendRequest')
-                                    ->withArgs(
-                                        function($request) use ($payoutId) {
-                                            try
-                                            {
-                                                if (empty($request['url']) === false)
-                                                {
-                                                    return (substr($request['url'], -37) ===
-                                                            '/payouts/admin/payouts/' . $payoutId);
-                                                }
-
-                                                return false;
-                                            }
-                                            catch (\Throwable $e)
-                                            {
-                                                return false;
-                                            }
-                                        })
-                                    ->andReturnUsing(
-                                        function() use ($payoutId) {
-                                            return $this->adminGetResponseForService('payouts', $payoutId, true);
-                                        }
-                                    );
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('payouts', $entityId, true);
 
         try
         {
-            $payoutServiceAdminFetchMock->fetch('payouts', $payoutId, []);
+            $payoutServiceAdminFetchMock->fetch('payouts', $entityId, []);
 
         }
         catch (\Throwable $throwable)
@@ -105,6 +88,97 @@ class PayoutServiceTest extends TestCase
             $this->assertEquals(ErrorCode::BAD_REQUEST_ERROR, $throwable->getCode());
 
         }
+    }
+
+    public function testAdminFetchViaServiceForReversalsWithServiceFailure()
+    {
+        $entityId = 'Gg7sgBZgvYjlSB';
+
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('reversals', $entityId, true);
+
+        try
+        {
+            $payoutServiceAdminFetchMock->fetch('reversals', $entityId, []);
+
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->assertEquals("Service Failure", $throwable->getMessage());
+            $this->assertEquals(ErrorCode::BAD_REQUEST_ERROR, $throwable->getCode());
+
+        }
+    }
+
+    public function testAdminFetchViaServiceForPayoutLogsWithServiceFailure()
+    {
+        $entityId = 'Gg7sgBZgvYjlSB';
+
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('payout_logs', $entityId, true);
+
+        try
+        {
+            $payoutServiceAdminFetchMock->fetch('payout_logs', $entityId, []);
+
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->assertEquals("Service Failure", $throwable->getMessage());
+            $this->assertEquals(ErrorCode::BAD_REQUEST_ERROR, $throwable->getCode());
+
+        }
+    }
+
+    public function testAdminFetchViaServiceForPayoutSourcesWithServiceFailure()
+    {
+        $entityId = 'Gg7sgBZgvYjlSB';
+
+        $payoutServiceAdminFetchMock = $this->createMockForAdminFetch('payout_sources', $entityId, true);
+
+        try
+        {
+            $payoutServiceAdminFetchMock->fetch('payout_sources', $entityId, []);
+
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->assertEquals("Service Failure", $throwable->getMessage());
+            $this->assertEquals(ErrorCode::BAD_REQUEST_ERROR, $throwable->getCode());
+
+        }
+    }
+
+    protected function createMockForAdminFetch($entity, $entityId, $fail = false)
+    {
+        $payoutServiceAdminFetchMock = Mockery::mock('RZP\Services\PayoutService\AdminFetch',
+                                                     [$this->app])->makePartial();
+
+        $expectedUrl = '/payouts/admin/' . $entity . '/' . $entityId;
+
+        $payoutServiceAdminFetchMock->shouldReceive('sendRequest')
+                                    ->withArgs(
+                                        function($request) use ($expectedUrl) {
+                                            try
+                                            {
+                                                if (empty($request['url']) === false)
+                                                {
+                                                    return (substr($request['url'], -1 * strlen($expectedUrl)) ===
+                                                            $expectedUrl);
+                                                }
+
+                                                return false;
+                                            }
+                                            catch (\Throwable $e)
+                                            {
+                                                return false;
+                                            }
+                                        })
+                                    ->andReturnUsing(
+                                        function() use ($entity, $entityId, $fail) {
+                                            return $this->adminGetResponseForService($entity, $entityId, $fail);
+                                        }
+                                    );
+
+        return $payoutServiceAdminFetchMock;
     }
 
     protected function adminGetResponseForService($entity, $id, $fail = false)
