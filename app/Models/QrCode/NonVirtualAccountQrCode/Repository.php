@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use RZP\Models\Order;
 use RZP\Models\QrCode;
 use RZP\Models\Base\PublicEntity;
 
@@ -9,7 +10,9 @@ class Repository extends QrCode\Repository
 {
     public function isEsSyncNeeded(string $action, array $dirty = null, PublicEntity $qrCode = null): bool
     {
-        if ($qrCode->source !== null)
+        // Sync in ES only for QRv2 created via API, DASHBOARD
+        if (($qrCode->source !== null) or
+            ($qrCode->getRequestSource() === RequestSource::CHECKOUT))
         {
             return false;
         }
@@ -37,5 +40,14 @@ class Repository extends QrCode\Repository
     public function addQueryParamEntityType($query, $params)
     {
         $query->whereNull(Entity::ENTITY_TYPE);
+    }
+
+    public function findActiveQrCodeByOrder(Order\Entity $order)
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->where(Entity::ENTITY_ID, '=', $order->getId())
+                    ->latest()
+                    ->first();
     }
 }

@@ -378,6 +378,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SCHEDULE_IN_USE                                           = 'Cannot delete a schedule that is currently in use by one or more merchants.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ACCOUNT                    = 'Creation of new virtual accounts is currently blocked for your account.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ORDER                      = 'Creation of new virtual accounts is currently blocked for this order.';
+    const BAD_REQUEST_QR_CODE_DISALLOWED_FOR_ORDER                              = 'Creation of new QR Code is currently blocked for this order.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES                    = 'One or more of the given receiver types is invalid.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_IDENTICAL_DESCRIPTOR                      = 'An active virtual account with the same descriptor already exists for your account.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH                 = 'Invalid length for descriptor.';

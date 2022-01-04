@@ -3,11 +3,12 @@
 namespace Functional\QrCode;
 
 use Carbon\Carbon;
+use RZP\Models\Order;
 use RZP\Constants\Timezone;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
 use RZP\Services\RazorXClient;
+use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
@@ -536,7 +537,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
 
-        $this->assertNotNull($qrCodeEntity['short_url']);
         $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
         $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
@@ -1259,6 +1259,141 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(4000, $payment['amount']);
         $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
         $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testQrCodeCreateForCheckoutWithOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $response = $this->createQrCodeForCheckout($order);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals($order['id'], $qrCode['entity_id']);
+        $this->assertEquals('order', $qrCode['entity_type']);
+        $this->runEntityAssertions($response);
+
+        // for same order, QR code should be same
+        $response2 = $this->createQrCodeForCheckout($order);
+        $this->assertEquals($response['id'], $response2['id']);
+    }
+
+    public function testQrCodeCreateForCheckoutWithoutOrder()
+    {
+        $response = $this->createQrCodeForCheckout(null, 1000);
+
+        $this->runEntityAssertions($response);
+    }
+
+    public function testPaymentOnQrCodeWithOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $qrCode = $this->createQrCodeForCheckout($order);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = $order->getAmountDue() / 100;
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $qrCode = $this->getDbLastEntity('qr_code');
+        $order->reload();
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($order->getAmount(), $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertTrue($qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+
+        $this->assertEquals(Status::CLOSED, $qrCode['status']);
+        $this->assertEquals(CloseReason::PAID, $qrCode['close_reason']);
+        $this->assertEquals(Order\Status::PAID, $order->getStatus());
+    }
+
+    public function testPaymentOnQrCodeWithoutOrder()
+    {
+        $qrCode = $this->createQrCodeForCheckout(null, 4510);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = 45.10;
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4510, $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertTrue($qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+
+        $this->assertEquals(Status::CLOSED, $qrCode['status']);
+        $this->assertEquals(CloseReason::PAID, $qrCode['close_reason']);
+    }
+
+    public function testCheckoutQrPaymentOnPaidOrder()
+    {
+        $order = $this->fixtures->create('order');
+
+        $qrCode = $this->createQrCodeForCheckout($order);
+
+        $this->fixtures->order->edit($order->getId(), ['status' => 'paid']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->assertNotNull($qrCodeId);
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAmount'] = $order->getAmount() / 100;
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('FallbackQrCode', $qrPayment['qr_code_id']);
+        $this->assertEquals('FallbackQrCode', $payment['receiver_id']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals($order->getAmount(), $payment['amount']);
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+        $this->assertFalse($qrPayment['expected']);
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
     }

@@ -52,6 +52,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
@@ -2455,6 +2456,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return (($this->isUpi() === true) and
                 ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
+    }
+
+    public function isQrV2UpiPayment()
+    {
+        if ($this->isUpi() === false)
+        {
+            return false;
+        }
+
+        return $this->isQrV2Payment();
+    }
+
+    public function isQrV2Payment()
+    {
+        $receiver = $this->receiver;
+
+        return (($receiver !== null) and
+                ($receiver instanceof QrV2\Entity) and
+                ($receiver->getStatus() !== null));
     }
 
     public function isVisaSafeClickPayment()

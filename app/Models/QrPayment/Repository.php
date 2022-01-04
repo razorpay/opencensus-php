@@ -5,10 +5,22 @@ namespace RZP\Models\QrPayment;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'qr_payment';
+
+    public function isEsSyncNeeded(string $action, array $dirty = null, PublicEntity $qrPayment = null): bool
+    {
+        // Sync in ES only for payments on QRv2 created via API, DASHBOARD
+        if ($qrPayment->qrCode->getRequestSource() === RequestSource::CHECKOUT)
+        {
+            return false;
+        }
+
+        return parent::isEsSyncNeeded($action, $dirty, $qrPayment);
+    }
 
     public function findByProviderReferenceIdAndGatewayAndAmount(string $providerReferenceId, string $gateway,int $amount)
     {

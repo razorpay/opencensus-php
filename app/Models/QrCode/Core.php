@@ -82,7 +82,7 @@ class Core extends Base\Core
         $this->edit($qrCode, $editInput);
     }
 
-    public function buildQrCode(array $input)
+    public function buildQrCode(array $input, $order = null)
     {
         $qrCode = (new Entity)->build($input);
 

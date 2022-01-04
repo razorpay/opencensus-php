@@ -231,6 +231,13 @@ class Processor extends Base\Core
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
+        if ($this->qrCode->hasOrder() === true)
+        {
+            $order = $this->qrCode->source;
+
+            $paymentArray[Payment\Entity::ORDER_ID] = $order->getPublicId();
+        }
+
         // TODO: find a better method to do this. This is done in order to bypass validation
         if ($this->gatewayInput[Entity::METHOD] === Payment\Method::CARD)
         {
@@ -329,7 +336,7 @@ class Processor extends Base\Core
 
     public function checkIfCutoffTimeIsExceeded($qrPayment)
     {
-        //The time format we get from the input is YYYYMMDDHHMMSS (datetime format), 
+        //The time format we get from the input is YYYYMMDDHHMMSS (datetime format),
         //the time format we need in the code is epoch, the method strtotime converts datetime format to epoch
         if (array_key_exists(Fields::TXN_COMPLETION_DATE, $this->callbackData) == true)
         {

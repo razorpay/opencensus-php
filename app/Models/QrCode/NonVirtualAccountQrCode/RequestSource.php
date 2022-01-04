@@ -9,6 +9,7 @@ class RequestSource
     const DASHBOARD = 'dashboard';
     const CHECKOUT  = 'checkout';
     const API       = 'api';
+    const FALLBACK  = 'fallback';
 
     public static function isRequestSourceValid(string $requestSource): bool
     {

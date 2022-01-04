@@ -20,7 +20,7 @@ class Core extends QrCode\Core
         $this->generator = new Generator;
     }
 
-    public function buildQrCode(array $input)
+    public function buildQrCode(array $input, $order = null)
     {
         $qrCode = (new Entity())->build($input);
 
@@ -31,6 +31,8 @@ class Core extends QrCode\Core
         $qrCode->customer()->associate($customer);
 
         $qrCode->merchant()->associate($this->merchant);
+
+        $qrCode->source()->associate($order);
 
         return $this->build($qrCode);
     }
@@ -49,6 +51,28 @@ class Core extends QrCode\Core
         });
 
         return $qrCode;
+    }
+
+    protected function generateQrCodeFile($qrCode)
+    {
+        if (($qrCode->getRequestSource() === RequestSource::CHECKOUT) or
+            ($qrCode->getRequestSource() === RequestSource::FALLBACK))
+        {
+            return;
+        }
+
+        parent::generateQrCodeFile($qrCode);
+    }
+
+    public function setShortUrl($qrCode)
+    {
+        if (($qrCode->getRequestSource() === RequestSource::CHECKOUT) or
+            ($qrCode->getRequestSource() === RequestSource::FALLBACK))
+        {
+            return;
+        }
+
+        parent::setShortUrl($qrCode);
     }
 
     private function checkFeatureEnabled($input)
@@ -125,9 +149,10 @@ class Core extends QrCode\Core
         $this->merchant = $this->repo->merchant->find($sharedMerchantId);
 
         $input = [
-            Entity::REQ_USAGE_TYPE => 'multiple_use',
+            Entity::REQ_USAGE_TYPE => UsageType::MULTIPLE_USE,
             Entity::FIXED_AMOUNT   => false,
-            Entity::REQ_PROVIDER   => 'bharat_qr',
+            Entity::REQ_PROVIDER   => Type::UPI_QR,
+            Entity::REQUEST_SOURCE => RequestSource::FALLBACK,
         ];
 
         $qrCode = (new Entity)->build($input);

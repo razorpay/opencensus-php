@@ -22,6 +22,14 @@ class QrCodeController extends Controller
 
         return ApiResponse::json($entity);
     }
+    public function createForCheckout()
+    {
+        $input = Request::all();
+
+        $entity = (new NonVAQrCodeService())->createForCheckout($input);
+
+        return ApiResponse::json($entity);
+    }
 
     public function closeQrCode(string $id)
     {

@@ -1024,7 +1024,8 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->qrPayment !== null)
+        // Skip event trigger if receiver is an instance of QRv2
+        if ($payment->isQrV2Payment() === true)
         {
             return;
         }
@@ -1043,7 +1044,15 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->qrPayment === null)
+        // Skip event trigger if receiver is not an instance of QRv2
+        if ($payment->isQrV2Payment() === false)
+        {
+            return;
+        }
+
+        $receiver = $payment->receiver;
+
+        if ($receiver->getRequestSource() === NonVAQr\RequestSource::CHECKOUT)
         {
             return;
         }

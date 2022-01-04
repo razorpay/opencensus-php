@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Entity extends QrCode\Entity
 {
@@ -237,9 +238,10 @@ class Entity extends QrCode\Entity
         $array[self::RESP_PAYMENTS_COUNT_RECEIVED] = $this->getAttribute(self::PAYMENTS_RECEIVED_COUNT);
     }
 
-    protected function setPublicImageContentAttribute(array & $array)
+    protected function setPublicImageContentAttribute(array &$array)
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::QR_IMAGE_CONTENT) === true)
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::QR_IMAGE_CONTENT) === true) or
+            ($this->getRequestSource() === RequestSource::CHECKOUT))
         {
             $array[self::RESP_IMAGE_CONTENT] = $this->getAttribute(self::QR_STRING);
         }
@@ -265,6 +267,11 @@ class Entity extends QrCode\Entity
         return $this->getAttribute(self::USAGE_TYPE);
     }
 
+    public function getRequestSource()
+    {
+        return $this->getAttribute(self::REQUEST_SOURCE);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
@@ -272,6 +279,11 @@ class Entity extends QrCode\Entity
 
     public function generateQrString()
     {
+        if ($this->getRequestSource() === RequestSource::FALLBACK)
+        {
+            return $this;
+        }
+
         $qrString = (new Generator)->generateQrString($this);
 
         $this->setQrString($qrString);
@@ -292,6 +304,11 @@ class Entity extends QrCode\Entity
     public function incrementPaymentAmountReceived(int $amount)
     {
         $this->increment(self::PAYMENTS_AMOUNT_RECEIVED, $amount);
+    }
+
+    public function hasOrder()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE) === ConstantsEntity::ORDER;
     }
 
     public function isClosed()

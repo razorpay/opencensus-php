@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Helpers\QrCode;
 
+use RZP\Models\Order;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
+
 trait NonVirtualAccountQrCodeTrait
 {
     private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000')
@@ -154,6 +157,31 @@ trait NonVirtualAccountQrCodeTrait
         ];
 
         $response = $this->makeRequestAndGetRawContent($request);
+
+        return $response;
+    }
+
+    private function createQrCodeForCheckout($order = null, $amount = null)
+    {
+        $this->ba->publicAuth();
+
+        if ($order !== null)
+        {
+            $input[Entity::ENTITY_TYPE] = 'order';
+            $input[Entity::ENTITY_ID] = $order->getPublicId();
+        }
+        else
+        {
+            $input[Entity::REQ_AMOUNT] = $amount;
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/checkout/qr_codes',
+            'content' => $input,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
 
         return $response;
     }
