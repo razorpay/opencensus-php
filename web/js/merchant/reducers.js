@@ -62,6 +62,7 @@ import {
   batchDetailsReducer,
   batchesReducer,
 } from 'merchant/reducers/batches';
+import { addressBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_address_upload';
 
 import {
   paymentsReducer,
@@ -125,6 +126,7 @@ export default combineReducers({
   subscription_buttons: subscriptionButtonsReducer,
   subscription_button_create: subscriptionButtonCreateReducer,
   refundbatches: refundBatchesReducer,
+  addressbatches: addressBatchesReducer,
   batchDetails: batchDetailsReducer,
   bMerchant: bMerchantReducer,
   subscriptions: subscriptionsReducer,

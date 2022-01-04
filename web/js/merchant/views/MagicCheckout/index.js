@@ -8,6 +8,7 @@ import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
 import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
 import MagicCheckoutFeatures from 'merchant/views/MagicCheckout/components/Features';
 import { AsyncBtn } from 'common/new-ui/Button';
+import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import JoinWaitlistButton from 'merchant/views/MagicCheckout/components/JoinWaitlistButton';
 
 const MagicCheckout = ({ active, user, magicCheckout, fetchStatus }) => {
@@ -41,6 +42,10 @@ const MagicCheckout = ({ active, user, magicCheckout, fetchStatus }) => {
       )}
     </JoinWaitlistButton>
   );
+
+  if (user.isBulkAddressUploadEnabled) {
+    return <BulkAddressUpload />;
+  }
 
   return (
     <OnBoardingWrapper class="MagicCheckout">

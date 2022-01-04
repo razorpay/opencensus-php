@@ -222,6 +222,15 @@ export const storeProductsStatusMap = {
   inactive: 'label-muted',
 };
 
+export const batchAddressStatusMap = {
+  created: 'label-cancelled',
+  scheduled: 'label-cancelled',
+  processing: 'label-processing',
+  processed: 'label-processed',
+  cancelled: 'label-cancelled',
+  failed: 'label-failed',
+};
+
 export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
 export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
@@ -244,6 +253,7 @@ export const QRCodeStatusLabel = statusLabel(qrCOdeStatusMap);
 export const XSubmerchantCAStatusLabel = statusLabel(XSubmerchantCAStatusMap);
 export const XSubmerchantVAStatusLabel = statusLabel(XSubmerchantVAStatusMap);
 export const StoreProductsStatusLabel = statusLabel(storeProductsStatusMap);
+export const batchAddressStatusLabel = statusLabel(batchAddressStatusMap);
 
 // statusLabel is being used in lot of places, not sure which place is triggering this error https://sentry.io/organizations/rzp/issues/2660520384/?project=5699615
 // item.entity is coming as undefined. Passing {} for now, this will hide the status, enabling us to

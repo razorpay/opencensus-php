@@ -21,6 +21,7 @@ const successMessageMap = {
   payment_transfer: ROUTE_SUCCESS_MESSAGE,
   linked_account_create: ROUTE_SUCCESS_MESSAGE,
   transfer_reversal: ROUTE_SUCCESS_MESSAGE,
+  raw_address: 'You can download the batch file to check the failed addresses',
 };
 class BatchUpload extends Component {
   state = {
@@ -60,7 +61,7 @@ class BatchUpload extends Component {
     return (
       <div class={`batch-upload-modal ${this.state.currentStatus}`}>
         <ModalHeader
-          title={this.state.currentStatus !== 'success' ? 'Batch Upload' : ''}
+          title={this.state.currentStatus !== 'success' ? this.props.title || 'Batch Upload' : ''}
           onCloseClick={this.onModalClose}
         />
         {(() => {
@@ -78,6 +79,7 @@ class BatchUpload extends Component {
                   maxRows={this.props.maxRows}
                   maxFileSize={this.props.maxFileSize}
                   acceptFileInfo={this.props.acceptFileInfo}
+                  modalInfo={this.props.validateModalInfo}
                 />
               );
             case 'create':

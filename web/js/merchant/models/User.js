@@ -320,14 +320,16 @@ export default class User {
   }
 
   get isMagicCheckoutEnabled() {
-    return (
-      this.isFeatureEnabled('one_cc_merchant_dashboard') &&
-      this.getExpStatus('dashboard_super_checkout') &&
-      this.isOrgRZP
-    );
+    return this.isFeatureEnabled('one_cc_merchant_dashboard') && this.isOrgRZP;
   }
   get isSuperCheckoutEnabledFeatureFLag() {
     return this.isFeatureEnabled('one_cc_merchant_dashboard');
+  }
+
+  get isBulkAddressUploadEnabled() {
+    return (
+      this.isFeatureEnabled('one_click_checkout') && this.getExpStatus('magic_bulk_address_live')
+    );
   }
 
   get isPaymentPagesEnabled() {

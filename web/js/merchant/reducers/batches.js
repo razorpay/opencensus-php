@@ -1,10 +1,6 @@
 import store from 'merchant/store';
 import { set, merge } from 'common/utils/immutable';
-import {
-  getActionName,
-  makeCollectionReducer,
-  makeActionCollectionReducer,
-} from 'merchant/reducers/collection';
+import { getActionName, makeActionCollectionReducer } from 'merchant/reducers/collection';
 import {
   makeEntityReducer,
   entityFetchPendingState,
@@ -26,11 +22,11 @@ const PAYMENT_LINK = 'PAYMENT_LINK';
 /* New Batch Action Types */
 const NOTIFY_BATCH = 'NOTIFY_BATCH';
 
-const appendBatches = (namespace) => namespace + '_BATCHS';
-const getCreateActioName = (namespace) => namespace + '_BATCH_CREATE';
-const getValidateActionName = (namespace) => namespace + '_BATCH_VALIDATE';
-const getFetchActionName = (namespace) => appendBatches(namespace) + '_FETCH';
-const getFetchDetailAction = (namespace) => namespace + '_BATCHS_FETCH_DETAILS';
+const appendBatches = (namespace) => `${namespace}_BATCHS`;
+const getCreateActioName = (namespace) => `${namespace}_BATCH_CREATE`;
+const getValidateActionName = (namespace) => `${namespace}_BATCH_VALIDATE`;
+const getFetchActionName = (namespace) => `${appendBatches(namespace)}_FETCH`;
+const getFetchDetailAction = (namespace) => `${namespace}_BATCHS_FETCH_DETAILS`;
 
 const BATCH_DETAILS = getFetchDetailAction(BATCH);
 const BATCH_LIST = getFetchActionName(BATCH);
@@ -41,14 +37,14 @@ export const fetchBatchAjax = (id) =>
     batch: response.data,
   }));
 
-const fetchBatchesAjax = (params, type) => {
+export const fetchBatchesAjax = (params = {}, type) => {
   // add types/type only if type filter not applied
-  if(!params.type) {
+  if (!params.type) {
     params[Array.isArray(type) ? 'types' : 'type'] = type;
-  } 
+  }
   return merchantFetch({
     url: 'batches',
-    params: params,
+    params,
   });
 };
 
@@ -75,7 +71,7 @@ export const editIssuableBatchList = (batchIdToRemove) => {
 /////
 
 function _validateBatch(file, progressTracker, batchType) {
-  let formData = new FormData();
+  const formData = new FormData();
   formData.append('file', file);
   formData.append('type', batchType);
 
@@ -91,7 +87,7 @@ function _validateBatch(file, progressTracker, batchType) {
 }
 
 /* methods to create actions for validating batch */
-const validateBatch = (batchType) => (file, progressTracker) => {
+export const validateBatch = (batchType) => (file, progressTracker) => {
   return _validateBatch(file, progressTracker, batchType);
 };
 
@@ -126,7 +122,7 @@ function _createBatch(data, batchType, customBatch) {
 }
 
 /* method to create action for create batch action */
-const createBatch = (batchType, actionPrefix) => (data) => {
+export const createBatch = (batchType, actionPrefix) => (data) => {
   return _createBatch(data, batchType, actionPrefix);
 };
 
@@ -135,11 +131,11 @@ const createBatch = (batchType, actionPrefix) => (data) => {
 /* method to create action for upload batch action */
 // currently used by only refund batches
 const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
-  let formData = new FormData();
+  const formData = new FormData();
   formData.append('file', file);
   formData.append('type', batchType);
 
-  for (let key in extraFields) {
+  for (const key in extraFields) {
     if (extraFields.hasOwnProperty(key)) {
       formData.append(key, extraFields[key]);
     }
@@ -175,24 +171,24 @@ export const updateBatchInList = (batch) => {
   };
 };
 
-export const cancelBatchRefund = (batchId) => {
-  const actionType = 'REFUND_BATCH_CANCEL';
-  return _cancelBatchRefund(batchId, actionType, 'refunds');
-};
-
 const _cancelBatchRefund = (batchId, actionType, prefix) => {
   return {
     type: actionType,
     payload: merchantFetch({
       url: `${prefix}/batch/${batchId}/cancel`,
       method: 'post',
-    }).then((e) =>
+    }).then(() =>
       fetchBatchAjax(batchId).then((r) => {
         r.batch.status = 'created';
         return r.batch;
       }),
     ),
   };
+};
+
+export const cancelBatchRefund = (batchId) => {
+  const actionType = 'REFUND_BATCH_CANCEL';
+  return _cancelBatchRefund(batchId, actionType, 'refunds');
 };
 
 export const cancelBatch = (actionType) => (batchId) => {
@@ -223,7 +219,7 @@ export const fetchBatchStatsForPLV2 = (batchId, batchType) => {
   });
 };
 
-export const fetchBatchInvoices = (batchId, isPaymentlinksV2CompatEnabled) => {
+export const fetchBatchInvoices = (batchId) => {
   const queryParams = {
     batch_id: batchId,
   };
@@ -316,13 +312,13 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
   const user = store.getState().session.user;
   const id = params.id;
 
-  const promise = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve) => {
     return fetchBatchAjax(id).then((batchData) => {
       if (batchData) {
         const batchType = batchData.batch.type;
         const isBatchTypePaymentlinksV2 = batchType === 'payment_link_v2';
 
-        let promises = [];
+        const promises = [];
 
         if (isBatchTypePaymentlinksV2) {
           promises.push(fetchBatchStatsForPLV2(id, batchType));
@@ -338,6 +334,7 @@ export const fetchPaymentLinkBatchesDetails = (params) => {
           resolve([batchData, stats, paymentLinksList]);
         });
       }
+      return null;
     });
   });
 
@@ -395,7 +392,11 @@ export const validateRecurringChargeAxisBatch = validateBatch('recurring_charge_
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();
 
 /* batches for route */
-export const fetchAllRouteBatches = fetchBatches(['payment_transfer', 'linked_account_create', 'transfer_reversal']);
+export const fetchAllRouteBatches = fetchBatches([
+  'payment_transfer',
+  'linked_account_create',
+  'transfer_reversal',
+]);
 export const createTransferBatch = createBatch('payment_transfer');
 export const validateTransferBatch = validateBatch('payment_transfer');
 export const createLinkedAccountBatch = createBatch('linked_account_create');
@@ -408,7 +409,7 @@ export const fetchRouteBatchDetails = fetchBatchDetails();
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
 
-let paymentBatchIdsInitialState = {
+const paymentBatchIdsInitialState = {
   issuableIdList: [],
 };
 
@@ -418,11 +419,7 @@ const onPaymentLinkDetails = (state, { payload }) =>
     entity: {
       batch: payload[0].batch,
       stats: payload[1].data.stats,
-      paymentlinks: (function () {
-        const batchData = payload[0].batch;
-
-        const isBatchTypePaymentlinksV2 = batchData.type === 'payment_link_v2';
-
+      paymentlinks: (function makePaymentLinks() {
         let paymentLinks;
 
         if (payload[2].data.hasOwnProperty('payment_links')) {
@@ -453,21 +450,19 @@ export const batchDetailsReducer = makeEntityReducer(BATCH_DETAILS, {
   ...customBatchDetailsSet(PAYMENT_LINK_DETAILS, onPaymentLinkDetails),
 });
 
-export const PaymentBatchIdsReducer = function (state = paymentBatchIdsInitialState, action) {
+export function PaymentBatchIdsReducer(state = paymentBatchIdsInitialState, action) {
   switch (action.type) {
     case `${ISSUABLE_BATCHES}::SUCCESS`:
       return set(state, 'issuableIdList', action.payload.data);
 
     case 'EDIT_ISSUABLE_BATCHES':
-      const index = state.issuableIdList.indexOf(action.batchIdToRemove);
-      let issuableIdList = Object.assign([], state.issuableIdList);
-      if (index > -1) {
-        issuableIdList.splice(index, 1);
-      }
-
-      return set(state, 'issuableIdList', issuableIdList);
+      return set(
+        state,
+        'issuableIdList',
+        state.issuableIdList.filter((id) => id !== action.batchIdToRemove),
+      );
 
     default:
       return state;
   }
-};
+}

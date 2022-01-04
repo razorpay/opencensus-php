@@ -223,7 +223,8 @@ class Service extends Base\Service
             'rx_cohesive_pl_flows',
             'free_credit_recovery_banner',
             'rx_mask_payroll_payouts',
-            'show_activation_form_full_view'
+            'show_activation_form_full_view',
+            'magic_bulk_address_live'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
