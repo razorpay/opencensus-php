@@ -3,24 +3,24 @@
 namespace RZP\Services;
 
 use App;
-use RZP\Http\Request\Requests;
-use Razorpay\Edge\Passport\Passport;
-use RZP\Constants\Entity;
-use RZP\Error\Error;
 use RZP\Exception;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
-use RZP\Models\Payment;
+use RZP\Error\Error;
 use RZP\Models\Card;
-use RZP\Models\Merchant;
 use RZP\Models\Offer;
 use RZP\Models\Order;
-use RZP\Models\Reward\Repository as RewardRepository;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Entity;
 use RZP\Error\ErrorClass;
 use RZP\Models\Order\Metric;
+use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\Edge\Passport\Passport;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 
 class PGRouter
 {
@@ -106,7 +106,7 @@ class PGRouter
 
         $this->baseUrl = $this->config['url'];
 
-        $this->mode = $app['rzp.mode'];
+        $this->mode = (isset($app['rzp.mode']) === true) ? $app['rzp.mode'] : Mode::LIVE;
 
         $this->request = $app['request'];
 
