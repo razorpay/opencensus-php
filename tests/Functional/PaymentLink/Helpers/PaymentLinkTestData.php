@@ -3024,7 +3024,7 @@ return [
             'content'   => [
                 'title'      =>    'Test Label 123',
                 'slug'       =>    '@testlabel123',
-                'url'        =>    'https://pages.razorpay.com/@testlabel123'
+                'url'        =>    'https://razorpay.me/@testlabel123'
             ]
         ]
     ],
