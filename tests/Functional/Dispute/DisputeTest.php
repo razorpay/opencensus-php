@@ -312,6 +312,27 @@ class DisputeTest extends TestCase
         ], $dispute);
     }
 
+    public function testDisputeCreateWithDeductAtOnsetMerchantValidationFailure()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $merchantId = $this->payment->merchant->getId();
+
+        $this->setUpFixtures(['merchant_id' => $merchantId]);
+
+        $this->fixtures->merchant->addFeatures(['exclude_deduct_dispute']);
+
+        $this->startTest($testData);
+
+        $this->fixtures->merchant->removeFeatures(['exclude_deduct_dispute']);
+
+        $this->fixtures->edit('merchant', $merchantId, ['category' => '6211']);
+
+        $testData['response']['content']['error']['description'] = 'Deduct At Onset Dispute can not be created for this Merchant Category';
+
+        $this->startTest($testData);
+    }
+
     public function testDisputeCreateWithDeductAdjustmentRecoveryMethodWithoutEnoughBalance()
     {
         $payment = $this->fixtures->create('payment:captured');

@@ -123,7 +123,7 @@ class Core extends Base\Core
             {
                 $input = $this->preProcessInputForCreate($input);
 
-                (new Validator)->validatePaymentForDispute($input, $payment);
+                (new Validator)->validatePaymentAndMerchantForDispute($input, $payment);
 
                 $parent = $this->checkAndGetParent($input);
 

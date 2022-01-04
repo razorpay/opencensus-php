@@ -7,6 +7,8 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Admin\File;
@@ -159,6 +161,38 @@ class Validator extends Base\Validator
                     ['input' => $input, 'payment_id' => $payment->getId()]);
             }
         }
+    }
+
+    protected function validateMerchantForDisputeDeductAtOnset($input, $payment)
+    {
+        if ((isset($input[Entity::DEDUCT_AT_ONSET]) === false) or
+            ($input[Entity::DEDUCT_AT_ONSET]) === false)
+        {
+            return;
+        }
+
+        $merchant = $payment->merchant;
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DEDUCT_DISPUTE) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct At Onset Dispute can not be created for EXCLUDE_DEDUCT_DISPUTE feature enable Merchant');
+        }
+
+        $mcc = $merchant->getCategory();
+
+        if (in_array($mcc, Constants::MCC_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Deduct At Onset Dispute can not be created for this Merchant Category');
+        }
+    }
+
+    public function validatePaymentAndMerchantForDispute($input, $payment)
+    {
+        $this->validatePaymentForDispute($input, $payment);
+
+        $this->validateMerchantForDisputeDeductAtOnset($input, $payment);
     }
 
     public function validateInputBeforeBuild(array $input)

@@ -896,6 +896,11 @@ class Constants
     const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
     /**
+     * Dispute with Deduct At Onset can not be created for EXCLUDE_DEDUCT_DISPUTE enabled
+     */
+    const EXCLUDE_DEDUCT_DISPUTE = 'exclude_deduct_dispute';
+
+    /**
      * One click checkout
      */
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
@@ -1465,6 +1470,7 @@ class Constants
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
         self::ONBOARD_TOKENIZATION            => true,
+        self::EXCLUDE_DEDUCT_DISPUTE          => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
         self::EXPOSE_GATEWAY_ERRORS           => true,
