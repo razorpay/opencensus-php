@@ -363,11 +363,11 @@ class Service
         switch ($class)
         {
             case ErrorClass::GATEWAY:
-                $this->handleGatewayErrors($errorCode);
+                $this->handleGatewayErrors($errorCode, $response);
                 break;
 
             case ErrorClass::BAD_REQUEST:
-                $this->handleBadRequestErrors($errorCode);
+                $this->handleBadRequestErrors($errorCode, $response);
                 break;
 
             default:
@@ -390,7 +390,7 @@ class Service
         return $class;
     }
 
-    protected function handleGatewayErrors($errorCode)
+    protected function handleGatewayErrors($errorCode, array $response)
     {
         switch ($errorCode)
         {
@@ -401,11 +401,14 @@ class Service
                 throw new Exception\GatewayTimeoutException($errorCode);
 
             default:
-                throw new Exception\GatewayErrorException($errorCode);
+                $error = $response[Response::ERROR];
+                $gatewayErrorCode = $error[Error::CAUSE]['gateway_error_code'] ?? null;
+                $gatewayErrorDesc = $error[Error::CAUSE]['gateway_error_description'] ?? null;
+                throw new Exception\GatewayErrorException($errorCode, $gatewayErrorCode, $gatewayErrorDesc);
         }
     }
 
-    protected function handleBadRequestErrors($errorCode)
+    protected function handleBadRequestErrors($errorCode, array $response)
     {
 
         if ($errorCode === ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION)
@@ -414,7 +417,7 @@ class Service
                 ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
         }
 
-        $this->handleGatewayErrors($errorCode);
+        $this->handleGatewayErrors($errorCode, $response);
     }
 
     protected function handleInternalServerErrors($code)

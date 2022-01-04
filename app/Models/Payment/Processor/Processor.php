@@ -11,6 +11,7 @@ use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
@@ -3008,6 +3009,23 @@ class Processor
         );
 
         $payment->setError($code, $desc, $internalCode);
+
+        if (($exception instanceof Exception\GatewayErrorException) and
+            ($this->payment->merchant !== null or $this->payment->merchant->isFeatureEnabled(Features::EXPOSE_GATEWAY_ERRORS) === true))
+        {
+            $data = $exception->getGatewayErrorCodeAndDesc();
+
+            if (empty($data[0]) === false)
+            {
+                $data = [
+                    Payment\Entity::GATEWAY_ERROR_CODE          => $data[0],
+                    Payment\Entity::GATEWAY_ERROR_DESCRIPTION   => $data[1],
+                ];
+
+                $payment->setReference17(json_encode($data));
+            }
+
+        }
 
         $this->updateVerifyBucketOnPaymentFailure($exception);
 

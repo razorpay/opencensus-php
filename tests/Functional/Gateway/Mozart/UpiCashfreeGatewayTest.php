@@ -41,4 +41,21 @@ class UpiCashfreeGatewayTest extends TestCase
 
         $this->fixtures->merchant->activate();
     }
+
+    public function testSendAndStoreGatewayError()
+    {
+        $this->fixtures->merchant->addFeatures(['raas', 'expose_gateway_errors']);
+        $this->fixtures->edit('terminal', $this->terminal['id'], ['procurer' => 'merchant']);
+
+        $this->testUpiPaymentCallbackFailed();
+
+        $paymentDbEntry = $this->getDbLastPayment();
+
+        $payment = $this->fetchPayment($paymentDbEntry['public_id']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertArrayHasKey('gateway_data', $payment);
+        $this->assertEquals('U30', $payment['gateway_data']['error_code']);
+    }
 }

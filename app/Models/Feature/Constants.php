@@ -1046,6 +1046,9 @@ class Constants
 
     const ORG_ANNOUNCEMENT_TAB_DISABLE = 'disable_announcements';
 
+    // Show gateway errors in merchant dashboard
+    const EXPOSE_GATEWAY_ERRORS = 'expose_gateway_errors';
+
     const ENABLE_IFSC_VALIDATION       = 'enable_ifsc_validation';
 
     const EDIT_SINGLE_VA = 'edit_single_va';
@@ -1464,6 +1467,7 @@ class Constants
         self::ONBOARD_TOKENIZATION            => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,
+        self::EXPOSE_GATEWAY_ERRORS           => true,
         self::DISABLE_COLLECT_CONSENT         => true,
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,

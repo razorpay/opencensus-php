@@ -439,6 +439,42 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
         $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
+    public function testNbPlusGatewayErrorStore()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_gateway_errors']);
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = [
+                NbPlusPaymentService\Response::RESPONSE => null,
+                NbPlusPaymentService\Response::ERROR => [
+                    NbPlusPaymentService\Error::CODE  => 'GATEWAY',
+                    NbPlusPaymentService\Error::CAUSE => [
+                        NbPlusPaymentService\Error::MOZART_ERROR_CODE   =>  'GATEWAY_ERROR_UNKNOWN_ERROR',
+                        'gateway_error_code'                            =>  'ABC',
+                        'gateway_error_description'                     =>  'invalid_account',
+                    ]
+                ],
+            ];
+        });
+
+        $paymentArray = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $this->makeRequestAndCatchException(function() use ($paymentArray)
+        {
+            $this->doAuthPayment($paymentArray);
+        }, GatewayErrorException::class);
+
+        $paymentDbEntry = $this->getDbLastPayment();
+
+        $payment = $this->fetchPayment($paymentDbEntry['public_id']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertArrayHasKey('gateway_data', $payment);
+        $this->assertEquals('ABC', $payment['gateway_data']['error_code']);
+    }
+
     public function testEmptyCallback()
     {
         if($this->bank !== "ICIC")

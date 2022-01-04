@@ -1611,7 +1611,7 @@ class CardPaymentServiceTest extends TestCase
             ]
         ]);
 
-        
+
         $paymentArray['card']['number'] = '4044649165235890';
 
         $this->doAuthPayment($paymentArray);
@@ -1845,14 +1845,14 @@ class CardPaymentServiceTest extends TestCase
             ]
         );
 
-        
+
         unset($paymentArray['card']['number']);
         unset($paymentArray['card']['cryptogram_value']);
         unset($paymentArray['card']['tokenised']);
         unset($paymentArray['card']['token_provider']);
 
-        $paymentArray['token'] = 'token_100022custcard';        
-      
+        $paymentArray['token'] = 'token_100022custcard';
+
         $this->doAuthPayment($paymentArray);
 
         $payment = $this->getLastEntity('payment', true);
@@ -1877,7 +1877,7 @@ class CardPaymentServiceTest extends TestCase
 
         $this->assertEquals('400782', $card['iin']);
         $this->assertEquals('404464', $card['token_iin']);
-      
+
         $this->disbaleCpsConfig();
     }
 
@@ -2084,15 +2084,15 @@ class CardPaymentServiceTest extends TestCase
             ]
         );
 
-        
+
         unset($paymentArray['card']['number']);
         unset($paymentArray['card']['cryptogram_value']);
         unset($paymentArray['card']['tokenised']);
         unset($paymentArray['card']['token_provider']);
 
-        $paymentArray['token'] = 'token_100022custcard';        
-        $paymentArray['customer_id'] = 'cust_100000customer';        
-      
+        $paymentArray['token'] = 'token_100022custcard';
+        $paymentArray['customer_id'] = 'cust_100000customer';
+
         $this->doAuthPayment($paymentArray);
 
         $payment = $this->getLastEntity('payment', true);
@@ -3200,5 +3200,71 @@ class CardPaymentServiceTest extends TestCase
         $data = [ 'test_app_token' => $appToken ];
 
         $this->session($data);
+    }
+
+    public function testSendGatewayErrorData()
+    {
+        $this->razorxValue = "cardps";
+        $terminal = $this->fixtures->create('terminal:zaakpay_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+                'direct_settlement_with_refund' => '1',
+            ]
+        ]);
+
+        $this->fixtures->edit('terminal', $terminal['id'], ['procurer' => 'merchant']);
+
+        $this->fixtures->merchant->addFeatures(['expose_gateway_errors']);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => null,
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'axis_migs',
+                    ],
+                    'error' => [
+                        'internal_error_code'       =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'gateway_error_code'        =>"U123",
+                        'gateway_error_description' =>"invalid_cvv",
+                        'description'               =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                    ],
+                ];
+            });
+
+        try
+        {
+            $this->doAuthPayment($paymentArray);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $err = $e->getError()->toPublicArray();
+            $this->assertArrayHasKey('gateway_data', $err['error']);
+            $this->assertArrayHasKey('error_code', $err['error']['gateway_data']);
+            $this->assertEquals('U123', $err['error']['gateway_data']['error_code']);
+        }
+
+        $paymentDbEntry = $this->getDbLastPayment();
+
+        $payment = $this->fetchPayment($paymentDbEntry['public_id']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertArrayHasKey('gateway_data', $payment);
+        $this->assertEquals('U123', $payment['gateway_data']['error_code']);
+
+        $this->razorxValue = "on";
     }
 }

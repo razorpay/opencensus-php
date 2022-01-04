@@ -73,6 +73,7 @@ class Error extends Support\Fluent
     const ERROR_CLASS           = 'class';
     const DATA                  = 'data';
     const ACTION                = 'action';
+    const GATEWAY_DATA          = 'gateway_data';
     const GATEWAY_ERROR_CODE    = 'gateway_error_code';
     const GATEWAY_ERROR_DESC    = 'gateway_error_desc';
     const METADATA              = 'metadata';
@@ -694,6 +695,17 @@ class Error extends Support\Fluent
             self::REASON            => $this->getAttribute(self::REASON),
             self::METADATA          => $metadata,
         );
+
+        if (($this->getClass() === ErrorClass::GATEWAY) and
+            (empty($this->getGatewayErrorCode()) === false) and
+            ($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Features::EXPOSE_GATEWAY_ERRORS) === true))
+        {
+            $error[self::GATEWAY_DATA] = [
+                'error_code'        => $this->getGatewayErrorCode(),
+                'error_description' => $this->getGatewayErrorDesc()
+            ];
+        }
 
         if ($this->shouldModifyForNewBankingErrorCode() === true)
         {

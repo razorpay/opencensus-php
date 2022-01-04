@@ -1789,6 +1789,44 @@ EOT;
         );
     }
 
+    function testNpciGatewayErrorStoreAndShare()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_gateway_errors']);
+        // Do an Auth Payment
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        // Fetch the last payment entity
+        $payment = $this->getDbLastPayment();
+
+        // Fetch the last UPI Entity
+        $upiEntity = $this->getDbLastEntity('upi')->toArray();
+
+        // Set ResponseCode in Mock Server Content Function to NPCI Error Code
+        $server = $this->mockServerContentFunction(function (& $content)
+        {
+            $content['ResponseCode'] = 'U03';
+            $content['TxnStatus'] = 'FAILURE';
+        });
+
+        // Get the callback content
+        $content = $server->getAsyncCallbackContent($upiEntity, $payment->toArray());
+
+        // Now the callback will throw assertion error as the callback payment id is not same as actual payment id
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertEquals($response, ['success' => false]);
+        // Fetch the last payment
+        $payment = $this->getDbLastPayment();
+
+        $paymentFetchResponse = $this->fetchPayment($payment['public_id']);
+        
+        // Assert status_code in UPI Entity
+        $this->assertSame(
+            'U03',
+            $paymentFetchResponse['gateway_data']['error_code']
+        );
+    }
+
     function testErrorCodeWithoutResponseCodeForCallback()
     {
         $this->doAuthPaymentViaAjaxRoute($this->payment);

@@ -146,7 +146,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // From 14 to 17 are blank columns of various types(refer migration file) to be consumed after renaming when needed
     const REFERENCE14           = 'reference14';
     const REFERENCE16           = 'reference16';
-    const REFERENCE17           = 'reference17';
+    const REFERENCE17           = 'reference17'; // used to store gateway_error_code and gateway_error_description
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -232,6 +232,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const VA_TRANSACTION_ID       = 'va_transaction_id';
 
     const ORDER                  = 'order';
+
+    const GATEWAY_DATA             = 'gateway_data';
+
+    const GATEWAY_ERROR_CODE        = 'gateway_error_code';
+    const GATEWAY_ERROR_DESCRIPTION = 'gateway_error_description';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -473,6 +478,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ERROR_SOURCE,
         self::ERROR_STEP,
         self::ERROR_REASON,
+        self::GATEWAY_DATA,
         self::ACQUIRER_DATA,
         self::GATEWAY_PROVIDER,
         // self::SUBSCRIPTION_ID,
@@ -553,6 +559,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SUBSCRIPTION_ID,
         self::AMOUNT_TRANSFERRED,
         self::GATEWAY_PROVIDER,
+        self::GATEWAY_DATA,
         self::ACCOUNT_ID,
         self::TERMINAL_ID,
         self::FEE_BEARER,
@@ -1329,6 +1336,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::INTERNAL_ERROR_CODE, null);
         $this->setAttribute(self::ERROR_DESCRIPTION, null);
         $this->setAttribute(self::REFERENCE13, null);
+
+        // reset gateway error code and description in reference17.
+        if (empty($this->getReference17()) === false)
+        {
+            $oldRef17 = json_decode($this->getReference17(), true) ?? [];
+
+            if(empty($oldRef17) === true)
+            {
+                return;
+            }
+
+            unset($oldRef17[self::GATEWAY_ERROR_CODE]);
+            unset($oldRef17[self::GATEWAY_ERROR_DESCRIPTION]);
+
+            if(empty($oldRef17) === true)
+            {
+                $this->setAttribute(self::REFERENCE17, null);
+            }
+            else
+            {
+                $this->setAttribute(self::REFERENCE17, json_encode($oldRef17));
+            }
+        }
     }
 
     public function setEmiPlanId($planId)
@@ -1516,6 +1546,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setReference17(string $reference17)
     {
+        // used to store gateway_errors and visa safe click payment details
         $this->setAttribute(self::REFERENCE17, $reference17);
     }
 
@@ -1701,6 +1732,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     (array_key_exists('product_enrollment_id', $reference17Json) === true))
                 {
                     $reference17 = $reference17Json['product_enrollment_id'];
+                }
+                elseif ($this->isFailed() === true || $this->isCreated() === true)
+                {
+                    // Do Nothing.
+                    // Set this condition to avoid setting value as null
                 }
                 else
                 {
@@ -3682,6 +3718,25 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     }
 
+    public function setPublicGatewayDataAttribute(array & $array)
+    {
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_ERRORS) === true) and
+            (empty($this->getReference17()) === false) and
+            ($this->isStatusCreatedOrFailed() === true)
+        )
+        {
+            $ref17 = json_decode($this->getReference17(), true) ?? [];
+
+            $array[self::GATEWAY_DATA][self::ERROR_CODE]         = $ref17[self::GATEWAY_ERROR_CODE] ?? "";
+            $array[self::GATEWAY_DATA][self::ERROR_DESCRIPTION]  = $ref17[self::GATEWAY_ERROR_DESCRIPTION] ?? "";
+
+            return;
+        }
+
+        unset($array[self::GATEWAY_DATA]);
+    }
+
     public function associateTerminal($terminal)
     {
         if ($terminal === null)
@@ -4817,7 +4872,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);
-
         return $data;
     }
 
