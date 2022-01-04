@@ -154,6 +154,8 @@ final class Constants
     const INCREASE_TRANSACTION_LIMIT                    = 'increase_transaction_limit';
     const UPDATED_TRANSACTION_LIMIT                     = 'updated_transaction_limit';
     const GSTIN_UPDATE_SELF_SERVE                       = 'gstin_update_self_serve';
+    const OLD_GSTIN                                     = 'old_gstin';
+    const NEW_GSTIN                                     = 'new_gstin';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 

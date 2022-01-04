@@ -1958,7 +1958,10 @@ class Service extends Base\Service
 
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADDED_WITH_REGISTERED_ADDRESS : TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS;
 
-        $this->trace->info($traceCode, []);
+        $this->trace->info($traceCode, [
+            Constants::OLD_GSTIN  => $detail->getGstin(),
+            Constants::NEW_GSTIN  => $input[Entity::GSTIN],
+        ]);
     }
 
     protected function getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchantId, $validationId)
@@ -2078,8 +2081,8 @@ class Service extends Base\Service
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_CREATED : TraceCode::GSTIN_UPDATE_WORKFLOW_CREATED;
 
         $this->trace->info($traceCode, [
-            Constants::PERMISSION => $permissionName,
-            Constants::INPUT      => $input
+            Constants::OLD_GSTIN  => $oldDetailEntity->getGstin(),
+            Constants::NEW_GSTIN  => $input[Entity::GSTIN],
         ]);
     }
 
@@ -2109,7 +2112,7 @@ class Service extends Base\Service
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_APPROVED : TraceCode::GSTIN_UPDATE_WORKFLOW_APPROVED;
 
         $this->trace->info($traceCode, [
-            Constants::INPUT => $input
+            Constants::NEW_GSTIN  => $input[Entity::GSTIN],
         ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($input[Merchant\Entity::MERCHANT_ID]);
