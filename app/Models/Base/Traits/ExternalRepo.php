@@ -142,11 +142,6 @@ trait ExternalRepo
     {
         $this->entityName = $this->entity;
 
-        $this->trace->info(TraceCode::EXTERNAL_REPO_RECURSION_TEST, [
-            "entity" => $this->entity,
-            "id"     => $id,
-        ]);
-
         try
         {
             $entity = parent::findOrFailPublic($id, $columns);
