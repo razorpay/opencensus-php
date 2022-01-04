@@ -27,4 +27,11 @@ class QrPaymentController extends Controller
         return ApiResponse::json($entities);
     }
 
+    public function fetchCapturedPaymentByQrCodeId($qrCodeId)
+    {
+        $response = (new Service())->fetchCapturedPaymentByQrCodeId($qrCodeId);
+
+        return ApiResponse::json($response);
+    }
+
 }

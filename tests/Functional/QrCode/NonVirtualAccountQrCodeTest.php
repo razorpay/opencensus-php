@@ -1262,4 +1262,38 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
     }
+
+    public function testFetchCapturedPaymentByQrCodeId()
+    {
+        $qrCode = $this->createQrCode();
+        $qrCodeId = $qrCode['id'];
+        $this->assertNotNull($qrCodeId);
+        $this->fixtures->stripSign($qrCodeId);
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $searchResponse = $this->fetchPaymentByQrCodeIdOnCheckout('qr_' . $qrCodeId);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($searchResponse['razorpay_payment_id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $searchResponse['status']);
+
+        $this->assertEquals($qrCodeId, $payment['receiver_id']);
+    }
+
+    public function testFetchUnprocessedPaymentByQrCodeId()
+    {
+        $qrCode = $this->createQrCode();
+        $qrCodeId = $qrCode['id'];
+        $this->assertNotNull($qrCodeId);
+
+        $searchResponse = $this->fetchPaymentByQrCodeIdOnCheckout($qrCodeId);
+
+        $this->assertEquals('unprocessed', $searchResponse['status']);
+    }
 }

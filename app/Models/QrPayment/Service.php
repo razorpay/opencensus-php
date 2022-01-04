@@ -26,7 +26,7 @@ class Service extends Base\Service
 
         $qrPaymentIds = (new EsRepository('qr_payment'))->buildQueryAndSearch($input, $this->merchant->getId());
 
-        $qrPaymentIds = array_map(
+            $qrPaymentIds = array_map(
                                 function($res) {
                                     return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
                                 },
@@ -95,5 +95,21 @@ class Service extends Base\Service
         ];
 
         return $gatewayResponse;
+    }
+
+    public function fetchCapturedPaymentByQrCodeId($qrCodeId)
+    {
+        $response = $this->repo->payment->fetchCapturedByPublicQrCodeIdAndMerchant($qrCodeId, $this->merchant);
+
+        if ($response === null)
+        {
+            return ['status' => 'unprocessed'];
+        }
+
+        return [
+            'razorpay_payment_id' => $response->getPublicId(),
+            'status'              => $response->getStatus(),
+            'created_at'          => $response->getCreatedAt()
+        ];
     }
 }

@@ -47,6 +47,7 @@ use RZP\Constants\Entity as EntityName;
 use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 class Repository extends Base\Repository
 {
@@ -1751,6 +1752,33 @@ class Repository extends Base\Repository
                     ->where($paymentMerchantId, '=', $merchant->getId())
                     ->orderByCreatedAt()
                     ->get();
+    }
+
+
+    public function fetchCapturedByPublicQrCodeIdAndMerchant(string $qrCodeId, Merchant\Entity $merchant)
+    {
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+        $paymentMerchantId = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+        $paymentStatusColumn = $this->dbColumn(Payment\Entity::STATUS);
+
+        $qrCodeIdColumn = $this->repo->qr_code->dbColumn(QrV2\Entity::ID);
+
+        $paymentColumns = [$this->dbColumn(Payment\Entity::ID),
+                           $this->dbColumn(Payment\Entity::CREATED_AT),
+                           $this->dbColumn(Payment\Entity::STATUS)];
+
+        QrV2\Entity::verifyIdAndSilentlyStripSign($qrCodeId);
+
+        return $this->newQuery()
+                    ->select($paymentColumns)
+                    ->join(Table::QR_CODE, function ($join) use($paymentReceiverId, $qrCodeIdColumn)
+                    {
+                        $join->on($paymentReceiverId, '=', $qrCodeIdColumn);
+                    })
+                    ->where($paymentStatusColumn, '=', Status::CAPTURED)
+                    ->where($paymentMerchantId, '=', $merchant->getId())
+                    ->where($qrCodeIdColumn, '=', $qrCodeId)
+                    ->first();
     }
 
     /**

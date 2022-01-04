@@ -157,4 +157,18 @@ trait NonVirtualAccountQrCodeTrait
 
         return $response;
     }
+
+    private function fetchPaymentByQrCodeIdOnCheckout(string $id)
+    {
+        $this->ba->publicAuth();
+
+        $url = '/checkout/qr_code/' . $id . '/payment';
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => $url,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }
