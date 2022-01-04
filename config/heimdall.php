@@ -1261,6 +1261,34 @@ return [
             Permission::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD => [
                 'description' => 'Upload batch file to process virtual_bank_account payments',
                 'assignable'  => true,
+            ],
+            Permission::MERCHANT_CONFIG_INHERITANCE => [
+                'description' => '',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_ONBOARDING => [
+                'description' => '',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_STATUS_ACTIVATION => [
+                'description' => '',
+                'assignable'  => true,
+            ],
+            Permission::PRICING_RULE => [
+                'description' => '',
+                'assignable'  => true,
+            ],
+            Permission::MDR_ADJUSTMENTS => [
+                'description' => '',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_ACTIVATION => [
+                'description' => '',
+                'assignable'  => true,
+            ],
+            Permission::INSTANT_ACTIVATION => [
+                'description' => '',
+                'assignable'  => true,
             ]
         ],
 

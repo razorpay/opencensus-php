@@ -137,6 +137,10 @@ class Type
 
     const ECOLLECT_ICICI        = 'ecollect_icici';
 
+    const MDR_ADJUSTMENTS       = 'mdr_adjustments';
+
+    const MERCHANT_STATUS_ACTIVATION       = 'merchant_status_activation';
+
     const ECOLLECT_RBL          = 'ecollect_rbl';
 
     const REPORT                = 'report';
@@ -565,6 +569,14 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
         self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN          => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
+        self::INSTANT_ACTIVATION                 => Name::INSTANT_ACTIVATION,
+        self::MDR_ADJUSTMENTS                    => Name::MDR_ADJUSTMENTS,
+        self::MERCHANT_ACTIVATION                => Name::MERCHANT_ACTIVATION,
+        self::MERCHANT_CONFIG_INHERITANCE        => Name::MERCHANT_CONFIG_INHERITANCE,
+        self::MERCHANT_ONBOARDING                => Name::MERCHANT_ONBOARDING,
+        self::MERCHANT_STATUS_ACTIVATION         => Name::MERCHANT_STATUS_ACTIVATION,
+        self::PRICING_RULE                       => Name::PRICING_RULE,
+
         self::DEBIT_NOTE                         => Name::CREATE_DEBIT_NOTE,
     ];
 

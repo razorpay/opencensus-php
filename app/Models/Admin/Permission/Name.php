@@ -841,6 +841,13 @@ class Name
     const PAYMENTS_TERMINAL_FETCH_BY_ID         = 'payments_terminal_fetch_by_id';
     const PAYMENTS_TERMINAL_FETCH_MULTIPLE      = 'payments_terminal_fetch_multiple';
     const PROXY_MERCHANT_GET_TERMINALS          = 'proxy_merchant_get_terminals';
+    const INSTANT_ACTIVATION                    = 'instant_activation';
+    const MDR_ADJUSTMENTS                       = 'mdr_adjustments';
+    const MERCHANT_ACTIVATION                   = 'merchant_activation';
+    const MERCHANT_CONFIG_INHERITANCE           = 'merchant_config_inheritance';
+    const MERCHANT_ONBOARDING                   = 'merchant_onboarding';
+    const MERCHANT_STATUS_ACTIVATION            = 'merchant_status_activation';
+    const PRICING_RULE                          = 'pricing_rule';
 
     const BULK_REGENERATE_API_KEYS              = 'bulk_regenerate_api_keys';
 
