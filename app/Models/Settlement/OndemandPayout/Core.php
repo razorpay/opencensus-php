@@ -6,20 +6,16 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Feature;
 use RZP\Models\Pricing;
-use RZP\Models\Reversal;
-use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
-use RZP\Models\BankingAccount;
 use RZP\Services\FTS\Constants;
-use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\Holidays;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\Ondemand;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutReversal;
@@ -57,16 +53,20 @@ class Core extends Base\Core
 
     public function createSettlementOndemandPayout($settlementOndemand)
     {
-        $mode = $this->setMode();
+        $mode = $this->setMode($settlementOndemand->getAmount(), $settlementOndemand->getScheduled());
 
         return $this->createPayoutsFromOndemand($settlementOndemand, $mode);
     }
 
-    public function setMode()
+    public function setMode($amount, $scheduled = false)
     {
         if((new Ondemand\Service)->isMerchantWithXSettlementAccount($this->merchant->getId()))
         {
             return null;
+        }
+        else if ($scheduled == true && $amount > self::MAX_IMPS_AMOUNT)
+        {
+            return Mode::NEFT;
         }
         else
         {
@@ -165,6 +165,8 @@ class Core extends Base\Core
             $settlementOndemandPayout = (new Entity)->build($data);
 
             $settlementOndemandPayout->generateId();
+
+            $settlementOndemandPayout->scheduled = $settlementOndemand->getScheduled();
 
             $settlementOndemandPayout->merchant()->associate($this->merchant);
 

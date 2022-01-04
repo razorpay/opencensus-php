@@ -5984,6 +5984,47 @@ IFSC Code  ICIC0001206
         Mail::assertQueued(EsEnabledNotify::class);
     }
 
+    public function testEnableEsAutomaticRestricted()
+    {
+        Mail::fake();
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1BFFkd38fFGbnh']);
+
+        $this->fixtures->merchant->addFeatures(['es_on_demand', 'es_on_demand_restricted']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $esAutomaticPricingRules = $this->getDbEntities('pricing',
+            [
+                'feature' => Pricing\Feature::ESAUTOMATIC_RESTRICTED,
+                'plan_id' => '1BFFkd38fFGbnh'
+            ]
+        )->toArray();
+
+        $this->assertNotNull($esAutomaticPricingRules);
+
+        $this->assertEquals(12, $esAutomaticPricingRules[0]['percent_rate']);
+
+        $this->assertEquals(1, sizeof($esAutomaticPricingRules));
+
+        $features = $this->getEntities('feature',
+            [
+                'name'        => 'es_automatic_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ], 'test');
+
+        $this->assertNotNull($features);
+
+        $this->assertEquals(1, count($features['items']));
+
+        Mail::assertQueued(EsEnabledNotify::class);
+    }
+
     public function testPutEmiMethod()
     {
         $this->fixtures->create('pricing:emi_pricing_plan');

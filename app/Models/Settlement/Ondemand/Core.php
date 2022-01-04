@@ -32,9 +32,8 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Core extends Base\Core
 {
-    public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null)
+    public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, $scheduled = false)
     {
-
         if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
         {
             throw new Exception\BadRequestException(
@@ -56,6 +55,7 @@ class Core extends Base\Core
             Entity::MAX_BALANCE           => $input['settle_full_balance'] ?? 0,
             Entity::NOTES                 => $input[Entity::NOTES] ?? null,
             Entity::NARRATION             => $input['description'] ?? null,
+            Entity::SCHEDULED             => $scheduled
         ];
 
 
@@ -270,10 +270,9 @@ class Core extends Base\Core
                                                                                $merchant->getSignedOrgId());
     }
 
-    public function updateOndemandPricingPercent($merchant, $percentRate)
+    public function updateOndemandPricingPercentByFeature($merchant, $percentRate, $pricingFeature)
     {
-        $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant,
-                                                           PricingFeature::SETTLEMENT_ONDEMAND);
+        $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant, $pricingFeature);
         if(empty($settlementOndemandPricing) === false)
         {
             $pricingArray = $settlementOndemandPricing->toArray();
@@ -306,7 +305,20 @@ class Core extends Base\Core
         }
     }
 
-    public function addDefaultOndemandPricingIfNotPresent($merchantId = null, $percentRate = null)
+    public function getSettlementAmountAndSettleableAmount($input, $merchant, $featureConfig, $scheduled = false): array
+    {
+        $amount = $this->getSettlementAmount($input, $merchant);
+
+        [$settleableAmount, $amountLeftForToday] = (new FeatureConfig\Service)->getAllowedSettlementAmount($featureConfig);
+
+        if ($scheduled == true and isset($input['settle_full_balance']) and $input['settle_full_balance'] == true)
+        {
+            $amount = $amount > $settleableAmount ? $settleableAmount : $amount;
+        }
+        return [$amount, $settleableAmount];
+    }
+
+    public function addDefaultOndemandPricingByFeatureIfNotPresent($merchantId = null, $percentRate = null, $pricingFeature = PricingFeature::SETTLEMENT_ONDEMAND)
     {
         if ($merchantId !== null)
         {
@@ -315,66 +327,30 @@ class Core extends Base\Core
 
         $merchant = $this->merchant;
 
-        $pricingPlanId = $merchant->getPricingPlanId();
 
-        $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant, PricingFeature::SETTLEMENT_ONDEMAND);
+
+        $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant, $pricingFeature);
 
         if ($settlementOndemandPricing === null)
-            {
-                if ($percentRate === null)
-                {
-                    $percentRate = $this->findPricing($merchant);
-                }
-
-                $this->repo->transactionOnLiveAndTest(function () use($merchant,
-                                                                      $pricingPlanId,
-                                                                      $settlementOndemandPricing,
-                                                                      $percentRate)
-                {
-                    $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
-
-                    // Replicates plan for this merchant if it was shared
-                    if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
-                    {
-                        $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant, $pricingPlan);
-
-                        $merchant->refresh();
-
-                        $pricingPlanId = $newPlan->getId();
-                    }
-
-                    $settlementOndemandPricingRule = [
-                        Pricing\Entity::PRODUCT             => Product::PRIMARY,
-                        Pricing\Entity::FEATURE             => PricingFeature::SETTLEMENT_ONDEMAND,
-                        Pricing\Entity::PAYMENT_METHOD      => Payout\Method::FUND_TRANSFER,
-                        Pricing\Entity::PERCENT_RATE        => $percentRate,
-                        Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
-                        Pricing\Entity::AMOUNT_RANGE_MAX    => 0,
-                        Pricing\Entity::AMOUNT_RANGE_MIN    => 0,
-                        Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
-                        ];
-
-                    $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule, $pricingPlan->getOrgId());
-
-                    $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
-                        'merchant_id'   => $merchant->getId(),
-                        'pricing_type'  => 'settlement_ondemand',
-                    ]);
-
-                });
-            }
+        {
+            $this->addDefaultPricing($merchant, $percentRate, $pricingFeature);
+        }
     }
 
-    private function findPricing(Merchant\Entity $merchant): int
+    private function findPricing(Merchant\Entity $merchant, $pricingFeature): int
     {
         try
         {
             /** @var FeatureConfig\Entity $featureConfig */
             $featureConfig = (new FeatureConfig\Repository)->getConfigByMerchantId($merchant->getId());
 
-            if (empty($featureConfig->getPricingPercent()) === false)
+            if ($pricingFeature === PricingFeature::SETTLEMENT_ONDEMAND and empty($featureConfig->getPricingPercent()) === false)
             {
                 return $featureConfig->getPricingPercent();
+            }
+            else if ($pricingFeature === PricingFeature::ESAUTOMATIC_RESTRICTED and empty($featureConfig->getEsPricingPercent()) === false)
+            {
+                return $featureConfig->getEsPricingPercent();
             }
         }
         catch (\Throwable $e)
@@ -387,12 +363,60 @@ class Core extends Base\Core
 
         //if es_on_demand_restricted flag is enabled (ondemand day 1 merchant), use pricing from config if present, else use 30bps
         //if not ondemand day 1 merchant, use 25 bps
-        if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
+        if ($pricingFeature === PricingFeature::ESAUTOMATIC_RESTRICTED)
+        {
+            return FeatureConfig\Service::DEFAULT_ES_PRICING_PERCENT;
+        }
+        else if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
         {
             return 30;
         }
 
         return 25;
+    }
+
+    public function addDefaultPricing($merchant, $percentRate, $pricingFeature = PricingFeature::SETTLEMENT_ONDEMAND)
+    {
+        if ($percentRate === null)
+        {
+            $percentRate = $this->findPricing($merchant, $pricingFeature);
+        }
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        $this->repo->transactionOnLiveAndTest(function () use ($merchant, $pricingPlanId, $percentRate, $pricingFeature)
+        {
+            $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+
+            // Replicates plan for this merchant if it was shared
+            if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
+            {
+                $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant, $pricingPlan);
+
+                $merchant->refresh();
+
+                $pricingPlanId = $newPlan->getId();
+            }
+
+            $settlementOndemandPricingRule = [
+                Pricing\Entity::PRODUCT => Product::PRIMARY,
+                Pricing\Entity::FEATURE => $pricingFeature,
+                Pricing\Entity::PAYMENT_METHOD => Payout\Method::FUND_TRANSFER,
+                Pricing\Entity::PERCENT_RATE => $percentRate,
+                Pricing\Entity::AMOUNT_RANGE_ACTIVE => 0,
+                Pricing\Entity::AMOUNT_RANGE_MAX => 0,
+                Pricing\Entity::AMOUNT_RANGE_MIN => 0,
+                Pricing\Entity::FEE_BEARER => $merchant->getFeeBearer(),
+            ];
+
+            $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule, $pricingPlan->getOrgId());
+
+            $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
+                'merchant_id'     => $merchant->getId(),
+                'pricing_type'    => 'settlement_ondemand',
+                'pricing_feature' => $pricingFeature
+            ]);
+
+        });
     }
 
 }

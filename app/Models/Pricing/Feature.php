@@ -12,6 +12,7 @@ class Feature
     const TRANSFER                = 'transfer';
     const EMI                     = 'emi';
     const ESAUTOMATIC             = 'esautomatic';
+    const ESAUTOMATIC_RESTRICTED  = 'esautomatic_restricted';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
     const REFUND                  = 'refund';
     const SETTLEMENT_ONDEMAND     = 'settlement_ondemand';
@@ -26,7 +27,8 @@ class Feature
         self::ESAUTOMATIC,
         self::FUND_ACCOUNT_VALIDATION,
         self::SETTLEMENT_ONDEMAND,
-        self::OPTIMIZER
+        self::OPTIMIZER,
+        self::ESAUTOMATIC_RESTRICTED
     ];
 
     /**

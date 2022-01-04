@@ -16,10 +16,11 @@ class Validator extends Base\Validator
 {
     const SETTLEMENT_ONDEMAND_INPUT         = 'settlement_ondemand_input';
     const SETTLEMENT_ONDEMAND_FEES_INPUT    = 'settlement_ondemand_fees_input';
-    const FETCH_BY_TIMESTAMP_INPUT       = 'fetch_by_timestamp_input';
+    const FETCH_BY_TIMESTAMP_INPUT          = 'fetch_by_timestamp_input';
     const MAX_ONDEMAND_AMOUNT               = 2000000000;
     const MIN_ONDEMAND_AMOUNT               = 100;
     const MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD = 200000;
+    const MIN_PARTIAL_ES_AMOUNT             = 10000;
 
     protected static $createRules = [
         Entity::AMOUNT                => 'required|integer|custom',
@@ -33,6 +34,7 @@ class Validator extends Base\Validator
         Entity::REMARKS               => 'sometimes|nullable|string',
         Entity::NOTES                 => 'sometimes|nullable|array',
         Entity::MAX_BALANCE           => 'sometimes|boolean',
+        Entity::SCHEDULED             => 'sometimes|boolean',
         Entity::STATUS                => 'required',
     ];
 
@@ -82,6 +84,27 @@ class Validator extends Base\Validator
         //     ]);
         // }
         else if ($value < self::MIN_ONDEMAND_AMOUNT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT,
+                null,
+                [
+                    'amount' => $value
+                ]);
+        }
+    }
+
+    public static function validateOndemandSettlementAmount($value)
+    {
+        if ($value > self::MAX_ONDEMAND_AMOUNT)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
+                null,
+                [
+                    'amount' => $value,
+                ]);
+        }
+        else if ($value < self::MIN_PARTIAL_ES_AMOUNT)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_AMOUNT_LESS_THAN_MIN_ONDEMAND_AMOUNT,

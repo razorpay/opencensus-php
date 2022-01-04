@@ -2,14 +2,14 @@
 
 namespace RZP\Tests\Functional\SettlementOndemand;
 
+use Hash;
 use Queue;
 use Config;
-use Hash;
-
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
+use RZP\Models\Pricing\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Mock\RazorpayXClient;
 use RZP\Models\Settlement\OndemandPayout;
@@ -19,6 +19,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\SettlementOndemand\RequestOndemandPayout;
 use RZP\Models\Admin\Permission\Name as AdminPermission;
+use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
@@ -707,6 +708,189 @@ class SettlementOndemandTest extends TestCase
         $this->startTest();
 
         Queue::assertPushed(CreateSettlementOndemandBulkTransfer::class, 2);
+    }
+
+    public function testOndemandPartialEsScheduledTrigger()
+    {
+        Queue::fake();
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->startTest();
+
+        Queue::assertPushed(PartialScheduledSettlementJob::class, 1);
+    }
+
+    private function mockDataForOndemandPartialEs()
+    {
+        $merchantId = $this->merchantDetail['merchant_id'];
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->on(Mode::TEST)->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => $merchantId, 'name' => 'es_on_demand']);
+
+        $this->fixtures->on(Mode::TEST)->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => $merchantId, 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->on(Mode::TEST)->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => $merchantId, 'name' => 'es_automatic_restricted']);
+
+        $this->fixtures->create('pricing',[
+            'id'                  => '1zE3CYqf1zbyaa',
+            'plan_id'             => '1BFFkd38fFGbnh',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => Feature::ESAUTOMATIC_RESTRICTED,
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 25,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit($merchantId, ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international' => 0]);
+    }
+
+    public function testOndemandPartialScheduledSettlement()
+    {
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->mockDataForOndemandPartialEs();
+
+        $this->fixtures->on(Mode::TEST)->base->editEntity('balance', '10000000000000', ['balance' => 3000000]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 750000,
+            'pricing_percent'             => 50,
+            'es_pricing_percent'          => 25,
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => '10000000000000',
+            'amount'                => 750000,
+            'total_amount_settled'  => 747787,
+            'total_fees'            => 2213,
+            'total_tax'             => 338,
+            'total_amount_reversed' => 0,
+            'total_amount_pending'  => 0,
+            'max_balance'           => true,
+            'currency'              => 'INR',
+            'status'                => 'processed',
+            'scheduled'             => true
+        ], $settlementOndemand);
+
+    }
+
+
+
+    public function testOndemandPartialScheduledSettlementWithBalanceLessThanSettleableBalance()
+    {
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->mockDataForOndemandPartialEs();
+
+        $this->fixtures->on(Mode::TEST)->base->editEntity('balance', '10000000000000', ['balance' => 60000]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 750000,
+            'pricing_percent'             => 50,
+            'es_pricing_percent'          => 25,
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand', true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'           => '10000000000000',
+            'amount'                => 30000,
+            'total_amount_settled'  => 29911,
+            'total_fees'            => 89,
+            'total_tax'             => 14,
+            'total_amount_reversed' => 0,
+            'total_amount_pending'  => 0,
+            'max_balance'           => true,
+            'currency'              => 'INR',
+            'status'                => 'processed',
+            'scheduled'             => true
+        ], $settlementOndemand);
+
+    }
+
+    public function testOndemandPartialScheduledSettlementWithMaxAmountLimitCrossed()
+    {
+
+        $merchantId = $this->merchantDetail['merchant_id'];
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->mockDataForOndemandPartialEs();
+
+        $this->fixtures->on(Mode::TEST)->base->editEntity('balance', $merchantId, ['balance' => 3000000]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'merchant_id'                 => $merchantId,
+            'amount'                      => 750000,
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $merchantId,
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 750000,
+            'pricing_percent'             => 50,
+            'es_pricing_percent'          => 25,
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getDbEntity('settlement.ondemand', ['merchant_id' => $merchantId, 'scheduled' => true]);
+
+        $this->assertNull($settlementOndemand);
+
+    }
+
+    public function testOndemandPartialScheduledSettlementErrorWithBalanceBelowThreshold()
+    {
+
+        $merchantId = $this->merchantDetail['merchant_id'];
+
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->fixtures->on(Mode::TEST)->base->editEntity('balance', $merchantId, ['balance' => 9900]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $merchantId,
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 750000,
+            'pricing_percent'             => 50,
+            'es_pricing_percent'          => 25,
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getDbEntity('settlement.ondemand', ['merchant_id' => $merchantId, 'scheduled' => true]);
+
+        $this->assertNull($settlementOndemand);
+
     }
 
     public function testUpdateOndemandTransferPayoutId()
@@ -1552,6 +1736,240 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($secondMerchantFeature);
 
+    }
+
+    public function testEnableEsOnDemandFullAccessWithEsAutomaticRestrictedEnabledFromBatchRoute()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->create('schedule', [
+            'id'        => 'IaVvw68vQ2lgp2',
+            'period'    => 'hourly',
+            'interval'  => 1,
+            'hour'      => 0,
+            'delay'     => 0,
+            'type'      => 'settlement'
+        ]);
+
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 'es_automatic_restricted'
+            ]
+        );
+
+        $this->fixtures->create('methods', [
+            'merchant_id'    => '10000000000001',
+            'card'            => '1',
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->startTest();
+
+        $featureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
+            'es_pricing_percent'            => 20,
+        ], $featureConfigs['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
+            'es_pricing_percent'            => 12,
+        ], $featureConfigs['items'][1]);
+
+        $pricingRule = $this->getDbEntity('pricing',
+            [
+                'product' => 'primary',
+                'feature' =>'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule['percent_rate'], 50);
+
+        $firstMerchantFeature = $this->getDbEntity('feature',
+            [
+                'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $secondMerchantFeature = $this->getDbEntity('feature',
+            [
+                'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000001',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $firstMerchantEsAutomaticFeature = $this->getDbEntity('feature',
+            [
+                'name' => 'es_automatic',
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+
+        $secondMerchantEsAutomaticFeature = $this->getDbEntity('feature',
+            [
+                'name' => 'es_automatic',
+                'entity_id' => '10000000000001',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $scheduledTasks = $this->getLastEntity('schedule_task',true);
+
+        $this->assertArraySelectiveEquals([
+            'schedule_id' => 'IaVvw68vQ2lgp2',
+        ], $scheduledTasks);
+
+        $this->assertNotNull($firstMerchantFeature);
+
+        $this->assertNotNull($secondMerchantFeature);
+
+        $this->assertNotNull($firstMerchantEsAutomaticFeature);
+
+        $this->assertNull($secondMerchantEsAutomaticFeature);
+
+    }
+
+    public function testDisableOnDemandFullAccessWithEsAutomaticEnabledFromBatchRoute()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->create('schedule', [
+            'id'        => '10000000000000',
+            'period'    => 'hourly',
+            'interval'  => 1,
+            'hour'      => 0,
+            'delay'     => 0,
+            'type'      => 'settlement'
+        ]);
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 'es_on_demand'
+            ]
+        );
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000001',
+                'name'        => 'es_on_demand'
+            ]
+        );
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 'es_automatic'
+            ]
+        );
+
+        $this->fixtures->create('methods', [
+            'merchant_id'    => '10000000000001',
+            'card'            => '1',
+            'disabled_banks' => [],
+            'banks'          => '[]'
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->startTest();
+
+        $featureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
+        ], $featureConfigs['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
+        ], $featureConfigs['items'][1]);
+
+        $pricingRule = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' =>'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule['percent_rate'], 50);
+
+        $firstMerchantFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $secondMerchantFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000001',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $this->assertNotNull($firstMerchantFeature);
+
+        $this->assertNotNull($secondMerchantFeature);
     }
 
     public function testEnableEsOnDemandRestrictedAccessFromBatchRoute()
@@ -3030,6 +3448,14 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
 
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 23,
+        ]);
+
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
 
@@ -3284,6 +3710,14 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 23,
+        ]);
 
         $this->fixtures->on('live')->edit('balance', '10000000000000', ['balance' => 10000000000]);
 

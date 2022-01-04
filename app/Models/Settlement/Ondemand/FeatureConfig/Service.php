@@ -14,6 +14,8 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Service extends Base\Service
 {
+    const DEFAULT_ES_PRICING_PERCENT = 12;
+
     public function enableFeature(array $inputs)
     {
         $result = new Base\PublicCollection;
@@ -40,9 +42,15 @@ class Service extends Base\Service
                         {
                             $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
 
-                            //creates ondemand pricing rule if not present, else updates the present pricing rule with
-                            //given pricing_percent
-                            $this->createOrUpdatePricingRule($merchant, $input);
+                            /* creates ondemand pricing and es automatic restricted rule if not present,
+                               else updates the present pricing rule with given pricing_percent */
+                            $this->createOrUpdatePricingRule($merchant, $input[Entity::PRICING_PERCENT],
+                                                PricingFeature::SETTLEMENT_ONDEMAND);
+
+                            $input[Entity::ES_PRICING_PERCENT] = (isset($input[Entity::ES_PRICING_PERCENT]) === true) ?
+                                                                 $input[Entity::ES_PRICING_PERCENT]: self::DEFAULT_ES_PRICING_PERCENT;
+
+                            $this->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT], PricingFeature::ESAUTOMATIC_RESTRICTED);
 
                             if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
                             {
@@ -57,11 +65,18 @@ class Service extends Base\Service
 
                             if($input[Entity::FULL_ACCESS] === 'yes')
                             {
-                                $this->disableRestricted($merchant, $input);
+                                $this->disableFeatureFlag($merchant, $input, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+
+                                if ($merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC_RESTRICTED) === true)
+                                {
+                                    $this->disableFeatureFlag($merchant, $input, Feature\Constants::ES_AUTOMATIC_RESTRICTED);
+
+                                    $this->enableScheduledEs($input[Entity::MERCHANT_ID]);
+                                }
                             }
-                            else if($input[Entity::FULL_ACCESS] === 'no')
+                            else if ($input[Entity::FULL_ACCESS] === 'no')
                             {
-                                $this->enableRestricted($merchant, $input);
+                                $this->enableFeatureFlag($merchant, $input, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
                             }
 
                             $this->createOrUpdateFeatureConfig($input);
@@ -105,28 +120,28 @@ class Service extends Base\Service
         return $result->toArrayWithItems();
     }
 
-    public function enableRestricted($merchant, $input)
+    public function enableFeatureFlag($merchant, $input, $feature)
     {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === false)
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             $featureInput = [
                 Feature\Entity::ENTITY_ID   => $input["merchant_id"],
                 Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
-                Feature\Entity::NAME        => Feature\Constants::ES_ON_DEMAND_RESTRICTED,
+                Feature\Entity::NAME        => $feature,
             ];
 
             (new Feature\Core)->create($featureInput, true);
         }
     }
 
-    public function disableRestricted($merchant, $input)
+    public function disableFeatureFlag($merchant, $input, $feature)
     {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
+        if ($merchant->isFeatureEnabled($feature) === true)
         {
             $feature = (new Feature\Repository)
                                     ->findByEntityTypeEntityIdAndNameOrFail(Feature\Constants::MERCHANT,
                                                                             $input['merchant_id'],
-                                                        Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+                                                                            $feature);
 
             (new Feature\Core)->delete($feature, true);
         }
@@ -150,17 +165,15 @@ class Service extends Base\Service
         }
     }
 
-    public function createOrUpdatePricingRule($merchant, $input)
+    public function createOrUpdatePricingRule($merchant, $pricingPercent, $pricingFeature)
     {
-        $settlementOndemandPricing = (new Ondemand\Core)->getOndemandPricingByFeature($merchant,
-            PricingFeature::SETTLEMENT_ONDEMAND);
+        $pricing = (new Ondemand\Core)->getOndemandPricingByFeature($merchant, $pricingFeature);
 
-        if($settlementOndemandPricing === null)
+        if($pricing === null)
         {
             try
             {
-                (new Ondemand\Core)->addDefaultOndemandPricingIfNotPresent($input["merchant_id"],
-                                                                           $input["pricing_percent"]);
+                (new Ondemand\Core)->addDefaultPricing($merchant, $pricingPercent, $pricingFeature);
             }
             catch(\Throwable $e)
             {
@@ -176,7 +189,7 @@ class Service extends Base\Service
         {
             try
             {
-                (new Ondemand\Core)->updateOndemandPricingPercent($merchant, $input["pricing_percent"]);
+                (new Ondemand\Core)->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature);
             }
             catch(\Throwable $e)
             {
@@ -243,5 +256,16 @@ class Service extends Base\Service
         $attemptsLeft = ($settlementsCountLimit - $settlementsCountToday) > 0 ? ($settlementsCountLimit - $settlementsCountToday) : 0;
 
         return $attemptsLeft;
+    }
+
+    /**
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
+     */
+    public function enableScheduledEs($merchantId): void
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $this->app['basicauth']->setMerchant($merchant);
+        (new \RZP\Models\Merchant\Service)->enableScheduledEs(true);
     }
 }

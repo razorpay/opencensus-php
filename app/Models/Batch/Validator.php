@@ -659,6 +659,7 @@ class Validator extends Base\Validator
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PERCENTAGE_OF_BALANCE_LIMIT => 'required|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_SETTLEMENTS_COUNT_LIMIT     => 'required|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_PRICING_PERCENT             => 'required|integer',
+        Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_ES_PRICING_PERCENT          => 'sometimes|integer',
         Header::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_FULL_ACCESS                 => 'required|in:yes,no'
     ];
 

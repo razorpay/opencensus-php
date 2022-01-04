@@ -115,6 +115,7 @@ class Constants
     const ES_ON_DEMAND_RESTRICTED         = 'es_on_demand_restricted';
     const UPDATED_IMPS_ONDEMAND           = 'updated_imps_ondemand';
     const ES_AUTOMATIC                    = 'es_automatic';
+    const ES_AUTOMATIC_RESTRICTED         = 'es_automatic_restricted';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BEPG_DISABLE                    = 'bepg_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
@@ -1206,6 +1207,7 @@ class Constants
         self::ES_ON_DEMAND_RESTRICTED         => true,
         self::UPDATED_IMPS_ONDEMAND           => true,
         self::ES_AUTOMATIC                    => true,
+        self::ES_AUTOMATIC_RESTRICTED         => true,
         self::HEADLESS_DISABLE                => true,
         self::BEPG_DISABLE                    => true,
         self::FIRST_DATA_S2S_FLOW             => true,
@@ -1607,6 +1609,11 @@ class Constants
         self::ES_AUTOMATIC              => [
             'feature'       => self::ES_AUTOMATIC,
             'display_name'  => 'Es Automatic',
+            'documentation' => '',
+        ],
+        self::ES_AUTOMATIC_RESTRICTED   => [
+            'feature'       => self::ES_AUTOMATIC_RESTRICTED,
+            'display_name'  => 'Es Automatic Restricted',
             'documentation' => '',
         ],
         self::LOAN                      => [
@@ -2163,6 +2170,7 @@ class Constants
         self::VIRTUAL_ACCOUNTS,
         self::QR_CODES,
         self::ES_AUTOMATIC,
+        self::ES_AUTOMATIC_RESTRICTED,
         self::SHOW_CREDIT_SCORE,
         self::SKIP_WORKFLOWS_FOR_API,
         self::SKIP_WF_FOR_PAYROLL,

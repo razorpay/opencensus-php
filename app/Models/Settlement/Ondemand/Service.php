@@ -15,10 +15,12 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
 use RZP\Jobs\SettlementOndemand\AddOndemandPricingIfAbsent;
+use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
 
@@ -39,7 +41,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEES_INPUT, $input);
 
-        $this->core()->addDefaultOndemandPricingIfNotPresent();
+        $this->core()->addDefaultOndemandPricingByFeatureIfNotPresent();
 
         $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
@@ -55,13 +57,27 @@ class Service extends Base\Service
         return $this->core()->isMerchantWithXSettlementAccount($merchantId);
     }
 
-    public function create(array $input): array
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
+    public function create(array $input, $merchantId = null, $scheduled = false, $mode = null): array
     {
+        if($scheduled == true && $merchantId != null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+            $this->app['basicauth']->setMerchant($merchant);
+
+            $this->mode = $mode;
+            $this->merchant = $merchant;
+        }
+
         return $this->app['api.mutex']->acquireAndRelease(
         'settlement_ondemand'.$this->merchant->getId(),
-        function() use ($input)
+        function() use ($input, $scheduled)
         {
-            return $this->repo->transaction(function () use ($input)
+            return $this->repo->transaction(function () use ($input, $scheduled)
             {
                 $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
                     'merchant_id' => $this->merchant->getId(),
@@ -75,7 +91,9 @@ class Service extends Base\Service
 
                 $this->validateIfDisabledByCollections();
 
-                $amount = $this->core()->getSettlementAmount($input, $this->merchant);
+                $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($this->merchant->getId());
+
+                [$amount, $settleableAmount] = $this->core()->getSettlementAmountAndSettleableAmount($input, $this->merchant, $featureConfig, $scheduled);
 
                 $input[Entity::AMOUNT] = $amount;
 
@@ -83,13 +101,14 @@ class Service extends Base\Service
                 //additional checks will be done based on config values
                 if($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
                 {
-                    $this->configCheck($amount);
+                    $this->configCheck($featureConfig, $amount, $scheduled, $settleableAmount);
                 }
 
                 [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->core()->createSettlementOndemand(
                                                                                             $input,
                                                                                             $this->merchant,
-                                                                                            $this->user);
+                                                                                            $this->user,
+                                                                                            $scheduled);
 
                 if($this->mode === 'live')
                 {
@@ -158,6 +177,8 @@ class Service extends Base\Service
                         }
                     }
                 }
+
+
 
                 if (isset($input['expand']) === true && boolval($input['expand']) === true)
                 {
@@ -306,32 +327,38 @@ class Service extends Base\Service
 
     public function addDefaultOndemandPricingIfNotPresent($merchantId)
     {
-        $this->core()->addDefaultOndemandPricingIfNotPresent($merchantId);
+        $this->core()->addDefaultOndemandPricingByFeatureIfNotPresent($merchantId);
     }
 
-    public function configCheck($amount)
+    /**
+     * @throws BadRequestException
+     */
+    public function configCheck($featureConfig, $amount, $scheduled, $settleableAmount)
     {
-        $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($this->merchant->getId());
-
-        $attemptsLeftToday = (new FeatureConfig\Service)->getAttemptsLeft($featureConfig);
-
-        if($attemptsLeftToday === 0)
+        if ($scheduled === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXCEEDED ,
-                null,
-                [
-                    'merchantId'                         => $this->merchant->getId(),
-                    'settlement_ondemand_feature_config' => $featureConfig,
-                    'attempts_left_today'                => $attemptsLeftToday
-                ],
-                'No more attempts left for today');
+            $attemptsLeftToday = (new FeatureConfig\Service)->getAttemptsLeft($featureConfig);
+
+            if ($attemptsLeftToday === 0)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_LIMIT_EXCEEDED,
+                    null,
+                    [
+                        'merchantId'                         => $this->merchant->getId(),
+                        'settlement_ondemand_feature_config' => $featureConfig,
+                        'attempts_left_today'                => $attemptsLeftToday
+                    ],
+                    'No more attempts left for today');
+            }
+        }
+        else
+        {
+            Validator::validateOndemandSettlementAmount($amount);
         }
 
-        [$settlableAmount, $amountLeftForToday] = (new FeatureConfig\Service)->getAllowedSettlementAmount($featureConfig);
-
         //Checks if the requested amount is greater than the maximum allowed amount that can be settled
-        if($amount > $settlableAmount)
+        if($amount > $settleableAmount)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_AMOUNT_MAX_LIMIT_EXCEEDED,
@@ -339,10 +366,10 @@ class Service extends Base\Service
                 [
                     'merchantId'                         => $this->merchant->getId(),
                     'settlement_ondemand_feature_config' => $featureConfig,
-                    'settlable_amount'                   => $settlableAmount,
+                    'settlable_amount'                   => $settleableAmount,
 
                 ],
-            'Maximum amount that can be settled(in paisa) is '.$settlableAmount);
+            'Maximum amount that can be settled(in paisa) is '.$settleableAmount);
         }
     }
 
@@ -358,5 +385,15 @@ class Service extends Base\Service
         $this->repo->saveOrFail($settlementOndemand);
 
         return [];
+    }
+
+    public function processPartialSettlementScheduled(): array
+    {
+        PartialScheduledSettlementJob::dispatch($this->mode);
+
+        return [
+            'response' => 'PartialScheduledSettlementJob job dispatched',
+        ];
+
     }
 }

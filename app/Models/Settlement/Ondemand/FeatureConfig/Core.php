@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Ondemand\FeatureConfig;
 
+use Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 
@@ -14,7 +15,8 @@ class Core extends Base\Core
             Entity::MAX_AMOUNT_LIMIT             => $input[Entity::MAX_AMOUNT_LIMIT],
             Entity::SETTLEMENTS_COUNT_LIMIT      => $input[Entity::SETTLEMENTS_COUNT_LIMIT],
             Entity::PERCENTAGE_OF_BALANCE_LIMIT  => $input[Entity::PERCENTAGE_OF_BALANCE_LIMIT],
-            Entity::PRICING_PERCENT              => $input[Entity::PRICING_PERCENT]
+            Entity::PRICING_PERCENT              => $input[Entity::PRICING_PERCENT],
+            Entity::ES_PRICING_PERCENT           => $input[Entity::ES_PRICING_PERCENT]
         ];
 
         $featureConfig = (new Entity)->build($data);
@@ -36,25 +38,38 @@ class Core extends Base\Core
 
         $featureConfig->setPricingPercent($input[Entity::PRICING_PERCENT]);
 
+        $featureConfig->setEsPricingPercent($input[Entity::ES_PRICING_PERCENT]);
+
         $this->repo->saveOrFail($featureConfig);
 
         return $featureConfig;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getFeatureConfigByMerchantId($merchantId)
     {
-        if ($this->mode === Constants\Mode::TEST)
+        try
         {
-            $data = [
-                Entity::MERCHANT_ID                  => $merchantId,
-                Entity::MAX_AMOUNT_LIMIT             => 10000,
-                Entity::SETTLEMENTS_COUNT_LIMIT      => 1000000,
-                Entity::PERCENTAGE_OF_BALANCE_LIMIT  => 50,
-                Entity::PRICING_PERCENT              => 30
-            ];
-
-           return (new Entity)->build($data);
+            return (new Repository)->getConfigByMerchantId($merchantId);
         }
-        return (new Repository)->getConfigByMerchantId($merchantId);
+        catch (Exception $e)
+        {
+            if($this->mode === Constants\Mode::TEST)
+            {
+                $data = [
+                    Entity::MERCHANT_ID                  => $merchantId,
+                    Entity::MAX_AMOUNT_LIMIT             => 10000,
+                    Entity::SETTLEMENTS_COUNT_LIMIT      => 1000000,
+                    Entity::PERCENTAGE_OF_BALANCE_LIMIT  => 50,
+                    Entity::PRICING_PERCENT              => 30,
+                    Entity::ES_PRICING_PERCENT           => 12
+                ];
+
+                return (new Entity)->build($data);
+            }
+            throw $e;
+        }
     }
 }

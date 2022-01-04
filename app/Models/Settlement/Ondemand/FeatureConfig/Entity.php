@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                      = 'updated_at';
     const DELETED_AT                      = 'deleted_at';
     const PRICING_PERCENT                 = 'pricing_percent';
+    const ES_PRICING_PERCENT              = 'es_pricing_percent';
 
     const FULL_ACCESS                     = 'full_access';
     const AMOUNT                          = 'amount';
@@ -36,7 +37,8 @@ class Entity extends Base\PublicEntity
         self::PERCENTAGE_OF_BALANCE_LIMIT,
         self::SETTLEMENTS_COUNT_LIMIT,
         self::MAX_AMOUNT_LIMIT,
-        self::PRICING_PERCENT
+        self::PRICING_PERCENT,
+        self::ES_PRICING_PERCENT
     ];
 
     public function getMerchantId()
@@ -64,6 +66,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_PERCENT);
     }
 
+    public function getEsPricingPercent()
+    {
+        return $this->getAttribute(self::ES_PRICING_PERCENT);
+    }
+
     public function setSettlementsCountLimit($settlementsCountLimit)
     {
         $this->setAttribute(Entity::SETTLEMENTS_COUNT_LIMIT, $settlementsCountLimit);
@@ -82,5 +89,10 @@ class Entity extends Base\PublicEntity
     public function setPricingPercent($pricingPercent)
     {
         $this->setAttribute(Entity::PRICING_PERCENT, $pricingPercent);
+    }
+
+    public function setEsPricingPercent($esPricingPercent)
+    {
+        $this->setAttribute(Entity::ES_PRICING_PERCENT, $esPricingPercent);
     }
 }

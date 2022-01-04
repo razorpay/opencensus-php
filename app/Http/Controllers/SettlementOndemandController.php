@@ -158,4 +158,11 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processPartialSettlementScheduled()
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->processPartialSettlementScheduled();
+
+        return ApiResponse::json($data);
+    }
 }

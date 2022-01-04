@@ -51,6 +51,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
     const DELETED_AT             = 'deleted_at';
+    const SCHEDULED              = 'scheduled';
 
     protected $public = [
         self::ID,
@@ -68,11 +69,13 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::SETTLEMENT_ONDEMAND_PAYOUTS,
         self::CREATED_AT,
+        self::SCHEDULED
     ];
 
     protected $casts = [
         self::MAX_BALANCE   => 'bool',
         self::AMOUNT        => 'int',
+        self::SCHEDULED     => 'bool',
     ];
 
     protected $fillable = [
@@ -90,6 +93,7 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::TRANSACTION_ID,
         self::TRANSACTION_TYPE,
+        self::SCHEDULED
     ];
 
     public function settlementOnDemandPayouts()
@@ -231,6 +235,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setScheduled($scheduled)
+    {
+        return $this->setAttribute(self::SCHEDULED, $scheduled);
+    }
+
     /**
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
@@ -248,6 +257,11 @@ class Entity extends Base\PublicEntity
     public function getBaseAmount()
     {
         return $this->getAmount();
+    }
+
+    public function getScheduled()
+    {
+        return $this->getAttribute(self::SCHEDULED);
     }
 
     public function shouldValidateAndUpdateBalances(): bool
@@ -274,6 +288,7 @@ class Entity extends Base\PublicEntity
             'description'                          => $arr[self::NARRATION],
             self::NOTES                            => $arr[self::NOTES],
             self::CREATED_AT                       => $arr[self::CREATED_AT],
+            self::SCHEDULED                        => $arr[self::SCHEDULED]
         ];
 
         if (isset($arr[self::SETTLEMENT_ONDEMAND_PAYOUTS]) === true)

@@ -6597,3 +6597,7 @@ CREATE TABLE raw_addresses
 );
 
 ALTER TABLE merchant_1cc_configs ADD COLUMN value_json json DEFAULT NULL;
+
+ALTER TABLE settlement_ondemand_feature_configs ADD COLUMN es_pricing_percent int DEFAULT NULL;
+
+ALTER TABLE settlement_ondemands ADD COLUMN scheduled tinyint(1) DEFAULT 0;

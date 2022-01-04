@@ -36,7 +36,12 @@ class SettlementOndemandPayout extends Base
 
     public function getRelevantPricingRule(Pricing\Plan $pricing)
     {
-        $entityName = 'settlement_ondemand';
+        $entityName = Pricing\Feature::SETTLEMENT_ONDEMAND;
+
+        if($this->entity->scheduled == true)
+        {
+            $entityName = Pricing\Feature::ESAUTOMATIC_RESTRICTED;
+        }
 
         $this->getBasicPricingRule($pricing, $entityName);
 

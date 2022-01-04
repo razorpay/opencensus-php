@@ -3005,18 +3005,25 @@ class Service extends Base\Service
     {
         $pricingPlanId = $this->merchant->getPricingPlanId();
 
+        $pricingFeature = PricingFeature::ESAUTOMATIC;
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
+        {
+            $pricingFeature = PricingFeature::ESAUTOMATIC_RESTRICTED;
+        }
+
         $scheduledPricings = $this->repo->pricing
                               ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId($pricingPlanId,
-                                                                                           PricingFeature::ESAUTOMATIC,
+                                                                                           $pricingFeature,
                                                                                            false);
 
         if ($scheduledPricings->isEmpty() === true)
         {
-            $pricingPlanId = $this->addDefaultScheduledEarlySettlementPricingForMerchant($pricingPlanId);
+            $pricingPlanId = $this->addDefaultScheduledEarlySettlementPricingForMerchant($pricingFeature, $pricingPlanId);
 
             $scheduledPricings = $this->repo->pricing
                                   ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId($pricingPlanId,
-                                                                                               PricingFeature::ESAUTOMATIC,
+                                                                                               $pricingFeature,
                                                                                                false);
         }
 
@@ -3041,11 +3048,11 @@ class Service extends Base\Service
         return $finalSchedulePricing->toArrayPublic() + ['fee_bearer' => $this->merchant->getFeeBearer()];
     }
 
-    public function addDefaultScheduledEarlySettlementPricingForMerchant($pricingPlanId)
+    public function addDefaultScheduledEarlySettlementPricingForMerchant($pricingFeature, $pricingPlanId)
     {
         if ($this->merchant->isPostpaid() === false)
         {
-            return $this->repo->transactionOnLiveAndTest(function () use($pricingPlanId)
+            return $this->repo->transactionOnLiveAndTest(function () use($pricingFeature, $pricingPlanId)
             {
                 // Replicates plan for this merchant if it was shared
                 if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
@@ -3058,9 +3065,16 @@ class Service extends Base\Service
                     $pricingPlanId = $newPlan->getId();
                 }
 
-                $defaultScheduledEarlySettlementPricings = $this->getDefaultScheduledEarlySettlementPricing($pricingPlanId);
+                if($pricingFeature === PricingFeature::ESAUTOMATIC_RESTRICTED)
+                {
+                    $defaultScheduledEarlySettlementPricing = $this->getDefaultPartialScheduledEarlySettlementPricing();
+                }
+                else
+                {
+                    $defaultScheduledEarlySettlementPricing = $this->getDefaultScheduledEarlySettlementPricing($pricingPlanId);
+                }
 
-                foreach($defaultScheduledEarlySettlementPricings as $scheduledEarlySettlementPricing)
+                foreach($defaultScheduledEarlySettlementPricing as $scheduledEarlySettlementPricing)
                 {
                     $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $scheduledEarlySettlementPricing);
                 }
@@ -3073,6 +3087,24 @@ class Service extends Base\Service
             throw new Exception\LogicException('ES scheduled Default Pricing cannot be assigned to postpaid merchant.',
                                                 ErrorCode::SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT);
         }
+    }
+
+    public function getDefaultPartialScheduledEarlySettlementPricing(): array
+    {
+        $defaultScheduledEarlySettlementPricings = [];
+        $pricingRule = [
+            'product'             => Product::PRIMARY,
+            'feature'             => PricingFeature::ESAUTOMATIC_RESTRICTED,
+            'payment_method'      => Payout\Method::FUND_TRANSFER,
+            'percent_rate'        => 12,
+            'amount_range_active' => 0,
+            'amount_range_max'    => 0,
+            'amount_range_min'    => 0,
+            'fee_bearer'          => $this->merchant->getFeeBearer(),
+        ];
+
+        array_push($defaultScheduledEarlySettlementPricings, $pricingRule);
+        return $defaultScheduledEarlySettlementPricings;
     }
 
     public function getDefaultScheduledEarlySettlementPricing($pricingPlanId)
@@ -3618,23 +3650,31 @@ class Service extends Base\Service
         }
     }
 
-    public function enableScheduledEs(): array
+    public function enableScheduledEs($skipRoleCheck = false): array
     {
-        $userRole = $this->repo
-                         ->merchant
-                         ->getMerchantUserMapping(
-                            $this->merchant->getId(),
-                            $this->user->getId(),
-                            null,
-                            Product::PRIMARY)
-                         ->pivot
-                         ->role;
-
-        if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER))
+        if($skipRoleCheck == false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
-                                                    'role',
-                                                    $userRole);
+            $userRole = $this->repo
+                             ->merchant
+                             ->getMerchantUserMapping(
+                                $this->merchant->getId(),
+                                $this->user->getId(),
+                                null,
+                                Product::PRIMARY)
+                             ->pivot
+                             ->role;
+
+            if (($userRole !== User\Role::ADMIN) and ($userRole !== User\Role::OWNER))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED,
+                                                        'role',
+                                                        $userRole);
+            }
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
+        {
+            return $this->enablePartialScheduledEs();
         }
 
         $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
@@ -3713,6 +3753,53 @@ class Service extends Base\Service
                 $exception,
                 Trace::ERROR,
                 TraceCode::FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'user_id' => $this->user->getId()
+                ]);
+        }
+
+        return ['success' => true];
+    }
+
+
+    private function enablePartialScheduledEs(): array
+    {
+        $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
+
+        $this->repo->transactionOnLiveAndTest(function ()
+        {
+            // Pricing plan updates, if required, need not be blocked by workflows.
+            $this->app['workflow']->skipWorkflows(function () use (&$pricingForMerchant)
+            {
+                $onDemandPayoutPricing = $this->updateOnDemandPricingForMerchantBeforeEnableSchedule();
+
+                $settlementOndemandPricing = $this->updateOnDemandPricingForMerchantBeforeEnableSchedule(PricingFeature::SETTLEMENT_ONDEMAND);
+
+                $pricingForMerchant['on_demand_percent_rate'] = [$onDemandPayoutPricing, $settlementOndemandPricing];
+
+            });
+
+            $this->addOrRemoveMerchantFeatures(
+                [
+                    Entity::FEATURES => [
+                        Feature\Constants::ES_AUTOMATIC_RESTRICTED => 1
+                    ],
+                    Feature\Entity::SHOULD_SYNC => 1
+                ]
+            );
+        });
+
+        try
+        {
+            $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FEATURE_ENABLE_PARTIAL_ES_MAIL_FAILED,
                 [
                     'merchant_id' => $this->merchant->getId(),
                     'user_id' => $this->user->getId()

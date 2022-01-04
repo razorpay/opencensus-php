@@ -84,6 +84,9 @@ class CreateSettlementOndemand extends Migration
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
+            $table->boolean(Entity::SCHEDULED)
+                  ->default(false);
+
             $table->index(Entity::CREATED_AT);
         });
     }

@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'settlement.ondemand_payout';
 
+    public $scheduled = false;
+
     const PAYMENT_METHOD = 'fund_transfer';
     const TRANSACTION    = 'transaction';
     const ID_LENGTH = 14;

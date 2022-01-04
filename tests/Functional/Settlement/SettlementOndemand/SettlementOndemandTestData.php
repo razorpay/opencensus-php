@@ -1106,6 +1106,94 @@ return [
         ]
     ],
 
+    'testEnableEsOnDemandFullAccessWithEsAutomaticRestrictedEnabledFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'es_pricing_percent'            => 12,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'es_pricing_percent'            => 20,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000001'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testDisableOnDemandFullAccessWithEsAutomaticEnabledFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000001'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
     'testEnableEsOnDemandRestrictedAccessFromBatchRoute' => [
         'request'  => [
             'url'     => '/settlements/ondemand/feature',
@@ -1515,4 +1603,70 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
+
+    'testOndemandPartialEsScheduledTrigger' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/scheduled/process',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'PartialScheduledSettlementJob job dispatched'
+            ],
+        ],
+    ],
+
+    'testOndemandPartialScheduledSettlement' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/scheduled/process',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'PartialScheduledSettlementJob job dispatched'
+            ],
+        ],
+    ],
+
+    'testOndemandPartialScheduledSettlementWithMaxAmountLimitCrossed' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/scheduled/process',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'PartialScheduledSettlementJob job dispatched'
+            ],
+        ],
+    ],
+
+    'testOndemandPartialScheduledSettlementErrorWithBalanceBelowThreshold' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/scheduled/process',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'PartialScheduledSettlementJob job dispatched'
+            ],
+        ],
+    ],
+
+    'testOndemandPartialScheduledSettlementWithBalanceLessThanSettleableBalance' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/scheduled/process',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'PartialScheduledSettlementJob job dispatched'
+            ],
+        ],
+    ],
+
 ];

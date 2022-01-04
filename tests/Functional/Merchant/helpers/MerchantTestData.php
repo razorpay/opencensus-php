@@ -4805,6 +4805,18 @@ return [
         ]
     ],
 
+    'testEnableEsAutomaticRestricted' => [
+        'request' => [
+            'url' => '/es/scheduled',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ]
+    ],
+
     'testEnableEsScheduledEsautomaticPricingUnavailableForSharedPlan' => [
         'request' => [
             'url' => '/es/scheduled',
