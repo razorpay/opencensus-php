@@ -1594,6 +1594,10 @@ return [
                 'description'   => 'View single/bulk internal instrument requests',
                 'assignable'    => true,
             ],
+            Permission::UPDATE_KAM_INTERNAL_INSTRUMENT_REQUEST => [
+                'description'   => 'Update single internal instrument requests on kam',
+                'assignable'    => true,
+            ],
             Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST => [
                 'description'   => 'Update single/bulk internal instrument requests',
                 'assignable'    => true,

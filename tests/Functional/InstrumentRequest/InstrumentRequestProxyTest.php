@@ -195,6 +195,22 @@ class InstrumentRequestProxyTest extends TestCase
             ],
             [
                 self::REQUEST                              => [
+                    'url'      => '/internal_instrument_request/0123456789abcd/toggle_pause',
+                    'method'   => \Requests::PATCH,
+                    'content'  => [
+                        'status' => 'paused',
+                        'comment' => 'Merchant needs time to procure information',
+                    ],
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/internal_instrument_request/0123456789abcd/toggle_pause',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::PATCH,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   =>  [
+                    'status' => 'paused',
+                    'comment' => 'Merchant needs time to procure information',
+                ],
+            ],
+            [
+                self::REQUEST                              => [
                     'url'      => '/internal_instrument_request/0123456789abcd',
                     'method'   => \Requests::DELETE,
                     'content'  => [

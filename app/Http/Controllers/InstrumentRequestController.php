@@ -63,6 +63,20 @@ class InstrumentRequestController extends BaseController
         return ApiResponse::json($response);
     }
 
+    public function pauseInternalInstrumentRequestById(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            $input,
+            \Requests::PATCH,
+            'v2/internal_instrument_request/'. $id.'/toggle_pause',
+            [],
+            $this->getAdminHeadersForInstrumentRequest());
+
+        return ApiResponse::json($response);
+    }
+
     public function deleteInternalInstrumentRequestById(string $id)
     {
         $response = $this->app['terminals_service']->proxyTerminalService(
