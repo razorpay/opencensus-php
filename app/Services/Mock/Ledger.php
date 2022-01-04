@@ -1249,4 +1249,23 @@ class Ledger extends BaseLedger
             'body' => $response
         ];
     }
+
+    public function fetchMerchantAccounts($input, bool $throwExceptionOnFailure = false): array {
+        $response = [
+            "merchant_id"      => "I7Z8xLJXBYmFhW",
+            "merchant_balance" => [
+                "balance"      => "160.000000",
+                "min_balance"  => "10000.000000"
+            ],
+            "reward_balance"  => [
+                "balance"     => "20.000000",
+                "min_balance" => "-20.000000"
+            ],
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
 }

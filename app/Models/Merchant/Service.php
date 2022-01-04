@@ -104,6 +104,7 @@ use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Merchant\Detail\SmsTemplates as SmsTemplates;
@@ -1387,6 +1388,31 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getId();
 
         $balance = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
+
+        foreach ($balance['items'] as &$b)
+        {
+            // Only call ledger when balance is of type 'banking and account_type 'shared'.
+            if (($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
+                ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::SHARED))
+            {
+
+                // Only call ledger when "ledger_journal_reads" is enabled on the merchant.
+                if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true)
+                {
+
+                    $bankingAccount = $this->merchant->sharedBankingBalance->bankingAccount;
+
+                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccount->getPublicId());
+
+                    if (empty($ledgerResponse) === false)
+                    {
+                        $b[Balance\Entity::BALANCE] = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+                    }
+
+                    break;
+                }
+            }
+        }
 
         if ($this->auth->isStrictPrivateAuth() === true)
         {

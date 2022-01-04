@@ -2319,6 +2319,8 @@ class UserTest extends TestCase
 
         $balanceEntityMock->shouldReceive('only')->andReturn('24334');
 
+        $balanceEntityMock->shouldReceive('getAccountType')->andReturn('shared');
+
         $this->coreMock->shouldReceive('fetchBankingCreditBalances')->andReturn('24334');
 
         $response = $r->invoke($this->coreMock,[$content], '1cXSLlUU8V9sXl');

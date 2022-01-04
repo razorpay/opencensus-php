@@ -6,9 +6,13 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\ServerErrorException;
+use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\BankingAccount\Entity as BankingAccount;
+use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 
 class Core extends Base\Core
 {
@@ -41,6 +45,21 @@ class Core extends Base\Core
         self::DIRECT_MERCHANT_ONBOARDING  => 'Event for onboarding of merchant on direct account',
         self::SHARED_MERCHANT_ONBOARDING  => 'Event for onboarding of merchant on shared account',
     ];
+
+    const TIME_TAKEN       = 'time_taken';
+    const BALANCE          = 'balance';
+    const REWARD_BALANCE   = 'reward_balance';
+    const MERCHANT_BALANCE = 'merchant_balance';
+
+    /** @var LedgerService $ledgerService */
+    protected $ledgerService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->ledgerService = $this->app['ledger'];
+    }
 
     /***
      * Push event to sns topic which will be consumed by ledger SQS to create accounts based on event
@@ -102,6 +121,75 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::LEDGER_ACCOUNT_STREAMING_FAILED,
                 $payload);
+        }
+    }
+
+    /**
+     * This function is called to fetch merchant balance and credit (reward) balance from ledger service.
+     * @param string $merchantId
+     * @param string $bankingAccountId
+     * @return array
+     */
+    public function fetchBalanceFromLedger(string $merchantId, string $bankingAccountId) :array {
+            $startTime = millitime();
+            $ledgerResponse = [];
+
+            try {
+
+                $request = [
+                    self::TENANT             => self::X,
+                    self::MERCHANT_ID        => $merchantId,
+                    self::BANKING_ACCOUNT_ID => $bankingAccountId,
+                ];
+
+                $response = $this->ledgerService->fetchMerchantAccounts($request);
+                $statusCode = $response[LedgerService::RESPONSE_CODE];
+
+                if ($statusCode !== 200)
+                {
+                    throw new ServerErrorException('Received invalid status code',
+                        ErrorCode::SERVER_ERROR_LEDGER_ACCOUNT_FETCH_BALANCES,
+                        [
+                            LedgerService::RESPONSE_CODE => $statusCode,
+                            LedgerService::RESPONSE_BODY => $ledgerResponse,
+                        ]
+                    );
+                }
+
+                $ledgerResponse = $response[LedgerService::RESPONSE_BODY];
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_ERROR,
+                    [
+                        self::MERCHANT_ID        => $merchantId,
+                        self::BANKING_ACCOUNT_ID => $bankingAccountId
+                    ]);
+            }
+            finally
+            {
+                $this->trace->info(
+                    TraceCode::LEDGER_ACCOUNT_FETCH_BALANCE_TIME_TAKEN,
+                    [
+                        self::TIME_TAKEN => millitime() - $startTime,
+                    ]);
+            }
+            return $ledgerResponse;
+    }
+
+    /**
+     * This function changes credit balance amount with the credit balance returned by ledger service.
+     * @param array $creditBalances
+     * @param array $ledgerResponse
+     */
+    public function constructCreditBalanceFromLedger(array &$creditBalances, array $ledgerResponse){
+        foreach ($creditBalances as &$creditBalance)
+        {
+            $creditBalance[CreditEntity::BALANCE] = (int) $ledgerResponse[self::REWARD_BALANCE][self::BALANCE];
         }
     }
 }

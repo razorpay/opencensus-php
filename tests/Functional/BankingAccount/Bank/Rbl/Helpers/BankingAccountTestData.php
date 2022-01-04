@@ -2361,6 +2361,40 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchOnProxyAuthFromLedger' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'account_number'    => '2224440041626905',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 160,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                    [
+                        'account_number'    => '1234567808',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 100000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBankingAccountFetchOnPrivateAuth' => [
         'request'  => [
             'url'     => '/banking_accounts/activated',

@@ -448,6 +448,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUB_STATUS);
     }
 
+    public function getBalance()
+    {
+        return $this->getAttribute(self::BALANCE);
+    }
+
     public function getSubStatusForExternalDisplay()
     {
         return Status::transformSubStatusFromInternalToExternal($this->getSubStatus());

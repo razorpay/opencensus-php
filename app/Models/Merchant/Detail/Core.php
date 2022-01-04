@@ -17,6 +17,7 @@ use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
 use RZP\Diag\EventCode;
+use RZP\Models\Feature;
 use phpseclib\Crypt\AES;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\RequestJob;
@@ -78,12 +79,14 @@ use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
+use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
@@ -3078,6 +3081,8 @@ class Core extends Base\Core
                 Product::BANKING,
                 Merchant\Balance\AccountType::SHARED);
 
+        $creditBalance = [];
+
         if (empty($balance) === false)
         {
             $bankingAccount = $this->repo
@@ -3085,22 +3090,43 @@ class Core extends Base\Core
                 ->getFromBalanceId($balance->getId());
 
             $response[Merchant\Entity::BANKING_ACCOUNT] = $bankingAccount->toArrayPublic();
+
+            $creditBalance = $this->fetchBankingCreditBalances($merchant->getId(), Product::BANKING, $balance->getAccountType(), $bankingAccount->getPublicId());
         }
 
-        $response[Merchant\Entity::CREDIT_BALANCE]  = $this->fetchBankingCreditBalances(
-            $merchant->getId(),
-            Product::BANKING);
+        if (empty($creditBalance) == true)
+        {
+
+            $creditBalance = $this->fetchBankingCreditBalances($merchant->getId(), Product::BANKING, null, null);
+        }
+
+        $response[Merchant\Entity::CREDIT_BALANCE] = $creditBalance;
 
         return $response;
     }
 
-    protected function fetchBankingCreditBalances($merchantId, $product)
+    protected function fetchBankingCreditBalances($merchantId, $product, $accountType, $bankingAccountId)
     {
         $creditBalances = $this->repo
             ->credits
             ->getTypeAggregatedMerchantCreditsForProductForDashboard(
                 $merchantId,
                 $product);
+
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        // Calling ledger when merchant has "ledger_journal_reads" feature flag enabled
+        // and balance is of type "shared".
+        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true) &&
+            ($accountType === Merchant\Balance\AccountType::SHARED))
+        {
+            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccountId);
+
+            if (empty($ledgerResponse) === false)
+            {
+                (new LedgerCore())->constructCreditBalanceFromLedger($creditBalances, $ledgerResponse);
+            }
+        }
 
         return $creditBalances;
     }

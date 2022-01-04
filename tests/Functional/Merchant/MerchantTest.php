@@ -9884,6 +9884,72 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testGetBalancesFromLedger()
+    {
+        $this->fixtures->create('merchant',['id' => '10000000000001']);
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '10000000000001',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 0,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'shared',
+            'channel'           => null,
+            'updated_at'        => 1
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '10000000000001',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  $balanceData1['account_number'],
+            'balance_id'            =>  $balanceData1['id'],
+            'account_type'          =>  'shared',
+            'channel'               =>  $balanceData1['channel'],
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], 'owner', 'test');
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::LEDGER_JOURNAL_READS,
+            'entity_id'   => 10000000000001,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $user->getId());
+
+        $this->startTest();
+    }
+
     public function testGetBalancesWhenNoBalanceExists()
     {
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);

@@ -8,6 +8,7 @@ use Mail;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -15,6 +16,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
@@ -22,6 +24,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
@@ -311,7 +314,36 @@ class Service extends Base\Service
 
         $bankingAccounts = (new BankingAccountService\Service())->fetchAccountDetailsFromBas($this->merchant->getMerchantId(), $bankingAccounts);
 
-        return $bankingAccounts->load(Entity::BALANCE)->toArrayPublic();
+        $bankingAccounts = $bankingAccounts->load(Entity::BALANCE);
+
+        foreach ($bankingAccounts as &$ba)
+        {
+            $balance = $ba->getBalance();
+
+            if (empty($balance) === true)
+            {
+                continue;
+            }
+
+            if(($balance->getType() === Balance\Type::BANKING) &&
+                ($balance->getAccountType() === Balance\AccountType::SHARED))
+            {
+                // Only call ledger when "ledger_journal_reads" is enabled on the merchant.
+                if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true)
+                {
+                    $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $ba->getPublicId());
+                    if (empty($ledgerResponse) === false)
+                    {
+                        $balanceAmount = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+                        $balance->setBalance($balanceAmount);
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return $bankingAccounts->toArrayPublic();
     }
 
     public function fetchActivatedAccounts()

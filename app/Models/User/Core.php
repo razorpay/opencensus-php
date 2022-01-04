@@ -13,6 +13,7 @@ use Lib\PhoneBook;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
@@ -45,8 +46,10 @@ use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Escalations as MerchantEscalation;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
@@ -3212,7 +3215,9 @@ class Core extends Base\Core
                                                                                     $merchant['id']),
                         Merchant\Entity::CREDIT_BALANCE         => $this->fetchBankingCreditBalances(
                                                                                     $merchant['id'],
-                                                                                    Product::BANKING),
+                                                                                    Product::BANKING,
+                                                                                    $balance->getAccountType(),
+                                                                                    $bankingAccount->getPublicId()),
                         Merchant\Entity::BULK_PAYOUTS_USER_TYPE => $bulkUserType,
                     ];
             },
@@ -3265,11 +3270,26 @@ class Core extends Base\Core
         return $result;
     }
 
-    protected function fetchBankingCreditBalances($merchantId, $product)
+    protected function fetchBankingCreditBalances($merchantId, $product, string $accountType, string $bankingAccountId)
     {
         $creditBalances = $this->repo
                                ->credits
                                ->getTypeAggregatedMerchantCreditsForProductForDashboard($merchantId, $product);
+
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        // Calling ledger when merchant has "ledger_journal_reads" feature flag enabled
+        // and balance is of type "shared".
+        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true) &&
+            ($accountType === Merchant\Balance\AccountType::SHARED))
+        {
+            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccountId);
+
+            if (empty($ledgerResponse) === false)
+            {
+                (new LedgerCore())->constructCreditBalanceFromLedger($creditBalances, $ledgerResponse);
+            }
+        }
 
         return $creditBalances;
     }
