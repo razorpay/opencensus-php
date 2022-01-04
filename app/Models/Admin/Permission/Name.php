@@ -592,6 +592,9 @@ class Name
 
     const EXECUTE_TERMINAL_TEST               = 'execute_terminal_test';
 
+    const VIEW_IIR_DISCREPANCY                = 'view_iir_discrepancy';
+    const CREATE_IIR_DISCREPANCY              = 'create_iir_discrepancy';
+
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
     const MANAGE_FUND_LOADING_DOWNTIME        = 'manage_fund_loading_downtime';

@@ -1590,6 +1590,14 @@ return [
                 'description'   => 'Update merchant instrument',
                 'assignable'    => true,
             ],
+            Permission::VIEW_IIR_DISCREPANCY    =>  [
+                'description'   => 'View IIR Discrepancy',
+                'assignable'    => true,
+            ],
+            Permission::CREATE_IIR_DISCREPANCY    =>  [
+                'description'   => 'Create IIR Discrepancy',
+                'assignable'    => true,
+            ]
         ],
 
         PermissionCategory::GATEWAY_CREDENTIAL => [

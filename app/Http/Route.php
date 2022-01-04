@@ -2887,6 +2887,15 @@ class Route
         'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
         'fetch_merchant_instrument_requests'                       =>  ['post',    'merchant_instrument_request_fetch',                              'InstrumentRequestController@getMerchantInstruments'             ],
 
+        'get_discrepancy_list'                    => ['get',       'terminals/proxy/discrepancy_list',                                         'TerminalController@proxyV2TerminalService' ],
+        'get_discrepancy_list_merchant'           => ['get',       'terminals/proxy/discrepancy_list_merchant',                                'TerminalController@proxyV2TerminalService' ],
+        'create_iir_discrepancy'                  => ['post',      'terminals/proxy/iir_discrepancies',                                        'TerminalController@proxyV2TerminalService' ],
+        'create_iir_discrepancy_bulk'             => ['post',      'terminals/proxy/iir_discrepancies_bulk',                                   'TerminalController@proxyV2TerminalService' ],
+        'fetch_iir_discrepancies_of_iir'          => ['get',       'terminals/proxy/internal_instrument_request/{id}/iir_discrepancies',       'TerminalController@proxyV2TerminalService' ],
+        'patch_iir_discrepancy_by_id'             => ['patch',     'terminals/proxy/iir_discrepancies/{id}',                                   'TerminalController@proxyV2TerminalService' ],
+        'fetch_iir_discrepancies_of_mir'          => ['get',       'terminals/proxy/merchant_instrument_request/{id}/iir_discrepancies',       'TerminalController@proxyV2TerminalService' ],
+        'create_iir_discrepancy_answer'           => ['post',      'terminals/proxy/iir_discrepancy_answers',                                  'TerminalController@proxyV2TerminalService' ],
+
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
 
@@ -3404,6 +3413,9 @@ class Route
         'qr_payment_fetch_for_qr_code',
         'wallet_service',
         'mir_instruments_get',
+        'fetch_iir_discrepancies_of_mir',
+        'get_discrepancy_list_merchant',
+        'create_iir_discrepancy_answer',
         'settlement_ondemand_fees',
         'settlement_ondemand_create',
         'settlement_ondemand_fetch',
@@ -5909,6 +5921,11 @@ class Route
         'wfs_config_get_admin',
         'payout_workflow_retry_admin_bulk',
         'payout_wf_config_migrate',
+        'get_discrepancy_list',
+        'create_iir_discrepancy',
+        'create_iir_discrepancy_bulk',
+        'fetch_iir_discrepancies_of_iir',
+        'patch_iir_discrepancy_by_id',
 
         // gateway credentials
         'terminals_proxy_create_gateway_credential',
@@ -7056,6 +7073,13 @@ class Route
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'mir_instrument_set'                          => Permission::UPDATE_MERCHANT_INSTRUMENT,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
+
+        'get_discrepancy_list'                        => Permission::VIEW_IIR_DISCREPANCY,
+        'create_iir_discrepancy'                      => Permission::CREATE_IIR_DISCREPANCY,
+        'create_iir_discrepancy_bulk'                 => Permission::CREATE_IIR_DISCREPANCY,
+        'fetch_iir_discrepancies_of_iir'              => Permission::VIEW_IIR_DISCREPANCY,
+        'patch_iir_discrepancy_by_id'                 => Permission::CREATE_IIR_DISCREPANCY,
+
 
         // gateway credential
         'terminals_proxy_create_gateway_credential'   => Permission::CREATE_GATEWAY_CREDENTIAL,
@@ -8336,6 +8360,10 @@ class Route
             'merchant_verify_attributes',
             'merchants_risk_service',
             'mir_instruments_get',
+            'get_discrepancy_list',
+            'get_discrepancy_list_merchant',
+            'fetch_iir_discrepancies_of_mir',
+            'create_iir_discrepancy_answer',
             'mock_acs',
             'mock_aeps_payment',
             'mock_amex_payment',
@@ -9947,6 +9975,11 @@ class Route
             'patch_internal_instrument_request_by_id',
             'patch_internal_instrument_requests',
             'bulk_cancel_internal_instrument_requests',
+            'get_discrepancy_list',
+            'create_iir_discrepancy',
+            'create_iir_discrepancy_bulk',
+            'fetch_iir_discrepancies_of_iir',
+            'patch_iir_discrepancy_by_id',
             'payment_acknowledge',
             'payment_add_metadata',
             'payment_authorize_failed',
@@ -12798,6 +12831,10 @@ class Route
         'payout_links_shopify_app_customers_redact'         => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_app_shop_redact'              => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
+    ];
+
+    public static $terminalsServiceFormRequestsRoutes = [
+        'create_iir_discrepancy_answer',
     ];
 
     /*

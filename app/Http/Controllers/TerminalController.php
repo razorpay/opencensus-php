@@ -4,11 +4,13 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use Route;
 use RZP\Trace\TraceCode;
 
 class TerminalController extends Controller
 {
     const X_DASHBOARD_ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+    const X_DASHBOARD_MERCHANT_ID   = "X-Dashboard-Merchant-Id";
 
     public function putTerminal(string $id)
     {
@@ -270,15 +272,35 @@ class TerminalController extends Controller
 
         $path = Request::path();
 
-        $traceData = ["method" => $method, "path" => $path];
+        $traceData = ["method" => $method, "path" => $path, "input" => $input];
 
         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V2, $traceData);
 
         $path = str_replace("v1/terminals/proxy","v2", $path);
 
-        $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path, [],  $this->getAdminHeaders());
+        if ($path === 'v2/discrepancy_list_merchant')
+        {
+            $path = 'v2/discrepancy_list'; // both terminals/proxy/discrepancy_list and terminals/proxy/discrepancy_list_merchant calls same route on TS
+        }
+
+        if (in_array(Route::currentRouteName(), \RZP\Http\Route::$terminalsServiceFormRequestsRoutes) === true)
+        {
+            $response = $this->app['terminals_service']->proxyTerminalServiceFormRequest($input, $method, $path, ['timeout' => 0.5], $this->getHeadersForProxyRequest());
+        }
+        else
+        {
+            $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path, [],  $this->getHeadersForProxyRequest());
+        }
 
         return ApiResponse::json($response);
+    }
+
+    protected function getHeadersForProxyRequest() : array
+    {
+        return [
+            self::X_DASHBOARD_MERCHANT_ID => $this->getMerchantId(), // will be empty if not merchant auth/private auth
+            self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(), // will be empty if not kam
+        ];
     }
 
     public function proxyGetTerminalsGatewayStatus()
@@ -421,5 +443,16 @@ class TerminalController extends Controller
     protected function getAdminEmail() : string
     {
         return $this->app['basicauth']->getDashboardHeaders()['admin_email'] ?? '';
+    }
+
+    protected function getMerchantId() : string
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if (is_null($merchant) === false)
+        {
+            return $merchant->getId();
+        }
+        return '';
     }
 }
