@@ -18,6 +18,11 @@ use RZP\Base\Database\LagChecker\HeartbeatLagChecker;
 class Route
 {
     protected static $apiRoutes = [
+        // internal
+        'internal_create'    => ['post', 'internal', 'InternalController@create'],
+        'internal_fail'      => ['post', 'internal/{id}/fail', 'InternalController@fail'],
+        'internal_reconcile' => ['post', 'internal/{id}/reconcile', 'InternalController@reconcile'],
+
         //friend buy
         'friendbuy_purchase_events' => ['post', 'friendbuy/purchase_events',  'ReferralController@sendPurchaseEvents' ],
         'friend_buy_reward_validation'  =>  ['post',    'friendbuy/reward_validation',  'ReferralController@performRewardValidation' ],
@@ -4327,6 +4332,10 @@ class Route
         // trusted badge experiment internal auth
         'trusted_badge_get_experiment_list',
         'trusted_badge_put_experiment_list',
+
+        'internal_create',
+        'internal_fail',
+        'internal_reconcile',
 
         'update_shopify_1cc_config',
 

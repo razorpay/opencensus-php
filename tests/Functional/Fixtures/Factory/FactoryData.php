@@ -1978,6 +1978,19 @@ final class FactoryData
             'title'       => 'Sample title',
             'description' => 'Sample description',
             'notes'       => null,
+
+        ]);
+
+        $factory(\RZP\Models\Internal\Entity::class, [
+            'id'               => $faker->uniqueid,
+            'merchant_id'      => '10000000000000',
+            'currency'         => 'INR',
+            'amount'           => '1',
+            'base_amount'      => '1',
+            'utr'              => '999999999',
+            'transaction_date' => $faker->timestamp,
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Dispute\DebitNote\Entity::class, [

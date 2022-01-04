@@ -72,6 +72,7 @@ class Entity
     const TERMINAL                   = 'terminal';
     const TRANSFER                   = 'transfer';
     const EXTERNAL                   = 'external';
+    const INTERNAL                   = 'internal';
     const REFERRALS                  = 'referrals';
     const STATEMENT                  = 'statement';
     const BHARAT_QR                  = 'bharat_qr';

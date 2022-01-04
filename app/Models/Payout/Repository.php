@@ -2001,5 +2001,6 @@ class Repository extends Base\Repository
             ->where(Entity::ID, $payoutId)
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->update($updates);
+
     }
 }

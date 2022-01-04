@@ -74,6 +74,7 @@ class Entity extends Base\PublicEntity
     const PURPOSE                               = 'purpose';
     const PURPOSE_TYPE                          = 'purpose_type';
     const AMOUNT                                = 'amount';
+    const BASE_AMOUNT                           = 'base_amount';
     const CURRENCY                              = 'currency';
     const NOTES                                 = 'notes';
     const FEES                                  = 'fees';

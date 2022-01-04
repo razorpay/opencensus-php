@@ -2163,6 +2163,22 @@ class Core extends Base\Core
                                                      $payout)->notify();
         }
 
+        // if purpose_type = inter_account_payout then create an internal entity
+        if($payout->getPurposeType() === Purpose::INTER_ACCOUNT_PAYOUT)
+        {
+            try {
+                $internalEntityService = new \RZP\Models\Internal\Service();
+                $internalEntityService->createOnPayout($payout);
+            }
+            catch(\Throwable $ex)
+            {
+                $this->app['trace']->traceException(
+                    $ex,
+                    Trace::ALERT,
+                    TraceCode::INTERNAL_ENTITY_CREATION_FAILED);
+            }
+        }
+
         $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);
     }
 
@@ -2655,6 +2671,23 @@ class Core extends Base\Core
             (new PayoutsStatusDetailsCore())->create($payout);
 
             $this->app->events->dispatch('api.payout.reversed', [$payout]);
+        }
+
+        // if a reversal happens on the payout with inter_account_payout then mark the internal entity as failed
+        if($payout->getPurposeType() === Purpose::INTER_ACCOUNT_PAYOUT)
+        {
+            try {
+                // get internal entity
+                $internalEntityService = new \RZP\Models\Internal\Service();
+                $internalEntityService->failOnPayoutReversal($payout->getUtr());
+            }
+            catch(\Throwable $ex)
+            {
+                $this->app['trace']->traceException(
+                    $ex,
+                    Trace::ALERT,
+                    TraceCode::INTERNAL_ENTITY_UPDATE_FAILED);
+            }
         }
 
         $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation);

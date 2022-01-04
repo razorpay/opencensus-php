@@ -2489,6 +2489,15 @@ class ErrorCode
     const BAD_REQUEST_TOKEN_SUSPENDED_OR_DEACTIVATED                                = 'BAD_REQUEST_TOKEN_SUSPENDED_OR_DEACTIVATED';
     const BAD_REQUEST_TOKEN_EXPIRED                                                 = 'BAD_REQUEST_TOKEN_EXPIRED';
 
+    const BAD_REQUEST_LEDGER_JOURNAL_CREATE                                         = 'BAD_REQUEST_LEDGER_JOURNAL_CREATE';
+
+    const BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND                                    = 'BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND';
+    const BAD_REQUEST_INTERNAL_MERCHANT_NOT_FOUND                                   = 'BAD_REQUEST_INTERNAL_MERCHANT_NOT_FOUND';
+    const BAD_REQUEST_INTERNAL_ENTITY_ALREADY_EXISTS                                = 'BAD_REQUEST_INTERNAL_ENTITY_ALREADY_EXISTS';
+    const BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND                                     = 'BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND';
+    const BAD_REQUEST_INTERNAL_BALANCE_NOT_FOUND                                    = 'BAD_REQUEST_INTERNAL_BALANCE_NOT_FOUND';
+    const BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND                               = 'BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

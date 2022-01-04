@@ -268,6 +268,11 @@ class ConfigKey
     // This will be used to get the utrs facing credit before debit issue.
     const BAS_CREDIT_BEFORE_DEBIT_UTRS = self::PREFIX . 'bas_credit_before_debit_utrs';
 
+    // This is a map between real account number to mid of all the razorpay internal accounts
+    // This is used to both get the mid based on real account number as well as the list of mids
+    // which belong to razorpay.
+    const RAZORPAY_ACCOUNT_MERCHANTS = self::PREFIX . 'rzp_account_merchants';
+
     // This key will be a flag for creating a DB connection with master instead of slave
     const USE_MASTER_DB_CONNECTION = self::PREFIX . 'use_master_db_connection';
 
@@ -386,6 +391,7 @@ class ConfigKey
         self::INTER_ACCOUNT_PAYOUT_MERCHANTS,
         self::SUB_BALANCES_MAP,
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
+        self::RAZORPAY_ACCOUNT_MERCHANTS,
     ];
 
     const REDIS_CONFIG_MAP = [

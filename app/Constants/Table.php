@@ -294,6 +294,7 @@ class Table
     const BANKING_ACCOUNT_CALL_LOG          = 'banking_account_call_log';
     const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_details';
     const BANKING_ACCOUNT_STATEMENT_DETAILS = 'banking_account_statement_details';
+    const INTERNAL                          = 'internal_entity';
 
     // P2P Service Tables
     const P2P_VPA               = 'p2p_vpa';

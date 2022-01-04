@@ -4123,6 +4123,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXTERNAL_SAVE_WITH_REMARKS_NOT_NULL                   = 'EXTERNAL_SAVE_WITH_REMARKS_NOT_NULL';
     const EXTERNAL_DELETE_REQUEST                               = 'EXTERNAL_DELETE_REQUEST';
 
+    // Internal
+    const INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA                  = 'INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA';
+    const INTERNAL_CREATE_INPUT_DATA                            = 'INTERNAL_CREATE_INPUT_DATA';
+    const INTERNAL_FAIL_ON_PAYOUT_REVERSAL_INPUT_DATA           = 'INTERNAL_FAIL_INPUT_DATA';
+    const INTERNAL_FAIL_INPUT_DATA                              = 'INTERNAL_FAIL_INPUT_DATA';
+    const INTERNAL_SAVE                                         = 'INTERNAL_SAVE';
+    const INTERNAL_DELETE_REQUEST                               = 'INTERNAL_DELETE_REQUEST';
+    const INTERNAL_ENTITY_CREATION_FAILED                       = 'INTERNAL_ENTITY_CREATION_FAILED';
+    const INTERNAL_ENTITY_UPDATE_FAILED                         = 'INTERNAL_ENTITY_UPDATE_FAILED';
+
     const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
     const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';
     const GOVERNOR_SERVICE_RETRY                                = 'GOVERNOR_SERVICE_RETRY';
@@ -5444,6 +5454,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_JOURNAL_REWARD_LOADING_PAYLOAD_ERROR           = 'LEDGER_JOURNAL_REWARD_LOADING_PAYLOAD_ERROR';
     const LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR                = 'LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR';
 
+    const LEDGER_JOURNAL_CREATED                                = 'LEDGER_JOURNAL_CREATED';
+    const LEDGER_JOURNAL_CREATE_TIME_TAKEN                      = 'LEDGER_JOURNAL_CREATE_TIME_TAKEN';
+    const LEDGER_JOURNAL_CREATE_ERROR                           = 'LEDGER_JOURNAL_CREATE_ERROR';
     const LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW           = 'LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW';
     const LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW                 = 'LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW';
 
