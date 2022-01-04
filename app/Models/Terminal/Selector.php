@@ -1250,7 +1250,7 @@ class Selector extends Base\Core
 
         $createTerminalCondition = ($payment->isMethod(Method::CARD) === true) and
         ($hasHitachiTerminal === true) and
-        ($payment->isBharatQr() === false) and ($currency === Currency::INR);
+        ($payment->isBharatQr() === false) and ($currency === Currency::INR) and ($payment->isDCC() === false);
 
         if($createTerminalCondition === true) {
             $hasDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
