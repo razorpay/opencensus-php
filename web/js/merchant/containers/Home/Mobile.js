@@ -186,16 +186,15 @@ class AnalyticsMobile extends Component {
           {showInstantActivation && !user.isOnboardingV2Enabled ? (
             <Announcement mode={mode} user={user} payments={payments} />
           ) : null}
-          {user.isPaymentsEnabled &&
-          this.props.transactionAmount <= 0 &&
-          this.props.referee?.status === 'signup' ? (
+          {user.isPaymentsEnabled && this.props.referee?.status === 'signup' ? (
             <AnnouncementBanner
               title="Unlock Pending Credits"
               theme="warning"
               card_id="merchant_referral"
             >
-              Accept your first payment of minimum ₹50 to unlock{' '}
-              {getFormattedAmountNew(this.props.referee.referral_amount, true)} transaction credits{' '}
+              Accept payments of minimum ₹2,000 to receive{' '}
+              {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
+              100% FREE*
             </AnnouncementBanner>
           ) : null}
           {!user.isOnboardingV2Enabled ? (

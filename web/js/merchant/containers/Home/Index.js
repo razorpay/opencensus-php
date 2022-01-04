@@ -230,7 +230,8 @@ export default class HomeContainer extends Component {
       hideDiwaliPromotion: getItem('hide_diwali_promotional_banner') || false,
       hasMinTransactionSD: false,
       referredMerchants: [],
-      referredMerchantsAmount: 0,
+      referredAmount: 0,
+      isReferee: false,
     };
 
     /*
@@ -879,11 +880,13 @@ export default class HomeContainer extends Component {
 
   fetchReferredMerchants = async () => {
     const res = await fetchModalConfigDetails('onboarding');
-    const referralSuccessCount = res?.data?.referral_success_popup_count ?? 0;
-    if (parseInt(referralSuccessCount, 10) !== 0) {
+    const referralSuccessCount = parseInt(res?.data?.referral_success_popup_count ?? 0, 10);
+    const refereeSuccessCount = parseInt(res?.data?.referee_success_popup_count ?? 0, 10);
+    if (referralSuccessCount !== 0 || refereeSuccessCount !== 0) {
       this.setState({
         referredMerchants: res.data.referee_name,
-        referredMerchantsAmount: res.data.referral_amount,
+        referredAmount: res.data.referral_amount,
+        isReferee: !!refereeSuccessCount,
       });
     }
   };
@@ -1246,10 +1249,11 @@ export default class HomeContainer extends Component {
           />
         )}
 
-        {this.state.referredMerchants?.length > 0 && (
+        {this.state.referredAmount > 0 && (
           <M2MSuccessModal
             referredMerchants={this.state.referredMerchants}
-            referredMerchantsAmount={this.state.referredMerchantsAmount}
+            referredAmount={this.state.referredAmount}
+            isReferee={this.state.isReferee}
           />
         )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}

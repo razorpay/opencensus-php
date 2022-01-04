@@ -67,10 +67,9 @@ class ActivationCard extends Component {
           <>
             {isReferredMerchant ? (
               <div>
-                Complete this step to start transacting and unlock{' '}
-                <strong>
-                  {getFormattedAmountNew(this.props.referee.referral_amount, true)} credits
-                </strong>
+                Complete this step to receive{' '}
+                <strong>{getFormattedAmountNew(this.props.referee.referral_amount, true)}</strong>{' '}
+                in collections with zero charges
               </div>
             ) : (
               <div>
@@ -154,14 +153,6 @@ class ActivationCard extends Component {
               settlement
             </a>{' '}
             in your account{' '}
-            {isReferredMerchant ? (
-              <div>
-                and unlock{' '}
-                <strong>
-                  {getFormattedAmountNew(this.props.referee.referral_amount, true)} credits
-                </strong>
-              </div>
-            ) : null}
             <div>
               <Link
                 to={activationFormUrl}

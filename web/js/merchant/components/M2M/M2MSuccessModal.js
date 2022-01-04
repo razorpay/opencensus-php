@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
-import { updateModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { updateModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventActions from 'merchant/reducers/trackEvents';
 
-const M2MSuccessModal = ({ referredMerchants, referredMerchantsAmount, trackEvents }) => {
+const M2MSuccessModal = ({ referredMerchants, referredAmount, trackEvents, isReferee }) => {
   const [showModal, setShowModal] = useState(true);
   const onModalClose = () => {
-    updateModalConfigDetails({ referral_success_popup_count: 0 }, 'onboarding');
+    if (isReferee) {
+      updateModalConfigDetails({ referee_success_popup_count: 0 }, 'onboarding');
+    } else {
+      updateModalConfigDetails({ referral_success_popup_count: 0 }, 'onboarding');
+    }
     setShowModal(false);
   };
 
@@ -22,22 +26,19 @@ const M2MSuccessModal = ({ referredMerchants, referredMerchantsAmount, trackEven
   }, []);
 
   let title, description;
-  const referredAmount = getFormattedAmountNew(referredMerchantsAmount, true);
+
   if (referredMerchants.length > 1) {
-    const referredMerchantsNames = referredMerchants.reduce(
-      (merchantNames, merchantName, index) => {
-        if (index < referredMerchants.length - 1) {
-          return `${merchantNames}, ${merchantName}`;
-        } else {
-          return `${merchantNames} and ${merchantName}`;
-        }
-      },
-    );
-    title = `Yay! You referred ${referredMerchants.length} merchants successfully and unlocked ${referredAmount} transaction credits.`;
-    description = `${referredMerchantsNames} have started using Razorpay. Your payments processed via Razorpay, up to ${referredAmount}, will be free of charge!`;
+    title = `Congratulations! ${referredMerchants.length} of your friends have started using Razorpay to grow their business`;
+    description = `No charges, no fees on your next ${getFormattedAmountNew(
+      referredAmount,
+      true,
+    )} in collections. Keep growing your business. Continue helping others in your network!`;
   } else {
-    title = `Yayy! Double winnings! ${referredMerchants[0]} and you unlocked ${referredAmount} transaction credits.`;
-    description = `This means, your payments processed via Razorpay, up to ${referredAmount}, will be free of charge!`;
+    title = `Congratulations! Your friend ${referredMerchants[0]} has started using Razorpay to grow their business`;
+    description = `No charges, no fees on your next ${getFormattedAmountNew(
+      referredAmount,
+      true,
+    )} in collections. Keep growing your business. Continue helping others in your network!`;
   }
   return showModal ? (
     <ModalMask>

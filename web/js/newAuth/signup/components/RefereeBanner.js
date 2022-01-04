@@ -63,11 +63,11 @@ const RefereeBanner = () => {
         <MobileOnlyView>
           <RefereeBannerMobileView>
             <Text size="xsmall" color="background.100" as="div">
-              You were invited to try out Razorpay.
+              You have been invited to try out Razorpay
             </Text>
             <Text size="medium" color="background.100" as="div">
-              Sign up to collect your transaction credit of{' '}
-              {getFormattedAmount(referralAmount, true)}
+              Complete your signup and receive {getFormattedAmount(referralAmount, true)} in
+              collections - 100% FREE!*
             </Text>
           </RefereeBannerMobileView>
         </MobileOnlyView>
@@ -75,11 +75,12 @@ const RefereeBanner = () => {
           <RefereeBannerContainerView>
             <RefereeBannerDesktopView>
               <Text size="xsmall" color="background.100" as="div">
-                Hi there! Your friend invited you to set up online payments for your business.
+                Hi! Your friend believes your business can benefit from using our payments
+                solutions.
               </Text>
               <Text size="medium" color="background.100" as="div">
-                Sign up to Razorpay to collect your transaction credit of{' '}
-                {getFormattedAmount(referralAmount, true)}
+                Complete your signup and receive {getFormattedAmount(referralAmount, true)} in
+                collections - 100% FREE!*
               </Text>
             </RefereeBannerDesktopView>
           </RefereeBannerContainerView>

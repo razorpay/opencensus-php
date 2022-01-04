@@ -120,8 +120,8 @@ const WelcomeModal = ({
           </h1>
           {referee?.status === 'signup' ? (
             <p className="product-desc">
-              Activate your account and start transacting to earn{' '}
-              {getFormattedAmountNew(referee.referral_amount, true)} worth transaction credits
+              Receive {getFormattedAmountNew(referee.referral_amount, true)} in collections - 100%
+              FREE* by activating your account now!
             </p>
           ) : (
             <p className="product-desc">

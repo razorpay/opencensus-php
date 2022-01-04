@@ -8,7 +8,6 @@ const M2MBanner = (props) => {
   const {
     referralAmount,
     referralAmountCurrency,
-    maxAllowedReferrals,
     userId,
     userEmail,
     userName,
@@ -36,11 +35,6 @@ const M2MBanner = (props) => {
     });
   };
 
-  const maxReferralAmount = getFormattedAmountNew(
-    maxAllowedReferrals * referralAmount,
-    true,
-    referralAmountCurrency,
-  );
   return (
     <div className="refferal-banner">
       <div className="banner-illustration">
@@ -48,21 +42,18 @@ const M2MBanner = (props) => {
       </div>
       <div className="banner-info">
         <div className="desktop-view">
-          <div className="heading">
-            Refer and earn up to {maxReferralAmount} worth transaction credits
-          </div>
+          <div className="heading">Help a fellow entrepreneur grow using Razorpay</div>
           <div className="desc">
-            Know someone who needs to setup online payments? Refer up to {maxAllowedReferrals}{' '}
-            friends and earn {getFormattedAmountNew(referralAmount, true, referralAmountCurrency)}{' '}
-            transcation credits for each successsful referral
+            Know someone who needs to set up online payments? Recieve{' '}
+            {getFormattedAmountNew(referralAmount, true, referralAmountCurrency)} in collections -
+            100% FREE* per successful referral
           </div>
         </div>
         <div className="mobile-view">
-          <div className="heading">Refer and earn {maxReferralAmount} credits</div>
+          <div className="heading">Help a fellow entrepreneur grow using Razorpay</div>
           <div className="desc">
-            Refer up to {maxAllowedReferrals} friends and earn{' '}
-            {getFormattedAmountNew(referralAmount, true, referralAmountCurrency)} transcation
-            credits for each successsful referral
+            Receive {getFormattedAmountNew(referralAmount, true, referralAmountCurrency)} in
+            collections - 100% FREE* per successful referral
           </div>
         </div>
         <div className="mobile-view action-cta">
@@ -87,7 +78,7 @@ const mapStateToProps = (state) => {
     maxAllowedReferrals: state.merchantReferral.data.max_allowed_referrals,
     userId: state.session.user.current,
     userEmail: state.session.user.email,
-    userName: state.session.user.name,
+    userName: state.session.user.contact_name,
   };
 };
 

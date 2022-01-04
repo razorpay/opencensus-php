@@ -417,22 +417,22 @@ class AnalyticsDesktop extends Component {
               shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             />
           )}
+
           {checkHTML5APIvalidity() && (
             <AnnouncementBanner title="Outdated Browser" theme="warning">
               Please update your web browser. We recommend you to download the latest version of
               Google Chrome, Edge, Safari, Firefox.
             </AnnouncementBanner>
           )}
-          {user.isPaymentsEnabled &&
-          this.props.transactionAmount <= 0 &&
-          this.props.referee?.status === 'signup' ? (
+          {user.isPaymentsEnabled && this.props.referee?.status === 'signup' ? (
             <AnnouncementBanner
               title="Unlock Pending Credits"
               theme="warning"
               card_id="merchant_referral"
             >
-              Accept your first payment of minimum ₹50 to unlock{' '}
-              {getFormattedAmountNew(this.props.referee.referral_amount, true)} transaction credits{' '}
+              Accept payments of minimum ₹2,000 to receive{' '}
+              {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
+              100% FREE*
               <div class="big-circle-seprator" />
               <a className="btn-link" onClick={() => this.props.showProductsModal()}>
                 Accept payments.
