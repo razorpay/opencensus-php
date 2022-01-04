@@ -2437,18 +2437,24 @@ class Core extends Base\Core
 
             $features = $this->repo->feature->findMerchantWithFeatures($merchant->getId(), [FeatureConstant::CREATE_SOURCE_V2]);
 
-            $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['user_id' => $user->getId(), 'features' => $features ]);
+            $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['user_id' => $user->getId(), 'features' => $features]);
 
             if (count($features) > 0)
             {
                 $this->trace->info(TraceCode::USER_INVALIDATE_DEBUG, ['user_id' => $user->getId(), 'flow' => 'skipped']);
                 $this->trace->info(TraceCode::USER_INVALIDATE_SKIPPED, ['user_id' => $user->getId()]);
+
                 return;
             }
 
-            $this->invalidateMerchantContactInfo($merchant);
+            $merchantDetail = $merchant->merchantDetail;
 
-            $this->invalidateMerchantDetailInfo($merchant);
+            if ($merchantDetail->getActivationFormMilestone() != DetailConstants::L2_SUBMISSION)
+            {
+                $this->invalidateMerchantContactInfo($merchant);
+
+                $this->invalidateMerchantDetailInfo($merchant);
+            }
 
             $this->repo->saveOrFail($user);
 

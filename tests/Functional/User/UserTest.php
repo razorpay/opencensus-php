@@ -2017,6 +2017,54 @@ class UserTest extends TestCase
         $this->assertEmpty($merchantDetails['transaction_volume']);
     }
 
+    public function testOauthLoginInvalidateContactDetailsL2Submitted()
+    {
+        $user = $this->fixtures->create('user', ['id'             => 'FL0nl7kME8j3Dd',
+                                                 'email'          => 'hello123@gmail.com',
+                                                 'password'       => 'hello123',
+                                                 'contact_mobile' => '9999999999',
+                                                 'confirm_token'  => 'confirm_token']);
+
+        $merchant = $user->getMerchantEntity();
+
+        $this->fixtures->edit('merchant',$merchant->getId(),['name'=>'hello world']);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail',
+                                                   ['merchant_id'        => $merchant->getId(),
+                                                    'business_name'      => 'hello world',
+                                                    'contact_name'       => 'hello',
+                                                    'business_type'      => '1',
+                                                    'transaction_volume' => '1',
+                                                    'contact_mobile'     => '9999999999',
+                                                    'activation_form_milestone'=>'L2']);
+
+        $testData =   &$this->testData['testOauthLoginInvalidatePassword'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+        // check if password is set as null
+
+        $user = $this->getDbEntityById('user', 'FL0nl7kME8j3Dd');
+
+        $this->assertEmpty($user['password']);
+
+        $merchant = $this->getDbEntityById('merchant', $merchant->getId());
+
+        // check if name is set as empty
+        $this->assertNotNull($merchant['name']);
+        $this->assertEquals('', $user['name']);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchant->getId());
+
+        // check if contact details are set as null.
+        $this->assertNotNull($merchantDetails['business_name']);
+        $this->assertNotNull($merchantDetails['contact_name']);
+        $this->assertNotNull($merchantDetails['contact_mobile']);
+        $this->assertNotNull($merchantDetails['business_type']);
+        $this->assertNotNull($merchantDetails['transaction_volume']);
+    }
 
     public function testOauthLoginFailInvalidProvider()
     {
