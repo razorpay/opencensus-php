@@ -1622,9 +1622,23 @@ class GatewayController extends Controller
             return false;
         }
 
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+            'message' => 'Pre-processing server callback decide',
+        ]);
+
+        $feature = 'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1';
+
+        $mode = ($mode === null) ? Mode::LIVE : $mode;
+
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1',
-            $mode === null ? Mode::LIVE : $mode);
+            $feature, $mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
+            'gateway' => $gateway,
+            'variant' => $variant,
+            'mode'    => $mode,
+            'feature' => $feature,
+        ]);
 
         if ($variant === $gateway)
         {

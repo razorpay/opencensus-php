@@ -268,31 +268,34 @@ class Server extends Base\Mock\Server
         switch ($description)
         {
             case 'payment_failed':
-                $response = [
-                    'code'      => '1',
-                    'errorCode' => 'U30',
-                    'messageText' => 'failed',
+                $response = [                    
+                    'amount' => $payment['amount'] / 100,
+                    'mid' => 'MER0000000548542',
                     'rrn' => '987654321',
                     'txnStatus' => 'FAILED',
-                    'amount' => $payment['amount'] / 100,
                     'hdnOrderID' => ltrim($payment['id'], 'pay_'),
+                    'messageText' => 'failed',
+                    'code'      => '1',
+                    'errorCode' => 'U30',
                     'payerVPA'	=> $payment['vpa'],
                     'payeeVPA'  => $terminal['gateway_merchant_id2'] ?? 'razorpay@mairtel',
+                    'txnRefNo'	=> 'FT2129114821982611',
                 ];
 
                 break;
             default:
-                $response = [
-                    'code'      => '0',
-                    'errorCode' => '000',
-                    'messageText' => 'success',
+                $response = [                    
+                    'amount' => $payment['amount'] / 100,
+                    'mid' => 'MER0000000548542',
                     'rrn' => '987654321',
                     'txnStatus' => 'SUCCESS',
-                    'amount' => $payment['amount'] / 100,
                     'hdnOrderID' => ltrim($payment['id'], 'pay_'),
+                    'messageText' => 'success',
+                    'code'      => '0',
+                    'errorCode' => '000',
                     'payerVPA'	=> $payment['vpa'],
-                    'txnRefNo'	=> 'FT2129114821982611',
                     'payeeVPA'  => $terminal['gateway_merchant_id2'] ?? 'razorpay@mairtel',
+                    'txnRefNo'	=> 'FT2129114821982611',
                 ];
         }
 

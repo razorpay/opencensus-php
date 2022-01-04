@@ -3221,19 +3221,37 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallbackForUpiAirtel(string $input,$mode = null)
     {
-        $mode = $mode === null ? Mode::LIVE : $mode ;
+        $feature = 'api'. '_' . Payment\Gateway::UPI_AIRTEL . '_' . Action::PRE_PROCESS . '_' . 'v1';
+
+        $mode = ($mode === null) ? Mode::LIVE : $mode ;
+
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            'api'. '_' . Payment\Gateway::UPI_AIRTEL . '_' . Action::PRE_PROCESS . '_' . 'v1',
-            $mode);
+            $feature, $mode);
 
         $inputArray = json_decode($input, true);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
+            'gateway' => Payment\Gateway::UPI_AIRTEL,
+            'variant' => $variant,
+            'mode'    => $mode,
+            'feature' => $feature,
+        ]);
 
         if ($variant === 'upi_airtel')
         {
             $terminalData = [
                 'gateway' => Payment\Gateway::UPI_AIRTEL,
-                'gateway_merchant_id2' => $inputArray['payeeVPA'],
             ];
+
+            if (isset($inputArray['payeeVPA']) === true)
+            {
+                $terminalData['gateway_merchant_id2'] = $inputArray['payeeVPA'];
+            }
+
+            if (isset($inputArray['gateway_merchant_id']) === true)
+            {
+                $terminalData['gateway_merchant_id'] = $inputArray['gateway_merchant_id'];
+            }
 
             $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData(Payment\Gateway::UPI_AIRTEL,
                 $terminalData);

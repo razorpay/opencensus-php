@@ -134,7 +134,12 @@ class Service extends UpiPaymentService
      */
     protected function preProcess(array $content): array
     {
-        $payload = json_decode($content['payload'], true);
+        if ($this->isTerminalRequiredForPreProcess($content['gateway']) === true)
+        {
+            assertTrue($content['data']['terminal'], $content['gateway']);
+        }
+        $payload = $content['data']['gateway']['payload'];
+        $payload = json_decode($payload, true);
 
         $data['data'] = [
             'version' => 'v2',
@@ -267,5 +272,14 @@ class Service extends UpiPaymentService
     public function request(&$content)
     {
         return $content;
+    }
+
+    public function isTerminalRequiredForPreProcess(string $gateway): bool
+    {
+        $gateways = [
+            Payment\Gateway::UPI_AIRTEL,
+        ];
+
+        return (in_array($gateway, $gateways, true) === true);
     }
 }

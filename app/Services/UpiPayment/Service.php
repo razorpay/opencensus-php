@@ -5,6 +5,7 @@ namespace RZP\Services\UpiPayment;
 use App;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -133,14 +134,122 @@ class Service
      */
     public function preProcessServerCallback($input, string $gateway)
     {
-        $this->action = self::PRE_PROCESS;
-
-        $data = [
+        $gatewayData = [
             'payload' => $input,
             'gateway' => $gateway,
         ];
 
-        return $this->action(self::PRE_PROCESS, $data, $gateway);
+        $input = [
+            'gateway' => $gatewayData,
+        ];
+
+        $this->addTerminalToServerCallback($input, $gateway);
+
+        return $this->action(self::PRE_PROCESS, $input, $gateway);
+    }
+
+    /**
+     * add terminal details to server callback request
+     *
+     * @param array $input
+     * @param string $gateway
+     * @return void
+     */
+    protected function addTerminalToServerCallback(array &$input, string $gateway)
+    {
+        if ($this->isTerminalRequiredForPreProcess($gateway) === false)
+        {
+            return;
+        }
+
+        $terminalData = $this->getTerminalDataFromServerCallback($gateway, $input);
+
+        $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData(Payment\Gateway::UPI_AIRTEL,
+        $terminalData);
+
+        if (empty($terminal) === true)
+        {
+            throw new Exception\RuntimeException(
+                'No terminal found',
+                [
+                    'input'     => $input,
+                    'action'    => self::PRE_PROCESS,
+                    'gateway'   => $gateway,
+                ],
+                null,
+                ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND);
+        }
+
+        $input['terminal'] = $terminal->toArrayWithPassword();
+    }
+
+    /**
+     * returns terminal data to of a gateway from server callback
+     *
+     * @param string $gateway
+     * @param array $input
+     * @return array
+     */
+    protected function getTerminalDataFromServerCallback(string $gateway, array $input): array
+    {
+        switch ($gateway)
+        {
+            case Payment\Gateway::UPI_AIRTEL:
+                return $this->getTerminalDataFromAirtelServerCallback($input);
+            default:
+                throw new Exception\LogicException(
+                    'terminal data extraction not defined for gateway',
+                    null,
+                    [
+                        Base\Entity::ACTION => $this->action,
+                        'gateway'           => $gateway
+                    ]);
+        }
+    }
+
+    /**
+     * returns terminal data from airtel server callback
+     *
+     * @param array $input
+     * @return array
+     */
+    protected function getTerminalDataFromAirtelServerCallback(array $input): array
+    {
+        $payload = $input['gateway']['payload'];
+
+        $data = json_decode($payload, true);
+
+        $terminalData = [
+            'gateway' => Payment\Gateway::UPI_AIRTEL,
+        ];
+
+        if (isset($data['payeeVPA']) === true)
+        {
+            $terminalData['gateway_merchant_id2'] = $data['payeeVPA'];
+        }
+
+        if (isset($data['gateway_merchant_id']) === true)
+        {
+            $terminalData['gateway_merchant_id'] = $data['gateway_merchant_id'];
+        }
+
+        return $terminalData;
+    }
+
+    /**
+     * checks if terminal data is required for callback pre-processing for certain gateway
+     *
+     * @param string $gateway
+     * @return boolean
+     */
+    protected function isTerminalRequiredForPreProcess(string $gateway)
+    {
+        // gateways which require terminal details for pre-processing of callback
+        $gateways = [
+            Payment\Gateway::UPI_AIRTEL,
+        ];
+
+        return (in_array($gateway, $gateways, true) === true);
     }
 
     /**
@@ -151,7 +260,7 @@ class Service
      */
     protected function getRequest(array $input): RequestInterface
     {
-        $mode = $this->app['rzp.mode'];
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $domain = $this->config['url'][$mode];
 
@@ -208,7 +317,10 @@ class Service
                 $data = $this->getRequestBodyForAuthorize($input);
                 break;
             case self::PRE_PROCESS:
-                $data = $input;
+                $data = [
+                    'data'      => $input,
+                    'gateway'   => $this->gateway,
+                ];
                 break;
             case Payment\Action::CALLBACK:
                 $data = [
