@@ -4,7 +4,7 @@ get_github_user_value()
 {
   URI="https://api.github.com"
   API_HEADER="Accept: application/vnd.github.v3+json"
-  AUTH_HEADER="Authorization: token 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"
+  AUTH_HEADER="Authorization: token ${GITHUB_TOKEN}"
   payment_links=$(curl -sSL -f -H "${AUTH_HEADER}" -H "${API_HEADER}" "${URI}/orgs/razorpay/teams/payment-links-devs/members")
   payment_cards=$(curl -sSL -f -H "${AUTH_HEADER}" -H "${API_HEADER}" "${URI}/orgs/razorpay/teams/cards/members")
   nb_plus=$(curl -sSL -f -H "${AUTH_HEADER}" -H "${API_HEADER}" "${URI}/orgs/razorpay/teams/nbplus/members")
