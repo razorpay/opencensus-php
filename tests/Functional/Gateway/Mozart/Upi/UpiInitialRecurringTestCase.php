@@ -286,7 +286,26 @@ class UpiInitialRecurringTestCase extends TestCase
             ]
         ], $upi->toArray());
 
+        $asserted = false;
+
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $asserted)
+        {
+            if ($action === 'pay_init')
+            {
+                assertTrue(isset($content['payment']['id']));
+                assertTrue(isset($content['payment']['vpa']));
+                assertTrue(isset($content['payment']['amount']));
+                assertTrue(isset($content['upi_mandate']['umn']));
+                assertTrue(isset($content['terminal']['gateway_merchant_id']));
+                assertTrue(isset($content['terminal']['gateway_terminal_password']));
+
+                $asserted = true;
+            }
+        });
+
         $this->mandateCreateCallback($payment, $encrypted);
+
+        $this->assertTrue($asserted, 'The request contents for pay_init were not asserted');
 
         $payment->reload();
 

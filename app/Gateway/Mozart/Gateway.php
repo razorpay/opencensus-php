@@ -1537,6 +1537,8 @@ class Gateway extends Base\Gateway
 
         $this->checkTpvAndModifyOrder($content, $input);
 
+        $this->setPaymentVpaForUpiRecurringIntent($content, $input);
+
         $prefix = 'payments';
 
         if ((isset($input['gateway']['cps_route']) === true) and 
@@ -3280,5 +3282,23 @@ class Gateway extends Base\Gateway
         }
 
         return json_decode($input, true);
+    }
+
+    /**
+     * Sets the VPA in payment entity from the upi entity if
+     *  - The payment is UPI Recurring Intent
+     *  - The VPA is not set in payment entity already
+     *
+     * @param $content
+     * @param $input
+     */
+    protected function setPaymentVpaForUpiRecurringIntent(& $content, $input): void
+    {
+        if (($this->isUpiIntent($input) === true) and
+            ($this->isUpiRecurringPayment($input['payment']) === true) and
+            (isset($content['entities']['payment']['vpa']) === false))
+        {
+            $content['entities']['payment']['vpa'] = $input['upi']['vpa'] ?? null;
+        }
     }
 }
