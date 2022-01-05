@@ -47,6 +47,21 @@ class TncMapTest extends TestCase
         $tnc = $this->runRequestResponseFlow($testData);
     }
 
+    public function testUpdateTnCWrongBU()
+    {
+        $testData = $this->testData['testCreateTnC'];
+
+        $tnc = $this->runRequestResponseFlow($testData);
+
+        $tncId = $tnc[Entity::ID];
+
+        $testData = $this->testData['testUpdateTnCWrongBU'];
+
+        $testData['request']['url'] = '/products/tnc/'. $tncId;
+
+        $tnc = $this->runRequestResponseFlow($testData);
+    }
+
     public function testGetTncById()
     {
         $testData = $this->testData['testCreateTnC'];

@@ -29,6 +29,9 @@ class CreateTncMap extends Migration
 
             $table->string(Entity::STATUS, 30);
 
+            $table->string(Entity::BUSINESS_UNIT, 20)
+                ->unique();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

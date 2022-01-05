@@ -8,6 +8,7 @@ class Entity extends Base\PublicEntity
 {
     const ID                        = 'id';
     const PRODUCT_NAME              = 'product_name';
+    const BUSINESS_UNIT             = 'business_unit';
     const CONTENT                   = 'content';
     const STATUS                    = 'status';
 
@@ -21,6 +22,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::PRODUCT_NAME,
+        self::BUSINESS_UNIT,
         self::STATUS,
         self::CONTENT,
     ];
@@ -52,5 +54,15 @@ class Entity extends Base\PublicEntity
     public function getProductName()
     {
         return $this->getAttribute(self::PRODUCT_NAME);
+    }
+
+    public function getBusinessUnit()
+    {
+        return $this->getAttribute(self::BUSINESS_UNIT);
+    }
+
+    public function getContent()
+    {
+        return $this->getAttribute(self::CONTENT);
     }
 }
