@@ -13,7 +13,7 @@ import { trackSearchEvent } from '../utils';
 
 @connect((state) => ({ ...state.payments }), { fetchAll })
 @RTracking(() => window.rzpQ.component('EmandatePayments'))
-export default class EmandatePayments extends ListContainer {
+export default class RecurringPaymentsListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'payment.search' });
   };

@@ -1,6 +1,6 @@
 import React from 'react';
 import Alert from 'common/ui/Forms/Alert';
-import EntityRow from './Row';
+import EntityDetailRow from './Row';
 import Time from 'common/ui/Time';
 import Amount from 'common/ui/Amount';
 
@@ -45,7 +45,7 @@ export default class EntityDetailList extends React.Component {
     } = this.props;
 
     if (loading) {
-      return [<EntityRow key="loading" item={{}} loading={loading} />];
+      return [<EntityDetailRow key="loading" item={{}} loading={loading} />];
     }
 
     const list = [];
@@ -111,7 +111,7 @@ export default class EntityDetailList extends React.Component {
       }
 
       list.push(
-        <EntityRow
+        <EntityDetailRow
           mode={mode}
           paymentMethod={paymentMethod}
           key={index}

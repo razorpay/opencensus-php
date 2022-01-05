@@ -13,7 +13,7 @@ import { fetchTokens as fetchAll } from 'merchant/reducers/collection';
 
 import { tokenId, createdAt } from 'common/ui/item/pair';
 
-import ListFilter from './components/ListFilter';
+import TokensListFilter from './components/ListFilter';
 import analytics from '../analytics';
 import { trackSearchEvent } from '../utils';
 
@@ -47,7 +47,7 @@ const status = {
   { fetchAll },
 )
 @RTracking(() => window.rzpQ.component('TokensList'))
-export default class TokensList extends ListContainer {
+export default class TokensListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'token.search' });
   };
@@ -78,7 +78,7 @@ export default class TokensList extends ListContainer {
           </div>
         </HeaderAction>
 
-        <ListFilter
+        <TokensListFilter
           form="tokensListFilter"
           count={this.state.count}
           onSubmit={this.onSubmit}

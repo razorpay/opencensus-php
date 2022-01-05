@@ -36,6 +36,7 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/order': 'off',
     'react/display-name': 'off',
+    'react/no-find-dom-node': 'warn',
   },
   env: {
     browser: true,

@@ -2,7 +2,7 @@ import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { DocLink } from 'merchant/components/DocsLink';
 
-export default React.memo(({ url }) => {
+function PaperNachBanner({ url }) {
   return (
     <AnnouncementBanner title="IMPORTANT UPDATE" canBeClosed={true} theme="warning">
       <span class="display-inline">
@@ -13,4 +13,6 @@ export default React.memo(({ url }) => {
       </DocLink>
     </AnnouncementBanner>
   );
-});
+}
+
+export default React.memo(PaperNachBanner);

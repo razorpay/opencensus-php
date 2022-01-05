@@ -13,7 +13,7 @@ import CopyLink from 'merchant/components/CopyLink';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import ListFilter from './components/ListFilter';
+import RegistrationLinksListFilter from './components/ListFilter';
 import analytics from '../analytics';
 import { trackSearchEvent } from '../utils';
 
@@ -42,7 +42,7 @@ const createdAt = {
 
 @connect((state) => state.registrationLinks, { fetchAll })
 @RTracking(() => window.rzpQ.component('RegistrationLinksList'))
-export default class RegistrationLinksList extends ListContainer {
+export default class RegistrationLinksListContainer extends ListContainer {
   trackSearch = (event, options) => {
     trackSearchEvent(event, { options, eventStartLabel: 'registrationlink.search' });
   };
@@ -75,7 +75,7 @@ export default class RegistrationLinksList extends ListContainer {
           </div>
         </HeaderAction>
 
-        <ListFilter
+        <RegistrationLinksListFilter
           form="authLinksListFilter"
           count={this.state.count}
           onSubmit={this.onSubmit}

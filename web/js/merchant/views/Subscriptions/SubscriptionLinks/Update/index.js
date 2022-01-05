@@ -63,7 +63,7 @@ const tabs = Object.keys(tabsMeta);
     fetchSettings,
   },
 )
-export default class UpdateSubscription extends React.Component {
+export default class UpdateSubscriptionLink extends React.Component {
   constructor(props) {
     super(props);
 

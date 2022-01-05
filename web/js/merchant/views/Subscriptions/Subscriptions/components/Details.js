@@ -21,7 +21,7 @@ import { trackClickDuplicateSubscription } from '../ga';
 import moment from 'moment';
 import analytics from '../../analytics';
 
-export default (props) => {
+export default function SubscriptionDetails(props) {
   const {
     mode,
     plan,
@@ -315,7 +315,7 @@ export default (props) => {
       )}
     </div>
   );
-};
+}
 
 function getTestModeMessage(subscription) {
   const chargeThisNowBtn = {

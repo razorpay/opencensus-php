@@ -6,7 +6,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
-export default (props) => {
+export default function EntityDetailRow(props) {
   const {
     goToLink,
     item,
@@ -195,4 +195,4 @@ export default (props) => {
       )}
     </div>
   );
-};
+}

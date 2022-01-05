@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import Alert from 'common/ui/Forms/Alert';
 import AsyncButton from 'react-async-button';
 
-export default ({
+export default function UploadNachFormDetails({
   downloadSignedNACHFile,
   registrationLinkId,
   preFilledNachFileURL,
   trackClickViewNACHForm,
   trackClickUploadNACHForm,
   trackClickDownloadNACHForm,
-}) => {
+}) {
   if (downloadSignedNACHFile) {
     return (
       <AsyncButton
@@ -54,4 +54,4 @@ export default ({
       </a>
     </>
   );
-};
+}

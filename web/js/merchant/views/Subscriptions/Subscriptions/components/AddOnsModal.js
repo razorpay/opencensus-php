@@ -19,7 +19,7 @@ import { AmountTooltip } from 'common/ui/Amount';
 @reduxForm({
   form: 'newAddOn',
 })
-export default class CreateAddOn extends Component {
+export default class CreateAddOnModal extends Component {
   state = {};
 
   componentWillMount() {

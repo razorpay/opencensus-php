@@ -1,11 +1,12 @@
 // eslintdisabled for this file in .eslintignore
+import React from 'react';
 import PropTypes from 'prop-types';
 import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
-import AddOnsModal from 'merchant/views/Subscriptions/Subscriptions/components/AddOnsModal';
+import CreateAddOnModal from 'merchant/views/Subscriptions/Subscriptions/components/AddOnsModal';
 import SubscriptionDetails from 'merchant/views/Subscriptions/Subscriptions/components/Details';
 import InvoiceDetail from 'merchant/views/Subscriptions/Subscriptions/components/InvoiceDetail';
 import CreditNoteDetails from 'merchant/views/Subscriptions/Subscriptions/components/CreditNoteDetails';
@@ -27,13 +28,11 @@ import {
   fetchSubscriptionCreditNotes,
   fetchSubscription as fetchItem,
   pauseAndResumeSubscription,
+  removeOffersOnSubscription,
 } from 'merchant/reducers/subscriptions';
 import { fetchOffer } from 'merchant/reducers/offers/offerDetails';
-import { removeOffersOnSubscription } from 'merchant/reducers/subscriptions';
-
 import fetchKeysAndCheckout from 'merchant/utils/fetchKeysAndCheckout';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
-
 import CancellationModal from './components/CancellationModal';
 import TestPaymentModal from './components/TestPaymentModal';
 import analytics from '../analytics';
@@ -85,7 +84,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     confirm: PropTypes.func,
   };
 
-  constructor(props) {
+  constructor() {
     super();
 
     this.state = {
@@ -101,11 +100,11 @@ export default class SubscriptionDetailsContainer extends React.Component {
   }
 
   componentDidMount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Open Details - Subscriptions',
         eventLabel: `subscription_id=${id}`,
       });
@@ -116,11 +115,11 @@ export default class SubscriptionDetailsContainer extends React.Component {
   }
 
   componentWillUnmount() {
-    const { closeUrl, id } = this.props,
-      eventCategory = getEventCategoryFromPath(closeUrl);
+    const { closeUrl, id } = this.props;
+    const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
       window.rzpAnalytics({
-        eventCategory: eventCategory,
+        eventCategory,
         eventAction: 'Close Details - Subscriptions',
         eventLabel: `subscription_id=${id}`,
       });
@@ -222,16 +221,16 @@ export default class SubscriptionDetailsContainer extends React.Component {
         });
       })
       .catch(({ errors }) => {
-        this.setState({
+        this.setState((prevState) => ({
           creditNote: {
-            ...this.state.creditNote,
+            ...prevState.creditNote,
             statusMsg: {
               type: 'error',
               message: errors,
             },
             isLoading: false,
           },
-        });
+        }));
       });
   };
 
@@ -313,39 +312,38 @@ export default class SubscriptionDetailsContainer extends React.Component {
   fetchScheduledChanges = (id) => {
     return fetchScheduledChanges(id)
       .then((res) => {
-        this.setState({
+        this.setState((prevState) => ({
           scheduledChanges: {
-            ...this.state.scheduledChanges,
+            ...prevState.scheduledChanges,
             data: res,
           },
-        });
+        }));
 
         const plan = new Plan();
         return plan.fetch(res.plan_id);
       })
       .then((resp) => {
-        this.setState({
+        this.setState((prevState) => ({
           scheduledChanges: {
-            ...this.state.scheduledChanges,
+            ...prevState.scheduledChanges,
             plan: resp,
             isLoading: false,
           },
-        });
+        }));
       });
   };
 
   fetchSubscriptionDetails(id) {
-    let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
-
     this.setState({
       isLoading: true,
     });
 
-    fetchItem(id)
+    this.props
+      .fetchItem(id)
       .then((subscription) => {
         return Promise.all([
-          fetchPlan(subscription.plan_id),
-          subscription.customer_id && fetchCustomer(subscription.customer_id),
+          this.props.fetchPlan(subscription.plan_id),
+          subscription.customer_id && this.props.fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
           subscription.offer_id && this.props.fetchOffer(subscription.offer_id),
         ]).then((response) => {
@@ -394,8 +392,6 @@ export default class SubscriptionDetailsContainer extends React.Component {
     if (this.creditNoteView && findDOMNode(this.creditNoteView)) {
       findDOMNode(this.creditNoteView).classList.add('toggle-slider');
     }
-
-    return;
   };
 
   onCancellationModalMount = (id) => {
@@ -446,7 +442,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
   };
 
   secClose = () => {
-    let { compactSlider, history, location } = this.props;
+    const { history, location } = this.props;
 
     if (this.invoiceView) {
       findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
@@ -456,9 +452,10 @@ export default class SubscriptionDetailsContainer extends React.Component {
       findDOMNode(this.creditNoteView).classList.toggle('toggle-slider');
     }
 
-    compactSlider();
+    this.props.compactSlider();
 
     // Going back to initial detail view mode. Remove the chunk in url after the last /.
+    //eslint-disable-next-line
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
@@ -573,7 +570,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
   // testing charge while subscription status is created
   onTestChargeAttemptWhileCreate = () => {
-    const { plan, user } = this.props;
+    const { user } = this.props;
     const razorpay = new window.Razorpay({
       key: this.key,
       description: 'Start Subscription',
@@ -586,7 +583,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
         dashboard: true,
       },
       subscription_id: this.props.entity.id,
-      handler: (status) => {
+      handler: () => {
         this.postChargeAttempt();
       },
     });
@@ -618,7 +615,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       affirmativePendingLabel: 'Deleting...',
       action: () =>
         deleteAddOn(id)
-          .then((response) => {
+          .then(() => {
             this.fetchAddOns(this.props.entity.id);
 
             this.props.showNotification({
@@ -644,7 +641,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <AddOnsModal
+        <CreateAddOnModal
           addon={addon}
           subscriptionId={this.props.entity.id}
           onSave={this.handleOnCreateAddOn}
@@ -751,7 +748,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
   };
 
   render() {
-    let {
+    const {
       user,
       plan,
       entity,
@@ -763,7 +760,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       activeSecEntityId,
     } = this.props;
 
-    let {
+    const {
       errors,
       invoice,
       secView,
@@ -781,8 +778,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
     // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && !invoices.error) {
-      const subscriptionData = scheduledChanges.data ? scheduledChanges.data : entity,
-        planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
+      const subscriptionData = scheduledChanges.data ? scheduledChanges.data : entity;
+      const planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
 
       if (this.checkNextDueInvoiceValidity(subscriptionData.status, subscriptionData.type)) {
         invoicesList = { ...invoices };
@@ -799,7 +796,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           chargeAt = null;
         }
 
-        let nextDueInvoice = this.getUpcomingInvoiceDetails(
+        const nextDueInvoice = this.getUpcomingInvoiceDetails(
           chargeAt,
           planData.item ? planData.item.amount * subscriptionData.quantity : 0,
           this.state.addons,
@@ -818,8 +815,8 @@ export default class SubscriptionDetailsContainer extends React.Component {
         Object.keys(entity).length && // Helps to simulate the loader for 'inv_upcoming' invoice
         !invoices.loading // To display upcoming invoice rightly
       ) {
-        const subscriptionData = scheduledChanges.data ? scheduledChanges.data : entity,
-          planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
+        const subscriptionData = scheduledChanges.data ? scheduledChanges.data : entity;
+        const planData = scheduledChanges.plan.id ? scheduledChanges.plan : plan;
 
         // inv_upcoming exists only for these subscriptions status only
         if (this.checkNextDueInvoiceValidity(subscriptionData.status, subscriptionData.type)) {
@@ -864,9 +861,9 @@ export default class SubscriptionDetailsContainer extends React.Component {
         }
       }
 
-      let planDetails = plan,
-        subscriptionDetails = entity,
-        isInvoiceLoading = invoiceLoading;
+      let planDetails = plan;
+      let subscriptionDetails = entity;
+      let isInvoiceLoading = invoiceLoading;
 
       if (this.props.invoice_id === 'inv_upcoming' && invoiceData) {
         isInvoiceLoading = false;
@@ -961,7 +958,7 @@ function makeErrorStatus(message) {
   if (message) {
     return {
       type: 'error',
-      message: message,
+      message,
     };
   }
 

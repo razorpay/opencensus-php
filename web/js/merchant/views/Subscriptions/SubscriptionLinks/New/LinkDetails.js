@@ -3,7 +3,7 @@ import moment from 'moment';
 import Input from 'common/new-ui/Input';
 import analytics from '../../analytics';
 
-export default function NewSubscriptionLinkLinkDetails(props) {
+export default function NewSubscriptionLinkDetails(props) {
   const { fields, internals, cloneOptions, onDateChange, onTimeChange } = props;
   const dateInMoment = fields.expire_by ? moment(fields.expire_by, 'X') : undefined;
 

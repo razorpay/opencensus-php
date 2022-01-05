@@ -3,7 +3,7 @@ import { isEmail, isPhone } from 'common/utils/validators';
 
 import Input from 'common/new-ui/Input';
 
-export default (props) => {
+export default function CustomerDetailsForm(props) {
   const {
     expireAt,
     isCustomerNameRequired,
@@ -122,7 +122,7 @@ export default (props) => {
       </Input.Group>
     </>
   );
-};
+}
 
 function validatePhone(val) {
   return !isPhone(val) && 'Invalid Phone';

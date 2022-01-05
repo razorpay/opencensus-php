@@ -1,7 +1,7 @@
 import { Field } from 'redux-form';
 import ListFilter from 'merchant/components/ListFilter';
 
-export default (props) => {
+export default function PlansListFilter(props) {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
@@ -22,4 +22,4 @@ export default (props) => {
       </div>
     </ListFilter>
   );
-};
+}

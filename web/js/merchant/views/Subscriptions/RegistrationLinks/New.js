@@ -104,7 +104,7 @@ const UPIMandatoryFields = [
   createRegistrationLink,
 })
 @RTracking(() => window.rzpQ.component('CreateNewRegistrationLinkContainer'))
-export default class CreateNewRegistrationLinkContainer extends React.Component {
+export default class NewRegistrationLink extends React.Component {
   constructor(props) {
     super(props);
 

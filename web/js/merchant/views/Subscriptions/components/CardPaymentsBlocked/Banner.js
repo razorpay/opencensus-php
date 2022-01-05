@@ -1,7 +1,7 @@
 import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/CardPaymentsBlocked';
 
-export default React.memo(({ isCAW }) => {
+function CardPaymentsBlockedBanner({ isCAW }) {
   return (
     <AnnouncementBanner
       docURL={
@@ -26,4 +26,6 @@ export default React.memo(({ isCAW }) => {
       )}
     </AnnouncementBanner>
   );
-});
+}
+
+export default React.memo(CardPaymentsBlockedBanner);

@@ -21,7 +21,7 @@ const next7DaysEpoch = moment().add(7, 'days').unix();
 const next30DaysEpoch = moment().add(30, 'days').unix();
 const next60DaysEpoch = moment().add(60, 'days').unix();
 
-export default (props) => {
+export default function SubscriptionsListFilter(props) {
   return (
     <ListFilter {...props} maxMwebFiltersLength={3}>
       <div class="form-group list-filter-item">
@@ -124,4 +124,4 @@ export default (props) => {
       </div>
     </ListFilter>
   );
-};
+}

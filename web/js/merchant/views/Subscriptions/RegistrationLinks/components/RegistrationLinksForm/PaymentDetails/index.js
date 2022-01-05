@@ -11,7 +11,7 @@ import Emandate from './Emandate';
 import UPI from './UPI';
 import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './utils';
 
-export default (props) => {
+export default function PaymentDetailsForm(props) {
   const {
     showNACHAccountTypes,
     showAmountField,
@@ -119,7 +119,7 @@ export default (props) => {
       />
     </>
   );
-};
+}
 
 function getDocLinkForSelectedPayment(method) {
   if (!method || method === 'nach') return null;

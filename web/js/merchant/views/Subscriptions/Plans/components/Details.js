@@ -13,7 +13,7 @@ import Tooltip from 'common/ui/Tooltip';
 import { trackClickDuplicatePlan } from 'merchant/views/Subscriptions/Plans/ga';
 import analytics from '../../analytics';
 
-export default ({ plan, isLoading, statusMsg, subscriptions }) => {
+export default function PlanDetails({ plan, isLoading, statusMsg, subscriptions }) {
   const tableLimit = 5; // Set limit to total rows displayed in table
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -103,4 +103,4 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
       )}
     </div>
   );
-};
+}

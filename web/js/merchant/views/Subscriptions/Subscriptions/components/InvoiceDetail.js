@@ -13,7 +13,7 @@ import AsyncButton from 'react-async-button';
 
 // Note: class is needed for "ref" to work in parent component
 @RTracking(() => window.rzpQ.component('InvoiceDetail'))
-export default class InvoiceDetail extends Component {
+export default class SubscriptionsInvoiceDetail extends Component {
   componentDidMount() {
     this.props.tracking.trackEvent(
       window.rzpQ.subscription().interaction('subscription.invoice.details'),

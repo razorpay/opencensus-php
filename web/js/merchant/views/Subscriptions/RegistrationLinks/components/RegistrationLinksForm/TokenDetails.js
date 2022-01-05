@@ -54,7 +54,7 @@ const cardMaxAmountValidator = (maxAllowedAmount) => (value) => {
   return null;
 };
 
-export default ({
+export default function TokenDetailsForm({
   amount,
   frequency,
   isNACHPayment,
@@ -69,7 +69,7 @@ export default ({
   firstPaymentAmount,
   mandateExpireAt,
   onBlurElement,
-}) => {
+}) {
   const maxAmountProps = {
     validator: maxAmountValidator(amount, MAX_TOKEN_AMOUNT),
     description: `Max Amount for Mandate (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT)})`,
@@ -235,7 +235,7 @@ export default ({
       )}
     </>
   );
-};
+}
 
 function firstPaymentAmountValidator(mandateMaxAmount) {
   return (value) => checkIfAmountForFirstCharge(Number(mandateMaxAmount) || 100000, value);

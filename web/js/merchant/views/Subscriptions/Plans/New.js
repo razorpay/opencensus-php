@@ -63,7 +63,7 @@ const Label = ({ text, htmlFor, required: isRequired }) => {
   },
 })
 @withRouter
-export default class AddPlan extends Component {
+export default class NewPlan extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -369,6 +369,6 @@ export default class AddPlan extends Component {
   }
 }
 
-AddPlan.defaultProps = {
+NewPlan.defaultProps = {
   onSave: () => {},
 };
