@@ -884,7 +884,7 @@ export default class HomeContainer extends Component {
     const refereeSuccessCount = parseInt(res?.data?.referee_success_popup_count ?? 0, 10);
     if (referralSuccessCount !== 0 || refereeSuccessCount !== 0) {
       this.setState({
-        referredMerchants: res.data.referee_name,
+        referredMerchants: res.data.referee_name ?? [],
         referredAmount: res.data.referral_amount,
         isReferee: !!refereeSuccessCount,
       });

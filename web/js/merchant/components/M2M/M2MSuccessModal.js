@@ -25,22 +25,20 @@ const M2MSuccessModal = ({ referredMerchants, referredAmount, trackEvents, isRef
     });
   }, []);
 
-  let title, description;
-
-  if (referredMerchants.length > 1) {
+  let title = '';
+  let description = '';
+  const formattedReferredAmount = getFormattedAmountNew(referredAmount, true);
+  if (isReferee) {
+    title = `Congratulations! Your first ${formattedReferredAmount} in collections are on us - 100% FREE*`;
+    description = `No charges, no fees on your next ${formattedReferredAmount} in collections. Keep growing your business.`;
+  } else if (referredMerchants.length > 1) {
     title = `Congratulations! ${referredMerchants.length} of your friends have started using Razorpay to grow their business`;
-    description = `No charges, no fees on your next ${getFormattedAmountNew(
-      referredAmount,
-      true,
-    )} in collections. Keep growing your business. Continue helping others in your network!`;
-  } else {
+    description = `No charges, no fees on your next ${formattedReferredAmount} in collections. Keep growing your business. Continue helping others in your network!`;
+  } else if (referredMerchants.length === 1) {
     title = `Congratulations! Your friend ${referredMerchants[0]} has started using Razorpay to grow their business`;
-    description = `No charges, no fees on your next ${getFormattedAmountNew(
-      referredAmount,
-      true,
-    )} in collections. Keep growing your business. Continue helping others in your network!`;
+    description = `No charges, no fees on your next ${formattedReferredAmount} in collections. Keep growing your business. Continue helping others in your network!`;
   }
-  return showModal ? (
+  return showModal && title ? (
     <ModalMask>
       <Modal className="m2m-success-modal" onClose={onModalClose}>
         <div className="m2m-success-banner">
