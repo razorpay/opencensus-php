@@ -9,8 +9,11 @@ use Monolog\Logger;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Jobs\FavQueueForFTS;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Core;
@@ -56,6 +59,7 @@ class BankAccount extends Base
         // Only processing BankAccount because transaction is created only for this and not VPA.
         // Calling ledger at the start because validation is already created upto this stage,
         // and it's ledger entry can be created irrespective of creating the FTA
+        // This function doesn't do anything when the merchant is on the reverse shadow flow
         (new Core)->processLedgerFav($this->validation);
 
         // If merchant is expecting utr, we can not return same utr, so need to hit fresh request
@@ -330,7 +334,29 @@ class BankAccount extends Base
                     Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $input[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
                 ];
 
+                // Will do nothing for reverse shadow
                 (new Core)->processLedgerFav($this->validation, Attempt\Status::REVERSED, $ftsSourceAccountInformation);
+
+                if ($this->validation->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === true)
+                {
+                    try
+                    {
+                        $response = (new Transaction\Processor\Ledger\FundAccountValidation())
+                            ->processValidationAndCreateJournalEntry($this->validation);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        //This is a money credit flow, that is, there's no balance deduction
+                        //Also there's no change to merchant balance here
+                        //Thus, we wont disrupt the flow by throwing an exception here.
+                        //TODO: Decide how to raise an alert and re-run the request to ledger here.
+                        $this->trace->traceException(
+                            $e,
+                            Logger::ALERT,
+                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                        );
+                    }
+                }
             }
 
             return;
@@ -394,7 +420,29 @@ class BankAccount extends Base
             Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $input[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
         ];
 
+        // In reverse shadow, nothing happens here
         (new Core)->processLedgerFav($this->validation, null, $ftsSourceAccountInformation);
+
+        if ($this->validation->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW))
+        {
+            try
+            {
+                $response = (new Transaction\Processor\Ledger\FundAccountValidation())
+                    ->processValidationAndCreateJournalEntry($this->validation);
+            }
+            catch (\Throwable $e)
+            {
+                //This does nothing to the merchant balance
+                //This only changes other stuff in the CoA
+                //Hence not throwing an exception here to avoid disruptions
+                //TODO: Decide how to raise an alert and re-run the request to ledger here.
+                $this->trace->traceException(
+                    $e,
+                    Logger::ALERT,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                );
+            }
+        }
     }
 
     /**
@@ -424,6 +472,7 @@ class BankAccount extends Base
 
         (new Reversal\Core)->reverseForFundAccountValidation($this->validation);
 
+        // This shall do nothing in reverse shadow mode.
         (new Core)->processLedgerFav($this->validation);
     }
 
@@ -437,6 +486,17 @@ class BankAccount extends Base
         }
         return false;
 
+    }
+
+    public function createTransactionForLedger(array $ledgerResponse)
+    {
+        $txnId   = $ledgerResponse[Entity::ID];
+        $newBalance = Transaction\Processor\Ledger\FundAccountValidation::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+        $txn = (new Transaction\Processor\FundAccountValidation($this->validation))
+            ->createTransactionForLedger($txnId, $newBalance);
+
+        return $txn;
     }
 
     // The function to push the FAV ID to the FAV queue for FTS

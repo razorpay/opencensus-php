@@ -14,6 +14,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
+use Razorpay\Trace\Logger;
+use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
@@ -24,6 +26,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
@@ -321,6 +324,70 @@ class Core extends Base\Core
         $reversal->entity()->associate($fav);
 
         $reversal->balance()->associate($fav->balance);
+
+        if ($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+        {
+            $this->repo->saveOrFail($reversal);
+
+            try
+            {
+                $response = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($fav);
+            }
+            catch (Exception\GatewayTimeoutException $e)
+            {
+                // Timeout case
+                // This is an ambiguous situation, need to manually check if the ledger entry was created.
+                // TODO: An alert here is absolutely essential
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    null,
+                    [
+                        'fav_id' => $fav->getId(),
+                    ]
+                );
+
+                // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
+                // entry is eventually created
+            }
+            catch (\Throwable $e)
+            {
+                // If an exception is caught here, we ignore it.
+                // TODO: set an alert for exceptions caught in ledger calls
+                // If that exception is found to be a part of this reversal flow, we will make sure that we
+                // create an entry in ledger asynchronously/manually later.
+                $this->trace->traceException(
+                    $e,
+                    Logger::ALERT,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                );
+            }
+            // dispatch to queue for transactions creation.
+            try
+            {
+                Transactions::dispatch($this->mode, $reversal->getId(), E::REVERSAL, $response);
+            }
+            catch (\Throwable $ex)
+            {
+                // Todo: check how to handle this failure
+                $this->trace->info(
+                    TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+                    [
+                        'reversal_id'    => $reversal->getId(),
+                        'entity_name'    => \RZP\Constants\Entity::REVERSAL,
+                        'ledgerResponse' => $response,
+                    ]);
+            }
+
+            $this->trace->info(
+                TraceCode::FUND_ACCOUNT_VALIDATION_REVERSAL_CREATED,
+                [
+                    'fav_id'      => $fav->getId(),
+                    'reversal_id' => $reversal->getId(),
+                ]);
+
+            return;
+        }
 
         $reversal = $this->repo->transaction(function() use ($reversal)
         {
@@ -820,5 +887,44 @@ class Core extends Base\Core
             },
             $this->payoutServiceMutexTTLForReversal,
             ErrorCode::BAD_REQUEST_REVERSAL_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS);
+    }
+
+    public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $reversal = $this->repo->reversal->find($entityId);
+
+        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                                               ['merchant_id' => $reversal->getMerchantId()]);
+        }
+
+        $txn = $this->app['api.mutex']->acquireAndRelease(
+            'rvrsl_'.$entityId,
+            function () use ($reversal, $ledgerResponse)
+            {
+                return $this->repo->transaction(function() use ($reversal, $ledgerResponse)
+                {
+                    $txnId      = $ledgerResponse[Entity::ID];
+                    $newBalance = Transaction\Processor\Ledger\Base::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+
+                    list($txn, $feeSplit) = (new Transaction\Processor\Reversal($reversal))->createTransactionForLedger($txnId, $newBalance);
+
+                    (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+
+                    $this->repo->saveOrFail($txn);
+
+                    return $txn;
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity' => $reversal->getPublicId(),
+            'txn'    => $txn->getPublicId(),
+        ];
     }
 }

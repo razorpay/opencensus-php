@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Jobs\Transactions;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
@@ -19,6 +20,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\Transaction\ReconciledType;
@@ -137,6 +139,15 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
+        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) and
+            ($validation->isBalanceTypeBanking() === true) and
+            ($validation->getFundAccountType() !== FundAccount\Type::VPA))
+        {
+            $validation = $this->processFavThroughLedger($validation, $merchant, $input);
+
+            return $validation;
+        }
+
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
             $fundAccount = $this->createOrGetFundAccount($input, $merchant);
@@ -167,6 +178,87 @@ class Core extends Base\Core
 
             return $validation;
         });
+
+        return $validation;
+    }
+
+    public function processFavThroughLedger(Entity $validation, Merchant\Entity $merchant, array $input): Entity
+    {
+        // Create the entity first, and calculate the pricing changes.
+        list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant)
+        {
+            $fundAccount = $this->createOrGetFundAccount($input, $merchant);
+
+            $validation->associateFundAccount($fundAccount);
+
+            $this->runInputValidations($validation, $input);
+
+            $processor = Processor\Factory::get($validation);
+
+            $processor->setDefaultValuesForValidation();
+
+            $validation->setAttempts(1);
+
+            list($fee, $tax, $feesSplit) = (new Fee())->calculateMerchantFees($validation);
+
+            $validation->setFees($fee);
+            $validation->setTax($tax);
+
+            $this->repo->saveOrFail($validation);
+
+            return [$validation, $feesSplit];
+        });
+
+        try
+        {
+            $ledgerResponse = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($validation);
+        }
+        catch (Exception\GatewayTimeoutException $e)
+        {
+            // Timeout case
+            // This is an ambiguous situation, need to manually check if the ledger entry was created.
+            // TODO: An alert here is absolutely essential
+            // TODO: Figure out how to retry these scenarios.. Maybe more SQS?
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                null,
+                [
+                    'fav_id' => $validation->getId(),
+                ]
+            );
+
+            throw $e;
+        }
+        catch (\Throwable $e)
+        {
+            $validation->setStatus(Status::FAILED);
+            $this->repo->saveOrFail($validation);
+
+            throw $e;
+        }
+
+        // If it is a success, dispatch to queue for transactions creation
+        try
+        {
+            Transactions::dispatch($this->mode,
+                                   $validation->getId(),
+                                   EntityConstant::FUND_ACCOUNT_VALIDATION,
+                                   $ledgerResponse,
+                                   $feesSplit);
+        }
+        catch (\Throwable $ex)
+        {
+            // Todo: check how to handle this failure
+            // Will probably need to give a route to retry creation
+            $this->trace->info(
+                TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+                [
+                    'fav_id'         => $validation->getId(),
+                    'entity_name'    => EntityConstant::FUND_ACCOUNT_VALIDATION,
+                    'ledgerResponse' => $ledgerResponse,
+                ]);
+        }
 
         return $validation;
     }
@@ -541,6 +633,12 @@ class Core extends Base\Core
             ($fundAccountValidation->isBalanceTypeBanking() === false))
         {
            return;
+        }
+
+        // return if reverse shadow is enabled
+        if ($fundAccountValidation->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+        {
+            return;
         }
 
         // If the mode is live but the merchant does not have the ledger journal write feature, we return.
@@ -935,5 +1033,60 @@ class Core extends Base\Core
         $source->transaction->setReconciledType($reconciledType);
 
         $source->transaction->saveOrFail();
+    }
+
+    public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse, PublicCollection $feeSplit = null)
+    {
+        $fav = $this->repo->fund_account_validation->find($entityId);
+
+        if($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                ,ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+            ['merchant_id' => $fav->getMerchantId()]);
+        }
+
+        if ($fav->getFundAccountType() === FundAccount\Type::VPA)
+        {
+            $this->trace->info(
+                TraceCode::LEDGER_TRANSACTIONS_QUEUE_VPA_BASED_FAV_NOT_ALLOWED,
+                [
+                    'fav_id' => $fav->getId(),
+                ]
+            );
+
+            return [
+                'entity' => $fav->getPublicId(),
+                'txn'    => null,
+            ];
+        }
+
+        $processor = Processor\Factory::get($fav);
+
+        $txn = $this->mutex->acquireAndRelease('fav_'.$entityId,
+            function () use ($fav, $ledgerResponse, $processor, $feeSplit)
+            {
+                return $this->repo->transaction(function () use ($ledgerResponse, $fav, $processor, $feeSplit)
+                {
+                   $txn = $processor->createTransactionForLedger($ledgerResponse);
+
+                    if ($feeSplit !== null)
+                    {
+                        (new \RZP\Models\Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+                    }
+
+                    $this->repo->saveOrFail($txn);
+
+                    return $txn;
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+        return [
+            'entity' => $fav->getPublicId(),
+            'txn'    => $txn->getPublicId(),
+        ];
     }
 }

@@ -2,7 +2,15 @@
 
 namespace RZP\Services\Mock;
 
+use App;
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Services\Ledger as BaseLedger;
+use RZP\Models\Transaction\Processor\Ledger\Payout;
+use RZP\Models\Transaction\Processor\Ledger\Adjustment;
+use RZP\Models\Transaction\Processor\Ledger\FundLoading;
+use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation;
 
 class Ledger extends BaseLedger
 {
@@ -272,43 +280,123 @@ class Ledger extends BaseLedger
      */
     public function createJournal($input, bool $throwExceptionOnFailure = false): array
     {
-        $response =  [
-            "id"                => "HNjsypA96SgJKJ",
-            "created_at"        => "1623848289",
-            "updated_at"        => "1632368730",
-            "amount"            => "130.000000",
-            "base_amount"       => "130.000000",
-            "currency"          => "INR",
-            "tenant"            => "X",
-            "transactor_id"     => "pout_SamplePayoutId4",
-            "transactor_event"  => "fund_loading_processed",
-            "transaction_date"  => "1611132045",
-            "ledger_entry" => [
+        $presentTime      = (string) Carbon::now(Timezone::IST)->timestamp;
+        $app              = App::getFacadeRoot();
+        $merchant         = $app['repo']->merchant->find($input['merchant_id']);
+        $bankingAccountId = $merchant->bankingAccounts->first()->getId();
+
+        if (strpos($input['transactor_event'], 'fav') !== false)
+        {
+            if ((strpos($input['transactor_event'], 'failed') !== false) or
+                (strpos($input['transactor_event'], 'reversed') !== false))
+            {
+                $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
+            }
+            else
+            {
+                $balance = $app['repo']->fund_account_validation->findByPublicId($input['transactor_id'])->balance->getBalance();
+            }
+        }
+        else if (strpos($input['transactor_event'], 'payout') !== false)
+        {
+            if ((strpos($input['transactor_event'], 'failed') !== false) or
+                (strpos($input['transactor_event'], 'reversed') !== false))
+            {
+                $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
+            }
+            else
+            {
+                $balance = $app['repo']->payout->findByPublicId($input['transactor_id'])->balance->getBalance();
+            }
+        }
+        else if (strpos($input['transactor_event'], 'adjustment') !== false)
+        {
+            $balance = $app['repo']->adjustment->findByPublicId($input['transactor_id'])->balance->getBalance();
+        }
+        else if (strpos($input['transactor_event'], 'fund_loading') !== false)
+        {
+            $balance = $app['repo']->bank_transfer->findByPublicId($input['transactor_id'])->balance->getBalance();
+        }
+        else
+        {
+            $balance = $merchant->sharedBankingBalance->getBalance();
+        }
+
+        $creditEvents = [
+            Adjustment::POSITIVE_ADJUSTMENT_PROCESSED,
+            FundLoading::FUND_LOADING_PROCESSED,
+            FundAccountValidation::FAV_FAILED,
+            FundAccountValidation::FAV_PROCESSED,
+            Payout::PAYOUT_REVERSED,
+            Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
+            Payout::INTER_ACCOUNT_PAYOUT_FAILED,
+            Payout::PAYOUT_FAILED,
+        ];
+
+        $isCredit = false;
+
+        if (in_array($input['transactor_event'], $creditEvents) === true)
+        {
+            $isCredit = true;
+        }
+
+        $balanceDelta = $input['amount'];
+
+        if (strpos($input['transactor_event'], 'fav') !== false)
+        {
+            $balanceDelta = $input['commission'];
+        }
+
+        $journalId = \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
+
+        $response = [
+            'id'               => $journalId,
+            'created_at'       => $presentTime,
+            'updated_at'       => $presentTime,
+            'amount'           => $input['amount'],
+            'base_amount'      => $input['base_amount'],
+            'currency'         => $input['currency'],
+            'tenant'           => $input['tenant'] ?? 'X',
+            'transactor_id'    => $input['transactor_id'],
+            'transactor_event' => $input['transactor_event'],
+            'transaction_date' => $input['transaction_date'],
+            'ledger_entry'     => [
                 [
-                    "id"          => "HNjsypHNXdSiei",
-                    "created_at"  => "1623848289",
-                    "updated_at"  => "1623848289",
-                    "merchant_id" => "HN59oOIDACOXt3",
-                    "journal_id"  => "HNjsypA96SgJKJ",
-                    "account_id"  => "GoRNyEuu9Hl0OZ",
-                    "amount"      => "130.000000",
-                    "base_amount" => "130.000000",
-                    "type"        => "debit",
-                    "currency"    => "INR",
-                    "balance"     => ""
+                    'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'created_at'       => $presentTime,
+                    'updated_at'       => $presentTime,
+                    'merchant_id'      => $input['merchant_id'],
+                    'journal_id'       => $journalId,
+                    'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'amount'           => $input['amount'],
+                    'base_amount'      => $input['base_amount'],
+                    'type'             => $isCredit ? 'debit' : 'credit',
+                    'currency'         => $input['currency'],
+                    'balance'          => '',
+                    'account_entities' => [
+                        'account_type'      => ['cash'],
+                        'fund_account_type' => ['adjustment'],
+                        'transactor'        => [$input['tenant'] ?? 'X'],
+                    ],
                 ],
                 [
-                    "id"          => "HNjsypHPOUlxDR",
-                    "created_at"  => "1623848289",
-                    "updated_at"  => "1623848289",
-                    "merchant_id" => "HN59oOIDACOXt3",
-                    "journal_id"  => "HNjsypA96SgJKJ",
-                    "account_id"  => "HN5AGgmKu0ki13",
-                    "amount"      => "130.000000",
-                    "base_amount" => "130.000000",
-                    "type"        => "credit",
-                    "currency"    => "INR",
-                    "balance"     => ""
+                    'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'created_at'       => $presentTime,
+                    'updated_at'       => $presentTime,
+                    'merchant_id'      => $input['merchant_id'],
+                    'journal_id'       => $journalId,
+                    'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
+                    'amount'           => $input['amount'],
+                    'base_amount'      => $input['base_amount'],
+                    'type'             => $isCredit ? 'credit' : 'debit',
+                    'currency'         => $input['currency'],
+                    'balance'          => $isCredit ? ($balance + $balanceDelta) : ($balance - $balanceDelta),
+                    'account_entities' => [
+                        'account_type'       => ['payable'],
+                        'banking_account_id' => [$bankingAccountId],
+                        'fund_account_type'  => ['merchant_va'],
+                        'transactor'         => [$input['tenant'] ?? 'X'],
+                    ],
                 ]
             ]
         ];

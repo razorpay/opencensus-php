@@ -13,6 +13,66 @@ use RZP\Models\Transaction\Processor\Base as BaseProcessor;
 
 class FundAccountValidation extends BaseProcessor
 {
+    public function createTransactionForLedger($txnId, $newBalance)
+    {
+        $txn = new Transaction\Entity;
+
+        $txn->setId($txnId);
+        $txn->setSettledAt(false);
+        $txn->sourceAssociate($this->source);
+        $txn->merchant()->associate($this->source->merchant);
+
+        $this->setTransaction($txn);
+
+        $this->setSourceDefaults();
+
+        $this->fillDetails();
+
+        $this->setFeeDefaultsForLedger();
+
+        $this->calculateFees();
+
+        $this->setOtherDetails();
+
+        $this->updateTransaction();
+
+        $merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+
+        $oldBalance = $merchantBalance->getBalance();
+
+        $this->txn->accountBalance()->associate($merchantBalance);
+
+        $merchantBalance->setAttribute(Balance\Entity::BALANCE, $newBalance);
+
+        $this->repo->balance->updateBalance($merchantBalance);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'merchant_id' => $txn->getMerchantId(),
+                'new_balance' => $newBalance,
+                'old_balance' => $oldBalance,
+                'method'      => __METHOD__,
+            ]);
+
+        $this->txn->setBalance($newBalance, 0, false);
+
+        if (in_array($this->txn->getType(), Constants::DO_NOT_DISPATCH_FOR_SETTLEMENT, true) === false)
+        {
+            (new Transaction\Core)->dispatchForSettlementBucketing($txn);
+        }
+
+        return $this->txn;
+    }
+
+    public function setFeeDefaultsForLedger()
+    {
+        $this->amountCredits = 0;
+        $this->feeCredits    = 0;
+        $this->fees          = $this->source->getFees();
+        $this->tax           = $this->source->getTax();
+    }
+
     protected function setTransactionForSource($txnId = null)
     {
         $this->setTransaction($this->createNewTransaction($txnId));

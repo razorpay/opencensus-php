@@ -7,11 +7,14 @@ use App;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
 use Razorpay\Trace\Logger;
 use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Reversal\Core as ReversalCore;
+use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Transactions extends Job
@@ -24,9 +27,10 @@ class Transactions extends Job
     protected $trace;
 
     /**
+     * used to map the SQS queue worker to this code
+     *
      * @var string
      */
-
     protected $queueConfigKey = 'ledger_transactions';
 
     protected $entityId;
@@ -45,43 +49,56 @@ class Transactions extends Job
     {
         parent::__construct($mode);
 
-        $this->entityId = $entityId;
-        $this->entityName = $entityName;
-        $this->ledgerResponse = $ledgerResponse;
+        $this->entityId       = $entityId;
+        $this->entityName     = $entityName;
+        $this->ledgerResponse = $ledgerResponse['body'];
         $this->feeSplit       = $feeSplit;
     }
 
     public function handle()
     {
-        parent::handle();
-
-        $traceData = [
-            'entityId'          => $this->entityId,
-            'entityName'        => $this->entityName,
-            'ledgerResponse'    => $this->ledgerResponse,
-        ];
-
-        $this->trace->info(
-            TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_INIT,
-            $traceData);
-
         try
         {
-            $txnId = null;
-            $ledgerResponseBody = $this->ledgerResponse['body'];
+            parent::handle();
+
+            $traceData = [
+                'entityId'          => $this->entityId,
+                'entityName'        => $this->entityName,
+                'ledgerResponse'    => $this->ledgerResponse,
+            ];
+
+            $this->trace->info(
+                TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_INIT,
+                $traceData);
+
             $resource = sprintf(self::LEDGER_TRANSACTIONS_MUTEX_RESOURCE, $this->entityName, $this->entityId);
 
+            // logic
             switch ($this->entityName)
             {
                 case Constants\Entity::BANK_TRANSFER :
-                    $txnId = $this->processBankTransferJob($resource, $ledgerResponseBody);
+                    $response = $this->processBankTransferJob($resource, $this->ledgerResponse);
                     break;
 
                 case Constants\Entity::ADJUSTMENT :
-                    $txnId = $this->processAdjustmentJob($resource, $ledgerResponseBody);
+                    $response = $this->processAdjustmentJob($resource, $this->ledgerResponse);
+                    break;
+
+                case Entity::FUND_ACCOUNT_VALIDATION :
+                    $response = (new FavCore)
+                        ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse, $this->feeSplit);
+
+                    break;
+
+                case Entity::REVERSAL :
+                    $response = (new ReversalCore)
+                        ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse);
+
                     break;
 
                 default:
+                    $response = [];
+
                     $this->trace->info(
                         TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_ENTITY_NAME_NOT_SUPPORTED,
                         $traceData
@@ -93,8 +110,9 @@ class Transactions extends Job
                 [
                     'entity_id'   => $this->entityId,
                     'entity_name' => $this->entityName,
-                    'response'    => $txnId,
-                ]);
+                    'response'    => $response,
+                ]
+            );
 
             $this->delete();
         }
@@ -131,13 +149,13 @@ class Transactions extends Job
 
     protected function processBankTransferJob($resource, $ledgerResponseBody)
     {
-        $txnId = $this->mutex->acquireAndRelease(
+        list($entityId, $txnId) = $this->mutex->acquireAndRelease(
             $resource,
             function () use ($ledgerResponseBody)
             {
                 $bankTransfer = $this->repoManager->bank_transfer->find($this->entityId);
                 $journalId = $ledgerResponseBody["id"];
-                $balance = (new Transaction\Processor\Ledger\FundLoading)->getMerchantBalanceFromLedger($ledgerResponseBody);
+                $balance = Transaction\Processor\Ledger\FundLoading::getMerchantBalanceFromLedgerResponse($ledgerResponseBody);
 
                 $tempBankTransfer = $bankTransfer;
                 list($bankTransfer, $txn) = $this->repoManager->transaction(function() use ($tempBankTransfer, $journalId, $balance)
@@ -151,24 +169,30 @@ class Transactions extends Job
 
                 // dispatch event for txn created
                 (new BankTransfer\Processor())->dispatchEventForTransactionCreated($bankTransfer, $txn);
-                return $txn->getId();
+                return [
+                    $bankTransfer->getPublicId(),
+                    $txn->getPublicId(),
+                ];
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
 
-        return $txnId;
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $txnId
+        ];
     }
 
     protected function processAdjustmentJob($resource, $ledgerResponseBody)
     {
-        $txnId = $this->mutex->acquireAndRelease(
+        list($entityId, $txnId) = $this->mutex->acquireAndRelease(
             $resource,
             function () use ($ledgerResponseBody)
             {
                 $adjustment = $this->repoManager->adjustment->find($this->entityId);
                 $journalId = $ledgerResponseBody["id"];
-                $balance = (new Transaction\Processor\Ledger\Adjustment)->getMerchantBalanceFromLedger($ledgerResponseBody);
+                $balance = Transaction\Processor\Ledger\Adjustment::getMerchantBalanceFromLedgerResponse($ledgerResponseBody);
 
                 $tempAdjustment = $adjustment;
                 list($adjustment, $txn) = $this->repoManager->transaction(function() use ($tempAdjustment, $journalId, $balance)
@@ -186,12 +210,18 @@ class Transactions extends Job
 
                 // dispatch event for txn created
                 (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
-                return $txn->getId();
+                return [
+                    $adjustment->getPublicId(),
+                    $txn->getPublicId(),
+                ];
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
-        return $txnId;
+        return [
+            'entity_id' => $entityId,
+            'txn_id'    => $txnId
+        ];
     }
 
     protected function checkRetry()

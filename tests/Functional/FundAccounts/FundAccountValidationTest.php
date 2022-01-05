@@ -7,6 +7,7 @@ use Queue;
 use \RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Jobs\Transactions;
 use RZP\Models\Admin\Admin;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
@@ -1694,8 +1695,6 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccountValidationReversedOnLiveMode()
     {
-        $this->mockLedgerSns(0);
-
         $this->mockRazorxTreatment();
 
         $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode();
@@ -1810,5 +1809,168 @@ class FundAccountValidationTest extends TestCase
         // Passed in fund account validation reversed payload
         $this->assertEquals('1111111', $ledgerSnsPayloadArray[2]['identifiers']['fts_fund_account_id']);
         $this->assertEquals('current', $ledgerSnsPayloadArray[2]['identifiers']['fts_account_type']);
+    }
+
+    /**
+     * In this test, we are not faking the queue class.
+     * Tests run the dispatch calls in sync mode, thus a txn is actually created in API DB.
+     */
+    public function testFundAccountValidationCreationInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+    }
+
+    /**
+     * In this test, we are not faking the queue class.
+     * Tests run the dispatch calls in sync mode, thus a txn is actually created in API DB.
+     */
+    public function testFundAccountValidationCreationInLedgerReverseShadowOnLiveMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode();
+    }
+
+    public function testDispatchOfTransactionsJobInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        Queue::fake();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        Queue::assertPushed(Transactions::class);
+    }
+
+    public function testDispatchOfTransactionsJobInLedgerReverseShadowInLiveMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        Queue::fake();
+
+        $this->setUpMerchantForBusinessBankingLive(false, 10000000);
+
+        $this->createFAVBankingPricingPlan('live');
+
+        $this->fixtures->on('live')->merchant->editEntity('merchant', '10000000000000', [
+            'fee_model' => 'prepaid',
+            'pricing_plan_id' => '1hDYlICobzOCYt'
+        ]);
+
+        $fundAccountResponse = $this->createFundAccountBankAccount('rzp_live_TheLiveAuthKey', 'live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testDispatchOfTransactionsJobInLedgerReverseShadow'];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        Queue::assertPushed(Transactions::class);
+    }
+
+    public function testFundAccountValidationReversedInLedgerReverseShadowInLiveMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testFundAccountValidationReversedOnLiveMode();
+    }
+
+    public function testDispatchOfTransactionsJobForFundAccountValidationReversedInLedgerReverseShadowInLiveMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode();
+
+        Queue::fake();
+
+        $fav = $this->getDbLastEntity('fund_account_validation', 'live');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $favId = $fav->getId();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'COMPLETED', [], 'live');
+
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'REVERSED', [], 'live');
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId, 'live');
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId(), 'live');
+
+        $this->assertEquals('reversed', $fta->getStatus());
+
+        $this->assertEquals('completed', $fav->getStatus());
+
+        Queue::assertPushed(Transactions::class, 0);
+    }
+
+    public function testFundAccValidationWithFailedStatusForBusinessBankingInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithFailedStatusForBusinessBanking();
+    }
+
+    public function testDispatchOfTransactionsJobForFundAccValidationWithFailedStatusForBusinessBankingInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockRazorxTreatment();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking'];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        //$this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        Queue::fake();
+
+        $this->triggerFlowToUpdateFavWithNewState($fav['id']);
+
+        Queue::assertPushed(Transactions::class);
     }
 }

@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends Core
@@ -67,7 +68,7 @@ class Base extends Core
 
     const LEDGER_TRANSACTION_CREATE = 'ledger_transaction_create';
 
-    // For Ledger merchant balance
+    // Constants for reading ledger response
     const LEDGER_ENTRY      = 'ledger_entry';
     const ACCOUNT_ENTITIES  = 'account_entities';
     const ACCOUNT_TYPE      = 'account_type';
@@ -75,6 +76,27 @@ class Base extends Core
     const PAYABLE           = 'payable';
     const MERCHANT_VA       = 'merchant_va';
     const BALANCE           = 'balance';
+
+    public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse)
+    {
+        foreach($ledgerResponse[self::LEDGER_ENTRY] as $ledgerEntry)
+        {
+            if ((empty($ledgerEntry[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE]) === false) and
+                (empty($ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE]) === false) and
+                ($ledgerEntry[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE][0] === self::PAYABLE) and
+                ($ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0] === self::MERCHANT_VA))
+            {
+                return $ledgerEntry[self::BALANCE];
+            }
+        }
+
+        // throw error if reaches here
+        throw new BadRequestValidationFailureException(
+            Errorcode::BAD_REQUEST_LEDGER_JOURNAL_ENTRY_BALANCE_GET_ERROR,
+            null,
+            $ledgerResponse
+        );
+    }
 
     /**
      * @param array $payload
@@ -116,6 +138,7 @@ class Base extends Core
      * @throws \RZP\Exception\RuntimeException
      * @throws \RZP\Exception\BadRequestException
      * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\GatewayTimeoutException
      * @throws \Throwable
      */
     public function createJournalEntry(array $payload)
@@ -128,23 +151,31 @@ class Base extends Core
             $ledgerService->setIdempotencyKey(Uuid::uuid1());
             $response = $ledgerService->createJournal($payload, true);
         }
+        catch (\Requests_Exception $re)
+        {
+            // This is an ambiguous situation, need to manually check if the ledger entry was created.
+            // TODO: An alert here is absolutely essential
+            $this->trace->traceException($re, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_TIMEOUT);
+
+            throw new GatewayTimeoutException($re->getMessage(), $re);
+        }
         catch (\RZP\Exception\RuntimeException $e)
         {
             $exceptionData = $e->getData();
 
             // If it's an insufficient balance case, convert to a new BadRequestException
-            if (strpos($exceptionData['msg'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false)
+            if (strpos($exceptionData['response_body'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false)
             {
                 $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
 
                 throw new BadRequestException(
-                    Errorcode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+                    Errorcode::BAD_REQUEST_INSUFFICIENT_BALANCE,
                     null,
                     $exceptionData
                 );
             }
             // If it's a validation failure, convert to a new BadRequestValidationFailureException
-            else if (strpos($exceptionData['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            else if (strpos($exceptionData['response_body'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
             {
                 $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
 
@@ -165,30 +196,6 @@ class Base extends Core
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $response);
 
         return $response;
-    }
-
-    /**
-     * Get merchant balance from ledger response
-     *
-     * @param array $ledgerResponse
-     *
-     */
-    public function getMerchantBalanceFromLedger(array $ledgerResponse)
-    {
-        foreach ($ledgerResponse[self::LEDGER_ENTRY] as $key => $value) {
-            if (isset($value[self::ACCOUNT_ENTITIES]) && isset($value[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE]) && isset($value[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE])) {
-                if (($value[self::ACCOUNT_ENTITIES][self::ACCOUNT_TYPE][0] == self::PAYABLE) && ($value[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0] == self::MERCHANT_VA)) {
-                    return $value[self::BALANCE];
-                }
-            }
-        }
-
-        // throw error if reaches here
-        throw new BadRequestValidationFailureException(
-            Errorcode::LEDGER_MERCHANT_BALANCE_GET_ERROR,
-            null,
-            $ledgerResponse
-        );
     }
 
     /**

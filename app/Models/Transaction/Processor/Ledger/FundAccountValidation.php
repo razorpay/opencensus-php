@@ -2,13 +2,15 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
-use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
+
+use Ramsey\Uuid\Uuid;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Entity;
+use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
@@ -153,6 +155,77 @@ class FundAccountValidation extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * Use the entity to create request payload for ledger and then call ledger
+     *
+     * @param Entity     $validation
+     *
+     * @param array|null $ftsSourceAccountInformation
+     *
+     * @return array $response
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function processValidationAndCreateJournalEntry(Entity $validation, array $ftsSourceAccountInformation = []): array
+    {
+        $payload = $this->createLedgerPayloadFromEntity($validation, $ftsSourceAccountInformation);
+
+        return $this->createJournalEntry($payload);
+    }
+
+    /**
+     * Create payload from the validation
+     * @param Entity $validation
+     *
+     * @return array
+     */
+    protected function createLedgerPayloadFromEntity(Entity $validation, array $ftsSourceAccountInformation = null): array
+    {
+        $status = Status::getLedgerEventFromFavStatus($validation->getStatus());
+
+        $notes = [
+            self::BALANCE_ID => BalanceEntity::getSignedIdOrNull($validation->getBalanceId()),
+        ];
+
+        $identifiers = [
+            self::BANKING_ACCOUNT_ID => $validation->balance->bankingAccount->getPublicId(),
+        ];
+
+        $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+
+        $identifiers = array_merge($identifiers, $ftsSourceAccountData);
+
+        $payload = [
+            self::TENANT           => self::X,
+            self::MODE             => $this->mode,
+            self::MERCHANT_ID      => $validation->getMerchantId(),
+            self::CURRENCY         => $validation->getCurrency(),
+            self::AMOUNT           => (string) $validation->getAmount(),
+            self::BASE_AMOUNT      => (string) $validation->getBaseAmount(),
+            self::COMMISSION       => (string) $validation->getFees(),
+            self::TAX              => (string) $validation->getTax(),
+            self::TRANSACTOR_ID    => $validation->getPublicId(),
+            self::TRANSACTOR_EVENT => $status,
+            self::TRANSACTION_DATE => $validation->getCreatedAt(),
+            self::NOTES            => $notes,
+            self::IDENTIFIERS      => $identifiers,
+        ];
+
+        if ($status === self::FAV_FAILED)
+        {
+            $payload[self::TRANSACTOR_ID]    = $validation->reversal->getPublicId();
+            $payload[self::TRANSACTION_DATE] = $validation->reversal->getCreatedAt();
+        }
+
+        if ($validation->merchant->isPostpaid() === true)
+        {
+            $payload[self::COMMISSION] = '0';
+            $payload[self::TAX]        = '0';
+        }
+
+        return $payload;
     }
 
     /**
