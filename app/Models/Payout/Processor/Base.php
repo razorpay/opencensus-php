@@ -168,6 +168,9 @@ class Base extends BaseCore
 
     const ERROR_CODE = 'error_code';
 
+    // FTS timeout is set to 1 sec. This should be utilized on sync calls to FTS.
+    const FTS_TRANSFER_TIMEOUT = 1;
+
 
     public function __construct()
     {
@@ -475,6 +478,7 @@ class Base extends BaseCore
                                    'balance_id'   => $payout->getBalanceId(),
                                ]);
 
+            /** @var \RZP\Services\FTS\FundTransfer $transferService */
             $transferService = App::getFacadeRoot()['fts_fund_transfer'];
 
             $transferService->initialize($fta->getId());
@@ -497,6 +501,8 @@ class Base extends BaseCore
                     throw new Exception\LogicException('fts fund transfer not allowed', null, $data);
                 }
             }
+
+            $transferService->setRequestTimeout(self::FTS_TRANSFER_TIMEOUT);
 
             $ftsResponse = $transferService->requestFundTransfer();
 

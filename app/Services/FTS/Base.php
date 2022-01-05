@@ -43,6 +43,8 @@ class Base
      */
     protected $repo;
 
+    protected $requestTimeout = 60;
+
     // Account related URIs
     const FUND_ACCOUNT_CREATE_URI  = '/account';
     const FUND_ACCOUNT_REGISTER_URI  = '/account/register';
@@ -131,8 +133,6 @@ class Base
     const ALLOWED_FTS_ACTION = [
         self::TRANSFER_RETRY,
     ];
-
-    const REQUEST_TIMEOUT = 60;
 
     /**
      * FTS Base constructor.
@@ -229,7 +229,7 @@ class Base
         }
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $this->requestTimeout,
             'auth'    => [
                 $this->key,
                 $this->secret,
@@ -450,5 +450,10 @@ class Base
         $response->body = $content;
 
         return $response;
+    }
+
+    public function setRequestTimeout(int $requestTimeout)
+    {
+        $this->requestTimeout = $requestTimeout;
     }
 }
