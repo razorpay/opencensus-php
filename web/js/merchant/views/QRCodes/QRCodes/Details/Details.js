@@ -1,18 +1,15 @@
-import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import Amount from 'common/ui/Amount';
-import Banner from 'common/ui/Banner';
+// import Banner from 'common/ui/Banner';
 import Button from 'common/new-ui/Button';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
 import PlaceHolderLoader from 'common/ui/PlaceholderLoader';
-import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Table from 'common/ui/Table/Index';
 import { paymentId, amount } from 'common/ui/item/pair';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
 import CustomerDetails from 'merchant/components/CustomerDetails';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
@@ -22,14 +19,12 @@ export default function Details(props) {
   const {
     qrCode,
     payments,
-    mode,
     isLoading,
     statusMsg,
     onClose,
-    onMakeTestPaymentClick,
-    user,
+    // onMakeTestPaymentClick,
     customers,
-    isTestMode,
+    // isTestMode,
     showPreview,
     downloadQRCode,
     isPaymentsLoading,
@@ -37,7 +32,7 @@ export default function Details(props) {
 
   const isClosed = qrCode.status === 'closed';
 
-  const showTestPaymentBtn = isTestMode && qrCode.status === 'active';
+  // const showTestPaymentBtn = isTestMode && qrCode.status === 'active';
 
   const customerDetails = findBy(customers.items, 'id', qrCode.customer_id) || {};
 
@@ -56,29 +51,28 @@ export default function Details(props) {
           <div class="SliderPanel__Body">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
-            <div class="info">
-              <div>
-                <div class="heading">Amount Received</div>
-                <div class="value">
-                  <Amount value={qrCode.payments_amount_received || '000'} />
+            <div class="panel-body">
+              <div class="info">
+                <div>
+                  <div class="heading">Amount Received</div>
+                  <div class="value">
+                    <Amount value={qrCode.payments_amount_received || '000'} />
+                  </div>
+                </div>
+                <div>
+                  <div class="heading">Number of Payments</div>
+                  <div class="value">{qrCode.payments_count_received || 0}</div>
                 </div>
               </div>
-              <div>
-                <div class="heading">Number of Payments</div>
-                <div class="value">{qrCode.payments_count_received || 0}</div>
+
+              <div class="actions">
+                <Button.Transparent class="Button--Link" onClick={showPreview}>
+                  <i class="i i-eye m-r" /> Preview QR
+                </Button.Transparent>
+                <Button.Transparent class="Button--Link" onClick={downloadQRCode}>
+                  <i class="i i-download m-r" /> Download QR
+                </Button.Transparent>
               </div>
-            </div>
-
-            <div class="actions">
-              <Button.Transparent class="Button--Link" onClick={showPreview}>
-                <i class="i i-eye m-r" /> Preview QR
-              </Button.Transparent>
-              <Button.Transparent class="Button--Link" onClick={downloadQRCode}>
-                <i class="i i-download m-r" /> Download QR
-              </Button.Transparent>
-            </div>
-
-            <div class="panel-body">
               <div>
                 <EntityDetailRow label="Created At">
                   <Time value={qrCode.created_at} format="DD MMM YYYY, hh:mm:ss a" />
