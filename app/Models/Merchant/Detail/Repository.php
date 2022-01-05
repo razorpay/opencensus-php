@@ -389,7 +389,7 @@ class Repository extends Base\Repository
 
     public function findMerchantDetailsWithContactMobile(string $newNumber)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::CONTACT_MOBILE, '=', $newNumber)
                     ->first();
     }
