@@ -247,7 +247,7 @@ class Validator extends Merchant\Validator
     {
         if (in_array(strtoupper($value), Constants::$validBusinessModels, true) === false)
         {
-            throw new BadRequestValidationFailureException('Invalid business model: ' . $value);
+            throw new BadRequestValidationFailureException('Invalid business model: ' . $value, Constants::BUSINESS_MODEL);
         }
     }
 
