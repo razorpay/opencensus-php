@@ -117,11 +117,13 @@ class Service extends Base\Service
 
         $totalFetchTime = $endTimeMs - $startTimeMs;
 
-        $this->trace->info(TraceCode::CONTACT_API_FETCH_DURATION, [
-            'duration_ms'    => $totalFetchTime,
-            'merchant_id'    => $this->merchant->getId(),
-        ]);
+        if($totalFetchTime > 500) {
 
+            $this->trace->info(TraceCode::CONTACT_API_FETCH_DURATION, [
+                'duration_ms' => $totalFetchTime,
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+        }
         return $entities->toArrayPublic();
     }
 

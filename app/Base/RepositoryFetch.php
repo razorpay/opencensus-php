@@ -157,9 +157,11 @@ trait RepositoryFetch
 
         $queryDuration = $endTimeMs - $startTimeMs;
 
-        $this->trace->info(TraceCode::BUILD_QUERY_RESPONSE_DURATION, [
-            'duration_ms'    => $queryDuration,
-        ]);
+        if($queryDuration > 500) {
+            $this->trace->info(TraceCode::BUILD_QUERY_RESPONSE_DURATION, [
+                'duration_ms' => $queryDuration,
+            ]);
+        }
 
         $startTimeMs = round(microtime(true) * 1000);
 
@@ -183,15 +185,26 @@ trait RepositoryFetch
 
         $queryDuration = $endTimeMs - $startTimeMs;
 
-        $this->trace->info(TraceCode::REPLICA_LAG_RESPONSE_DURATION, [
-            'duration_ms'    => $queryDuration,
-        ]);
-
+        if($queryDuration > 500) {
+            $this->trace->info(TraceCode::REPLICA_LAG_RESPONSE_DURATION, [
+                'duration_ms' => $queryDuration,
+            ]);
+        }
         $startTimeMs = round(microtime(true) * 1000);
 
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        if($queryDuration > 100) {
+            $this->trace->info(TraceCode::ES_SEARCH_RESPONSE_DURATION, [
+                'duration_ms' => $queryDuration,
+            ]);
+        }
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
@@ -203,13 +216,6 @@ trait RepositoryFetch
             return $this->runEsFetch($esParams, $merchantId, $expands);
         }
 
-        $endTimeMs = round(microtime(true) * 1000);
-
-        $queryDuration = $endTimeMs - $startTimeMs;
-
-        $this->trace->info(TraceCode::ES_SEARCH_RESPONSE_DURATION, [
-            'duration_ms'    => $queryDuration,
-        ]);
 
         $startTimeMs = round(microtime(true) * 1000);
 
@@ -237,7 +243,7 @@ trait RepositoryFetch
 
         $queryDuration = $endTimeMs - $startTimeMs;
 
-        if ($queryDuration > 100)
+        if ($queryDuration > 500)
         {
             $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
                 'data_warehouse' => in_array($connection , Connection::DATA_WAREHOUSE_CONNECTIONS),
@@ -430,6 +436,7 @@ trait RepositoryFetch
         string $merchantId = null,
         array $expands): PublicCollection
     {
+        $startTimeMs = round(microtime(true) * 1000);
         $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
         // Extract results from ES response. If hit has _source get that else just the document id.
@@ -473,6 +480,16 @@ trait RepositoryFetch
         if (count($ids) !== $entities->count())
         {
             $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
+        }
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        if($queryDuration > 100) {
+            $this->trace->info(TraceCode::ES_SEARCH_DURATION, [
+                'duration_ms' => $queryDuration,
+            ]);
         }
 
         return $entities;

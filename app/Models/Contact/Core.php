@@ -343,10 +343,12 @@ class Core extends Base\Core
 
         $totalFetchTime = $endTimeMs - $startTimeMs;
 
-        $this->trace->info(TraceCode::DATA_WAREHOUSE_RESPONSE_DURATION, [
-            'duration_ms'    => $totalFetchTime,
-        ]);
+        if($totalFetchTime > 500) {
 
+            $this->trace->info(TraceCode::CONTACT_TO_REPO_FETCHTIME, [
+                'duration_ms' => $totalFetchTime,
+            ]);
+        }
 
         return $this->getBulkAppSpecificInformation($contact);
     }
@@ -757,10 +759,13 @@ class Core extends Base\Core
 
         $totalFetchTime = $endTimeMs - $startTimeMs;
 
-        $this->trace->info(TraceCode::VENDOR_DETAILS_FETCH_DURATION, [
-            'duration_ms'    => $totalFetchTime,
-            'merchant_id'    => $this->merchant->getId(),
-        ]);
+        if($totalFetchTime > 500) {
+
+            $this->trace->info(TraceCode::VENDOR_DETAILS_FETCH_DURATION, [
+                'duration_ms' => $totalFetchTime,
+                'merchant_id' => $this->merchant->getId(),
+            ]);
+        }
 
         if (empty($contactIds))
         {
