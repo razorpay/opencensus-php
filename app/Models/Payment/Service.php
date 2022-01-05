@@ -2346,6 +2346,8 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments($input = [])
     {
+        $this->increaseAllowedSystemLimits();
+
         // Using current time for fetching payments as refund_at is set properly.
         $ts = Carbon::now()->getTimestamp();
 
@@ -2354,8 +2356,15 @@ class Service extends Base\Service
             $ts -= $input['offset'];
         }
 
+        $limit = 1000;
+
+        if (isset($input['limit']) === true)
+        {
+            $limit = $input['limit'];
+        }
+
         // Fetch all the authorized payments whose refund_at is on or before current time.
-        $payments = $this->repo->payment->getAuthorizedPaymentsToBeRefundedUsingRefundAt($ts);
+        $payments = $this->repo->payment->getAuthorizedPaymentsToBeRefundedUsingRefundAt($ts, $limit);
 
         // Counts for determining the unsetting refund_at work and rejections
         $initialCount = $payments->count();
@@ -2365,47 +2374,54 @@ class Service extends Base\Service
          * Rejecting all the disputed payments
          * as the query only depends on refund_at column
          */
-        $payments = $payments->reject(function ($payment) use (&$updatedRefundAt)
+        try
         {
-            /**
-             * @var $payment Payment\Entity
-             */
-            if ($payment->isDisputed() === true)
+            $payments = $payments->reject(function ($payment) use (&$updatedRefundAt)
             {
-                return true;
-            }
+                /**
+                 * @var $payment Payment\Entity
+                 */
+                if ($payment->isDisputed() === true)
+                {
+                    return true;
+                }
 
-            $isRefundRequired = $this->isRefundRequiredForPayment($payment);
+                $isRefundRequired = $this->isRefundRequiredForPayment($payment);
 
-            /**
-             * Check that if the refund is not required , then unset the refund_at
-             * for the payment.
-             * Ideally, This should not happen.But there are old payments which have refund_at
-             * set and have a failed or refunded state. This will eventually clean all
-             * payments where refund_at shouldn't be set.
-             */
-            if ($isRefundRequired === false)
-            {
-                $previousRefundAt = $payment->getRefundAt();
+                /**
+                 * Check that if the refund is not required , then unset the refund_at
+                 * for the payment.
+                 * Ideally, This should not happen.But there are old payments which have refund_at
+                 * set and have a failed or refunded state. This will eventually clean all
+                 * payments where refund_at shouldn't be set.
+                 */
+                if ($isRefundRequired === false)
+                {
+                    $previousRefundAt = $payment->getRefundAt();
 
-                $this->core->updateRefundAt($payment->getPublicId(), null);
+                    $this->core->updateRefundAt($payment->getPublicId(), null);
 
-                $this->trace->info(
-                    TraceCode::PAYMENTS_UPDATE_REFUND_AT,
-                    [
-                        'payment_id'         => $payment->getId(),
-                        'payment_status'     => $payment->getStatus(),
-                        'previous_refund_at' => $previousRefundAt,
-                        'current_refund_at'  => null,
-                    ]);
+                    $this->trace->info(
+                        TraceCode::PAYMENTS_UPDATE_REFUND_AT,
+                        [
+                            'payment_id'         => $payment->getId(),
+                            'payment_status'     => $payment->getStatus(),
+                            'previous_refund_at' => $previousRefundAt,
+                            'current_refund_at'  => null,
+                        ]);
 
-                $updatedRefundAt++;
+                    $updatedRefundAt++;
 
-                return true;
-            }
+                    return true;
+                }
 
-            return false;
-        });
+                return false;
+            });
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION, ["message" => "mutex lock not acquired"]);
+        }
 
         $authorized = $payments->count();
         $refunded = 0;
@@ -4513,7 +4529,7 @@ class Service extends Base\Service
             throw $ex;
         }
     }
-    
+
     /*
     * @param $library
     * @return bool
