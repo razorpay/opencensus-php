@@ -631,7 +631,7 @@ class AnalyticsDesktop extends Component {
               productName="Transactions"
               title="Boost your revenue 🚀"
               bannerText="Use Payment Links for instant payment collection by offering 100+ payment methods"
-              cardId="NOV21-CATALYSTP1V2FL"
+              cardId="NOV21-CATALYSTP1V2EF"
               cta1Text="Know More"
               cta2Text="Try Now"
               cta2Link="paymentlinks/new"
