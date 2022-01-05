@@ -525,6 +525,11 @@ class Constants
     const ALLOW_NON_FLDG_LOANS = "allow_non_fldg_loans";
 
     /**
+     * Gives access to Bulk edit VAN
+     */
+    const VA_EDIT_BULK = "va_edit_bulk";
+
+    /**
      * Gives access to ES-AMAZON Loan Product
      */
     const ALLOW_ES_AMAZON = "es_amazon";
@@ -1261,6 +1266,7 @@ class Constants
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
         self::VAS_MERCHANT                    => true,
+        self::VA_EDIT_BULK                    => true,
         self::PAYOUT_WORKFLOWS                => true,
         self::ASYNC_BALANCE_UPDATE            => true,
         self::ISSUE_MPANS                     => true,

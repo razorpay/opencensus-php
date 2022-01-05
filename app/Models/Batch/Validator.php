@@ -839,6 +839,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID     => 'required_without:file|public_id',
     ];
 
+    protected static $virtualAccountEditCreateRules = [
+        Entity::TYPE        => 'required|in:virtual_account_edit',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+    ];
+
     protected static $payoutLinkBulkTypeRowRules = [
         Header::PAYOUT_LINK_BULK_CONTACT_NAME      => 'required|string',
         Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_SMS.',Yes|string',
@@ -1312,6 +1319,64 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_RZP_REF_NO);
+            }
+        }
+    }
+
+    protected function validateVirtualAccountEditEntries(array &$entries, array $params, ME $merchant)
+    {
+
+        if ($merchant->isFeatureEnabled(Feature::VA_EDIT_BULK) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Bulk VA edit is not enabled for the merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        foreach ($entries as $entry)
+        {
+            $vaId = $entry[Header::VIRTUAL_ACCOUNT_ID];
+
+            if (strlen($vaId) != 17)
+            {
+                throw new BadRequestValidationFailureException("Invalid Virtual Account Id");
+            }
+
+            $dt = $entry[Header::EXPIRE_BY];
+
+            $dtime = DateTime::createFromFormat("d-m-Y H:i", $dt, new \DateTimeZone('Asia/Kolkata'));
+
+            $currentTimestamp = Carbon::now()->getTimestamp();
+
+            if ($dtime === false)
+            {
+                throw new BadRequestValidationFailureException("Invalid date time format");
+            }
+
+            $dtTimestamp = $dtime->getTimestamp();
+
+            // the createFromFormat accepts month value greater than 12. It set the month value as input modulus 12 +1
+            // and increase the year account accordingly, we don't want to allow that so doing string compare of te input
+            // and the one after reformatting from the timestamp of the converted datetime
+            $date = new \DateTime('now', new \DateTimeZone('Asia/Kolkata'));
+
+            $date->setTimestamp($dtTimestamp);
+
+            $formattedDate = $date->format("d-m-Y H:i");
+
+            if ($dt != $formattedDate)
+            {
+                throw new BadRequestValidationFailureException("Invalid date time format");
+            }
+
+            var_dump($formattedDate);
+
+            if ($dtTimestamp < $currentTimestamp)
+            {
+                throw new BadRequestValidationFailureException("Expiry time must be greater than current time");
             }
         }
     }

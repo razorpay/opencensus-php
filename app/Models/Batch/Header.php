@@ -199,6 +199,7 @@ class Header
     const VA_BANK_ACCOUNT_NAME   = 'bank_account_name';
     const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
+    const VIRTUAL_ACCOUNT_ID     = 'Virtual Account Id';
 
     //
     // Bank Transfer Bulk Insertion
@@ -1474,6 +1475,23 @@ class Header
                 self::NOTES,
                 self::REFUND_ID,
                 self::REFUNDED_AMOUNT,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+                self::SPEED
+            ],
+        ],
+
+        Type::VIRTUAL_ACCOUNT_EDIT => [
+
+            self::INPUT => [
+                self::VIRTUAL_ACCOUNT_ID,
+                self::EXPIRE_BY,
+            ],
+
+            self::OUTPUT => [
+                self::VIRTUAL_ACCOUNT_ID,
+                self::EXPIRE_BY,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

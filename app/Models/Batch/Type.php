@@ -195,6 +195,8 @@ class Type
 
     const WHITELISTED_DOMAIN  =  'whitelisted_domain';
 
+    const VIRTUAL_ACCOUNT_EDIT = "virtual_account_edit";
+
     const DEBIT_NOTE          = 'debit_note';
 
     public static $disabledTypes = [
@@ -339,6 +341,7 @@ class Type
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,
+        self::VIRTUAL_ACCOUNT_EDIT,
         self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
@@ -418,6 +421,7 @@ class Type
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,
+        self::VIRTUAL_ACCOUNT_EDIT,
         self::LOC_WITHDRAWAL,
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
@@ -469,6 +473,7 @@ class Type
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,
+        self::VIRTUAL_ACCOUNT_EDIT,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::ENTITY_UPDATE_ACTION,

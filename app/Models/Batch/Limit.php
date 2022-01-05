@@ -79,6 +79,7 @@ class Limit
         Type::BUY_PRICING_RULE                      => 100000,
         Type::BUY_PRICING_ASSIGN                    => 100000,
         Type::LEDGER_ONBOARD_OLD_ACCOUNT            => 5000,
+        Type::VIRTUAL_ACCOUNT_EDIT                  => 10000
     ];
 
     /**
