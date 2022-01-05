@@ -5,6 +5,8 @@
   min-height: 100vh
   min-width: 900px
   font-family: "Mulish", "Lato", "Lato-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  @media (max-width: $screen-xs-max)
+    min-width: 100vw
 
   .page-nav-container
     position: fixed
@@ -39,6 +41,8 @@
     margin: auto
     padding-top: 20px
     margin-top: 56px
+    @media (max-width: $screen-xs-max)
+      min-width: 100vw
 
     .edit-page-btn
       font-size: 10px
@@ -65,16 +69,25 @@
       height: 214px   
       border-radius: 3px
       margin-right: 80px
+      @media (max-width: $screen-xs-max)
+        margin: 0 24px
+        height: inherit
 
       &--left
         padding-top: 40px
         padding-bottom: 40px
         padding-left: 75px
+        @media (max-width: $screen-xs-max)
+          padding: 40px 20px
+          width: 100%
 
       &--action
         display: flex
         align-items: center
         margin-top: 22px
+        @media (max-width: $screen-xs-max)
+          flex-direction: column
+          align-items: start
 
         & > div
           color: #162F56
@@ -82,6 +95,9 @@
           font-weight: 700
           line-height: 20px
           margin-right: 24px
+          @media (max-width: $screen-xs-max)
+            margin: 0
+            width: 100%
 
         &-buttons
           display: flex
@@ -118,6 +134,24 @@
               color: rgba(22, 47, 86, 0.68)
               background: rgba(22, 47, 86, 0.02)
               border: 1px solid rgba(22, 47, 86, 0.4)
+            // separate CTA container for mobile view. only share and view page shown, check .mobile-cta-container
+            @media (max-width: $screen-xs-max)
+              display: none
+
+        .mobile-cta-container
+          display: none
+          margin-top: 10px
+          text-align: right
+          @media (max-width: $screen-xs-max)
+            display: block
+
+          .button--highlight
+            display: inline-block
+
+          button
+            margin-right: 0
+            margin-left: 10px
+
 
         .short-url 
           margin-top: 8px
@@ -156,6 +190,9 @@
       &--right
         padding-top: 22px
         position: relative
+        // not showing iframe in mobile
+        @media (max-width: $screen-xs-max)
+          display: none
 
         .preview-icon
           width: 320px
@@ -211,6 +248,8 @@
 
     #next-steps
       margin: 24px 56px
+      @media (max-width: $screen-xs-max)
+        margin: 24px 20px
 
       &--title
         font-size: 16px
@@ -236,6 +275,10 @@
         display: flex
         justify-content: space-between
         padding: 20px 22px
+        @media (max-width: $screen-xs-max)
+          flex-direction: column
+          align-items: start
+          gap: 7px
 
         &--left
           text-align: left
@@ -274,6 +317,8 @@
 
         &--space, &--and-more
           margin-left: 28px
+          @media (max-width: $screen-xs-max)
+            margin-left: 0
           
     .button--highlight
       background: rgba(11, 112, 231, 0.05);
@@ -283,7 +328,7 @@
       border: 1px solid rgba(11, 112, 231, 0.74);
       box-sizing: border-box;
       border-radius: 2px;
-      padding: 5px 16px
+      padding: 7px 15px 8px
       display: flex
       align-items: center
 

@@ -150,6 +150,10 @@ class Success extends React.Component {
     });
   };
 
+  handleViewPage = () => {
+    window.open(this.props.paymentPageEntity.short_url, '_blank');
+  };
+
   handleSavePaymentReceipt = (receipt) => {
     const { paymentPageEntity } = this.props;
 
@@ -323,6 +327,16 @@ class Success extends React.Component {
                         Customise URL
                       </Button>
                     )}
+                  </div>
+                  {/* CTAs container for mobile view */}
+                  <div class="mobile-cta-container">
+                    <Button.Transparent class="button--highlight" onClick={this.handleViewPage}>
+                      View Page
+                    </Button.Transparent>
+                    <Button.Primary onClick={this.openShareView}>
+                      <i className="i i-share-outline mr-5" />
+                      Share
+                    </Button.Primary>
                   </div>
                 </div>
               </div>

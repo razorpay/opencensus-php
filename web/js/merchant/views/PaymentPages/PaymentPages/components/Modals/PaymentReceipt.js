@@ -268,154 +268,155 @@ export default class PaymentReceipt extends React.Component {
               </div>
             ) : (
               <Form class="Receipts-form" onSubmit={this.onSubmit}>
-                <div class="settings-section">
-                  <Input.Radio
-                    name="enable_custom_serial_number"
-                    defaultValue={
-                      props.paymentPageEntity.receipt
-                        ? props.paymentPageEntity.receipt.enable_custom_serial_number
-                        : ''
-                    }
-                    onClick={this.trackSendingOptions}
-                    options={[
-                      {
-                        label: (
-                          <div>
-                            <Label text="Send Receipts Automatically" />
-                            <Description text="Receipts are emailed to customers immediately after payment." />
-                          </div>
-                        ),
-                      },
-                      {
-                        label: (
-                          <div>
-                            <Label text="Don’t Send Receipts Automatically" />
-                            <Description text="You may send receipts later from dashboard. Your own reference ID may be added too." />
-                          </div>
-                        ),
-                      },
-                    ]}
-                    class="Input--vTop Input--theme"
-                  />
-
-                  <div class="doc-links">
-                    <DocLink
-                      href="https://razorpay.com/docs/payment-pages/receipt/#pdf-receipt-to-customers"
-                      target="_blank"
-                    >
-                      Sample Receipt <i class="i i-external-link" />
-                    </DocLink>
-                    <DocLink
-                      href="https://razorpay.com/docs/payment-pages/receipt/"
-                      target="_blank"
-                    >
-                      Learn More <i class="i i-external-link" />
-                    </DocLink>
-                  </div>
-                </div>
-
-                <div class="settings-section">
-                  <Input.Check
-                    fieldLabel={() => (
-                      <div>
-                        <b class="m-r">Show Customer’s Information on Receipt</b>
-                      </div>
-                    )}
-                    onChange={this.handleInputFieldChecked}
-                    checked={this.state.isInputFieldChecked}
-                    defaultChecked={this.state.isInputFieldChecked}
-                  />
-
-                  {this.state.isInputFieldChecked && (
-                    <PowerSelect
-                      class="PowerSelect-PickField ps-in-modal"
-                      placeholder="Choose type of information"
-                      options={this.options}
-                      selected={
-                        this.state.selectedInputField ? this.state.selectedInputField.title : null
+                <main>
+                  <div class="settings-section">
+                    <Input.Radio
+                      name="enable_custom_serial_number"
+                      defaultValue={
+                        props.paymentPageEntity.receipt
+                          ? props.paymentPageEntity.receipt.enable_custom_serial_number
+                          : ''
                       }
-                      optionComponent={({ option }) => {
-                        return (
-                          <div>
-                            {option.title}
-                            {option.disabled && <span>(show by default)</span>}
-                          </div>
-                        );
-                      }}
-                      onChange={this.handleInputField}
-                      onBlur={this.trackInputField}
-                      showClear={false}
-                      searchEnabled={false}
-                      disabled={!this.state.isInputFieldChecked}
+                      onClick={this.trackSendingOptions}
+                      options={[
+                        {
+                          label: (
+                            <div>
+                              <Label text="Send Receipts Automatically" />
+                              <Description text="Receipts are emailed to customers immediately after payment." />
+                            </div>
+                          ),
+                        },
+                        {
+                          label: (
+                            <div>
+                              <Label text="Don’t Send Receipts Automatically" />
+                              <Description text="You may send receipts later from dashboard. Your own reference ID may be added too." />
+                            </div>
+                          ),
+                        },
+                      ]}
+                      class="Input--vTop Input--theme"
                     />
-                  )}
-                </div>
 
-                <div class="settings-section">
-                  <div className="checkbox-container-80g">
+                    <div class="doc-links">
+                      <DocLink
+                        href="https://razorpay.com/docs/payment-pages/receipt/#pdf-receipt-to-customers"
+                        target="_blank"
+                      >
+                        Sample Receipt <i class="i i-external-link" />
+                      </DocLink>
+                      <DocLink
+                        href="https://razorpay.com/docs/payment-pages/receipt/"
+                        target="_blank"
+                      >
+                        Learn More <i class="i i-external-link" />
+                      </DocLink>
+                    </div>
+                  </div>
+
+                  <div class="settings-section">
                     <Input.Check
-                      name="enable_80g_details"
                       fieldLabel={() => (
                         <div>
-                          <b class="m-r">Show 80G Details on Receipt</b>
+                          <b class="m-r">Show Customer’s Information on Receipt</b>
                         </div>
                       )}
-                      autoRender
-                      onChange={this.handle80GDetails}
-                      checked={this.state.is80GDetailsChecked}
-                      disabled={!text_80g_12a}
-                      defaultChecked={this.state.is80GDetailsChecked}
+                      onChange={this.handleInputFieldChecked}
+                      checked={this.state.isInputFieldChecked}
+                      defaultChecked={this.state.isInputFieldChecked}
                     />
-                    <span className="rzp-tooltip-80g">
-                      <i className="i i-info-outline" />
-                      <Popover align="top" theme="dark" parentQuerySelector=".Modal-body">
-                        <PopoverBody>
-                          <div className="rzp-tooltip-title">For Donations</div>
-                          80G-registered organisations can add their details on receipts to help
-                          donors avail tax benefits
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  </div>
-                  <div>
-                    {!text_80g_12a ? (
-                      <Button
-                        type="button"
-                        class="Button--transparent Button--add-80g"
-                        onClick={this.open80gDetailsModal}
-                      >
-                        + Add your 80G details
-                      </Button>
-                    ) : (
-                      <div className="preview_80g">
-                        <div className="preview_80g--text">{text_80g_12a}</div>
-                        <div className="preview_80g--container">
-                          {image_url_80g ? <img src={image_url_80g} alt="signature" /> : <div />}
-                          <div className="preview_80g--container-right">
-                            <Button
-                              type="button"
-                              class="Button--transparent"
-                              onClick={this.open80gDetailsModal}
-                            >
-                              <i className="i i-edit-outline" />
-                              Edit
-                            </Button>
-                            <div className="vertical-divider" />
-                            <Button
-                              type="button"
-                              class="Button--transparent"
-                              onClick={this.remove80gDetails}
-                            >
-                              <i className="i i-delete-outline" />
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
+
+                    {this.state.isInputFieldChecked && (
+                      <PowerSelect
+                        class="PowerSelect-PickField ps-in-modal"
+                        placeholder="Choose type of information"
+                        options={this.options}
+                        selected={
+                          this.state.selectedInputField ? this.state.selectedInputField.title : null
+                        }
+                        optionComponent={({ option }) => {
+                          return (
+                            <div>
+                              {option.title}
+                              {option.disabled && <span>(show by default)</span>}
+                            </div>
+                          );
+                        }}
+                        onChange={this.handleInputField}
+                        onBlur={this.trackInputField}
+                        showClear={false}
+                        searchEnabled={false}
+                        disabled={!this.state.isInputFieldChecked}
+                      />
                     )}
                   </div>
-                </div>
 
+                  <div class="settings-section">
+                    <div className="checkbox-container-80g">
+                      <Input.Check
+                        name="enable_80g_details"
+                        fieldLabel={() => (
+                          <div>
+                            <b class="m-r">Show 80G Details on Receipt</b>
+                          </div>
+                        )}
+                        autoRender
+                        onChange={this.handle80GDetails}
+                        checked={this.state.is80GDetailsChecked}
+                        disabled={!text_80g_12a}
+                        defaultChecked={this.state.is80GDetailsChecked}
+                      />
+                      <span className="rzp-tooltip-80g">
+                        <i className="i i-info-outline" />
+                        <Popover align="top" theme="dark" parentQuerySelector=".Modal-body">
+                          <PopoverBody>
+                            <div className="rzp-tooltip-title">For Donations</div>
+                            80G-registered organisations can add their details on receipts to help
+                            donors avail tax benefits
+                          </PopoverBody>
+                        </Popover>
+                      </span>
+                    </div>
+                    <div>
+                      {!text_80g_12a ? (
+                        <Button
+                          type="button"
+                          class="Button--transparent Button--add-80g"
+                          onClick={this.open80gDetailsModal}
+                        >
+                          + Add your 80G details
+                        </Button>
+                      ) : (
+                        <div className="preview_80g">
+                          <div className="preview_80g--text">{text_80g_12a}</div>
+                          <div className="preview_80g--container">
+                            {image_url_80g ? <img src={image_url_80g} alt="signature" /> : <div />}
+                            <div className="preview_80g--container-right">
+                              <Button
+                                type="button"
+                                class="Button--transparent"
+                                onClick={this.open80gDetailsModal}
+                              >
+                                <i className="i i-edit-outline" />
+                                Edit
+                              </Button>
+                              <div className="vertical-divider" />
+                              <Button
+                                type="button"
+                                class="Button--transparent"
+                                onClick={this.remove80gDetails}
+                              >
+                                <i className="i i-delete-outline" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </main>
                 <footer>
                   <Button.Transparent type="button" onClick={props.handleClose}>
                     Cancel
