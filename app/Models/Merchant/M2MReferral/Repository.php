@@ -52,7 +52,7 @@ class Repository extends Base\Repository
     }
     public function fetchMerchantsInReferralState(array $status)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->whereIn(Entity::STATUS, $status)
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)

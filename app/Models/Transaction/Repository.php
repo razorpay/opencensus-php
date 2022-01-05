@@ -528,7 +528,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantsWithFirstTransactionAboveTimestamp(array $merchantIdList, int $timestamp)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
@@ -540,7 +540,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantsWithFirstTransactionBetweenTimestamps(array $merchantIdList, int $from, int $to)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
@@ -558,7 +558,7 @@ class Repository extends Base\Repository
         $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
-        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        $query = $this->newQueryWithConnection($this->getMasterReplicaConnection())
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
@@ -585,7 +585,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeAboveThreshold(
         array $merchantIdList, string $type, int $threshold): array
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)

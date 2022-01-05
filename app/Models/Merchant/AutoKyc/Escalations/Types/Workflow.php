@@ -26,6 +26,7 @@ class Workflow extends BaseEscalationType
         {
             try
             {
+                $this->app['basicauth']->setMerchant($merchant);
                 $entity = $this->triggerWorkflow($merchant);
                 $workflowId = null;
                 if(empty($entity) === false)
