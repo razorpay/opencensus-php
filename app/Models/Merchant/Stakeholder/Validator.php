@@ -183,7 +183,7 @@ class Validator extends Base\Validator
 
         if ($isValid === false)
         {
-            throw new BadRequestValidationFailureException('Not a valid state: '. $value);
+            throw new BadRequestValidationFailureException('Not a valid state: '. $value, Constants::STATE);
         }
     }
 
