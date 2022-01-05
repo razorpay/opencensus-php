@@ -400,21 +400,21 @@ class Service extends Base\Service
         {
             $keyString = explode("|", $key);
 
-            $attribute = $keyString[2] ?? null;
+            $attribute = $keyString[1] ?? null;
 
-            switch ($keyString[1])
+            switch ($keyString[0])
             {
                 case 'merchant':
                     $merchantEditInput[$attribute] = $value;
                     break;
                 case 'merchant_business_detail':
-                    $merchantBusinessDetailEditInput[$attribute] = [$keyString[3] => $value];
+                    $merchantBusinessDetailEditInput[$attribute] = [$keyString[2] => $value];
                     break;
                 case 'documents':
                     $merchantDocumentEditInput[$attribute] = $value;
                     break;
                 default:
-                    $merchantDetailEditInput[$keyString[1]] = $value;
+                    $merchantDetailEditInput[$keyString[0]] = $value;
             }
         }
 

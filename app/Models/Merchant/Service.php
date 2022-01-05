@@ -4440,6 +4440,12 @@ class Service extends Base\Service
             }
         }
 
+        // beautifying subcategory - is required as subcategories from this api needs to be matched to subcategories returned in get_discrepancy_list api.
+        // E.g. sla_ffmc_license will be modified to Sla Ffmc License
+        array_walk($smartDashboardMerchantDetailMap[MerchantConstants::DOCUMENTS], function(& $fieldInfo){
+            $fieldInfo[MerchantConstants::SUBCATEGORY] = ucwords(str_replace('_', ' ', $fieldInfo[MerchantConstants::SUBCATEGORY]));
+        });
+
         return $smartDashboardMerchantDetailMap;
     }
 
@@ -4452,6 +4458,11 @@ class Service extends Base\Service
             if (isset($value) === false)
             {
                 break;
+            }
+
+            if (in_array($v, [Constants::MERCHANT, 'merchant_business_detail', 'documents']))
+            {
+                $value = $value['merchant_details'];
             }
 
             if (is_array($value) === false)

@@ -880,8 +880,9 @@ final class Constants
     const SUBCATEGORY       = 'subcategory';
     const MERCHANT_CATEGORY = 'Merchant Category';
     const MERCHANTNAME      = 'Merchant Name';
-    const PAN_NUMBER        = 'PAN Number';
-    const BUSINESS_DOE      = 'Business DOE';
+    const COMPANY_CIN       = 'Company CIN';
+    const COMPANY_PAN       = 'Company Pan';
+    const BUSINESS_DOE      = 'Business Date of Establishment';
     const CONTACT_NUMBER    = 'Contact Number';
     const BUSINESSTYPE      = 'Business Type';
     const CONTACT_NAME      = 'Contact Name';
@@ -891,7 +892,7 @@ final class Constants
     const PRICING_POLICY    = 'Pricing Policy';
     const TERMS             = 'Terms & Conditions';
     const PRIVACY_POLICY    = 'Privacy Policy';
-    const CONTACT_DETAILS   = 'Contact Details';
+    const WEBSITEDETAILS    = 'Website Details';
     const REFUND_POLICY     = 'Refund Policy';
     const CANCELLATION_POLICY   = 'Cancellation Policy';
     const PLAYSTORE_URL     = 'Playstore URL';
@@ -909,44 +910,44 @@ final class Constants
     const SMART_DASHBOARD_MERCHANT_DETAILS_MAP = [
         self::MERCHANT_DETAILS => [
             [
+                self::SUBCATEGORY => self::BUSINESSTYPE,
+                self::FIELDS      => [
+                    'merchant_details|business_type',
+                ]
+            ],
+            [
                 self::SUBCATEGORY => self::MERCHANT_CATEGORY,
                 self::FIELDS      => [
-                    'merchant_details|merchant|category',
-                    'merchant_details|merchant|category2',
+                    'merchant|category',
+                    'merchant|category2',
                     'merchant_details|business_category',
                     'merchant_details|business_subcategory',
                 ]
             ],
             [
+                self::SUBCATEGORY => self::BUSINESS_DESCRIPTION,
+                self::FIELDS      => [
+                    'merchant_details|business_description',
+                ]
+            ],
+            [
                 self::SUBCATEGORY => self::MERCHANTNAME,
                 self::FIELDS      => [
-                    'merchant_details|merchant|billing_label',
+                    'merchant|billing_label',
                     'merchant_details|business_dba',
                 ]
             ],
             [
-                self::SUBCATEGORY => self::PAN_NUMBER,
+                self::SUBCATEGORY => self::COMPANY_CIN,
                 self::FIELDS      => [
-                    'merchant_details|company_pan',
+                    'merchant_details|company_cin',
                 ]
             ],
             [
-                self::SUBCATEGORY => 'Name on PAN Number',
+                self::SUBCATEGORY => self::COMPANY_PAN,
                 self::FIELDS      => [
                     'merchant_details|company_pan_name',
-                ]
-            ],
-            [
-                self::SUBCATEGORY => self::CONTACT_NUMBER,
-                self::FIELDS      => [
-                    'merchant_details|contact_mobile',
-                    'merchant_details|contact_landline',
-                ]
-            ],
-            [
-                self::SUBCATEGORY => self::BUSINESSTYPE,
-                self::FIELDS      => [
-                    'merchant_details|business_type',
+                    'merchant_details|company_pan',
                 ]
             ],
             [
@@ -962,15 +963,22 @@ final class Constants
                 ]
             ],
             [
+                self::SUBCATEGORY => 'Owner PAN Number',
+                self::FIELDS      => [
+                    'merchant_details|promoter_pan',
+                ]
+            ],
+            [
                 self::SUBCATEGORY => self::CONTACT_NAME,
                 self::FIELDS      => [
                     'merchant_details|contact_name',
                 ]
             ],
             [
-                self::SUBCATEGORY => 'Owner PAN Number',
+                self::SUBCATEGORY => self::CONTACT_NUMBER,
                 self::FIELDS      => [
-                    'merchant_details|promoter_pan',
+                    'merchant_details|contact_mobile',
+                    'merchant_details|contact_landline',
                 ]
             ],
             [
@@ -1004,15 +1012,15 @@ final class Constants
                 ]
             ],
             [
-                self::SUBCATEGORY => self::BUSINESS_DOE,
+                self::SUBCATEGORY => 'Authorised Signatory Date of Birth',
                 self::FIELDS      => [
-                    'merchant_details|business_doe',
+                    'merchant_details|authorized_signatory_dob',
                 ]
             ],
             [
-                self::SUBCATEGORY => self::BUSINESS_DESCRIPTION,
+                self::SUBCATEGORY => self::BUSINESS_DOE,
                 self::FIELDS      => [
-                    'merchant_details|business_description',
+                    'merchant_details|business_doe',
                 ]
             ],
         ],
@@ -1020,7 +1028,7 @@ final class Constants
             [
                 self::SUBCATEGORY => self::WEBSITE_LINK,
                 self::FIELDS      => [
-                    'merchant_details|merchant|website',
+                    'merchant|website',
                     'merchant_details|business_website',
                 ]
             ],
@@ -1028,57 +1036,57 @@ final class Constants
                 self::SUBCATEGORY => self::PRICING_POLICY,
                 self::FIELDS      => [
                     'merchant_details|website_pricing',
-                    'merchant_details|merchant_business_detail|website_details|pricing',
+                    'merchant_business_detail|website_details|pricing',
                 ]
             ],
             [
                 self::SUBCATEGORY => self::TERMS,
                 self::FIELDS      => [
                     'merchant_details|website_terms',
-                    'merchant_details|merchant_business_detail|website_details|terms',
+                    'merchant_business_detail|website_details|terms',
                 ]
             ],
             [
                 self::SUBCATEGORY => self::PRIVACY_POLICY,
                 self::FIELDS      => [
                     'merchant_details|website_privacy',
-                    'merchant_details|merchant_business_detail|website_details|privacy',
+                    'merchant_business_detail|website_details|privacy',
                 ]
             ],
             [
-                self::SUBCATEGORY => self::CONTACT_DETAILS,
+                self::SUBCATEGORY => self::WEBSITEDETAILS,
                 self::FIELDS      => [
                     'merchant_details|website_contact',
-                    'merchant_details|merchant_business_detail|website_details|contact',
+                    'merchant_business_detail|website_details|contact',
                     'merchant_details|website_about',
-                    'merchant_details|merchant_business_detail|website_details|about',
+                    'merchant_business_detail|website_details|about',
                 ]
             ],
             [
                 self::SUBCATEGORY => self::REFUND_POLICY,
                 self::FIELDS      => [
                     'merchant_details|website_refund',
-                    'merchant_details|merchant_business_detail|website_details|refund',
+                    'merchant_business_detail|website_details|refund',
                 ]
             ],
             [
                 self::SUBCATEGORY => self::CANCELLATION_POLICY,
                 self::FIELDS      => [
-                    'merchant_details|merchant_business_detail|website_details|cancellation',
+                    'merchant_business_detail|website_details|cancellation',
                 ]
             ],
             [
                 self::SUBCATEGORY => self::PLAYSTORE_URL,
                 self::FIELDS      => [
                     'merchant_details|playstore_url',
-                    'merchant_details|merchant_business_detail|app_urls|playstore_url',
+                    'merchant_business_detail|app_urls|playstore_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => self::APPSTORE_URL,
                 self::FIELDS      => [
                     'merchant_details|appstore_url',
-                    'merchant_details|merchant_business_detail|app_urls|appstore_url',
+                    'merchant_business_detail|app_urls|appstore_url',
                 ]
             ],
         ],
@@ -1086,276 +1094,276 @@ final class Constants
             [
                 self::SUBCATEGORY => Type::SEBI_REGISTRATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sebi_registration_certificate',
+                    'documents|sebi_registration_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::IRDAI_REGISTRATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|irdai_registration_certificate',
+                    'documents|irdai_registration_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::FFMC_LICENSE,
                 self::FIELDS      => [
-                    'merchant_details|documents|ffmc_license',
+                    'documents|ffmc_license',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::NBFC_REGISTRATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|nbfc_registration_certificate',
+                    'documents|nbfc_registration_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::AMFI_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|amfi_certificate',
+                    'documents|amfi_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SLA_SEBI_REGISTRATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sla_sebi_registration_certificate',
+                    'documents|sla_sebi_registration_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SLA_IRDAI_REGISTRATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sla_irdai_registration_certificate',
+                    'documents|sla_irdai_registration_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SLA_FFMC_LICENSE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sla_ffmc_license',
+                    'documents|sla_ffmc_license',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SLA_NBFC_REGISTRATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sla_nbfc_registration_certificate',
+                    'documents|sla_nbfc_registration_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SLA_AMFI_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sla_amfi_certificate',
+                    'documents|sla_amfi_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SLA_IATA_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|sla_iata_certificate',
+                    'documents|sla_iata_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::AFFILIATION_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|affiliation_certificate',
+                    'documents|affiliation_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::IATA_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|iata_certificate',
+                    'documents|iata_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PPI_LICENSE,
                 self::FIELDS      => [
-                    'merchant_details|documents|ppi_license',
+                    'documents|ppi_license',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::DRIVER_LICENSE_FRONT,
                 self::FIELDS      => [
-                    'merchant_details|documents|driver_license_front',
+                    'documents|driver_license_front',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::DRIVER_LICENSE_BACK,
                 self::FIELDS      => [
-                    'merchant_details|documents|driver_license_back',
+                    'documents|driver_license_back',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::AADHAR_FRONT,
                 self::FIELDS      => [
-                    'merchant_details|documents|aadhar_front',
+                    'documents|aadhar_front',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::AADHAR_BACK,
                 self::FIELDS      => [
-                    'merchant_details|documents|aadhar_back',
+                    'documents|aadhar_back',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::AADHAR_ZIP,
                 self::FIELDS      => [
-                    'merchant_details|documents|aadhar_zip',
+                    'documents|aadhar_zip',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::AADHAR_XML,
                 self::FIELDS      => [
-                    'merchant_details|documents|aadhar_xml',
+                    'documents|aadhar_xml',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PASSPORT_FRONT,
                 self::FIELDS      => [
-                    'merchant_details|documents|passport_front',
+                    'documents|passport_front',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PASSPORT_BACK,
                 self::FIELDS      => [
-                    'merchant_details|documents|passport_back',
+                    'documents|passport_back',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::VOTER_ID_FRONT,
                 self::FIELDS      => [
-                    'merchant_details|documents|voter_id_front',
+                    'documents|voter_id_front',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::VOTER_ID_BACK,
                 self::FIELDS      => [
-                    'merchant_details|documents|voter_id_back',
+                    'documents|voter_id_back',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::CANCELLED_CHEQUE,
                 self::FIELDS      => [
-                    'merchant_details|documents|cancelled_cheque',
+                    'documents|cancelled_cheque',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::BUSINESS_PROOF_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|business_proof_url',
+                    'documents|business_proof_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::BUSINESS_OPERATION_PROOF_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|business_operation_proof_url',
+                    'documents|business_operation_proof_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::BUSINESS_PAN_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|business_pan_url',
+                    'documents|business_pan_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::ADDRESS_PROOF_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|address_proof_url',
+                    'documents|address_proof_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PROMOTER_PROOF_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|promoter_proof_url',
+                    'documents|promoter_proof_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PROMOTER_PAN_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|promoter_pan_url',
+                    'documents|promoter_pan_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PROMOTER_ADDRESS_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|promoter_address_url',
+                    'documents|promoter_address_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::FORM_12A_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|form_12a_url',
+                    'documents|form_12a_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::FORM_80G_URL,
                 self::FIELDS      => [
-                    'merchant_details|documents|form_80g_url',
+                    'documents|form_80g_url',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::MEMORANDUM_OF_ASSOCIATION,
                 self::FIELDS      => [
-                    'merchant_details|documents|memorandum_of_association',
+                    'documents|memorandum_of_association',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::ARTICLE_OF_ASSOCIATION,
                 self::FIELDS      => [
-                    'merchant_details|documents|article_of_association',
+                    'documents|article_of_association',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::BOARD_RESOLUTION,
                 self::FIELDS      => [
-                    'merchant_details|documents|board_resolution',
+                    'documents|board_resolution',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::PERSONAL_PAN,
                 self::FIELDS      => [
-                    'merchant_details|documents|personal_pan',
+                    'documents|personal_pan',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::SHOP_ESTABLISHMENT_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|shop_establishment_certificate',
+                    'documents|shop_establishment_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::GST_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|gst_certificate',
+                    'documents|gst_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::MSME_CERTIFICATE,
                 self::FIELDS      => [
-                    'merchant_details|documents|msme_certificate',
+                    'documents|msme_certificate',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::BANK_STATEMENT,
                 self::FIELDS      => [
-                    'merchant_details|documents|bank_statement',
+                    'documents|bank_statement',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::FIRS_FILE,
                 self::FIELDS      => [
-                    'merchant_details|documents|firs_file',
+                    'documents|firs_file',
                 ]
             ],
             [
                 self::SUBCATEGORY => Type::FIRS_ZIP,
                 self::FIELDS      => [
-                    'merchant_details|documents|firs_zip',
+                    'documents|firs_zip',
                 ]
             ],
         ]
     ];
 
     const immutableSmartDashboardMerchantDetailsFields = [
-        'merchant_details|merchant|category',
-        'merchant_details|merchant|category2',
+        'merchant|category',
+        'merchant|category2',
         'merchant_details|business_category',
         'merchant_details|business_subcategory',
-        'merchant_details|merchant|billing_label',
+        'merchant|billing_label',
         'merchant_details|business_dba',
         'merchant_details|business_type',
     ];

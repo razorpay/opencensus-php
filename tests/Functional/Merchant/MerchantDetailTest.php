@@ -1280,7 +1280,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ],
-        ], $response[MerchantConstants::MERCHANT_DETAILS][5]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][0]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::CONTACT_NUMBER,
@@ -1291,7 +1291,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ]
-        ], $response[MerchantConstants::MERCHANT_DETAILS][4]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][9]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::CONTACT_EMAIL,
@@ -1302,7 +1302,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ]
             ]
-        ], $response[MerchantConstants::MERCHANT_DETAILS][9]);
+        ], $response[MerchantConstants::MERCHANT_DETAILS][10]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::PLAYSTORE_URL,
@@ -1313,7 +1313,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ],
                 [
-                    'name'     => 'merchant_details|merchant_business_detail|app_urls|playstore_url',
+                    'name'     => 'merchant_business_detail|app_urls|playstore_url',
                     'value'    => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
                     'editable' => false
                 ]
@@ -1329,7 +1329,7 @@ We look forward to transacting with you!
                     'editable' => false
                 ],
                 [
-                    'name'     => 'merchant_details|merchant_business_detail|app_urls|appstore_url',
+                    'name'     => 'merchant_business_detail|app_urls|appstore_url',
                     'value'    => 'https://play.google.com/store/apps/details?id=com.dummy123123',
                     'editable' => false
                 ]
@@ -1337,10 +1337,10 @@ We look forward to transacting with you!
         ], $response[MerchantConstants::WEBSITE_DETAILS][8]);
 
         $this->assertArraySelectiveEquals([
-            'subcategory' => 'promoter_address_url',
+            'subcategory' => 'Promoter Address Url',
             'fields'      => [
                 [
-                    'name'     => 'merchant_details|documents|promoter_address_url',
+                    'name'     => 'documents|promoter_address_url',
                     'value'    => [
                         [
                             'file_store_id' => '123123',
