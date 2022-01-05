@@ -867,6 +867,12 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onPaymentDowntimeUpdated(Downtime\Entity $downtime)
+    {
+        $payload = $this->getPaymentDowntimePayload($downtime);
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onPaymentDowntimeResolved(Downtime\Entity $downtime)
     {
         $payload = $this->getPaymentDowntimePayload($downtime);

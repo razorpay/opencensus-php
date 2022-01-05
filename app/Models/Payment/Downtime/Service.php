@@ -254,6 +254,44 @@ class Service extends Base\Service
         }
     }
 
+    public function eventDowntimeUpdated(Entity $downtime, $lastSeverity=null)
+    {
+        try
+        {
+            $merchantIds = [];
+
+            if($downtime->getMerchantId() === null)
+            {
+                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
+            }
+            else
+            {
+                $merchantIds = $this->getMerchantsSubscribingToWebhookEventForMerchant(Event::PAYMENT_DOWNTIME_STARTED, $downtime->getMerchantId());
+            }
+
+            $sendMerchantDowntimesInWebhooks = true;
+
+            foreach ($merchantIds as $merchantId)
+            {
+                $eventPayload = [
+                    ApiEventSubscriber::MAIN        => $downtime,
+                    ApiEventSubscriber::MERCHANT_ID => $merchantId,
+                    ApiEventSubscriber::WITH        => $sendMerchantDowntimesInWebhooks
+                ];
+
+                $this->app['events']->dispatch('api.payment.downtime.updated', $eventPayload);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_DOWNTIME_UPDATED_WEBHOOK_FAILED
+            );
+        }
+    }
+
     public function eventDowntimeResolved(Entity $downtime, $lastSeverity=null)
     {
         $downtimeType = ($downtime->getMerchantId() === null) ? DowntimeService::PLATFORM : DowntimeService::MERCHANT;
@@ -529,6 +567,11 @@ class Service extends Base\Service
         unset($downtimeArrayPublic[Entity::INSTRUMENT_SCHEMA]);
         unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::TYPE]);
         unset($downtimeArrayPublic[Entity::INSTRUMENT][Entity::FLOW]);
+
+        if (($downtimeArrayPublic[Entity::STATUS] === Status::UPDATED))
+        {
+            $downtimeArrayPublic[Entity::STATUS] = Status::STARTED;
+        }
     }
 
     public function getValueFromRedis(string $key)

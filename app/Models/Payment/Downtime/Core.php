@@ -74,9 +74,16 @@ class Core extends Base\Core
         {
             (new Service())->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
 
-            $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
+            $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> $downtime::STATUS, "downtime" => $downtime]);
 
-            PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
+            if((new Service())->shouldSendMerchantDowntimes(Constants::WEBHOOKS) === true)
+            {
+                PaymentDowntimeEvent::dispatch($this->mode, Status::UPDATED, serialize($downtime), $lastSeverity);
+            }
+            else
+            {
+                PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
+            }
 
             (new SlackAppService($this->app))->sendDowntimeRequestToSlack($downtime, Status::STARTED);
         }

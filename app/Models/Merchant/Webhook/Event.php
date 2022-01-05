@@ -62,6 +62,7 @@ class Event
     const FUND_ACCOUNT_VALIDATION_COMPLETED = 'fund_account.validation.completed';
     const FUND_ACCOUNT_VALIDATION_FAILED    = 'fund_account.validation.failed';
     const PAYMENT_DOWNTIME_STARTED          = 'payment.downtime.started';
+    const PAYMENT_DOWNTIME_UPDATED          = 'payment.downtime.updated';
     const PAYMENT_DOWNTIME_RESOLVED         = 'payment.downtime.resolved';
     const PAYOUT_QUEUED                     = 'payout.queued';
     const PAYOUT_INITIATED                  = 'payout.initiated';
@@ -187,6 +188,7 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
         self::FUND_ACCOUNT_VALIDATION_FAILED,
         self::PAYMENT_DOWNTIME_STARTED,
+        self::PAYMENT_DOWNTIME_UPDATED,
         self::PAYMENT_DOWNTIME_RESOLVED,
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
@@ -311,6 +313,7 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_COMPLETED,
         self::FUND_ACCOUNT_VALIDATION_FAILED,
         self::PAYMENT_DOWNTIME_STARTED,
+        self::PAYMENT_DOWNTIME_UPDATED,
         self::PAYMENT_DOWNTIME_RESOLVED,
         self::PAYOUT_QUEUED,
         self::PAYOUT_INITIATED,
@@ -502,6 +505,7 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => 45,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => 46,
         self::SHIPROCKET_PAYMENT_PAGE_PAID_V1             => 47,
+        self::PAYMENT_DOWNTIME_UPDATED                    => 48,
     ];
 
     /**
@@ -554,6 +558,7 @@ class Event
         self::PAYOUT_REVERSED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_FAILED                     => [Product::BANKING],
         self::PAYMENT_DOWNTIME_STARTED          => [Product::PRIMARY],
+        self::PAYMENT_DOWNTIME_UPDATED          => [Product::PRIMARY],
         self::PAYMENT_DOWNTIME_RESOLVED         => [Product::PRIMARY],
         self::PAYOUT_QUEUED                     => [Product::BANKING],
         self::PAYOUT_INITIATED                  => [Product::PRIMARY, Product::BANKING],
@@ -675,6 +680,7 @@ class Event
         self::FUND_ACCOUNT_VALIDATION_COMPLETED => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
         self::FUND_ACCOUNT_VALIDATION_FAILED    => FundAccount\Validation\Entity::PUBLIC_ENTITY_NAME,
         self::PAYMENT_DOWNTIME_STARTED          => Entity::PAYMENT_DOWNTIME,
+        self::PAYMENT_DOWNTIME_UPDATED          => Entity::PAYMENT_DOWNTIME,
         self::PAYMENT_DOWNTIME_RESOLVED         => Entity::PAYMENT_DOWNTIME,
         self::PAYOUT_QUEUED                     => Entity::PAYOUT,
         self::PAYOUT_INITIATED                  => Entity::PAYOUT,

@@ -302,4 +302,17 @@ class Entity extends Base\PublicEntity
             return Status::RESOLVED;
         }
     }
+
+    public function toArrayPublic()
+    {
+        $data = parent::toArrayPublic();
+
+        if ((self::STATUS === Status::STARTED)
+            && (self::CREATED_AT !== self::UPDATED_AT))
+        {
+            $data[self::STATUS] = Status::UPDATED;
+        }
+
+        return $data;
+    }
 }
