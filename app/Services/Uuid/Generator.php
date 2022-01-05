@@ -38,7 +38,8 @@ class Generator
         // and create a unique identifier
         $id = $b62 . $rand;
 
-        assert(strlen($id) === 14);
+        // the id is generated internally. ignoring the usage of assert.
+        assert(strlen($id) === 14); // nosemgrep : php.lang.security.assert-use.assert-use
 
         return $id;
     }

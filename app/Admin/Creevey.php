@@ -226,7 +226,7 @@ class Creevey
         $tempfile = tempnam(storage_path('files'), '');
         if (file_exists($tempfile))
         {
-            unlink($tempfile);
+            unlink($tempfile);  // nosemgrep : php.lang.security.unlink-use.unlink-use
         }
         mkdir($tempfile);
         return $tempfile;
