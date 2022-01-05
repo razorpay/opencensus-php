@@ -13,6 +13,7 @@ class Status
     const ACTIVATED           = 'activated';
     const REJECTED            = 'rejected';
     const ACTIVATED_MCC_PENDING = 'activated_mcc_pending';
+    const ACTIVATED_KYC_PENDING = 'activated_kyc_pending';
 
     /*
      * Allowed next activation statuses mapping
@@ -23,6 +24,7 @@ class Status
         self::NEEDS_CLARIFICATION => [self::UNDER_REVIEW],
         self::REJECTED            => [self::UNDER_REVIEW],
         self::ACTIVATED_MCC_PENDING => [self::NEEDS_CLARIFICATION, self::ACTIVATED],
+        self::ACTIVATED_KYC_PENDING => [self::NEEDS_CLARIFICATION, self::UNDER_REVIEW],
         self::ACTIVATED           => [],
     ];
 
@@ -30,7 +32,8 @@ class Status
         self::INSTANTLY_ACTIVATED,
         self::UNDER_REVIEW,
         self::NEEDS_CLARIFICATION,
-        self::ACTIVATED_MCC_PENDING
+        self::ACTIVATED_MCC_PENDING,
+        self::ACTIVATED_KYC_PENDING
     ];
 
     const END_STATUSES  = [
