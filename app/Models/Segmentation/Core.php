@@ -21,7 +21,7 @@ class Core extends Base\Core
             $response = $this->app->splitzService->createSegment($preSignedUrl, $segmentName);
         } else {
             $segment = $seg_res['response']['segment'];
-            $response = $this->app->splitzService->updateSegment($preSignedUrl, $segmentName,$segment['id']);
+            $response = $this->app->splitzService->updateSegment($preSignedUrl, $segmentName,$segment);
         }
 
         return $response;

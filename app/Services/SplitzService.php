@@ -149,23 +149,32 @@ class SplitzService extends Base\Service
         return $splitzResponse;
     }
 
-    public function updateSegment($preSignedUrl, $segmentName, $id)
+    public function updateSegment($preSignedUrl, $segmentName, $segment)
     {
-        $parameters = $this->getParametersForUpdateSegment($preSignedUrl, $segmentName, $id);
+        $parameters = $this->getParametersForUpdateSegment($preSignedUrl, $segmentName, $segment);
 
         return $this->sendRequest($parameters, self::UPDATE_SEGMENT_URL, Requests::POST);
     }
 
-    private function getParametersForUpdateSegment($presignedUrl, $segmentName, $id): array
+    private function getParametersForUpdateSegment($presignedUrl, $segmentName, $segment): array
     {
-        return [
-            'segment' => [
-                'id'                  => $id,
-                'name'                => $segmentName,
-                'description'         => $segmentName,
-                'signedUrl'           => $presignedUrl,
-                'falsePositivityRate' => static::FALSE_POSITIVITY_RATE
-            ]
+
+        $segmentParams = [
+            'id'                  => $segment['id'],
+            'name'                => $segmentName,
+            'description'         => $segmentName,
+            'signedUrl'           => $presignedUrl,
+            'falsePositivityRate' => static::FALSE_POSITIVITY_RATE
+        ];
+
+        if(isset($segment['source_type']) && $segment['source_type']==='SQL'){
+            $segmentParams['source_type']      = $segment['source_type'];
+            $segmentParams['cron_expression']  = $segment['cron_expression'];
+            $segmentParams['sql_query']        = $segment['sql_query'];
+        }
+
+        return[
+            'segment' => $segmentParams
         ];
     }
 
