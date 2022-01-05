@@ -694,6 +694,16 @@ class InstrumentRequestProxyTest extends TestCase
 
         $testCases = [
             [
+                // smart dashboard razorx
+                self::REQUEST       => [
+                    'url'       => '/terminals/proxy/merchants/1231/smart_dashboard/razorx/admin',
+                    'method'    => \Requests::GET,
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/merchants/1231/smart_dashboard/razorx/admin',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => ''
+            ],
+            [
                 // get discrepancy static list
                 self::REQUEST       => [
                     'url'       => '/terminals/proxy/discrepancy_list',

@@ -2900,6 +2900,7 @@ class Route
         'merchant_instrument_request_update_by_id'          =>  ['patch',   'merchant_instrument_request/{id}',                 'InstrumentRequestController@patchMerchantInstrumentRequestById' ],
         'fetch_merchant_instrument_requests'                       =>  ['post',    'merchant_instrument_request_fetch',                              'InstrumentRequestController@getMerchantInstruments'             ],
 
+        'smart_dashboard_razorx_admin'            => ['get',       'terminals/proxy/merchants/{id}/smart_dashboard/razorx/admin',              'TerminalController@proxyV2TerminalService' ],
         'get_discrepancy_list'                    => ['get',       'terminals/proxy/discrepancy_list',                                         'TerminalController@proxyV2TerminalService' ],
         'get_discrepancy_list_merchant'           => ['get',       'terminals/proxy/discrepancy_list_merchant',                                'TerminalController@proxyV2TerminalService' ],
         'create_iir_discrepancy'                  => ['post',      'terminals/proxy/iir_discrepancies',                                        'TerminalController@proxyV2TerminalService' ],
@@ -5947,6 +5948,7 @@ class Route
         'wfs_config_get_admin',
         'payout_workflow_retry_admin_bulk',
         'payout_wf_config_migrate',
+        'smart_dashboard_razorx_admin',
         'get_discrepancy_list',
         'create_iir_discrepancy',
         'create_iir_discrepancy_bulk',
@@ -7103,6 +7105,7 @@ class Route
         'mir_instrument_set'                          => Permission::UPDATE_MERCHANT_INSTRUMENT,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
 
+        'smart_dashboard_razorx_admin'                => Permission::VIEW_IIR_DISCREPANCY,
         'get_discrepancy_list'                        => Permission::VIEW_IIR_DISCREPANCY,
         'create_iir_discrepancy'                      => Permission::CREATE_IIR_DISCREPANCY,
         'create_iir_discrepancy_bulk'                 => Permission::CREATE_IIR_DISCREPANCY,
@@ -10008,6 +10011,7 @@ class Route
             'pause_internal_instrument_request_by_id',
             'patch_internal_instrument_requests',
             'bulk_cancel_internal_instrument_requests',
+            'smart_dashboard_razorx_admin',
             'get_discrepancy_list',
             'create_iir_discrepancy',
             'create_iir_discrepancy_bulk',
