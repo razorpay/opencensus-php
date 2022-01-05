@@ -322,7 +322,7 @@ export default class AmountWithdraw extends React.Component {
 
     if (maxWithdrawableAmount > this.getMinWithdrawableAmount()) {
       this.setState({
-        withdrawalAmount: maxWithdrawableAmount / 100,
+        withdrawalAmount: Math.trunc(maxWithdrawableAmount / 100),
         selectedDueDate: maxDueDate.endOf('day'),
       });
     }
@@ -342,6 +342,12 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
+  isOnlyNumbers = (value) => {
+    const numberRegex = /^(\d*)?\d+$/;
+    const regexNumbers = new RegExp(numberRegex);
+    return regexNumbers.test(value);
+  };
+
   handleWithdrawalAmountChange = (e) => {
     trackWithdrawAmountUpdated(e.currentTarget.value);
     e.persist();
@@ -352,6 +358,11 @@ export default class AmountWithdraw extends React.Component {
       type: null,
       showReasonCTA: true,
     };
+
+    const eventAmount = e.currentTarget.value;
+    if (!this.isOnlyNumbers(eventAmount)) {
+      errors.push('No Decimals Allowed');
+    }
 
     if (amount > this.getMaxWithdrawableAmount()) {
       errors.push(
@@ -907,7 +918,7 @@ export default class AmountWithdraw extends React.Component {
 
     if (withdrawalErrorType === WITHDRAW_ERROR_TYPES.MIN_WITHDRAWAL_ERROR) {
       props.minWithdrawalAmount = this.getMinWithdrawableAmount();
-    } else {
+    } else if (withdrawalErrorType === WITHDRAW_ERROR_TYPES.MAX_WITHDRAWAL_ERROR) {
       props.maxWithdrawalAmount = this.getMaxWithdrawableAmount();
     }
 
