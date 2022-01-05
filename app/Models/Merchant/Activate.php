@@ -412,8 +412,7 @@ class Activate extends Base\Core
 
         (new Detail\Core)->postFormSubmissionToZapier($zapierData, 'activations', $merchant);
 
-        if (empty($merchant->getEmail() === false))
-        {
+        if($merchant->getEmail() != null){
             $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), [
                 'settlement_enabled' => true
             ]);
