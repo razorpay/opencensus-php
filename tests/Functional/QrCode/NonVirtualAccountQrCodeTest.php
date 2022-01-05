@@ -1431,4 +1431,25 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertEquals('unprocessed', $searchResponse['status']);
     }
+
+    public function testFetchQrCodeByPaymentId()
+    {
+        $qrCode =$this->createQrCode(['type'  => 'upi_qr']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $expectedResponse = $this->testData['testFetchQrCodeByPaymentId'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $this->makeUpiIciciPayment($request);
+        $qrPayment = $this->getDbLastEntityToArray('qr_payment');
+
+        $this->assertArraySelectiveEquals($expectedResponse,
+                                          $this->fetchQrCode(null, ['payment_id' => 'pay_' . $qrPayment['payment_id']]));
+    }
 }

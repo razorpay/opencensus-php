@@ -264,5 +264,18 @@ return [
                 'a' => 'b',
             ],
         ]
-    ]
+    ],
+
+    'testFetchQrCodeByPaymentId' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'name'         => 'Test QR Code',
+                'description'  => 'QR code for tests',
+                'type'         => 'upi_qr',
+                'fixed_amount' => false
+            ]
+        ]
+    ],
 ];

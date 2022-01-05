@@ -4,6 +4,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Models\QrCode;
+use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -173,6 +174,18 @@ class Service extends QrCode\Service
 
     public function fetchMultiple($input)
     {
+        if (array_key_exists(QrPayment\Entity::PAYMENT_ID, $input))
+        {
+            if (count($input) > 1)
+            {
+                $this->trace->info(TraceCode::QR_CODE_FETCH_MULTIPLE_KEYS_SUPPLIED_WITH_PAYMENT_ID, $input);
+            }
+
+            $qrCode = (new Repository())->fetchQrCodeForPaymentId($input[QrPayment\Entity::PAYMENT_ID], $this->merchant->getId());
+
+            return $qrCode->toArrayPublic();
+        }
+
         $input[Entity::ENTITY_TYPE] = 'qr_code';
 
         $qrCodes = (new Repository)->fetch($input, $this->merchant->getId());

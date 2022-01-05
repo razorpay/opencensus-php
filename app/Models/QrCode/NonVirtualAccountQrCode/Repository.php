@@ -4,6 +4,9 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use RZP\Models\Order;
 use RZP\Models\QrCode;
+use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Models\QrPayment;
 use RZP\Models\Base\PublicEntity;
 
 class Repository extends QrCode\Repository
@@ -40,6 +43,24 @@ class Repository extends QrCode\Repository
     public function addQueryParamEntityType($query, $params)
     {
         $query->whereNull(Entity::ENTITY_TYPE);
+    }
+
+    public function fetchQrCodeForPaymentId(string $paymentId, string $merchantId)
+    {
+        $paymentMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+        $qrData            = $this->dbColumn('*');
+        $qrCodeId          = $this->dbColumn(Entity::ID);
+
+        Payment\Entity::verifyIdAndStripSign($paymentId);
+
+        return $this->newQuery()
+                    ->select($qrData)
+                    ->join(Table::QR_PAYMENT, function($join) use ($qrCodeId) {
+                        $join->on($qrCodeId, '=', QrPayment\Entity::QR_CODE_ID);
+                    })
+                    ->where(QrPayment\Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where($paymentMerchantId, '=', $merchantId)
+                    ->get();
     }
 
     public function findActiveQrCodeByOrder(Order\Entity $order)
