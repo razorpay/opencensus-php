@@ -33,4 +33,11 @@ class LocationController extends Controller
     {
         return (new LocationService($this->app))->getStatesByCountry($countryCode);
     }
+
+    public function getAddressSuggestions()
+    {
+        $uri = \Request::fullUrl();
+        $query = explode( "?", $uri, 2)[1];
+        return (new LocationService($this->app))->getAddressSuggestions($query);
+    }
 }

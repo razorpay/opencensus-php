@@ -13,4 +13,11 @@ class LocationServiceTest extends TestCase
         $this->assertNotEmpty($states);
         $this->assertContains(["name" => "Aichi Prefecture", "state_code" => 23], $states);
     }
+
+    public function testGetAddressSuggestions()
+    {
+        $suggestions = (new LocationService($this->app))->getAddressSuggestions("input=Australia&types=geocode");
+        $this->assertNotEmpty($suggestions);
+        $this->assertEquals(["predictions" => [], "status" => "OK"], $suggestions);
+    }
 }

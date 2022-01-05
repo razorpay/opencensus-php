@@ -9,7 +9,8 @@ use RZP\Exception\BadRequestException;
 
 class GoogleMapsClient
 {
-    const BASE_URL = 'https://maps.googleapis.com/maps/api/geocode/json?components=';
+    const BASE_URL_GEOCODE = 'https://maps.googleapis.com/maps/api/geocode/json?components=';
+    const BASE_URL_PLACES  = 'https://maps.googleapis.com/maps/api/place/autocomplete/json?';
 
     protected $apiKey = '';
     /**
@@ -23,6 +24,31 @@ class GoogleMapsClient
 
         $this->apiKey = $app['config']->get('applications.pincodesearch.google_api_key');
         $this->mock = $app['config']->get('applications.pincodesearch.mock') === true;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function fetchAddressSuggestions(string $addressQuery)
+    {
+        if ($this->mock === true)
+        {
+            return [
+                "predictions" => [],
+                "status" => "OK",
+            ];
+        }
+
+        $url = self::BASE_URL_PLACES . $addressQuery . "&key=" . $this->apiKey;
+        $response = Requests::get($url);
+        $json = json_decode($response->body, true);
+
+        if($json['status'] !== 'OK')
+        {
+            throw new \Exception($json['error_message']);
+        }
+
+        return $json;
     }
 
     /**
@@ -44,9 +70,9 @@ class GoogleMapsClient
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
-        
+
         $query = $this->buildQuery($country, $postal_code);
-        $url = self::BASE_URL . $query . "&key=" . $this->apiKey;
+        $url = self::BASE_URL_GEOCODE . $query . "&key=" . $this->apiKey;
 
 
         $response = Requests::get($url);

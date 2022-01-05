@@ -3,14 +3,16 @@
 namespace RZP\Services;
 
 use RZP\Constants\Country;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class LocationService
 {
 
-    const STATES_FILE  = "json/states_by_country.json";
-    const CACHE_PREFIX = "locations:states_by_country";
-    const CACHE_TTL    = 86400 * 60;
+    const STATES_FILE              = "json/states_by_country.json";
+    const CACHE_PREFIX             = "locations:states_by_country";
+    const CACHE_PREFIX_AUTOSUGGEST = "locations:autosuggest";
+    const CACHE_TTL                = 86400 * 60;
 
     protected $cache;
 
@@ -19,9 +21,9 @@ class LocationService
         $this->cache = $app['cache'];
     }
 
-    protected function getCacheKey(string $countryCode): string
+    protected function getCacheKey(string $prefix, string $key): string
     {
-        return sprintf("%s:%s", self::CACHE_PREFIX, $countryCode);
+        return sprintf("%s:%s", $prefix, $key);
     }
 
     /**
@@ -43,7 +45,7 @@ class LocationService
         $this->validateCountryCode($countryCode);
 
         $statesFile = resource_path(self::STATES_FILE);
-        $key = $this->getCacheKey($countryCode);
+        $key = $this->getCacheKey(self::CACHE_PREFIX, $countryCode);
         $states = $this->cache->get($key);
 
         if ($states === null)
@@ -53,11 +55,35 @@ class LocationService
             foreach ($statesJson as $country)
             {
                 $countryCodeStr = strtolower($country['country_code']);
-                $cacheKey = $this->getCacheKey($countryCodeStr);
+                $cacheKey = $this->getCacheKey(self::CACHE_PREFIX, $countryCodeStr);
                 $this->cache->put($cacheKey, $country['states'], self::CACHE_TTL);
             }
         }
 
         return $this->cache->get($key);
+    }
+
+    /**
+     * @throws ServerErrorException
+     */
+    public function getAddressSuggestions(string $addressQuery)
+    {
+        $cacheKey = $this->getCacheKey(self::CACHE_PREFIX_AUTOSUGGEST, $addressQuery);
+        $suggestions = $this->cache->get($cacheKey);
+
+        if ($suggestions === null)
+        {
+            try
+            {
+                $suggestions = (new GoogleMapsClient())->fetchAddressSuggestions($addressQuery);
+                $this->cache->put($cacheKey, $suggestions);
+            }
+            catch (\Exception $e)
+            {
+                throw new ServerErrorException();
+            }
+        }
+
+        return $suggestions;
     }
 }
