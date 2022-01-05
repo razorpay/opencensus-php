@@ -12,6 +12,7 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "opencensus/opencensus": "~0.6",
+        "opencensus/opencensus-exporter-jaeger": "~0.1",
         "predis/predis": "^1.1"
     },
     "require-dev": {

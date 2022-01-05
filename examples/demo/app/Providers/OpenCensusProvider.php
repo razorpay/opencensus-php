@@ -20,7 +20,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use OpenCensus\Trace\Exporter\FileExporter;
+use OpenCensus\Trace\Exporter\JaegerExporter;
 use OpenCensus\Trace\Exporter\StackdriverExporter;
+use OpenCensus\Trace\Exporter\ZipkinExporter;
 use OpenCensus\Trace\Integrations\Grpc;
 
 use OpenCensus\Trace\Integrations\Postgres;
@@ -47,12 +49,17 @@ class OpenCensusProvider extends ServiceProvider
         Grpc::load();
         Postgres::load();
 
-        // Start the request traci ng for this request
-        Tracer::start(new FileExporter('spans.json'));
+        // Start the request tracing for this request
+        $options = [
+            'host' => '127.0.0.1',
+            'port' => 6831,
+            'tags' => [],
+            'client' => null
+        ];
+        Tracer::start(new JaegerExporter('demo-service', $options));
 
         // Create a span that starts from when Laravel first boots (public/index.php)
         Tracer::inSpan(['name' => 'bootstrap', 'startTime' => LARAVEL_START], function () {});
-
 
     }
 }
