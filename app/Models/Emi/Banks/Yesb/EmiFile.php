@@ -84,7 +84,7 @@ class EmiFile extends Base\EmiFile
 
             $data[] = [
                 'EMI ID'                       => $emiPayment->getId(),
-                'Card Pan'                     => $this->getCardNumber($emiPayment->card),
+                'Tokenised Card'               => str_repeat('*', 12) . $emiPayment->card->getLast4(),
                 'Issuer'                       => 'YES',
                 'RRN'                          => $notApplicable,
                 'Auth Code'                    => $this->getAuthCode($emiPayment),
