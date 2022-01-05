@@ -9,11 +9,11 @@ use RZP\Jobs\PaymentDowntime;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'gateway_downtime';
-
     private $SOURCES = ['statuscake','STATUSCAKE','vajra','VAJRA'];
 
     protected $entityFetchParamRules = array(
@@ -70,25 +70,33 @@ class Repository extends Base\Repository
     {
         parent::saveOrFail($entity, $options);
 
-        if((empty($entity['source']) === false) and (isset($entity['source']) === true))
-        {
-            if(in_array($entity['source'], $this->SOURCES))
-            {
-                return;
+        if (($this->sourcePresentinSources($entity)) === true) {
+            // Every update of gateway downtimes table should
+            // queue a refresh of the payment downtimes table
+            $paymentDowntimesEnabled = (bool)ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
+
+            // Will enable on prod after PaymentDowntime logic is more thoroughly tested.
+            if ($paymentDowntimesEnabled === true) {
+                PaymentDowntime::dispatch($this->app['rzp.mode']);
             }
+
         }
-
-        // Every update of gateway downtimes table should
-        // queue a refresh of the payment downtimes table
-        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
-
-        // Will enable on prod after PaymentDowntime logic is more thoroughly tested.
-        if ($paymentDowntimesEnabled === true)
+       try
+       {
+            // we send gatewayDowntime Data to Smart Routing
+            $this->app->smartRouting->sendDowntimesSmartRouting($entity);
+        }
+        catch (\Throwable $ex)
         {
-            PaymentDowntime::dispatch($this->app['rzp.mode']);
-        }
-    }
 
+            $this->trace->error(TraceCode::SMART_ROUTING_DOWNTIME_DATA_ERROR, [
+                "gateway_downtime_data" => $entity,
+                'error'    => $ex->getMessage(),
+            ]);
+
+        }
+
+    }
     public function deleteOrFail($entity)
     {
         parent::deleteOrFail($entity);
@@ -101,6 +109,18 @@ class Repository extends Base\Repository
         if ($paymentDowntimesEnabled === true)
         {
             PaymentDowntime::dispatch($this->app['rzp.mode']);
+        }
+
+        try {
+            // we delete gatewayDowntime Data from Smart Routing
+            $this->app->smartRouting->deleteDowntimesSmartRouting($entity);
+        }
+        catch (\Throwable $ex){
+
+            $this->trace->error(TraceCode::SMART_ROUTING_DOWNTIME_DATA_ERROR, [
+                "gateway_downtime_data" => $entity,
+                "error"    => $ex->getMessage(),
+            ]);
         }
     }
 
@@ -408,5 +428,19 @@ class Repository extends Base\Repository
         return $query->whereNotNull(Entity::END)
             ->where(Entity::BEGIN, '>=', $params[Entity::BEGIN])
             ->get();
+    }
+
+    /**
+     * @param $entity
+     * @return bool
+     */
+    protected function sourcePresentInSources($entity): bool
+    {
+        if ((empty($entity['source']) === false) and (isset($entity['source']) === true) and (in_array($entity['source'], $this->SOURCES) === true)) {
+
+            return false;
+        }
+
+        return true;
     }
 }

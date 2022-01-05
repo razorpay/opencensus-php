@@ -14,6 +14,7 @@ class SmartRouting
     const X_RAZORPAY_MODE           = 'X-Razorpay-Mode';
 
     const REQUEST_TIMEOUT           = 1.5;
+    const REQUEST_DOWNTIME_TIMEOUT  = 0.5;
     const REQUEST_TIMEOUT_ASYNC     = 0.1;
 
     const REQUEST_TIMEOUT_AUTHN     = 0.5;
@@ -61,6 +62,16 @@ class SmartRouting
         'method'    =>  "POST",
     ];
 
+    const  CREATE_GATEWAY_DOWNTIME_DATA = [
+        'url'       => "/create_update_downtime",
+        'method'    => "POST"
+    ];
+
+    const DELETE_GATEWAY_DOWNTIME_DATA = [
+        'url'       => "/resolve_downtime",
+        'method'    => "POST"
+    ];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -81,6 +92,15 @@ class SmartRouting
         return $this->sendRequest(self::SEND_PAYMENT_DATA, $data, null, null,self::REQUEST_TIMEOUT);
     }
 
+    public function createOrUpdateGatewayDowntimeData($data)
+    {
+        return $this->sendRequest(self::CREATE_GATEWAY_DOWNTIME_DATA,$data,null,null,self::REQUEST_DOWNTIME_TIMEOUT);
+    }
+
+    public function deleteGatewayDowntimeData($data)
+    {
+        return $this->sendRequest(self::DELETE_GATEWAY_DOWNTIME_DATA,$data,null,null,self::REQUEST_DOWNTIME_TIMEOUT);
+    }
     public function sendAuthNPaymentData($data)
     {
         return $this->sendRequest(self::SEND_PAYMNENT_AUTHN, $data, null, null,self::REQUEST_TIMEOUT_AUTHN);
@@ -190,7 +210,7 @@ class SmartRouting
         {
             $traceData = $data;
 
-            if (array_key_exists('terminals',$traceData) === true)
+            if ((array_key_exists('scheduled',$traceData) === false) and (array_key_exists('terminals',$traceData) === true))
             {
                 $terminalIds = array_pluck($traceData['terminals'],'id');
 
@@ -200,12 +220,10 @@ class SmartRouting
 
                 $traceData['terminals'] = $terminalIds;
             }
-
-
-            // remove sensitive data from logging
-            unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
-
-
+           if((array_key_exists('scheduled',$traceData) === false) and isset($traceData['scheduled']) === false ) {
+               // remove sensitive data from logging
+               unset($traceData['payment']['email'], $traceData['payment']['contact'], $traceData['payment']['notes']);
+           }
             // checking card key exist or not in array
             if (isset($traceData['payment']['card']) === true)
             {
@@ -273,7 +291,11 @@ class SmartRouting
             {
                 // check curl error, increase retry count if timeout
                 // throw the error if retry count reaches max allowed value
-                if (($retryCount < self::MAX_RETRY_COUNT) and
+                $maxRetryCount=self::MAX_RETRY_COUNT;
+                if (isset($data['scheduled'])==true){
+                    $maxRetryCount = 3;
+                }
+                if (($retryCount < $maxRetryCount) and
                     (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
                 {
                     $this->trace->traceException($e,
@@ -304,12 +326,13 @@ class SmartRouting
 
     protected function checkErrors($response)
     {
+
         $responseBody = json_decode($response->body, true);
 
         $traceResponse = $responseBody;
 
         // checking whether its terminals selection related response or rule crud related response
-        if (array_key_exists('success', $traceResponse) === false)
+        if (( $traceResponse!= null ) and (array_key_exists('success', $traceResponse) === false) and (array_key_exists('scheduled',$traceResponse)==false))
         {
             $newTraceResponse = [];
 
@@ -358,5 +381,61 @@ class SmartRouting
         }
 
         return $url;
+    }
+    /**
+     * @param $entity
+     */
+    public function sendDowntimesSmartRouting($entity): void
+    {
+        if ($entity['gateway'] != "ALL") {
+            $function = "saveOrFail";
+            if (!($entity['scheduled']) and ((isset($entity['end']) === true) and ($entity['end']) > 0)) {
+
+                $this->deleteGatewayDowntimes($entity,$function);
+
+            } else {
+
+                $this->createOrUpdateDowntimes($entity,$function);
+            }
+        }
+    }
+
+    /**
+     * @param $entity
+     */
+    public function createOrUpdateDowntimes($entity,$function): void
+    {
+        $this->createOrUpdateGatewayDowntimeData($entity);
+
+        $this->trace->info(TraceCode::SENDING_DOWNTIME_DATA_TO_SMART_ROUTING, [
+            "gateway_downtime_data" => $entity,
+            "function" => $function,
+            "request" => "createOrUpdate"
+        ]);
+    }
+
+    /**
+     * @param $entity
+     */
+    public function deleteGatewayDowntimes($entity,$function): void
+    {
+        $this->deleteGatewayDowntimeData($entity);
+
+        $this->trace->info(TraceCode::SENDING_DOWNTIME_DATA_TO_SMART_ROUTING, [
+            "gateway_downtime_data" => $entity,
+            "function" => $function,
+            "request" => "delete"
+        ]);
+    }
+
+    /**
+     * @param $entity
+     */
+    public function deleteDowntimesSmartRouting($entity): void
+    {
+        if ($entity['gateway'] != "ALL") {
+            $function = "deleteOrFail";
+            $this->deleteGatewayDowntimes($entity,$function);
+        }
     }
 }
