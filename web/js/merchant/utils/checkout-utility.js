@@ -1,22 +1,17 @@
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 
-const creditsType = (type) => {
-  switch (type) {
-    case 'fee':
-      return 'fee_credit';
-    case 'refund':
-      return 'refund_credit';
-    case 'reserve':
-      return 'reserve_balance';
-    default:
-      return '';
+const fetchOrderId = (type, data) => {
+  if (type === 'current') {
+    return merchantFetch({
+      url: `orders`,
+      method: 'post',
+      data,
+    });
   }
-};
 
-const fetchOrderId = (data) => {
   return merchantFetch({
-    url: `orders`,
+    url: `fund_addition/initialize`,
     method: 'post',
     data,
   });
@@ -31,40 +26,32 @@ const openCheckout = async (
   statusHandler,
 ) => {
   let response = {};
-  const merchant_id = `acc_${user.current}`;
   const amountInPaise = rupeesToPaise(fieldProps.amountInINR);
-  const payload = {
-    amount: amountInPaise,
-    currency: 'INR',
-    payment_capture: 1,
-  };
-  const orderObject =
-    type === 'current'
-      ? payload
-      : {
-          ...payload,
-          transfers: [
-            {
-              amount: amountInPaise,
-              currency: 'INR',
-              account: merchant_id,
-              balance: creditsType(type),
-            },
-          ],
-          notes: {
-            description: fieldProps.description,
-          },
-        };
+  let payload = null;
+
+  if (type === 'current') {
+    payload = {
+      amount: amountInPaise,
+      currency: 'INR',
+      payment_capture: 1,
+    };
+  } else {
+    payload = {
+      type,
+      method: fieldProps.paymentMethod,
+      amount: amountInPaise,
+    };
+  }
 
   try {
-    response = await fetchOrderId(orderObject);
+    response = await fetchOrderId(type, payload);
   } catch (e) {
     statusHandler(e);
     return;
   }
 
   const options = {
-    order_id: response.data.id,
+    order_id: type === 'current' ? response?.data?.id : response?.data?.order_id,
     amount: amountInPaise,
     description: fieldProps.description,
     amountInINR: fieldProps.amountInINR,

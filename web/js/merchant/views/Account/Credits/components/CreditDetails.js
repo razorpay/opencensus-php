@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import Amount from 'common/ui/Amount';
-import { openModal } from 'merchant_common/reducers/modals';
+import { openModal as openModalReducer } from 'merchant_common/reducers/modals';
 import {
   clickHistoryCreditsGA,
   CLICK_ADD_FEE_CREDITS,
@@ -12,11 +12,11 @@ import {
   REFUND_CREDITS_FAILED,
 } from '../ga';
 import ViewCreditHistoryTable from './ViewCreditHistoryTable';
-import AddFundsForm from 'common/ui/AddFundsForm';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchCreditBalance } from 'merchantLA/reducers/credits';
+import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
+import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchantLA/reducers/credits';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
+import AddCredits from './AddCredits';
 
 function CreditDetails({
   title,
@@ -79,12 +79,7 @@ function CreditDetails({
     openModal({
       size: 'small',
       component: (
-        <AddFundsForm
-          type={type}
-          addHandler={addCredits}
-          user={user}
-          statusHandler={statusHandler}
-        />
+        <AddCredits type={type} addHandler={addCredits} user={user} statusHandler={statusHandler} />
       ),
     });
   };
@@ -137,7 +132,14 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ openModal, showNotification, fetchCreditBalance }, dispatch);
+  return bindActionCreators(
+    {
+      openModal: openModalReducer,
+      showNotification: showNotificationReducer,
+      fetchCreditBalance: fetchCreditBalanceReducer,
+    },
+    dispatch,
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CreditDetails);
