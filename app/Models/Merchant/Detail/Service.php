@@ -2436,6 +2436,54 @@ class Service extends Base\Service
         return $publicTncDetails;
     }
 
+    public function getMerchantTncByMerchantId($merchantId): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_TNC_GET_REQUEST, [
+            "merchant_id" => $merchantId
+        ]);
+
+        $merchantDetail = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+        $tnc = $merchantDetail->tnc;
+
+        $merchant = $merchantDetail->merchant;
+
+        $merchantEmail = (new Merchant\Email\Service())->proxyGetSupportDetails($merchant);
+
+        $publicTncDetails = [
+            'link' => (new Merchant\Tnc\Core)->getMerchantTncLink($merchant, $tnc->getId())
+        ];
+
+        foreach (DetailConstants::PUBLIC_TNC_DETAILS as $var => $entities)
+        {
+            foreach ($entities as $entity)
+            {
+                if (empty(${$var}[$entity]) === false)
+                {
+                    $publicTncDetails[$entity] = ${$var}[$entity];
+                }
+                else
+                {
+                    $publicTncDetails[$entity] = null;
+                }
+            }
+        }
+
+        $businessCategory = $merchantDetail[Entity::BUSINESS_CATEGORY];
+
+        $businessSubcategory = $merchantDetail[Entity::BUSINESS_SUBCATEGORY];
+
+        $publicTncDetails[Entity::BUSINESS_CATEGORY] = BusinessCategory::DESCRIPTIONS[$businessCategory];
+
+        $publicTncDetails[Entity::BUSINESS_SUBCATEGORY] = Sub::DESCRIPTIONS[$businessSubcategory];
+
+        $this->trace->info(TraceCode::MERCHANT_TNC_GET_REQUEST_SUCCESS, [
+            "publicTncDetails" => $publicTncDetails
+        ]);
+
+        return $publicTncDetails;
+    }
+
     public function saveMerchantTnc(array $input)
     {
         if ((new Merchant\Detail\Core)->isMerchantTncApplicable($this->merchant) === true)

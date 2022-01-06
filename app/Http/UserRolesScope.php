@@ -686,6 +686,7 @@ class UserRolesScope
             'merchant_tag_map_create'                              => [Role::OWNER, Role::ADMIN],
             'merchant_tag_map_update'                              => [Role::OWNER, Role::ADMIN],
             'merchant_tnc_save'                                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_tnc_details_by_mid'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_tpv_create'                                  => [Role::OWNER, Role::ADMIN],
             'merchant_verify_attributes'                           => [Role::OWNER, Role::ADMIN],
             'merchant_workflow_details'                            => Role::ALL_ROLES,

@@ -2358,6 +2358,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantTncByMerchantId($merchantId)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantTncByMerchantId($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantTnc()
     {
         $input = Request::all();
