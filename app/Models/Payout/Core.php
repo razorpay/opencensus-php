@@ -3938,7 +3938,12 @@ class Core extends Base\Core
                 Attempt\Entity::FUND_TRANSFER_ID    => (int)$payout->getFTSTransferId(),
                 Attempt\Constants::BENEFICIARY_NAME => $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null,
                 Attempt\Entity::BANK_STATUS_CODE    => $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null,
-                Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null
+                Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null,
+                Entity::STATUS_DETAILS              => [
+                    'beneficiary_bank'      => $payout->provideBeneBankName() ?? 'beneficiary bank',
+                    'processed_by_time'     => $statusDetails[Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null,
+                    'reason'                => $statusDetails[Attempt\Entity::REASON] ?? '',
+                ]
             ];
 
             //
