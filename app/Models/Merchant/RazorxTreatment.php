@@ -420,4 +420,7 @@ final class RazorxTreatment
 
     //Experiment for enabling dcc on various libraries
     const DCC_ON_INTERNATIONAL = 'dcc_on_international';
+
+    // experiment to send partner and source details to SF on each lead (sub-merchant) & opportunity creation
+    const SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE = 'send_partner_and_source_details_to_salesforce';
 }

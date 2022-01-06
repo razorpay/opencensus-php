@@ -1358,6 +1358,8 @@ class Service extends Base\Service
             ];
 
             $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+
+            $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partnerId, $referralProduct);
         }
 
         unset($input[Entity::REFERRAL_CODE]);

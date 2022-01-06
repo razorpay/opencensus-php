@@ -3,17 +3,18 @@
 namespace RZP\Services;
 
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Http\Request\Requests;
 use Requests_Exception;
 use Requests_Response;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Http\RequestHeader;
-use RZP\Jobs\SalesforceRequestJob;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
+use RZP\Http\Request\Requests;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Jobs\SalesforceRequestJob;
 use RZP\Exception\BadRequestException;
 
 class SalesForceClient
@@ -178,6 +179,27 @@ class SalesForceClient
         $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_COUPON_REQUEST,
                                   TraceCode::SALESFORCE_COUPON_RESPONSE,
                                   TraceCode::SALESFORCE_COUPON_EXCEPTION
+        );
+    }
+
+    public function sendPartnerLeadInfo(string $merchantId, string $partnerId, string $product, array $extraData = [])
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $leadData = [
+            Merchant\Entity::MERCHANT_ID  => $merchantId,
+            Merchant\Entity::PARTNER_ID   => $partnerId,
+            'source_detail'               => $product
+        ];
+
+        $leadData = array_merge($leadData, array_filter($extraData));
+
+        $this->dispatchRequestJob(
+            $url,
+            $leadData,
+            TraceCode::SALESFORCE_PARTNERSHIP_LEAD_REQUEST,
+            TraceCode::SALESFORCE_PARTNERSHIP_LEAD_RESPONSE,
+            TraceCode::SALESFORCE_PARTNERSHIP_LEAD_EXCEPTION
         );
     }
 

@@ -325,6 +325,8 @@ class Service extends Base\Service
 
         $isLinkedAccount = (bool) ($input['account'] ?? false);
 
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
         $isPartner = $merchant->isPartner();
 
         $hasAggregatorFeature = $merchant->hasAggregatorFeature();
@@ -364,7 +366,7 @@ class Service extends Base\Service
             'merchant_id'  => $output['id'] ?? null,
             'partner_id'   => $merchant->getId(),
             'source'       => $source,
-            'product_group'=> $input[Entity::PRODUCT] ?? Product::PRIMARY
+            'product_group'=> $product
         ];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
@@ -387,6 +389,16 @@ class Service extends Base\Service
         if ($isLinkedAccount === true)
         {
             $this->app->hubspot->trackLinkedAccountCreation($output['email'] ?? null);
+        }
+        else if (isset($output['id']) === true)
+        {
+            $partnerLeadData = [
+                MerchantDetail::CONTACT_NAME    => $output['name'] ?? null,
+                Entity::EMAIL                   => $output['email'] ?? null,
+                MerchantDetail::CONTACT_MOBILE  => $output['user']['contact_mobile'] ?? null
+            ];
+
+            $this->core()->sendPartnerLeadInfoToSalesforce($output['id'], $merchant->getId(), $product, $partnerLeadData);
         }
 
         $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);

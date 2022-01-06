@@ -1970,6 +1970,57 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    public function testPutPreSignupDetailsWithPartnerCouponCodeForBanking()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $promotionAttributes = [
+            'partner_id' => self::DEFAULT_MERCHANT_ID,
+            'product' => 'banking'
+        ];
+
+        $promotion = $this->fixtures->on('live')->create('promotion:onetime', $promotionAttributes);
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code'        => 'RANDOM',
+        ];
+
+        $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID], [], 'owner', 'live');
+
+        $razorxMock = $this->getMockBuilder(Core::class)
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $razorxMock->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        $this->mockSalesforceEventTracked('sendPartnerLeadInfo');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail[MerchantDetails::MERCHANT_ID], $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantPromotion = $this->getDbEntity('merchant_promotion',
+            [
+                'merchant_id' => $merchantDetail[MerchantDetails::MERCHANT_ID]
+            ], 'live')
+            ->toArray();
+
+        $this->assertSame(1, $merchantPromotion['remaining_iterations']);
+    }
+
     public function testBulkAssignReviewer()
     {
         $this->ba->adminAuth();
@@ -2591,9 +2642,19 @@ We look forward to transacting with you!
             'business_type' => 2
         ]);
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId);
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($referredSubMerchantId);
 
         $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+
+        $razorxMock = $this->getMockBuilder(Core::class)
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $razorxMock->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        $this->mockSalesforceEventTracked('sendPartnerLeadInfo');
 
         $this->startTest();
 

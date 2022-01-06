@@ -5734,6 +5734,38 @@ class Core extends Base\Core
         }
     }
 
+    public function sendPartnerLeadInfoToSalesforce(string $merchantId, string $partnerId, string $product, array $extraData = [])
+    {
+        $merchantId = Account\Entity::SilentlyStripSign($merchantId);
+
+        $isExpEnabled = $this->isRazorxExperimentEnable($merchantId,
+            RazorxTreatment::SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE);
+
+        // send only X leads
+        if (($product !== Product::BANKING) or ($isExpEnabled !== true))
+        {
+            return;
+        }
+
+        try
+        {
+            $this->app->salesforce->sendPartnerLeadInfo($merchantId, $partnerId, $product, $extraData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB,
+                [
+                    Entity::MERCHANT_ID => $merchantId,
+                    Entity::PARTNER_ID  => $partnerId,
+                    Entity::PRODUCT     => $product
+                ]
+            );
+        }
+    }
+
     public function isRegularMerchant(Entity $merchant): bool
     {
         // RazorpayX

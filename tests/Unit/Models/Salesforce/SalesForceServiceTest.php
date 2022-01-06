@@ -2,14 +2,14 @@
 
 namespace RZP\Tests\Unit\Models\SalesForceServiceTest;
 
-use PHPUnit\Framework\TestCase as TestCase;
 use RZP\Models\Merchant\Entity;
+use RZP\Services\SalesForceClient;
+use RZP\Models\SalesForce\SalesForceService;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\SalesForce\SalesForceEventRequestDTO;
 use RZP\Models\SalesForce\SalesForceEventRequestType;
-use RZP\Models\SalesForce\SalesForceService;
-use RZP\Services\SalesForceClient;
 
-class SalesForceServiceTest extends TestCase {
+class SalesForceServiceTest extends OAuthTestCase {
 
     private $salesForceService;
     private $salesForceClient;

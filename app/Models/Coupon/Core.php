@@ -342,14 +342,18 @@ class Core extends Base\Core
 
         if (empty($partner) === false)
         {
-            (new Merchant\Core)->createPartnerSubmerchantAccessMap($partner, $merchant);
+            $merchantCore = new Merchant\Core;
+
+            $merchantCore->createPartnerSubmerchantAccessMap($partner, $merchant);
+
+            $product = $promotion->getProduct() ?? Product::PRIMARY;
 
             $data = [
                 'status'       => 'success',
                 'merchant_id'  => $merchant->getId(),
                 'partner_id'   => $partner->getId(),
                 'source'       => PartnerConstants::COUPON,
-                'product_group'=> $promotion->getProduct() ?? Product::PRIMARY
+                'product_group'=> $product
             ];
 
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
@@ -369,6 +373,8 @@ class Core extends Base\Core
             ];
 
             $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+
+            $merchantCore->sendPartnerLeadInfoToSalesforce($merchant->getId(), $partner->getId(), $product);
         }
     }
 }

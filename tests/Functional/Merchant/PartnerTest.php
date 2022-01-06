@@ -16,6 +16,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Services\SalesForceClient;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -1598,6 +1599,16 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth();
 
+        $razorxMock = $this->getMockBuilder(Merchant\Core::class)
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $razorxMock->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        $this->mockSalesForce('sendPartnerLeadInfo', 1);
+
         $response = $this->startTest();
 
         // fetch submerchant id from response (ignoring prefix acc_)
@@ -2595,5 +2606,16 @@ class PartnerTest extends OAuthTestCase
                 'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
             ]
         );
+    }
+
+    private function mockSalesForce(string $method, int $count)
+    {
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        $salesforceClientMock->expects($this->exactly($count))->method($method);
     }
 }
