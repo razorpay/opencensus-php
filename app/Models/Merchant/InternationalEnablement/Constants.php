@@ -21,4 +21,8 @@ class Constants
     const IEDocumentDownloadLink  = '/admin/api/%s/admin-ufh/%s/files/file_%s/get-signed-url';
 
     const IE_RAZORX_FEATURE = 'international_enablement_new_flow';
+
+    const INTERNATIONAL_CARDS_ENABLED = 'international_cards_enabled';
+    const INTERNATIONAL_ACTIVATION_FORM_INITIATED= 'international_activation_form_initiated';
+    const INTERNATIONAL_ACTIVATION_FORM_COMPLETED = 'international_activation_form_completed';
 }

@@ -220,6 +220,10 @@ class InternationalEnablementTest extends TestCase
 
         $this->startTest($testData);
 
+        $testData = $this->testData['testInternationalVisibilityWithoutDocuments'];
+
+        $this->startTest($testData);
+
         // submit - (with digital services and not accepting intl transaction)
 
         $testData = $this->testData['testSubmitValidUseCase1'];
@@ -237,6 +241,10 @@ class InternationalEnablementTest extends TestCase
         $this->startTest($testData);
 
         $testData = $this->testData['testPreviewForSubmit'];
+
+        $this->startTest($testData);
+
+        $testData = $this->testData['testInternationalVisibility'];
 
         $this->startTest($testData);
     }

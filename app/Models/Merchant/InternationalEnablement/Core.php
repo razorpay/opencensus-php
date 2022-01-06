@@ -61,7 +61,7 @@ class Core extends Base\Core
 
         $newDetailEntity = $this->repo->transaction(function() use ($input, $documents, $action)
         {
-            list($oldDetailEntity, $newDetailEntity) = 
+            list($oldDetailEntity, $newDetailEntity) =
                 (new Detail\Core)->upsert($input, $action);
 
             if (is_null($documents) === true)
@@ -206,5 +206,30 @@ class Core extends Base\Core
         $publicAttributes['documents'] = $documents;
 
         return $publicAttributes;
+    }
+
+    /**
+     * This returns enablement form data required for international visibility,
+     * for a merchant.
+     * @return array
+     */
+    public function getInternationalEnablementDetail(): array
+    {
+        $detailEntity = (new Detail\Core)->getLatest();
+
+        $internationalFormCompleted = false;
+        $internationalFormInitiated = false;
+
+        if (is_null($detailEntity) === false)
+        {
+            $internationalFormCompleted = $detailEntity->isSubmitted();
+            $internationalFormInitiated = !$internationalFormCompleted;
+        }
+
+        return [
+            Constants::INTERNATIONAL_CARDS_ENABLED              => $internationalFormCompleted,
+            Constants::INTERNATIONAL_ACTIVATION_FORM_INITIATED  => $internationalFormInitiated,
+            Constants::INTERNATIONAL_ACTIVATION_FORM_COMPLETED  => $internationalFormCompleted,
+        ];
     }
 }

@@ -253,4 +253,28 @@ class Service extends Base\Service
                 $errors);
         }
     }
+
+    /**
+     * This returns data required for international visibility
+     * for a merchant.
+     * @return array
+     */
+    public function getInternationalVisibilityInfo(): array
+    {
+        $data =  $this->core()->getInternationalEnablementDetail();
+
+        $merchantMethods = $this->merchant->getMethods();
+        $paypalEnabled = false;
+
+        if($merchantMethods !== null &&
+            empty($merchantMethods) === false &&
+            isset($merchantMethods['paypal']))
+        {
+            $paypalEnabled = $merchantMethods['paypal'];
+        }
+
+        $data['paypal'] = $paypalEnabled;
+
+        return $data;
+    }
 }

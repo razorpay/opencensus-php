@@ -45,4 +45,11 @@ class MerchantInternationalEnablementController extends Controller
 
         return ApiResponse::json(['status' => 'success']);
     }
+
+    public function getInternationalVisibilityInfo()
+    {
+        $data = $this->service()->getInternationalVisibilityInfo();
+
+        return ApiResponse::json($data);
+    }
 }

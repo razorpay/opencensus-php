@@ -13,11 +13,11 @@ return [
                 'goods_type'         => 'physical_goods',
                 'allowed_currencies' => [
                    'INR',
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
-                'business_txn_size_max'               => 20000, 
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
+                'business_txn_size_max'               => 20000,
                 'accepts_intl_txns'                   => 0,
                 'about_us_link'                       => 'https://www.test.com',
                 'contact_us_link'                     => 'https://www.test.com',
@@ -30,31 +30,31 @@ return [
         'response'  => [
             'status_code' => 200,
             'content'     => [
-                'goods_type'         => 'physical_goods', 
-                'business_use_case'  => null, 
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => null,
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => null, 
-                'privacy_policy_link'                 => null, 
-                'refund_and_cancellation_policy_link' => null, 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => null, 
-                'customer_info_collected'             => null, 
-                'partner_details_plugins'             => null, 
-                'accepts_intl_txns'                   => false, 
-                'import_export_code'                  => null, 
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => null,
+                'privacy_policy_link'                 => null,
+                'refund_and_cancellation_policy_link' => null,
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => null,
+                'customer_info_collected'             => null,
+                'partner_details_plugins'             => null,
+                'accepts_intl_txns'                   => false,
+                'import_export_code'                  => null,
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => null,
             ],
         ],
@@ -73,14 +73,14 @@ return [
                 'documents' => [
                     'ie_code' => [
                         [
-                            'id'           => 'doc_10000011111111', 
+                            'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
                         ],
                     ],
                     'others' => [
                         'custom_type_1' => [
                             [
-                                'id'           => 'doc_10000011111112', 
+                                'id'           => 'doc_10000011111112',
                                 'display_name' => 'display_name_2',
                             ],
                         ],
@@ -91,43 +91,43 @@ return [
         'response'  => [
             'status_code' => 200,
             'content'     => [
-                'goods_type'         => 'physical_goods', 
-                'business_use_case'  => null, 
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => null,
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 1500, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
-                'business_txn_size_max'               => 20000, 
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => null, 
-                'terms_and_conditions_link'           => null, 
-                'privacy_policy_link'                 => null, 
-                'refund_and_cancellation_policy_link' => null, 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => null, 
-                'customer_info_collected'             => null, 
-                'partner_details_plugins'             => null, 
-                'accepts_intl_txns'                   => true, 
-                'import_export_code'                  => null, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 1500,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
+                'business_txn_size_max'               => 20000,
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => null,
+                'terms_and_conditions_link'           => null,
+                'privacy_policy_link'                 => null,
+                'refund_and_cancellation_policy_link' => null,
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => null,
+                'customer_info_collected'             => null,
+                'partner_details_plugins'             => null,
+                'accepts_intl_txns'                   => true,
+                'import_export_code'                  => null,
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => [
                     'ie_code' => [
                         [
-                            'id'           => 'doc_10000011111111', 
-                            'display_name' => 'display_name_1' 
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1'
                         ],
                    ],
                    'others' => [
                         'custom_type_1' => [
                             [
-                                'id'           => 'doc_10000011111112', 
-                                'display_name' => 'display_name_2' 
+                                'id'           => 'doc_10000011111112',
+                                'display_name' => 'display_name_2'
                             ],
                         ],
                     ],
@@ -144,12 +144,12 @@ return [
                 'goods_type'         => 'physical_goods',
                 'allowed_currencies' => [
                    'INP',
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
-                'business_txn_size_max'               => 20000, 
-                'accepts_intl_txns'                   => 0,  
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
+                'business_txn_size_max'               => 20000,
+                'accepts_intl_txns'                   => 0,
                 'products' => [
                    'payment_gateway',
                 ],
@@ -232,45 +232,45 @@ return [
                 'documents' => [
                     'ie_code' => [
                         [
-                            'id'           => 'doc_10000011111111', 
-                            'display_name' => 'display_name_1' 
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1'
                         ],
                         [
-                            'id'           => 'doc_10000011111111', 
-                            'display_name' => 'display_name_1' 
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1'
                         ],
                         [
-                            'id'           => 'doc_10000011111111', 
-                            'display_name' => 'display_name_1' 
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1'
                         ],
                         [
-                            'id'           => 'doc_10000011111111', 
-                            'display_name' => 'display_name_1' 
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1'
                         ],
                     ],
                     'others' => [
                         'custom_type_1' => [
                             [
-                                'id'           => 'doc_10000011111112', 
-                                'display_name' => 'display_name_2' 
+                                'id'           => 'doc_10000011111112',
+                                'display_name' => 'display_name_2'
                             ],
                             [
-                                'id'           => 'doc_10000011111112', 
-                                'display_name' => 'display_name_2' 
+                                'id'           => 'doc_10000011111112',
+                                'display_name' => 'display_name_2'
                             ],
                             [
-                                'id'           => 'doc_10000011111112', 
-                                'display_name' => 'display_name_2' 
+                                'id'           => 'doc_10000011111112',
+                                'display_name' => 'display_name_2'
                             ],
                             [
-                                'id'           => 'doc_10000011111112', 
-                                'display_name' => 'display_name_2' 
+                                'id'           => 'doc_10000011111112',
+                                'display_name' => 'display_name_2'
                             ],
                         ],
                         'custom_type_2' => [
                             [
-                                'id'           => '10000011111112', 
-                                'display_name' => 'display_name_2' 
+                                'id'           => '10000011111112',
+                                'display_name' => 'display_name_2'
                             ],
                         ],
                     ],
@@ -344,31 +344,31 @@ return [
         'response'  => [
             'status_code' => 200,
             'content'     => [
-                'goods_type'         => 'physical_goods', 
-                'business_use_case'  => null, 
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => null,
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
                 'contact_us_link'                     => 'https://www.test.com',
-                'terms_and_conditions_link'           => null, 
-                'privacy_policy_link'                 => null, 
-                'refund_and_cancellation_policy_link' => null, 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => null, 
-                'customer_info_collected'             => null, 
-                'partner_details_plugins'             => null, 
-                'accepts_intl_txns'                   => false, 
-                'import_export_code'                  => null, 
+                'terms_and_conditions_link'           => null,
+                'privacy_policy_link'                 => null,
+                'refund_and_cancellation_policy_link' => null,
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => null,
+                'customer_info_collected'             => null,
+                'partner_details_plugins'             => null,
+                'accepts_intl_txns'                   => false,
+                'import_export_code'                  => null,
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => null,
             ],
         ],
@@ -382,31 +382,31 @@ return [
         'response'  => [
             'status_code' => 200,
             'content'     => [
-                'goods_type'         => 'digital_services', 
-                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test', 
+                'goods_type'         => 'digital_services',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => 'https://www.test.com', 
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
                 'privacy_policy_link'                 => 'https://www.test.com',
-                'refund_and_cancellation_policy_link' => 'https://www.test.com', 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => ['test_1'], 
-                'customer_info_collected'             => ['test_1'], 
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
                 'partner_details_plugins'             => ['test_1'],
-                'accepts_intl_txns'                   => false, 
-                'import_export_code'                  => '1234567891', 
+                'accepts_intl_txns'                   => false,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => null,
             ],
         ],
@@ -451,62 +451,62 @@ return [
             'url'     => '/international_enablement/submit',
             'method'  => 'POST',
             'content' => [
-                'goods_type'         => 'digital_services', 
-                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test', 
+                'goods_type'         => 'digital_services',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => 'https://www.test.com', 
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
                 'privacy_policy_link'                 => 'https://www.test.com',
-                'refund_and_cancellation_policy_link' => 'https://www.test.com', 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => ['test_1'], 
-                'customer_info_collected'             => ['test_1'], 
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
                 'partner_details_plugins'             => ['test_1'],
-                'accepts_intl_txns'                   => 0, 
-                'import_export_code'                  => '1234567891', 
+                'accepts_intl_txns'                   => 0,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => null,
             ],
         ],
         'response'  => [
             'status_code' => 200,
             'content'     => [
-                'goods_type'         => 'digital_services', 
-                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test', 
+                'goods_type'         => 'digital_services',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => 'https://www.test.com', 
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
                 'privacy_policy_link'                 => 'https://www.test.com',
-                'refund_and_cancellation_policy_link' => 'https://www.test.com', 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => ['test_1'], 
-                'customer_info_collected'             => ['test_1'], 
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
                 'partner_details_plugins'             => ['test_1'],
-                'accepts_intl_txns'                   => false, 
-                'import_export_code'                  => '1234567891', 
+                'accepts_intl_txns'                   => false,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => null,
             ],
         ],
@@ -517,43 +517,43 @@ return [
             'url'     => '/international_enablement/submit',
             'method'  => 'POST',
             'content' => [
-                'goods_type'         => 'physical_goods', 
-                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test', 
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => 'dhl', 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => 'https://www.test.com', 
+                'logistic_partners'                   => 'dhl',
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
                 'privacy_policy_link'                 => 'https://www.test.com',
-                'refund_and_cancellation_policy_link' => 'https://www.test.com', 
-                'shipping_policy_link'                => 'https://www.test.com', 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => ['test_1'], 
-                'customer_info_collected'             => ['test_1'], 
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => 'https://www.test.com',
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
                 'partner_details_plugins'             => ['test_1'],
-                'accepts_intl_txns'                   => 1, 
-                'import_export_code'                  => '1234567891', 
+                'accepts_intl_txns'                   => 1,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_links',
                    'payment_pages',
                    'invoices',
-                ], 
+                ],
                 'documents' => [
                     'bank_statement_inward_remittance' => [
                         [
-                            'id'           => 'doc_10000011111111', 
+                            'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
                         ],
                     ],
                     'current_payment_partner_settlement_record' => [
                         [
-                            'id'           => 'doc_10000011111111', 
+                            'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
                         ],
                     ],
@@ -563,43 +563,43 @@ return [
         'response'  => [
             'status_code' => 200,
             'content'     => [
-                'goods_type'         => 'physical_goods', 
-                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test', 
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => 'dhl', 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => 'https://www.test.com', 
+                'logistic_partners'                   => 'dhl',
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
                 'privacy_policy_link'                 => 'https://www.test.com',
-                'refund_and_cancellation_policy_link' => 'https://www.test.com', 
-                'shipping_policy_link'                => 'https://www.test.com', 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => ['test_1'], 
-                'customer_info_collected'             => ['test_1'], 
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => 'https://www.test.com',
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
                 'partner_details_plugins'             => ['test_1'],
-                'accepts_intl_txns'                   => true, 
-                'import_export_code'                  => '1234567891', 
+                'accepts_intl_txns'                   => true,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_links',
                    'payment_pages',
                    'invoices',
-                ], 
+                ],
                 'documents' => [
                     'bank_statement_inward_remittance' => [
                         [
-                            'id'           => 'doc_10000011111111', 
+                            'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
                         ],
                     ],
                     'current_payment_partner_settlement_record' => [
                         [
-                            'id'           => 'doc_10000011111111', 
+                            'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
                         ],
                     ],
@@ -613,31 +613,31 @@ return [
             'url'     => '/international_enablement/submit',
             'method'  => 'POST',
             'content' => [
-                'goods_type'         => 'physical_goods', 
-                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test', 
+                'goods_type'         => 'physical_goods',
+                'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
                 'allowed_currencies' => [
-                   'INR' 
-                ], 
-                'monthly_sales_intl_cards_min'        => 2000, 
-                'monthly_sales_intl_cards_max'        => 4000, 
-                'business_txn_size_min'               => 10000, 
+                   'INR'
+                ],
+                'monthly_sales_intl_cards_min'        => 2000,
+                'monthly_sales_intl_cards_max'        => 4000,
+                'business_txn_size_min'               => 10000,
                 'business_txn_size_max'               => 20000,
-                'logistic_partners'                   => null, 
-                'about_us_link'                       => 'https://www.test.com', 
-                'contact_us_link'                     => 'https://www.test.com', 
-                'terms_and_conditions_link'           => 'https://www.test.com', 
+                'logistic_partners'                   => null,
+                'about_us_link'                       => 'https://www.test.com',
+                'contact_us_link'                     => 'https://www.test.com',
+                'terms_and_conditions_link'           => 'https://www.test.com',
                 'privacy_policy_link'                 => 'https://www.test.com',
-                'refund_and_cancellation_policy_link' => 'https://www.test.com', 
-                'shipping_policy_link'                => null, 
-                'social_media_page_link'              => null, 
-                'existing_risk_checks'                => ['test_1'], 
-                'customer_info_collected'             => ['test_1'], 
+                'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                'shipping_policy_link'                => null,
+                'social_media_page_link'              => null,
+                'existing_risk_checks'                => ['test_1'],
+                'customer_info_collected'             => ['test_1'],
                 'partner_details_plugins'             => ['test_1'],
-                'accepts_intl_txns'                   => 1, 
-                'import_export_code'                  => '1234567891', 
+                'accepts_intl_txns'                   => 1,
+                'import_export_code'                  => '1234567891',
                 'products' => [
                    'payment_gateway',
-                ], 
+                ],
                 'documents' => null,
             ],
         ],
@@ -670,7 +670,7 @@ return [
                 'request' => [
                     'content' => [
                         'logistic_partners'    => 'dhl',
-                        'shipping_policy_link' => 'https://www.test.com', 
+                        'shipping_policy_link' => 'https://www.test.com',
                     ]
                 ],
                 'response'  => [
@@ -727,6 +727,38 @@ return [
                 'enablement_progress'   => 'submitted',
                 'percentage_completion' => 100,
                 'new_flow'              => true,
+            ],
+        ],
+    ],
+
+    'testInternationalVisibility' => [
+        'request'   => [
+            'url'     => '/international_enablement/visibility',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'     => [
+                'international_cards_enabled'               => true,
+                'international_activation_form_initiated'   => false,
+                'international_activation_form_completed'   => true,
+                'paypal'                                    => false,
+            ],
+        ],
+    ],
+
+    'testInternationalVisibilityWithoutDocuments' => [
+        'request'   => [
+            'url'     => '/international_enablement/visibility',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'     => [
+                'international_cards_enabled'               => false,
+                'international_activation_form_initiated'   => true,
+                'international_activation_form_completed'   => false,
+                'paypal'                                    => false,
             ],
         ],
     ],

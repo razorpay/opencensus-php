@@ -3052,6 +3052,11 @@ class Route
             'international_enablement/preview',
             'MerchantInternationalEnablementController@preview',
         ],
+        'merchant_international_visibility_info' => [
+            'get',
+            'international_enablement/visibility',
+            'MerchantInternationalEnablementController@getInternationalVisibilityInfo',
+        ],
         'merchant_international_enablement_get' => [
             'get',
             'international_enablement',
@@ -5123,6 +5128,7 @@ class Route
         'merchant_toggle_fee_bearer',
 
         'merchant_international_enablement_preview',
+        'merchant_international_visibility_info',
         'merchant_international_enablement_get',
         'merchant_international_enablement_draft',
         'merchant_international_enablement_submit',
@@ -8986,6 +8992,7 @@ class Route
             'banking_account_slot_reschedule',
             'bbps_bill_payments',
             'merchant_international_enablement_preview',
+            'merchant_international_visibility_info',
             'merchant_international_enablement_get',
             'merchant_international_enablement_draft',
             'merchant_international_enablement_submit',
@@ -10846,6 +10853,7 @@ class Route
             'complete_submerchant_onboarding',
 
             'merchant_international_enablement_preview',
+            'merchant_international_visibility_info',
             'merchant_international_enablement_get',
             'merchant_international_enablement_draft',
             'merchant_international_enablement_submit',

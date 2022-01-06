@@ -358,6 +358,7 @@ class UserRolesScope
             'merchant_get_tags'                             => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_ADMIN, Role::LINKED_ACCOUNT_OWNER],
             'merchant_instrument_status_get_by_merchant_id' => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'merchant_international_enablement_preview'     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
+            'merchant_international_visibility_info'        => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE],
             'merchant_partner_configs_fetch'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::RBL_SUPERVISOR,],
             'merchant_razorx_bulk_evaluate'                 => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
             'merchant_razorx_evaluate'                      => array_merge(Role::allExceptPaymentLinkRoles(), Role::LINKED_ACCOUNT_ROLES),
