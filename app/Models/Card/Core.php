@@ -72,7 +72,12 @@ class Core extends Base\Core
             Card\Entity::EXPIRY_YEAR        => '9999',
         ];
 
-        if(empty($response['service_provider_tokens']) === false)
+        if ($this->isPresent($input, Card\Entity::NAME))
+        {
+            $createInput[Card\Entity::NAME] = $input[Card\Entity::NAME];
+        }
+
+        if (empty($response['service_provider_tokens']) === false)
         {
             $createInput[Card\Entity::VAULT] = strtolower($response['service_provider_tokens'][0]['provider_name']);
 
@@ -627,7 +632,7 @@ class Core extends Base\Core
             Card\Entity::TOKENISED        => 1,
             Card\Entity::VAULT            => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL  => false,
-            Card\Entity::CVV              => $input['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::CVV              => $input['card']['cvv'] ?? "123", // adding dummy cvv
             Card\Entity::TOKEN_PROVIDER   => 'Razorpay',
         ];
 

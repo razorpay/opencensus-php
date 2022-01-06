@@ -6420,6 +6420,7 @@ trait Authorize
                 'expiry_year'                     => $input['card']['expiry_year'] ?? "9999",
                 'emi'                             => $input['card']['emi'] ?? false,
                 'iin'                             => $input['card']['iin'] ?? 0,
+                'name'                            => $input['card']['name'] ?? null,
                 'authentication_reference_number' => $authReferenceNumber,
             ];
 
