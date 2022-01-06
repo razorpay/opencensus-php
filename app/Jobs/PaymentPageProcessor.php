@@ -69,12 +69,18 @@ class PaymentPageProcessor extends Job
     {
         parent::handle();
 
-        $handler = "handle" . Str::studly(Str::lower($this->event));
-
         $context = [
             'mode'  => $this->mode,
             'event' => $this->event
         ];
+
+        // time taken in milliseconds for a worker to pick job
+        $timeTakenToPickJobInMilliSecs  =  millitime() - $this->params->get('start_time');
+
+        $this->trace->histogram(PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB,
+            $timeTakenToPickJobInMilliSecs, $context);
+
+        $handler = "handle" . Str::studly(Str::lower($this->event));
 
         if (! method_exists($this, $handler))
         {
@@ -86,7 +92,15 @@ class PaymentPageProcessor extends Job
 
         $this->$handler();
 
+        $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_COUNT_TOTAL, $context);
+
         $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_COMPLETED, $context);
+
+        // total time taken to create PH since job was pushed to queue
+        $totalTimeTakenToCreatePH = millitime() - $this->params->get('start_time');
+
+        $this->trace->histogram(PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TOTAL_TIME_TO_COMPLETE_JOB,
+            $totalTimeTakenToCreatePH, $context);
     }
 
     protected function handlePaymentCaptureEvent()

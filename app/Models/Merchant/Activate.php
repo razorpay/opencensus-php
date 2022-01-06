@@ -137,6 +137,7 @@ class Activate extends Base\Core
         PaymentPageProcessor::dispatch(Mode::LIVE, [
             'event'     => PaymentPageProcessor::PAYMENT_HANDLE_CREATION,
             'merchant_id'  => $merchant->getPublicId(),
+            'start_time'   => millitime(),
         ]);
 
         //to be removed once hold funds issue is resolved
@@ -215,6 +216,7 @@ class Activate extends Base\Core
         PaymentPageProcessor::dispatch(Mode::LIVE, [
             'event'     => PaymentPageProcessor::PAYMENT_HANDLE_CREATION,
             'merchant_id'  => $merchant->getPublicId(),
+            'start_time'   => millitime(),
         ]);
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED, [

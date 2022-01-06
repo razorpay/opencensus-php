@@ -598,6 +598,7 @@ class Core extends Base\Core
         {
             PaymentPageProcessor::dispatch($this->mode, [
                 'payment'   => $payment,
+                'start_time'=> millitime(),
             ]);
 
             return;
@@ -615,6 +616,7 @@ class Core extends Base\Core
             'event'     => PaymentPageProcessor::REFUND_PROCESSED_EVENT,
             'refund_id' => $refund->getId(),
             'merchant'  => $refund->merchant,
+            'start_time'=> millitime(),
         ]);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_REFUND_PROCESS_DISPATCHED, $context);

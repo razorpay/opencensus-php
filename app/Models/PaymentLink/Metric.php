@@ -21,4 +21,9 @@ final class Metric
     const PAYMENT_PAGE_CREATED_TOTAL          = 'payment_page_created_total';
     const PAYMENT_PAGE_RISK_ALERT_COUNT       = 'payment_page_risk_alert_count';
     const PAYMENT_PAGE_EXPIRED_SEC            = 'payment_page_expired_sec';
+
+    // Payment Page Processor Counters
+    const PAYMENT_PAGE_PROCESSOR_COUNT_TOTAL                      = 'payment_page_processor_count_total';
+    const PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB           = 'payment_page_processor_time_taken_to_pick_job';
+    const PAYMENT_PAGE_PROCESSOR_TOTAL_TIME_TO_COMPLETE_JOB       = 'payment_page_processor_total_time_to_complete_job';
 }
