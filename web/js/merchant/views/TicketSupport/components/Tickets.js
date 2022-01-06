@@ -6,7 +6,6 @@ import { statuses, MAX_PAGE_SIZE } from './data';
 import { fetchSupportTickets } from 'merchant/reducers/config';
 import Spinner from 'common/ui/Spinner';
 import TicketBrief from './TicketBrief';
-import TicketBriefRevamped from './TicketBriefRevamped';
 import { raiseTicket } from '../utils';
 import FailedScreen from './FailedScreen';
 import { withRouter } from 'react-router';
@@ -52,12 +51,10 @@ export default class Tickets extends React.Component {
       rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
 
       let options = {};
-      if (this.props.user.isNewGrievanceFlowEnabled) {
-        options = {
-          screens: 'dashboardRequest',
-          email: window.rzp_user ? window.rzp_user.email : '',
-        };
-      }
+      options = {
+        screens: 'dashboardRequest',
+        email: window.rzp_user ? window.rzp_user.email : '',
+      };
 
       rzpTicketSystem.openModal('#ticket', options);
 
@@ -110,9 +107,9 @@ export default class Tickets extends React.Component {
 
     if (NO_TICKETS_PRESENT) {
       return (
-        <div class="no-tickets-present-container">
-          <h2 class="no-tickets-f">There are no queries yet!</h2>
-          <p class="text-center view-raised-queries">
+        <div className="no-tickets-present-container">
+          <h2 className="no-tickets-f">There are no queries yet!</h2>
+          <p className="text-center view-raised-queries">
             You can view your raised queries here and track its status.
           </p>
         </div>
@@ -163,15 +160,7 @@ export default class Tickets extends React.Component {
         )}
         <div>
           {OPEN_TICKETS.map((ticket, index) => {
-            return user.isTicketRevampFlowEnabled ? (
-              <TicketBriefRevamped
-                ticketType={this.props.match.params.ticketType || 'merchant'}
-                user={user}
-                last={index == currentPageTickets.length - 1}
-                ticket={ticket}
-                key={index}
-              />
-            ) : (
+            return (
               <TicketBrief
                 ticketType={this.props.match.params.ticketType || 'merchant'}
                 user={user}
@@ -188,7 +177,7 @@ export default class Tickets extends React.Component {
         {CLOSED_TICKETS.length !== 0 && (
           <h1 className="tickets-section-title">
             <span>Closed queries ({CLOSED_TICKETS.length})</span>
-            <i class="i i-chevron-up section-collapse" />
+            <i className="i i-chevron-up section-collapse" />
             {OPEN_TICKETS.length === 0 ? (
               <button onClick={createTicket} className="btn btn-outline pull-right">
                 <i className="i i-plus" /> Raise New Query
@@ -198,18 +187,10 @@ export default class Tickets extends React.Component {
         )}
         <div>
           {CLOSED_TICKETS.map((ticket, index) => {
-            return user.isTicketRevampFlowEnabled ? (
-              <TicketBriefRevamped
-                ticketType={this.props.match.params.ticketType || 'merchant'}
-                user={user}
-                last={index == currentPageTickets.length - 1}
-                ticket={ticket}
-                key={index}
-              />
-            ) : (
+            return (
               <TicketBrief
-                user={user}
                 ticketType={this.props.match.params.ticketType || 'merchant'}
+                user={user}
                 last={index == currentPageTickets.length - 1}
                 ticket={ticket}
                 key={index}
@@ -238,7 +219,7 @@ export default class Tickets extends React.Component {
 
     const createTicket = raiseTicket;
     return (
-      <div class="content-wrapper content-sm ticket-support">
+      <div className="content-wrapper content-sm ticket-support">
         <div className="row">
           <div className="col-xs-12">
             <div className="tickets-container">

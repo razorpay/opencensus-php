@@ -1,12 +1,10 @@
 import React from 'react';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-
-import { statuses } from './data';
 import TicketStatus from './TicketStatus';
-
-export default class TicketBrief extends React.Component {
+import TicketBriefMessage from './TicketBriefMessage';
+import { STATUSES } from '../utils';
+export default class TicketBriefRevamped extends React.Component {
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Ticket Dashboard',
@@ -17,95 +15,93 @@ export default class TicketBrief extends React.Component {
 
   render() {
     const ticket = this.props.ticket;
-
+    const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
-    const isScheduleCallbackEnabled = this.props.user.isScheduleCallbackEnabled;
+
     const formattedDate = moment(ticket.created_at).fromNow();
-    const responseFormatDate = moment(ticket.fr_due_by).format('DD MMM');
+    const ticketStatus = STATUSES[ticket.status];
     // only date showed here
     return (
-      <div className="panel ticket-row-panel" style={{ marginBottom: 0 }}>
-        <div
-          className="panel-header"
-          style={{ borderBottom: this.props.last ? `1px solid rgba(22,47,86,0.1)` : 'auto' }}
-        >
-          <div className="row">
-            <div className="col-xs-12">
-              <div className="panel" style={{ marginBottom: 0 }}>
-                <div className="panel-body">
-                  <div className="row">
-                    <div className="col-xs-8">
-                      <Link
-                        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
-                      >
-                        <p className="ticket-subject">{subject}</p>
-                      </Link>
-
-                      <Link
-                        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
-                      >
-                        <p className="ticket-short-details">
-                          <span>Ticket # {ticket.ticket_id}</span>
-                          <span className="ticket-detail-separator">•</span>
-                          <span>Raised {formattedDate}</span>
+      <Link
+        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
+      >
+        <div className="panel ticket-row-panel revamped">
+          <div className={`panel-header ${this.props.last ? 'border-solid' : 'border-auto'}`}>
+            <div className="row">
+              <div className="col-xs-12">
+                <div className="panel mb-0">
+                  <div className="panel-body">
+                    <div className="row">
+                      <div className="col-xs-10">
+                        <p className="ticket-subject">
+                          {isTicketCreatedByAgent ? (
+                            subject
+                          ) : (
+                            <>
+                              {ticket.custom_fields.cf_requestor_subcategory}
+                              {ticket.custom_fields.cf_requester_item ? (
+                                <>
+                                  <span className="ticket-detail-separator">•</span>
+                                  {ticket.custom_fields.cf_requester_item}
+                                </>
+                              ) : null}
+                            </>
+                          )}
                         </p>
-                      </Link>
+
+                        <Link
+                          to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
+                        >
+                          <p className="ticket-short-details">
+                            <span>Ticket # {ticket.ticket_id}</span>
+                            <span className="ticket-detail-separator">•</span>
+                            <span>Raised {formattedDate}</span>
+                          </p>
+                        </Link>
+                      </div>
+                      <div className="col-xs-2">
+                        <TicketStatus ticket={ticket} />
+                      </div>
+                      <div className="col-xs-12">
+                        <div className="ticket-brief-desc-text">{ticket.description_text}</div>
+                      </div>
                     </div>
-                    {/* Render only if status `Awaiting Your Reply` */}
-                    {statuses[ticket.status] &&
-                      statuses[ticket.status].name === 'Awaiting Your Reply' && (
-                        <div className="col-xs-4">
-                          <TicketStatus ticket={ticket} />
-                        </div>
-                      )}
-                    {statuses[ticket.status] &&
-                      statuses[ticket.status].name === 'Active' &&
-                      ticket.priority === 4 && (
-                        <div className="ticket-escalated-response">
-                          <span>
-                            <i class="i i-forward ticket-escalated-icon" />
-                            <Popover align="bottom" theme="dark">
-                              <PopoverBody>
-                                <div>We are looking at this escalation on priority.</div>
-                              </PopoverBody>
-                            </Popover>
-                          </span>
-                          <span>Response expected before:</span>
-                          <span className="ticket-escalated-response-time">
-                            {responseFormatDate}
-                          </span>
-                        </div>
-                      )}
                   </div>
+                  {ticketStatus !== 'CLOSED' ? (
+                    ticket.tags.includes('callback') ? (
+                      <p className="call-requested">
+                        <img
+                          className="schedule-call-icon"
+                          src="https://cdn.razorpay.com/static/assets/ticket-system/icon-call.svg"
+                          alt="schedule callback icon"
+                        />{' '}
+                        Call is requested on this query.{' '}
+                        <b
+                          onClick={() => {
+                            if (window.rzpTicketSystem) {
+                              window.rzpTicketSystem.openModal(`#call-details`, {
+                                id: ticket.custom_fields.cf_callback_id,
+                              });
+                            }
+                          }}
+                          className="pointer"
+                        >
+                          View Details
+                        </b>
+                      </p>
+                    ) : (
+                      <div className="Ticket-Status-Desc">
+                        <TicketBriefMessage ticketType={this.props.ticketType} ticket={ticket} />
+                      </div>
+                    )
+                  ) : null}
                 </div>
-                {isScheduleCallbackEnabled && ticket.tags.includes('callback') ? (
-                  <p class="call-requested">
-                    <img
-                      class="schedule-call-icon"
-                      src="https://cdn.razorpay.com/static/assets/ticket-system/icon-call.svg"
-                      alt=""
-                    />{' '}
-                    Call is requested on this query.{' '}
-                    <b
-                      onClick={() => {
-                        if (window.rzpTicketSystem) {
-                          window.rzpTicketSystem.openModal(`#call-details`, {
-                            id: ticket.custom_fields.cf_callback_id,
-                          });
-                        }
-                      }}
-                      class="pointer"
-                    >
-                      View Details
-                    </b>
-                  </p>
-                ) : null}
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </Link>
     );
   }
 }

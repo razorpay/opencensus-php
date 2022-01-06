@@ -3,8 +3,8 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import Attachment from './Attachment';
-const RZP_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/rzp-logo.png`;
 
+const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 @withRouter
 @connect((state) => {
   return {
@@ -14,41 +14,74 @@ const RZP_IMG = `https://cdn.razorpay.com/static/assets/merchant-dash/rzp-logo.p
   };
 })
 export default class Message extends React.Component {
-  renderMessage(from_razorpay) {
+  state = {
+    showCompleteReply: this.props.showExpandedReply,
+  };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.showExpandedReply) {
+      this.setState({ showCompleteReply: true });
+    }
+  }
+
+  renderMessage = (from_razorpay) => {
+    const { showCompleteReply } = this.state;
     if (from_razorpay) {
+      const { body } = this.props.message;
+
       return (
         <div
-          className="message-body body"
-          style={{ marginTop: '0' }}
+          className={`message-body revamped body mt-0 ${
+            showCompleteReply || this.props.showExpandedReply ? '' : 'truncate'
+          }`}
           dangerouslySetInnerHTML={{
-            __html: `<div>${this.props.message.body}</div>`,
+            __html: `<div>${body}</div>`,
           }}
         />
       );
     } else {
+      const { body_text } = this.props.message;
+
       return (
-        <div className="message-body body" style={{ marginTop: '0' }}>
-          {this.props.message.body_text}
+        <div className={`message-body revamped body mt-0${showCompleteReply ? '' : ' truncated'}`}>
+          {body_text}
         </div>
       );
     }
-  }
+  };
+
+  toggleReplyState = () => {
+    const { showCompleteReply } = this.state;
+    this.setState({ showCompleteReply: !showCompleteReply });
+  };
 
   render() {
+    const { showCompleteReply } = this.state;
     const from_dashboard_user = this.props.message.user_id === this.props.ticket.requester_id;
     let from_razorpay = !from_dashboard_user;
     if (this.props.message.incoming) {
       from_razorpay = false;
     }
-    let img = <i className="i i-user-circle message-user-circle" />;
+
+    let img = <i className="i i-ticket-user message-user-circle-revamped" />;
     if (!from_razorpay) {
       img = this.props.user.logo_url ? (
-        <img class="img-round user-image" src={this.props.user.logo_url} />
+        <div className="revamped-user-image">
+          <img
+            className="img-round revamped-user-image"
+            src={this.props.user.logo_url}
+            alt="revamped-user-image"
+          />
+        </div>
       ) : (
-        <i className="i i-user-circle message-user-circle" />
+        <div className="revamped-user-image">{img}</div>
       );
     } else {
-      img = <img class="img-round user-image" src={RZP_IMG} />;
+      img = (
+        <div className="revamped-user-image">
+          <img className="img-round revamped-user-image" src={RAZORPAY_LOGO} alt="razorpay-logo" />
+        </div>
+      );
     }
     const name = !from_razorpay
       ? from_dashboard_user
@@ -60,30 +93,39 @@ export default class Message extends React.Component {
 
     return (
       <div
-        className={`message panel ticket-row-panel ${
-          this.props.last ? 'border-bt-0' : 'border-bottom-solid'
-        }`}
+        className={`message  revamped
+          panel ticket-row-panel mt-0 border-bt-0 mb-0`}
       >
-        <div className="panel-body" style={{ paddingLeft: 0 }}>
-          <div className="row min-ht-56">
-            <div className="col-xs-2">{img}</div>
-            <div className="col-xs-10 reply-message-container">
-              <h5 style={{ marginBottom: 0, marginTop: 0 }}>
-                <div className="row">
+        <div className="panel-body p-v-24">
+          <div className="row min-ht-56" onClick={this.toggleReplyState}>
+            <div className="col-xs-2 w-auto">{img}</div>
+            <div className="col-xs-10 reply-message-container pr-0 mt-6">
+              <h5 className="title-container">
+                <div className="row flex pr-0">
                   <div className="col-xs-5 message-owner">
-                    <b>{name}</b>
+                    <b className="name">{name}</b>
                   </div>
-                  <div className="col-xs-7 text-right">
-                    {moment(this.props.message.created_at).format('ddd, MMM D, h:mm A')} (
-                    {moment(this.props.message.created_at).fromNow()})
+                  <div className="col-xs-7 text-right created-time">
+                    {moment(this.props.message.created_at).fromNow('h')} ago
                   </div>
                 </div>
               </h5>
-              <div class="message-body" style={{ marginTop: '15px' }}>
+              {showCompleteReply && (
+                <p className="message-to mt-24">
+                  To :{' '}
+                  {from_razorpay ? this.props.message.to_emails.join(', ') : 'Razorpay Account'}
+                </p>
+              )}
+
+              <div
+                className={`message-body revamped ${
+                  showCompleteReply || this.props.showExpandedReply ? 'mt-0' : 'mt-6'
+                }`}
+              >
                 {this.renderMessage(from_razorpay)}
               </div>
-              {attachments && attachments.length !== 0 && (
-                <div className="message-body body">
+              {attachments && attachments?.length !== 0 && (
+                <div className="message-body revamped body mt-20">
                   {attachments.map((file) => (
                     <Attachment key={file.id} file={file} />
                   ))}

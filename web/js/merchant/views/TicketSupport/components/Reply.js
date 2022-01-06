@@ -59,16 +59,11 @@ export default class Reply extends React.Component {
   };
 
   reply = () => {
-    const isTicketCreatedByAgent = this.props.ticket?.custom_fields?.cf_created_by === 'agent';
-
     this.track('send reply clicked', 'Tickets');
 
     const bodyFormData = new FormData();
     bodyFormData.append('body', this.state.body);
-    bodyFormData.append(
-      'user_id',
-      isTicketCreatedByAgent ? this.props.ticket.responder_id : this.props.ticket.requester_id,
-    );
+    bodyFormData.append('user_id', this.props.ticket.requester_id);
 
     if (this.state.attachments && this.state.attachments.length) {
       this.state.attachments.forEach((attachment) => {
@@ -104,6 +99,7 @@ export default class Reply extends React.Component {
         } else {
           this.track('reply undelivered', 'Tickets | Status: Failed');
         }
+        this.props.onClose();
       })
       .catch((e) => {
         this.setState({ loading: false });
@@ -187,31 +183,41 @@ export default class Reply extends React.Component {
 
   render() {
     const REMAINING_SIZE = this.getRemainingUploadSize();
+    const { onClose, ticket } = this.props;
 
     const img = this.props.logo_url ? (
-      <img class="img-round user-image" src={this.props.logo_url} />
+      <div className="revamped-user-image">
+        <img
+          className="img-round revamped-user-image"
+          src={this.props.logo_url}
+          alt="revamped-user-image"
+        />
+      </div>
     ) : (
-      <i className="i i-user-circle reply-user-circle" />
+      <div className="revamped-user-image">
+        <i className="i i-ticket-user" />
+      </div>
     );
     return (
-      <div className="message" style={{ marginBottom: 0 }}>
-        <div
-          className="panel ticket-row-panel"
-          style={{ borderBottom: this.props.last ? '1px solid rgba(22,47,86,0.1)' : 'auto' }}
-        >
-          <div className="panel-body" style={{ paddingLeft: 0 }}>
+      <div className="message m-20 mt-30">
+        <div className="panel ticket-row-panel reply-ticket-panel">
+          {ticket?.status === 5 && (
+            <i className="i i-close close-icon" onClick={onClose} role="button" />
+          )}
+          <div className="panel-body mt-0 pl-0 pt-0">
             <div className="row">
-              <div className="col-xs-2">{img}</div>
+              <div className="col-xs-2 w-auto">{img}</div>
               <div className="col-xs-10 reply-textarea">
-                <h5 style={{ marginBottom: 0 }}>
+                <h5 className="mb-0">
                   <div className="row">
-                    <div className="col-xs-5 message-owner">
+                    <div className="col-xs-5 message-owner row-container">
                       <b>{this.props.user.name}</b>
+                      <p className="to-account">To: Razorpay Account</p>
                     </div>
                     <div className="col-xs-7 text-right" />
                   </div>
                 </h5>
-                <div class="reply-quill">
+                <div className="reply-quill">
                   <textarea
                     value={this.state.body}
                     onChange={(e) => this.setState({ body: e.target.value })}
@@ -250,6 +256,7 @@ export default class Reply extends React.Component {
                     onFileChange={this.addFile}
                     showFileSize={true}
                   />
+
                   <button
                     onClick={this.reply}
                     disabled={this.state.loading || !this.state.body}
@@ -259,8 +266,8 @@ export default class Reply extends React.Component {
                       'Sending'
                     ) : (
                       <span>
-                        <span>Send</span>
-                        <i class="i i-send reply-icon" />
+                        <span>{this.props.ticket?.status === 5 ? 'Re-open Query' : 'Send'}</span>
+                        <i className="i i-send reply-icon" />
                       </span>
                     )}
                   </button>

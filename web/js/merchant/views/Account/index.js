@@ -91,7 +91,6 @@ const MyAccount = (props) => {
           ) : (
             <Route path="/ticket-support/tickets" component={Tickets} />
           )}
-
           <Route
             path="/ticket-support/:instance/:id/:ticketType/conversation"
             component={Conversations}

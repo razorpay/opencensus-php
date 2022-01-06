@@ -87,11 +87,9 @@ export const checkCallEligibilityApiCall = () => {
   );
 };
 
-export const actionCheckScheduleCallConfig = (v2ExpEnabled) => {
+export const actionCheckScheduleCallConfig = () => {
   return merchantFetch({
-    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/CheckEligibility${
-      v2ExpEnabled ? 'V2' : ''
-    }`,
+    url: `care_service/merchant/twirp/${CALLBACK_SERVICE}/CheckEligibilityV2`,
     mode: 'live',
     method: 'POST',
   }).then((res) => {
@@ -219,10 +217,10 @@ export const checkCallEligibility = () => {
   };
 };
 
-export const checkScheduleCallConfig = (v2ExpEnabled) => {
+export const checkScheduleCallConfig = () => {
   return {
     type: FETCH_SCHEDULE_CALL_CONFIG,
-    payload: actionCheckScheduleCallConfig(v2ExpEnabled),
+    payload: actionCheckScheduleCallConfig(),
   };
 };
 

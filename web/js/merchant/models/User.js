@@ -579,10 +579,6 @@ export default class User {
     return this.findTag('Charge_at_will');
   }
 
-  get isCallbackCategoryExpEnabled() {
-    return this.getExpStatus('schedule_callback_category');
-  }
-
   get isEsignEnabled() {
     return this.findTag('Esign');
   }
@@ -751,18 +747,6 @@ export default class User {
 
   get isFdTicketsEnabled() {
     return this.getExpStatus('view_fd_tickets');
-  }
-
-  get isNewGrievanceFlowEnabled() {
-    return this.getExpStatus('show_new_grievance_flow');
-  }
-
-  get isTicketRevampFlowEnabled() {
-    return this.getExpStatus('ticket_creation_flow_revamp_dashboard');
-  }
-
-  get isScheduleCallbackEnabled() {
-    return this.getExpStatus('show_schedule_callback');
   }
 
   get isTicketCreationFlowRevamp() {

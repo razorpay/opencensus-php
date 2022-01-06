@@ -1,9 +1,10 @@
-import React from 'react';
-import moment from 'moment';
 import { connect } from 'react-redux';
+import React, { Fragment } from 'react';
+import moment from 'moment';
 import TicketStatus from './TicketStatus';
 import Attachment from './Attachment';
-import Banner from './Banner';
+import Message from './Message';
+const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
 @connect((state) => {
   return {
@@ -17,7 +18,9 @@ export default class Ticket extends React.Component {
     super(props);
 
     this.state = {
-      detailsVisible: false,
+      showMoreConversation: false,
+      expandLastReply: false,
+      showFullMessage: false,
     };
   }
 
@@ -29,81 +32,146 @@ export default class Ticket extends React.Component {
     });
   }
 
-  showDetails = () => {
-    this.setState({ detailsVisible: true });
+  toggleFullReply = () => {
+    const { showFullMessage } = this.state;
+    this.setState({ showFullMessage: !showFullMessage });
   };
 
   render() {
-    const { ticket, user } = this.props;
-    const { ticketID } = this.props;
-    const img = this.props.logo_url ? (
-      <img height="56px" class="img-round user-image" src={this.props.logo_url} />
+    const { ticket, user, totalConversations } = this.props;
+    const { showMoreConversation } = this.state;
+    const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
+
+    let img = this.props.logo_url ? (
+      <img className="img-round mt-0" src={this.props.logo_url} alt="ticket-user-logo" />
     ) : (
-      <i className="i i-user-circle reply-user-circle" />
+      <i className="i i-ticket-user img-round" />
     );
 
-    const subject = (ticket.subject || '').replace('[Merchant]', '');
-    const subjectComponent = subject && <b>| Category: {subject}</b>;
+    if (isTicketCreatedByAgent) {
+      img = <img className="img-round" src={RAZORPAY_LOGO} alt="ticket-user-logo" />;
+    }
 
-    return (
-      <div className="message mb-0">
-        <div className="ticket-conv-body">
-          <div className="row ticket-title-section">
-            <div className="col-xs-2">{img}</div>
-            <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-              <h5 style={{ marginBottom: 0 }}>
-                <div className="row" style={{ paddingRight: '10px' }}>
-                  <div className="col-xs-8 message-owner">
-                    <b>Ticket ID #{ticket && ticket.ticket_id ? ticket.ticket_id : ticketID} </b>
-                    {subjectComponent}
-                  </div>
-                  <div className="col-xs-4 text-right" style={{ height: '20px' }}>
-                    <TicketStatus ticket={ticket} />
-                  </div>
-                </div>
-              </h5>
-              <p class="message-to">
-                Raised {moment(ticket.created_at).fromNow()}
-                {this.state.detailsVisible ? (
-                  <span className="ticket-details-caption text-uppercase">
-                    ({moment(ticket.created_at).format('ddd, MMM D, YYYY, hh:mm A')})
-                  </span>
+    const category = ticket?.custom_fields?.cf_requestor_subcategory;
+    const subCategory = ticket?.custom_fields?.cf_requester_item;
+    const ticketConversationsLength = totalConversations?.length;
+    if (ticket) {
+      return (
+        <div className="message-container">
+          <div className="title-section">
+            <div className="title-text-container">
+              <div className="category-container">
+                {isTicketCreatedByAgent ? (
+                  <p className="title-text">{ticket?.subject}</p>
                 ) : (
-                  <a className="ticket-details-caption" onClick={this.showDetails}>
-                    Show details
-                  </a>
+                  <>
+                    <p className="title-text">{category}</p>
+                    {category && subCategory && <p className="separator">&#183;</p>}
+                    <p className="title-text">{subCategory}</p>
+                  </>
                 )}
-              </p>
-              {this.state.detailsVisible && ticket.cc_emails.length !== 0 ? (
-                <p class="message-to" style={{ marginTop: '3px' }}>
-                  CC: {ticket.cc_emails.join(', ')}
+              </div>
+              <TicketStatus ticket={ticket} />
+            </div>
+            <div className="title-text-container sub-text" style={{ justifyContent: 'flex-start' }}>
+              <p>Ticket #{ticket?.ticket_id}</p>
+              <p className="separator text-size-25">&#183;</p>
+              <p>{moment(ticket.created_at).format('ddd, MMM D, YYYY, hh:mm A')}</p>
+            </div>
+          </div>
+          <div className="user-details-container">
+            <div className="user-section" onClick={this.toggleFullReply}>
+              <div className="user-image">{img}</div>
+              <div className="user-details">
+                <p className="user">{isTicketCreatedByAgent ? 'Razorpay Support' : user?.name}</p>
+                {this.state.showFullMessage && !isTicketCreatedByAgent && (
+                  <p className="message-to">To: Razorpay Account</p>
+                )}
+                <p className={`lh-18 ${this.state.showFullMessage ? '' : 'truncated'}`}>
+                  {ticket?.description_text}
                 </p>
-              ) : null}
+              </div>
+              <p className="created-time">{moment(ticket.created_at).fromNow()}</p>
             </div>
+            {ticket?.attachments?.length > 0 && (
+              <div className="attachment-container">
+                {ticket?.attachments?.map((file) => (
+                  <Attachment key={file.id} file={file} />
+                ))}
+              </div>
+            )}
           </div>
-          <div className="ticket-title-divider" />
-          <div className="row">
-            <div className="col-xs-2" />
-            <div className="col-xs-10" style={{ paddingLeft: 0 }}>
-              <div
-                className="message-body body"
-                dangerouslySetInnerHTML={{
-                  __html: ticket.description,
-                }}
-              />
 
-              {ticket.attachments && ticket.attachments.length !== 0 && (
-                <div className="message-body body">
-                  {ticket.attachments.map((file) => (
-                    <Attachment key={file.id} file={file} />
-                  ))}
+          {totalConversations?.length >= 3 && !showMoreConversation && (
+            <div className="show-more-container">
+              <div className="divider" />
+              <button
+                type="button"
+                onClick={() => {
+                  this.setState({ showMoreConversation: true });
+                }}
+                className="btn btn-outline requested show-more-button"
+              >
+                <p>
+                  {totalConversations?.length - 2} more{' '}
+                  {totalConversations?.length === 3 ? 'reply' : 'replies'}
+                </p>
+
+                <div className="icons-container">
+                  <i className="i i-chevron-up icons-show-more" />
+                  <i className="i i-chevron-down icons-show-more" />
                 </div>
-              )}
+              </button>
+              <div className="divider" />
             </div>
+          )}
+          <div>
+            {((totalConversations.length >= 3 && showMoreConversation) ||
+              totalConversations.length < 3) && (
+              <>
+                {totalConversations.length > 0 && <div className="solid-divider" />}
+
+                {totalConversations.map((conversation, i) => {
+                  return (
+                    <>
+                      <Message
+                        showExpandedReply={
+                          this.state.expandLastReply && i == totalConversations.length - 1
+                        }
+                        last={i === totalConversations.length - 1}
+                        ticket={ticket}
+                        key={i}
+                        message={conversation}
+                      />
+                      {i !== ticketConversationsLength - 1 && <div className="solid-divider" />}
+                    </>
+                  );
+                })}
+              </>
+            )}
+            {totalConversations?.length >= 3 && !showMoreConversation && (
+              <>
+                <Message
+                  last={false}
+                  ticket={ticket}
+                  key={3}
+                  message={totalConversations[ticketConversationsLength - 2]}
+                />
+                <div className="solid-divider" />
+                <Message
+                  showExpandedReply={this.state.expandLastReply}
+                  last={true}
+                  ticket={ticket}
+                  key={4}
+                  message={totalConversations[ticketConversationsLength - 1]}
+                />
+              </>
+            )}
           </div>
-          {user.isNewGrievanceFlowEnabled && <Banner ticket={ticket} />}
         </div>
-      </div>
-    );
+      );
+    }
+
+    return null;
   }
 }

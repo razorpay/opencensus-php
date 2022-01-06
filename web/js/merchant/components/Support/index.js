@@ -50,23 +50,21 @@ export default class Support extends Component {
 
   componentDidMount() {
     this.props.checkCallEligibility();
-    if (this.props.user.isScheduleCallbackEnabled) {
-      this.props
-        .checkScheduleCallConfig(this.props.user.isCallbackCategoryExpEnabled)
-        .then((response) => {
-          if (response.is_eligible) {
-            analyticsTrack({
-              objectName: 'request a call',
-              actionName: 'viewed',
-              screen: 'home page',
-              properties: {
-                message: response.reason,
-                ...getCommonAnalyticsProperties(window.rzp_user),
-              },
-            });
-          }
+
+    this.props.checkScheduleCallConfig().then((response) => {
+      if (response.is_eligible) {
+        analyticsTrack({
+          objectName: 'request a call',
+          actionName: 'viewed',
+          screen: 'home page',
+          properties: {
+            message: response.reason,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
-    }
+      }
+    });
+
     this.bindEvents();
     merchantFetch({
       url: 'merchants/support/option/flags',
@@ -168,7 +166,7 @@ export default class Support extends Component {
       return null;
     }
     return (
-      <div class={classList('support', isHidden && 'hidden')}>
+      <div className={classList('support', isHidden && 'hidden')}>
         <SupportHeader
           onToggle={this.handleToggle}
           isOpened={isOpened}
