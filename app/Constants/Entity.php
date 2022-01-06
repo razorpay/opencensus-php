@@ -619,7 +619,10 @@ class Entity
     // Network Tokenization
     const SERVICE_PROVIDER_TOKEN = 'service_provider_token';
 
-
+    // Ledger
+    const JOURNAL           = 'journal';
+    const LEDGER_ENTRY      = 'ledger_entry';
+    const ACCOUNT_DETAIL    = 'account_detail';
     const LEDGER_STATEMENT  = 'ledger_statement';
 
     const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
@@ -772,6 +775,9 @@ class Entity
         self::PROMOTION                 => \RZP\Models\Promotion::class,
         self::APP_TOKEN                 => \RZP\Models\Customer\AppToken::class,
         self::STATEMENT                 => \RZP\Models\Transaction\Statement::class,
+        self::JOURNAL                   => \RZP\Models\Transaction\Statement\Ledger\Journal::class,
+        self::LEDGER_ENTRY              => \RZP\Models\Transaction\Statement\Ledger\LedgerEntry::class,
+        self::ACCOUNT_DETAIL            => \RZP\Models\Transaction\Statement\Ledger\AccountDetail::class,
         self::LEDGER_STATEMENT          => \RZP\Models\Transaction\Statement\Ledger\Statement::class,
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
@@ -1070,7 +1076,6 @@ class Entity
         self::MERCHANT_VERIFICATION_DETAIL    => \RZP\Models\Merchant\VerificationDetail::class,
         self::MERCHANT_BUSINESS_DETAIL        => \RZP\Models\Merchant\BusinessDetail::class,
         self::M2M_REFERRAL                    => \RZP\Models\Merchant\M2MReferral::class,
-
         self::MERCHANT_ONBOARDING_ESCALATIONS   => \RZP\Models\Merchant\Escalations::class,
         self::ONBOARDING_ESCALATION_ACTIONS     => \RZP\Models\Merchant\Escalations\Actions::class,
         self::MERCHANT_CHECKOUT_DETAIL        => \RZP\Models\Merchant\CheckoutDetail::class,

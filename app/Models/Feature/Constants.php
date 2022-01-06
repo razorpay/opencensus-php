@@ -951,12 +951,7 @@ class Constants
      * All Ledger Features for RX release
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
-
-    /**
-     * This will enable reads flow from ledger for merchants having this feature flag.
-     */
     const LEDGER_JOURNAL_READS  = 'ledger_journal_reads';
-
     const LEDGER_REVERSE_SHADOW = 'ledger_reverse_shadow';
 
     /**

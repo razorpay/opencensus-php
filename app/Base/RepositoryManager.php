@@ -187,8 +187,10 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\VirtualAccountProducts\Repository                 $virtual_account_products
  * @property Models\Merchant\OneClickCheckout\AuthConfig\Repository   $merchant_1cc_auth_configs
  * @property Models\Offer\Repository                                  $offer
+ * @property Models\Transaction\Statement\Ledger\Journal\Repository         $journal
+ * @property Models\Transaction\Statement\Ledger\AccountDetail\Repository   $account_detail
+ * @property Models\Transaction\Statement\Ledger\Statement\Repository       $ledger_statement
  * @property Models\Internal\Repository                               $internal
- * @property Models\Transaction\Statement\Ledger\Statement\Repository $ledger_statement
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

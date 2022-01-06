@@ -55,9 +55,9 @@ class Repository extends \Razorpay\Spine\Repository
     const DELETED      = 'deleted';
 
     // Data Warehouse
-    const ADMIN_FETCH         = "data_warehouse_admin_fetch";
-    const MERCHANT_FETCH      = "data_warehouse_merchant_fetch";
-    const REARCH_TIDB_EXPERIMENT = 'rearch_fetch_tidb_or_slave';
+    const ADMIN_FETCH               = "data_warehouse_admin_fetch";
+    const MERCHANT_FETCH            = "data_warehouse_merchant_fetch";
+    const REARCH_TIDB_EXPERIMENT    = 'rearch_fetch_tidb_or_slave';
 
     protected $app;
 
@@ -1122,6 +1122,10 @@ class Repository extends \Razorpay\Spine\Repository
             if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
             {
                 $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
+            }
+            if ($cluster === ConnectionType::RX_DATA_WAREHOUSE_MERCHANT)
+            {
+                $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_MERCHANT_TEST : Connection::DATA_WAREHOUSE_MERCHANT_LIVE;
             }
         }
 

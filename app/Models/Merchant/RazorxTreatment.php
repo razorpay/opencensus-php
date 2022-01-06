@@ -415,6 +415,9 @@ final class RazorxTreatment
     //Experiment for throwing exception of an invoice link older than six months is fetched
     const FAIL_OLD_INVOICE_ID_FETCH = 'fail_old_invoice_id_fetch';
 
+    // Experiment for RX Rearch (Ledger <> RX integration)
+    const RX_REARCH_TIDB_EXPERIMENT = 'rx_rearch_fetch_tidb';
+
     //Experiment to route fetch queries to data warehouse
     const USE_DATA_WAREHOUSE_CONNECTION_FOR_FETCH = 'use_data_warehouse_connection_for_fetch';
 

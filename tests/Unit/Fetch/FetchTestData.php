@@ -748,4 +748,6 @@ return [
     E::TRUSTED_BADGE_HISTORY => [],
 
     E::PAYMENT_PAGE_ITEM => [],
+
+    E::LEDGER_STATEMENT => [],
 ];

@@ -293,6 +293,15 @@ trait RepositoryFetch
 
                 return $this->getSlaveConnection();
 
+            case ConnectionType::RX_DATA_WAREHOUSE_MERCHANT:
+
+                if ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true)
+                {
+                    return $this->getDataWarehouseConnection(ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+                }
+
+                return $this->getSlaveConnection();
+
             case ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA:
                 if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
                 {

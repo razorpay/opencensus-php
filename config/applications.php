@@ -1119,6 +1119,10 @@ return [
         'ledger_secret'     => env('LEDGER_SECRET'),
         // ledger will call api using this secret
         'secret'            => env('LEDGER_API_SECRET'),
+        'tidb_db_name' => [
+            'live' => env('LEDGER_LIVE_TIDB_DB_NAME'),
+            'test' => env('LEDGER_TEST_TIDB_DB_NAME'),
+        ],
     ],
 
     'banking_account_service' => [

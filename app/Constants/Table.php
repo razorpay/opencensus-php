@@ -2,6 +2,8 @@
 
 namespace RZP\Constants;
 
+use App;
+
 class Table
 {
     // Core entities
@@ -89,6 +91,7 @@ class Table
     const TRANSFER                  = 'transfers';
     // Statement is public exposed version of transaction, ref /Models/Transaction/Statement.
     const STATEMENT                 = 'transactions';
+
     const REVERSAL                  = 'reversals';
     const BHARAT_QR                 = 'bharat_qr';
     const PROMOTION                 = 'promotions';
@@ -410,6 +413,12 @@ class Table
     const MERCHANT_1CC_CONFIGS = 'merchant_1cc_configs';
     const MERCHANT_1CC_AUTH_CONFIGS = 'merchant_1cc_auth_configs';
 
+    // Ledger
+    const JOURNAL           = 'journal';
+    const ACCOUNT_DETAIL    = 'account_details';
+    const LEDGER_ENTRY      = 'ledger_entries';
+    const LEDGER_STATEMENT  = 'ledger_entries';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,
@@ -441,6 +450,40 @@ class Table
             return self::$entityToTableMap[$entity];
         }
 
-        return constant(Table::class . '::' . strtoupper($entity));
+        $tableName = constant(Table::class . '::' . strtoupper($entity));
+
+        if (self::isLedgerTableName($tableName) === true)
+        {
+            return self::getTableNameForLedgerTable($tableName);
+        }
+
+        return $tableName;
+    }
+
+    /**
+     * Ledger services' tables data is going to come only from TiDB, so appending tidb db name before table name
+     *
+     * @param string $tableName
+     * @return string
+     */
+    public static function getTableNameForLedgerTable(string $tableName)
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $config = $app['config']->get('applications.ledger');
+
+        $tidbName = ($mode === Mode::LIVE) ? $config['tidb_db_name']['live'] : $config['tidb_db_name']['test'];
+
+        return $tidbName . '.' . $tableName;
+    }
+
+    public static function isLedgerTableName($tableName)
+    {
+        if (in_array($tableName, [self::JOURNAL, self::ACCOUNT_DETAIL, self::LEDGER_ENTRY]) === true)
+        {
+            return true;
+        }
     }
 }
