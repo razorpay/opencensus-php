@@ -1207,10 +1207,10 @@ class Selector extends Base\Core
             return false;
         }
 
-        $createTerminalCondition = ($payment->isMethod(Method::CARD) === true) and
+        $createTerminalCondition = (($payment->isMethod(Method::CARD) === true) and
         ($payment->isBharatQr() === false) and
         ((in_array($merchant->getCategory(), \RZP\Gateway\Hitachi\Gateway::BLACKLISTED_MCC) === false) or
-            ($merchant->isFeatureEnabled(Feature\Constants::OVERRIDE_HITACHI_BLACKLIST) === true));
+            ($merchant->isFeatureEnabled(Feature\Constants::OVERRIDE_HITACHI_BLACKLIST) === true)));
 
         if ($createTerminalCondition === true)
         {
@@ -1248,9 +1248,9 @@ class Selector extends Base\Core
             $merchant,
             $currency);
 
-        $createTerminalCondition = ($payment->isMethod(Method::CARD) === true) and
+        $createTerminalCondition = (($payment->isMethod(Method::CARD) === true) and
         ($hasHitachiTerminal === true) and
-        ($payment->isBharatQr() === false) and ($currency === Currency::INR) and ($payment->isDCC() === false);
+        ($payment->isBharatQr() === false) and ($currency === Currency::INR) and ($payment->isDCC() === false));
 
         if($createTerminalCondition === true) {
             $hasDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
