@@ -366,7 +366,12 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_HMAC_SIGNATURE,
-            ['query' => $query, 'config' => $config, 'hmac' => $hmac, 'signature' => $input['signature']]
+            [
+                'query'     => $query,
+                'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
+                'hmac'      => $hmac,
+                'signature' => $input['signature']
+            ]
         );
         return $input['signature'] === $hmac;
     }
@@ -384,7 +389,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
-                  'error' => 'Duplicate payment confirmation received',
+                  'error' => 'Order has already been placed for this payment',
                   'order' => $rzpOrder
                 ]
             );

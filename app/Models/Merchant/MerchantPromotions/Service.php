@@ -67,7 +67,7 @@ class Service extends Base\Service
             // TODO: critical error if not found !
             $input['order_id'] = $rzpOrder->toArrayPublic()['notes']['storefront_id'];
 
-            $decodedResponse = (new Shopify\Service)->getShopifyCoupons($input);
+            $decodedResponse = (new Shopify\Service)->getShopifyCoupons($input, $this->merchant->getId());
         }
         else
         {

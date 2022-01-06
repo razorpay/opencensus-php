@@ -14,6 +14,11 @@ use RZP\Models\Merchant\OneClickCheckout;
 
 class Service extends Base\Service
 {
+
+    const skipListCouponMids = [
+        'DzyQ9A6YiAcZpT',
+    ];
+
     /**
      * starts the 1cc flow for shopify
      * amount from checkout and order should be the same
@@ -114,19 +119,35 @@ class Service extends Base\Service
         ];
     }
 
-    public function getShopifyCoupons(array $input): array
+    // returns list of coupons, filter out personal and shipping coupons
+    public function getShopifyCoupons(array $input, string $merchantId = ''): array
     {
+        if (isset($merchantId) === true and in_array($merchantId, self::skipListCouponMids) === true)
+        {
+            return ['promotions' => []];
+        }
+
         $checkoutId = $input['order_id'];
 
         $checkout = (new Core)->getOrderDetailsFromCheckout($checkoutId);
+
         $checkout = json_decode($checkout, true);
 
-        $amount = $checkout['data']['node']['subtotalPrice'];
-        $countryCode = $checkout['data']['node']['currencyCode'];
+        // TODO: discuss proper error for this
+        if (empty($checkout['data']['node']) === true)
+        {
+          return (new Errors)->getInvalidCouponApplicationResponse();
+        }
+
+        $checkoutNode = $checkout['data']['node'];
+
+        $amount = $checkoutNode['subtotalPrice'];
+
+        $countryCode = $checkoutNode['currencyCode'];
 
         $orderQuantity = 0;
 
-        foreach ($checkout['data']['node']['lineItems']['edges'] as $item) {
+        foreach ($checkoutNode['lineItems']['edges'] as $item) {
             $item = $item['node'];
             $orderQuantity += $item['quantity'];
         }
@@ -142,6 +163,11 @@ class Service extends Base\Service
             $minQuantityRange = floatval($value['prerequisiteQuantityRange']['greaterThanOrEqualTo']);
             $discountStartDate = $value['startsAt'];
             $dicountEndDate = $value['endsAt'];
+
+            if (($value['customerSelection']['forAllCustomers'] !== null && $value['customerSelection']['forAllCustomers'] === false)
+            || ($value['itemEntitlements']['targetAllLineItems'] !== null && $value['itemEntitlements']['targetAllLineItems'] === false)){
+                continue;
+            }
 
             // skip free shipping in v1
             if ($value['target'] == 'SHIPPING_LINE')
@@ -171,14 +197,27 @@ class Service extends Base\Service
             if (!empty($count) && !empty($limit)) {
                 $remaining = $limit - $count;
                 if ($remaining <=  0) {
-                continue;
+                    continue;
                 }
             }
 
-            array_push($discountData,array('code'=>$value['title'],'summary'=>$value['summary'],'tnc'=>[]));
-
+            foreach($value['discountCodes']['edges'] as $node)
+            {
+                $discountCodeNode = $node['node'];
+                if (empty($discountCodeNode) === false)
+                {
+                    array_push(
+                      $discountData,
+                      [
+                          'code' => $discountCodeNode['code'],
+                          'summary' => $value['summary'],
+                          'tnc'=> []
+                      ]
+                    );
+                }
+            }
         }
-        return array('promotions'=>$discountData);
+        return ['promotions' => $discountData];
     }
 
     public function applyShopifyCoupon(array $input):array
@@ -217,18 +256,42 @@ class Service extends Base\Service
             ['response' => json_decode($response, true)]
         );
 
-        $response = json_decode($response);
+        $response = json_decode($response, true);
 
-        $discountData = $response->data->checkoutDiscountCodeApplyV2->checkout->discountApplications->edges[0]->node;
-
-        if ($discountData->applicable)
+        // TODO: discuss this error handling
+        if (empty($response['errors']) === false)
         {
-            $value = ($response->data->checkoutDiscountCodeApplyV2->checkout->lineItemsSubtotalPrice->amount - $response->data->checkoutDiscountCodeApplyV2->checkout->subtotalPrice) * 100;
-            return array('response' => ['promotion' => array( 'code' => $discountData->code, 'reference_id' => $discountData->code, 'value' => $value)], 'status_code' => 200);
+            return (new Errors)->getInvalidCouponApplicationResponse();
+        }
+
+        $data = $response['data']['checkoutDiscountCodeApplyV2'];
+
+        if (empty($data['checkoutUserErrors']) === false)
+        {
+            return (new Errors)->getInvalidCouponApplicationResponse();
+        }
+
+        $checkout = $data['checkout'];
+
+        $discountData = $checkout['discountApplications']['edges'][0]['node'];
+
+        if ($discountData['applicable'] === true)
+        {
+            $value = ($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
+            return [
+                'response' => [
+                    'promotion' => [
+                        'code' => $discountData['code'],
+                        'reference_id' => $discountData['code'],
+                        'value' => $value,
+                    ],
+                ],
+                'status_code' => 200,
+            ];
         }
         else
         {
-            return array('response' => ['failure_code' => 'INVALID_COUPON','failure_reason' => 'Coupon not applicable'], 'status_code' => 400);
+            return (new Errors)->getInvalidCouponApplicationResponse();
         }
     }
 
@@ -239,7 +302,7 @@ class Service extends Base\Service
     }
 
     /**
-     * shipping calculations are async
+     * shipping calculations are async from Shopify
      * sleep and poll till rates are ready
      * if address is changed, we may get the stale rates
      * so we start with one sleep and poll
@@ -256,6 +319,7 @@ class Service extends Base\Service
         return ['addresses' => $finalVal];
     }
 
+    // get serviceability and fee for single address
     public function getShippingForOneAddress(string $checkoutId, array $address): array
     {
         $response = (new Core)->updateShippingAddress($checkoutId, $address);

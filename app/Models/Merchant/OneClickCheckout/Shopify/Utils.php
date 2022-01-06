@@ -60,4 +60,16 @@ class Utils
       }
       return base64_encode($id);
   }
+
+  public function getInvalidCouponResponse()
+  {
+    return [
+        'response' => [
+            'failure_code' => 'INVALID_COUPON',
+            'failure_reason' => 'Coupon not applicable',
+        ],
+        'status_code' => 400,
+    ];
+  }
+
 }
