@@ -814,9 +814,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $request['headers'] = [
-            'Content-Type' => 'application/json'
-        ];
+        $request['headers']['Content-Type'] = 'application/json';
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -1160,6 +1158,11 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getExternalMockUrl(string $type)
+    {
+        return  env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . '/upi_axis' . $this->getRelativeUrl($type);
+    }
+
     protected function getRefundRequestArray(array $input, Entity $gatewayEntity): array
     {
         $data = [
@@ -1250,9 +1253,7 @@ class Gateway extends Base\Gateway
     {
         $request = parent::getStandardRequestArray($content, $method, $type);
 
-        $request['headers'] = [
-            'Content-Type' => 'application/json',
-        ];
+        $request['headers']['Content-Type'] = 'application/json';
 
         // Axis gateway firewall is not accepting any value for encoding
         // And the default curl transport is forcing the encoding to be compressed
