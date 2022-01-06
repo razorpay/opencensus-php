@@ -43,6 +43,7 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_GET_TICKET_BY_ID                 = 'rzp_get_ticket_by_id';
 
     const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET                          = 'rzp_fetch_ticket_filter_agent_created_ticket';
+    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT           = 'rzp_fetch_ticket_filter_agent_created_ticket_wrong_merchant';
     const RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET                = 'rzp_fetch_ticket_filter_paginated_agent_created_ticket';
     const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED                   = 'rzp_fetch_ticket_filter_agent_created_ticket_mapped';
 
@@ -1240,16 +1241,14 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertGreaterThanOrEqual($now, $firstResponseTimeData[0]['created_at']);
     }
 
-    public function testFreshdeskSchedulerGetAgentCreatedTicket()
+    public function testFreshdeskWebhookGetAgentCreatedTicket()
     {
         $testcases = [
             [
                 'name'                          => 'pagination',
-                'function_name'                 => 'setupTestDataGetAgentCreatedTickets'
             ],
             [
                 'name'                          => 'general',
-                'function_name'                 => 'setupTestDataGetAgentCreatedTickets'
             ],
         ];
 
@@ -1259,26 +1258,46 @@ class FreshdeskTicketV2Test extends TestCase
 
         foreach ($testcases as $testcase)
         {
+            $this->setupTestDataGetAgentCreatedTickets($testcase['name']);
 
-            $functionName = $testcase['function_name'];
+            $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
 
-            $this->$functionName($testcase['name']);
-
-            $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
-
-            $this->ba->cronAuth();
+            $this->ba->cronAuth('live');
 
             $this->startTest();
 
-            $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+            $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
 
-            $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
+            $this->assertNotEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
+
+            $this->assertEquals('agent', $ticketAfterTest['created_by']);
         }
     }
 
-    public function testFreshdeskSchedulerGetAgentCreatedTicketMappedAlready()
+    public function testFreshdeskWebhookGetAgentCreatedTicketFailed()
     {
-        $this->testData[__FUNCTION__] = $this->testData['testFreshdeskSchedulerGetAgentCreatedTicket'];
+        $this->testData[__FUNCTION__] = $this->testData['testFreshdeskWebhookGetAgentCreatedTicket'];
+
+        $fixedTime = (new Carbon())->timestamp(1583548200);
+
+        Carbon::setTestNow($fixedTime);
+
+            $this->setupTestDataGetAgentCreatedTickets('merchant_doesnt_exist');
+
+            $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
+
+            $this->ba->cronAuth('live');
+
+            $this->startTest();
+
+            $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
+
+            $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
+    }
+
+    public function testFreshdeskWebhookGetAgentCreatedTicketMappedAlready()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testFreshdeskWebhookGetAgentCreatedTicket'];
 
         $fixedTime = (new Carbon())->timestamp(1583548200);
 
@@ -1286,7 +1305,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $ticketDetails["fd_instance"] = "rzpind";
 
-        $this->fixtures->create('merchant_freshdesk_tickets', [
+        $this->fixtures->on('live')->create('merchant_freshdesk_tickets', [
             'id'             => 'razoridind0017',
             'ticket_id'      => '17',
             'merchant_id'    => '10000000000000',
@@ -1296,7 +1315,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $ticketDetails["fd_instance"] = "rzpcap";
 
-        $this->fixtures->create('merchant_freshdesk_tickets', [
+        $this->fixtures->on('live')->create('merchant_freshdesk_tickets', [
             'id'             => 'razoridcap0017',
             'ticket_id'      => '17',
             'merchant_id'    => '10000000000000',
@@ -1304,9 +1323,9 @@ class FreshdeskTicketV2Test extends TestCase
             'ticket_details' => $ticketDetails,
         ]);
 
-        $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+        $ticketBeforeTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
 
-        $this->ba->cronAuth();
+        $this->ba->cronAuth('live');
 
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED);
 
@@ -1315,7 +1334,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->startTest();
 
-        $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true);
+        $ticketAfterTest = $this->getLastEntity('merchant_freshdesk_tickets', true, 'live');
 
         $this->assertEquals($ticketBeforeTest['id'], $ticketAfterTest['id']);
     }
@@ -2070,6 +2089,40 @@ class FreshdeskTicketV2Test extends TestCase
 
                 ]];
         }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => "13",
+                            'body'      => 'some random body 13',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "middoesntexist"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => "34",
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "agent",
+                                "cf_merchant_id"            => "middoesntexist"
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                    ],
+
+                ]];
+        }
         else if ($key === self::RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET)
         {
             return [
@@ -2240,6 +2293,13 @@ class FreshdeskTicketV2Test extends TestCase
                                                         [
                                                             'id'            => '12',
                                                         ],2 );
+        }
+        else if ($testcaseName = 'merchant_doesnt_exist')
+        {
+            $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT);
+
+            $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22created_at%3A%272020-03-07%27+AND+custom_string%3A%27agent%27%22&page=1', 'get',
+                                                        $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
         }
 
     }

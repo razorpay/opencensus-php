@@ -757,7 +757,7 @@ return [
         ],
     ],
 
-    'testFreshdeskSchedulerGetAgentCreatedTicket' => [
+    'testFreshdeskWebhookGetAgentCreatedTicket' => [
         'request'   => [
             'url'           => '/fd/webhook/get_agent_created_ticket',
             'method'        => 'POST',

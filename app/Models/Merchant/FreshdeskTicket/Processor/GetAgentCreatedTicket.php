@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\FreshdeskTicket\Processor;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Notifications\Support\Events;
@@ -10,8 +11,10 @@ use RZP\Notifications\Support\Handler;
 use RZP\Models\Merchant\FreshdeskTicket\Type;
 use RZP\Models\Merchant\FreshdeskTicket\Core;
 use RZP\Models\Merchant\FreshdeskTicket\Entity;
+use RZP\Models\Merchant\FreshdeskTicket\Metric;
 use RZP\Models\Merchant\FreshdeskTicket\Service;
 use RZP\Models\Merchant\FreshdeskTicket\TicketStatus;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class GetAgentCreatedTicket extends Base
 {
@@ -40,7 +43,7 @@ class GetAgentCreatedTicket extends Base
             {
                 $filterInput[Constants::PAGE] = $i;
 
-                $this->trace->info(TraceCode::GET_AGENT_CREATED_TICKET_ALREADY_MAPPED,
+                $this->trace->info(TraceCode::GET_AGENT_CREATED_TICKET_FILTER,
                                    [
                                        'tickets' => $filterInput
                                    ]
@@ -68,11 +71,28 @@ class GetAgentCreatedTicket extends Base
 
                         if ($isMapped === false)
                         {
-                            $ticket = $this->createTicketEntity($fdInstance, $ticket);
+                            try
+                            {
+                                $merchant = $this->repo->merchant->findOrFail($ticket[Constants::CUSTOM_FIELDS][Constants::CF_MERCHANT_ID]);
 
-                            $this->setCfMerchantIdDashboardForTicket($ticket);
+                                $updateResponse = $this->setCfMerchantIdDashboard($fdInstance, $merchant, $ticket[Entity::ID]);
 
-                            (new Handler(['ticket' => $ticket]))->sendForEvent(Events::AGENT_TICKET_CREATED);
+                                if (isset($updateResponse['errors']) === true)
+                                {
+                                    throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
+                                }
+
+                                $ticket = $this->createTicketEntity($fdInstance, $ticket);
+
+                                (new Handler(['ticket' => $ticket]))->sendForEvent(Events::AGENT_TICKET_CREATED);
+
+                            }
+                            catch (\Throwable $exception)
+                            {
+                                $this->trace->count(Metric::GET_AGENT_CREATED_TICKET_FAILED);
+
+                                $this->trace->traceException($exception);
+                            }
                         }
                         else
                         {
@@ -153,16 +173,35 @@ class GetAgentCreatedTicket extends Base
             [
                 Entity::TICKET_ID      => stringify($ticket[Entity::ID]),
                 Entity::TYPE           => Type::SUPPORT_DASHBOARD,
-                Entity::MERCHANT_ID    => $ticket,
                 Entity::TICKET_DETAILS => $ticketDetails,
                 Entity::CREATED_BY     => Constants::AGENT,
                 Entity::STATUS         => TicketStatus::getDatabaseStatusMappingForStatusString(TicketStatus::OPEN),
             ];
 
+        $ticketEntity =  (new Core)->create($ticketInput, $ticket[Constants::CUSTOM_FIELDS][Constants::CF_MERCHANT_ID], true);
+
         $this->trace->info(TraceCode::GET_AGENT_CREATED_TICKET_ENTITY, [
-            'ticket_entity' => $ticketInput,
+            'ticket_fd_id' => $ticketEntity[Entity::TICKET_ID],
+            'ticket_rzp_id' => $ticketEntity[Entity::ID],
         ]);
 
-        return (new Core)->create($ticketInput, $ticket[Constants::CUSTOM_FIELDS][Constants::CF_MERCHANT_ID], true);
+        return $ticketEntity;
+    }
+
+    protected function setCfMerchantIdDashboard($fdInstance, $merchant, $ticketId)
+    {
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);;
+
+        $data = [
+            Constants::CUSTOM_FIELDS => [
+                Constants::CF_MERCHANT_ID_DASHBOARD  => $this->getQueryParamMerchantIdForSearchAPI($merchant),
+            ],
+        ];
+
+        $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2(
+            $ticketId,
+            $data,
+            $url
+        );
     }
 }
