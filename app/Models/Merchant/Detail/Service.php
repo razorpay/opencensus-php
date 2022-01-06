@@ -254,29 +254,6 @@ class Service extends Base\Service
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
     }
 
-    public function postSaveEmail($input)
-    {
-        (new Validator)->validateInput('activation_email', $input);
-
-        $userInput = [
-            User\Entity::EMAIL  => $input[Merchant\Entity::EMAIL]
-        ];
-
-        $merchantInput = [
-            User\Entity::EMAIL => $input[Merchant\Entity::EMAIL]
-        ];
-
-        (new User\Service())->edit($this->user->getId(), $userInput);
-        (new Merchant\Service())->edit($this->merchant->getId(),$merchantInput);
-
-        $merchantDetails = $this->merchant->merchantDetail;
-
-        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
-            $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
-            $this->repo->saveOrFail($merchantDetails);
-        });
-    }
-
     public function saveMerchantDetailsForActivation(array $input)
     {
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
