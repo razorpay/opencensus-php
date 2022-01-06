@@ -75,7 +75,7 @@ class PayoutProcessedContactCommunication extends Base
             ],
             SmsConstants::TEMPLATE_NAME      => self::SMS_TEMPLATE,
             SmsConstants::TEMPLATE_NAMESPACE => SmsConstants::PAYOUTS_CORE_TEMPLATE_NAMESPACE,
-            SmsConstants::ORG_ID             => '',
+            SmsConstants::ORG_ID             => $this->app['basicauth']->getOrgId() ?? '',
             SmsConstants::DESTINATION        => $contactNumber,
             SmsConstants::SENDER             => SmsConstants::RAZORPAYX_SENDER,
             SmsConstants::OWNER_ID           => $this->payoutMerchant->getId(),

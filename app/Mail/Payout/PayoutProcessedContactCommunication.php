@@ -115,8 +115,8 @@ class PayoutProcessedContactCommunication extends Mailable
             'merchant_brand_color'    => $this->merchant->getBrandColorElseDefault(),
             'merchant_contrast_color' => $this->merchant->getContrastOfBrandColor(),
             'payout_status'           => $this->payout->getStatus(),
-            'payout_utr'              => $this->payout->getUtr(),
-            'payout_reference_id'     => $this->payout->getReferenceId() ?? "",
+            'payout_utr'              => $this->payout->getUtr() ?? '',
+            'payout_reference_id'     => $this->payout->getReferenceId(),
             'payout_mode'             => $this->payout->getMode(),
             'payout_id'               => $this->payout->getPublicId(),
             'payout_processed_at'     => Carbon::createFromTimeStamp($this->payout->getProcessedAt(), Timezone::IST)
@@ -129,7 +129,7 @@ class PayoutProcessedContactCommunication extends Mailable
             //'sent'                    => [
             //    'url' => sprintf('https://x.razorpay.com/payouts?id=%s', $this->payout->getPublicId()),
             //],
-            'learn_more_url'             => 'https://x.razorpay.com/?support=ticket'
+            'learn_more_url'             => 'https://razorpay.com/x'
         ];
 
         $this->with($data);
