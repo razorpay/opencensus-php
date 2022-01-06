@@ -171,7 +171,7 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function fetchVirtualAccountsToBeClosed()
+    public function fetchVirtualAccountsToBeClosed($limit = 10000)
     {
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -180,6 +180,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
                     ->whereBetween(Entity::CLOSE_BY, array($nowMinus14days, $now))
+                    ->limit($limit)
                     ->pluck(Entity::ID)
                     ->toArray();
     }

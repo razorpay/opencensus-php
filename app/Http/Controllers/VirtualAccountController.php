@@ -7,6 +7,7 @@ use ApiResponse;
 use Lib\Formatters\Xml;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\VirtualAccount\Entity;
 use RZP\Models\VirtualAccount\Provider;
@@ -34,6 +35,12 @@ class VirtualAccountController extends Controller
 
     public function closeVirtualAccountsByCloseBy()
     {
+        RuntimeManager::setTimeLimit(900);
+
+        RuntimeManager::setMaxExecTime(900);
+
+        RuntimeManager::setMemoryLimit('1024M');
+
         $response = $this->service()->closeVirtualAccountsByCloseBy();
 
         return ApiResponse::json($response);
