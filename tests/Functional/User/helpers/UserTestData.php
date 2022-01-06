@@ -2166,6 +2166,30 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
         ],
     ],
+    'testTriggerTwoFaOtpWithTwoFaSetupForMobileUsers'   => [
+        'request'   => [
+            'url'       => '/users/2fa',
+            'method'    => 'POST',
+        ],
+
+        'response'  => [
+            'content'   => [],
+        ],
+    ],
+
+    'testTriggerTwoFaOtpVerificationForMobileUsers' => [
+        'request'  => [
+            'url'     => '/users/2fa/verify',
+            'method'  => 'post',
+            'content' => [
+                'otp'            => '0007',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
 
     'testConfirmByToken' => [
         'request' => [

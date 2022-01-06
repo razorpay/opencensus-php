@@ -3030,6 +3030,84 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testTriggerTwoFaOtpWithTwoFaSetupForMobileUsers()
+    {
+        $user = $this->fixtures->create('user',
+                                        [
+                                            'contact_mobile'            => '9123456788',
+                                            'contact_mobile_verified'   => true,
+                                            'signup_via_email'          => 0,
+                                            'email'                     => null,
+                                        ]);
+
+        $this->fixtures->edit('org', '100000razorpay', [
+            'second_factor_auth_mode'    => 'email',
+        ]);
+
+        $merchantId = $user
+                        ->merchants()
+                        ->get()
+                        ->pluck('id')
+                        ->toArray()[0];
+
+        $apiKey = 'rzp_live_' . $merchantId;
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id'   => $merchantId,
+            'contact_name'  => 'Aditya',
+            'business_type' => 2,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantId,
+                                                             'user_id'     => $user->getId(),
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->ba->proxyAuth($apiKey, $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testTriggerTwoFaOtpVerificationForMobileUsers()
+    {
+        $user = $this->fixtures->create('user',
+                                        [
+                                            'contact_mobile'            => '9123456788',
+                                            'contact_mobile_verified'   => true,
+                                            'signup_via_email'          => 0,
+                                            'email'                     => null,
+                                        ]);
+
+        $this->fixtures->edit('org', '100000razorpay', [
+            'second_factor_auth_mode'    => 'email',
+        ]);
+
+        $merchantId = $user
+                        ->merchants()
+                        ->get()
+                        ->pluck('id')
+                        ->toArray()[0];
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id'   => $merchantId,
+            'contact_name'  => 'Aditya',
+            'business_type' => 2,
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => $merchantId,
+                                                             'user_id'     => $user->getId(),
+                                                             'role'        => 'owner',
+                                                         ], 'live');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
+
+        $this->startTest();
+    }
+
     public function testTriggerTwoFaOtpWithoutContactMobileVerified()
     {
         $user = $this->fixtures->create('user',[

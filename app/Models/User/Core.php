@@ -2535,8 +2535,16 @@ class Core extends Base\Core
 
     private function isCorrectOtpForSecondFactorAuthOnLogin($user, $input)
     {
+        $medium =  $this->get2FaAuthMode();
+
+        if ((is_null($user->getEmail()) === true) and
+            ($user->isSignupViaEmail() === false))
+        {
+            $medium = Org\Constants::SMS;
+        }
+
         $data = [
-            Entity::MEDIUM => $this->get2FaAuthMode(),
+            Entity::MEDIUM => $medium,
             Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
             Entity::TOKEN  => $user->getId(),
             Entity::OTP    => $input[Entity::OTP],
@@ -2578,6 +2586,12 @@ class Core extends Base\Core
         if ($medium !== Org\Constants::EMAIL)
         {
             $this->check2faSetupDoneOrThrowException($user);
+        }
+
+        if ((is_null($user->getEmail()) === true) and
+           ($user->isSignupViaEmail() === false))
+        {
+            $medium = Org\Constants::SMS;
         }
 
         $input = [
