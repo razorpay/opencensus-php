@@ -62,7 +62,7 @@ class Service extends Base\Service
             'order_id' => $rzporder['id'],
             'currency' => 'INR',
             'name' => $this->merchant->getBillingLabel(),
-            'description' => $this->merchant->getBillingLabel(),
+            'description' => '',
             'prefill' => [
                 'name'  => '',
                 'email' => '',
