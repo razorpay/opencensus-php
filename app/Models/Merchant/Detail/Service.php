@@ -1990,7 +1990,7 @@ class Service extends Base\Service
                 $this->handleGstinSelfServeCallbackFailure($detail);
         }
 
-        $this->deleteGstinSelfServeInput();
+        $this->deleteGstinSelfServeInput($detail->getId());
     }
 
 
@@ -1999,7 +1999,7 @@ class Service extends Base\Service
      */
     private function handleGstinSelfServeCallbackSuccess(Entity $detail): void
     {
-        $input = $this->getGstinSelfServeInputFromCache();
+        $input = $this->getGstinSelfServeInputFromCache($detail->getId());
 
         $this->trace->info(TraceCode::GSTIN_CACHE_INPUT, [
             Constants::INPUT  => $input,
@@ -2133,7 +2133,7 @@ class Service extends Base\Service
 
     protected function handleGstinSelfServeCallbackFailure(Entity $oldDetailEntity)
     {
-        $input = $this->getGstinSelfServeInputFromCache();
+        $input = $this->getGstinSelfServeInputFromCache($oldDetailEntity->getId());
 
         $this->trace->info(TraceCode::GSTIN_CACHE_INPUT, [
             Constants::INPUT  => $input,
@@ -2250,21 +2250,26 @@ class Service extends Base\Service
         $this->app['cache']->put($cacheKey, $input, DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_TTL);
     }
 
-    protected function deleteGstinSelfServeInput()
+    protected function deleteGstinSelfServeInput($merchantId)
     {
-        $cacheKey = $this->getGstinSelfServeInputCacheKey();
+        $cacheKey = $this->getGstinSelfServeInputCacheKey($merchantId);
 
         $this->app['cache']->delete($cacheKey);
     }
 
-    protected function getGstinSelfServeInputCacheKey()
+    protected function getGstinSelfServeInputCacheKey($merchantId = null)
     {
-        return sprintf(DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT, $this->merchant->getId());
+        if (is_null($merchantId) === true)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
+        return sprintf(DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_KEY_FORMAT, $merchantId);
     }
 
-    public function getGstinSelfServeInputFromCache()
+    public function getGstinSelfServeInputFromCache($merchantId = null)
     {
-        $cacheKey = $this->getGstinSelfServeInputCacheKey();
+        $cacheKey = $this->getGstinSelfServeInputCacheKey($merchantId);
 
         return $this->app['cache']->get($cacheKey);
     }
