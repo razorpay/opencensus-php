@@ -152,6 +152,36 @@ jobs:
              GIT_USERNAME=rzp
              ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+
+  build-e2e:
+    name: E2E test build
+    runs-on: [ self-hosted ]
+    needs: [build-web, build-worker, build-checkout, build-openresty]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build and push
+        uses: docker/build-push-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+          repository: ${{ github.repository }}
+          dockerfile: ./e2e/Dockerfile
+          path: e2e
+          build_args: GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+          push: true
+          tags: e2e_${{ github.sha }}
+
+  e2e-test-webhook:
+    name: E2E test webhook
+    runs-on: [ self-hosted ]
+    needs: [ build-e2e ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Triggers rundeck's webhook to execute e2e tests
+        run: |
+          ./.github/scripts/rundeck.sh ${{ github.sha }}
+
   trigger_regression_suite:
    runs-on: [self-hosted]
    name: Regression Suite
