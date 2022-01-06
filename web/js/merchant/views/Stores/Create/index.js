@@ -1,5 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import React from 'react';
+import RTracking from 'react-tracking';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -23,11 +24,17 @@ const FORM_NAME = 'ProductCreate-Form';
 const WRAPPER_CLASS = 'Stores--ProductCreate';
 
 @withRouter
-@connect(null, {
-  showNotification,
-  addToProductsList,
-  updateProductsList,
-})
+@connect(
+  (state) => ({
+    store: state.storefront,
+  }),
+  {
+    showNotification,
+    addToProductsList,
+    updateProductsList,
+  },
+)
+@RTracking(() => window.rzpQ.component('StoresProductCreate'))
 export default class ProductCreate extends React.Component {
   state = {
     isLoading: false,
@@ -51,9 +58,9 @@ export default class ProductCreate extends React.Component {
           let discountedPrice = paiseToRupees(response.data.discounted_price);
 
           /* 
-            backend sets discountedPrice same as sellingPrice if discountedPrice not entered,
-            hence making discounted price empty if same
-          */
+        backend sets discountedPrice same as sellingPrice if discountedPrice not entered,
+        hence making discounted price empty if same
+        */
           if (sellingPrice === discountedPrice) {
             discountedPrice = '';
           }
@@ -81,6 +88,9 @@ export default class ProductCreate extends React.Component {
 
     this.toggleDisableState();
 
+    track.init({
+      store_id: this.props.store.entity.data.id,
+    });
     track.openModal();
   }
 
@@ -121,6 +131,8 @@ export default class ProductCreate extends React.Component {
     const { formData, images } = this.state;
     const { product_id } = this.props;
 
+    track.createProduct();
+
     const payload = {
       name: formData.name,
       description: formData.description,
@@ -156,6 +168,7 @@ export default class ProductCreate extends React.Component {
   handleCancel = () => {
     // if modal view
     if (this.props.onClose) {
+      track.cancelBtn();
       this.props.onClose();
     } else {
       this.props.history.push('/stores/products');
@@ -224,6 +237,8 @@ export default class ProductCreate extends React.Component {
         });
       }
     };
+
+    track.addProductImage();
   };
 
   handleImageRemove = (index) => {
@@ -253,6 +268,31 @@ export default class ProductCreate extends React.Component {
     });
   };
 
+  handleProductName = (e) => {
+    const value = e.target.value;
+    track.productName(value);
+  };
+
+  handleSellingPrice = (e) => {
+    const value = e.target.value;
+    track.sellingPrice(value);
+  };
+
+  handleDiscountedPrice = (e) => {
+    const value = e.target.value;
+    track.discountedPrice(value);
+  };
+
+  handleQuantityAvailable = (e) => {
+    const value = e.target.value;
+    track.quantityAvailable(value);
+  };
+
+  handleProductDescription = (e) => {
+    const value = e.target.value;
+    track.productDescription(value);
+  };
+
   render() {
     const { images, isSubmitDisabled, isLoading, formData, status } = this.state;
     const isEdit = !!this.props.product_id;
@@ -279,6 +319,7 @@ export default class ProductCreate extends React.Component {
                 required
                 maxLength="100"
                 defaultValue={formData.name}
+                onBlur={this.handleProductName}
               />
               {isEdit ? (
                 <div class="status-field">
@@ -338,6 +379,7 @@ export default class ProductCreate extends React.Component {
                     required
                     defaultValue={formData.sellingPrice}
                     validator={validateAmount}
+                    onBlur={this.handleSellingPrice}
                   />
                 </div>
               </Input.Group>
@@ -360,6 +402,7 @@ export default class ProductCreate extends React.Component {
                     placeholder="0.00"
                     defaultValue={formData.discountedPrice}
                     validator={validateAmount}
+                    onBlur={this.handleDiscountedPrice}
                   />
                 </div>
               </Input.Group>
@@ -370,6 +413,7 @@ export default class ProductCreate extends React.Component {
                 placeholder="No. of units in Stock"
                 defaultValue={formData.stock}
                 type="number"
+                onBlur={this.handleQuantityAvailable}
                 validator={(val) => {
                   if (!val) {
                     return 'Quantity is a required field';
@@ -396,6 +440,7 @@ export default class ProductCreate extends React.Component {
                 description={
                   <div class="text-right">{(formData.description || '').length} / 240</div>
                 }
+                onBlur={this.handleProductDescription}
               />
             </main>
           )}

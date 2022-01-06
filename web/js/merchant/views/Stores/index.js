@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Switch, NavLink, Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import StoreOnboarding from './Onboarding';
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -13,6 +14,7 @@ import Spinner from 'common/ui/Spinner';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchStore } from 'merchant/reducers/storefront';
+import track from './Onboarding/track';
 
 @connect(
   (state) => ({
@@ -25,6 +27,7 @@ import { fetchStore } from 'merchant/reducers/storefront';
     fetchStore,
   },
 )
+@RTracking(() => window.rzpQ.component('StoresContainer'))
 export default class StoresContainer extends React.Component {
   state = {
     isSettingsOpen: false,
@@ -53,6 +56,15 @@ export default class StoresContainer extends React.Component {
     this.props.fetchStore();
   }
 
+  componentDidUpdate(prevProps) {
+    // update store_id if store created/deleted
+    if (this.props.store && this.props.store.entity.data.id !== prevProps.store.entity.data.id) {
+      track.init({
+        store_id: this.props.store.entity.data.id,
+      });
+    }
+  }
+
   render() {
     const { isSettingsOpen } = this.state;
     const { store } = this.props;
@@ -79,7 +91,13 @@ export default class StoresContainer extends React.Component {
                 <span class="tag">LIVE</span>
               </div>
               <div>
-                <a class="m-r" target="_blank" href={store.entity.data.store_url} rel="noreferrer">
+                <a
+                  class="m-r"
+                  target="_blank"
+                  href={store.entity.data.store_url}
+                  rel="noreferrer"
+                  onClick={track.storeLinkClick}
+                >
                   <span class="mr-5">
                     stores.razorpay.com/ <strong>{store.entity.data.slug}</strong>
                   </span>
@@ -92,7 +110,11 @@ export default class StoresContainer extends React.Component {
                   <button class="Button Button--primary--invert" onClick={this.toggleSettingsModal}>
                     <i class="i i-settings-outline mr-5" /> Settings
                   </button>
-                  <Link class="Button Button--primary" to="/stores/products/new">
+                  <Link
+                    class="Button Button--primary"
+                    to="/stores/products/new"
+                    onClick={track.addProductDashboardBtn}
+                  >
                     <span>
                       <i class="i i-plus mr-5" /> Add Product
                     </span>

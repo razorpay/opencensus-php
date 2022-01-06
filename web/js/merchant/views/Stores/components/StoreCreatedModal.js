@@ -1,9 +1,11 @@
 import { withRouter } from 'react-router-dom';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
+import track from '../Onboarding/track';
 
 const StoreCreatedModal = ({ hideSuccessModal, history }) => {
   const handleAddProduct = () => {
+    track.addProductPopupBtn();
     hideSuccessModal();
     history.push('/stores/products/new');
   };

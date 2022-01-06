@@ -93,6 +93,16 @@
               value: 'paymentpages-dashboard'
             },
           ],
+          paymentStores: [
+            {
+              propertyName: 'event_type',
+              value: 'paymentstores'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'paymentstores-dashboard'
+            },
+          ],
           'paymentLinks':[
               {
                   propertyName:'event_type',

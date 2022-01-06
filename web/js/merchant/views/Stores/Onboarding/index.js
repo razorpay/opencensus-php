@@ -59,7 +59,14 @@ const StoreOnboarding = (props) => {
     });
   };
 
+  const handleStep1 = () => {
+    setStep(2);
+    track.saveAndProceedBtn();
+  };
+
   const handleCreateStore = () => {
+    track.createStoreBtn();
+
     return createStoreEntity({
       title: storeName,
       description: '',
@@ -119,7 +126,7 @@ const StoreOnboarding = (props) => {
           <OnboardingStep1
             storeName={storeName}
             handleStorenameChange={handleStorenameChange}
-            handleStep={() => setStep(2)}
+            handleStep={handleStep1}
             disabled={isStep1Disabled}
           />
         ) : step === 2 ? (
