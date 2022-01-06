@@ -3425,10 +3425,12 @@ class Header
             self::INPUT => [
                 self::TERMINAL_ID,
                 self::PRICING_RULE_PLAN_NAME,
+                self::TERMINAL_CREATION_NETWORK_CATEGORY,
             ],
             self::OUTPUT => [
                 self::TERMINAL_ID,
                 self::PRICING_RULE_PLAN_NAME,
+                self::TERMINAL_CREATION_NETWORK_CATEGORY,
             ]
         ],
         Type::LOC_WITHDRAWAL => [
