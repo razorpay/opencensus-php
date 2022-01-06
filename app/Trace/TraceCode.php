@@ -5065,6 +5065,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GSTIN_UPDATE_WORKFLOW_CREATED                       = 'GSTIN_UPDATE_WORKFLOW_CREATED';
     const GSTIN_ADD_WORKFLOW_APPROVED                         = 'GSTIN_ADD_WORKFLOW_APPROVED';
     const GSTIN_UPDATE_WORKFLOW_APPROVED                      = 'GSTIN_UPDATE_WORKFLOW_APPROVED';
+    const GSTIN_CACHE_INPUT                                   = 'GSTIN_CACHE_INPUT';
 
     // merchant failure Analysis trace
     const MERCHANT_FAILURE_ANALYSIS_QUERY_TIME                = 'MERCHANT_FAILURE_ANALYSIS_QUERY_TIME';

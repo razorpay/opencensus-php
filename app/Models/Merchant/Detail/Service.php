@@ -2024,6 +2024,15 @@ class Service extends Base\Service
     {
         $input = $this->getGstinSelfServeInputFromCache();
 
+        $this->trace->info(TraceCode::GSTIN_CACHE_INPUT, [
+            Constants::INPUT  => $input,
+        ]);
+
+        if (isset($input[Entity::GSTIN]) === false)
+        {
+            return;
+        }
+
         $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
 
         try
@@ -2148,6 +2157,15 @@ class Service extends Base\Service
     protected function handleGstinSelfServeCallbackFailure(Entity $oldDetailEntity)
     {
         $input = $this->getGstinSelfServeInputFromCache();
+
+        $this->trace->info(TraceCode::GSTIN_CACHE_INPUT, [
+            Constants::INPUT  => $input,
+        ]);
+
+        if (isset($input[Entity::GSTIN]) === false)
+        {
+            return;
+        }
 
         $newDetailsEntity = clone $oldDetailEntity;
 
