@@ -42,6 +42,7 @@ import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import {
+  WORKFLOW_TYPES,
   getWorkflowTypeForRoute,
   getWorkflowNameForRoute,
 } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
@@ -473,6 +474,7 @@ class Profile extends Component {
         .saveBankAccountChangesAutomate(user.id, formdata) //user.id is merchant_id not user_id
         .then(() => {
           this.props.closeModal();
+          this.props.fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
           this.props.showNotification({
             type: 'success',
             message: 'Bank Account change request updated succesfully. ',
@@ -491,6 +493,7 @@ class Profile extends Component {
       .saveBankAccountChanges(user.id, formdata) //user.id is merchant_id not user_id
       .then(() => {
         this.props.closeModal();
+        this.props.fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
         this.props.showNotification({
           type: 'success',
           message: 'Bank Account change request updated succesfully. ',

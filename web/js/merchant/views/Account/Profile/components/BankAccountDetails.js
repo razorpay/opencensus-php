@@ -43,6 +43,14 @@ const BankAccountDetails = ({
     });
   };
 
+  const isWorkflowChangeAllowed = (workflow) => {
+    return (
+      !workflow?.loading &&
+      (workflow?.workflow_exists === false ||
+        !['open', 'approved'].includes(workflow?.workflow_status))
+    );
+  };
+
   useEffect(() => {
     if (
       bankAccountSectionRef &&
@@ -94,7 +102,7 @@ const BankAccountDetails = ({
           </span>
         )}
         {showRequestChange &&
-          (isBankAccountChangeAllowed ? (
+          (isWorkflowChangeAllowed(bank_detail_update_workflow) && isBankAccountChangeAllowed ? (
             <span
               className="nav-link pull-right"
               onClick={(...e) => {
@@ -112,9 +120,7 @@ const BankAccountDetails = ({
             >
               Request Change
             </span>
-          ) : (
-            <span className="pull-right under-review">Request under review</span>
-          ))}
+          ) : null)}
         <WorkflowStatus
           roles={[rolesList.OWNER]}
           workflowType={WORKFLOW_TYPES.BANK_DETAIL_UPDATE}
@@ -123,7 +129,7 @@ const BankAccountDetails = ({
           onReplyClick={() =>
             openNeedsClarificationModal({
               workflowType: WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
-              worklowName: 'Update Bank Account Details',
+              workflowName: 'Update Bank Account Details',
             })
           }
         />

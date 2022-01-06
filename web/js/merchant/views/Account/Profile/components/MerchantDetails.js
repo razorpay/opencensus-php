@@ -39,6 +39,15 @@ import NeedsClarificationModal from 'merchant/views/Account/Profile/components/W
 import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+
+function isWorkflowChangeAllowed(workflow) {
+  return (
+    !workflow?.loading &&
+    (workflow?.workflow_exists === false ||
+      !['open', 'approved'].includes(workflow?.workflow_status))
+  );
+}
 
 function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
   return (
@@ -52,8 +61,7 @@ function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
       ) : (
         '--'
       )}
-      {(websiteWorkflow?.workflow_exists === false ||
-        !['open', 'approved'].includes(websiteWorkflow?.workflow_status)) &&
+      {isWorkflowChangeAllowed(websiteWorkflow) &&
         user.role === 'owner' &&
         user.isAccepted &&
         user.isWebsiteSelfServeOn && (
@@ -91,8 +99,7 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
       </div>
       {user.business_website &&
         user.isAdditionalDomainWhitelistSelfServeOn &&
-        (additionalWebsiteWorkflow?.workflow_exists === false ||
-          !['open', 'approved'].includes(additionalWebsiteWorkflow?.workflow_status)) &&
+        isWorkflowChangeAllowed(additionalWebsiteWorkflow) &&
         (user.role === 'owner' || user.role === 'admin') &&
         !isLimitReached && (
           <div>
@@ -142,6 +149,9 @@ const MerchantDetails = ({
     activationName = 'Activation';
     trackerName = 'act.form_fill';
   }
+  const increaseTxnLimitWorkflow = workflows[WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT];
+  const businessWebsiteWorkflow = workflows[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
+  const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
 
   const handleEditWebsite = (flowType) => {
     const hasWebsite = user.has_key_access; // If true => edit website flow; otherwise add flow
@@ -207,6 +217,7 @@ const MerchantDetails = ({
       component: (
         <UpdateTransactionLimit
           onComplete={() => fetchWorkflowStatus(WORKFLOW_TYPES.INCREASE_TRANSACTION_LIMIT)}
+          closeModal={closeModal}
         />
       ),
     });
@@ -481,8 +492,7 @@ const MerchantDetails = ({
                       openNeedsClarificationModal({
                         workflowType: WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE,
                         workflowName:
-                          workflows[WORKFLOW_TYPES.ADD_BUSINESS_WEBSITE].permission ===
-                          'edit_merchant_website_detail'
+                          businessWebsiteWorkflow.permission === 'edit_merchant_website_detail'
                             ? 'Add Business Website'
                             : 'Update Business Website',
                       })
@@ -490,9 +500,7 @@ const MerchantDetails = ({
                   />
                 </div>
               )}
-              value={() =>
-                renderWebsites(user, handleEditWebsite, workflows.update_business_website)
-              }
+              value={() => renderWebsites(user, handleEditWebsite, businessWebsiteWorkflow)}
             />
           </IntoView>
           <IntoView hashedWith={[NC_ADD_ADDITIONAL_WEBSITE]}>
@@ -526,7 +534,7 @@ const MerchantDetails = ({
                 </div>
               )}
               value={() =>
-                renderAdditionalWebsites(user, handleEditWebsite, workflows.add_additional_website)
+                renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWorkflow)
               }
             />
           </IntoView>
@@ -625,7 +633,7 @@ const MerchantDetails = ({
             value={() => (
               <div>
                 <Amount value={user.merchant.max_payment_amount} currency="INR" />
-                {showTransactionLimitEdit && (
+                {isWorkflowChangeAllowed(increaseTxnLimitWorkflow) && showTransactionLimitEdit && (
                   <Button.Transparent onClick={onUpdateTransactionLimitClick}>
                     <i class="i i-edit p-l" />
                   </Button.Transparent>
@@ -678,4 +686,5 @@ const MerchantDetails = ({
 export default connect((state) => ({ workflows: state.workflows }), {
   openModal: fnOpenModal,
   closeModal: fnCloseModal,
+  fetchWorkflowStatus: fetchWorkflowStatusReducer,
 })(rTracking()(MerchantDetails));

@@ -193,7 +193,7 @@ const NeedsClarificationModal = ({
       if (workflow?.tags?.includes('customer-responded')) {
         showNotification({
           type: 'error',
-          message: `You've already responded for ${workflowName} workflow`,
+          message: `You've already responded to ${workflowName} workflow`,
         });
         closeModal();
       } else if (

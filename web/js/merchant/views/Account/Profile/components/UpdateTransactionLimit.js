@@ -43,35 +43,12 @@ function UpdateTransactionLimit(props) {
       },
     });
 
-    try {
-      const response = await merchantFetch({
-        url: 'merchant/transaction_limit',
-        method: 'POST',
-        mode: 'live',
-        data: formData,
-      });
-      if (response) {
-        props.showNotification({
-          type: 'success',
-          message: `Request sent successfully`,
-        });
-
-        props.onComplete();
-        props.closeModal();
-
-        // Track API success
-        analyticsTrack({
-          objectName: 'Transaction limit workflow created',
-          actionName: 'API response',
-          screen: 'My account screen',
-          properties: {
-            result: 'Success',
-            newLimit: `${formFieldValues.limit}`,
-            ...getCommonAnalyticsProperties(window.rzp_user),
-          },
-        });
-      }
-    } catch ({ errors }) {
+    const response = await merchantFetch({
+      url: 'merchant/transaction_limit',
+      method: 'POST',
+      mode: 'live',
+      data: formData,
+    }).catch(({ errors }) => {
       props.showNotification({
         type: 'error',
         message: errors,
@@ -85,6 +62,26 @@ function UpdateTransactionLimit(props) {
         properties: {
           result: 'Failure',
           failureReason: `${errors}`,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    });
+    if (response) {
+      props.showNotification({
+        type: 'success',
+        message: `Request sent successfully`,
+      });
+      props.onComplete();
+      props.closeModal();
+
+      // Track API success
+      analyticsTrack({
+        objectName: 'Transaction limit workflow created',
+        actionName: 'API response',
+        screen: 'My account screen',
+        properties: {
+          result: 'Success',
+          newLimit: `${formFieldValues.limit}`,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
