@@ -118,7 +118,14 @@ class Service extends Base\Service
 
         $additionalDetails = json_decode($activationDetail->getAdditionalDetails(), true);
 
-        $response['booking_id'] = $additionalDetails['booking_id'];
+        $bookingId = null;
+
+        if (array_key_exists('booking_id', $additionalDetails) === true)
+        {
+            $bookingId = $additionalDetails['booking_id'];
+        }
+
+        $response['booking_id'] = $bookingId;
 
         $response['assigned_staff_name'] = $activationDetail->getAssigneeName();
 
