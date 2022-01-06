@@ -2889,7 +2889,12 @@ class Processor
         $traceCode = TraceCode::PAYMENT_CARD_MANDATE_CANCELLED_BY_USER;
         $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER;
 
-        $exception = new Exception\BadRequestException($errorCode);
+        $data = [
+            'payment_id' => $payment->getPublicId(),
+            'order_id'   => $payment->getPublicOrderId()
+        ];
+
+        $exception = new Exception\BadRequestException($errorCode,null, $data);
 
         $this->updatePaymentFailed($exception, $traceCode);
 

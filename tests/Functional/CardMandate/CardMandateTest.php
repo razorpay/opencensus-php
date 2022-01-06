@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\CardMandate;
 use Mockery;
 
 use Queue;
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
@@ -1556,5 +1557,38 @@ class CardMandateTest extends TestCase
                 ];
         }
     }
+
+    public function testMetaDataAddition()
+    {
+
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mandateConfirm = 'false';
+
+        $this->mockReportPayment();
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $exception = false;
+        try
+        {
+            $this->makeRequestAndGetContent($request);
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER, $e->getCode());
+            $this->assertArrayKeysExist($e->getData(),['payment_id','order_id']);
+            $exception = true;
+        }
+        assertTrue($exception);
+
+    }
+
 }
 
