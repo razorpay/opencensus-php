@@ -17,10 +17,11 @@ use OpenCensus\Trace\Tracer;
 
 Route::get('/visits', function () {
     // Creates a detached span
-    $span = Tracer::startSpan(['name' => 'expensive-redis-operation']);
-// Opens a scope that attaches the span to the current context
+    $span = Tracer::startSpan(['name' => 'visits-operation']);
     $scope = Tracer::withSpan($span);
     try {
+        $span = Tracer::startSpan(['name' => 'expensive-redis-operation']);
+        $scope = Tracer::withSpan($span);
         $visits = Redis::incr('visits');
         $span = Tracer::startSpan(['name' => 'db:get:user']);
         $scope = Tracer::withSpan($span);

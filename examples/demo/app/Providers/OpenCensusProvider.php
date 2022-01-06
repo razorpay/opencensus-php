@@ -45,7 +45,7 @@ class OpenCensusProvider extends ServiceProvider
         // Enable OpenCensus extension integrations
         Laravel::load();
         Mysql::load();
-        Redis::load();
+        //Redis::load();
         PDO::load();
         Grpc::load();
         Curl::load();
