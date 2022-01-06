@@ -17,12 +17,19 @@ use OpenCensus\Trace\Tracer;
 
 Route::get('/visits', function () {
     // Creates a detached span
-    $span = Tracer::startSpan(['name' => 'expensive-operation']);
-
+    $span = Tracer::startSpan(['name' => 'expensive-redis-operation']);
 // Opens a scope that attaches the span to the current context
     $scope = Tracer::withSpan($span);
     try {
         $visits = Redis::incr('visits');
+        $span = Tracer::startSpan(['name' => 'db:get:user']);
+        $scope = Tracer::withSpan($span);
+        $users = DB::table('users')->get();
+        $span = Tracer::startSpan(['name' => 'GET:Guzzle:Repository']);
+        $scope = Tracer::withSpan($span);
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request('GET', 'https://api.github.com/repos/guzzle/guzzle');
+        $response->getStatusCode();
     } finally {
         // Closes the scope (ends the span)
         $scope->close();

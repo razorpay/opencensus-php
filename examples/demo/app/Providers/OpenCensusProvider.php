@@ -23,6 +23,7 @@ use OpenCensus\Trace\Exporter\FileExporter;
 use OpenCensus\Trace\Exporter\JaegerExporter;
 use OpenCensus\Trace\Exporter\StackdriverExporter;
 use OpenCensus\Trace\Exporter\ZipkinExporter;
+use OpenCensus\Trace\Integrations\Curl;
 use OpenCensus\Trace\Integrations\Grpc;
 
 use OpenCensus\Trace\Integrations\Postgres;
@@ -44,9 +45,10 @@ class OpenCensusProvider extends ServiceProvider
         // Enable OpenCensus extension integrations
         Laravel::load();
         Mysql::load();
-        //Redis::load();
+        Redis::load();
         PDO::load();
         Grpc::load();
+        Curl::load();
         Postgres::load();
 
         // Start the request tracing for this request
