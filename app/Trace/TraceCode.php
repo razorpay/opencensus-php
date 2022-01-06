@@ -15,6 +15,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION                = 'TOKEN_REQUESTOR_CARD_NUMBER_DECRYPTION';
 
     const COI_EXPERIMENT                                        = 'COI_EXPERIMENT';
+
+    const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     /*
      * Payment component error messages
      */
@@ -987,6 +989,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COUPON_DELETED                                        = 'COUPON_DELETED';
     const COUPON_UPDATE_REQUEST                                 = 'COUPON_UPDATE_REQUEST';
     const COUPON_VALIDATE_REQUEST                               = 'COUPON_VALIDATE_REQUEST';
+
+    const AMOUNT_CREDITS_COUPON_APPLY_REQUEST                   = 'AMOUNT_CREDITS_COUPON_APPLY_REQUEST';
 
     const ITEM_CREATE_REQUEST                                   = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                                   = 'ITEM_UPDATE_REQUEST';

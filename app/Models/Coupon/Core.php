@@ -178,6 +178,22 @@ class Core extends Base\Core
         ];
     }
 
+    public function applyCouponCode(Merchant\Entity $merchant, Entity $coupon)
+    {
+        $promotion = $coupon->source;
+
+        $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
+        {
+            $this->createAndActivateMerchantPromotion($merchant, $promotion);
+
+            $coupon->incrementUsedCount();
+
+            $this->repo->saveOrFail($coupon);
+
+            $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
+        });
+    }
+
     /**
      * Check if the coupon has been used by the merchant
      *
@@ -319,7 +335,7 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function createAndActivateMerchantPromotion(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    public function createAndActivateMerchantPromotion(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $merchantPromotionCore = (new MerchantPromotion\Core);
 

@@ -679,6 +679,7 @@ class Route
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
+        'merchant_coupons_apply'                   => ['post',     'merchant/activation/coupons/apply',              'MerchantController@postApplyCoupon'                                               ],
 
         // Api for creating merchant using raw file
         'merchant_upload'                          => ['post',     'merchant/upload',                                'MerchantController@uploadMerchant'                ],
@@ -4475,6 +4476,7 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_coupons_apply',
         'raw_address_create_batch_service',
         'raw_address_failed_file',
         'shipping_provider_list',
@@ -7917,6 +7919,7 @@ class Route
             'growth_get_asset_details',
             'merchant_activation_post_email',
             'merchant_activation_otp_send',
+            'merchant_coupons_apply',
             'store_create',
             'store_get_by_merchant',
             'store_update',

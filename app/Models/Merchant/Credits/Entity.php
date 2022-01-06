@@ -150,6 +150,11 @@ class Entity extends Base\PublicEntity
         $attributes[self::VALUE] = (new Core)->getCreditInAmount($this->getValue(), $this->getProduct());
     }
 
+    public function setExpiredAt(int $timestamp)
+    {
+        $this->setAttribute(self::EXPIRED_AT, $timestamp);
+    }
+
 // --------------------- End Setters -------------------------------------
 
 // --------------------- Getters -----------------------------------------

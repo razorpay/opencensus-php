@@ -175,6 +175,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getCreditsForMerchantAndPromotion(string $merchantId, string $promotionId)
+    {
+        return $this->newQuery()
+            ->merchantId($merchantId)
+            ->where(Entity::PROMOTION_ID, '=', $promotionId)
+            ->first();
+    }
+
     public function getMerchantCreditsOfType(string $merchantId, string $type): int
     {
         if ($type === Type::REFUND)

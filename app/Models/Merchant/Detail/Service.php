@@ -28,6 +28,7 @@ use RZP\Models\Promotion\Event;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\BusinessDetail;
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\PublicErrorDescription;
@@ -41,6 +42,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
+use RZP\Models\Transaction\CreditType as CreditType;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -441,6 +443,111 @@ class Service extends Base\Service
         }
 
         return (new Merchant\Service)->getSmartDashboardMerchantDetails();
+    }
+
+    public function postApplyCoupon(array $input)
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+        $merchantId = $merchant->getMerchantId();
+
+        (new Coupon\Validator())->validateInput('apply_coupon_code', $input);
+
+        $couponCode =  $input[Coupon\Entity::CODE];
+
+        $couponInput = [
+            Coupon\Entity::CODE => $couponCode,
+        ];
+
+        // validates coupon code and merchant promotion
+        $coupon = (new Coupon\Core())->validateAndGetDetails($merchant, $couponInput);
+
+        $promotion = $coupon->source;
+
+        if($promotion->getCreditType() != CreditType::AMOUNT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_AMOUNT_CREDITS_COUPON_APPLICABLE
+            );
+        }
+
+        $promotionIds = $this->repo->merchant_promotion->fetchActivePromotionIdsOfCreditTypeAmount($merchantId);
+
+        $this->trace->info(TraceCode::AMOUNT_CREDITS_COUPON_APPLY_REQUEST,[
+            "merchantId"            => $merchantId,
+            "input"                 => $input,
+            "existingPromotionIds"  => $promotionIds,
+            "existingCredits"       => $merchant->primaryBalance->reload()->getAmountCredits(),
+        ]);
+
+        if(isset($input[DetailConstants::TOKEN]) === true)
+        {
+            //fetch the data from cache and if token matches then apply the coupon and expire any existing credits.
+            $token = $input[DetailConstants::TOKEN];
+
+            $cacheKey = DetailConstants::COUPON_CODE_CACHE_KEY_PREFIX. $merchantId . '_' . $couponCode;
+
+            $cacheValue = $this->app['cache']->get($cacheKey);
+
+            if($token == $cacheValue)
+            {
+                //expire existing credits and apply coupon
+                $this->trace->info(TraceCode::CREDITS_EXPIRE_REQUEST,[
+                    "merchantId"   => $merchantId,
+                    "couponCode"   => $couponCode,
+                ]);
+
+                //expire existing credits
+                (new Merchant\Promotion\Core())->forceExpireExistingCredits($merchantId, $promotionIds);
+
+                (new Coupon\Core())->applyCouponCode($merchant, $coupon);
+
+                return [
+                    'applied' => true,
+                ];
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_COUPON_REQUEST_TIMED_OUT
+                );
+            }
+        }
+        else
+        {
+            /*
+             when api is called for the first time, system will check if there is already an unexpired coupon applied.
+             If yes, we will store the data [mid_token] in cache (with an expiry of 60 mins) and return token to the user
+            */
+            $primaryBalance = $merchant->primaryBalance;
+
+            $availableCredits = $primaryBalance->reload()->getAmountCredits();
+
+            if((empty($promotionIds) === false) && ($availableCredits != 0))
+            {
+                //User have unexpired coupon code in their profile
+                $token = UniqueIdEntity::generateUniqueId();
+
+                $cacheKey = DetailConstants::COUPON_CODE_CACHE_KEY_PREFIX. $merchantId . '_' . $couponCode;
+
+                $this->app['cache']->put($cacheKey, $token, DetailConstants::TOKEN_TTL * 60);
+
+                return [
+                    DetailConstants::TOKEN            => $token,
+                    'applied'                         => false,
+                    'data'  => [
+                        'available_credits' => $availableCredits
+                    ],
+                ];
+            }
+            else
+            {
+                (new Coupon\Core())->applyCouponCode($merchant, $coupon);
+
+                return [
+                    'applied' => true,
+                ];
+            }
+        }
     }
 
     /**

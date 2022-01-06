@@ -64,6 +64,11 @@ class Constants
     const FAILURE           = 'failure';
     const INVALID           = 'invalid';
 
+    const TOKEN                         = 'token';
+    //token timeout duration in mins
+    const TOKEN_TTL                     = 15;
+    const COUPON_CODE_CACHE_KEY_PREFIX  = 'COUPON_CODE_';
+
     const SIGNED_URL             = 'signed_url';
     const PASSPORT_FRONT         = 'passport_front';
     const AADHAR_FRONT           = 'aadhar_front';

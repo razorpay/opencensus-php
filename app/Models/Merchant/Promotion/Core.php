@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Merchant\Promotion;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
+use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Task;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
@@ -146,7 +148,7 @@ class Core extends Base\Core
         // Credits are given when merchant signups and not when merchant activates.
         // Need to revisit on this as merchant's signup time is not considered to calculate next_run_at.
         //
-        $input[Task\Entity::NEXT_RUN_AT] = $merchant->getCreatedAt();
+        $input[Task\Entity::NEXT_RUN_AT] = Carbon::now(Timezone::IST)->getTimestamp();
 
         $task = (new Task\Core)->create($merchant, $promotion, $input);
 
@@ -253,6 +255,27 @@ class Core extends Base\Core
     {
         $creditsToExpire = $this->calculateCreditToExpire($merchant, $promotion, $timestamp);
 
+        $this->expireCreditsUtility($creditsToExpire, $merchant, $promotion);
+    }
+
+    protected function calculateCreditToExpire(
+        Merchant\Entity $merchant,
+        Promotion\Entity $promotion,
+        int $timestamp): int
+    {
+        $credit = $this->repo->credits->findCreditsToExpire(
+                    $merchant->getId(), $promotion->getId(), $timestamp);
+
+        if ($credit === null)
+        {
+            return 0;
+        }
+
+        return $credit->getUnusedCredits();
+    }
+
+    protected function expireCreditsUtility($creditsToExpire, Merchant\Entity $merchant, Promotion\Entity $promotion)
+    {
         if ($creditsToExpire > 0)
         {
             $creditInput = [
@@ -278,19 +301,56 @@ class Core extends Base\Core
         }
     }
 
-    protected function calculateCreditToExpire(
-        Merchant\Entity $merchant,
-        Promotion\Entity $promotion,
-        int $timestamp): int
+    public function forceExpireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
-        $credit = $this->repo->credits->findCreditsToExpire(
-                    $merchant->getId(), $promotion->getId(), $timestamp);
+        $creditsToExpire = $this->calculateAndExpireRemainingCredits($merchant, $promotion);
+
+        $this->expireCreditsUtility($creditsToExpire, $merchant, $promotion);
+    }
+
+    public function calculateAndExpireRemainingCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
+    {
+        $credit = $this->repo->credits->getCreditsForMerchantAndPromotion(
+            $merchant->getId(), $promotion->getId());
 
         if ($credit === null)
         {
             return 0;
         }
 
+        $credit->setExpiredAt(Carbon::now()->getTimestamp());
+
+        $this->repo->saveOrFail($credit);
+
         return $credit->getUnusedCredits();
+    }
+
+    public function forceExpireExistingCredits(string $merchantId, array $promotionIds)
+    {
+        //expire existing credits
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        foreach ($promotionIds as $promotionId) {
+            $promotion = $this->repo->promotion->findOrFailPublic($promotionId);
+
+            $merchantPromotion = $this->repo
+                ->merchant_promotion
+                ->findByMerchantAndPromotionId(
+                    $merchant->getId(),
+                    $promotion->getId());
+
+            $this->repo->transaction(
+                function () use (
+                    $merchant,
+                    $promotion,
+                    $merchantPromotion
+                ) {
+                    (new Merchant\Promotion\Core())->forceExpireCredits($merchant, $promotion);
+
+                    $merchantPromotion->setExpired();
+
+                    $this->repo->saveOrFail($merchantPromotion);
+                });
+        }
     }
 }

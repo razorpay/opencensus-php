@@ -13,7 +13,6 @@ use RZP\Base\JitValidator;
 use RZP\Services\EsClient;
 use RZP\Http\Request\Requests;
 
-
 class PublicController extends Controller
 {
     public function getRoot()

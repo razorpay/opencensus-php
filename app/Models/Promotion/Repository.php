@@ -81,4 +81,14 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function fetchPromotionIdsOnCreditType(array $promotionIds, string $creditType)
+    {
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->whereIn(Entity::ID, $promotionIds)
+            ->where(Entity::CREDIT_TYPE, '=', $creditType)
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
 }

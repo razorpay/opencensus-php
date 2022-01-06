@@ -982,6 +982,9 @@ class PublicErrorDescription
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
     const BAD_REQUEST_COUPON_ALREADY_EXISTS                                     = 'Coupon code already exists';
 
+    const BAD_REQUEST_COUPON_REQUEST_TIMED_OUT                                  = 'Coupon code apply request timeout';
+    const BAD_REQUEST_ONLY_AMOUNT_CREDITS_COUPON_APPLICABLE                     = 'Only Amount Credits Coupon Code is allowed';
+
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
 
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                      = 'Admin Token Mismatch';

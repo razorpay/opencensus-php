@@ -1106,6 +1106,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postApplyCoupon()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->postApplyCoupon($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function putEditMerchantDetailsAfterLock($id)
     {
         $input = Request::all();

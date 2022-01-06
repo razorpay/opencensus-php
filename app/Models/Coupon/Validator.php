@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Promotion;
 use RZP\Constants\Entity as PublicEntity;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Validator extends Base\Validator
 {
@@ -41,6 +42,11 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::START_AT => 'sometimes|epoch',
         Entity::END_AT  =>  'required|epoch'
+    ];
+
+    protected static $applyCouponCodeRules = [
+        Entity::CODE           => 'required|string',
+        DetailConstants::TOKEN => 'sometimes|string',
     ];
 
     /**

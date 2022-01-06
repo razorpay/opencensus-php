@@ -79,4 +79,19 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->exists();
     }
+
+    public function fetchActivePromotionIdsOfCreditTypeAmount(string $merchantId)
+    {
+        $merchantPromotionId = $this->dbColumn(Entity::PROMOTION_ID);
+        $promotionId = $this->repo->promotion->dbColumn(Promotion\Entity::ID);
+        $creditType = $this->repo->promotion->dbColumn(Promotion\Entity::CREDIT_TYPE);
+
+        return $this->newQuery()
+            ->join(TABLE::PROMOTION, $promotionId, '=', $merchantPromotionId)
+            ->where($creditType, '=', 'amount')
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::EXPIRED, '=', 0)
+            ->pluck(Entity::PROMOTION_ID)
+            ->toArray();
+    }
 }
