@@ -499,12 +499,14 @@ class Service extends Base\Service
      */
     private function getShippingInfoCacheKey($orderId, $address): string
     {
+        $zipcode = $address['zipcode'] ?? "";
+
         return self::SHIPPING_INFO_CACHE_KEY_PREFIX
             . $this->merchant->getId()
             . "_"
             . $orderId
             . "_"
-            . $address['zipcode']
+            . $zipcode
             . "_"
             . $address['country'];
     }

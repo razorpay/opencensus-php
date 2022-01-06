@@ -67,12 +67,13 @@ class Service extends \RZP\Models\Base\Service
     protected function getShippingInfoCacheKey($orderId, $address): string
     {
         $merchantId = $this->merchant !== null ? $this->merchant->getId() : "";
+        $zipcode = $address['zipcode'] ?? "";
         return "SHIPPING_INFO_"
             . $merchantId
             . "_"
             . $orderId
             . "_"
-            . $address['zipcode']
+            . $zipcode
             . "_"
             . $address['country'];
     }

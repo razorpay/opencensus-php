@@ -572,7 +572,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $shippingInfoRequestRules = [
-        Address\Entity::ZIPCODE => 'required|string|between:2,10',
+        Address\Entity::ZIPCODE => 'sometimes|string|between:0,16',
         Address\Entity::COUNTRY => 'sometimes|string|between:2,64|custom',
     ];
 
