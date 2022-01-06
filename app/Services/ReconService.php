@@ -67,11 +67,11 @@ class ReconService
 
         $this->baseUrl = $this->config['url'];
 
-        $this->key = $this->config['key'];
+        $this->key = $this->config['api_key'];
 
         $this->auth = $app['basicauth'];
 
-        $this->secret = $this->config['secret'];
+        $this->secret = $this->config['api_secret'];
 
         $this->matcher_key = $this->config['matcher_key'];
 
