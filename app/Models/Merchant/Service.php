@@ -7709,7 +7709,7 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'The provided Email Id does not belongs to the merchant');
         }
 
-        if (empty($merchantEmail === false))
+        if (empty($merchantEmail) === false)
         {
             $this->app->hubspot->trackHubspotEvent($merchantEmail, $input);
         }

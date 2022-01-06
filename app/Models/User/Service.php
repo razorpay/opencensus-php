@@ -1495,7 +1495,7 @@ class Service extends Base\Service
         /** @var HubspotClient $hubspotClient */
         $hubspotClient = $this->app->hubspot;
 
-        if (empty($this->merchant->getEmail() === false))
+        if (empty($this->merchant->getEmail()) === false)
         {
             $hubspotClient->trackHubspotEvent($this->merchant->getEmail(), [
                 'contact_verified' => true
