@@ -35,12 +35,9 @@ class ChannelNotification
     // TODO: Will change once merchant specific logic is plugged in
     protected $internalContact = [
         '9008516469',
-        '9620148438',
         '9986565961',
         '9057230892',
-        '7892118329',
         '7036916099',
-        '9130522794',
         '8050408646',
         '8976670177',
         '8861655100',
