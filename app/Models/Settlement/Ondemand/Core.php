@@ -305,13 +305,11 @@ class Core extends Base\Core
         }
     }
 
-    public function getSettlementAmountAndSettleableAmount($input, $merchant, $featureConfig, $scheduled = false): array
+    public function getSettlementAmountAndSettleableAmount($input, $amount, $featureConfig, $scheduled = false): array
     {
-        $amount = $this->getSettlementAmount($input, $merchant);
-
         [$settleableAmount, $amountLeftForToday] = (new FeatureConfig\Service)->getAllowedSettlementAmount($featureConfig);
 
-        if ($scheduled == true and isset($input['settle_full_balance']) and $input['settle_full_balance'] == true)
+        if ($scheduled === true and isset($input['settle_full_balance']) === true and boolval($input['settle_full_balance']) === true)
         {
             $amount = $amount > $settleableAmount ? $settleableAmount : $amount;
         }

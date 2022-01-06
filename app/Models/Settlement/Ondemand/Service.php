@@ -91,18 +91,20 @@ class Service extends Base\Service
 
                 $this->validateIfDisabledByCollections();
 
-                $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($this->merchant->getId());
-
-                [$amount, $settleableAmount] = $this->core()->getSettlementAmountAndSettleableAmount($input, $this->merchant, $featureConfig, $scheduled);
-
-                $input[Entity::AMOUNT] = $amount;
+                $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
                 //If es_on_demand_restricted feature is enabled for the merchant
                 //additional checks will be done based on config values
                 if($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
                 {
+                    $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($this->merchant->getId());
+
+                    [$amount, $settleableAmount] = $this->core()->getSettlementAmountAndSettleableAmount($input, $amount, $featureConfig, $scheduled);
+
                     $this->configCheck($featureConfig, $amount, $scheduled, $settleableAmount);
                 }
+
+                $input[Entity::AMOUNT] = $amount;
 
                 [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->core()->createSettlementOndemand(
                                                                                             $input,
