@@ -62,6 +62,7 @@ const ShopEstablishmentNumber: React.FC = () => {
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
             tabName="Documents"
+            cardTitle="Documents"
           />
         </form>
       )}

@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useLayoutEffect, useEffect } from 'react';
 import styled from 'styled-components';
 import Link from '@razorpay/blade-old/src/atoms/Link';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -10,6 +10,7 @@ import { Modal, ModalBody } from 'common/components/Modal';
 import Panel from 'common/components/Accordian/Panel';
 import StatelessAccordian from 'common/components/Accordian/StatelessAccordian';
 import { useActivationFormState } from '../context/store';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -17,7 +18,11 @@ const StyledSeparator = styled(View)`
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
-const FAQs: React.FC = () => {
+interface IFAQsProps {
+  activeTab?: string;
+}
+
+const FAQs = ({ activeTab }: IFAQsProps): React.ReactElement => {
   const isOpen = useActivationFormState((state) => state.isFAQOpen);
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const sectionToDisplay = useActivationFormState((state) => state.fAQSection);
@@ -25,6 +30,77 @@ const FAQs: React.FC = () => {
   const modalBottomSheetRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState<React.ReactText[]>([sectionToDisplay]);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
+  const trackEvents = useTrackEvents();
+
+  const questionsMapping = {
+    Q1: 'What is Billing label?',
+    Q2: 'How can I add api keys to my website?',
+    Q3: 'What are the documents needed to sign-up?',
+    Q4: 'I have submitted my activation form. When will my account get activated?',
+    Q5: 'What is KYC review process',
+    Q6: 'Where do I find the templates for website policies?',
+    Q7: 'Special anniversary pricing offer',
+    Q8: 'Unlock Growth with Razorpay',
+    Q9: 'I have signed up with Razorpay. How do I complete my activation form?',
+    Q10: 'My account is not yet activated, its been too long since I got any update, what do I do?',
+    Q11:
+      'I have submitted my activation form but my account is not activated. Can I start integrating?',
+    Q12: 'I had submitted the form long back. How do I get my account activated?',
+    Q13: 'Do you support unregistered businesses?',
+    Q14: 'What are the payment methods supported?',
+  };
+
+  const sendEventToSegment = (key) => {
+    let isCurrentAccordianOpen;
+    if (expanded[0] === '' || key !== expanded[0] || expanded.length === 0) {
+      isCurrentAccordianOpen = true;
+    } else isCurrentAccordianOpen = false;
+
+    const isPreviousAccordianClosed =
+      key !== expanded[0] && expanded.length !== 0 && expanded[0] !== '';
+
+    if (isCurrentAccordianOpen) {
+      trackEvents({
+        objectName: 'Accordian',
+        actionName: 'Opened',
+        screen: 'home page',
+        properties: {
+          'Accordian Label': questionsMapping[key],
+          Screen: activeTab,
+        },
+      });
+    } else {
+      trackEvents({
+        objectName: 'Accordian',
+        actionName: 'Closed',
+        screen: 'home page',
+        properties: {
+          'Accordian Label': questionsMapping[key],
+          Screen: activeTab,
+        },
+      });
+      trackEvents({
+        objectName: 'Screen',
+        actionName: 'Viewed',
+        screen: 'home page',
+        properties: {
+          'Accordian Label': questionsMapping[key],
+          Screen: activeTab,
+        },
+      });
+    }
+    if (isPreviousAccordianClosed) {
+      trackEvents({
+        objectName: 'Accordian',
+        actionName: 'Closed',
+        screen: 'home page',
+        properties: {
+          'Accordian Label': questionsMapping[expanded[0]],
+          Screen: activeTab,
+        },
+      });
+    }
+  };
 
   useLayoutEffect(() => {
     setTimeout(() => {
@@ -45,11 +121,31 @@ const FAQs: React.FC = () => {
     setExpanded([sectionToDisplay]);
   }, [sectionToDisplay]);
 
+  useEffect(() => {
+    if (isOpen) {
+      trackEvents({
+        objectName: 'Bottom Sheet',
+        actionName: 'Loaded',
+        screen: 'home page',
+        properties: {
+          'Modal Label': 'FAQs',
+        },
+      });
+    }
+  }, [isOpen]);
   return (
     <Modal
       bottomsheet
       isOpen={isOpen}
       onClose={() => {
+        trackEvents({
+          objectName: 'Bottom sheet',
+          actionName: 'Closed',
+          screen: 'home page',
+          properties: {
+            'Modal Label': 'FAQs',
+          },
+        });
         setIsOpen(false);
         setFAQSection('');
       }}
@@ -70,7 +166,13 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel key="Q1" title="What is Billing label?">
+            <Panel
+              key="Q1"
+              title="What is Billing label?"
+              onClick={() => {
+                sendEventToSegment('Q1');
+              }}
+            >
               Billing label is your brand&apos;s identity, it will be displayed on your invoices and
               bills. Please ensure billing label is as close to your business name/website as
               possible.
@@ -82,7 +184,13 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel key="Q2" title="How can I add api keys to my website?">
+            <Panel
+              key="Q2"
+              title="How can I add api keys to my website?"
+              onClick={() => {
+                sendEventToSegment('Q2');
+              }}
+            >
               Following are the mandatory requirements to access and api keys to your website:
               <br />
               1.Privacy Policy page
@@ -102,7 +210,13 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel key="Q3" title="What are the documents needed to sign-up?">
+            <Panel
+              key="Q3"
+              title="What are the documents needed to sign-up?"
+              onClick={() => {
+                sendEventToSegment('Q3');
+              }}
+            >
               Here are the Documents to be uploaded:
               <br />
               <br />
@@ -129,6 +243,9 @@ const FAQs: React.FC = () => {
             <Panel
               key="Q4"
               title="I have submitted my activation form. When will my account get activated?"
+              onClick={() => {
+                sendEventToSegment('Q4');
+              }}
             >
               Activation of an account is subject to approval from our banking partners (Working
               days do not include Saturdays, Sundays and bank holidays)
@@ -136,7 +253,13 @@ const FAQs: React.FC = () => {
               Our team will update you on the status of your account, once we get a revert from our
               bank.
             </Panel>
-            <Panel key="Q5" title="What is KYC review process">
+            <Panel
+              key="Q5"
+              title="What is KYC review process"
+              onClick={() => {
+                sendEventToSegment('Q5');
+              }}
+            >
               <Text size="medium" weight="bold" style={{ display: 'inline' }} color="shade.970">
                 Instant Activation: &nbsp;
               </Text>
@@ -174,7 +297,13 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel key="Q6" title="Where do I find the templates for website policies?">
+            <Panel
+              key="Q6"
+              title="Where do I find the templates for website policies?"
+              onClick={() => {
+                sendEventToSegment('Q6');
+              }}
+            >
               Please find the sample templates for website policies here:
               <br />
               <br />
@@ -203,7 +332,13 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel key="Q7" title="Special anniversary pricing offer">
+            <Panel
+              key="Q7"
+              title="Special anniversary pricing offer"
+              onClick={() => {
+                sendEventToSegment('Q7');
+              }}
+            >
               <Text weight="bold" color="shade.970" size="medium">
                 1) What’s the eligibility criteria for the promotional pricing offer?
               </Text>
@@ -264,7 +399,13 @@ const FAQs: React.FC = () => {
               section. Any payments reports downloaded with fees breakup will show the effective
               pricing in each transaction row.
             </Panel>
-            <Panel key="Q8" title="Unlock Growth with Razorpay">
+            <Panel
+              key="Q8"
+              title="Unlock Growth with Razorpay"
+              onClick={() => {
+                sendEventToSegment('Q8');
+              }}
+            >
               Get offers worth ₹35 lakh: Accept payments worth ₹1 lakh for free, get fee waivers to
               disburse vendor payouts worth ₹33+ lakh, working capital loans from 1.25% per month
               and more!
@@ -335,6 +476,9 @@ const FAQs: React.FC = () => {
             <Panel
               key="Q9"
               title="I have signed up with Razorpay. How do I complete my activation form?"
+              onClick={() => {
+                sendEventToSegment('Q9');
+              }}
             >
               You can login to your Razorpay account and refer to this{' '}
               <Link href="https://i.imgur.com/prVyTF9.gif">short animation</Link> to find and
@@ -343,6 +487,9 @@ const FAQs: React.FC = () => {
             <Panel
               key="Q10"
               title="My account is not yet activated, it's been too long since I got any update, what do I do?"
+              onClick={() => {
+                sendEventToSegment('Q10');
+              }}
             >
               We try our best to have everyone's account activated on time, however since you
               haven’t received an update on this, please file a grievance over here:{' '}
@@ -353,6 +500,9 @@ const FAQs: React.FC = () => {
             <Panel
               key="Q11"
               title="I have submitted my activation form but my account is not activated. Can I start integrating?"
+              onClick={() => {
+                sendEventToSegment('Q11');
+              }}
             >
               Yes you can. Please refer to our integration documentation at{' '}
               <Link href="https://razorpay.com/integrations/">
@@ -365,6 +515,9 @@ const FAQs: React.FC = () => {
             <Panel
               key="Q12"
               title="I had submitted the form long back. How do I get my account activated?"
+              onClick={() => {
+                sendEventToSegment('Q12');
+              }}
             >
               Please check if you have received a mail from us around the time you submitted the
               activation form and revert on the mail thread. If you don’t see any mail, please raise
@@ -374,7 +527,13 @@ const FAQs: React.FC = () => {
               </Link>{' '}
               and our team will get back to you.
             </Panel>
-            <Panel key="Q13" title="Do you support unregistered businesses?">
+            <Panel
+              key="Q13"
+              title="Do you support unregistered businesses?"
+              onClick={() => {
+                sendEventToSegment('Q13');
+              }}
+            >
               Yes, we do support freelancers/individuals/unregistered business entities. You can
               sign up <Link href="https://dashboard.razorpay.com/#/access/signup">here</Link> and
               submit your activation form. Get started on accepting payments from your customers
@@ -384,7 +543,13 @@ const FAQs: React.FC = () => {
               Keywords: individual, individual business, individual account, individual entity,
               unregistered business, unregistered, Freelancer
             </Panel>
-            <Panel key="Q14" title="What are the payment methods supported?">
+            <Panel
+              key="Q14"
+              title="What are the payment methods supported?"
+              onClick={() => {
+                sendEventToSegment('Q14');
+              }}
+            >
               We support payments through Cards, Netbanking, UPI and Wallets. You may find more
               about this <Link href="https://razorpay.com/payment-gateway/#methods">here</Link>
             </Panel>

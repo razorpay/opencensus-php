@@ -125,7 +125,20 @@ let FooterCheckBox = ({
             target="_blank"
             rel="noopener noreferrer"
             href="https://razorpay.com/terms/"
-            onClick={() => onAction && onAction.trackTnCClick()}
+            onClick={() => {
+              onAction && onAction.trackTnCClick();
+              trackEvents({
+                objectName: 'Checkbox',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Checkbox Label': 'I agree to Razorpay terms and conditions',
+                  'Option Selected': 'I agree to Razorpay terms and conditions',
+                  'Element Type': 'Form',
+                  Mandatory: 'Yes',
+                },
+              });
+            }}
           >
             Terms and Conditions
           </a>

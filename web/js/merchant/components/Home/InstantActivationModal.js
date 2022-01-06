@@ -21,6 +21,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import * as EventActions from 'merchant/reducers/trackEvents';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
@@ -43,6 +44,7 @@ const InstantActivationModal = ({
   currentOnboarding,
   tracking,
   isActivationFormFullView = false,
+  trackEvents,
 }) => {
   const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
   const isPaymentLinkRecommendedProduct = getLandingProduct === 'payment_link';
@@ -67,6 +69,15 @@ const InstantActivationModal = ({
               milestone: 'L2 Start',
               ...commonProperty,
               ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          trackEvents({
+            objectName: 'Modal CTA',
+            actionName: 'Clicked',
+            screen: 'home page',
+            properties: {
+              'CTA Label': 'Complete KYC',
+              'Modal Label': 'KYC Form',
             },
           });
           trackEvent(
@@ -97,6 +108,15 @@ const InstantActivationModal = ({
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
+            trackEvents({
+              objectName: 'Pop Up CTA',
+              actionName: 'Clicked',
+              screen: 'home page',
+              properties: {
+                'Pop-up Label': 'Congratulations! You are ready to accept payments now',
+                'CTA Label': 'Create PL Button',
+              },
+            });
             analyticsTrack({
               objectName: 'Auto PL Pop Up Redirection',
               actionName: 'Initiated',
@@ -122,6 +142,15 @@ const InstantActivationModal = ({
           {completKYCBtn}
           <Button.Primary
             onClick={() => {
+              trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'Congratulations! You are ready to accept payments now',
+                  'CTA Label': 'Complete KYC',
+                },
+              });
               analyticsTrack({
                 objectName: `Create ${recommendProductName} Button`,
                 actionName: 'clicked',
@@ -150,7 +179,21 @@ const InstantActivationModal = ({
     return (
       <>
         {completKYCBtn}
-        <Button.Primary onClick={openPaymentAcceptModal} children="Accept Payments" />
+        <Button.Primary
+          onClick={() => {
+            trackEvents({
+              objectName: 'Pop Up CTA',
+              actionName: 'Clicked',
+              screen: 'home page',
+              properties: {
+                'Pop-up Label': 'Congratulations! You are ready to accept payments now',
+                'CTA Label': 'Accept Payments',
+              },
+            });
+            openPaymentAcceptModal();
+          }}
+          children="Accept Payments"
+        />
       </>
     );
   };
@@ -278,11 +321,32 @@ const InstantActivationModal = ({
     }, 2000);
   }
 
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Pop Up',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        'Pop-up Label': 'Congratulations! You are ready to accept payments now',
+      },
+    });
+  }, []);
+
   return (
     <ModalMask>
       <Modal
         className="instant-activations-success"
-        onClose={onClose}
+        onClose={() => {
+          trackEvents({
+            objectName: 'Pop Up',
+            actionName: 'Closed',
+            screen: 'home page',
+            properties: {
+              'Pop-up Label': 'Congratulations! You are ready to accept payments now',
+            },
+          });
+          onClose();
+        }}
         showCloseBtn={!isPaymentLinkRecommendedProduct}
       >
         <div className="modal-header">
@@ -332,7 +396,7 @@ export default compose(
     (state) => ({
       currentOnboarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
     }),
-    { handleProductQuickGuide },
+    { handleProductQuickGuide, ...EventActions },
   ),
   rTracking(() => window.rzpQ.component('InstantActivationModal')),
 )(InstantActivationModal);

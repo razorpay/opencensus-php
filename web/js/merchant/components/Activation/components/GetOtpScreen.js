@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import Input, { Description } from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { classList } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import * as EventActions from 'merchant/reducers/trackEvents';
 
 const GetOtpScreen = ({
   analyticsProperties,
@@ -22,6 +25,7 @@ const GetOtpScreen = ({
   isStartAgain,
   setIsStartAgain,
   isAadharEkycMandatory,
+  trackEvents,
 }) => {
   const [captchaImg, setCaptchaImg] = useState('');
   const [hasMobileLinked, setHasMobileLinked] = useState(isAadharLinked);
@@ -42,6 +46,17 @@ const GetOtpScreen = ({
       actionName: 'click on checkbox',
       screen: 'KYC on Activation page',
       ...analyticsProperties,
+    });
+    trackEvents({
+      objectName: 'Checkbox',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        'Checkbox Label': 'My Aadhar is not linked to my number',
+        'Option Selected': 'My Aadhar is not linked to my number',
+        'Element Type': 'Form',
+        Mandatory: 'No',
+      },
     });
   };
 
@@ -284,6 +299,18 @@ const GetOtpScreen = ({
             screen: 'Activation page',
             ...analyticsProperties,
           });
+          trackEvents({
+            objectName: 'Form Details',
+            actionName: 'Filled',
+            screen: 'home page',
+            properties: {
+              'Tab Title': 'Document Verification',
+              'Element Type': 'Form',
+              'Field Type': 'Text',
+              'Field Name': 'Aadhar Verification',
+              'Card Title': 'none',
+            },
+          });
         }}
       />
 
@@ -328,6 +355,18 @@ const GetOtpScreen = ({
               actionName: 'focus on enter captcha',
               screen: 'Entering captch on Activation page',
               ...analyticsProperties,
+            });
+            trackEvents({
+              objectName: 'Form Details',
+              actionName: 'Filled',
+              screen: 'home page',
+              properties: {
+                'Tab Title': 'Document Verification',
+                'Element Type': 'Form',
+                'Field Type': 'Text',
+                'Field Name': 'Enter the captcha shown above',
+                'Card Title': 'none',
+              },
             });
           }}
         />
@@ -386,4 +425,4 @@ const GetOtpScreen = ({
   );
 };
 
-export default GetOtpScreen;
+export default compose(connect(null, { ...EventActions }))(GetOtpScreen);

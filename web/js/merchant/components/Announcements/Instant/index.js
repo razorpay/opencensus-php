@@ -118,7 +118,7 @@ export default class InstantActivationAnnouncements extends Component {
                 payments{' '}
               </div>
               <div className="big-circle-seprator" />
-              <Link to={activationUrl} onClick={this.sendL2StartEvent}>
+              <Link to={activationUrl} onClick={() => this.sendL2StartEvent()}>
                 Complete KYC
               </Link>
             </div>

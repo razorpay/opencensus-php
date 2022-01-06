@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
@@ -8,6 +8,7 @@ import useActivation, { getRequestData } from '../hooks/useActivation';
 import usePartnerActivation from '../hooks/usePartnerActivation';
 import { useApp } from 'common/context/App';
 import EmailVerify from '../EmailVerify';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const contactDetailsSchema = Yup.object().shape({
   contact_name: Yup.string()
@@ -36,10 +37,12 @@ interface IContactDetailsProps {
 
 const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
+  const trackEvents = useTrackEvents();
   const { user, experiments } = useApp();
   const { getFieldStatus } = usePartnerActivation();
   const contactDetails = data.contact_details;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+  const [contactDetailsCardTitle, setContactDetailsCardTitle] = useState('');
   const setContactDetailsCompleted = useActivationFormState(
     (state) => state.setContactDetailsCompleted,
   );
@@ -51,6 +54,17 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
     formikProps.handleBlur(e);
     setIsBlurCalled(true);
   };
+
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        pageTitle: 'Contact Details',
+      },
+    });
+  }, []);
 
   const handleSubmit = (updatedDetails) => {
     if (isEmailVerificationRequired && (!!updatedDetails?.contact_email || !!updatedDetails?.otp)) {
@@ -101,7 +115,10 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                   formikProps.setFieldTouched('contact_name');
                   formikProps.setFieldValue('contact_name', value);
                 }}
-                onBlur={(e) => handleBlur(e, formikProps)}
+                onBlur={(e) => {
+                  setContactDetailsCardTitle('Contact Details');
+                  handleBlur(e, formikProps);
+                }}
               />
             </Field>
             <Field>
@@ -124,7 +141,10 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                   formikProps.setFieldTouched('contact_mobile');
                   formikProps.setFieldValue('contact_mobile', value);
                 }}
-                onBlur={(e) => handleBlur(e, formikProps)}
+                onBlur={(e) => {
+                  handleBlur(e, formikProps);
+                  setContactDetailsCardTitle('Contact Details');
+                }}
               />
             </Field>
             {isEmailVerificationRequired ? (
@@ -164,7 +184,10 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
                       ? 'check'
                       : ''
                   }
-                  onBlur={(e) => handleBlur(e, formikProps)}
+                  onBlur={(e) => {
+                    setContactDetailsCardTitle('Contact Details');
+                    handleBlur(e, formikProps);
+                  }}
                 />
               </Field>
             )}
@@ -174,6 +197,7 @@ const ContactDetails: React.FC<IContactDetailsProps> = ({ isFormLocked }) => {
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
             tabName="Contact Details"
+            cardTitle={contactDetailsCardTitle}
           />
         </Form>
       )}

@@ -75,6 +75,7 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import EndOfYearBanner from '../../components/Announcements/EndOfYearBanner';
+import * as EventActions from 'merchant/reducers/trackEvents';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -116,6 +117,16 @@ class AnalyticsDesktop extends Component {
       objectName: 'home page',
       actionName: 'displayed',
       screen: 'home page',
+    });
+    this.props.trackEvents({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        slug: window.location.pathname,
+        pageUrl: window.location.href,
+        PageTitle: 'Razorpay Dashboard',
+      },
     });
     fetchInternationalProductsStatus();
     if (user.isNewSettlementServiceEnabled) {
@@ -993,5 +1004,6 @@ export default withRouter(
     fetchSettlementConfig: fnFetchSettlementConfig,
     fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
     showProductsModal,
+    ...EventActions,
   })(AnalyticsDesktop),
 );

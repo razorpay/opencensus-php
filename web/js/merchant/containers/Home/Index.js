@@ -57,6 +57,7 @@ import User from 'merchant/models/User';
 import { analyticsTrack } from 'common/utils/analytics';
 import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
+import * as EventActions from 'merchant/reducers/trackEvents';
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -116,6 +117,7 @@ const recentActivityTitle = 'Recent Activity';
     fetchSupportDetail,
     showOrHideHighlightMode,
     updateSession,
+    ...EventActions,
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -917,6 +919,7 @@ export default class HomeContainer extends Component {
       kycStatusActivationDuration,
       ondemand_restrictions,
       showTnCModal,
+      trackEvents,
     } = this.props;
 
     const { activation_flow } = user;
@@ -1107,6 +1110,14 @@ export default class HomeContainer extends Component {
                       trackTryDashboard();
                       this.closeOnboardingStep();
                       onFirstStepClose();
+                      trackEvents({
+                        objectName: 'Pop Up',
+                        actionName: 'Closed',
+                        screen: 'home page',
+                        properties: {
+                          'Pop-up Label': 'Welcome to Razorpay',
+                        },
+                      });
                     }}
                     onActivate={() => {
                       trackActivateAccount();

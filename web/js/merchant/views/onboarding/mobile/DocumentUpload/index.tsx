@@ -40,6 +40,7 @@ import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 import useGstin from '../hooks/useGstin';
 import useConfigDetails from '../hooks/useConfigDetails';
 import EmailVerify from '../EmailVerify';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -60,6 +61,7 @@ interface IDocumentUploadProps {
 
 const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElement => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
+  const trackEvents = useTrackEvents();
   const {
     user,
     experiments: {
@@ -221,6 +223,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     setDocumentUploadCompleted(isComplete);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc, data, hasNonMandatoryEmail]);
 
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        pageTitle: 'Document Upload',
+      },
+    });
+  }, []);
+
   const hasBankVerificationFailed =
     data?.bank_details_verification_status &&
     !['initiated', 'verified'].includes(data?.bank_details_verification_status);
@@ -325,6 +338,19 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     !user.user?.signup_via_email &&
     (data?.activation_form_milestone === 'L1' || (data?.submitted && isEmailVerified));
 
+  const fileUploadSegmentEvent = (properties = {}) => {
+    trackEvents({
+      objectName: 'Form Details',
+      actionName: 'Filled',
+      screen: 'home page',
+      eventAction: 'success',
+      user,
+      properties: {
+        ...properties,
+      },
+    });
+  };
+
   return (
     <>
       {shouldShowEsignFlow && <ESignVerification disabled={isFormLocked} />}
@@ -421,7 +447,32 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                     label="Choose Proof Type"
                     placeholder="SELECT PROOF TYPE"
                     searchable={false}
-                    onChange={(value) => setAddressDoc(value)}
+                    onChange={(value) => {
+                      setAddressDoc(value);
+                      trackEvents({
+                        objectName: 'Accordian',
+                        actionName: 'Opened',
+                        screen: 'home page',
+                        properties: {
+                          'Accordian Label': 'Choose Proof Type',
+                        },
+                      });
+                      analyticsTrack({
+                        objectName: 'Form Field',
+                        actionName: 'Filled',
+                        screen: 'home page',
+                        eventAction: 'success',
+                        user,
+                        properties: {
+                          'Card Title': "Authorised Signatory's Address Proof",
+                          'Element Type': 'Form',
+                          'Field Name': 'SELECT PROOF TYPE',
+                          'Field Type': 'Text',
+                          'Tab Title': 'Document Upload',
+                          Mandatory: 'Yes',
+                        },
+                      });
+                    }}
                     value={addressDoc}
                     disabled={isFormLocked}
                   >
@@ -439,7 +490,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                 </Field>
                 <Field>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, `${addressDoc}_front`, formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, `${addressDoc}_front`, formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': "Authorised Signatory's Address Proof",
+                        'Element Type': 'Form',
+                        'Field Name': 'Front Side',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -454,7 +515,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                 </Field>
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, `${addressDoc}_back`, formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, `${addressDoc}_back`, formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': "Authorised Signatory's Address Proof",
+                        'Element Type': 'Form',
+                        'Field Name': 'Back Side',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -473,7 +544,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               <FormSection title={getDocumentTitle(data)} disabled={isFormLocked}>
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, 'business_proof_url', formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, 'business_proof_url', formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': getDocumentTitle(data),
+                        'Element Type': 'Form',
+                        'Field Name': 'business proof url',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -502,7 +583,24 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                     label="Choose Proof Type"
                     placeholder="SELECT PROOF TYPE"
                     searchable={false}
-                    onChange={(value) => setBusinessDoc(value)}
+                    onChange={(value) => {
+                      setBusinessDoc(value);
+                      analyticsTrack({
+                        objectName: 'Form Details',
+                        actionName: 'Filled',
+                        screen: 'home page',
+                        eventAction: 'success',
+                        user,
+                        properties: {
+                          'Card Title': 'Choose Proof Type',
+                          'Element Type': 'Form',
+                          'Field Name': 'SELECT PROOF TYPE',
+                          'Field Type': 'Text',
+                          'Tab Title': 'Document Upload',
+                          Mandatory: 'Yes',
+                        },
+                      });
+                    }}
                     value={businessDoc}
                     disabled={isFormLocked}
                   >
@@ -522,7 +620,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                   businessDoc === 'shop_establishment_certificate' && <ShopEstablishmentNumber />}
                 <Field last={businessDoc !== BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE}>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, businessDoc, formikProps)}
+                    onFileUpload={(e) => {
+                      fileUploadSegmentEvent({
+                        'Card Title': 'Business Registration Proof',
+                        'Element Type': 'Form',
+                        'Field Name': businessDoc,
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                      onChange(e, businessDoc, formikProps);
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -541,6 +649,21 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                         errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                         updateGstin={(value) => {
                           postData({ gstin: value });
+                          analyticsTrack({
+                            objectName: 'Form Field',
+                            actionName: 'Filled',
+                            screen: 'home page',
+                            eventAction: 'success',
+                            user,
+                            properties: {
+                              'Card Title': 'Choose Proof Type',
+                              'Element Type': 'Form',
+                              'Field Name': 'gst certificate',
+                              'Field Type': 'Text',
+                              'Tab Title': 'Document Upload',
+                              Mandatory: 'Yes',
+                            },
+                          });
                         }}
                         hasGSTIN={false}
                         disabled={isFormLocked}
@@ -562,6 +685,21 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                             screen: 'home page',
                             eventAction: 'initiated',
                             user,
+                          });
+                          analyticsTrack({
+                            objectName: 'Form Details',
+                            actionName: 'Filled',
+                            screen: 'home page',
+                            eventAction: 'success',
+                            user,
+                            properties: {
+                              'Card Title': 'Choose Proof Type',
+                              'Element Type': 'Form',
+                              'Field Name': 'GST Identification Number (GSTIN)',
+                              'Field Type': 'Text',
+                              'Tab Title': 'Document Upload',
+                              Mandatory: 'Yes',
+                            },
                           });
                         }}
                       />
@@ -608,7 +746,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               <FormSection title="Business Pan">
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, 'business_pan_url', formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, 'business_pan_url', formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': 'Business Pan',
+                        'Element Type': 'Form',
+                        'Field Name': 'business pan url',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -627,7 +775,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               <FormSection title="Personal Pan">
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, 'personal_pan', formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, 'personal_pan', formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': 'Personal Pan',
+                        'Element Type': 'Form',
+                        'Field Name': 'Personal pan',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -646,7 +804,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               <FormSection title="Form 12A Allotment Letter">
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, 'form_12a_url', formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, 'form_12a_url', formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': 'Form 12A Allotment Letter',
+                        'Element Type': 'Form',
+                        'Field Name': 'Form 12A url',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -662,7 +830,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               <FormSection title="Form 80G Allotment Letter">
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, 'form_80g_url', formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, 'form_80g_url', formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': 'Form 80G Allotment Letter',
+                        'Element Type': 'Form',
+                        'Field Name': 'Form 80g url',
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -681,7 +859,24 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                     label="Choose Proof Type"
                     placeholder="SELECT PROOF TYPE"
                     searchable={false}
-                    onChange={(value) => setBankDoc(value)}
+                    onChange={(value) => {
+                      setBankDoc(value);
+                      analyticsTrack({
+                        objectName: 'Form Field',
+                        actionName: 'Filled',
+                        screen: 'home page',
+                        eventAction: 'success',
+                        user,
+                        properties: {
+                          'Card Title': 'Bank Account Proof',
+                          'Element Type': 'Form',
+                          'Field Name': 'SELECT PROOF TYPE',
+                          'Field Type': 'Text',
+                          'Tab Title': 'Document Upload',
+                          Mandatory: 'Yes',
+                        },
+                      });
+                    }}
                     value={bankDoc}
                     disabled={isFormLocked}
                   >
@@ -699,7 +894,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                 </Field>
                 <Field last>
                   <FileUpload
-                    onFileUpload={(e) => onChange(e, bankDoc, formikProps)}
+                    onFileUpload={(e) => {
+                      onChange(e, bankDoc, formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title': 'Bank Account Proof',
+                        'Element Type': 'Form',
+                        'Field Name': bankDoc,
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
+                    }}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -732,6 +937,24 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                       searchable={false}
                       onChange={(value) => {
                         setAdditionalDoc(value);
+                        analyticsTrack({
+                          objectName: 'Form Details',
+                          actionName: 'Filled',
+                          screen: 'home page',
+                          eventAction: 'success',
+                          user,
+                          properties: {
+                            'Card Title':
+                              getAdditionalDocCount(data) > 1
+                                ? 'Additional Document'
+                                : 'Affiliation Certificate',
+                            'Element Type': 'Form',
+                            'Field Name': 'SELECT PROOF TYPE',
+                            'Field Type': 'Text',
+                            'Tab Title': 'Document Upload',
+                            Mandatory: 'Yes',
+                          },
+                        });
                       }}
                       value={additionalDoc}
                       disabled={isFormLocked}
@@ -764,6 +987,17 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                   <FileUpload
                     onFileUpload={(e) => {
                       onChange(e, additionalDoc, formikProps);
+                      fileUploadSegmentEvent({
+                        'Card Title':
+                          getAdditionalDocCount(data) > 1
+                            ? 'Additional Document'
+                            : 'Affiliation Certificate',
+                        'Element Type': 'Form',
+                        'Field Name': additionalDoc,
+                        'Field Type': 'Document upload',
+                        'Tab Title': 'Document Upload',
+                        Mandatory: 'Yes',
+                      });
                     }}
                     onRemove={onDeleteFile}
                     progress={progress}
@@ -787,6 +1021,20 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                       onChange={(checked) => {
                         setHasNonMandatoryEmail(checked);
                         setDocumentUploadCompleted(!checked);
+                        trackEvents({
+                          objectName: 'Checkbox',
+                          actionName: 'Clicked',
+                          screen: 'home page',
+                          eventAction: 'success',
+                          user,
+                          properties: {
+                            'Checkbox Label':
+                              'Send all important communication and account updates on email',
+                            'Option Selected': checked,
+                            'Element Type': 'Form',
+                            Mandatory: 'Yes',
+                          },
+                        });
                       }}
                       checked={hasNonMandatoryEmail || isEmailVerified}
                     />

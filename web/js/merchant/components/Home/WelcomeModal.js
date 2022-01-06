@@ -40,6 +40,17 @@ const WelcomeModal = ({
   const handleActivationClick = () => {
     onActivate();
     trackEvents({
+      objectName: 'Pop Up CTA',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        'CTA Label': 'Activate your account',
+        'Pop-up Label': isRecommendProduct
+          ? 'Welcome to Razorpay'
+          : 'Congratulations on making the move to Razorpay.',
+      },
+    });
+    trackEvents({
       objectName: 'L1 Form',
       actionName: 'initiated',
       screen: 'home page',
@@ -74,6 +85,17 @@ const WelcomeModal = ({
       actionName: 'Try Dashboard CTA Clicked',
       screen: 'home page',
     });
+    trackEvents({
+      objectName: 'Pop Up CTA',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        'CTA Label': 'Try out the Dashboard',
+        'Pop-up Label': isRecommendProduct
+          ? 'Welcome to Razorpay'
+          : 'Congratulations on making the move to Razorpay.',
+      },
+    });
     tracking.trackEvent(
       window.rzpQ.onbr().success('login.first_login_modal', {
         action: 'Try_Dashboard',
@@ -96,6 +118,19 @@ const WelcomeModal = ({
       );
     }
   }, [isFestive, tracking]);
+
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Pop Up',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        'Pop-up Label': isRecommendProduct
+          ? 'Welcome to Razorpay'
+          : 'Congratulations on making the move to Razorpay. ',
+      },
+    });
+  }, []);
 
   return (
     <div className="welcome-modal-content">

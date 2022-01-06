@@ -12,6 +12,7 @@ const getTouchedFields = (formikProps) => {
 };
 
 interface GetTouchedFieldsPropsT {
+  cardTitle: string;
   handleSubmit: (updatedDetails) => void;
   isBlurCalled: boolean;
   setIsBlurCalled: (value: boolean) => void;
@@ -23,6 +24,7 @@ const GetTouchedFields: React.FC<GetTouchedFieldsPropsT> = ({
   isBlurCalled,
   setIsBlurCalled,
   tabName,
+  cardTitle,
 }) => {
   const formikContext = useFormikContext();
   const trackEvents = useTrackEvents();
@@ -47,6 +49,19 @@ const GetTouchedFields: React.FC<GetTouchedFieldsPropsT> = ({
               },
             });
           }
+          trackEvents({
+            objectName: 'Form Details',
+            actionName: 'Filled',
+            screen: 'home page',
+            properties: {
+              fieldLabel,
+              'Tab Title': tabName,
+              'Element Type': 'Form',
+              'Field Type': 'Text',
+              'Field Name': fieldLabel,
+              'Card Title': cardTitle,
+            },
+          });
         });
       }
 

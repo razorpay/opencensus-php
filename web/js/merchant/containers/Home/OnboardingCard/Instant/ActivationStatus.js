@@ -482,12 +482,12 @@ class ActivationCard extends Component {
             to your{' '}
             <a
               className="btn-link"
-              onClick={() =>
+              onClick={() => {
                 this.props.openModal({
                   size: 'medium',
                   component: <SettlementSchedule />,
-                })
-              }
+                });
+              }}
             >
               settlement schedule
             </a>
@@ -504,12 +504,12 @@ class ActivationCard extends Component {
             your{' '}
             <a
               className="btn-link"
-              onClick={() =>
+              onClick={() => {
                 this.props.openModal({
                   size: 'medium',
                   component: <SettlementSchedule />,
-                })
-              }
+                });
+              }}
             >
               settlement schedule
             </a>
@@ -526,12 +526,12 @@ class ActivationCard extends Component {
             to your{' '}
             <a
               className="btn-link"
-              onClick={() =>
+              onClick={() => {
                 this.props.openModal({
                   size: 'medium',
                   component: <SettlementSchedule />,
-                })
-              }
+                });
+              }}
             >
               settlement schedule
             </a>

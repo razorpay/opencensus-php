@@ -726,6 +726,17 @@ export default class ActivationContainer extends React.Component {
     this.handleSupportModalClose();
   }
 
+  componentDidMount() {
+    this.props.trackEvents({
+      objectName: 'Modal',
+      actionName: 'Displayed',
+      screen: 'home page',
+      properties: {
+        'Modal Label': 'KYC Form',
+      },
+    });
+  }
+
   /*
    * 1. For linked account form, only spinner or Activation wizard.
    * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.

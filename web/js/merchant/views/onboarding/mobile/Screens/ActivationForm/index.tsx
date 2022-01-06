@@ -172,6 +172,18 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     };
   }, [data]);
 
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Modal',
+      actionName: 'Displayed',
+      screen: 'home page',
+      properties: {
+        'Modal Label': 'KYC Form',
+      },
+      toCleverTap: true,
+    });
+  }, []);
+
   const canShowTncCheckbox = autoScrollRef.current;
 
   useEffect(() => {
@@ -811,6 +823,15 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                 screen: 'home page',
                 eventAction: 'initiated',
               });
+              trackEvents({
+                objectName: 'Bottom Sheet CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'CTA Label': 'FAQs',
+                  'Modal LAbel': 'FAQs',
+                },
+              });
             }}
             variant="tertiary"
           >
@@ -844,7 +865,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         isOpen={isSaveAndExitModalOpen}
         onClose={() => setIsSaveAndExitModalOpen(false)}
       />
-      <FAQs />
+      <FAQs activeTab={startCase(activeTabId)} />
     </View>
   );
 };

@@ -253,6 +253,17 @@ export default class ActivationContainer extends Component {
       screen: 'home page',
       toCleverTap: true,
     });
+
+    if (isFormCloseAction) {
+      this.props.trackEvents({
+        objectName: 'Modal',
+        actionName: 'Closed',
+        screen: 'home page',
+        properties: {
+          'Modal Label': 'KYC Form',
+        }
+      });
+    }
   };
 
   componentWillMount() {

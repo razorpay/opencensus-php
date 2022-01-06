@@ -10,6 +10,7 @@ import { FormikErrors } from 'formik';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { debounce } from '../../services/utils';
 import useBusinessName from '../../hooks/useBusinessName';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface INameData {
   company_name?: string;
@@ -40,7 +41,7 @@ const BusinessName = ({
 }: IBusinessNameProps): React.ReactElement => {
   const [inputValue, setInputValue] = useState(businessNameValue);
   const businessNameData = useRef({});
-
+  const trackEvents = useTrackEvents();
   const onInputChange = debounce((val) => {
     businessNameData.current = { company_name: val };
     setInputValue(val);
@@ -55,6 +56,14 @@ const BusinessName = ({
     if (selectedBusinessNameData) {
       businessNameData.current = selectedBusinessNameData;
     }
+    trackEvents({
+      objectName: 'Bottom sheet',
+      actionName: 'Closed',
+      screen: 'home page',
+      properties: {
+        'Modal Label': 'Business name',
+      },
+    });
     updateBusinessName(businessNameData.current);
   };
 

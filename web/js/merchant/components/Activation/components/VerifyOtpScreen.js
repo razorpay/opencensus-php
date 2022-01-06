@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import Input, { Description } from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import OtpInputComponent from 'common/new-ui/Input/OtpInput';
 import { analyticsTrack } from 'common/utils/analytics';
+import * as EventActions from 'merchant/reducers/trackEvents';
 
 const VerifyOtp = ({
   analyticsProperties,
@@ -15,6 +18,7 @@ const VerifyOtp = ({
   captcha,
   setError,
   setIsStartAgain,
+  trackEvents,
 }) => {
   const [otp, setOtp] = useState('');
   const [wrongOtp, setWrongOtp] = useState(false);
@@ -30,6 +34,18 @@ const VerifyOtp = ({
       actionName: 'Type',
       screen: 'Type OTP on Activation page',
       ...analyticsProperties,
+    });
+    trackEvents({
+      objectName: 'Form Details',
+      actionName: 'Filled',
+      screen: 'home page',
+      properties: {
+        'Tab Title': 'Document Verification',
+        'Element Type': 'Form',
+        'Field Type': 'Text',
+        'Field Name': 'Aadhar OTP Verification',
+        'Card Title': 'none',
+      },
     });
   };
 
@@ -47,6 +63,16 @@ const VerifyOtp = ({
   };
 
   const verifyOTP = () => {
+    trackEvents({
+      objectName: 'Modal CTA',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        'CTA Label': 'Submit & Verify',
+        'Modal Label': 'KYC Form',
+      },
+    });
+
     const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
     const body = {
       otp,
@@ -233,4 +259,4 @@ const VerifyOtp = ({
   );
 };
 
-export default VerifyOtp;
+export default compose(connect(null, { ...EventActions }))(VerifyOtp);

@@ -22,6 +22,7 @@ import { autoPrefixUrls, hasSelectedBlacklistCategory } from '../services/utils'
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import usePartnerActivation from '../hooks/usePartnerActivation';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface IBusinessOverviewProps {
   isFormLocked?: boolean;
@@ -29,6 +30,7 @@ interface IBusinessOverviewProps {
 
 const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.ReactElement => {
   const { data, postData } = useActivation();
+  const trackEvents = useTrackEvents();
   const {
     user,
     experiments: {
@@ -53,9 +55,21 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
   const [isBlurCalled, setIsBlurCalled] = useState(false);
   const [isUnregistered, setIsUnregistered] = useState(false);
   const [websiteOption, setWebiteOption] = useState('1');
+  const [businessOverviewCardTitle, setBusinessOverviewCardTitle] = useState('');
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
   const { getFieldStatus } = usePartnerActivation();
+
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        pageTitle: 'Business Overview',
+      },
+    });
+  }, []);
 
   const handleBlur = (e, formikProps) => {
     formikProps.handleBlur(e);
@@ -258,7 +272,16 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                     else setIsUnregistered(false);
                     formikProps.setFieldTouched('business_type');
                     formikProps.setFieldValue('business_type', value);
+                    setBusinessOverviewCardTitle('About Your Business');
                     setIsBlurCalled(true);
+                    trackEvents({
+                      objectName: 'Bottom sheet',
+                      actionName: 'Closed',
+                      screen: 'home page',
+                      properties: {
+                        'Modal Label': 'Business Type',
+                      },
+                    });
                   }}
                   disabled={isFormLocked || getFieldStatus('business_type').isDisabled}
                 />
@@ -274,6 +297,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                   onChange={(value) => {
                     formikProps.setFieldTouched('business_subcategory');
                     formikProps.setFieldValue('business_subcategory', value);
+                    setBusinessOverviewCardTitle('About Your Business');
                     setIsBlurCalled(true);
                     analyticsTrack({
                       objectName: 'SignUp',
@@ -281,6 +305,14 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                       screen: 'home page',
                       eventAction: 'success',
                       user,
+                    });
+                    trackEvents({
+                      objectName: 'Bottom sheet',
+                      actionName: 'Closed',
+                      screen: 'home page',
+                      properties: {
+                        'Modal Label': 'Business Category',
+                      },
                     });
                   }}
                   disabled={isFormLocked}
@@ -303,6 +335,9 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                   errorText={formikProps.touched.contact_name && formikProps.errors.contact_name}
                   disabled={isFormLocked || getFieldStatus('contact_name').isDisabled}
                   helpText={getFieldStatus('contact_name').description || ''}
+                  onBlur={() => {
+                    setBusinessOverviewCardTitle('About Your Business');
+                  }}
                 />
               </Field>
               <Field last={isLiteOnboarding}>
@@ -323,6 +358,9 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                       }
                       helpText="Tell us about the products you sell, your customers and the channels you primarily use for business ( Website, offline retail, etc) with minimum 50 characters"
                       maxLength={255}
+                      onBlur={() => {
+                        setBusinessOverviewCardTitle('About Your Business');
+                      }}
                     />
                   </View>
                 </Space>
@@ -341,6 +379,15 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                         formikProps.setFieldTouched('merchant_avg_order_value');
                         formikProps.setFieldValue('merchant_avg_order_value', value);
                         setIsBlurCalled(true);
+                        setBusinessOverviewCardTitle('About Your Business');
+                        trackEvents({
+                          objectName: 'Bottom sheet',
+                          actionName: 'Closed',
+                          screen: 'home page',
+                          properties: {
+                            'Modal Label': 'merchant avg order value',
+                          },
+                        });
                       }}
                     />
                   </View>
@@ -370,6 +417,21 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                       setHasWebsite(false);
                       setHasApp(false);
                     }
+
+                    setBusinessOverviewCardTitle('Website Details');
+
+                    const selectedLabel =
+                      val == '0' ? 'I have a live website/app' : 'Accept payments on app';
+                    trackEvents({
+                      objectName: 'Toggle',
+                      actionName: 'Selected',
+                      screen: 'home page',
+                      properties: {
+                        'Toggle Label': 'Website Details',
+                        'Option Selected': selectedLabel,
+                        'Element Type': 'Form',
+                      },
+                    });
                     setIsBlurCalled(true);
                   }}
                 >
@@ -398,6 +460,17 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                                 formikProps.setFieldValue('business_website', '');
                                 setHasWebsite(false);
                               }
+                              setBusinessOverviewCardTitle('Website Details');
+                              trackEvents({
+                                objectName: 'Checkbox',
+                                actionName: 'Clicked',
+                                screen: 'home page',
+                                properties: {
+                                  'Checkbox Label': 'Accept payments on website',
+                                  'Option Selected': 'Accept payments on website',
+                                  'Element Type': 'Form',
+                                },
+                              });
                               setIsBlurCalled(true);
                             }}
                             defaultChecked={hasWebsite}
@@ -418,6 +491,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                                 formikProps.errors.business_website
                               }
                               disabled={isFormLocked}
+                              onBlur={() => setBusinessOverviewCardTitle('Website Details')}
                             />
                             <IconContainer
                               onClick={() => {
@@ -461,6 +535,19 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                                 formikProps.setFieldValue('playstore_url', '');
                                 setHasApp(false);
                               }
+                              setBusinessOverviewCardTitle('Website Details');
+                              trackEvents({
+                                objectName: 'Checkbox',
+                                actionName: 'Clicked',
+                                screen: 'home page',
+                                properties: {
+                                  'Checkbox Label': 'Accept payments on app',
+                                  'Option Selected': 'Accept payments on app',
+                                  'Element Type': 'Form',
+                                  Mandatory: 'Yes',
+                                },
+                              });
+
                               setIsBlurCalled(true);
                             }}
                             defaultChecked={hasApp}
@@ -481,6 +568,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
                                 formikProps.errors.playstore_url
                               }
                               disabled={isFormLocked}
+                              onBlur={() => setBusinessOverviewCardTitle('Website Details')}
                             />
                             <IconContainer
                               onClick={() => {
@@ -753,6 +841,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
               isBlurCalled={isBlurCalled}
               setIsBlurCalled={setIsBlurCalled}
               tabName="Business Overview"
+              cardTitle={businessOverviewCardTitle}
             />
           </form>
         );

@@ -15,6 +15,7 @@ import {
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import usePartnerActivation from '../hooks/usePartnerActivation';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface BankDetailsProps {
   isFormLocked?: boolean;
@@ -27,6 +28,7 @@ const REG_BANK_ERROR =
 const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
   const { user, experiments } = useApp();
+  const trackEvents = useTrackEvents();
   const { data: configData, refetch } = useConfigDetails('onboarding');
 
   const bankAndCompanyDetails = data.bank_and_company_details;
@@ -35,6 +37,8 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
   );
   const [isBlurCalled, setIsBlurCalled] = useState(false);
   const [branchIfscInfo, setBranchIfscInfo] = useState<string>('');
+
+  const [bankDetailsCardTitle, setBankDetailsCardTitle] = useState('');
 
   const [bankAccountNumber, setBankAccountNumber] = useState();
   const [reAccountNumber, setReAccountNumber] = useState();
@@ -126,6 +130,17 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
     }
   }, [hasBankVerificationFailed]);
 
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        pageTitle: 'Bank Details',
+      },
+    });
+  }, []);
+
   return (
     <Formik
       initialValues={{
@@ -196,6 +211,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   formikProps.values.bank_verificatio_attemp_count,
                 )}
                 onBlur={() => {
+                  setBankDetailsCardTitle(title);
                   analyticsTrack({
                     objectName: 'SignUp',
                     actionName: 'bank account name',
@@ -226,6 +242,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   setBankAccountNumber(value);
                 }}
                 onBlur={() => {
+                  setBankDetailsCardTitle(title);
                   analyticsTrack({
                     objectName: 'SignUp',
                     actionName: 'bank account number',
@@ -261,6 +278,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     canDisabledField ||
                     getFieldStatus('bank_account_number').isDisabled
                   }
+                  onBlur={() => setBankDetailsCardTitle(title)}
                 />
               </Field>
             ) : null}
@@ -285,6 +303,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   formikProps.values.bank_verificatio_attemp_count,
                 )}
                 onBlur={() => {
+                  setBankDetailsCardTitle(title);
                   analyticsTrack({
                     objectName: 'SignUp',
                     actionName: 'bank branch ifsc',
@@ -306,6 +325,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
             tabName="Bank Details"
+            cardTitle={bankDetailsCardTitle}
           />
         </form>
       )}

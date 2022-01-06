@@ -401,6 +401,12 @@ export default class ActivationWizard extends React.Component {
                 location: 'Activation page',
               },
             });
+            this.sendInputToSegment({
+              'Field Name': filename,
+              'Field Type': 'Document Upload',
+              'Tab Title': 'Document Verification',
+              Mandatory: 'Yes',
+            });
             if (!this.isOnKYCTab()) {
               this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
             }
@@ -583,6 +589,15 @@ export default class ActivationWizard extends React.Component {
 
   saveCurrentTab = () => {
     const currenActiveTab = this.state.activeTab;
+    this.props.trackEventsAction({
+      objectName: 'Modal CTA',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        'CTA Label': 'Save',
+        'Modal Label': 'KYC Form',
+      },
+    });
     const tracker = () =>
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().initiated(`${this.trackingType}.save_modifications`, {
@@ -631,6 +646,41 @@ export default class ActivationWizard extends React.Component {
     }
   };
 
+  sendInputToSegment = (properties = {}) => {
+    this.props.trackEventsAction({
+      objectName: 'Form Details',
+      actionName: 'Filled',
+      screen: 'home page',
+      properties: {
+        'Card Title': 'none',
+        'Element Type': 'Form',
+        ...properties,
+      },
+    });
+  };
+
+  sendCheckboxToSegment = (properties = {}) => {
+    this.props.trackEventsAction({
+      objectName: 'Checkbox',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        ...properties,
+      },
+    });
+  };
+
+  sendRadioInputToSegment = (properties = {}) => {
+    this.props.trackEventsAction({
+      objectName: 'Toggle',
+      actionName: 'Selected',
+      screen: 'home page',
+      properties: {
+        ...properties,
+      },
+    });
+  };
+
   next = (e) => {
     const currenActiveTab = this.state.activeTab;
     this.props.trackEventsAction({
@@ -641,6 +691,16 @@ export default class ActivationWizard extends React.Component {
         tab: this.mainTabs[currenActiveTab],
       },
       toCleverTap: true,
+    });
+
+    this.props.trackEventsAction({
+      objectName: 'Modal CTA',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        'CTA Label': 'Save & Next',
+        'Modal Label': 'KYC Form',
+      },
     });
 
     const tracker = () =>

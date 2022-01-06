@@ -131,6 +131,12 @@ const contactFields = [
     name: 'contact_name',
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
+      this.sendInputToSegment({
+        'Field Name': 'Contact Name',
+        'Field Type': 'Text',
+        'Tab Title': 'Contact Info',
+        Mandatory: 'Yes',
+      });
     },
   },
   {
@@ -155,6 +161,12 @@ const contactFields = [
       );
     },
     onBlur: function onBlur(e, error) {
+      this.sendInputToSegment({
+        'Field Name': 'Contact Number',
+        'Field Type': 'Text',
+        'Tab Title': 'Contact Info',
+        Mandatory: 'Yes',
+      });
       this.sendErrorMessageToSegment(e, error);
     },
   },
@@ -189,6 +201,12 @@ const contactFields = [
       );
     },
     onBlur: function onBlur(e, error) {
+      this.sendInputToSegment({
+        'Field Name': 'Contact Email',
+        'Field Type': 'Text',
+        'Tab Title': 'Contact Info',
+        Mandatory: 'Yes',
+      });
       this.sendErrorMessageToSegment(e, error);
     },
     _disabledWhen: (activation) => {
@@ -264,6 +282,12 @@ const businessModel = [
     options: [], // options will be filled dynamically based on current activation stage
     info: getBusinessTypeInfo,
     onBlur: function onBlur(e, error) {
+      this.sendInputToSegment({
+        'Field Name': 'Business Type',
+        'Field Type': 'Text',
+        'Tab Title': 'Business Overview',
+        Mandatory: 'Yes',
+      });
       this.sendErrorMessageToSegment(e, error);
     },
   },
@@ -288,6 +312,12 @@ const businessModel = [
         return '';
       },
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Business Category',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
     },
@@ -297,6 +327,12 @@ const businessModel = [
       _cmp: Input.Select,
       _autoRenderImpure: true,
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Business Sub Category',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
       options: [],
@@ -347,6 +383,12 @@ const businessModel = [
       placeholder: 'Minimum 50 characters',
       descriptionClass: 'Input--business-description',
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Business Description',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
       validator: (value) => {
@@ -391,6 +433,12 @@ const businessModel = [
     _autoRenderImpure: true,
     options: [],
     onBlur: function onBlur(e, error) {
+      this.sendInputToSegment({
+        'Field Name': 'Average Order Value',
+        'Field Type': 'Text',
+        'Tab Title': 'Business Overview',
+        Mandatory: 'Yes',
+      });
       this.sendErrorMessageToSegment(e, error);
     },
     _optionsFn: (activation) => {
@@ -432,6 +480,12 @@ const businessModel = [
       _name: 'has_url',
       className: 'Input--vTop Input--Website',
       onBlur: function onBlur(e, error) {
+        this.sendRadioInputToSegment({
+          'Toggle Label': 'How do you wish to accept payments',
+          'Option Selected': e.target.value,
+          'Element Type': 'Form',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
       _optionsFn: (activation) => {
@@ -476,6 +530,12 @@ const businessModel = [
       _when: (activation) =>
         activation.state.has_url === '1' && !activation.props.user.isActivationFormFullView,
       onBlur: function onBlur(e, error) {
+        this.sendCheckboxToSegment({
+          'Checkbox Label': 'Accept payments on Website',
+          'Option Selected': e.target.value,
+          'Element Type': 'Form',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
     },
@@ -486,6 +546,12 @@ const businessModel = [
       type: 'url',
       className: 'Input--Website-Url',
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Business Website',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'No',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
       validator: (value) => {
@@ -509,6 +575,12 @@ const businessModel = [
       _when: (activation) =>
         activation.state.has_url === '1' && !activation.props.user.isActivationFormFullView,
       onBlur: function onBlur(e, error) {
+        this.sendCheckboxToSegment({
+          'Checkbox Label': 'Accept payments on app',
+          'Option Selected': e.target.value,
+          'Element Type': 'Form',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
     },
@@ -519,6 +591,12 @@ const businessModel = [
       type: 'url',
       className: 'Input--App-Url',
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Accept payments on app',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'No',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
       info:
@@ -634,6 +712,12 @@ const businessDetails = [
           }
         }
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Business PAN',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
       _disabledWhen: (activation) => {
         if (activation?.props?.user?.submitted) {
@@ -715,6 +799,12 @@ const businessDetails = [
           }
         }
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Business Name',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -728,6 +818,12 @@ const businessDetails = [
       info: 'Example : U67190TN2014PTC096978',
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'CIN',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
       _when: (activation) => {
         const currentBusinessType =
@@ -744,6 +840,12 @@ const businessDetails = [
       validator: (value) => validateCIN(value, 'LLPIN'),
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'LLPIN',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
       _when: (activation) =>
         activation.props.data.business_type &&
@@ -817,6 +919,12 @@ const businessDetails = [
           }
         }
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Promoter PAN',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -876,6 +984,12 @@ const businessDetails = [
           }
         }
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Promoter PAN Name',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
   ],
@@ -884,6 +998,12 @@ const businessDetails = [
     name: 'business_dba',
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
+      this.sendInputToSegment({
+        'Field Name': 'Billing Label',
+        'Field Type': 'Text',
+        'Tab Title': 'Business Details',
+        Mandatory: 'Yes',
+      });
     },
     _autoRenderImpure: true,
     required: true,
@@ -903,6 +1023,12 @@ const businessDetails = [
       className: 'Input--vTop Input--capitalize',
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendRadioInputToSegment({
+          'Toggle Label': 'GSTIN',
+          'Option Selected': e.target.value,
+          'Element Type': 'Form',
+          Mandatory: 'Yes',
+        });
       },
       _cmp: Input.Radio,
       _when: (activation) => excludeFor_Indiv(activation) && isL1Completed(activation),
@@ -938,6 +1064,12 @@ const businessDetails = [
         );
       },
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'gstin',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
       _autoRenderImpure: true, // Re-render to show the error
@@ -1017,6 +1149,12 @@ const bankAccountFields = [
     _when: (activation) => !activation?.props?.user?.isUpdatedLiteOnboarding,
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
+      this.sendInputToSegment({
+        'Field Name': 'Beneficiary Name',
+        'Field Type': 'Text',
+        'Tab Title': 'Bank Account',
+        Mandatory: 'Yes',
+      });
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
         const { dirty } = this.state;
@@ -1059,6 +1197,12 @@ const bankAccountFields = [
     checkValidityFromAPI: getBankVerificationAtteemptError,
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
+      this.sendInputToSegment({
+        'Field Name': 'Branch IFSC Code',
+        'Field Type': 'Text',
+        'Tab Title': 'Bank Account',
+        Mandatory: 'Yes',
+      });
       if (!this.isOnKYCTab()) {
         const { user, fetchBankVerificationAttemptCount } = this.props;
         const { dirty } = this.state;
@@ -1095,6 +1239,12 @@ const bankAccountFields = [
       checkValidityFromAPI: getBankVerificationAtteemptError,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Account Number',
+          'Field Type': 'Text',
+          'Tab Title': 'Bank Account',
+          Mandatory: 'Yes',
+        });
         if (!this.isOnKYCTab()) {
           const { user, fetchBankVerificationAttemptCount } = this.props;
           const { dirty } = this.state;
@@ -1154,6 +1304,12 @@ const bankAccountFields = [
       },
       onBlur: function (e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Re-Enter Account Number',
+          'Field Type': 'Text',
+          'Tab Title': 'Bank Account',
+          Mandatory: 'Yes',
+        });
         if (!this.isOnKYCTab()) {
           const { user, fetchBankVerificationAttemptCount } = this.props;
           const { dirty } = this.state;

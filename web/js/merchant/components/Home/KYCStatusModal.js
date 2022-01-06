@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import { compose } from 'redux';
 import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
@@ -13,6 +13,7 @@ import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import InstantActivationModal from './InstantActivationModal';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -50,8 +51,10 @@ const KYCStatusModal = ({
   showProductsModal: showProductsModals,
   hideProductsModal: hideProductsModals,
   showProducts,
+  trackEvents,
 }) => {
   const activationState = getActivationState(user, user.isUnregisteredBusiness);
+
   const generatePage = () => {
     onClose();
     openModal({
@@ -70,6 +73,27 @@ const KYCStatusModal = ({
     showProductsModals();
   };
 
+  const args = {
+    isWhitelistFlow: user.instantActivation.isWhitelistFlow,
+    isUnregisteredBusiness: user.isUnregisteredBusiness,
+    isActivationFormFullView: user.isActivationFormFullView,
+    onGoToDashboard,
+    isActivated: user.isActivated,
+    activationDuration,
+    activationData: user,
+    generatePage,
+    goToActivationForm,
+    tracking,
+    openPaymentAcceptModal,
+    onClose,
+    trackEvents,
+  };
+
+  const content =
+    modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL'
+      ? MODAL_CONTENT.KYC_CLARIFICATION_SUBMIT_MODAL
+      : kycModalContent(args);
+
   const onCloseModal = () => {
     const shouldShowModal =
       activationState === 'L2_dedupe_blocked' ||
@@ -79,6 +103,16 @@ const KYCStatusModal = ({
       activationState === 'L1_instantly_activated' ||
       activationState === 'funds_on_hold' ||
       activationState === 'rejected';
+    if (content) {
+      trackEvents({
+        objectName: 'Pop Up',
+        actionName: 'Closed',
+        screen: 'home page',
+        properties: {
+          'Pop-up Label': content.title,
+        },
+      });
+    }
     if (!shouldShowModal) {
       onGoToDashboard();
     } else {
@@ -99,25 +133,18 @@ const KYCStatusModal = ({
     return null;
   };
 
-  const args = {
-    isWhitelistFlow: user.instantActivation.isWhitelistFlow,
-    isUnregisteredBusiness: user.isUnregisteredBusiness,
-    isActivationFormFullView: user.isActivationFormFullView,
-    onGoToDashboard,
-    isActivated: user.isActivated,
-    activationDuration,
-    activationData: user,
-    generatePage,
-    goToActivationForm,
-    tracking,
-    openPaymentAcceptModal,
-    onClose,
-  };
-
-  const content =
-    modalType === 'KYC_CLARIFICATION_SUBMIT_MODAL'
-      ? MODAL_CONTENT.KYC_CLARIFICATION_SUBMIT_MODAL
-      : kycModalContent(args);
+  useEffect(() => {
+    if (!!content) {
+      trackEvents({
+        objectName: 'Pop Up',
+        actionName: 'Viewed',
+        screen: 'home page',
+        properties: {
+          'Pop-up Label': content.title,
+        },
+      });
+    }
+  }, [content]);
 
   return (
     <>
@@ -150,7 +177,7 @@ export default compose(
     (state) => ({
       showProducts: state.home.instantActivations.showProductsModal,
     }),
-    { openModal, closeModal, showProductsModal, hideProductsModal },
+    { openModal, closeModal, showProductsModal, hideProductsModal, ...EventsActions },
   ),
   rTracking(() => window.rzpQ.component('KYCStatusModal')),
 )(KYCStatusModal);

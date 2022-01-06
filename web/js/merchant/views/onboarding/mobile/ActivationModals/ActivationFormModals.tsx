@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import View from '@razorpay/blade-old/src/atoms/View';
@@ -6,6 +6,7 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { Modal, ModalBody } from 'common/components/Modal';
 import { getModalContent, ModalTypeT } from './ModalContent';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface ActivationModalPropsT extends RouteComponentProps {
   isOpen: boolean;
@@ -35,6 +36,18 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
     activationData,
     dedupeStatus,
   );
+  const trackEvents = useTrackEvents();
+
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Modal CTA',
+      actionName: 'Displayed',
+      screen: 'home page',
+      properties: {
+        'Modal Label': title,
+      },
+    });
+  }, []);
 
   if (!title) {
     return null;
@@ -53,6 +66,14 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
     <Modal
       onClose={() => {
         if (['dedupe', 'tnc'].includes(modalType)) history.push('/');
+        trackEvents({
+          objectName: 'Modal CTA',
+          actionName: 'Closed',
+          screen: 'home page',
+          properties: {
+            'CTA Label': title,
+          },
+        });
         closeModal();
       }}
       isOpen={isOpen}

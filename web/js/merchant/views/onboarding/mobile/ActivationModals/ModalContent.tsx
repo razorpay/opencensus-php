@@ -15,6 +15,7 @@ import FillKyc from './icons/FillKyc.svg';
 import PaymentPaused from './icons/PaymentPaused.svg';
 import * as Message from './Constant';
 import { SAMPLE_TICKET } from '../Constants/OnboardingConstants';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 export type ModalTypeT =
   | 'dedupe'
@@ -42,6 +43,7 @@ export const getModalContent = (
 ) => {
   /* eslint-disable react-hooks/rules-of-hooks */
   const { user, experiments } = useApp();
+  const trackEvents = useTrackEvents();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
 
@@ -81,6 +83,17 @@ export const getModalContent = (
     });
   };
 
+  const sendSegmentEventFromButton = (ctaText) => {
+    trackEvents({
+      objectName: 'Modal CTA',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        'CTA Label': ctaText,
+      },
+    });
+  };
+
   switch (modalType) {
     case 'dedupe':
       title = isInstantActivationEnabled ? Message.DEDUPE.title : Message.DEDUPE.old_title;
@@ -95,7 +108,13 @@ export const getModalContent = (
           <span />
         );
       button = (
-        <Button onClick={openCustomerSupport} block>
+        <Button
+          onClick={() => {
+            sendSegmentEventFromButton(Message.DEDUPE.buttonText);
+            openCustomerSupport();
+          }}
+          block
+        >
           {Message.DEDUPE.buttonText}
         </Button>
       );
@@ -106,7 +125,13 @@ export const getModalContent = (
       image = <img src={UnderReview} />;
       description = Message.POI_INITIATED.description;
       button = (
-        <Button onClick={() => (location.href = '/')} block>
+        <Button
+          onClick={() => {
+            sendSegmentEventFromButton(Message.POI_INITIATED.buttonText);
+            location.href = '/';
+          }}
+          block
+        >
           {Message.POI_INITIATED.buttonText}
         </Button>
       );
@@ -121,7 +146,13 @@ export const getModalContent = (
       );
       button = (
         <>
-          <Button onClick={() => (location.href = '/')} block>
+          <Button
+            onClick={() => {
+              sendSegmentEventFromButton(Message.PAYMENT_ENABLE.buttonText);
+              location.href = '/';
+            }}
+            block
+          >
             {Message.PAYMENT_ENABLE.buttonText}
           </Button>
           <Space margin={[1.5, 0, 0]}>
@@ -132,6 +163,7 @@ export const getModalContent = (
                   onClick={() => {
                     closeModal();
                     sendFormSegment();
+                    sendSegmentEventFromButton(Message.PAYMENT_ENABLE.secondryButtonText);
                     location.href = '/app/onboarding/steps';
                   }}
                 >
@@ -153,6 +185,7 @@ export const getModalContent = (
           onClick={() => {
             closeModal();
             sendFormSegment();
+            sendSegmentEventFromButton(Message.PAYMENT_DISABLE.buttonText);
             history.push('/onboarding/steps');
           }}
           block
@@ -184,7 +217,13 @@ export const getModalContent = (
         description = Message.UNDER_REVIEW.payment_enable_description;
       }
       button = (
-        <Button onClick={() => (location.href = '/')} block>
+        <Button
+          onClick={() => {
+            sendSegmentEventFromButton('Back To Dashboard');
+            location.href = '/';
+          }}
+          block
+        >
           Back To Dashboard
         </Button>
       );
@@ -204,6 +243,7 @@ export const getModalContent = (
       button = (
         <Button
           onClick={() => {
+            sendSegmentEventFromButton(Message.TNC.buttonText);
             history.push('/tncform');
             analyticsTrack({
               objectName: 'Act',
@@ -243,6 +283,7 @@ export const getModalContent = (
                 ticket: SAMPLE_TICKET,
               });
             }
+            sendSegmentEventFromButton('Request a call');
             closeModal();
           }}
           block
@@ -266,6 +307,7 @@ export const getModalContent = (
           <Button
             onClick={() => {
               closeModal();
+              sendSegmentEventFromButton(Message.NC.buttonText);
               history.push(activationFormUrl);
             }}
             icon="link"
@@ -281,7 +323,10 @@ export const getModalContent = (
                   <Button
                     variant="tertiary"
                     children={Message.NC.secondryButtonText}
-                    onClick={closeModal}
+                    onClick={() => {
+                      sendSegmentEventFromButton(Message.NC.secondryButtonText);
+                      closeModal();
+                    }}
                   />
                 </View>
               </Space>
@@ -296,7 +341,13 @@ export const getModalContent = (
       image = <img src={MerchantBlocked} />;
       description = Message.REJECTED.description;
       button = (
-        <Button onClick={openCustomerSupport} block>
+        <Button
+          onClick={() => {
+            sendSegmentEventFromButton(Message.REJECTED.buttonText);
+            openCustomerSupport();
+          }}
+          block
+        >
           {Message.REJECTED.buttonText}
         </Button>
       );

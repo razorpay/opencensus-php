@@ -296,6 +296,32 @@ export const handlers = [
     );
   }),
 
+  rest.get(`*/merchant/api/test/merchant/aov-config`, (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.delay(50),
+      ctx.json({
+        status_code: 200,
+        data: {
+          config: [
+            { min: 1, max: 150 },
+            { min: 151, max: 300 },
+            { min: 301, max: 600 },
+            { min: 601, max: 1000 },
+            { min: 1001, max: 2000 },
+            { min: 2001, max: 3000 },
+            { min: 3001, max: 5000 },
+            { min: 5001, max: 10000 },
+            { min: 10001, max: 20000 },
+            { min: 20001, max: 50000 },
+            { min: 50001, max: 100000 },
+            { min: 100001, max: 0 },
+          ],
+        },
+      }),
+    );
+  }),
+
   rest.post('*/merchant/api/live/merchant/activation/otp/send', (req, res, ctx) => {
     return res(
       ctx.status(200),

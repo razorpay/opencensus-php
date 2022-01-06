@@ -37,6 +37,7 @@ import { fetch } from 'common/services/rest/rest-fetch';
 import BusinessName from '../Fields/BusinessName';
 import GstinAutoPopulate from '../Fields/GstinAutoPopulate';
 import usePartnerActivation from '../hooks/usePartnerActivation';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const Container = styled(View)`
   position: relative;
@@ -159,12 +160,14 @@ interface IBusinessDetailsProps {
 
 const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactElement => {
   const { data, postData } = useActivation();
+  const trackEvents = useTrackEvents();
   const { user, experiments } = useApp();
   const { gstinDetails } = useGstin();
   const snackbar = useSnackbar();
   const [pinCode, setPinCodeValue] = useState<string>('');
   const [isRegisteredPin, setIsRegisteredPin] = useState<boolean>(true);
   const [addressFormikValue, setAddressFormikValue] = useState({});
+  const [businessDetailsCardTitle, setBusinessDetailsCardTitle] = useState('');
 
   const { business_type: businessType } = data;
   const businessDetails = data.business_details;
@@ -253,6 +256,17 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
       });
     }
   }, [hasPoiStatus]);
+
+  useEffect(() => {
+    trackEvents({
+      objectName: 'Page',
+      actionName: 'Viewed',
+      screen: 'home page',
+      properties: {
+        pageTitle: 'Business Overview',
+      },
+    });
+  }, []);
 
   const copySameAddress = (reqData, updatedDetails) => {
     let _reqData = { ...reqData };
@@ -415,6 +429,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                 }
                 helpText={getFieldStatus('company_pan').description || 'PAN of the Company'}
                 autoCapitalize="characters"
+                onBlur={() => setBusinessDetailsCardTitle('PAN Details')}
               />
             </Field>
             <Field visible={isVisible('business_name', data)}>
@@ -451,6 +466,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                           formikProps.setFieldTouched('business_dba');
                           formikProps.setFieldValue('business_dba', company_name);
                         }
+                        setBusinessDetailsCardTitle('PAN Details');
                         setIsBlurCalled(true);
                       }}
                       onInputBlur={(value) => {
@@ -513,6 +529,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     eventAction: 'initiated',
                     user,
                   });
+                  setBusinessDetailsCardTitle('PAN Details');
                 }}
                 disabled={isFormLocked}
               />
@@ -536,6 +553,9 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                 helpText={
                   getFieldStatus('promoter_pan').description || getHelpText('promoter_pan', data)
                 }
+                onBlur={() => {
+                  setBusinessDetailsCardTitle('PAN Details');
+                }}
                 autoCapitalize="characters"
               />
             </Field>
@@ -565,6 +585,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                 helpText={
                   getFieldStatus('promoter_pan_name').description || 'As mentioned in the PAN'
                 }
+                onBlur={() => setBusinessDetailsCardTitle('PAN Details')}
               />
             </Field>
             <Field last>
@@ -626,6 +647,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                   formikProps.errors.business_registered_address
                 }
                 disabled={isFormLocked}
+                onBlur={() => setBusinessDetailsCardTitle('Address Details')}
               />
             </Field>
             <Field>
@@ -645,6 +667,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                   setIsRegisteredPin(true);
                 }}
                 disabled={isFormLocked}
+                onBlur={() => setBusinessDetailsCardTitle('Address Details')}
               />
             </Field>
             <Field>
@@ -659,6 +682,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                 }
                 disabled={isFormLocked}
                 onBlur={(value) => {
+                  setBusinessDetailsCardTitle('Address Details');
                   formikProps.setFieldTouched('business_registered_city');
                   formikProps.setFieldValue('business_registered_city', value);
                 }}
@@ -680,8 +704,17 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                   formikProps.setFieldTouched('business_registered_state');
                   formikProps.setFieldValue('business_registered_state', value);
                   setIsBlurCalled(true);
+                  trackEvents({
+                    objectName: 'Bottom sheet',
+                    actionName: 'Closed',
+                    screen: 'home page',
+                    properties: {
+                      'Modal Label': 'Select state',
+                    },
+                  });
                 }}
                 onInputBlur={(value) => {
+                  setBusinessDetailsCardTitle('Address Details');
                   formikProps.setFieldTouched('business_registered_state');
                   formikProps.setFieldValue('business_registered_state', value);
                   setIsBlurCalled(true);
@@ -708,7 +741,21 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                 title="Operational address is the same as above"
                 helpText="Physical verification may take place"
                 defaultChecked={hasSameAdress}
-                onChange={(value) => handleSameAddress(value)}
+                onChange={(value) => {
+                  handleSameAddress(value);
+                  setBusinessDetailsCardTitle('Address Details');
+                  trackEvents({
+                    objectName: 'Checkbox',
+                    actionName: 'Clicked',
+                    screen: 'home page',
+                    properties: {
+                      'Checkbox Label': 'Physical verification may take place',
+                      'Option Selected': 'Physical verification may take place',
+                      'Element Type': 'Form',
+                      Mandatory: 'Yes',
+                    },
+                  });
+                }}
               />
             </Field>
           </FormSection>
@@ -726,6 +773,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     formikProps.errors.business_operation_address
                   }
                   disabled={isFormLocked}
+                  onBlur={() => setBusinessDetailsCardTitle('Business Operational Address')}
                 />
               </Field>
               <Field>
@@ -740,6 +788,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                   }
                   disabled={isFormLocked}
                   onBlur={(value) => {
+                    setBusinessDetailsCardTitle('Business Operational Address');
                     formikProps.setFieldTouched('business_operation_pin');
                     formikProps.setFieldValue('business_operation_pin', value);
                   }}
@@ -761,6 +810,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     formikProps.touched.business_operation_city &&
                     formikProps.errors.business_operation_city
                   }
+                  onBlur={() => setBusinessDetailsCardTitle('Business Operational Address')}
                   disabled={isFormLocked}
                 />
               </Field>
@@ -781,6 +831,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     formikProps.setFieldValue('business_operation_state', value);
                     setIsBlurCalled(true);
                   }}
+                  onInputBlur={() => setBusinessDetailsCardTitle('Business Operational Address')}
                   disabled={isFormLocked}
                 >
                   {Object.keys(states).map((state_code) => (
@@ -807,6 +858,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     updateGstin={(value) => {
                       formikProps.setFieldTouched('gstin');
                       formikProps.setFieldValue('gstin', value);
+                      setBusinessDetailsCardTitle('Company Details');
                       setIsBlurCalled(true);
                     }}
                     hasGSTIN={hasGSTIN}
@@ -821,6 +873,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     value={formikProps.values.gstin}
                     errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                     onBlur={() => {
+                      setBusinessDetailsCardTitle('Company Details');
                       analyticsTrack({
                         objectName: 'SignUp',
                         actionName: 'Gst Identification Number',
@@ -828,6 +881,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                         eventAction: 'initiated',
                         user,
                       });
+                      setBusinessDetailsCardTitle('Company Details');
                     }}
                     disabled={isFormLocked || hasGSTIN || getFieldStatus('gstin').isDisabled}
                     helpText={
@@ -858,6 +912,17 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                             );
                             setBusinessDetailsCompleted(value);
                           }
+                          setBusinessDetailsCardTitle('Company Details');
+                          trackEvents({
+                            objectName: 'Checkbox',
+                            actionName: 'Clicked',
+                            screen: 'home page',
+                            properties: {
+                              'Checkbox Label': 'I dont have a GSTIN',
+                              'Option Selected': 'I dont have a GSTIN',
+                              'Element Type': 'Form',
+                            },
+                          });
                           analyticsTrack({
                             objectName: 'SignUp',
                             actionName: "I don't have a GSTIN checkbox",
@@ -885,6 +950,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
             isBlurCalled={isBlurCalled}
             setIsBlurCalled={setIsBlurCalled}
             tabName="Business Details"
+            cardTitle={businessDetailsCardTitle}
           />
         </form>
       )}

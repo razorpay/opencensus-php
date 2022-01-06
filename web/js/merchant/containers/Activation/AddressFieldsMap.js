@@ -19,6 +19,12 @@ export default [
       placeholder: 'Enter Street Address',
       _cmp: Input.Textarea,
       onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Address',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
         this.sendErrorMessageToSegment(e, error);
       },
     },
@@ -30,6 +36,12 @@ export default [
       validator: isPinValid,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Pincode',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -38,6 +50,12 @@ export default [
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'City',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -48,6 +66,12 @@ export default [
       _autoRenderImpure: true, // Re-evaluate errors if pincode is updated
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'State',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
   ],
@@ -59,6 +83,12 @@ export default [
     _when: excludeFor_Indiv,
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
+      this.sendCheckboxToSegment({
+        'Checkbox Label': 'Operational Address same as above',
+        'Option Selected': e.target.value,
+        'Element Type': 'Form',
+        Mandatory: 'No',
+      });
     },
   },
   [
@@ -70,6 +100,12 @@ export default [
       _when: differentAddress,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Enter Street Address',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -81,6 +117,12 @@ export default [
       _when: differentAddress,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'Pincode',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -90,6 +132,12 @@ export default [
       _when: differentAddress,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'City',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
     {
@@ -101,6 +149,12 @@ export default [
       _when: differentAddress,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'State',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
       },
     },
   ],

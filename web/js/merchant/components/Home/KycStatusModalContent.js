@@ -1,6 +1,5 @@
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import SupportButton from './SupportButton';
-
 import { Link } from 'react-router-dom';
 import { SAMPLE_TICKET } from 'merchant/views/TicketSupport/components/data';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -70,6 +69,15 @@ export const kycModalContent = (args = {}) => {
               });
               args.onClose();
               args.goToActivationForm();
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'Few more details required',
+                  'CTA Label': 'Complete KYC',
+                },
+              });
             }}
           >
             Complete KYC
@@ -94,6 +102,15 @@ export const kycModalContent = (args = {}) => {
             onClick={() => {
               args.onClose();
               args.openPaymentAcceptModal();
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'Reviewing your details',
+                  'CTA Label': 'Try our products',
+                },
+              });
             }}
           >
             Try our products
@@ -135,6 +152,15 @@ export const kycModalContent = (args = {}) => {
                     milestone: 'L2 Start',
                   },
                 });
+                args.trackEvents({
+                  objectName: 'Pop Up CTA',
+                  actionName: 'Clicked',
+                  screen: 'home page',
+                  properties: {
+                    'Pop-up Label': 'Congratulations!',
+                    'CTA Label': 'Complete KYC',
+                  },
+                });
                 args.onClose();
                 args.goToActivationForm();
               }}
@@ -144,6 +170,15 @@ export const kycModalContent = (args = {}) => {
             <button
               className="btn btn-primary"
               onClick={() => {
+                args.trackEvents({
+                  objectName: 'Pop Up CTA',
+                  actionName: 'Clicked',
+                  screen: 'home page',
+                  properties: {
+                    'Pop-up Label': 'Congratulations!',
+                    'CTA Label': 'Accept Payments',
+                  },
+                });
                 args.onClose();
                 args.openPaymentAcceptModal();
               }}
@@ -178,6 +213,15 @@ export const kycModalContent = (args = {}) => {
                   clickSource: 'KYC submitted, TnC Popup',
                 }),
               );
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC is under review',
+                  'CTA Label': 'Generate TnC Page',
+                },
+              });
               analyticsTrack({
                 objectName: 'Act Generate Page Now',
                 actionName: 'initiated',
@@ -211,7 +255,21 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC is under review',
+                  'CTA Label': ' Back to Dashboard',
+                },
+              });
+              args.onGoToDashboard();
+            }}
+          >
             Back to Dashboard
           </button>
         ),
@@ -250,6 +308,15 @@ export const kycModalContent = (args = {}) => {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC is under review',
+                  'CTA Label': 'Generate TnC Page',
+                },
+              });
               args.onClose();
               args.generatePage();
             }}
@@ -274,7 +341,21 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              analyticsTrack({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC is under review',
+                  'CTA Label': 'Back to Dashboard',
+                },
+              });
+              args.onGoToDashboard();
+            }}
+          >
             Back to Dashboard
           </button>
         ),
@@ -336,7 +417,21 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <button className="btn btn-primary" onClick={args.onGoToDashboard}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC under review',
+                  'CTA Label': 'Back to Dashboard',
+                },
+              });
+              args.onGoToDashboard();
+            }}
+          >
             Back to Dashboard
           </button>
         ),
@@ -354,7 +449,22 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <Link to={activationFormUrl} onClick={() => args.onClose()} className="btn btn-primary">
+          <Link
+            to={activationFormUrl}
+            onClick={() => {
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC Clarification',
+                  'CTA Label': 'Update Details',
+                },
+              });
+              args.onClose();
+            }}
+            className="btn btn-primary"
+          >
             Update Details
           </Link>
         ),
@@ -372,7 +482,22 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <Link to={activationFormUrl} onClick={() => args.onClose()} className="btn btn-primary">
+          <Link
+            to={activationFormUrl}
+            onClick={() => {
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC under review',
+                  'CTA Label': 'Update Details',
+                },
+              });
+              args.onClose();
+            }}
+            className="btn btn-primary"
+          >
             Update Details
           </Link>
         ),
@@ -423,6 +548,15 @@ export const kycModalContent = (args = {}) => {
                   ticket: SAMPLE_TICKET,
                 });
               }
+              args.trackEvents({
+                objectName: 'Pop Up CTA',
+                actionName: 'Clicked',
+                screen: 'home page',
+                properties: {
+                  'Pop-up Label': 'KYC under review',
+                  'CTA Label': 'Request a call',
+                },
+              });
               args.onClose();
             }}
           >
