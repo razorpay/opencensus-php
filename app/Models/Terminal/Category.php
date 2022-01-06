@@ -50,6 +50,11 @@ class Category
     const SERVICES                = 'services';
     const SOCIAL                  = 'social';
     const TRANSPORT               = 'transport';
+    const FUEL_GOVERNMENT         = 'fuel_government';
+    const COMMUNICATION           = 'communication';
+    const AUTO_RENTAL             = 'auto_rental';
+    const FUEL_NON_GOVERNMENT     = 'fuel_nongovernment';
+    const FUEL_HPCL               = 'fuel_hpcl';
 
     /**
      * Categories mapped to invalid will not find an
@@ -144,15 +149,21 @@ class Category
             self::DEFAULT        => self::ECOMMERCE,
             self::PHARMA         => self::ECOMMERCE,
             Gateway::AMEX     => [
-                self::DEFAULT        => self::RETAIL_SERVICES,
-                self::GROCERY        => 'sup_hypermrkt_deptstore',
-                self::ECOMMERCE      => self::RETAIL_SERVICES,
-                self::GOVT_EDUCATION => self::EDUCATION,
-                self::PVT_EDUCATION  => self::EDUCATION,
-                self::CORPORATE      => self::INVALID,
-                self::INSURANCE      => self::INSURANCE,
-                self::HOUSING        => self::HOUSING,
-                self::UTILITIES      => self::UTILITIES
+                self::DEFAULT                => self::RETAIL_SERVICES,
+                self::GROCERY                => 'sup_hypermrkt_deptstore',
+                self::ECOMMERCE              => self::RETAIL_SERVICES,
+                self::GOVT_EDUCATION         => self::EDUCATION,
+                self::PVT_EDUCATION          => self::EDUCATION,
+                self::CORPORATE              => self::INVALID,
+                self::INSURANCE              => self::INSURANCE,
+                self::HOUSING                => self::HOUSING,
+                self::UTILITIES              => self::UTILITIES,
+                self::FUEL_GOVERNMENT        => self::FUEL_GOVERNMENT,
+                self::COMMUNICATION          => self::COMMUNICATION,
+                self::AUTO_RENTAL            => self::AUTO_RENTAL,
+                self::FUEL_NON_GOVERNMENT    => self::FUEL_NON_GOVERNMENT,
+                self::FUEL_HPCL              => self::FUEL_HPCL,
+
             ],
         ],
         Method::EMANDATE => [

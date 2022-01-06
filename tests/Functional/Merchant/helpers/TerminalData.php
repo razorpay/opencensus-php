@@ -1988,6 +1988,7 @@ return [
             'url' => '/merchants/100000Razorpay/terminals',
             'content' => [
                 'gateway'                   => 'amex',
+                'card'                      => true,
                 'gateway_acquirer'          => 'amex',
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_secure_secret'     => 'randomsecuresecretwhichis32chars',
@@ -1998,6 +1999,7 @@ return [
                 'type'                      => [
                     'non_recurring' => '1',
                 ],
+                'network_category'          => 'fuel_government',
             ],
             'method' => 'POST'
         ],
