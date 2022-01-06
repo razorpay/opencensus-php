@@ -714,7 +714,7 @@ class SettlementOndemandTest extends TestCase
     {
         Queue::fake();
 
-        $this->ba->adminAuth(MODE::TEST);
+        $this->ba->cronAuth(MODE::TEST);
 
         $this->startTest();
 
@@ -724,8 +724,6 @@ class SettlementOndemandTest extends TestCase
     private function mockDataForOndemandPartialEs()
     {
         $merchantId = $this->merchantDetail['merchant_id'];
-
-        $this->ba->adminAuth(MODE::TEST);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
 
@@ -759,7 +757,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandPartialScheduledSettlement()
     {
-        $this->ba->adminAuth(MODE::TEST);
+        $this->ba->cronAuth(MODE::TEST);
 
         $this->mockDataForOndemandPartialEs();
 
@@ -798,8 +796,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandPartialScheduledSettlementWithBalanceLessThanSettleableBalance()
     {
-
-        $this->ba->adminAuth(MODE::TEST);
+        $this->ba->cronAuth(MODE::TEST);
 
         $this->mockDataForOndemandPartialEs();
 
@@ -839,7 +836,7 @@ class SettlementOndemandTest extends TestCase
 
         $merchantId = $this->merchantDetail['merchant_id'];
 
-        $this->ba->adminAuth(MODE::TEST);
+        $this->ba->cronAuth(MODE::TEST);
 
         $this->mockDataForOndemandPartialEs();
 
@@ -872,7 +869,7 @@ class SettlementOndemandTest extends TestCase
 
         $merchantId = $this->merchantDetail['merchant_id'];
 
-        $this->ba->adminAuth(MODE::TEST);
+        $this->ba->cronAuth(MODE::TEST);
 
         $this->fixtures->on(Mode::TEST)->base->editEntity('balance', $merchantId, ['balance' => 9900]);
 
