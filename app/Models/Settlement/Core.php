@@ -834,7 +834,7 @@ class Core extends Base\Core
 
         $payoutSupportedChannels = [
             Channel::AXIS,
-            Channel::YESBANK,
+            Channel::RBL,
         ];
 
         $ftsSupportedChannels = [
