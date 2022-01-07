@@ -136,6 +136,8 @@ class GraphRequestAny
 
         $devServeHeader = Request::header('rzpctx-dev-serve-user');
 
+        $mobileDebugId = Request::header('x-mobile-debug-id');  // adding a unique key with value = ({userId}:{uniqueDeviceId}) to help in debugging issues for multiple platforms. This header will not be available for web applications. 
+
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
             'X-Org-Hostname'                        => $domain,
@@ -151,6 +153,7 @@ class GraphRequestAny
             'apollographql-client-version'          => $apolloClientVersion,
             'X-App-Mode'                            => $appMode,
             'rzpctx-dev-serve-user'                 => $devServeHeader,
+            'X-Mobile-Debug-Id'                     => $mobileDebugId,
         ];
 
         $this->headers = array_merge($defaultHeaders, $this->headers);
