@@ -32,7 +32,7 @@ test('should show paused message is case of block', async () => {
   render(<App />, {});
   await waitForOnboardingPageLoadingToFinish();
   expect(screen.getByText('Account Activation')).toBeInTheDocument();
-  expect(screen.getByText('Paused')).toBeInTheDocument();
+  expect(screen.queryByText('Paused')).toBeNull();
 });
 
 test('should show activation progress %', async () => {

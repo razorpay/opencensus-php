@@ -54,11 +54,10 @@ test('should show error info if dedupe blocked and button should not be present'
   await waitForLoadingToFinish();
   expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
   expect(
-    screen.getByText(
+    screen.queryByText(
       'We can’t support your business because it doesn’t meet our compliance requirements',
     ),
-  ).toBeInTheDocument();
-  expect(() => screen.getByText('Submit KYC')).toThrow();
+  ).toBeNull();
 });
 
 test('should render greylist flow and milestone = L1', async () => {

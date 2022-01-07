@@ -63,6 +63,7 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
       if (
         !canShowModals?.dedupe &&
         isDedupe &&
+        (activationData.activation_form_milestone === 'L2' || activationData.submitted) &&
         !activationData.activated &&
         (activationData.activation_status !== 'rejected' ||
           activationData.activation_status !== 'activated')
@@ -138,6 +139,7 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
               </Space>
               {((isDedupe && !activationData.activated) ||
                 activationData.activation_status === 'rejected') &&
+              activationData.submitted &&
               isInstantActivationEnabled ? (
                 <AccountBlock>Paused</AccountBlock>
               ) : (

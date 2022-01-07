@@ -305,23 +305,21 @@ class App extends Component {
       });
 
     if (
-      !user?.activation_form_milestone &&
-      !user?.activated &&
-      this.props.user?.isActivationFormFullView
+      this.props.user?.isActivationFormFullView &&
+      user?.merchants &&
+      Object.keys(user.merchants).length === 1
     ) {
-      if (isMobileDevice()) {
-        this.props.history.push('/onboarding/steps');
-      } else {
-        const firstStepToken = 'onboarding_first_step';
-        removeItem(`${firstStepToken}--${user?.current}`);
+      if (!user?.activation_form_milestone && !user?.activated) {
+        if (isMobileDevice()) {
+          this.props.history.push('/onboarding/steps');
+        } else {
+          const firstStepToken = 'onboarding_first_step';
+          removeItem(`${firstStepToken}--${user?.current}`);
+          this.props.history.push('/kyc');
+        }
+      } else if (this.props.location.pathname === '/activation' && !isMobileDevice()) {
         this.props.history.push('/kyc');
       }
-    } else if (
-      this.props.user?.isActivationFormFullView &&
-      this.props.location.pathname === '/activation' &&
-      !isMobileDevice()
-    ) {
-      this.props.history.push('/kyc');
     }
   }
 

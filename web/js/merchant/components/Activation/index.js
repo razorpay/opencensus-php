@@ -2353,14 +2353,21 @@ export default class ActivationWizard extends React.Component {
             <div>
               <div className="full-view-header">
                 {!this.props.user.activation_form_milestone ? (
-                  <>
-                    <div style={{ fontWeight: 'bold', fontSize: '20px' }}>
-                      Welcome {this.props.data.contact_name},
+                  <div className="header-container">
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '20px' }}>
+                        Welcome {this.props.data.contact_name},
+                      </div>
+                      <div style={{ fontSize: '15px' }}>
+                        Tell us a little more about your business to activate your account
+                      </div>
                     </div>
-                    <div style={{ fontSize: '15px' }}>
-                      Tell us a little more about your business to activate your account
-                    </div>
-                  </>
+                    {Object.keys(this.props.user.merchants).length > 1 && (
+                      <div>
+                        <a onClick={this.saveAndExitForm}>Save & Exit</a>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="header-container">
                     <div className="header-title">

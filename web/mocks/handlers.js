@@ -5,6 +5,7 @@ import * as WebsiteWorkflowDB from 'merchant/views/onboarding/mobile/services/da
 import * as InternationalWorkflowDB from 'merchant/views/onboarding/mobile/services/data/InternationalWorkflowDB';
 import * as BusinessCategoryDB from 'merchant/views/onboarding/mobile/services/data/BusinessCategoryDB';
 import * as PaymentEscalationDB from 'merchant/views/onboarding/mobile/services/data/PaymentEscalationDB';
+import * as GstinDetailsDB from 'merchant/views/onboarding/mobile/services/data/GstinDetailsDB';
 import * as TermsAndConditionDB from 'merchant/views/TermsAndCondition/services/TermsAndConditionDB';
 import * as SettlementsDB from 'merchant/views/Settlements/tests/data/SettlementsDB';
 
@@ -265,6 +266,20 @@ export const handlers = [
         ctx.json({
           status_code: 200,
           data: { ...PaymentEscalationDB.read() },
+        }),
+      );
+    },
+  ),
+
+  rest.get(
+    'http://localhost:6006/merchant/api/live/merchants/activation/gst_details',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: { ...GstinDetailsDB.read() },
         }),
       );
     },

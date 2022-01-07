@@ -59,7 +59,6 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
     status === 'success' && hasSelectedBlacklistCategory(data, businessCategoriesData);
 
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
-  const isDedupe = checkIfDedupe({ ...data, isInstantActivationEnabled }) === 'blocked';
 
   const onClick = (step) => {
     setActiveTabId(step);
@@ -119,9 +118,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
     !isL1Submitted(data.activation_form_milestone) && (!isL1AllTabComplete || isBlackListCategory);
 
   const canShowCTA =
-    !isDedupe &&
-    (data.poi_verification_status !== 'initiated' ||
-      (experiments.isSyncExperimentEnabled && !isL1Submitted(data.activation_form_milestone)));
+    data.poi_verification_status !== 'initiated' ||
+    (experiments.isSyncExperimentEnabled && !isL1Submitted(data.activation_form_milestone));
 
   const steps = [
     {
@@ -168,13 +166,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
             ? 'You have submitted all the details. Our team is reviewing them'
             : ''
         }
-        errorInfo={
-          isDedupe
-            ? 'We can’t support your business because it doesn’t meet our compliance requirements'
-            : ''
-        }
         steps={steps}
-        showSettlement={!isDedupe}
+        showSettlement={true}
         onCTAClick={onCTAClick}
         showCTA={canShowCTA}
         canSubmitL1Form={canL1Submit}

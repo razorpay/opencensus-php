@@ -1,23 +1,36 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { connect } from 'react-redux';
+
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import * as EventActions from 'merchant/reducers/trackEvents';
 import ActivationForm from './index';
 
-const ActivationNativeView = () => {
-  useEffect(() => {
-    analyticsTrack({
-      objectName: 'native full view activation form',
-      actionName: 'displayed',
-      screen: 'KYC Document',
-      properties: {
-        show_activation_form_full_view: 'true',
-        experiment_name: 'show_activation_form_full_view',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
-  }, []);
+@connect(
+  (state) => ({
+    session: state.session,
+    user: state.session.user,
+  }),
+  {
+    ...EventActions,
+  },
+)
+export default class ActivationNativeView extends React.Component {
+  componentDidMount() {
+    if (this.props.user?.isActivationFormFullView) {
+      this.props.trackEvents({
+        objectName: 'native full view activation form',
+        actionName: 'displayed',
+        screen: 'KYC Document',
+        properties: {
+          show_activation_form_full_view: 'true',
+          experiment_name: 'show_activation_form_full_view',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  }
 
-  return <ActivationForm />;
-};
-
-export default ActivationNativeView;
+  render() {
+    return <ActivationForm />;
+  }
+}
