@@ -4960,6 +4960,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_TIME_FOR_LEDGER_TRANSACTION_API                  = 'QUERY_TIME_FOR_LEDGER_TRANSACTION_API';
 
     const ES_SEARCH_RESPONSE_DURATION                            = 'ES_SEARCH_RESPONSE_DURATION';
+    const PAGINATED_RESPONSE_DURATION                            = 'PAGINATED_RESPONSE_DURATION';
     const ES_SEARCH_DURATION                                     = 'ES_SEARCH_DURATION';
     const REPLICA_LAG_RESPONSE_DURATION                          = 'REPLICA_LAG_RESPONSE_DURATION';
     const BUILD_QUERY_RESPONSE_DURATION                          = 'BUILD_QUERY_RESPONSE_DURATION';
