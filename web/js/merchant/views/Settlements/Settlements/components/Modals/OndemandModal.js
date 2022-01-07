@@ -423,12 +423,12 @@ class OndemandModal extends Component {
   // eslint-disable-next-line consistent-return
   validateAmount = (val) => {
     if (isInteger(val) && val > 0) {
-      if (val <= 1) {
+      if (val < 100) {
         this.setState({
           errors: [
             <>
-              <span>Minimum Amount should be greater than </span>
-              <Amount value={100} currency="INR" />
+              <span>Minimum Amount should be </span>
+              <Amount value={10000} parentQuerySelector=".onmdemand-modal" currency="INR" />
             </>,
           ],
           validAmount: false,

@@ -7,7 +7,7 @@ const InstantSettlementListFilter = (props) => {
   return (
     <ListFilter {...props}>
       <div className="form-group list-filter-item">
-        <label>Ondemand Settlement Id</label>
+        <label>Settlement Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 

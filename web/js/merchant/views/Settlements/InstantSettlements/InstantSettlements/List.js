@@ -36,6 +36,7 @@ const SettlementsListItem = ({ settlement, user }) => {
           currency="INR"
         />
       </td>
+      <td className="text-center">{settlement?.scheduled ? 'Same day' : 'Instant'}</td>
       <td>
         <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
@@ -57,7 +58,7 @@ const List = ({ settlements, isLoading, user }) => {
       <table className="table table-hover">
         <thead>
           <tr>
-            <th style={{ paddingLeft: 39, width: '19%' }}>Ondemand Settlement Id</th>
+            <th style={{ paddingLeft: 39, width: '19%' }}>Settlement Id</th>
             <th width="18%" className="text-right">
               Requested Amount
             </th>
@@ -69,6 +70,9 @@ const List = ({ settlements, isLoading, user }) => {
 
             <th width="15%" className="text-right">
               Settled Amount
+            </th>
+            <th width="15%" className="text-center">
+              Type
             </th>
             <th width={user.showOnDemandDeduction ? '19%' : '20%'}>Created At</th>
             <th width="15%" className="text-center">

@@ -60,13 +60,16 @@ const Details = ({
       ) : (
         <div className="panel panel-default SliderPanel">
           <div className="panel-heading instant-settlement--panel-heading">
-            <span className="instant-settlement--panel-heading">Ondemand Settlement Id:</span>{' '}
+            <span className="instant-settlement--panel-heading">Settlement Id:</span>{' '}
             <span className="instant-settlement--panel-heading-id">{settlement.id}</span>
           </div>
           <div className="instant-settlement--modal-section">
             <Alert type={statusMsg.type} message={statusMsg.message} />
-            <div className="instant-settlement--modal-section-heading">
-              Ondemand Settlement Details
+            <div
+              className="instant-settlement--modal-section-heading"
+              style={{ marginTop: '60px' }}
+            >
+              Settlement Details
             </div>
             <EntityDetailRow label="Status">
               <SettlementStatusLabel status={settlement.status} />
@@ -105,14 +108,17 @@ const Details = ({
                 <Amount value={settlement.amount_pending} currency="INR" />
               </EntityDetailRow>
             )}
-            <EntityDetailRow label="Ondemand Fee">
+            <EntityDetailRow label="Transaction Fee">
               <Amount value={settlement.fees - settlement.tax} currency="INR" />
             </EntityDetailRow>
             {settlement.tax !== 0 && (
-              <EntityDetailRow label="Tax">
+              <EntityDetailRow label="GST Charge">
                 <Amount value={settlement.tax} currency="INR" />
               </EntityDetailRow>
             )}
+            <EntityDetailRow label="Type">
+              {settlement?.scheduled ? 'Same day' : 'Instant'}
+            </EntityDetailRow>
           </div>
           <div className="instant-settlement--modal-section">
             <div className="instant-settlement--modal-section-heading">

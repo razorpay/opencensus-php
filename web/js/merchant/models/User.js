@@ -801,6 +801,10 @@ export default class User {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
 
+  get isAutomaticSettlementRestricted() {
+    return this.isFeatureEnabled('es_automatic_restricted');
+  }
+
   get isOndemandSettlementsRestricted() {
     return this.isFeatureEnabled('es_on_demand_restricted');
   }
