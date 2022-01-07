@@ -7,6 +7,7 @@ import { showProductsModal } from 'merchant/reducers/home';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { updateModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 const OnboardingCoupons = ({
   closeModal,
@@ -49,6 +50,13 @@ const OnboardingCoupons = ({
       </button>
       <div className="content">
         <div className="offer-period">Limited time offer</div>
+        {isMobileDevice() && (
+          <img
+            src="https://cdn.razorpay.com/static/assets/onboarding/mweb_coupon.svg"
+            alt="coupon"
+            className="mweb-coupon-img"
+          />
+        )}
         <div className="credit-text">
           Get free credits worth <span className="amount">2 Lakhs</span> if you accept a payment in
           the next 5 days !

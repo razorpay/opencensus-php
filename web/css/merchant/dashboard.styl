@@ -2664,6 +2664,9 @@ $stepIndicatorSize = 36px;
         .link {
           display: inline;
         }
+        @media(max-width: 498px) {
+          color: rgba(22, 47, 86, 0.54)
+        }
       }
     }
 
@@ -2685,6 +2688,19 @@ $stepIndicatorSize = 36px;
       > div {
         padding: 0 18px 10px;
       }
+    }
+  }
+}
+
+.Modal-container--mtu-success {
+  @media(max-width: 498px) {
+    padding: 15px;
+    border-radius: 6px;
+  }
+
+  .Button.Button--primary.succes-mtu-btn {
+    @media(max-width: 498px) {
+      width: 100%; 
     }
   }
 }

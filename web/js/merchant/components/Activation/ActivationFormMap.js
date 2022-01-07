@@ -216,7 +216,7 @@ const contactFields = [
         isEmailNonMandatoryOnL2Form,
         user,
       } = activation.props.user;
-      // if user signup from mobile disable the field
+      // if user email is verified disable the field
       return (
         !activation.isOnKYCTab() &&
         (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&

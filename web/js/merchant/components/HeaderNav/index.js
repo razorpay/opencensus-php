@@ -9,8 +9,9 @@ import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
 import { toggleMobileMenu } from 'merchant/reducers/app';
 import { isMobileDevice } from 'merchant/components/Home/data';
-
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
+import * as LocalStorageService from 'common/utils/localStorage';
 import NavFragment from './NavFragment';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
@@ -22,6 +23,10 @@ import {
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
 import StatusDetails from './StatusDetails/index';
+import OnboardingCoupons from 'common/ui/OnboardingCoupons';
+
+// number of times to show MTU offer
+const COUNT_TO_SHOW_MTU_OFFER = 5;
 
 const analyticsAction = (action) => {
   window?.rzpAnalytics?.({
@@ -42,7 +47,7 @@ function toggleDropdown() {
     user: state.session.user,
     referee: state.merchantReferral.data.referee,
   }),
-  { toggleMobileMenu },
+  { toggleMobileMenu, openModals: openModal, closeModals: closeModal },
 )
 export default class HeaderNav extends Component {
   constructor(props) {
@@ -97,6 +102,43 @@ export default class HeaderNav extends Component {
   onToggleAppMenu() {
     analyticsAction('Click - Sidebar Toggle');
     this.props.toggleMobileMenu();
+  }
+  // function to open MTU popup
+  showMTUOffer = (isButtonClicked = false) => {
+    const { closeModals, openModals, user } = this.props;
+
+    openModals({
+      component: (
+        <OnboardingCoupons
+          closeModal={closeModals}
+          mtuCouponCount={this.state.mtuOfferCount}
+          autoOpenOnboardingCoupon={user.autoOpenOnboardingCoupon}
+          isButtonClicked={isButtonClicked}
+        />
+      ),
+      size: 'xlarge',
+    });
+  };
+
+  componentDidUpdate(_prevProp, prevState) {
+    if (prevState.mtuOfferCount !== this.state.mtuOfferCount) {
+      const { user, referee } = this.props;
+      const prevSessionID = LocalStorageService.getItem(`prev_session`);
+      const isReferredMerchant = referee?.status === 'signup';
+      const canShowOnboardingOffers =
+        user.isOnboardingCouponEnabled && !isReferredMerchant && user.showMtuPopup;
+
+      if (
+        canShowOnboardingOffers &&
+        window.session_id !== prevSessionID &&
+        typeof this.state.mtuOfferCount === 'number' &&
+        this.state.mtuOfferCount < COUNT_TO_SHOW_MTU_OFFER &&
+        user.autoOpenOnboardingCoupon
+      ) {
+        this.showMTUOffer();
+        LocalStorageService.setItem('prev_session', window.session_id);
+      }
+    }
   }
 
   render() {
