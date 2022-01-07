@@ -12,6 +12,72 @@ class Cors
         '/user/session',
     ];
 
+    /*
+     * url_config   - fetching the actual host from env
+     * routes       - if routes are present then CORS is enabled for only those routes
+     */
+    const CORS_CONFIG = [
+        'auth_domain'       => [
+            'url_config'    => 'oauth.auth_service_url',
+            'routes'        => [
+                '/user/session'
+            ]
+        ],
+
+        'banking_domain'    => [
+            'url_config'    => 'app.banking_service_url',
+        ],
+
+        'docs_domain'       => [
+            'url_config'    => 'app.docs_url'
+        ],
+
+        'rzp_website_domain'=> [
+            'url_config'    => 'app.rzp_website_url'
+        ],
+
+        'next_rzp_domain'   => [
+            'url_config'    => 'app.next_rzp_url'
+        ],
+
+        'static_web_domain' => [
+            'url_config'    => 'app.static_web_url'
+        ]
+    ];
+
+    protected function shouldAllowCors($request, $originHost) : bool
+    {
+        $env = \App::environment();
+
+        if(($env === 'stage') and ($this->isDevstackHost($originHost) === true))
+        {
+            return true;
+        }
+
+        foreach (self::CORS_CONFIG as $key => $config)
+        {
+            $url_config = $config['url_config'];
+
+            $url = parse_url(config($url_config), PHP_URL_HOST);
+
+            if ($originHost === $url)
+            {
+                $routes = $config['routes'] ?? null;
+
+                if ($routes === null)
+                {
+                    return true;
+                }
+
+                if(in_array($request->getPathInfo(), $routes, true) === true)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Handle an incoming request.
      *
@@ -25,28 +91,7 @@ class Cors
 
         $originHost = parse_url($originDomain, PHP_URL_HOST);
 
-        $crossOriginDomains = [
-            'auth'       => parse_url(config('oauth.auth_service_url'), PHP_URL_HOST),
-            'banking'    => parse_url(config('app.banking_service_url'), PHP_URL_HOST),
-            'auth_cde'   => parse_url(config('oauth.auth_service_url_cde'), PHP_URL_HOST),
-            'docs'       => parse_url(config('app.docs_url'), PHP_URL_HOST),
-        ];
-
-        $crossOriginPolicy = false;
-
-        $env = \App::environment();
-
-        if (($originHost === $crossOriginDomains['banking']) or
-            ($originHost === $crossOriginDomains['docs']) or
-            (($originHost === $crossOriginDomains['auth']) and
-                (in_array($request->getPathInfo(), $this->authRoutes, true) === true)) or
-            (($env === 'stage') and ($this->isDevstackHost($originHost) === true)))
-        {
-            // For Auth Origin we have to enable cors only for one route.
-            $crossOriginPolicy = true;
-        }
-
-        if ($crossOriginPolicy === true)
+        if ($this->shouldAllowCors($request, $originHost) === true)
         {
             $allowHeaders = [
                 'X-Requested-With',
@@ -57,7 +102,8 @@ class Cors
                 // Added this to allow email verification via OTP in X
                 'x-send-email-otp',
                 // Added to allow access to users api for non confirmed user
-                'x-signup-flow-v2'
+                'x-signup-flow-v2',
+                'x-xsrf-token'
             ];
 
             $headers = [

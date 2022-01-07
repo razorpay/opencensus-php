@@ -265,5 +265,9 @@ return array(
     'lj_key'                     => env('LJ_KEY'),
     'banking_service_url'        => env('BANKING_SERVICE_URL'),
     'docs_url'                   => env('DOCS_URL'),
-    'banking_demo_user_password' => env('BANKING_DEMO_USER_PASSWORD')
+    'banking_demo_user_password' => env('BANKING_DEMO_USER_PASSWORD'),
+
+    'rzp_website_url'            => env('RZP_WEBSITE_URL'),
+    'next_rzp_url'               => env('NEXT_WEBSITE_URL'),
+    'static_web_url'             => env('STATIC_WEBSITE_URL')
 );
