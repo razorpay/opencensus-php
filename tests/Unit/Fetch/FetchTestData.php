@@ -523,6 +523,14 @@ return [
         ],
     ],
 
+    E::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::SETTLEMENT_ONDEMAND_ATTEMPT => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -530,6 +538,7 @@ return [
             ],
         ],
     ],
+
     E::SETTLEMENT_ONDEMAND_BULK => [
         Type::PRIVILEGE_AUTH => [
             [
@@ -537,6 +546,7 @@ return [
             ],
         ],
     ],
+
     E::SETTLEMENT_ONDEMAND_TRANSFER => [
         Type::PRIVILEGE_AUTH => [
             [

@@ -2292,6 +2292,11 @@ class AdminFetch
                     ],
                 ],
             ],
+
+            Entity::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::SETTLEMENT_ONDEMAND_PAYOUT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'settlement_ondemand_id' => [
