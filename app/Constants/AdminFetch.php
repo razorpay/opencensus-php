@@ -1922,6 +1922,7 @@ class AdminFetch
                         'combined',
                         'payment',
                         'refund',
+                        'cancel'
                     ],
                 ],
                 'gateway' => [
