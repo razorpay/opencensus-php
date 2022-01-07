@@ -784,7 +784,7 @@ class Core extends Base\Core
 
         try
         {
-            $oldBankAccount = $this->repo->bank_account->getBankAccount($this->merchant);
+            $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
             if (is_null($data[Constants::ADMIN_EMAIL]) === false)
             {
@@ -793,6 +793,13 @@ class Core extends Base\Core
                 $this->app['workflow']
                     ->setWorkflowMaker($maker)
                     ->setWorkflowMakerType(MakerType::ADMIN)
+                    ->setMakerFromAuth(false);
+            }
+            else
+            {
+                $this->app['workflow']
+                    ->setWorkflowMaker($merchant)
+                    ->setWorkflowMakerType(MakerType::MERCHANT)
                     ->setMakerFromAuth(false);
             }
 

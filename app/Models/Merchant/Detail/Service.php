@@ -35,6 +35,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
@@ -2159,6 +2160,8 @@ class Service extends Base\Service
             ->setRouteName(DetailConstants::GSTIN_UPDATE_SELF_SERVE_ROUTE_NAME)
             ->setRouteParams([])
             ->setInput($input)
+            ->setWorkflowMakerType(MakerType::MERCHANT)
+            ->setWorkflowMaker($oldDetailEntity->merchant)
             ->setController(DetailConstants::GSTIN_UPDATE_SELF_SERVE_WORKFLOW_CONTROLLER)
             ->setMethod('POST')
             ->setEntityAndId($oldDetailEntity->getEntity(), $oldDetailEntity->getId())
