@@ -1356,6 +1356,110 @@ class EnachRblGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testCancelEmandateToken()
+    {
+        $payment = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(['status' => 'PAID'], $enach);
+
+        $token = $this->getDbEntityById('token',$payment['token_id']);
+
+        $this->assertEquals('confirmed',$token['recurring_status']);
+
+        $response = $this->deleteCustomerToken('token_' . $payment['token_id'], 'cust_' . $payment['customer_id']);
+
+        $this->assertEquals(true, $response['deleted']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $fileStore = $this->getDbLastEntityToArray(Entity::FILE_STORE);
+
+        $this->assertEquals("rbl_enach_cancel", $fileStore['type']);
+
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        $this->assertEquals("rbl/nach/input_file/MMS-CANCEL-RATN-RATNA0001-$date-ESIGN000001-INP", $fileStore['name']);
+    }
+
+    public function testCancelEmandateTokenWithMultipleUtilityCode()
+    {
+        $payment1 = $this->makeDebitPayment();
+
+        $this->fixtures->create('terminal:direct_enach_rbl_terminal');
+
+        $payment2 = $this->makeDebitPayment();
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch1 = $this->makeBatchDebitPayment($payment1, $fileStatuses);
+        $batch2 = $this->makeBatchDebitPayment($payment2, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch1['type']);
+        $this->assertEquals('processed', $batch1['status']);
+
+        $this->assertEquals('emandate', $batch2['type']);
+        $this->assertEquals('processed', $batch2['status']);
+
+        $payment1 = $this->getDbEntityById('payment', $payment1['id']);
+        $payment2 = $this->getDbEntityById('payment', $payment2['id']);
+
+        $this->assertEquals('captured', $payment1['status']);
+        $this->assertEquals('captured', $payment2['status']);
+
+        $enach1 = $this->getDbEntities('enach', ['payment_id' => $payment1['id']])->first()->toArray();
+        $enach2 = $this->getDbEntities('enach', ['payment_id' => $payment2['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(['status' => 'PAID'], $enach1);
+        $this->assertArraySelectiveEquals(['status' => 'PAID'], $enach2);
+
+        $token1 = $this->getDbEntityById('token',$payment1['token_id']);
+        $token2 = $this->getDbEntityById('token',$payment2['token_id']);
+
+        $this->assertEquals('confirmed',$token1['recurring_status']);
+        $this->assertEquals('confirmed',$token2['recurring_status']);
+
+        $response1 = $this->deleteCustomerToken('token_' . $payment1['token_id'], 'cust_' . $payment1['customer_id']);
+        $response2 = $this->deleteCustomerToken('token_' . $payment2['token_id'], 'cust_' . $payment2['customer_id']);
+
+        $this->assertEquals(true, $response1['deleted']);
+        $this->assertEquals(true, $response2['deleted']);
+
+        $this->ba->adminAuth();
+
+        $data = $this->testData['testCancelEmandateToken'];
+
+        $this->startTest($data);
+
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        $fileStore = $this->getDbLastEntityToArray(Entity::FILE_STORE);
+
+        $this->assertEquals("rbl/nach/input_file/MMS-CANCEL-RATN-RATNA0001-$date-ESIGN000001-INP", $fileStore['name']);
+    }
+
     protected function makeDebitPayment()
     {
         $payment                 = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);

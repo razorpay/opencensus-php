@@ -21,6 +21,7 @@ class Type
 
     const RBL_ENACH_DEBIT                   = 'rbl_enach_debit';
     const RBL_ENACH_REGISTER                = 'rbl_enach_register';
+    const RBL_ENACH_CANCEL                  = 'rbl_enach_cancel';
 
     const ENACH_NPCI_NB_DEBIT               = 'enach_npci_nb_debit';
     const ENACH_NPCI_NB_CANCEL              = 'enach_npci_nb_cancel';
@@ -267,6 +268,7 @@ class Type
             self::RBL_ENACH_REGISTER,
             self::ENACH_NPCI_NB_DEBIT,
             self::ENACH_NPCI_NB_CANCEL,
+            self::RBL_ENACH_CANCEL,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ICICI_NACH_COMBINED_DEBIT,
             self::ICICI_NACH_COMBINED_CANCEL,
@@ -462,6 +464,7 @@ class Type
         self::RBL_ENACH_REGISTER,
         self::ENACH_NPCI_NB_DEBIT,
         self::ENACH_NPCI_NB_CANCEL,
+        self::RBL_ENACH_CANCEL,
         self::ENACH_NPCI_NB_DEBIT_ICICI,
         self::ICICI_NACH_COMBINED_DEBIT,
         self::ICICI_NACH_COMBINED_CANCEL,
@@ -696,6 +699,7 @@ class Type
             self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ENACH_NPCI_NB_DEBIT,
             self::ENACH_NPCI_NB_CANCEL,
+            self::RBL_ENACH_CANCEL,
             self::BDBL_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
         ],

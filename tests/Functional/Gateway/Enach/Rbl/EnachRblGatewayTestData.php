@@ -301,4 +301,38 @@ return [
             ],
         ],
     ],
+
+    'testCancelEmandateToken' => [
+        'request' => [
+            'url' => '/gateway/files',
+            'method' => 'POST',
+            'content' => [
+                'type'    => 'emandate_cancel',
+                'targets' => ['enach_rbl'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [''],
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_cancel',
+                        'target'              => 'enach_rbl',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
 ];

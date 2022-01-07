@@ -153,6 +153,7 @@ class Constants
         ],
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING,
+            self::ENACH_RBL,
         ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
@@ -273,6 +274,7 @@ class Constants
 
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING => [''],
+            self::ENACH_RBL => [''],
         ],
 
         Type::EMANDATE_DEBIT => [
