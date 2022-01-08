@@ -59,10 +59,7 @@ class SalesForceService {
     {
         $merchantCore = (new MerchantCore());
 
-        $isExpEnabled = $merchantCore->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE);
-
-        if ($sfEventRequestType === 'CURRENT_ACCOUNT_INTEREST' and $isExpEnabled === true)
+        if ($sfEventRequestType === 'CURRENT_ACCOUNT_INTEREST')
         {
             $partners = $merchantCore->fetchAffiliatedPartners($merchant->getId());
 
@@ -70,10 +67,18 @@ class SalesForceService {
 
             if (empty($partner) === false)
             {
-                // data to create opportunity for partnership leads on SF
-                $data = ['partner_id' => $partner->getId(), 'source_detail' => 'banking'];
+                $partnerId = $partner->getId();
 
-                $payload = array_merge($payload, $data);
+                $isExpEnabled = $merchantCore->isRazorxExperimentEnable($partnerId,
+                    RazorxTreatment::SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE);
+
+                if ($isExpEnabled === true)
+                {
+                    // data to create opportunity for partnership leads on SF
+                    $data = ['partner_id' => $partnerId, 'source_detail' => 'banking'];
+
+                    $payload = array_merge($payload, $data);
+                }
             }
         }
     }
