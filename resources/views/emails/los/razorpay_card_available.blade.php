@@ -531,65 +531,6 @@
     <![endif]-->
 
 
-    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-                        <tr>
-
-                            <td
-                                class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card descriptive" style="width: 85%; max-width: 860px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="center-align para-light font-size-medium" style="text-align: center; font-size: 14px; line-height: 1.5; color: #0D2366;">In case of any query kindly let us know. You can reach us on<a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;"> razorpay.com/support</a> or drop us a mail on<a class="link" href="mailto:capital.support@razorpay.com" style="text-decoration: none; color: #528FF0;"> capital.support@razorpay.com.</a></p></div>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-
-                    <!--[if mso | IE]>
-                    </td>
-
-                    </tr>
-
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-    </div>
-
-
     <!--[if mso | IE]>
     </td>
     </tr>
