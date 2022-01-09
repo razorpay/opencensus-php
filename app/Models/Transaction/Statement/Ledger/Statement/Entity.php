@@ -76,6 +76,8 @@ class Entity extends LedgerEntry\Entity
     protected $casts = [
         self::CREDIT              => 'int',
         self::DEBIT               => 'int',
+        self::AMOUNT              => 'int',
+        self::BALANCE             => 'int',
     ];
 
     protected $appends = [
@@ -111,6 +113,16 @@ class Entity extends LedgerEntry\Entity
         $array[self::ENTITY] = 'transaction';
     }
 
+    /***
+     * Public id for ledger statement is Journal Id
+     *
+     * @param array $array
+     */
+    public function setPublicIdAttribute(array & $array)
+    {
+        $array[static::ID] = static::$sign . static::getDelimiter() . $this->getAttribute(self::JOURNAL_ID);
+    }
+
     // Appends
     public function getAccountNumberAttribute()
     {
@@ -119,12 +131,22 @@ class Entity extends LedgerEntry\Entity
 
     public function getCreditAttribute()
     {
-        return $this->bankingAccount->getAccountNumber();
+        if ($this->getAttribute(self::TYPE) == self::CREDIT)
+        {
+            return $this->getAttribute(self::AMOUNT);
+        }
+
+        return 0;
     }
 
     public function getDebitAttribute()
     {
-        return $this->bankingAccount->getAccountNumber();
+        if ($this->getAttribute(self::TYPE) == self::DEBIT)
+        {
+            return $this->getAttribute(self::AMOUNT);
+        }
+
+        return 0;
     }
 
     public function isBalanceTypeBanking(): bool
