@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Status;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
@@ -142,6 +143,90 @@ class Payout extends Base
                     self::TIME_TAKEN => millitime() - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * Use the entity to create request payload for ledger and then call ledger
+     *
+     * @param Entity               $payout
+     * @param Reversal\Entity|null $reversal
+     * @param array                $ftsSourceAccountInformation
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws \Throwable
+     */
+    public function processPayoutAndCreateJournalEntry(Entity $payout, Reversal\Entity $reversal = null, array $ftsSourceAccountInformation = [])
+    {
+        $this->trace->info(
+            TraceCode::PROCESS_PAYOUT_AND_CREATE_JOURNAL_ENTRY_INIT,
+            [
+                'payout_id' => $payout->getPublicId(),
+                'reversal_id' => optional($reversal)->getPublicId() ?? null,
+                'fts_source_account_information' => $ftsSourceAccountInformation,
+            ]
+        );
+
+        $payload = $this->createLedgerPayloadFromEntity($payout, $reversal, $ftsSourceAccountInformation);
+
+        return $this->createJournalEntry($payload);
+    }
+
+    public function createLedgerPayloadFromEntity(Entity $payout, Reversal\Entity $reversal = null, array $ftsSourceAccountInformation = [])
+    {
+        $status = Status::getLedgerEventFromPayoutStatus($payout->getStatus(), $payout->getPurpose());
+
+        $notes = [
+            self::BALANCE_ID => BalanceEntity::getSignedIdOrNull($payout->getBalanceId()),
+        ];
+
+        $identifiers = [
+            self::BANKING_ACCOUNT_ID => $payout->balance->bankingAccount->getPublicId(),
+        ];
+
+        $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+
+        $identifiers = array_merge($identifiers, $ftsSourceAccountData);
+
+        $payload = [
+            self::TENANT           => self::X,
+            self::MODE             => $this->mode,
+            self::MERCHANT_ID      => $payout->getMerchantId(),
+            self::CURRENCY         => $payout->getCurrency(),
+            self::AMOUNT           => (string) $payout->getAmount(),
+            self::BASE_AMOUNT      => (string) $payout->getBaseAmount(),
+            self::COMMISSION       => (string) $payout->getFees(),
+            self::TAX              => (string) $payout->getTax(),
+            self::TRANSACTOR_ID    => $payout->getPublicId(),
+            self::TRANSACTOR_EVENT => $status,
+            self::TRANSACTION_DATE => $payout->getCreatedAt(),
+            self::NOTES            => $notes,
+            self::IDENTIFIERS      => $identifiers,
+        ];
+
+        if ($status === self::PAYOUT_REVERSED)
+        {
+            if ($reversal !== null)
+            {
+                $payload[self::TRANSACTOR_ID]    = $reversal->getPublicId();
+                $payload[self::TRANSACTION_DATE] = $reversal->getCreatedAt();
+            }
+        }
+
+        $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
+
+        // Keeping this here for future safety
+        // Ideally, this won't execute in partial reverse shadow
+        $this->updatePayloadForFeeCredits($payload, $payout);
+
+        $this->trace->info(
+            TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
+            [
+                'payload' => $payload,
+            ]
+        );
+
+        return $payload;
     }
 
     /**

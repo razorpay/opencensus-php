@@ -4,16 +4,18 @@ namespace RZP\Models\Transaction\Processor;
 
 use Carbon\Carbon;
 
-use RZP\Constants;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Models\Transaction\Core;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Pricing\Calculator;
+use RZP\Models\Transaction\Entity;
+use RZP\Constants as RzpConstants;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Exception\BadRequestException;
@@ -36,6 +38,68 @@ class Payout extends Base
 {
     /** @var PayoutModel\Entity */
     protected $source;
+
+    public function createTransactionForLedger($txnId, $newBalance)
+    {
+        // Let us first check if a transaction is already created with this ID or not.
+        // May be possible that at high TPS, multiple workers pick the same SQS job.
+        $existingTxn = $this->repo->transaction->find($txnId);
+
+        if ($existingTxn !== null)
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_ALREADY_EXISTS
+            );
+
+            // returning fee split as null, as a fee breakup shall already be created
+            return [$existingTxn, null];
+        }
+
+        $txn = new Entity;
+
+        $txn->setId($txnId);
+        $txn->setSettledAt(false);
+        $txn->sourceAssociate($this->source);
+        $txn->merchant()->associate($this->source->merchant);
+
+        $this->setTransaction($txn);
+
+        $this->setSourceDefaults();
+
+        $this->fillDetails();
+
+        $this->setCreditDebitDetails($this);
+
+        $this->updateTransaction();
+
+        $merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+
+        $oldBalance = $merchantBalance->getBalance();
+
+        $this->txn->accountBalance()->associate($merchantBalance);
+
+        $merchantBalance->setAttribute(Balance\Entity::BALANCE, $newBalance);
+
+        $this->repo->balance->updateBalance($merchantBalance);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'merchant_id' => $txn->getMerchantId(),
+                'new_balance' => $newBalance,
+                'old_balance' => $oldBalance,
+                'method'      => __METHOD__,
+            ]);
+
+        $this->txn->setBalance($newBalance, 0, false);
+
+        if (in_array($this->txn->getType(), Constants::DO_NOT_DISPATCH_FOR_SETTLEMENT, true) === false)
+        {
+            (new Core)->dispatchForSettlementBucketing($txn);
+        }
+
+        return [$this->txn, $this->feesSplit];
+    }
 
     /**
      * We are overriding this because base function was written very badly. (`hasTransaction`)
@@ -98,7 +162,7 @@ class Payout extends Base
         {
             foreach ($this->feesSplit as $key => $feeSplit)
             {
-                if ($feeSplit->getName() === Constants\Entity::TAX)
+                if ($feeSplit->getName() === RzpConstants\Entity::TAX)
                 {
                     $this->feesSplit->forget($key);
                 }
@@ -332,7 +396,7 @@ class Payout extends Base
         // feesplit for transaction of this payout
         foreach ($this->feesSplit as $key => $feeSplit)
         {
-            if ($feeSplit->getName() === Constants\Entity::TAX)
+            if ($feeSplit->getName() === RzpConstants\Entity::TAX)
             {
                 $this->feesSplit->forget($key);
             }

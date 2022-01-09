@@ -557,7 +557,7 @@ class Ledger
                 'Unexpected response code received from Ledger service.',
                 [
                     'status_code'   => $code,
-                    'response_body' => json_decode($response->body),
+                    'response_body' => json_decode($response->body, true),
                 ]);
         }
 

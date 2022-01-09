@@ -13,6 +13,7 @@ use RZP\Models\Transaction;
 use RZP\Models\BankTransfer;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\FundAccount\Validation\Core as FavCore;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -43,7 +44,7 @@ class Transactions extends Job
 
     const LEDGER_TRANSACTIONS_MUTEX_RESOURCE = 'LEDGER_TRANSACTIONS_%s_%s';
 
-    const MUTEX_LOCK_TIMEOUT = 5400;
+    const MUTEX_LOCK_TIMEOUT = 60;
 
     public function __construct(string $mode, string $entityId, string $entityName, array $ledgerResponse, PublicCollection $feeSplit = null)
     {
@@ -82,6 +83,12 @@ class Transactions extends Job
 
                 case Constants\Entity::ADJUSTMENT :
                     $response = $this->processAdjustmentJob($resource, $this->ledgerResponse);
+                    break;
+
+                case Entity::PAYOUT :
+                    $response = (new PayoutCore)
+                        ->createTransactionInLedgerReverseShadowFlow($this->entityId, $this->ledgerResponse);
+
                     break;
 
                 case Entity::FUND_ACCOUNT_VALIDATION :

@@ -1066,6 +1066,8 @@ class Core extends Base\Core
         $txn = $this->mutex->acquireAndRelease('fav_'.$entityId,
             function () use ($fav, $ledgerResponse, $processor, $feeSplit)
             {
+                $fav->reload();
+
                 return $this->repo->transaction(function () use ($ledgerResponse, $fav, $processor, $feeSplit)
                 {
                    $txn = $processor->createTransactionForLedger($ledgerResponse);

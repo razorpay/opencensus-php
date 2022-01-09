@@ -33,7 +33,6 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Account\Repository                  $account
  * @property Models\PaymentLink\Repository                       $payment_link
  * @property Models\PayoutLink\Repository                        $payout_link
- * @property Models\Adjustment\Repository                        $adjustment
  * @property Models\Feature\Repository                           $feature
  * @property Models\Order\Repository                             $order
  * @property Models\Order\Product\Repository                     $product

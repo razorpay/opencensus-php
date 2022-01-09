@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Jobs\Transactions;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -63,6 +64,7 @@ use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
+use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
 
 /**
  * Class Core
@@ -533,6 +535,7 @@ class Core extends Base\Core
                 break;
 
             case Status::FAILED:
+                // Not handling this in ledger reverse shadow, as VA payouts don't get marked as FAILED.
                 $this->handlePayoutFailed($payout, $ftaFailureReason, $ftaBankStatusCode, $ftsSourceAccountInformation);
                 break;
 
@@ -2179,7 +2182,28 @@ class Core extends Base\Core
             }
         }
 
+        // This will do nothing for reverse shadow
         $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);
+
+        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
+        {
+            try
+            {
+                $response = (new PayoutsLedgerProcessor())
+                    ->processPayoutAndCreateJournalEntry($payout, null, $ftsSourceAccountInformation);
+            }
+            catch (\Throwable $e)
+            {
+                //There's no change to merchant balance here
+                //Thus, we wont disrupt the flow by throwing an exception here.
+                //TODO: Decide how to raise an alert and re-run the request to ledger here.
+                $this->trace->traceException(
+                    $e,
+                    Trace::ALERT,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                );
+            }
+        }
     }
 
     /**
@@ -2202,6 +2226,12 @@ class Core extends Base\Core
             return;
         }
 
+        // return if reverse shadow is enabled
+        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
+        {
+            return;
+        }
+
         // If the mode is live but the merchant does not have the ledger journal write feature, we return.
         if (($this->isLiveMode()) and
             ($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false))
@@ -2214,6 +2244,22 @@ class Core extends Base\Core
      (new Transaction\Processor\Ledger\Payout)
          ->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
     }
+
+    public static function shouldPayoutGoThroughLedgerReverseShadowFlow($payout)
+    {
+        if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true) and
+            ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
+            ($payout->getFeeType() !== Entity::FREE_PAYOUT) and
+            ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
+            ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED) and
+            ($payout->getIsPayoutService() === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * TODO: The logic here could change for different banks. The structure needs to be accommodated for that.
      * JIRA: https://razorpay.atlassian.net/browse/RX-698
@@ -2640,9 +2686,13 @@ class Core extends Base\Core
         // If a payout goes from initiated to directly reversed, we will still wish to move the status
         // from initiated -> processed -> reversed for proper journal writes,
         // hence we are forcing a call to ledger with processed status.
-        if ($previousStatus === Status::INITIATED or
-            $previousStatus === Status::CREATED)
+        if (($previousStatus === Status::INITIATED or
+            $previousStatus === Status::CREATED))
         {
+            $this->trace->info(
+                TraceCode::PAYOUT_BEING_REVERSED_WITHOUT_PROCESSED_STATE
+            );
+
             $clonedPayout = clone $payout;
 
             $clonedPayout->setStatus(Status::PROCESSED);
@@ -2654,6 +2704,49 @@ class Core extends Base\Core
             // has its status set to reversed, cloning the payout and then trying to mark it as processed will throw an
             // exception, as the state machine for payout status will prohibit this change.
             $this->processLedgerPayout($clonedPayout, null, $ftsSourceAccountInformation);
+
+            // Since the above call for shadow mode won't work for reverse shadow payouts
+            // thus making another call in sync mode
+            if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($clonedPayout) === true)
+            {
+                try
+                {
+                    $response = (new PayoutsLedgerProcessor())->processPayoutAndCreateJournalEntry(
+                        $clonedPayout,
+                        null,
+                        $ftsSourceAccountInformation
+                    );
+                }
+                catch (Exception\GatewayTimeoutException $e)
+                {
+                    // Timeout case
+                    // This is an ambiguous situation, need to manually check if the ledger entry was created.
+                    // TODO: An alert here is absolutely essential
+                    $this->trace->traceException(
+                        $e,
+                        Trace::CRITICAL,
+                        null,
+                        [
+                            'payout_id' => $payout->getId(),
+                        ]
+                    );
+
+                    // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
+                    // entry is eventually created
+                }
+                catch (\Throwable $e)
+                {
+                    // If an exception is caught here, we ignore it.
+                    // TODO: set an alert for exceptions caught in ledger calls
+                    // If that exception is found to be a part of this reversal flow, we will make sure that we
+                    // create an entry in ledger asynchronously/manually later.
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ALERT,
+                        TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                    );
+                }
+            }
         }
 
         // check using service
@@ -2667,6 +2760,63 @@ class Core extends Base\Core
             $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
             $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas, $reversal);
+
+            if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
+            {
+                try
+                {
+                    $response = (new PayoutsLedgerProcessor())->processPayoutAndCreateJournalEntry(
+                        $payout,
+                        $reversal,
+                        $ftsSourceAccountInformation
+                    );
+                }
+                catch (Exception\GatewayTimeoutException $e)
+                {
+                    // Timeout case
+                    // This is an ambiguous situation, need to manually check if the ledger entry was created.
+                    // TODO: An alert here is absolutely essential
+                    $this->trace->traceException(
+                        $e,
+                        Trace::CRITICAL,
+                        null,
+                        [
+                            'payout_id' => $payout->getId(),
+                        ]
+                    );
+
+                    // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
+                    // entry is eventually created
+                }
+                catch (\Throwable $e)
+                {
+                    // If an exception is caught here, we ignore it.
+                    // TODO: set an alert for exceptions caught in ledger calls
+                    // If that exception is found to be a part of this reversal flow, we will make sure that we
+                    // create an entry in ledger asynchronously/manually later.
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ALERT,
+                        TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                    );
+                }
+                // dispatch to queue for transactions creation.
+                try
+                {
+                    Transactions::dispatch($this->mode, $reversal->getId(), Constants\Entity::REVERSAL, $response);
+                }
+                catch (\Throwable $ex)
+                {
+                    // Todo: check how to handle this failure
+                    $this->trace->info(
+                        TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+                        [
+                            'bank_transfer_id'          => $reversal->getId(),
+                            'entity_name'               => Constants\Entity::REVERSAL,
+                            'ledgerResponse'            => $response,
+                        ]);
+                }
+            }
 
             (new PayoutsStatusDetailsCore())->create($payout);
 
@@ -4321,5 +4471,52 @@ class Core extends Base\Core
         $response = $this->payoutGetApiServiceClient->GetPayoutsAnalyticsViaMicroservice($merchant->getId());
 
         return $response;
+    }
+
+    public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
+    {
+        $payout = $this->repo->payout->find($entityId);
+
+        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === false)
+        {
+            throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
+                , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
+                                               ['merchant_id' => $payout->getMerchantId()]);
+        }
+
+        // Fixing fund account payout here for now
+        // Since we are only exploring X balance based payouts
+        // Customer wallet payouts and Merchant payouts are usually on PG balance
+        // TODO: fix this when PG moves to ledger
+        $payoutType = 'fund_account_payout';
+
+        $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                       $payout,
+                                                       $this->mode,
+                                                       $payout->fundAccount->account);
+
+        $subProcessor = $downstreamProcessor->getSubProcessorClass();
+
+        $txn = $this->mutex->acquireAndRelease('pout_' . $entityId,
+            function() use ($payout, $ledgerResponse, $subProcessor) {
+                $payout->reload();
+
+                return $this->repo->transaction(function() use ($ledgerResponse, $payout, $subProcessor) {
+                    $txn = $subProcessor->createTransactionForLedgerReverseShadow($payout, $ledgerResponse);
+
+                    $payout->transaction()->associate($txn);
+
+                    $this->repo->saveOrFail($payout);
+                });
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+
+
+        return [
+            'entity' => $payout->getPublicId(),
+            'txn'    => $txn->getPublicId(),
+        ];
     }
 }

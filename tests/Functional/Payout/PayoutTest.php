@@ -12,6 +12,9 @@ use Mockery;
 use Requests_Response;
 
 use Carbon\Carbon;
+use RZP\Services\Raven;
+use RZP\Jobs\Transactions;
+use RZP\Exception\RuntimeException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Artisan;
 
@@ -16497,4 +16500,689 @@ class PayoutTest extends OAuthTestCase
 
     }
 
+    public function testCreatePayoutInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testCreatePayout();
+    }
+
+    public function testCreatePayoutOnLiveModeInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testCreatePayoutOnLiveMode();
+    }
+
+    public function testPayoutReversalInLedgerReverseShadowMode()
+    {
+        Queue::fake();
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $this->assertEquals(2001062, $reversal['amount']);
+
+        // pushed twice
+        // once for payout creation transaction
+        // once for reversal transaction
+        Queue::assertPushed(Transactions::class, 2);
+    }
+
+    public function testPayoutProcessedInLedgerReverseShadowMode()
+    {
+        Queue::fake();
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        // pushed once for payout creation
+        Queue::assertPushed(Transactions::class, 1);
+    }
+
+    public function testCreateAndProcessQueuedPayoutInLedgerReverseShadowMode()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateAndProcessQueuedPayout'];
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        // Setting the redis config as empty initially
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $currentBalance = $this->getDbLastEntity('balance');
+
+        $response = $this->startTest();
+
+        $newBalance = $this->getDbLastEntity('balance');
+
+        // Since we created queued payouts, hence balance shouldn't change
+        $this->assertEquals($currentBalance->getBalance(), $newBalance->getBalance());
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
+
+        $this->assertNull($fta);
+
+        // Create 2 more queued payouts
+        $this->startTest();
+        $this->startTest();
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 3 payouts in queued state.
+        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are still 3 payouts in queued state since there wasn't enough balance to process them
+        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+
+        // Add enough balance to process only one queued payout
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 11000000]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $updatedSummary = $this->makePayoutSummaryRequest();
+
+        // Assert that there is only one payout in queued state. The other one got processed.
+        $this->assertEquals(2, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(20000002, $updatedSummary[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+
+        // Add enough balance to process all queued payouts
+        $this->fixtures->balance->edit($newBalance['id'], ['balance' => 99000000]);
+
+        // Set offset = 1 for this balance ID
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => [
+            $newBalance['id'] => 1
+        ]]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that only one payout got processed even though there was enough balance to process both.
+        // This is because offset was set to 1.
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(10000001, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+
+        $offsetData = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION]);
+
+        // Assert that offset has been set back to 0
+        $this->assertEmpty($offsetData);
+    }
+
+    public function testFreePayoutsGoThroughNormalFlowWhenLedgerReverseShadowIsEnabled()
+    {
+        Queue::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreatePayoutOnLiveMode'];
+        $this->testData[__FUNCTION__]['response']['content']['fees'] = 0;
+        $this->testData[__FUNCTION__]['response']['content']['tax'] = 0;
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // To make sure that this function is never called for now, as free payouts go through the normal flow
+        $mockLedger->shouldReceive('createJournal')
+                   ->times(0);
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->liveSetUp();
+
+        // keeping 1 free payout available to be consumed
+        $counter1 = $this->getDbEntity('counter', ['balance_id' => $this->bankingBalance->getId()], 'live');
+        $this->fixtures->on('live')->edit('counter', $counter1->getId(), ['free_payouts_consumed' => 299]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'icici');
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true, 'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA9",
+            'percentage'      => null,
+            'amount'          => 0,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        Queue::assertPushed(Transactions::class, 0);
+    }
+
+    public function testProcessingOfCreateRequestSubmittedPayoutInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testProcessingOfCreateRequestSubmittedPayout();
+    }
+
+    public function testProcessingOfCreateRequestSubmittedPayoutInsufficientBalanceInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testProcessingOfCreateRequestSubmittedPayoutInsufficientBalance();
+    }
+
+    public function testProcessingOfCreateRequestSubmittedPayoutInsufficientBalanceQueueFlagTrueInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testProcessingOfCreateRequestSubmittedPayoutInsufficientBalanceQueueFlagTrue();
+    }
+
+    // This tests processing of batch submitted payouts
+    public function testProcessBatchSubmittedPayoutsInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->ba->batchAuth();
+
+        $request =
+            [
+                'url'     => '/payouts/bulk',
+                'method'  => 'POST',
+                'content' => [
+                    [
+                        'razorpayx_account_number' => '2224440041626905',
+                        'payout'                   => [
+                            'amount'       => '100',
+                            'currency'     => 'INR',
+                            'mode'         => 'NEFT',
+                            'purpose'      => 'refund',
+                            'narration'    => '123',
+                            'reference_id' => ''
+                        ],
+                        'fund'                     => [
+                            'account_type'   => 'bank_account',
+                            'account_name'   => 'Vivek Karna',
+                            'account_IFSC'   => 'HDFC0003780',
+                            'account_number' => '50100244702362',
+                            'account_vpa'    => ''
+                        ],
+                        'contact'                  => [
+                            'type'         => 'customer',
+                            'name'         => 'Vivek Karna',
+                            'email'        => 'sampleone@example.com',
+                            'mobile'       => '9988998899',
+                            'reference_id' => ''
+                        ],
+                        'notes'                    => [
+                            'abc' => 'xyz',
+                        ],
+                        'idempotency_key'          => 'batch_abc123',
+
+                    ]
+                ]
+            ];
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $request['server'] = $headers;
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($this->testData['testProcessBulkPayoutDelayedInitiation']['request']);
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assertions for first payout (NEFT)
+        $this->assertEquals(Payout\Mode::NEFT, $payouts[0]['mode']);
+        $this->assertEquals(Payout\Status::CREATED, $payouts[0]['status']);
+
+        $batchProcessingPayouts = $this->getDbEntities('payout', ['status' => Payout\Status::BATCH_SUBMITTED]);
+
+        // Assert that no payouts remain in batch_processing state
+        $this->assertEquals(0, $batchProcessingPayouts->count());
+    }
+
+    public function testProcessBatchSubmittedPayoutsWithInsufficientBalanceInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->ba->batchAuth();
+
+        $request =
+            [
+                'url'     => '/payouts/bulk',
+                'method'  => 'POST',
+                'content' => [
+                    [
+                        'razorpayx_account_number' => '2224440041626905',
+                        'payout'                   => [
+                            'amount'       => '100',
+                            'currency'     => 'INR',
+                            'mode'         => 'NEFT',
+                            'purpose'      => 'refund',
+                            'narration'    => '123',
+                            'reference_id' => ''
+                        ],
+                        'fund'                     => [
+                            'account_type'   => 'bank_account',
+                            'account_name'   => 'Vivek Karna',
+                            'account_IFSC'   => 'HDFC0003780',
+                            'account_number' => '50100244702362',
+                            'account_vpa'    => ''
+                        ],
+                        'contact'                  => [
+                            'type'         => 'customer',
+                            'name'         => 'Vivek Karna',
+                            'email'        => 'sampleone@example.com',
+                            'mobile'       => '9988998899',
+                            'reference_id' => ''
+                        ],
+                        'notes'                    => [
+                            'abc' => 'xyz',
+                        ],
+                        'idempotency_key'          => 'batch_abc123',
+
+                    ]
+                ]
+            ];
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $request['server'] = $headers;
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($this->testData['testProcessBulkPayoutDelayedInitiation']['request']);
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assertions for first payout (NEFT)
+        $this->assertEquals(Payout\Mode::NEFT, $payouts[0]['mode']);
+        $this->assertEquals(Payout\Status::FAILED, $payouts[0]['status']);
+
+        $batchProcessingPayouts = $this->getDbEntities('payout', ['status' => Payout\Status::BATCH_SUBMITTED]);
+
+        // Assert that no payouts remain in batch_processing state
+        $this->assertEquals(0, $batchProcessingPayouts->count());
+    }
+
+    public function testOnHoldPayoutCreateAndProcessInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testOnHoldPayoutCreateAndProcess'];
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::CREATED);
+
+
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::CREATED);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::CREATED);
+    }
+
+    public function testOnHoldPayoutCreateAndProcessWithInsufficientBalanceInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testOnHoldPayoutCreateAndProcess'];
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::FAILED);
+
+
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::FAILED);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::FAILED);
+    }
+
+    public function testOnHoldPayoutCreateAndProcessWithInsufficientBalanceWithQueueIfLowBalanceFlagTrueInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDownWithQueueIfLowBalanceFlagTrue();
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDownWithQueueIfLowBalanceFlagTrue();
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDownWithQueueIfLowBalanceFlagTrue();
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testOnHoldPayoutCreateAndProcess'];
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::QUEUED);
+
+
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals($payout3['status'], Payout\Status::QUEUED);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::QUEUED);
+    }
+
+    public function testProcessPendingPayoutinLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('heimdall.workflows.mock', false);
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createQueuedOrPendingPayout([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->testData[__FUNCTION__] = $this->testData['testApprovePayoutWithComment'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+        $secondApprovalResponse = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::CREATED, $payout->getStatus());
+    }
 }

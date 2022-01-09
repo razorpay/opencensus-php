@@ -15,6 +15,15 @@ class FundAccountValidation extends BaseProcessor
 {
     public function createTransactionForLedger($txnId, $newBalance)
     {
+        // Let us first check if a transaction is already created with this ID or not.
+        // May be possible that at high TPS, multiple workers pick the same SQS job.
+        $existingTxn = $this->repo->transaction->find($txnId);
+
+        if ($existingTxn !== null)
+        {
+            return $existingTxn;
+        }
+
         $txn = new Transaction\Entity;
 
         $txn->setId($txnId);

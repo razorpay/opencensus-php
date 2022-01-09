@@ -164,7 +164,7 @@ class Base extends Core
             $exceptionData = $e->getData();
 
             // If it's an insufficient balance case, convert to a new BadRequestException
-            if (strpos($exceptionData['response_body'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false)
+            if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false)
             {
                 $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
 
@@ -175,7 +175,7 @@ class Base extends Core
                 );
             }
             // If it's a validation failure, convert to a new BadRequestValidationFailureException
-            else if (strpos($exceptionData['response_body'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            else if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
             {
                 $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
 

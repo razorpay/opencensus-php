@@ -54,6 +54,13 @@ class DownstreamProcessor
         return $subProcessor->processTransaction($this->payout);
     }
 
+    public function processPayoutThroughLedger()
+    {
+        $subProcessor = $this->getSubProcessorClass();
+
+        return $subProcessor->processPayoutThroughLedger($this->payout, $this->ftaAccount);
+    }
+
     /**
      * Should not be used separately. Please check process func.
      */
@@ -64,7 +71,7 @@ class DownstreamProcessor
         $subProcessor->processCreateFundTransferAttempt($this->payout, $this->ftaAccount);
     }
 
-    protected function getSubProcessorClass()
+    public function getSubProcessorClass()
     {
         $subProcessor = __NAMESPACE__ . '\\' . studly_case($this->type);
 

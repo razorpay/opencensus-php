@@ -43,6 +43,7 @@ use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Payout\QueuedReasons;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Transaction\CreditType;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\Service\EntityMap;
@@ -327,7 +328,23 @@ class Base extends BaseCore
             return $payout;
         });
 
-        if ($payout->makeSyncFtsFundTransfer() === true)
+        if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+            ($payout->isStatusCreated() === true))
+        {
+            $payoutType = $this->getPayoutType();
+
+            $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                           $payout,
+                                                           $this->mode,
+                                                           $this->fundTransferDestination);
+
+            // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+            // the function processPayoutThroughLedger() only exists in this class
+            $downstreamProcessor->processPayoutThroughLedger();
+        }
+
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->makeSyncFtsFundTransfer() === true))
         {
             $isFts = false;
 
@@ -345,6 +362,7 @@ class Base extends BaseCore
             }
         }
 
+        //TODO: Handle for ledger failures
         $this->fireEventForPayoutStatus($payout);
 
         return $payout;
@@ -582,8 +600,22 @@ class Base extends BaseCore
 
                     return $payout;
                 });
-        }
 
+            if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+                ($payout->isStatusCreated() === true))
+            {
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+                // the function processPayoutThroughLedger() only exists in this class
+                $downstreamProcessor->processPayoutThroughLedger();
+            }
+        }
         catch (\Throwable $throwable)
         {
             $balanceId = $payout->getBalanceId();
@@ -602,7 +634,9 @@ class Base extends BaseCore
         // Since, currently, we only do fund_account, we are not handling it. Once we start
         // processing queued payouts for other types also, this needs to be changed.
         //
-        if ($payout->balance->getAccountType() !== Merchant\Balance\AccountType::DIRECT)
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->balance->getAccountType() !== Merchant\Balance\AccountType::DIRECT) and
+            ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
         }
@@ -700,6 +734,21 @@ class Base extends BaseCore
 
                     return $payout;
                 });
+
+            if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+                ($payout->isStatusCreated() === true))
+            {
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+                // the function processPayoutThroughLedger() only exists in this class
+                $downstreamProcessor->processPayoutThroughLedger();
+            }
         }
         catch (\Throwable $throwable)
         {
@@ -725,7 +774,8 @@ class Base extends BaseCore
         // processing queued payouts for other types also, this needs to be changed.
 
         if (($payout->isStatusBeforeCreate() === false) and
-            ($payout->getBalanceAccountType() === AccountType::SHARED))
+            ($payout->getBalanceAccountType() === AccountType::SHARED) and
+            ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
         }
@@ -816,6 +866,21 @@ class Base extends BaseCore
 
                     return $payout;
                 });
+
+            if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+                ($payout->isStatusCreated() === true))
+            {
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+                // the function processPayoutThroughLedger() only exists in this class
+                $downstreamProcessor->processPayoutThroughLedger();
+            }
         }
 
         catch (\Throwable $throwable)
@@ -843,7 +908,8 @@ class Base extends BaseCore
         // processing queued payouts for other types also, this needs to be changed.
         //
         if (($payout->isStatusBeforeCreate() === false) and
-            ($payout->getBalanceAccountType() === AccountType::SHARED))
+            ($payout->getBalanceAccountType() === AccountType::SHARED) and
+            ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
         }
@@ -1032,6 +1098,21 @@ class Base extends BaseCore
 
                     return $payout;
                 });
+
+            if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+                ($payout->isStatusCreated() === true))
+            {
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+                // the function processPayoutThroughLedger() only exists in this class
+                $downstreamProcessor->processPayoutThroughLedger();
+            }
         }
         catch (\Throwable $ex)
         {
@@ -1057,7 +1138,8 @@ class Base extends BaseCore
 
             $payout->reload();
 
-            if ($highTPSCompositePayoutFlag === false)
+            if ($highTPSCompositePayoutFlag === false and
+                Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === false)
             {
                 if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
                 {
@@ -1128,7 +1210,8 @@ class Base extends BaseCore
             }
         }
 
-        if ($payout->makeSyncFtsFundTransfer() === true)
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->makeSyncFtsFundTransfer() === true))
         {
             $isFts = false;
 
@@ -1166,7 +1249,8 @@ class Base extends BaseCore
                     $processor->fireEventForPayoutStatus($payout);
 
                     if (($payout->isStatusBeforeCreate() === false) and
-                        ($payout->getBalanceAccountType() === AccountType::SHARED))
+                        ($payout->getBalanceAccountType() === AccountType::SHARED) and
+                        ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
                     {
                         (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
                     }
@@ -1305,6 +1389,21 @@ class Base extends BaseCore
 
                     return $payout;
                 });
+
+            if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+                ($payout->isStatusCreated() === true))
+            {
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+                // the function processPayoutThroughLedger() only exists in this class
+                $downstreamProcessor->processPayoutThroughLedger();
+            }
         }
 
         catch (\Throwable $throwable)
@@ -1326,8 +1425,9 @@ class Base extends BaseCore
         // the payout hasn't been approved, in such a case,we wouldn't want to fire the transaction created webhook,
         // since no transaction was created.
         //
-        if (($payout->balance->getAccountType() === Merchant\Balance\AccountType::SHARED) and
-            ($payout->isStatusBeforeCreate() === false))
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->getBalanceAccountType() === AccountType::SHARED) and
+            ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
         }
@@ -1411,6 +1511,21 @@ class Base extends BaseCore
 
                     return $payout;
                 });
+
+            if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+                ($payout->isStatusCreated() === true))
+            {
+                $payoutType = $this->getPayoutType();
+
+                $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                               $payout,
+                                                               $this->mode,
+                                                               $this->fundTransferDestination);
+
+                // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+                // the function processPayoutThroughLedger() only exists in this class
+                $downstreamProcessor->processPayoutThroughLedger();
+            }
         }
 
         catch (\Throwable $throwable)
@@ -1424,13 +1539,11 @@ class Base extends BaseCore
 
         $this->fireEventForPayoutStatus($payout);
 
-        // Since RBL transactions are created at a later stage, we skip this flow fo RBL
-        if ($payout->balance->isAccountTypeShared() === true)
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->getBalanceAccountType() === AccountType::SHARED) and
+            ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
         {
-            if ($payout->isStatusCreated() === true)
-            {
-                (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
-            }
+            (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
         }
 
         return $payout;

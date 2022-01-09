@@ -592,6 +592,7 @@ class Core extends Base\Core
                 $reversal);
         }
 
+        // This returns true for ledger reverse shadow as well.
         $skipTxn = $this->shouldSkipReversalTransaction($reversal);
 
         if ($skipTxn === false)
@@ -633,8 +634,25 @@ class Core extends Base\Core
         return $reversal;
     }
 
+    /**
+     * This function is only used by payouts.
+     * Hence the ledger reverse shadow feature check only uses payout entity based checker
+     * If some other entity tries to use this, please make sure to modify the ledger reverse shadow feature check
+     * accordingly.
+     *
+     * @param Entity $reversal
+     *
+     * @return bool
+     */
     protected function shouldHandleRewardForReversalsForSource(Reversal\Entity $reversal)
     {
+        // shouldHandleRewardForReversalsForSource is only called by payouts
+        // hence no check on entity type necessary.
+        if (Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($reversal->entity) === true)
+        {
+            return false;
+        }
+
         // this checks if rewards were used for the payout
         if (($reversal->getEntityType() === E::PAYOUT) and
             ($reversal->entity->getFeeType() === Transaction\CreditType::REWARD_FEE))
@@ -755,11 +773,22 @@ class Core extends Base\Core
     /**
      * This function tells if a creating a reversal transaction should be skipped or not
      *
+     * IMPORTANT: For now, this function is only called by reverseMerchantPayout() flow
+     * , hence checking only for payouts for ledger reverse shadow checks is fine here.
+     * This should be corrected in the future if this function is used for other entities.
+     *
      * @param Entity $reversal
      * @return bool
      */
     protected function shouldSkipReversalTransaction(Reversal\Entity $reversal): bool
     {
+        // shouldSkipReversalTransaction is only called by payouts
+        // hence no check on entity type necessary.
+        if (Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($reversal->entity) === true)
+        {
+            return true;
+        }
+
         $balance     = $reversal->balance;
 
         $type        = optional($balance)->getType();
@@ -904,6 +933,8 @@ class Core extends Base\Core
             'rvrsl_'.$entityId,
             function () use ($reversal, $ledgerResponse)
             {
+                $reversal->reload();
+
                 return $this->repo->transaction(function() use ($reversal, $ledgerResponse)
                 {
                     $txnId      = $ledgerResponse[Entity::ID];
@@ -911,9 +942,19 @@ class Core extends Base\Core
 
                     list($txn, $feeSplit) = (new Transaction\Processor\Reversal($reversal))->createTransactionForLedger($txnId, $newBalance);
 
-                    (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+                    if ($feeSplit !== null)
+                    {
+                        (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
+                    }
 
                     $this->repo->saveOrFail($txn);
+
+                    // TODO: This dispatch has to be moved to some other location once ledger becomes primary
+                    // As we will stop the dual write to the transactions table
+                    if ($reversal->getEntityType() === E::PAYOUT)
+                    {
+                        (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+                    }
 
                     return $txn;
                 });

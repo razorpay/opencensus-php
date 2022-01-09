@@ -1411,4 +1411,12 @@ class ScheduledPayoutTest extends TestCase
         $this->assertEquals(Status::ON_HOLD, $updatedScheduledPayout['status']);
         $this->assertNotNull( $updatedScheduledPayout['on_hold_at']);
     }
+
+    public function testScheduledPayoutProcessingInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testScheduledPayoutProcessing();
+    }
 }
