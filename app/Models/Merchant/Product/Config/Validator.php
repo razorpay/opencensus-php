@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         Util\Constants::NOTIFICATIONS   => 'sometimes|array',
         Util\Constants::REFUND          => 'sometimes|array',
         Util\Constants::PAYMENT_METHODS => 'sometimes|array',
+        Util\Constants::TNC_ACCEPTED    => 'sometimes|boolean|in:1',
     ];
 
     protected static $notificationsRules  = [

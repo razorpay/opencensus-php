@@ -14,7 +14,8 @@ class Repository extends BaseRepository
     protected $proxyFetchParamRules = [
         Entity::ID           => 'sometimes|string|size:14',
         Entity::STATUS       => 'sometimes|string|in:active,inactive',
-        Entity::PRODUCT_NAME => 'sometimes|string'
+        Entity::PRODUCT_NAME => 'sometimes|string',
+        Entity::BUSINESS_UNIT => 'sometimes|string'
     ];
 
     public function fetchLatestTnCByProductName(string $productName)
@@ -24,5 +25,14 @@ class Repository extends BaseRepository
                     ->where(Entity::STATUS, '=', 'active')
                     ->orderBy(Entity::UPDATED_AT, 'DESC')
                     ->first();
+    }
+
+    public function fetchLatestTnCByBusinessUnit(string $businessUnit)
+    {
+        return $this->newQuery()
+            ->where(Entity::BUSINESS_UNIT, '=', $businessUnit)
+            ->where(Entity::STATUS, '=', 'active')
+            ->orderBy(Entity::UPDATED_AT, 'DESC')
+            ->first();
     }
 }

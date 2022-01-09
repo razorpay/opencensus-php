@@ -71,6 +71,7 @@ class Constants
     const DOCUMENT        = 'document';
     const DESCRIPTION     = 'description';
     const ACCEPTED        = 'accepted';
+    const TNC_ACCEPTED    = 'tnc_accepted';
 
     //Reason codes
     const FIELD_MISSING             = 'field_missing';

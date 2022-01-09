@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Config;
+use RZP\Models\Merchant\Product\TncMap\Acceptance\Service as Tnc;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Product\Util\ProductRequestHandler;
 use RZP\Models\Merchant\Product\Util\ProductResponseHandler;
@@ -60,11 +61,18 @@ class Service extends Base\Service
     {
         list($merchant, $partner) = $this->validateAndSetMerchantContext($merchantId);
 
+        (new Validator())->validateInput('create', $payload);
+
         $merchantProductInput = $this->getMerchantProductInput($payload);
 
-        (new Validator())->validateInput('create', $merchantProductInput);
-
         $productName = $merchantProductInput[Entity::PRODUCT_NAME];
+
+        if(isset($payload[Util\Constants::TNC_ACCEPTED]) === true )
+        {
+            unset($payload[Util\Constants::TNC_ACCEPTED]);
+
+            (new Tnc)->acceptProductConfigTnc($productName, $merchant);
+        }
 
         $merchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductName($merchantId, $productName);
 

@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Merchant\Product\TncMap\Acceptance;
 
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Product\TncMap;
+use RZP\Models\Merchant\Product\BusinessUnit\Constants as BusinessUnit;
 
 class Service extends Product\Service
 {
@@ -46,6 +48,27 @@ class Service extends Product\Service
         return $this->formatFetchResponse($tncMap, $merchantTncAcceptance);
     }
 
+    public function fetchProductConfigTnc(String $productName, Merchant\Entity $merchant): array
+    {
+        $merchantTncAcceptance = $this->core()->fetchMerchantAcceptanceViaBU($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$productName]);
+
+        return $this->formatFetchTnCResponse($merchantTncAcceptance);
+    }
+
+    public function acceptProductConfigTnc(String $productName, Merchant\Entity $merchant): array
+    {
+        $tncMap = (new TncMap\Core())->fetchTncForBU(BusinessUnit::PRODUCT_BU_MAPPING[$productName]);
+
+        $merchantTncAcceptance = $this->core()->fetchMerchantAcceptanceViaBU($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$productName]);
+
+        if(empty($merchantTncAcceptance) === true)
+        {
+            $merchantTncAcceptance = $this->core()->acceptTnc($merchant, $tncMap);
+        }
+
+        return $this->formatFetchTnCResponse($merchantTncAcceptance);
+    }
+
     public function formatFetchResponse(TncMap\Entity $tncMap, $merchantTncAcceptance): array
     {
         $response = $tncMap->toArrayPublic();
@@ -65,6 +88,19 @@ class Service extends Product\Service
         }
 
         $response[TncMap\Entity::ID] = $tncMap->getPublicId();
+
+        return $response;
+    }
+
+    public function formatFetchTnCResponse(Entity $merchantTncAcceptance): array
+    {
+        $response = [];
+
+        $response[Entity::ID] = $merchantTncAcceptance->getPublicId();
+
+        $response[Constants::ACCEPTED] = true;
+
+        $response[Constants::ACCEPTED_AT] = $merchantTncAcceptance->getAcceptedAt();
 
         return $response;
     }

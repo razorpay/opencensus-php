@@ -288,8 +288,8 @@ return [
             'content' => [
                 'requirements' => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -372,8 +372,8 @@ return [
                 ],
                 'requirements'         => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -438,8 +438,8 @@ return [
                 ],
                 'requirements'         => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -482,6 +482,159 @@ return [
                     [
                         'field_reference' => 'legal_info.cin',
                         'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'acceptTncUsingPostProductConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway',
+                'tnc_accepted' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'requirements'         => [
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.cin',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'acceptTncUsingPatchProductConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'tnc_accepted' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'requirements'         => [
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.cin',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -546,8 +699,8 @@ return [
             'content' => [
                 'requirements' => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -798,8 +951,8 @@ return [
             'content' => [
                 'requirements' => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -878,8 +1031,8 @@ return [
             'content' => [
                 'requirements' => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -927,8 +1080,8 @@ return [
             'content' => [
                 'requirements' => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -1041,8 +1194,8 @@ return [
             'content' => [
                 'requirements' => [
                     [
-                        'field_reference' => 'accepted',
-                        'resolution_url'  => '/accounts/{accountId}/tnc',
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -1216,6 +1369,23 @@ return [
                     'terms' => 'https://www.terms.com'
                 ],
                 'accepted' => false
+            ],
+
+        ]
+    ],
+
+    'testAcceptedAccountTnc' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{id}/tnc',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status'   => 'active',
+                'content'  => [
+                    'terms' => 'https://www.terms.com'
+                ],
+                'accepted' => true
             ],
 
         ]

@@ -17,4 +17,9 @@ class TncMapController extends Controller
     {
 
     }
+
+    public function fetchTncForBusinessUnit(string $businessUnit)
+    {
+        return $this->service()->fetchTncForBU($businessUnit);
+    }
 }

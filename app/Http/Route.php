@@ -2256,6 +2256,7 @@ class Route
         'product_config_create_v2'                 => ['post',     'accounts/{id}/products/',                        'ProductConfigController@createConfigForMerchant'                   ],
 
         // product_tnc
+        'business_unit_tnc_fetch_v2'               => ['get',       'products/{name}/tnc',                           'TncMapController@fetchTncForBusinessUnit'                          ],
         'product_config_tnc_fetch_v2'              => ['get',       'accounts/{id}/tnc',                             'ProductTncController@fetchTncForMerchantProduct'                   ],
         'product_config_tnc_accept_v2'             => ['post',      'accounts/{id}/tnc',                             'ProductTncController@acceptTncForMerchantProduct'                  ],
 
@@ -3752,6 +3753,7 @@ class Route
         'product_config_fetch_v2',
         'product_config_update_v2',
         'product_config_create_v2',
+        'business_unit_tnc_fetch_v2',
         'product_config_tnc_fetch_v2',
         'product_config_tnc_accept_v2',
 
@@ -4451,6 +4453,7 @@ class Route
         'product_config_update_v2',
         'product_config_create_v2',
 
+        'business_unit_tnc_fetch_v2',
         'product_config_tnc_fetch_v2',
         'product_config_tnc_accept_v2',
 
@@ -12560,6 +12563,7 @@ class Route
         'product_config_fetch_v2',
         'product_config_update_v2',
         'product_config_create_v2',
+        'business_unit_tnc_fetch_v2',
         'product_config_tnc_fetch_v2',
         'product_config_tnc_accept_v2',
         'onboarding_webhook_create',

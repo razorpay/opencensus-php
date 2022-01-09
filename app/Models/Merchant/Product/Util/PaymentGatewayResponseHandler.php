@@ -16,7 +16,8 @@ class PaymentGatewayResponseHandler
         Util\Constants::BANK_DETAILS    => Util\Constants::SETTLEMENTS,
         Util\Constants::NOTIFICATIONS   => Util\Constants::NOTIFICATIONS,
         Util\Constants::REQUIREMENTS    => Util\Constants::REQUIREMENTS,
-        Util\Constants::PAYMENT_METHODS => Util\Constants::PAYMENT_METHODS
+        Util\Constants::PAYMENT_METHODS => Util\Constants::PAYMENT_METHODS,
+        Util\Constants::TNC             => Util\Constants::TNC
     ];
 
     const CONFIGS_TO_BE_TRANSFORMED = [
@@ -92,7 +93,7 @@ class PaymentGatewayResponseHandler
 
         foreach ($transformedResponse as $configKey => $configValue)
         {
-            if($configKey === Constants::REQUIREMENTS)
+            if($configKey === Constants::REQUIREMENTS || $configKey === Constants::TNC)
             {
                 continue;
             }
@@ -107,6 +108,8 @@ class PaymentGatewayResponseHandler
         $publicResponse[Util\Constants::ACTIVE_CONFIGURATION] = $activeConfiguration;
 
         $publicResponse[Util\Constants::REQUIREMENTS] = $transformedResponse[Util\Constants::REQUIREMENTS] ?? [];
+
+        $publicResponse[Util\Constants::TNC] = $transformedResponse[Util\Constants::TNC] ?? [];
 
         $publicResponse = array_merge($publicResponse, ProductResponseHandler::getPublicMerchantProduct($merchantProduct));
 

@@ -19,6 +19,7 @@ class Constants
     const REFUND          = 'refund';
     const ACCOUNT_ID      = 'account_id';
     const REQUESTED_AT    = 'requested_at';
+    const TNC_ACCEPTED    = 'tnc_accepted';
 
     const REQUESTED_CONFIGURATION = 'requested_configuration';
     const ACTIVE_CONFIGURATION    = 'active_configuration';
@@ -83,6 +84,9 @@ class Constants
     const GENERAL                = 'general';
     const PAYMENT_METHODS        = 'payment_methods';
     const PAYMENT_METHODS_UPDATE = 'payment_methods_update';
+
+    // Tnc acceptance
+    const TNC = 'tnc';
 
     // Wallets
     const AIRTELMONEY   = "airtelmoney";

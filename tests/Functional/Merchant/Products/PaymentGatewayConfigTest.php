@@ -656,6 +656,64 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    protected function acceptTncUsingPostProductConfig()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['acceptTncUsingPostProductConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testAcceptedAccountTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    protected function acceptTncUsingPatchProductConfig()
+    {
+        Mail::fake();
+
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['acceptTncUsingPatchProductConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testAcceptedAccountTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function validateStorkWebhookFireEvent($testData, $storkPayload, $merchantId)
     {
         if ($storkPayload['event']['name'] === 'product.payment_gateway.needs_clarification')

@@ -10,6 +10,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         'product_name' => 'required|string|custom',
+        'tnc_accepted' => 'sometimes|boolean|in:1',
     ];
 
     public function validateProductName($attribute, $value)

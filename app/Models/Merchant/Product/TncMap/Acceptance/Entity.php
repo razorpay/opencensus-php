@@ -19,6 +19,8 @@ class Entity extends Base\PublicEntity
 
     protected  $primaryKey          = self::ID;
 
+    protected static $sign          = 'tnc';
+
     protected $fillable = [
         self::MERCHANT_ID,
         self::ACCEPTED_CHANNEL,

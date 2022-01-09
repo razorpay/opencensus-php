@@ -10,6 +10,7 @@ use RZP\Constants\Environment;
 use RZP\Models\Merchant\Product;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Merchant\Product\Status as ProductStatus;
+use RZP\Models\Merchant\Product\TncMap\Core as TncCore;
 use RZP\Models\Merchant\Product\TncMap\Entity as TncMap;
 
 class Core extends Base\Core
@@ -30,9 +31,25 @@ class Core extends Base\Core
         return ($exists === false);
     }
 
+    public function hasAcceptedBusinessUnitTnc(Merchant\Entity $merchant, $businessUnit = Product\BusinessUnit\Constants::PAYMENTS): bool
+    {
+        $tncMap = (new TncCore)->fetchTncForBU($businessUnit);
+
+        $exists = $this->repo->merchant_tnc_acceptance->acceptedTncExists($tncMap->getId(), $merchant->getId());
+
+        return ($exists === true);
+    }
+
     public function fetchMerchantAcceptance(Merchant\Entity $merchant, $productName = Product\Name::ALL)
     {
         $tncMap = $this->fetchTnc($productName);
+
+        return $this->repo->merchant_tnc_acceptance->fetchMerchantAcceptanceByTncMapId($tncMap->getId(), $merchant->getId());
+    }
+
+    public function fetchMerchantAcceptanceViaBU(Merchant\Entity $merchant, $businessUnit = Product\BusinessUnit\Constants::PAYMENTS)
+    {
+        $tncMap = (new TncCore)->fetchTncForBU($businessUnit);
 
         return $this->repo->merchant_tnc_acceptance->fetchMerchantAcceptanceByTncMapId($tncMap->getId(), $merchant->getId());
     }

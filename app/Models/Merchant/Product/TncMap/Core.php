@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Product\TncMap;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Product;
+use RZP\Models\Merchant\Product\TncMap\Entity as TncMap;
 
 class Core extends Base\Core
 {
@@ -42,5 +44,12 @@ class Core extends Base\Core
         $this->repo->saveOrFail($tnc);
 
         return $tnc;
+    }
+
+    public function fetchTncForBU(string $businessUnit = Product\BusinessUnit\Constants::PAYMENTS) : TncMap
+    {
+        $entity = $this->repo->tnc_map->fetchLatestTnCByBusinessUnit($businessUnit);
+
+        return $entity;
     }
 }

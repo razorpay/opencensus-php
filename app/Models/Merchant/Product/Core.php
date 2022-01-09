@@ -9,12 +9,14 @@ use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Jobs\MerchantProductsConfig;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
+use RZP\Models\Merchant\Product\BusinessUnit\Constants as BusinessUnit;
 
 class Core extends Base\Core
 {
@@ -27,6 +29,12 @@ class Core extends Base\Core
      * @var Config\PaymentMethods
      */
     private $paymentMethods;
+    /**
+     * @var TncMap\Acceptance\Service
+     */
+    private $tnc;
+
+    private $tncCore;
 
     public function __construct()
     {
@@ -35,6 +43,10 @@ class Core extends Base\Core
         $this->paymentsGeneralConfig = new Config\PaymentsGeneralConfig();
 
         $this->paymentMethods        = new Config\PaymentMethods();
+
+        $this->tnc                   = new TncMap\Acceptance\Service();
+
+        $this->tncCore               = new TncMap\Acceptance\Core();
     }
 
     public function createConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input)
@@ -83,6 +95,12 @@ class Core extends Base\Core
 
         $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
 
+        $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+        if ($hasAcceptedTnc === true)
+        {
+            $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+        }
         return $response;
     }
 
@@ -165,6 +183,13 @@ class Core extends Base\Core
             $this->createPaymentMethodsConfig($merchant, $merchantProduct, [Util\Constants::PAYMENT_METHODS => $paymentMethodsConfig]);
 
             $response[Util\Constants::PAYMENT_METHODS_UPDATE] = $paymentMethodsConfig;
+        }
+
+        if (isset($input[Util\Constants::TNC_ACCEPTED]) === true)
+        {
+            unset($input[Util\Constants::TNC_ACCEPTED]);
+
+            $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant);
         }
 
         $response = array_merge($response, $this->paymentsGeneralConfig->updateConfig($merchant, $input));
@@ -414,6 +439,13 @@ class Core extends Base\Core
         $response = $this->createPaymentGeneralConfig($merchant, $merchantProduct, $input);
 
         $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
+
+        $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+        if ($hasAcceptedTnc === true)
+        {
+            $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+        }
 
         return $response;
     }

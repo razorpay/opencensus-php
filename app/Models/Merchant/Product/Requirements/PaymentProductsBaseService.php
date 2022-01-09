@@ -257,9 +257,9 @@ class PaymentProductsBaseService extends Base\Service
 
         if ($hasPendingTnc === true)
         {
-            $requirement[Constants::FIELD_REFERENCE] = Constants::ACCEPTED;
+            $requirement[Constants::FIELD_REFERENCE] = Constants::TNC_ACCEPTED;
 
-            $requirement[Constants::RESOLUTION_URL] = Constants::ACCOUNT_TNC_ACCEPTANCE_RESOLUTION_URL;
+            $requirement[Constants::RESOLUTION_URL] = Constants::PAYMENT_CONFIG_RESOLUTION_URL;
 
             $requirement[Constants::STATUS] = Constants::REQUIRED;
 
