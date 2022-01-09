@@ -57,7 +57,8 @@ class Repository extends \Razorpay\Spine\Repository
     // Data Warehouse
     const ADMIN_FETCH               = "data_warehouse_admin_fetch";
     const MERCHANT_FETCH            = "data_warehouse_merchant_fetch";
-    const REARCH_TIDB_EXPERIMENT    = 'rearch_fetch_tidb_or_slave';
+    const MERCHANT_TIDB_EXPERIMENT  = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
+    const ADMIN_TIDB_EXPERIMENT     = 'admin_tidb_experiment';
 
     protected $app;
 

@@ -173,8 +173,6 @@ trait RepositoryFetch
             $query = $this->newQueryWithConnection($connection);
         }
 
-
-
         $query = $query->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
@@ -217,7 +215,6 @@ trait RepositoryFetch
 
             return $esSearchResult;
         }
-
 
         $startTimeMs = round(microtime(true) * 1000);
 
@@ -292,17 +289,15 @@ trait RepositoryFetch
                 return $this->getSlaveConnection();
 
             case ConnectionType::DATA_WAREHOUSE_ADMIN:
-
-                if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
+                if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT) === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
                 }
 
-                return $this->getSlaveConnection();
+                return $this->getPaymentFetchReplicaConnection();
 
             case ConnectionType::DATA_WAREHOUSE_MERCHANT:
-
-                if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
+                if ($this->isExperimentEnabled(self::MERCHANT_TIDB_EXPERIMENT) === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
                 }
@@ -310,7 +305,6 @@ trait RepositoryFetch
                 return $this->getSlaveConnection();
 
             case ConnectionType::RX_DATA_WAREHOUSE_MERCHANT:
-
                 if ($this->isExperimentEnabled(Merchant\RazorxTreatment::RX_REARCH_TIDB_EXPERIMENT) === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
@@ -319,16 +313,15 @@ trait RepositoryFetch
                 return $this->getSlaveConnection();
 
             case ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA:
-                if ($this->isExperimentEnabled(self::REARCH_TIDB_EXPERIMENT) === true)
+                if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT) === true)
                 {
                     return $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
                 }
 
                 return $this->getMasterReplicaConnection();
-
         }
 
-        return null;
+        return $connection;
     }
 
     protected function isExperimentEnabled($experiment)
