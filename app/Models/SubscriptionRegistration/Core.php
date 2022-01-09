@@ -597,7 +597,8 @@ class Core extends Base\Core
 
         if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
         {
-            $token = $this->repo->token->getByGatewayTokenAndMerchantId($id, $merchant->getId());
+            $token = $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
+                                                                                                    $this->mode);
         }
 
         if (empty($token) === true)
@@ -637,7 +638,6 @@ class Core extends Base\Core
         );
 
         $orderCore = new Order\Core();
-
         $order = $orderCore->create($orderInput, $this->merchant);
 
         if (empty($idemPotentKey) === false)

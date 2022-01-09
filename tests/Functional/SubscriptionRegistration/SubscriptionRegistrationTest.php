@@ -298,7 +298,7 @@ class SubscriptionRegistrationTest extends TestCase
     public function testChargeToken()
     {
         $paymentRequest = $this->setupPaymentRequest();
-
+        
         $this->doAuthPayment($paymentRequest);
 
         $this->ba->proxyAuth();

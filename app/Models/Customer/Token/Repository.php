@@ -116,6 +116,24 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByGatewayTokenAndMerchantIdWithForceIndex(string $gatewayToken, string $merchantId, string $mode)
+    {
+
+        $index = Token\Entity::TOKENS_MERCHANT_ID_INDEX_LIVE;
+
+        if ($mode === 'test')
+        {
+            $index = Token\Entity::TOKENS_MERCHANT_ID_INDEX_TEST;
+        }
+
+        return $this->newQuery()
+            ->from(\DB::raw("`tokens` FORCE INDEX ($index)"))
+            ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+            ->orderBy(Token\Entity::CREATED_AT, 'desc')
+            ->first();
+    }
+
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
     {
         return $this->newQuery()
