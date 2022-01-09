@@ -182,16 +182,50 @@ class Core extends Base\Core
     {
         $promotion = $coupon->source;
 
-        $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
+        $success = true;
+
+        try
         {
-            $this->createAndActivateMerchantPromotion($merchant, $promotion);
+            $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
+            {
+                $this->createAndActivateMerchantPromotion($merchant, $promotion);
 
-            $coupon->incrementUsedCount();
+                $coupon->incrementUsedCount();
 
-            $this->repo->saveOrFail($coupon);
+                $this->repo->saveOrFail($coupon);
 
-            $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
-        });
+                $this->trace->info(TraceCode::MERCHANT_PROMOTION_CREATED);
+            });
+        }
+        catch (\Throwable $exception)
+        {
+            $success = false;
+
+            $this->trace->info(
+                TraceCode::AMOUNT_CREDITS_COUPON_APPLY_EXCEPTION,
+                [
+                    'message'             => 'exception',
+                    'error'               => $exception->getMessage(),
+                ]);
+        }
+
+        if($success === true)
+        {
+            $hubspotInput = [Entity::COUPON_CODE => $coupon->getCode()];
+
+            $this->app->salesforce->sendCouponInfo($merchant, $hubspotInput);
+
+            $primaryBalance = $merchant->primaryBalance;
+
+            if (empty($primaryBalance) === false)
+            {
+                $segmentProperties = [
+                    Merchant\Service::SEGMENT_FREE_CREDITS_AVAILABLE => $primaryBalance->reload()->getAmountCredits()
+                ];
+
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
+            }
+        }
     }
 
     /**

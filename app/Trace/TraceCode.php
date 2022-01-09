@@ -991,6 +991,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COUPON_VALIDATE_REQUEST                               = 'COUPON_VALIDATE_REQUEST';
 
     const AMOUNT_CREDITS_COUPON_APPLY_REQUEST                   = 'AMOUNT_CREDITS_COUPON_APPLY_REQUEST';
+    const AMOUNT_CREDITS_COUPON_APPLY_EXCEPTION                 = 'AMOUNT_CREDITS_COUPON_APPLY_EXCEPTION';
 
     const ITEM_CREATE_REQUEST                                   = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                                   = 'ITEM_UPDATE_REQUEST';
