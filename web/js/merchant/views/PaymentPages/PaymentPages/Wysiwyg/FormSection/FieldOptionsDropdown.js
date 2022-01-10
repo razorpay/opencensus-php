@@ -1,7 +1,12 @@
-import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
-import { classList } from 'common/utils/rzp-utils';
+import React from 'react';
 
-export default class FieldOptionsDropdown extends React.PureComponent {
+import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import BottomSheet from 'common/components/BottomSheet';
+
+import { classList } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
+
+export class FieldOptionsDropdown extends React.PureComponent {
   render() {
     const { children, type, trigger } = this.props;
 
@@ -9,7 +14,7 @@ export default class FieldOptionsDropdown extends React.PureComponent {
       <div
         class={classList(
           'OptionsDropdown FieldOptionsDropdown',
-          type && 'FieldOptionsDropdown--' + type
+          type && `FieldOptionsDropdown--${type}`,
         )}
       >
         <Dropdown>
@@ -27,14 +32,72 @@ export default class FieldOptionsDropdown extends React.PureComponent {
   }
 }
 
+/* 
+  Separate component to handle open state for bottom sheet to close on click of 
+  option(behaves like a dropdown)
+*/
+export class FieldOptionsDropdownMobile extends React.PureComponent {
+  state = { isOpen: false };
+
+  handleDismiss = () => {
+    this.setState({ isOpen: false });
+  };
+
+  render() {
+    const { children, trigger } = this.props;
+
+    // wrapping with these classes to resuse CSS
+    const _trigger = (
+      <div class="OptionsDropdown FieldsDropdown">
+        <div class="dropdown">
+          <a class="dropdown__trigger">{trigger}</a>
+        </div>
+      </div>
+    );
+
+    return (
+      <BottomSheet
+        isOpen={this.state.isOpen}
+        isControlled
+        trigger={_trigger}
+        onDismiss={this.handleDismiss}
+        onTriggerClick={() => this.setState({ isOpen: true })}
+        class="payment-pages-v3"
+      >
+        {/* 
+          Wrapped with onclick so that on select of option, the event bubbles and is caught by onclick
+          and then the bottom sheet is also closed behaving like a dropdown
+        */}
+        <div class="Bottom-sheet__options" onClick={this.handleDismiss}>
+          <div class="OptionsDropdown-title">Additional Options</div>
+          {children}
+        </div>
+      </BottomSheet>
+    );
+  }
+}
+
 export const OptionsItem = ({ children, isSelected }) => (
-  <li
-    class={classList(
-      'OptionsDropdown-item',
-      isSelected && 'OptionsDropdown-item--selected'
-    )}
-  >
+  <li class={classList('OptionsDropdown-item', isSelected && 'OptionsDropdown-item--selected')}>
     {children}
     <i class="i i-check" />
   </li>
 );
+
+export default class FieldOptionsDropdownWrapper extends React.PureComponent {
+  render() {
+    if (isMobileDevice()) {
+      return (
+        <FieldOptionsDropdownMobile trigger={this.props.trigger}>
+          {this.props.children}
+        </FieldOptionsDropdownMobile>
+      );
+    } else {
+      return (
+        <FieldOptionsDropdown trigger={this.props.trigger}>
+          {this.props.children}
+        </FieldOptionsDropdown>
+      );
+    }
+  }
+}

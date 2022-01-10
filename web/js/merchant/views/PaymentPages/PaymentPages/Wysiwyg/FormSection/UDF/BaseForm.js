@@ -1,9 +1,12 @@
+import React from 'react';
+
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
+import FieldOptionsDropdownWrapper, { OptionsItem } from '../FieldOptionsDropdown';
+
 import { classList } from 'common/utils/rzp-utils';
 import { mapFieldToIndex } from '../UDF/helpers';
-import FieldOptionsDropdown, { OptionsItem } from '../FieldOptionsDropdown';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
@@ -15,19 +18,15 @@ export default class BaseForm extends React.PureComponent {
       disableSubmit: !fieldSchema.title, // Any required field is valid to do init, like 'name', 'title', 'type'
       hasDescription: !!fieldSchema.description,
       mirrorDisplayTitle: fieldSchema.title,
-      isRequired:
-        typeof fieldSchema.required !== 'undefined'
-          ? !!fieldSchema.required
-          : true, // NOTE: By default all fields are to be set as required
+      isRequired: typeof fieldSchema.required !== 'undefined' ? !!fieldSchema.required : true, // NOTE: By default all fields are to be set as required
       isFieldEnum: !!fieldSchema.enum,
       enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
     };
 
-    this.fieldIndexInOptions =
-      props.fieldIndexInOptions || mapFieldToIndex(fieldSchema);
+    this.fieldIndexInOptions = props.fieldIndexInOptions || mapFieldToIndex(fieldSchema);
   }
 
-  onChange = ({ target }) => {
+  onChange = () => {
     setTimeout(this.toggleSubmitBtn); // Validate form for input errors via class change in DOM, hence delayed.
   };
 
@@ -35,17 +34,14 @@ export default class BaseForm extends React.PureComponent {
     const form = this.formEl;
     let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
 
-    if (
-      this.state.isFieldEnum &&
-      (!this.state.enum || !this.state.enum.length)
-    ) {
+    if (this.state.isFieldEnum && (!this.state.enum || !this.state.enum.length)) {
       disableSubmit = true;
     }
 
     this.setState({ disableSubmit });
   };
 
-  onSaveForm = formData => {
+  onSaveForm = (formData) => {
     // Assuming this.state.enum.length > 1 always otherwise toggleSubmitBtn will handle
     if (this.state.enum) {
       formData.enum = this.state.enum;
@@ -70,20 +66,20 @@ export default class BaseForm extends React.PureComponent {
     setTimeout(this.toggleSubmitBtn);
   };
 
-  toggleDescriptionField = _ => {
-    this.setState({
-      hasDescription: !this.state.hasDescription,
+  toggleDescriptionField = (_) => {
+    this.setState((prevState) => {
+      return {
+        hasDescription: !prevState.hasDescription,
+      };
     });
   };
 
-  toggleOptional = _ => {
-    this.setState({
-      isRequired: !this.state.isRequired,
+  toggleOptional = (_) => {
+    this.setState((prevState) => {
+      return {
+        isRequired: !prevState.isRequired,
+      };
     });
-  };
-
-  onDeleteField = _ => {
-    this.props.onDeleteField();
   };
 
   onInputTitle = ({ target }) => {
@@ -92,7 +88,7 @@ export default class BaseForm extends React.PureComponent {
     });
   };
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
     const {
@@ -104,29 +100,16 @@ export default class BaseForm extends React.PureComponent {
       isFieldForcedRequired,
     } = this.props;
 
-    const {
-      isRequired,
-      hasDescription,
-      disableSubmit,
-      mirrorDisplayTitle,
-    } = this.state;
+    const { isRequired, hasDescription, disableSubmit, mirrorDisplayTitle } = this.state;
 
     let _RepresentationEl = (
-        <input
-          class="Field-el"
-          placeholder="To be filled by customer"
-          disabled
-        />
-      ),
-      _RepresentationClass = '';
+      <input class="Field-el" placeholder="To be filled by customer" disabled />
+    );
+    let _RepresentationClass = '';
 
     if (field.options && field.options.cmp === 'textarea') {
       _RepresentationEl = (
-        <textarea
-          class="Field-el"
-          placeholder="To be filled by customer"
-          disabled
-        />
+        <textarea class="Field-el" placeholder="To be filled by customer" disabled />
       );
       _RepresentationClass = 'Field--textarea';
     } else if (field.enum) {
@@ -139,11 +122,7 @@ export default class BaseForm extends React.PureComponent {
     }
 
     return (
-      <Form
-        setRef={this.setRefForm}
-        onChange={this.onChange}
-        onSubmit={this.onSaveForm}
-      >
+      <Form setRef={this.setRefForm} onChange={this.onChange} onSubmit={this.onSaveForm}>
         <Input.TextareaAutoResize
           class="Input--title"
           name="title"
@@ -152,7 +131,7 @@ export default class BaseForm extends React.PureComponent {
           placeholder="Enter field label"
           onInput={this.onInputTitle}
           autoRender
-          validator={function(val) {
+          validator={(val) => {
             if (!val) {
               return 'Field title is required';
             }
@@ -170,28 +149,18 @@ export default class BaseForm extends React.PureComponent {
             if (validateSameTitleExists(val, selfIndex)) {
               return 'Field title cannot be same as other field';
             }
+            return '';
           }}
           autoFocus
         >
-          <div
-            class={classList(
-              'Field Field--mirrorDisplay',
-              isRequired && 'Field--required'
-            )}
-          >
+          <div class={classList('Field Field--mirrorDisplay', isRequired && 'Field--required')}>
             <span class="mirror-title">{mirrorDisplayTitle}</span>
-            {mirrorDisplayTitle &&
-              !isRequired && <div class="text-optional">(Optional)</div>}
+            {mirrorDisplayTitle && !isRequired && <div class="text-optional">(Optional)</div>}
           </div>
         </Input.TextareaAutoResize>
 
-        <input
-          name="field_type"
-          value={this.fieldIndexInOptions}
-          hidden
-          readOnly
-        />
-        <input name="required" value={isRequired | 0} hidden readOnly />
+        <input name="field_type" value={this.fieldIndexInOptions} hidden readOnly />
+        <input name="required" value={Boolean(isRequired)} hidden readOnly />
 
         <div class={classList('Field--representation', _RepresentationClass)}>
           <div class="Field-wrapper placeholder-field">{_RepresentationEl}</div>
@@ -210,17 +179,18 @@ export default class BaseForm extends React.PureComponent {
               name="description"
               placeholder="Enter description"
               defaultValue={field.description}
-              validator={val => {
+              validator={(val) => {
                 if (val && val.length > 128) {
                   return 'Field description cannot be more than 128 characters';
                 }
+                return '';
               }}
               autoFocus
             />
           )}
         </div>
 
-        <FieldOptionsDropdown
+        <FieldOptionsDropdownWrapper
           trigger={
             <Button.Transparent>
               <i class="i i-ellipsis-v" />
@@ -239,25 +209,19 @@ export default class BaseForm extends React.PureComponent {
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
               <i class="i i-sort i-fix-sort" />
-              {this.state.hasDescription
-                ? 'Remove Description'
-                : 'Add Description'}
+              {this.state.hasDescription ? 'Remove Description' : 'Add Description'}
             </div>
           </OptionsItem>
 
-          {typeof selfIndex !== 'undefined' &&
-            onDeleteField && (
-              <OptionsItem>
-                <div
-                  class="OptionsDropdown-item--delete"
-                  onClick={this.onDeleteField}
-                >
-                  <i class="i i-delete" />
-                  <div>Delete Field</div>
-                </div>
-              </OptionsItem>
-            )}
-        </FieldOptionsDropdown>
+          {typeof selfIndex !== 'undefined' && onDeleteField && (
+            <OptionsItem>
+              <div class="OptionsDropdown-item--delete" onClick={onDeleteField}>
+                <i class="i i-delete" />
+                <div>Delete Field</div>
+              </div>
+            </OptionsItem>
+          )}
+        </FieldOptionsDropdownWrapper>
 
         <Button.Transparent
           class="base-form-side-btn base-form-cancel"

@@ -471,11 +471,21 @@
 #wysiwyg-root
   padding-top: 106px
   animation: 0.3s fadein ease-in
+  @media (max-width: $screen-xs-max)
+    padding-top: 73px
 
   .content-container
     min-width: 854px
     @media (max-width: $screen-xs-max)
-      min-width: 100%
+      min-width: 100vw
+
+  #mobile-container 
+    /* to hide the next button on mweb creation flow */
+    .content-scrollable > .btn-container
+      display: none
+
+    .content
+      height: 90vh
 
 /* Paymentpages v2 styles*/
 .payment-pages-v2
@@ -485,7 +495,7 @@
 
   .page-nav-container
     position: fixed
-    z-index: 2
+    z-index: 3
     width: 100%
 
   .page-nav
@@ -494,17 +504,17 @@
     box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
     padding: 9px 12px
     min-width: 854px
+    @media (max-width: $screen-xs-max)
+      min-width: 100vw
 
     .page-size
       width: 100%
       max-width: 1440px
       margin: 0 auto
-      display: table
+      display: flex
+      justify-content: space-between
+      align-items: center
       position: relative
-
-      > div
-        display: table-cell
-        vertical-align: middle
 
       .page-title
         font-size: 18px
@@ -520,7 +530,7 @@
         justify-content: flex-end
         margin-right: 34px
 
-        button
+        > button
           line-height: 10px
           padding: 10px 8px
           //height: 32px
@@ -530,6 +540,9 @@
           display: flex
           justify-content: center
           align-items: center
+          @media (max-width: $screen-xs-max)
+            > span
+              display: none
 
           i
             margin-right: 4px
@@ -537,11 +550,24 @@
         .Button--transparent
           padding: 10px 0
 
+        .mobile-cta-container
+          display: none
+          position: fixed
+          bottom: 0
+          left: 0
+          min-width: 100vw
+          justify-content: center
+          padding: 12px
+          background: white
+          box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
+          @media (max-width: $screen-xs-max)
+            display: flex
+
+
     .close-btn
       font-size: 24px
       line-height: 14px
       position: absolute
-      top: 4px
       right: 4px
       color: #fff
       cursor: pointer
@@ -575,6 +601,9 @@
       visibility: hidden
       opacity: 0
       transition: 0.08s
+      @media (max-width: $screen-xs-max)
+        visibility: visible
+        opacity: 1
 
     > div
         &:hover
@@ -733,6 +762,10 @@
       cursor: pointer
       visibility: hidden
       color: #bfbfbf
+      @media (max-width: $screen-xs-max) // to show edit button always in mobile
+        visibility: visible
+        top: 43px
+        right: 30px 
 
       &:hover
         color: #7b8199
@@ -757,6 +790,8 @@
 
     .rzp-popover
       white-space: normal
+      @media (max-width: $screen-xs-max)
+        display: none !important
 
   //Override Styles
   .Input-info
@@ -797,6 +832,9 @@
 
     &.Field--disabled .Field-el
       pointer-events: none
+      @media (max-width: $screen-xs-max)
+        width: calc(100% - 20px); // to show edit button always in mobile
+
 
   .Input-info
       left: calc(100% - 44px)
@@ -962,6 +1000,8 @@
 .paymentpage-container-goal-tracker
   .rzp-tooltip-donation-tracking
     margin-top: 10px
+    @media (max-width: $screen-xs-max)
+      display: none !important
     
     .rzp-tooltip-title
       font-weight: 700
@@ -1035,9 +1075,10 @@
   // Goal tracker create/edit modal
   .Modal-container--goal-tracker
     width: 375px;
-    // transform: none
     transform: translate(0%, -25%)
     overflow: visible
+    @media (max-width: $screen-xs-max)
+      transform: none
 
     .main-title
       font-weight: bold;
@@ -1095,10 +1136,12 @@
         margin-bottom: 8px
 
     footer
-      padding: 16px 24px;
-      background: #f6f6f6;
-      border-top: 1px solid #e0e0e0;
-      text-align: right;
+      padding: 16px 24px
+      background: #f6f6f6
+      border-top: 1px solid #e0e0e0
+      text-align: right
+      @media (max-width: $screen-xs-max)
+        text-align: center
 
       .Button--transparent
         padding: 8px 20px;
@@ -1220,3 +1263,8 @@
       span
         font-weight: bold;
         color: #1B226A;
+
+// written outside main wrapper as bottom sheet rendered with reach-portal
+.paymentpage-container-goal-tracker.goal-tracker--bottom-sheet
+  label
+    margin-bottom: 8px

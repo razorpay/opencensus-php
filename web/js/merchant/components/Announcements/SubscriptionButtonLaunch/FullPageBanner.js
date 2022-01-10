@@ -1,3 +1,5 @@
+import React from 'react';
+
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { DocLink } from 'merchant/components/DocsLink';
 import { getMode } from 'merchant/store';
@@ -54,6 +56,7 @@ export default React.memo(({ productName }) => {
       theme="primary"
       fullPage
       card_id="introducing-subscription-button-banner"
+      class="hidden-xs"
     >
       <span class="display-inline m-r">{bannerText}</span>
       <DocLink

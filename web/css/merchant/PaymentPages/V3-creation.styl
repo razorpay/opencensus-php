@@ -31,6 +31,8 @@
     .i-edit
       top: 26px
       right: 0
+      @media (max-width: $screen-xs-max)
+        right: 40px
 
   .btn-dotted
     display: inline-block
@@ -189,8 +191,14 @@
       transform: none
       right: -56px
       left: -44px
+      @media (max-width: $screen-xs-max)
+        width: 95vw
+        left: -18px
 
   #form-footer
+    @media (max-width: $screen-xs-max)
+      margin-bottom: 150px !important // so that content doesn't get covered by mobile cta-container
+
     .Modal-container--CreatorModal-BaseForm
       margin-bottom: 120px // To add a significant margin for scrolling
       top: -44px
@@ -199,6 +207,18 @@
       padding: 20px 32px
       right: -32px
       left: -32px
+      @media (max-width: $screen-xs-max)
+        width: 95%
+        margin: 0 auto
+
+        // to not show preview in mobile mode in pop up modal
+        .form-footer-payment
+          display: none
+
+        // to avoid red * getting placed randomly
+        .Input--required .Input-label::after
+          content: none
+
 
     .Input
       display: table
@@ -215,6 +235,10 @@
     .form-footer-payment
       width: 100%
 
+    .btn-gradient
+      @media (max-width: $screen-xs-max)
+        width: 100%
+        padding: 10px 16px
 
   .Modal-container--CreatorModal-BaseForm
     position: absolute
@@ -272,6 +296,8 @@
       padding-right: 12px
       display: table
       width: 100%
+      @media (max-width: $screen-xs-max)
+        display: block
 
     .base-form-side-btn
       position: absolute
@@ -317,6 +343,10 @@
       padding-right: 24px
       margin-right: 20px
       vertical-align: top
+      @media (max-width: $screen-xs-max)
+        display: block
+        margin-bottom: 20px
+
 
       .Input-el--resizer
         height: 24px
@@ -423,6 +453,9 @@
       position: absolute
       top: 20px
       right: 12px
+      @media (max-width: $screen-xs-max)
+        bottom: 20px
+        top: unset
 
     .OptionsDropdown-list
       left: 50%
@@ -452,6 +485,8 @@
   .Modal-container--CreatorModal-AdvancedForm
     padding: 20px 24px
     width: 480px
+    @media (max-width: $screen-xs-max)
+      width: 95%
 
     .modal-title
       font-weight: bold
@@ -483,6 +518,8 @@
 
     .Input-content--limits
       width: 136px
+      @media (max-width: $screen-xs-max)
+        width: 100%
 
     .Input--isStockSet
       .Input-label, .Input-content, .Input-radio, .Input-inlineLabel
@@ -519,6 +556,9 @@
       > .Input-content, > .Input-label, .separator
           display: inline-block
           vertical-align: top
+          @media (max-width: $screen-xs-max)
+            display: block
+
       > .Input-content
           //width: 136px
           .Input-content
@@ -569,6 +609,9 @@
     font-size: 12px
     font-weight: bold
     margin-right: 20px
+    @media (max-width: $screen-xs-max)
+      font-size: 18px
+      color: #2f3445
 
   .OptionsDropdown-item
     position: relative
@@ -578,6 +621,8 @@
     line-height: 24px
     font-size: 14px
     cursor: pointer
+    @media (max-width: $screen-xs-max)
+      padding: 10px
 
     &:not(:last-child)::after
       content: ''
@@ -672,6 +717,28 @@
     .OptionsDropdown-list
       min-height: 220px
 
+  .Bottom-sheet__options // options shown in bottom-sheet in mobile view
+    list-style: none
+    padding: 0 15px 15px
+
+    // duplicate from payment-pages-v2, written again because bottom-sheet rendered in portal
+    .i-fix-sort
+      font-size: 10px
+
+    .i-fix-number
+      font-size: 10px
+
+    .i-fix-alphabet
+      font-size: 10px
+
+    .i-fix-arrow-down
+      font-size: 13px
+      &::before
+        border-radius: 50%
+        border: 1px solid
+        border-color: inherit
+        width: 24px
+        height: 20px
 
 @keyframes dropdownAppearIn
   0%

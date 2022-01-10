@@ -1,21 +1,26 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+import moment from 'moment';
+
 import Button from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { Modal, ModalMask, ModalContent } from 'common/new-ui/Modal';
-import FieldsDropdown from '../FormSection/FieldsDropdown';
-import FIELD_TYPES from './helpers/fieldTypes';
+import FieldsDropdownWrapper from '../FormSection/FieldsDropdown';
 import DonationGoalTrackerPreview from './DonationGoalTrackerPreview';
 import AmountBasedModalContent from './AmountBasedModalContent';
 import SupporterBasedModalContent from './SupporterBasedModalContent';
-import moment from 'moment';
+import BottomSheet from 'common/components/BottomSheet';
+
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { connect } from 'react-redux';
-import RTracking from 'react-tracking';
+
 import { parseGoalTrackerAmountValues } from './helpers';
 import debounce from 'common/utils/debounce';
 import track from '../track';
+import FIELD_TYPES from './helpers/fieldTypes';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 const sampleData = {
   tracker_type: 'donation_amount_based',
@@ -74,11 +79,12 @@ export default class DonationGoalTracker extends React.PureComponent {
         this.props.goal_tracker?.meta_data && this.props.goal_tracker.meta_data.goal_end_timestamp
           ? moment.unix(this.props.goal_tracker.meta_data.goal_end_timestamp)
           : moment().add(30, 'days').set({ hour: 23, minute: 59, seconds: 59 }),
+      isBottomSheetOpen: false, // for showing details in mobile view
     };
   }
 
   handleClick = () => {
-    this.setState({ isEditable: true }, () => {
+    this.setState({ isEditable: true, isBottomSheetOpen: true }, () => {
       this.handleModalPosition();
       // add resize event listner on modal open
       window.addEventListener('resize', this.handleModalPosition);
@@ -96,6 +102,11 @@ export default class DonationGoalTracker extends React.PureComponent {
         modalPreviewNode.style.top = `${rect.top + 12}px`; // margin-top of 12px
         modalPreviewNode.style.left = `${rect.left}px`;
         modalPreviewNode.style.width = `${rect.width}px`;
+
+        // if mobile, open on top as details shown in bottom sheet
+        if (isMobileDevice()) {
+          modalPreviewNode.style.top = '100px';
+        }
       }
 
       const modalEditorNode = document.querySelector('.Modal-container--goal-tracker');
@@ -219,7 +230,7 @@ export default class DonationGoalTracker extends React.PureComponent {
         value: request,
       },
     });
-    this.setState({ isEditable: false });
+    this.setState({ isEditable: false, isBottomSheetOpen: false });
   };
 
   editGoal = () => {
@@ -270,7 +281,16 @@ export default class DonationGoalTracker extends React.PureComponent {
   };
 
   render() {
-    const { isEditable, meta_data, endDate, is_active, tracker_type } = this.state;
+    const {
+      isEditable,
+      meta_data,
+      endDate,
+      is_active,
+      tracker_type,
+      isBottomSheetOpen,
+    } = this.state;
+
+    const isMobile = isMobileDevice();
 
     return (
       <div
@@ -329,29 +349,66 @@ export default class DonationGoalTracker extends React.PureComponent {
                 />
               </ModalContent>
             </Modal>
-            <Modal onClose={this.handleClose} className="goal-tracker">
-              <ModalContent>
-                {tracker_type === 'donation_amount_based' ? (
-                  <AmountBasedModalContent
-                    handleClose={this.handleClose}
-                    endDate={endDate}
-                    onEndDateChange={this.onEndDateChange}
-                    meta_data={meta_data}
-                    onMetaDataChange={this.onMetaDataChange}
-                    handleSubmit={this.handleSubmit}
-                  />
-                ) : (
-                  <SupporterBasedModalContent
-                    handleClose={this.handleClose}
-                    endDate={endDate}
-                    onEndDateChange={this.onEndDateChange}
-                    meta_data={meta_data}
-                    onMetaDataChange={this.onMetaDataChange}
-                    handleSubmit={this.handleSubmit}
-                  />
-                )}
-              </ModalContent>
-            </Modal>
+            {/*
+              goal tracker settings shown in modal for desktop and in a bottom sheet for mobile
+            */}
+            {!isMobile ? (
+              <Modal onClose={this.handleClose} className="goal-tracker">
+                <ModalContent>
+                  {tracker_type === 'donation_amount_based' ? (
+                    <AmountBasedModalContent
+                      handleClose={this.handleClose}
+                      endDate={endDate}
+                      onEndDateChange={this.onEndDateChange}
+                      meta_data={meta_data}
+                      onMetaDataChange={this.onMetaDataChange}
+                      handleSubmit={this.handleSubmit}
+                    />
+                  ) : (
+                    <SupporterBasedModalContent
+                      handleClose={this.handleClose}
+                      endDate={endDate}
+                      onEndDateChange={this.onEndDateChange}
+                      meta_data={meta_data}
+                      onMetaDataChange={this.onMetaDataChange}
+                      handleSubmit={this.handleSubmit}
+                    />
+                  )}
+                </ModalContent>
+              </Modal>
+            ) : (
+              <BottomSheet
+                isOpen={isBottomSheetOpen}
+                isControlled
+                className="goal-tracker--bottom-sheet paymentpage-container-goal-tracker"
+                onDismiss={this.handleClose}
+                isBlocking={false}
+              >
+                <div class="Modal-container--goal-tracker">
+                  <ModalContent>
+                    {tracker_type === 'donation_amount_based' ? (
+                      <AmountBasedModalContent
+                        handleClose={this.handleClose}
+                        endDate={endDate}
+                        onEndDateChange={this.onEndDateChange}
+                        meta_data={meta_data}
+                        onMetaDataChange={this.onMetaDataChange}
+                        handleSubmit={this.handleSubmit}
+                      />
+                    ) : (
+                      <SupporterBasedModalContent
+                        handleClose={this.handleClose}
+                        endDate={endDate}
+                        onEndDateChange={this.onEndDateChange}
+                        meta_data={meta_data}
+                        onMetaDataChange={this.onMetaDataChange}
+                        handleSubmit={this.handleSubmit}
+                      />
+                    )}
+                  </ModalContent>
+                </div>
+              </BottomSheet>
+            )}
           </ModalMask>
         )}
       </div>
@@ -361,7 +418,7 @@ export default class DonationGoalTracker extends React.PureComponent {
 
 const GoalTrackerDropdown = ({ trigger, onSelect }) => {
   return (
-    <FieldsDropdown
+    <FieldsDropdownWrapper
       beforeOptionsTxt="Which goal would you like to track?"
       type="goal-tracker"
       options={[FIELD_TYPES.donation_amount_based, FIELD_TYPES.donation_supporter_based]}

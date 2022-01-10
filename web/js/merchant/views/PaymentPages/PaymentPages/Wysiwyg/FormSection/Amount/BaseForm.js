@@ -8,7 +8,7 @@ import Button from 'common/new-ui/Button';
 import { classList, paiseToRupees } from 'common/utils/rzp-utils';
 import { isMandatoryToBool } from '../Amount/helpers';
 import FIELD_TYPES from '../Amount/helpers/fieldTypes';
-import FieldOptionsDropdown, { OptionsItem } from '../FieldOptionsDropdown';
+import FieldOptionsDropdownWrapper, { OptionsItem } from '../FieldOptionsDropdown';
 // eslint-disable-next-line import/no-named-as-default
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -87,10 +87,6 @@ export default class BaseForm extends React.PureComponent {
     }));
 
     this.props.onChangeIsMandatory(isMandatory);
-  };
-
-  onDeleteField = (_) => {
-    this.props.onDeleteField();
   };
 
   onInputName = ({ target }) => {
@@ -343,8 +339,7 @@ export default class BaseForm extends React.PureComponent {
             />
           )}
         </div>
-
-        <FieldOptionsDropdown
+        <FieldOptionsDropdownWrapper
           trigger={
             <Button.Transparent>
               <i class="i i-ellipsis-v" />
@@ -390,13 +385,13 @@ export default class BaseForm extends React.PureComponent {
 
           {typeof selfIndex !== 'undefined' && onDeleteField && (
             <OptionsItem>
-              <div class="OptionsDropdown-item--delete" onClick={this.onDeleteField}>
+              <div class="OptionsDropdown-item--delete" onClick={onDeleteField}>
                 <i class="i i-delete" />
                 <div>Delete Field</div>
               </div>
             </OptionsItem>
           )}
-        </FieldOptionsDropdown>
+        </FieldOptionsDropdownWrapper>
 
         <Button.Transparent
           class="base-form-side-btn base-form-cancel"

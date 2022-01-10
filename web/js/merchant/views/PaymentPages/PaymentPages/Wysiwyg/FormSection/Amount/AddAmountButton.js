@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Button from 'common/new-ui/Button';
-import FieldsDropdown from '../FieldsDropdown';
+import FieldsDropdownWrapper from '../FieldsDropdown';
 import CreatorManager from './CreatorManager';
 
 import { getAmountFieldTypes, getBaseFieldForAmountFieldType } from '../Amount/helpers';
@@ -43,7 +43,7 @@ class AddAmountButton extends React.PureComponent {
 export default CreatorManager(AddAmountButton);
 
 export const AmountDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt }) => (
-  <FieldsDropdown
+  <FieldsDropdownWrapper
     beforeOptionsTxt={beforeOptionsTxt}
     type="amount"
     options={getAmountFieldTypes()}

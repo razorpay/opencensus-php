@@ -2,10 +2,11 @@ import React from 'react';
 import RTracking from 'react-tracking';
 
 import Button from 'common/new-ui/Button';
-import FieldsDropdown from '../FieldsDropdown';
-import { getFieldTypes } from '../UDF/helpers';
+import FieldsDropdownWrapper from '../FieldsDropdown';
 import CreatorManager from './CreatorManager';
+
 import track from '../../track';
+import { getFieldTypes } from '../UDF/helpers';
 
 @RTracking(() => window.rzpQ.component('AddUDFButton'))
 class AddUDFButton extends React.PureComponent {
@@ -37,7 +38,7 @@ class AddUDFButton extends React.PureComponent {
 export default CreatorManager(AddUDFButton);
 
 export const UDFDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt }) => (
-  <FieldsDropdown
+  <FieldsDropdownWrapper
     beforeOptionsTxt={beforeOptionsTxt}
     type="udf"
     options={getFieldTypes()}

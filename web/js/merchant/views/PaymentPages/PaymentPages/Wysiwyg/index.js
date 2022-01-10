@@ -11,17 +11,24 @@ import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
 import SubscriptionButtonLaunchFullPageBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch/FullPageBanner';
-import track from './track';
-
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
 import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
 import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
-import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
+import MobileActionButtons from './components/MobileActionButtons';
 
-import { autoPrefixUrls, getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
+import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
+import track from './track';
+import { isMobileDevice } from 'merchant/components/Home/data';
+
+import {
+  autoPrefixUrls,
+  getURLQueryParams,
+  rupeesToPaise,
+  classList,
+} from 'common/utils/rzp-utils';
 
 import {
   initDefaultFormItems,
@@ -514,7 +521,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (!support_contact || !support_email) {
       this.props.showNotification({
         type: 'error',
-        message: 'Please add your support contact details on this page',
+        message: `Please add your support details in the 'Contact Us' section`,
       });
       if (!support_email) {
         this.supportEmailRef?.current?.el.focus();
@@ -754,7 +761,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             onClick={this.togglePageSettings}
             className="Button--header"
           >
-            <i className="i i-settings-outline" /> Page Settings
+            <i className="i i-settings-outline" />
+            <span>Page Settings</span>
           </Button.Transparent>
           <AsyncBtn.Primary
             onClick={() => {
@@ -764,9 +772,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             }}
             disabled={!isAllowedToSubmit}
             pendingState="Publishing"
+            class="hidden-xs"
           >
             {payment_page_id ? 'Save and Update Page' : 'Create and Publish Page'}
           </AsyncBtn.Primary>
+          {/* floating container for actions in mobile view */}
+          <MobileActionButtons handlePublishPage={() => this.handleSavePublish('Publish Page')} />
         </React.Fragment>
       );
 
@@ -815,9 +826,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     return (
       <div
         id="paymentpage-container"
-        class={`payment-pages-v2 payment-pages-v3 desktop-view ${
-          user.isPPDonationGoalTracker ? 'paymentpage-container-goal-tracker' : ''
-        }`}
+        class={classList(
+          'payment-pages-v2',
+          'payment-pages-v3',
+          user.isPPDonationGoalTracker ? 'paymentpage-container-goal-tracker' : '',
+          isMobileDevice() ? '' : 'desktop-view',
+        )}
         style={{ backgroundColor: themeColor }}
       >
         {this.state.isTemplatesViewOpened && (
