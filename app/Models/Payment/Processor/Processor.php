@@ -3041,7 +3041,8 @@ class Processor
         $payment->setError($code, $desc, $internalCode);
 
         if (($exception instanceof Exception\GatewayErrorException) and
-            ($this->payment->merchant !== null or $this->payment->merchant->isFeatureEnabled(Features::EXPOSE_GATEWAY_ERRORS) === true))
+            ($this->payment->merchant !== null) and
+            ($this->payment->merchant->isFeatureEnabled(Features::EXPOSE_GATEWAY_ERRORS) === true))
         {
             $data = $exception->getGatewayErrorCodeAndDesc();
 
