@@ -18,6 +18,9 @@ import VirtualAccountsList from './VirtualAccounts/List';
 import BlockOnBoarding from './BlockOnBoarding';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import BatchExpiryUpdate from './BatchExpiryUpdate/List';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
 
 @connect(
   (state) => {
@@ -28,14 +31,38 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
   },
   {
     handleProductQuickGuide,
+    showNotification,
+    fetchFeatureStatus,
   },
 )
 export default class SmartCollectContainer extends React.Component {
+  state = {
+    isVaEditBulkMid: false,
+  };
+
   componentDidMount() {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Go To - Smart Collect',
     });
+    // check va_edit_bulk MID feature
+    this.props
+      .fetchFeatureStatus(this.props.user.id, 'va_edit_bulk')
+      .then((fetchFeatureStatusResp) => {
+        if (fetchFeatureStatusResp.data.status) {
+          this.setState({
+            isVaEditBulkMid: true,
+          });
+        }
+      })
+      .catch((err) => {
+        if (err) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors[0],
+          });
+        }
+      });
   }
 
   render() {
@@ -66,6 +93,9 @@ export default class SmartCollectContainer extends React.Component {
               Virtual Accounts
             </NavLink>
             <NavLink to="/smartcollect/payments">Payments</NavLink>
+            {this.state.isVaEditBulkMid && (
+              <NavLink to="/smartcollect/batchuploads">Batch Expiry Update</NavLink>
+            )}
           </header>
 
           <TestModeBanner />
@@ -78,6 +108,7 @@ export default class SmartCollectContainer extends React.Component {
                   component={VirtualAccountsList}
                 />
                 <Route path="/smartcollect/payments" component={PaymentsList} />
+                <Route path="/smartcollect/batchuploads" component={BatchExpiryUpdate} />
               </Switch>
             </ErrorBoundary>
           </content>

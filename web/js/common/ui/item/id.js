@@ -34,6 +34,7 @@ const batchBaseUrls = {
   payment_transfer: 'route',
   linked_account_create: 'route',
   transfer_reversal: 'route',
+  virtual_account_edit: 'smartcollect',
 };
 
 const commissionBase = {

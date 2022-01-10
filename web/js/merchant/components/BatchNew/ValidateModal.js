@@ -131,52 +131,67 @@ class BatchValidateModal extends Component {
                 <p className="modal-info-note">
                   <strong>Please note the following things before proceeding further: </strong>
                 </p>
-                <ol className="validate-modal-ul">
-                  <li>The amount mentioned should be in paise.</li>
-                  {batchType && batchType !== 'refund' && (
-                    <li>
-                      The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
-                      {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
-                    </li>
-                  )}
-
-                  {batchType === 'refund' ? (
-                    <>
-                      <li>The payment Id for all refunds should be unique.</li>
+                {batchType !== 'virtual_account_edit' ? (
+                  <ol className="validate-modal-ul">
+                    <li>The amount mentioned should be in paise.</li>
+                    {batchType && batchType !== 'refund' && (
                       <li>
-                        Mention refund speed of each payment Id otherwise refunds will be processed
-                        at default refund speed (check{' '}
-                        <strong
-                          className="btn-link"
-                          onClick={() => {
-                            window.rzpAnalytics({
-                              eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                              eventAction: 'Setting -  upload modal',
-                              eventLabel: `Click to setting`,
-                            });
-                            this.props.closeModal();
-                          }}
-                        >
-                          <Link
-                            to={{
-                              pathname: '/config',
-                              hash: 'instantrefunds',
+                        The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
+                        {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
+                      </li>
+                    )}
+
+                    {batchType === 'refund' ? (
+                      <>
+                        <li>The payment Id for all refunds should be unique.</li>
+                        <li>
+                          Mention refund speed of each payment Id otherwise refunds will be
+                          processed at default refund speed (check{' '}
+                          <strong
+                            className="btn-link"
+                            onClick={() => {
+                              window.rzpAnalytics({
+                                eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                                eventAction: 'Setting -  upload modal',
+                                eventLabel: `Click to setting`,
+                              });
+                              this.props.closeModal();
                             }}
                           >
-                            settings
-                          </Link>
-                        </strong>{' '}
-                        for default refund speed).
-                      </li>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                  {maxRows && <li>The number of rows should not exceed {maxRows}.</li>}
-                  {batchType === 'refund' ? (
-                    <li>Once the batch file is submitted, it will be processed after 70 mins.</li>
-                  ) : null}
-                </ol>
+                            <Link
+                              to={{
+                                pathname: '/config',
+                                hash: 'instantrefunds',
+                              }}
+                            >
+                              settings
+                            </Link>
+                          </strong>{' '}
+                          for default refund speed).
+                        </li>
+                      </>
+                    ) : (
+                      ''
+                    )}
+                    {maxRows && <li>The number of rows should not exceed {maxRows}.</li>}
+                    {batchType === 'refund' ? (
+                      <li>Once the batch file is submitted, it will be processed after 70 mins.</li>
+                    ) : null}
+                  </ol>
+                ) : (
+                  <ol class="validate-modal-ul">
+                    <li>
+                      Each row must contain a unique Virtual Account ID and it should not already be
+                      in expired or closed state.
+                    </li>
+                    <li>
+                      Each row must contain an expiry date in dd-mm-yyyy hh:mm format (e.g.
+                      15-01-2021 23:59).
+                    </li>
+                    <li>Number of rows in a batch file cannot exceed 10000.</li>
+                    <li>Batch file can take upto 70 min to process.</li>
+                  </ol>
+                )}
 
                 <p className="download-sample-file-p">
                   In case of any issues, please{' '}

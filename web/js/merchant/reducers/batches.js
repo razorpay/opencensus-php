@@ -9,6 +9,7 @@ import {
 import { merchantFetch } from 'merchant/utils/ajax';
 
 const REFUND = 'REFUND_BATCHS';
+const VIRTUAL_ACCOUNT_BATCHS = 'VIRTUAL_ACCOUNT_BATCHS';
 
 //Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/merchant_common/reducers/collection.js
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
@@ -265,6 +266,14 @@ export const batchDownload = (batchId) => {
   };
 };
 
+/* actions VA batches */
+export const fetchVABatches = (params) => {
+  return {
+    type: getActionName(VIRTUAL_ACCOUNT_BATCHS),
+    payload: fetchBatchesAjax(params, 'virtual_account_edit'),
+  };
+};
+
 /* actions refund batches */
 export const fetchRefundBatches = (params) => {
   return {
@@ -385,6 +394,8 @@ export const createRegistrationLinkBatch = createBatch('auth_link');
 export const validateRegistrationLinkBatch = validateBatch('auth_link');
 export const validateRefundBatch = validateBatch('refund');
 export const createRefundBatch = createBatch('refund', 'REFUND');
+export const validateVABatch = validateBatch('virtual_account_edit');
+export const createVABatch = createBatch('virtual_account_edit', 'VIRTUAL_ACCOUNT');
 export const createRecurringChargeBatch = createBatch('recurring_charge');
 export const validateRecurringChargeBatch = validateBatch('recurring_charge');
 export const createRecurringChargeAxisBatch = createBatch('recurring_charge_axis');
@@ -408,6 +419,7 @@ export const fetchRouteBatchDetails = fetchBatchDetails();
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);
 export const batchesReducer = makeActionCollectionReducer(appendBatches(BATCH));
+export const virtualAccountBatchesReducer = makeActionCollectionReducer(VIRTUAL_ACCOUNT_BATCHS);
 
 const paymentBatchIdsInitialState = {
   issuableIdList: [],

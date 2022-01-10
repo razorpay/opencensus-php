@@ -61,6 +61,7 @@ import {
   PaymentBatchIdsReducer,
   batchDetailsReducer,
   batchesReducer,
+  virtualAccountBatchesReducer,
 } from 'merchant/reducers/batches';
 import { addressBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_address_upload';
 
@@ -210,4 +211,5 @@ export default combineReducers({
   merchantReferral: merchantReferralReducer,
   trackEvents: trackEventsReducer,
   workflows: workflowReducer,
+  virtualAccountBatches: virtualAccountBatchesReducer,
 });

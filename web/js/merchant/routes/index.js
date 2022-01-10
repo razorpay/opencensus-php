@@ -66,6 +66,13 @@ const VirtualAccountDetails = lazy(() =>
     /* webpackChunkName: "VirtualAccountsDetails" */ 'merchant/views/SmartCollect/VirtualAccounts/Details'
   ),
 );
+
+const VirtualAccountBatchDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "VirtualAccountBatchDetails" */ 'merchant/views/SmartCollect/BatchExpiryUpdate/components/Details'
+  ),
+);
+
 const VirtualAccountCreate = lazy(() =>
   import(
     /* webpackChunkName: "VirtualAccountsCreate" */ 'merchant/views/SmartCollect/VirtualAccounts/Create/index'
@@ -336,6 +343,7 @@ const entityDetailsMap = {
   '/route/accounts/:id': { component: AccountDetailsNew },
   '/smartcollect/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
+  '/smartcollect/batchuploads/:id': { component: VirtualAccountBatchDetails },
   // QR Code
   '/qr_codes/:id(qr_.+)': {
     component: QRCodeDetails,

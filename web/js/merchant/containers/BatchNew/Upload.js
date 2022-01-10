@@ -22,6 +22,8 @@ const successMessageMap = {
   linked_account_create: ROUTE_SUCCESS_MESSAGE,
   transfer_reversal: ROUTE_SUCCESS_MESSAGE,
   raw_address: 'You can download the batch file to check the failed addresses',
+  virtual_account_edit:
+    'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
 };
 class BatchUpload extends Component {
   state = {
