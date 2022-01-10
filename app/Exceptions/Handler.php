@@ -111,6 +111,11 @@ class Handler extends ExceptionHandler
             'errors'  => [self::SERVER_ERROR]
         ];
 
+        // For Debugging exceptions
+        $app['trace']->info(TraceCode::ERROR_EXCEPTION, [
+            'context' => $this->getExceptionDetails($e)
+        ]);
+
         $response = null;
 
         if ($e instanceof ModelNotFoundException)
@@ -181,7 +186,7 @@ class Handler extends ExceptionHandler
 
     protected function getStatusCodeForUnhandledException(Exception $e)
     {
-        if (($e instanceof Exception) and 
+        if (($e instanceof Exception) and
             ($e->getMessage() === 'Unauthorized Access'))
         {
             return 401;
