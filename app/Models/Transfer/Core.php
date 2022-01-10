@@ -37,6 +37,20 @@ class Core extends Base\Core
         $this->razorx = $this->app['razorx'];
     }
 
+    protected function makeTransferTransaction($input, $merchant, $validator)
+    {
+        return $this->repo->transaction(function () use ($input, $merchant, $validator)
+        {
+            $transfer = $this->makeTransfer($input, $merchant, $merchant);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_CREATE_SUCCESS,
+                ['transfer_id' => $transfer->getId()]);
+
+            return $transfer;
+        });
+    }
+
     /**
      * Create a direct transfer from Merchant balance
      *
@@ -75,17 +89,28 @@ class Core extends Base\Core
 
         $validator->validateTransferMaxAmount($input[Entity::AMOUNT], $merchant);
 
-        $transfer = $this->repo->transaction(function () use ($input, $merchant, $validator)
+        $transfer = null;
+
+        try {
+            $transfer = $this->makeTransferTransaction($input, $merchant, $validator);
+        }
+        catch (\Throwable $ex)
         {
-            $transfer = $this->makeTransfer($input, $merchant, $merchant);
+            // Checks if the exception is caused by db connection loss and reconnects to DB(one retry)
+            // made this change as a fix for production issue SI-4668
+            $causedByLostConnection = $this->app['db.connector.mysql']->checkAndReloadDBIfCausedByLostConnection($ex);
 
-            $this->trace->info(
-                TraceCode::TRANSFER_CREATE_SUCCESS,
-                ['transfer_id' => $transfer->getId()]);
+            if($causedByLostConnection === true)
+            {
+                $transfer = $this->makeTransferTransaction($input, $merchant, $validator);
+            }
+            else
+            {
+                $this->trace->traceException($ex, null, TraceCode::DIRECT_TRANSFER_CREATE_EXPECTION,[]);
 
-            return $transfer;
-        });
-
+                throw $ex;
+            }
+        }
         if ($transfer->isProcessed() === true)
         {
             $this->eventTransferProcessed($transfer);

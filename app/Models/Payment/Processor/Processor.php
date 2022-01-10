@@ -2461,6 +2461,21 @@ class Processor
         }
     }
 
+    protected function createForPayment($payment, $input, $asyncTransfer, $deadLockRetryAttempts)
+    {
+        return $this->repo->transaction(function() use ($payment, $input, $asyncTransfer)
+        {
+            return Tracer::inSpan(['name' => 'payment.transfer.create'], function() use ($payment, $input, $asyncTransfer)
+            {
+                return (new TransferCore)->createForPayment(
+                    $payment,
+                    $input['transfers'],
+                    $this->merchant,
+                    $asyncTransfer
+                );
+            });
+        }, $deadLockRetryAttempts);
+    }
     /**
      * Transfer a captured payment to customer/marketplace account
      *
@@ -2504,18 +2519,28 @@ class Processor
             {
                 $this->repo->reload($payment);
 
-                $transfers = $this->repo->transaction(function() use ($payment, $input, $asyncTransfer)
+                $transfers = null;
+
+                try {
+                    $transfers = $this->createForPayment($payment, $input, $asyncTransfer, $deadLockRetryAttempts);
+                }
+                catch (\Throwable $ex)
                 {
-                    return Tracer::inSpan(['name' => 'payment.transfer.create'], function() use ($payment, $input, $asyncTransfer)
+                    // Checks if the exception is caused by db connection loss and reconnects to DB(one retry)
+                    // made this change as a fix for production  issue SI-4668
+                    $causedByLostConnection = $this->app['db.connector.mysql']->checkAndReloadDBIfCausedByLostConnection($ex);
+
+                    if($causedByLostConnection === true)
                     {
-                        return (new TransferCore)->createForPayment(
-                            $payment,
-                            $input['transfers'],
-                            $this->merchant,
-                            $asyncTransfer
-                        );
-                    });
-                }, $deadLockRetryAttempts);
+                        $transfers = $this->createForPayment($payment, $input, $asyncTransfer, $deadLockRetryAttempts);
+                    }
+                    else
+                    {
+                        $this->trace->traceException($ex, null, TraceCode::PAYMENT_TRANSFER_CREATE_EXCEPTION,[]);
+
+                        throw $ex;
+                    }
+                }
 
                 if ($asyncTransfer === true)
                 {

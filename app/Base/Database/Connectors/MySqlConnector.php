@@ -159,6 +159,19 @@ class MySqlConnector extends BaseMySqlConnector
         }
     }
 
+    public function checkAndReloadDBIfCausedByLostConnection($ex, $conn = '')
+    {
+        if($this->causedByLostConnection($ex))
+        {
+            $db = $this->getDB($conn);
+
+            $db->reconnect();
+
+            return true;
+        }
+        return false;
+    }
+
     public function setWaitTimeout($type, $conn = '')
     {
         $db = $this->getDb($conn);
