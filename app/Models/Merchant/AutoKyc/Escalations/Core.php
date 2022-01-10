@@ -77,34 +77,45 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::SELF_SERVE_CRON, [
             'type' => Constants::SOFT_LIMIT
         ]);
+
         // fetch all the merchants who are in activated_mcc_pending state
         $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
             [DetailStatus::ACTIVATED_MCC_PENDING], OrgEntity::ORG_ID_LIST
         );
 
-        // filter merchants who have not escalated to soft limit already
-        $merchantIdList = $this->filterMerchantIdsNotEscalatedToType($merchantIdList, Constants::SOFT_LIMIT);
+        $this->trace->info(TraceCode::SELF_SERVE_CRON, [
+            'type'         => Constants::SOFT_LIMIT,
+            'allmidscount' => count($merchantIdList)
+        ]);
 
-        // filter merchants who have crossed settlements above threshold
-        $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
-            $merchantIdList, MConstants::PAYMENT, env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
+        $merchantIdChunks = array_chunk($merchantIdList, 20);
 
-        $merchantIdList = array_map(function($element) {
-            return $element[Entity::MERCHANT_ID];
-        }, $merchantsGmvList);
+        foreach ($merchantIdChunks as $merchantIdList) {
+            // filter merchants who have not escalated to soft limit already
+            $merchantIdList = $this->filterMerchantIdsNotEscalatedToType($merchantIdList, Constants::SOFT_LIMIT);
 
-        if (empty($merchantIdList) === true)
-        {
-            $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
-                'type'   => Constants::SOFT_LIMIT,
-                'reason' => 'no merchants to run the cron'
-            ]);
+            // filter merchants who have crossed settlements above threshold
+            $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
+                $merchantIdList, MConstants::PAYMENT, env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
 
-            return;
+            $merchantIdList = array_map(function($element) {
+                return $element[Entity::MERCHANT_ID];
+            }, $merchantsGmvList);
+
+            if (empty($merchantIdList) === true)
+            {
+                $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
+                    'type'   => Constants::SOFT_LIMIT,
+                    'reason' => 'no merchants to run the cron'
+                ]);
+                return;
+            }
+
+            $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
+
+            // finally raise escalations
+            (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::SOFT_LIMIT, 1);
         }
-        $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
-        // finally raise escalations
-        (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::SOFT_LIMIT, 1);
     }
 
     /**
