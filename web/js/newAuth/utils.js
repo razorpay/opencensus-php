@@ -110,3 +110,15 @@ export const isMobileSignupEnabled = () => {
   const { 'mobile-signup': isMobileSignupParam } = getURLQueryParams(window.location.search);
   return !!window.isMobileSignup || isMobileSignupParam === 'true';
 };
+
+/**
+ * window.isTestEnv is set by QA env
+ * or else this can be passed via URL param as well
+ * Eg: https://dashboard.qa.razorpay.in/signin?isTestEnv=true
+ * In both case signin captcha will be skipped.
+ * @returns {boolean}.
+ */
+export const isTestEnvironment = () => {
+  const { isTestEnv } = getURLQueryParams(window.location.search);
+  return !!window.isTestEnv || isTestEnv === 'true';
+};

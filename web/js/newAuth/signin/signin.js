@@ -8,7 +8,7 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
 import { fetchOrg, transformFetchOrgData } from './apis';
 import { getBankingCaptchaColor, getTheme } from './theme';
-import { BANK_NAMES, getHostName } from '../utils';
+import { BANK_NAMES, getHostName, isTestEnvironment } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';
 import {
   Container,
@@ -123,6 +123,7 @@ const Signin = () => {
                         oneTapInfo={oneTapInfo}
                         theme={getTheme(orgData.orgName)}
                         isGoogleOauthEnabled={orgData.orgName !== BANK_NAMES.AXIS}
+                        skipCaptcha={isTestEnvironment()}
                       />
                       <CaptchaTextView>
                         <Flex>
