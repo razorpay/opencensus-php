@@ -160,7 +160,7 @@ class Admin extends Entity
         {
             if (file_exists($filePath))
             {
-                $success = unlink($filePath);
+                $success = unlink($filePath);  // nosemgrep : php.lang.security.unlink-use.unlink-use
 
                 if ($success === false)
                 {

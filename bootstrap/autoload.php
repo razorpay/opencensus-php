@@ -31,5 +31,5 @@ $compiledPath = __DIR__.'/cache/compiled.php';  // nosemgrep: file-inclusion
 
 if (file_exists($compiledPath))
 {
-    require $compiledPath;
+    require $compiledPath;  // nosemgrep : php.lang.security.file-inclusion.file-inclusion
 }

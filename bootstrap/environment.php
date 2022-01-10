@@ -27,7 +27,7 @@ if (env('APP_ENV') === 'testing')
 }
 else if (file_exists($file = __DIR__ . '/../environment/env.php'))
 {
-    $env = require $file;
+    $env = require $file;  // nosemgrep : php.lang.security.file-inclusion.file-inclusion
 }
 
 putenv("APP_ENV=$env");
