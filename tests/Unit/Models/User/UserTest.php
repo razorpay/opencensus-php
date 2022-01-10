@@ -201,6 +201,42 @@ class UserTest extends TestCase
 
     }
 
+    public function testCreateWithoutCaptcha()
+    {
+        $content = [
+            'id'                    => '100002Razorpay',
+            'name'                  => 'dummy',
+            'email'                 => 'dummy@example.com',
+            'password'              => 'blahblah123',
+            'password_confirmation' => 'blahblah123',
+            'contact_mobile'        => '9999999999',
+            'confirm_token'         => 'hello123',
+        ];
+
+        $expected = [
+            'id' => '100002Razorpay',
+            'name' => 'dummy',
+            'email' => 'dummy@example.com',
+            'contact_mobile' => '9999999999',
+            'contact_mobile_verified' => false,
+            'second_factor_auth_enforced' => false,
+            'second_factor_auth_setup' => false,
+            'org_enforced_second_factor_auth' => false,
+            'restricted' => false,
+            'confirmed' => false,
+            'email_verified' => false,
+        ];
+
+        $this->mockRedis();
+
+        $userValidator = Mockery::mock('RZP\Models\User\Validator')->shouldAllowMockingProtectedMethods();
+        $userValidator->shouldNotReceive('validateCaptcha');
+
+        $response = $this->userService->create($content, 'create_without_captcha');
+
+        $this->assertEquals($expected, $response);
+    }
+
     public function testEdit()
     {
         $content = [

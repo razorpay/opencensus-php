@@ -5145,9 +5145,18 @@ class Service extends Base\Service
 
     protected function createUserAndAttachMerchant(Entity $subMerchant, string $email, string $product = null): User\Entity
     {
-        $userData = $this->formatUserCreationData($email, $subMerchant);
+        $skipCaptcha = Request::all()[User\Entity::SKIP_CAPTCHA_VALIDATION] ?? false;
 
-        $subMerchantUser = (new User\Core)->create($userData);
+        $userData = $this->formatUserCreationData($email, $subMerchant, $skipCaptcha);
+
+        if ($skipCaptcha === true)
+        {
+            $subMerchantUser = (new User\Core)->create($userData, 'create_without_captcha');
+        }
+        else
+        {
+            $subMerchantUser = (new User\Core)->create($userData);
+        }
 
         $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $product);
 
@@ -5204,12 +5213,12 @@ class Service extends Base\Service
             PublicErrorDescription::BAD_REQUEST_CANNOT_ADD_MERCHANT_USER);
     }
 
-    public function formatUserCreationData(string $email, Entity $subMerchant)
+    public function formatUserCreationData(string $email, Entity $subMerchant, $skipCaptcha = false)
     {
         $dummyPass = bin2hex(random_bytes(20));
         $subMerchantDetails = (new MerchantDetailCore())->getMerchantDetails($subMerchant);
 
-        return [
+        $userData = [
             User\Entity::NAME                  => $subMerchant->getName(),
             User\Entity::EMAIL                 => $email,
             User\Entity::CONTACT_MOBILE        => $subMerchantDetails->getContactMobile(),
@@ -5217,6 +5226,11 @@ class Service extends Base\Service
             User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
+        if ($skipCaptcha === true)
+        {
+            unset($userData[User\Entity::CAPTCHA_DISABLE]);
+        }
+        return $userData;
     }
 
     public function enableEmiMerchantSubvention(string $id, string $emiPlanId, array $input)

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use Request;
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Feature;
@@ -111,6 +112,8 @@ class Core extends Merchant\Core
 
     protected function createSubmerchantAndAssociatedEntities(Merchant\Entity $partner, array $input): Merchant\Entity
     {
+        Request::instance()->request->add([User\Entity::SKIP_CAPTCHA_VALIDATION => true]);
+
         $this->repo->assertTransactionActive();
 
         $subMerchantCreateInput = InputHelper::getSubMerchantCreateInput($input);

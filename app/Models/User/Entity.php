@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_LOCKED                = 'account_locked';
     const CAPTCHA                       = 'captcha';
     const CAPTCHA_DISABLE               = 'captcha_disable';
+    const SKIP_CAPTCHA_VALIDATION       = 'skip_captcha_validation';
 
     //added for org level enforcing of 2fa
     const ORG_ENFORCED_SECOND_FACTOR_AUTH = 'org_enforced_second_factor_auth';

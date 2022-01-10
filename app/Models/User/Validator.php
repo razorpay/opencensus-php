@@ -32,9 +32,7 @@ class Validator extends Base\Validator
     const CAPTCHA_MODE_HEADER                    = 'X-RECAPTCHA-MODE';
     const MAX_ALLOWED_CAPTCHA_REQUEST_ATTEMPTS   =  3;
 
-    protected static $createRules = [
-        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
-        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
+    const CREATE_COMMON_RULES = [
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200',
         Entity::EMAIL                           => 'required|email',
@@ -50,6 +48,13 @@ class Validator extends Base\Validator
         Entity::X_VERIFY_EMAIL                  => 'sometimes|string',
         Entity::SIGNUP_VIA_EMAIL                => 'sometimes|in:0,1',
     ];
+
+    protected static $createRules = self::CREATE_COMMON_RULES + [
+        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
+        Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
+    ];
+
+    protected static $createWithoutCaptchaRules = self::CREATE_COMMON_RULES;
 
     protected static $createOTPSignupRules = [
         Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
@@ -390,7 +395,11 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'captcha',
-        'email_or_mobile_unique'
+        'email_or_mobile_unique',
+    ];
+
+    protected static $createWithoutCaptchaValidators = [
+        'email_or_mobile_unique',
     ];
 
     protected static $createOTPSignupValidators = [
