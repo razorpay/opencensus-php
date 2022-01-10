@@ -186,7 +186,6 @@ class Validator extends Base\Validator
         ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS                                      => 'array',
         ConfigKey::SUB_BALANCES_MAP                                                    => 'filled|array',
         ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS                                        => 'array',
-        ConfigKey::RAZORPAY_ACCOUNT_MERCHANTS                                          => 'array',
         ConfigKey::USE_MASTER_DB_CONNECTION                                            => 'filled|boolean'
     ];
 

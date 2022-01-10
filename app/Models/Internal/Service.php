@@ -4,7 +4,6 @@ namespace RZP\Models\Internal;
 
 use App;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
@@ -17,7 +16,6 @@ use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
-use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
 class Service extends Base\Service
 {
@@ -38,6 +36,8 @@ class Service extends Base\Service
     const STATUS_FAILED                = 'failed';
 
     const TYPE_CREDIT                  = 'credit';
+    const TENANT                       = 'tenant';
+    const X                            = 'X';
 
     protected $ledgerService;
 
@@ -78,8 +78,8 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
         }
 
-        // RAZORPAY_ACCOUNT_MERCHANTS contains mapping between real account number to mid mapping
-        $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(['key' => ConfigKey::RAZORPAY_ACCOUNT_MERCHANTS]);
+        // INTER_ACCOUNT_PAYOUT_MERCHANTS contains mapping between real account number to mid mapping
+        $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
         if (isset($accountNumberMerchantIdMap[$bankAccount->getAccountNumber()]) === false)
         {
             // throw exception
@@ -208,6 +208,7 @@ class Service extends Base\Service
             self::IDENTIFIERS        => [
                 self::BANKING_ACCOUNT_ID => $bankingAccount->getPublicId(),
             ],
+            self::TENANT             => self::X,
         ]);
 
         // update the internal entity with journal_id
@@ -222,22 +223,7 @@ class Service extends Base\Service
     private function createJournal(array $request): array
     {
         $response =  $this->ledgerService->createJournal($request, true);
-
-        $statusCode = $response[LedgerService::RESPONSE_CODE];
-        $body       = $response[LedgerService::RESPONSE_BODY];
-
-        if ($statusCode !== 200)
-        {
-            throw new InternalErrorException('Received invalid status code',
-                ErrorCode::BAD_REQUEST_LEDGER_JOURNAL_CREATE,
-                [
-                    LedgerService::RESPONSE_CODE => $statusCode,
-                    LedgerService::RESPONSE_BODY => $body,
-                ]
-            );
-        }
-
-        return $body;
+        return $response[LedgerService::RESPONSE_BODY];
     }
 
 }

@@ -533,7 +533,7 @@ class PayoutTest extends OAuthTestCase
     {
         (new AdminService)->setConfigKeys(
             [
-                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000"]
+                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000" => "10000000000000"]
             ]);
 
         $ledgerSnsPayloadArray = [];
@@ -609,7 +609,7 @@ class PayoutTest extends OAuthTestCase
     {
         (new AdminService)->setConfigKeys(
             [
-                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000"]
+                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000" => "10000000000000"]
             ]);
 
         $ledgerSnsPayloadArray = [];

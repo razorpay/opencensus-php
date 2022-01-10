@@ -83,8 +83,11 @@ class Purpose
         {
             $merchantId = $merchant->getMerchantId();
 
-            $arrMerchantId = (new AdminService)->getConfigKey(
+            // INTER_ACCOUNT_PAYOUT_MERCHANTS contains the map of account number to merchant_id for all the
+            // razorpay internal accounts
+            $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(
                 ['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
+            $arrMerchantId = array_values($accountNumberMerchantIdMap);
 
             if (in_array($merchantId, $arrMerchantId,true) === true)
             {
@@ -208,8 +211,11 @@ class Purpose
 
         $merchantId = $merchant->getId();
 
-        $arrFinopsMerchantId = (new AdminService)->getConfigKey(
+        // INTER_ACCOUNT_PAYOUT_MERCHANTS contains the map of account number to merchant_id for all the
+        // razorpay internal accounts
+        $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(
             ['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
+        $arrFinopsMerchantId = array_values($accountNumberMerchantIdMap);
 
         // array_merge cannot be used here because numeric keys in php arrays
         // can cause the function to give unexpected results.
