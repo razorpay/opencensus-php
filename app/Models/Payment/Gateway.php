@@ -1842,7 +1842,6 @@ class Gateway
             Network::VISA,
         ],
         self::FULCRUM => [
-            Network::MC,
             Network::VISA,
         ],
         self::HITACHI => [
