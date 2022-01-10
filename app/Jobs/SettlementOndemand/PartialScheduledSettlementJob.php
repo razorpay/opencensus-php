@@ -57,13 +57,21 @@ class PartialScheduledSettlementJob extends Job
                     break;
                 }
 
+                $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_JOB_MERCHANT_IDS, [
+                    "merchant_ids"  =>  $merchantIds
+                ]);
+
                 foreach ($merchantIds as $merchantId)
                 {
                     PartialScheduledSettlementForMerchantJob::dispatch($this->mode, $merchantId);
+
+                    $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_JOB_MERCHANT_JOB_DISPATCHED, [
+                        "merchant_id"   =>  $merchantId
+                    ]);
                 }
             }
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->traceException(
                 $e,

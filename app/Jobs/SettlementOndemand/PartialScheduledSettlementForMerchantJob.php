@@ -40,10 +40,15 @@ class PartialScheduledSettlementForMerchantJob extends Job
             ];
 
             $response = (new Ondemand\Service)->create($input, $this->merchantId, true, $this->mode);
-            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_FOR_MERCHANT_RESPONSE,
-                               ["response" => $response]);
+
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_FOR_MERCHANT_RESPONSE, [
+                "merchant_id"   => $this->merchantId,
+                "response"      => $response
+            ]);
+
+            $this->delete();
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
@@ -51,9 +56,7 @@ class PartialScheduledSettlementForMerchantJob extends Job
                 TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_FOR_MERCHANT_JOB_ERROR,
                 ["merchant_id" => $this->merchantId]
             );
-        }
-        finally
-        {
+
             if ($this->attempts() <= self::MAX_ATTEMPTS)
             {
                 $this->release(1);
