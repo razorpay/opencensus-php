@@ -105,9 +105,9 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
     public function gatewayCallback(Response $response)
     {
-        $gatewayData = $this->input->get(Transaction\Entity::GATEWAY_DATA);
+        $input = $this->input->get(Transaction\Entity::REQUEST);
 
-        switch ($this->input->get(Fields::CONTENT)[Fields::TYPE] ?? null)
+        switch ($input[Fields::CONTENT][Fields::TYPE] ?? null)
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
             case UpiAction::CUSTOMER_CREDITED_VIA_PAY:
@@ -119,7 +119,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             case null:
 
                 $signature = $this->getpayloadSignature();
-                $payload   = $this->input->get(Fields::PAYLOAD);
+                $payload   = $input[Fields::PAYLOAD];
 
                 $verifier = $this->getMerchantVerifier();
 
@@ -134,21 +134,20 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
             default:
                 throw $this->p2pGatewayException(ErrorMap::INVALID_CALLBACK, [
-                    'input' => $this->input->toArray(),
+                    'input' => $input->toArray(),
                 ]);
-
         }
 
-        $gatewayData[Transaction\Entity::RESPONSE] = [
+        $this->input->put(Transaction\Entity::RESPONSE, [
             Transaction\Entity::SUCCESS => true,
-        ];
+        ]);
 
-        $response->setData($gatewayData);
+        $response->setData($this->input->toArray());
     }
 
     protected function getpayloadSignature()
     {
-        $headers = $this->input->get(Fields::HEADERS);
+        $headers = $this->input->get(Transaction\Entity::REQUEST)[Fields::HEADERS];
 
         $signature = $headers[Fields::X_MERCHANT_PAYLOAD_SIGNATURE] ?? null;
 

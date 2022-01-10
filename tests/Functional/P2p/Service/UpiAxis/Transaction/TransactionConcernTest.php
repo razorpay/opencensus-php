@@ -272,4 +272,69 @@ class TransactionConcernTest extends TestCase
 
         $this->assertCount(1, $response['items']);
     }
+
+    public function testRaiseConcernSoftFailure()
+    {
+        $helper = $this->getTransactionHelper();
+
+        $transaction = $this->createFailedPayTransaction();
+
+        $counter = 0;
+        $udf = null;
+
+        $this->mockActionContentFunction([
+             'raise_concern' => function ($content) use (&$counter, & $udf)
+             {
+                 if ($counter === 0)
+                 {
+                     $udf = json_decode($content['udfParameters'], true);
+
+                     $this->assertArrayHasKey('id', $udf);
+                     $this->assertArrayHasKey('rid', $udf);
+                     $this->assertArrayHasKey('handle', $udf);
+                 }
+
+                 $counter++;
+             }
+        ]);
+
+        $helper->raiseConcern($transaction->getPublicId());
+
+        // set invalid gateway id so that it throws logical exception.
+        $transaction->concern->setGatewayReferenceId("QUERYGBhTmiBaQZA");
+
+        $this->assertSame('initiated', $transaction->concern->getStatus());
+        $this->assertSame('pending', $transaction->concern->getResponseCode());
+
+        $this->mockSdk()->setCallback('QUERIES', [
+            'merchantChannelId'     => 'MERCHANTAPP',
+            'merchantId'            => 'MERCHANT',
+            'queries'               => [
+                [
+                    'gatewayReferenceId'         => $transaction->upi->getRrn(),
+                    'gatewayResponseCode'        => '105',
+                    'gatewayResponseMessage'     => 'Beneficiary account has already been credited.',
+                    'gatewayTransactionId'       => $transaction->upi->getNetworkTransactionId(),
+                    'merchantCustomerId'         => $transaction->customer->getId(),
+                    'queryClosingTimestamp'      => '2019-11-25T00:00:00+05:30',
+                    'queryComment'               => $transaction->concern->getComment(),
+                    'queryReferenceId'           => $transaction->concern->getGatewayReferenceId(),
+                    'udfParameters'              => json_encode($udf),
+                ]
+            ],
+        ]);
+
+        // verify for gateway error code 500
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset(
+                [
+                    'code'          => 'SERVER_ERROR',
+                    'description'   => 'We are facing some trouble completing your request at the moment. Please try again shortly.'
+                ],
+            $error);
+        }, 500);
+
+        $helper->callback($this->gateway, $this->mockedSdk->callback());
+    }
 }

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\P2p\Base;
 
-use RZP\Models\Base;
+use App;
 
 // Todo:: It will extend later
 class Service //extends Base\Service
@@ -14,7 +14,11 @@ class Service //extends Base\Service
 
     public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->processor = $this->getNewProcessor();
+
+        $this->trace = $app['trace'];
     }
 
     // TODO: Logic will change after entity naming convention

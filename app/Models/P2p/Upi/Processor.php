@@ -27,14 +27,14 @@ class Processor extends Base\Processor
     {
         $this->initializeApplicationTrait(Action::INITIATE_GATEWAY_CALLBACK_SUCCESS, $input);
 
-        $this->resolveContext();
-
-        return $this->input->toArray();
+        return $input;
     }
 
     public function gatewayCallback(array $input): array
     {
         $this->initializeApplicationTrait(Action::GATEWAY_CALLBACK, $input);
+
+        $this->resolveContext();
 
         $this->gatewayInput = $this->input;
 
@@ -254,6 +254,11 @@ class Processor extends Base\Processor
             return parent::getGateway();
         }
 
-        return $this->input->get(Base\Entity::GATEWAY);
+        if($this->input->get(Base\Entity::GATEWAY) != null)
+        {
+            return $this->input->get(Base\Entity::GATEWAY);
+        }
+
+        return $this->gatewayInput->get(Base\Entity::GATEWAY);
     }
 }

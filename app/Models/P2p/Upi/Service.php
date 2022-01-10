@@ -2,31 +2,64 @@
 
 namespace RZP\Models\P2p\Upi;
 
-use RZP\Exception;
+use Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
-use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
+use Razorpay\Trace\Logger as Trace;
 
 /**
- * @property  Core          $core
- * @property  Validator     $validator
- * @property  Processor     $processor
+ * @property  Core      $core
+ * @property  Validator $validator
+ * @property  Processor $processor
  */
 class Service extends Base\Service
 {
     public function gatewayCallback(array $input)
     {
-        $gatewayData = $this->processor->initiateGatewayCallback($input);
+        // Initiate Gateway callback has two responsibilities to process the callback
+        // 1. provides the context data [Mandatory]
+        // 2. provides entity data by transforming the request [Optional]
+        $callbackArray = $this->processor->initiateGatewayCallback($input);
 
-        $input[Base\Entity::GATEWAY_DATA] = $gatewayData;
+        // Default Response to every callback
+        $response = [Base\Entity::SUCCESS => true];
 
-        $callback  = $this->processor->gatewayCallback($input);
+        try
+        {
+            // Add actual input to callback so that gateway can validate the actual request itself
+            $callbackArray[Base\Entity::REQUEST] = $input;
 
-        $response = $callback[Base\Entity::RESPONSE];
-        unset($callback[Base\Entity::RESPONSE]);
+            // Gateway callback has three responsibilities
+            // 1. resolves context based on the context data
+            // 2. verifies or validates the callback with the resolved context
+            // 3. provides entity data by transforming the request if it wasn't done in initiate call [Optional]
+            // 4. Update the response
+            $callbackArray = $this->processor->gatewayCallback($callbackArray);
 
-        $this->processCallback($callback);
+            $response = $callbackArray[Base\Entity::RESPONSE];
+            unset($callbackArray[Base\Entity::RESPONSE]);
+
+            // unset request key before validation
+            unset($callbackArray[Base\Entity::REQUEST]);
+
+            $this->processCallback($callbackArray);
+        }
+        catch (Exception $e)
+        {
+            if (ExpectedHardFailures::isExpected($e, $callbackArray[Base\Entity::CONTEXT]) === false)
+            {
+                throw $e;
+            }
+
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::P2P_CALLBACK_TRACE, [
+                Base\Entity::CONTEXT      => $callbackArray[Base\Entity::CONTEXT],
+                ExpectedHardFailures::KEY => true,
+            ]);
+
+            $response[ExpectedHardFailures::KEY] = $e->getMessage();
+        }
 
         return $response;
     }
@@ -80,6 +113,7 @@ class Service extends Base\Service
 
                 break;
         }
+
     }
 
     public function reminderCallback($input)

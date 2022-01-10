@@ -29,12 +29,10 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
     public function gatewayCallback(Response $response)
     {
-        $gatewayData = $this->input->get(Transaction\Entity::GATEWAY_DATA);
-
-        $gatewayData[Device\Entity::RESPONSE] = [
+        $this->input->put(Device\Entity::RESPONSE, [
             Device\Entity::SUCCESS => true,
-        ];
+        ]);
 
-        $response->setData($gatewayData);
+        $response->setData($this->input->toArray());
     }
 }
