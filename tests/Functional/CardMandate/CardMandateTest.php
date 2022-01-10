@@ -1558,7 +1558,7 @@ class CardMandateTest extends TestCase
         }
     }
 
-    public function testMetaDataAddition()
+    public function testUserMandateCancel()
     {
 
         $this->mockCheckBin();
@@ -1583,10 +1583,14 @@ class CardMandateTest extends TestCase
         catch (Exception\BadRequestException $e)
         {
             $this->assertEquals(ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER, $e->getCode());
-            $this->assertArrayKeysExist($e->getData(),['payment_id','order_id']);
+            $this->assertArrayKeysExist($e->getData(),['payment_id','order_id','method']);
+            $this->assertEquals('Card mandate created for payment has been cancelled by user', $e->getMessage());
             $exception = true;
         }
         assertTrue($exception);
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertEquals('mandate_cancelled', $cardMandate->getStatus());
 
     }
 

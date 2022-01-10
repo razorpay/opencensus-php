@@ -2916,7 +2916,8 @@ class Processor
 
         $data = [
             'payment_id' => $payment->getPublicId(),
-            'order_id'   => $payment->getPublicOrderId()
+            'order_id'   => $payment->getPublicOrderId(),
+            Payment\Entity::METHOD => Payment\Method::CARD
         ];
 
         $exception = new Exception\BadRequestException($errorCode,null, $data);
