@@ -151,6 +151,7 @@ export default class Tickets extends React.Component {
             {this.props.match.params.ticketType !== 'agent' ? (
               <button
                 onClick={createTicket}
+                type="button"
                 className="btn btn-outline pull-right raise-new-query-btn"
               >
                 <i className="i i-plus" /> Raise New Query
@@ -179,7 +180,11 @@ export default class Tickets extends React.Component {
             <span>Closed queries ({CLOSED_TICKETS.length})</span>
             <i className="i i-chevron-up section-collapse" />
             {OPEN_TICKETS.length === 0 ? (
-              <button onClick={createTicket} className="btn btn-outline pull-right">
+              <button
+                onClick={createTicket}
+                type="button"
+                className="btn btn-outline pull-right raise-new-query-btn"
+              >
                 <i className="i i-plus" /> Raise New Query
               </button>
             ) : null}

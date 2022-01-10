@@ -294,7 +294,9 @@ export default class FileUpload extends React.Component {
 
     if (acceptedFileTypes && showAcceptInfo) {
       return (
-        <p class="Dropzone-content-desc--secondary text-muted small-text">{acceptedFileTypes}</p>
+        <p className="Dropzone-content-desc--secondary text-muted small-text">
+          {acceptedFileTypes}
+        </p>
       );
     } else {
       return null;
@@ -341,13 +343,13 @@ export default class FileUpload extends React.Component {
 
     return (
       <div
-        class={classList('Dropzone', customClassName)}
+        className={classList('Dropzone', customClassName)}
         id={`Dropzone-${name}`}
         onDragLeave={isDocPreUploaded ? undefined : this.toggleDragWithFile}
       >
         {!isDocPreUploaded && (multi || !files.length) && (
           <label
-            class={classList(
+            className={classList(
               'Dropzone-cavity',
               this.state.isFileDraggedInside && 'Dropzone-cavity--highlight',
             )}
@@ -363,16 +365,16 @@ export default class FileUpload extends React.Component {
             onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
             onDragEnter={isDocPreUploaded ? undefined : this.toggleDragWithFile}
           >
-            <div class={`Dropzone-content ${size}`}>
+            <div className={`Dropzone-content ${size}`}>
               {!children ? (
                 <React.Fragment>
                   <img
-                    class="Dropzone-file-icon"
+                    className="Dropzone-file-icon"
                     src="/dist/css/assets/files/file-placeholder.svg"
                     alt=""
                   />
-                  <div class="Dropzone-content-desc">
-                    <p class="Dropzone-content-desc--primary upload-file-heading">
+                  <div className="Dropzone-content-desc">
+                    <p className="Dropzone-content-desc--primary upload-file-heading">
                       Drop file here or <b class="text-primary">Click to Upload</b>{' '}
                       {maxSize && (
                         <React.Fragment>({readableFileSize(maxSize)} Max)</React.Fragment>
@@ -409,7 +411,7 @@ export default class FileUpload extends React.Component {
         )}
         {!!(isDocPreUploaded || files.length) && (
           <div
-            class={classList(
+            className={classList(
               'Dropzone-cavity',
               'Dropzone-cavity--staged',
               stagedFileStatus && `Dropzone-cavity--${stagedFileStatus}`,

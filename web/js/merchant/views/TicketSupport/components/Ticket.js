@@ -83,7 +83,12 @@ export default class Ticket extends React.Component {
             <div className="user-section" onClick={this.toggleFullReply}>
               <div className="user-image">{img}</div>
               <div className="user-details">
-                <p className="user">{isTicketCreatedByAgent ? 'Razorpay Support' : user?.name}</p>
+                <p className="user">
+                  {isTicketCreatedByAgent ? 'Razorpay Support' : user?.name}
+                  <span className="created-time pull-right">
+                    {moment(ticket.created_at).fromNow()}
+                  </span>
+                </p>
                 {this.state.showFullMessage && !isTicketCreatedByAgent && (
                   <p className="message-to">To: Razorpay Account</p>
                 )}
@@ -91,7 +96,6 @@ export default class Ticket extends React.Component {
                   {ticket?.description_text}
                 </p>
               </div>
-              <p className="created-time">{moment(ticket.created_at).fromNow()}</p>
             </div>
             {ticket?.attachments?.length > 0 && (
               <div className="attachment-container">

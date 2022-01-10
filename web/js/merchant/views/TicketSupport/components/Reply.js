@@ -183,7 +183,7 @@ export default class Reply extends React.Component {
 
   render() {
     const REMAINING_SIZE = this.getRemainingUploadSize();
-    const { onClose, ticket } = this.props;
+    const { onClose } = this.props;
 
     const img = this.props.logo_url ? (
       <div className="revamped-user-image">
@@ -199,20 +199,18 @@ export default class Reply extends React.Component {
       </div>
     );
     return (
-      <div className="message m-20 mt-30">
+      <div className="message mt-30">
         <div className="panel ticket-row-panel reply-ticket-panel">
-          {ticket?.status === 5 && (
-            <i className="i i-close close-icon" onClick={onClose} role="button" />
-          )}
           <div className="panel-body mt-0 pl-0 pt-0">
             <div className="row">
               <div className="col-xs-2 w-auto">{img}</div>
               <div className="col-xs-10 reply-textarea">
-                <h5 className="mb-0">
+                <h5 className="mb-0 mt-0">
                   <div className="row">
                     <div className="col-xs-5 message-owner row-container">
                       <b>{this.props.user.name}</b>
                       <p className="to-account">To: Razorpay Account</p>
+                      <i className="i i-close close-icon" onClick={onClose} role="button" />
                     </div>
                     <div className="col-xs-7 text-right" />
                   </div>

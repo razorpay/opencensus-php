@@ -17,6 +17,7 @@ import {
   getResponseArrivalType,
   getTicketStatus,
 } from '../utils';
+import Ticket from './Ticket';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -25,9 +26,8 @@ import {
   replyToConversation,
   TICKET_BASE_URL,
 } from 'merchant/reducers/config';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import Ticket from './Ticket';
 import Reply from './Reply';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import FailedScreen from './FailedScreen';
 
 @withRouter
@@ -301,7 +301,6 @@ export default class Conversations extends React.Component {
           <a onClick={() => window.rzpTicketSystem && window.rzpTicketSystem.openModal(`#ticket`)}>
             <b>create a new query</b>
           </a>
-          .
         </h3>
       );
     }
@@ -309,6 +308,21 @@ export default class Conversations extends React.Component {
     if (this.state?.ticket?.status === 5 && MESSAGE !== 'Closed') {
       if (this.state.toggleReply) {
         message = '';
+      } else {
+        message = (
+          <h3 className="fsz-14">
+            {"This query has been marked closed. Didn't get satisfied response? "}
+            <a
+              role="button"
+              tabIndex="0"
+              onClick={() => {
+                this.setState({ toggleReply: true });
+              }}
+            >
+              <b>Re-open Query</b>
+            </a>
+          </h3>
+        );
       }
     }
 
@@ -357,14 +371,13 @@ export default class Conversations extends React.Component {
                   isReplyAdded={this.state.isReplyAdded}
                 />
               )}
-
               <div>
                 <div className="ticket-replies-container">
                   <div className="q-open">
                     {message}
                     {!(MESSAGE === 'Closed' || MESSAGE === 'Resolved') &&
                     this.state.ticket?.status !== 5 ? (
-                      <div className="row flex">
+                      <div className="row flex flex-wrap">
                         <button
                           onClick={() => {
                             this.setState((prevState) => {

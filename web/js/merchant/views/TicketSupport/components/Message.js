@@ -96,10 +96,10 @@ export default class Message extends React.Component {
         className={`message  revamped
           panel ticket-row-panel mt-0 border-bt-0 mb-0`}
       >
-        <div className="panel-body p-v-24">
-          <div className="row min-ht-56" onClick={this.toggleReplyState}>
+        <div className="panel-body p-v-16">
+          <div className="row" onClick={this.toggleReplyState}>
             <div className="col-xs-2 w-auto">{img}</div>
-            <div className="col-xs-10 reply-message-container pr-0 mt-6">
+            <div className="col-xs-10 reply-message-container pr-0">
               <h5 className="title-container">
                 <div className="row flex pr-0">
                   <div className="col-xs-5 message-owner">

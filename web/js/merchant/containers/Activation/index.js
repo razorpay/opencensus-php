@@ -261,7 +261,7 @@ export default class ActivationContainer extends Component {
         screen: 'home page',
         properties: {
           'Modal Label': 'KYC Form',
-        }
+        },
       });
     }
   };

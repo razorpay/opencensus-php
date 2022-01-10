@@ -11,6 +11,10 @@
         padding: 24px 0px;
     }
 
+    .p-v-16{
+        padding: 16px 0px;
+    }
+
     .pr-0 {
         padding: 0px;
     }
@@ -29,6 +33,10 @@
 
     .flex {
         display: flex;
+    }
+
+    .flex-wrap{
+        flex-wrap: wrap;
     }
 
     .mt-6 {
@@ -75,6 +83,9 @@
 
     padding: 30px 20px;
 
+    @media screen and (max-width: $screen-xs-max) {
+        padding: 24px 12px;
+    }
     .col-xs-12 {
         padding: 0;
     }
@@ -128,6 +139,14 @@
 
         .i-ticket-user {
             font-size: 20px;
+
+            @media screen and (max-width: $screen-xs-max) {
+                font-size: 10px;
+            }
+        }
+        @media screen and (max-width: $screen-xs-max) {
+            width: 30px;
+            height: 30px;
         }
     }
 
@@ -146,6 +165,7 @@
             display: flex;
             flex-direction: column;
             line-height: 20px;
+            width: 100%;
         }
 
         .to-account {
@@ -171,6 +191,11 @@
         .separator {
             font-size: 40px;
         }
+
+        @media screen and (max-width: $screen-xs-max) {
+            width: 100%;
+            padding-right: 0;
+        }
     }
 
     .reply-message-container {
@@ -185,7 +210,7 @@
             color: rgba(22, 47, 86, 0.54);
             text-align: right;
             width: 100%;
-            padding-right: 3px;
+            padding-right: 0;
         }
     }
 
@@ -220,7 +245,7 @@
             display: inline-block;
             color: #162F56;
             font-size: 12px;
-            margin: 0 12px 12px 0;
+            margin: 0 6px 6px 0;
             background: rgba(22, 47, 86, 0.02);
             border: 1px solid rgba(22, 47, 86, 0.12);
             border-radius: 50px;
@@ -242,6 +267,9 @@
     .message {
         .row {
             overflow: hidden;
+            @media screen and (max-width: $screen-xs-max) {
+                display:flex;
+                }
         }
 
         .col-xs-2 {
@@ -255,12 +283,18 @@
         }
 
         &.revamped.ticket-row-panel {
-            padding-left: 24px;
-
+            padding: 0 24px;
             &:hover {
                 padding-left: 24px;
                 border: 0;
                 background: transparent;
+            }
+             @media screen and (max-width: $screen-xs-max) {
+                padding-left: 16px;
+                padding-right: 16px;
+                &:hover {
+                    padding-left: 16px;
+                }
             }
         }
 
@@ -271,7 +305,18 @@
 
             .close-icon {
                 position: absolute;
-                right: 24px;
+                right: 16px;
+            }
+            .panel-body
+            {
+                @media screen and (max-width: $screen-xs-max) {
+                    padding: 0;
+                }
+
+            }
+            @media screen and (max-width: $screen-xs-max) {
+                 padding: 24px 0;
+                 border:none;
             }
         }
 
@@ -300,6 +345,9 @@
 
         .reply-textarea {
             padding-left: 0;
+             @media screen and (max-width: $screen-xs-max) {
+                 padding: 0;
+            }
         }
 
         .reply-text {
@@ -312,6 +360,10 @@
         font-weight: 700;
         margin-bottom: 5px;
         font-size: 15px;
+        @media screen and (max-width: $screen-xs-max) {
+            font-size: 14px;
+            hyphens: auto;
+        }
     }
 
     .ticket-short-details {
@@ -384,6 +436,15 @@
 
             .panel {
                 border-radius: 3px;
+
+                .panel-body{
+                    @media screen and (max-width: $screen-xs-max) {
+                        padding: 12px;
+                    }
+                    .col-xs-2{
+                        padding: 0;
+                    }
+                }
             }
 
             .panel:hover {
@@ -433,6 +494,9 @@
             vertical-align: middle;
             margin-left: 6px;
         }
+        @media screen and (max-width: $screen-xs-max) {
+            width: 100%;
+        }
     }
 
     .reply-quill {
@@ -463,6 +527,11 @@
                 background: rgba(11, 112, 231, 0.05);
                 color: #2B83EA;
             }
+            @media screen and (max-width: $screen-xs-max) {
+                font-size: 12px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
         }
 
         .section-collapse {
@@ -471,6 +540,10 @@
             vertical-align: middle;
             font-size: 24px;
         }
+    @media screen and (max-width: $screen-xs-max) {
+        margin: 0 0 26px;
+    }
+
     }
 
     .ticket-cont-spinner {
@@ -600,8 +673,11 @@
             border-radius: 18px;
             border: 1px solid rgba(22, 47, 86, 0.24);
             color: rgba(22, 47, 86, 0.87);
-            margin: 0 10px;
+            margin: 12px 4px;
             padding: 8px 20px;
+            @media screen and (max-width: $screen-xs-max) {
+                margin: 12px 4px;
+            }
         }
 
         .btn-warning {
@@ -733,12 +809,12 @@
 }
 
 .no-tickets-present-container, .failed-loading-tickets-container {
-    width: 37%;
     margin: auto;
     margin-top: 100px;
+    width: 70%;
 
     @media screen and (max-width: $screen-xs-max) {
-        width: 100%;
+        margin-top: 60px;
     }
 
     .refresh-again {
@@ -812,14 +888,16 @@
 }
 
 .message-container {
-    margin: 20px;
     border: 1px solid rgba(22, 47, 86, 0.1);
     box-sizing: border-box;
     border-radius: 3px 3px 0px 0px;
 
     .title-section {
-        padding: 24px;
         background: rgba(22, 47, 86, 0.05);
+        padding: 24px;
+        @media screen and (max-width: $screen-xs-max) {
+            padding: 16px;
+        }
 
         .title-text-container {
             display: flex;
@@ -831,6 +909,7 @@
             .category-container {
                 display: flex;
                 align-items: center;
+                flex-wrap: wrap;
             }
 
             .title-text {
@@ -840,6 +919,9 @@
                 font-size: 16px;
                 line-height: 24px;
                 color: rgba(22, 47, 86, 0.87);
+                @media screen and (max-width: $screen-xs-max) {
+                    font-size: 14px;
+                }
             }
 
             .separator {
@@ -854,6 +936,22 @@
             font-size: 13px;
             line-height: 18px;
             color: rgba(22, 47, 86, 0.54);
+            text-align: left;
+            display: flex;
+            justify-content: flex-start;
+
+            .separator {
+                font-size: 13px;
+                margin: 0px 5px;
+                line-height: 0;
+                margin-bottom: 7px;
+                @media screen and (max-width: $screen-xs-max) {
+                    font-size: 12px;
+                }
+            }
+            @media screen and (max-width: $screen-xs-max) {
+                font-size: 12px;
+            }
         }
     }
 
@@ -866,7 +964,9 @@
 
     .user-details-container {
         padding: 24px;
-
+         @media screen and (max-width: $screen-xs-max) {
+           padding: 16px;
+        }
         .user-section {
             display: flex;
             justify-content: flex-start;
@@ -881,7 +981,10 @@
                 justify-content: center;
                 background: rgba(22, 47, 86, 0.05);
                 margin-right: 15px;
-
+                @media screen and (max-width: $screen-xs-max) {
+                    width: 30px;
+                    height: 30px;
+                }
                 .img-round {
                     display: block;
                     margin: auto;
@@ -892,12 +995,19 @@
                 .i-ticket-user {
                     font-size: 20px;
                     text-align: center;
+
+                    @media screen and (max-width: $screen-xs-max) {
+                        font-size: 10px;
+                    }
                 }
             }
 
             .user-details {
-                width: 75%;
+                width: 83%;
                 margin-top: 6px;
+                @media screen and (max-width: $screen-xs-max) {
+                    width: 100%;
+                }
 
                 .user {
                     font-family: Lato;
@@ -921,12 +1031,14 @@
                     overflow: hidden;
                     text-overflow: ellipsis;
                 }
+                @media screen and (max-width: $screen-xs-max) {
+                    margin-top: 0;
+                }
             }
 
             .created-time {
                 color: rgba(22, 47, 86, 0.54);
                 text-align: right;
-                margin-top: 6px;
             }
         }
 
