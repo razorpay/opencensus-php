@@ -694,6 +694,14 @@ export default class ActivationContainer extends React.Component {
         .routeActions()
         .initiated('route.linked_account.activate_account.bank_account_details'),
     );
+    this.props.trackEvents({
+      objectName: 'Modal',
+      actionName: 'Displayed',
+      screen: 'home page',
+      properties: {
+        'Modal Label': 'KYC Form',
+      },
+    });
   }
 
   handleRxCaCheckboxChange = () => {
@@ -724,17 +732,6 @@ export default class ActivationContainer extends React.Component {
 
   componentWillUnmount() {
     this.handleSupportModalClose();
-  }
-
-  componentDidMount() {
-    this.props.trackEvents({
-      objectName: 'Modal',
-      actionName: 'Displayed',
-      screen: 'home page',
-      properties: {
-        'Modal Label': 'KYC Form',
-      },
-    });
   }
 
   /*
