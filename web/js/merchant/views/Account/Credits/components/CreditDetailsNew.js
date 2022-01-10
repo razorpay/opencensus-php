@@ -1,13 +1,39 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import moment from 'moment';
 import Amount from 'common/ui/Amount';
-import { analyticsTrack } from 'common/utils/analytics';
 
+import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import ApplyCouponCodeModal from 'merchant/views/Account/Credits/components/ApplyCouponCodeModal';
+import {
+  openModal as fnOpenModal,
+  closeModal as fnCloseModal,
+} from 'merchant_common/reducers/modals';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 function CreditDetails(props) {
   const [showCollapsible, setshowCollapsible] = useState(false);
+
+  const openApplyCouponCodeModal = () => {
+    analyticsTrack({
+      objectName: 'apply coupon code',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
+    const { openModal, closeModal } = props;
+    openModal({
+      size: 'small',
+      component: <ApplyCouponCodeModal onComplete={closeModal} onClose={closeModal} />,
+    });
+  };
 
   const toggleCollapsible = () => {
     if (!showCollapsible) {
@@ -58,7 +84,7 @@ function CreditDetails(props) {
     return prunedItems;
   };
 
-  const { title, description, toggleText } = props;
+  const { title, description, toggleText, user, mode } = props;
   const creditItems = pruneAmountCredits(props.creditItems);
 
   return (
@@ -72,6 +98,29 @@ function CreditDetails(props) {
             <Amount value={Math.abs(props.totalCredits)} currency="INR" />
           </div>
         </div>
+        {['instantly_activated', 'activated', 'activated_mcc_pending'].includes(
+          user.activation_status,
+        ) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) ? (
+          <div class="balances-add-funds">
+            <span>
+              <button
+                className="btn btn-outline"
+                disabled={mode !== 'live'}
+                onClick={openApplyCouponCodeModal}
+              >
+                Apply Coupon Code
+              </button>
+              {mode !== 'live' ? (
+                <Popover align="bottom" theme="dark">
+                  <PopoverBody>
+                    You cannot apply coupon codes in test mode. Switch to live mode to apply the
+                    coupon code.
+                  </PopoverBody>
+                </Popover>
+              ) : null}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div class="bal-cont-footer">
@@ -159,4 +208,9 @@ function CreditDetails(props) {
   );
 }
 
-export default CreditDetails;
+export default compose(
+  connect((state) => ({ user: state.session.user, mode: state.session.mode }), {
+    openModal: fnOpenModal,
+    closeModal: fnCloseModal,
+  }),
+)(CreditDetails);
