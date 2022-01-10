@@ -519,6 +519,17 @@ return [
         ]
     ],
 
+    'testRecentAvailableSlotsForBankingAccount' => [
+        'request'  => [
+            'url'    => '/booking/slot/recentSlots',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testSlotBookingForBankingAccountIfThatSlotIsAlreadyBooked' => [
         'request'  => [
             'url'     => '/booking/slot/book',

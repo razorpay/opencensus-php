@@ -2193,6 +2193,7 @@ class Route
         'banking_account_slot_book'                           =>    ['post',    'booking/slot/book',                                     'BasController@slotBookForBankingAccount'      ],
         'banking_account_get_free_slot'                       =>    ['get',     'booking/slot/availableSlots',                           'BasController@getFreeSlotForBankingAccount'   ],
         'banking_account_slot_reschedule'                     =>    ['post',    'booking/slot/reschedule',                               'BasController@rescheduleSlotForBankingAccount'],
+        'banking_account_get_recent_slot'                     =>    ['get',     'booking/slot/recentSlots',                              'BasController@getRecentFreeSlotForBankingAccount'],
 
 
         //creates balance and banking_account_statement_details
@@ -5114,6 +5115,7 @@ class Route
         'banking_account_service_pincode_serviceability_check',
         'banking_account_service_common_serviceability_check',
         'banking_account_slot_book',
+        'banking_account_get_recent_slot',
         'banking_account_get_free_slot',
         'banking_account_slot_reschedule',
 
@@ -7616,6 +7618,7 @@ class Route
         'banking_account_service_pincode_serviceability_check_bulk'  => '*',
         'banking_account_service_common_serviceability_check'        => '*',
         'banking_account_slot_book'                                  => '*',
+        'banking_account_get_recent_slot'                            => '*',
         'banking_account_get_free_slot'                              => '*',
         'banking_account_slot_reschedule'                            => '*',
 
@@ -8993,6 +8996,7 @@ class Route
             'banking_account_service_pincode_serviceability_check',
             'banking_account_service_common_serviceability_check',
             'banking_account_slot_book',
+            'banking_account_get_recent_slot',
             'banking_account_get_free_slot',
             'banking_account_slot_reschedule',
             'bbps_bill_payments',

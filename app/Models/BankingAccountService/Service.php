@@ -722,6 +722,15 @@ class Service extends Base\Service
         return $response['data'];
     }
 
+    public function getRecentFreeSlotForBankingAccount($input): array
+    {
+        $path = 'booking/slot/recentSlots';
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'GET', $input);
+
+        return $response['data'];
+    }
+
     public function rescheduleSlotForBankingAccount($input): array
     {
         $path = 'booking/slot/reschedule';

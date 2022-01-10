@@ -295,6 +295,23 @@ class BankingAccountService
             ];
         }
 
+        else if($path == 'booking/slot/recentSlots' and $method == 'GET')
+        {
+            $result = [
+                'data' => [
+                    "data" => [
+                        "04-Jan-2022" => [
+                            "10:00",
+                            "10:15",
+                            "10:30",
+                            "14:00",
+                            "10:00"
+                        ]
+                    ]
+                ]
+            ];
+        }
+
         return $result;
     }
 

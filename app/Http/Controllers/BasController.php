@@ -146,6 +146,15 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRecentFreeSlotForBankingAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service->getRecentFreeSlotForBankingAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function sendCaLeadToSalesForce()
     {
         $input = Request::all();

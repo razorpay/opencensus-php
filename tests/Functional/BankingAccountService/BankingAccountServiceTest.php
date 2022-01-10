@@ -645,6 +645,15 @@ class BankingAccountServiceTest extends TestCase
         $this->assertIsArray($response['data']);
     }
 
+    public function testRecentAvailableSlotsForBankingAccount()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertIsArray($response['data']);
+    }
+
     public function testSlotBookingForBankingAccountIfThatSlotIsAlreadyBooked()
     {
         $this->ba->proxyAuth();
