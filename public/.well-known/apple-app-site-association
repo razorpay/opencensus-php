@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "3J5MJT3GNL.com.razorpay.payments.app",
+        "paths": [
+          "/app/paymentlinks",
+          "/app/activation"
+        ]
+      }
+    ]
+  }
+}
