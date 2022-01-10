@@ -3590,6 +3590,8 @@ We look forward to transacting with you!
                         $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Add gstin workflow created", "Add gstin workflow status"], true));
                     }));
 
+        $this->mockStorkForAddGstinValidationFailWorkflowApprove();
+
         $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
 
         $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
@@ -3643,6 +3645,49 @@ We look forward to transacting with you!
             'needs_clarification'      =>  null,
             'request_under_validation' =>  false
         ]);
+    }
+
+    protected function mockStorkForAddGstinValidationFailWorkflowApprove()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_workflow_approve', '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi,
+GSTIN has been added successfully to your Razorpay Account
+GSTIN: 18AABCU9603R1ZM
+Cheers,
+Team Razorpay',
+            '1234567890'
+        );
+    }
+
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination)
+    {
+        $storkMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualPayload) use ($templateName, $destination)
+                {
+                    if (($templateName !== $actualPayload['templateName']) or
+                        ($destination !== $actualPayload['destination']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
     }
 
     public function testUpdateGstinSelfServeValidationFailWorkflowApprove()
@@ -3781,6 +3826,8 @@ Team Razorpay',
                         $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Add gstin workflow created", "Add gstin workflow status"], true));
                     }));
 
+        $this->mockStorkForAddGstinSelfServeValidationFailWorkflowReject();
+
         $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
 
         $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
@@ -3824,6 +3871,23 @@ Team Razorpay',
             'workflow_status'          => 'rejected',
             'rejection_reason_message' => 'Test body'
         ]);
+    }
+
+    protected function mockStorkForAddGstinSelfServeValidationFailWorkflowReject()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_rejection', '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi Test name, Your request for adding the GSTIN to Razorpay account has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_gstin to know more.
+-Team Razorpay
+
+',
+            '1234567890'
+        );
     }
 
     public function testUpdateGstinSelfServeValidationFailWorkflowReject()
@@ -4130,6 +4194,8 @@ Team Razorpay',
                         $this->assertEquals("Add gstin bvs result", $eventName);
                     }));
 
+        $this->mockStorkForAddGstinSelfServeBvsValidationSuccess();
+
         $this->processBvsResponseForGstinSelfServe();
 
         $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
@@ -4166,6 +4232,28 @@ Team Razorpay',
             'workflow_exists'          =>  false,
             'request_under_validation' =>  false
         ]);
+    }
+
+    protected function mockStorkForAddGstinSelfServeBvsValidationSuccess()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_auto_update_V1', '1234567890');
+
+//Commented this from UT because Whatsapp has been removed from the channel for this event for now.
+//        $this->expectStorkWhatsappRequest($storkMock,
+//            'Hi,
+//GSTIN has been added successfully to your Razorpay Account. The details are provided below.
+//GSTIN: 18AABCU9603R1ZM
+//Your registered address is updated as below, as per your GSTIN certificate
+//Registered address: 1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI, 400018, Mumbai City, MH
+//Cheers,
+//Team Razorpay
+//',
+//            '1234567890'
+//        );
     }
 
     public function testUpdateGstinSelfServeBvsValidationSuccess()
@@ -6354,5 +6442,71 @@ You can now start accepting payments from https://www.example.com.
 
         $this->startTest();
     }
+
+    public function testAddGstinSelfServeValidationFailWorkflowNeedsClarification()
+    {
+        Mail::fake();
+
+        Config(['services.bvs.mock' => true]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
+
+        extract($this->setupMerchantForGstinSelfServeTest());
+
+        $this->mockStorkForAddGstinSelfServeValidationFailWorkflowNeedClarification();
+
+        $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
+
+        $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
+
+        $this->startTest();
+
+        $this->processBvsResponseForGstinSelfServe('failed');
+
+        $this->esClient->indices()->refresh();
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertWorkflowDataForGstInSelfServe($workflowAction);
+
+        $testData = $this->testData['testNeedClarificationOnWorkflow'];
+
+        $testData['request']['url'] = '/merchant/' . $workflowAction['id'] . '/need_clarification';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/' . $workflowAction['id'] . '/details',
+            'content' => []
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $this->assertEquals('awaiting-customer-response', $res['tagged'][0]);
+
+        $this->assertWorkflowNeedsClarificationMailQueued('https://dashboard.razorpay.com/app/profile/clarification_update_gstin');
+
+    }
+
+    protected function mockStorkForAddGstinSelfServeValidationFailWorkflowNeedClarification()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_needs_clarification_V1', '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi Test name, we need a few more details to process the request on adding your GSTIN to Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_update_gstin to share the details.
+-Team Razorpay',
+            '1234567890'
+        );
+    }
+
 }
 
