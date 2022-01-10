@@ -1,4 +1,8 @@
 $checkout-modal-width = 400px
+$side-width = 240px
+$side-width-desktop-lg = 220px
+$color-white = #ffffff
+
 
 .flex-end
   display: flex
@@ -29,7 +33,7 @@ $checkout-modal-width = 400px
     border-bottom: none
     border-left: none
     width: 100%
-    background: rgba(238, 238, 238, 0.1)
+    background: #eeeeee1a
     overflow-x: auto
     overflow-y: hidden
     .level-1, .level-2
@@ -52,7 +56,7 @@ $checkout-modal-width = 400px
       padding: 0
       margin-bottom: 0
       li:hover
-        background: rgba(11, 112, 231, 0.05);
+        background: #0b70e70d;
         .show-expand
           visibility: visible
           cursor: pointer
@@ -64,7 +68,7 @@ $checkout-modal-width = 400px
         padding-right: 5px
         margin: 0px
         border-bottom: 1px solid #E6E7E8
-        background: #FFFFFF
+        background: $color-white
         .icon
           width: 30px
         .detail
@@ -90,7 +94,7 @@ $checkout-modal-width = 400px
           visibility: visible
           cursor: pointer
       .highlight
-        background: rgba(11, 112, 231, 0.05);
+        background: #0b70e70d;
 
         
     .overflowY
@@ -98,7 +102,7 @@ $checkout-modal-width = 400px
     .level-3
       width: 100%
       padding: 32px
-      background: #FFFFFF
+      background: $color-white
       .heading
         display: flex
         width: 420px
@@ -114,13 +118,13 @@ $checkout-modal-width = 400px
 
       .filter-btn
         outline: none;
-        background: rgba(22, 47, 86, 0.02)
-        border: 1px solid rgba(22, 47, 86, 0.1)
+        background: #162f5605
+        border: 1px solid #162f561a
         border-radius: 2px
         font-size: 14px
         line-height: 20px
         padding: 4px 12px
-        color: rgba(22, 47, 86, 0.74)
+        color: #162f56bd
       
       .filter-active
         background: #E7F1FD
@@ -164,7 +168,7 @@ $checkout-modal-width = 400px
           display: block
           border-radius: 4px
           padding: 20px 10px
-          background: rgba(232, 235, 239, 0.32)
+          background: #e8ebef52
           .product-title
             display: flex
             justify-content: space-between
@@ -217,7 +221,7 @@ $checkout-modal-width = 400px
                 width: 100%
               .status
                 text-transform: none;
-                background: rgba(232, 235, 239, 0.32);
+                background: #e8ebef52;
                 font-weight: 400;
                 font-size: 14px;
                 height: auto;
@@ -257,7 +261,7 @@ $checkout-modal-width = 400px
             width: 80%
             font-size: 12px
             line-height: 16px
-            color: rgba(22, 47, 86, 0.54)
+            color: #162f568a
           .status-pill
             font-size: 12px
             pointer-events: none
@@ -281,7 +285,7 @@ $checkout-modal-width = 400px
             align-items: center
             justify-content: space-evenly
             flex-wrap: wrap
-            background: rgba(232, 235, 239, 0.32)
+            background: #e8ebef52
             padding: 10px
             width: auto
             .est-date-para:
@@ -310,20 +314,24 @@ $checkout-modal-width = 400px
         .comment
           display: flex
           margin: 12px 0px
-          background: rgba(232, 235, 239, 0.32)
+          background: #cd82141a
           padding: 2px 10px
           font-size: 14px
+          border-radius: 2px
+          align-items: flex-start
           i
             padding: 5px 10px 2px 0px
             font-size: 20px
           p
             margin: 5px 10px
+          img
+            margin: 8px 0
       li.activated-action-required-list-item
         height: auto
         padding: 15px
         .comment
           margin-top: 10px
-          background: rgba(205, 130, 20, 0.1);
+          background: #cd82141a;
           details
             padding: 0 10px
             width: 100%
@@ -377,7 +385,7 @@ $checkout-modal-width = 400px
       li.list-item
         min-height: 56px
       li.list-item-disabled
-        background: rgba(232,235,239,0.32)
+        background: #e8ebef52
 
     .status
       text-transform: uppercase
@@ -391,24 +399,24 @@ $checkout-modal-width = 400px
     .activated, .activated-action-required
       min-width: 80px
       color: #1F890E
-      background: rgba(31, 137, 14, 0.1)
+      background: #1f890e1a
     .pending
       min-width: 80px
-      color: rgba(22, 47, 86, 0.87)
-      background: rgba(22, 47, 86, 0.1)
+      color: #162f56de
+      background: #162f561a
     .requested
       min-width: 80px
       color: #2A8CFF
-      background: rgba(11, 112, 231, 0.1);
+      background: #0b70e71a;
     .rejected
       min-width: 80px
       color: #D12D2D
-      background: rgba(209, 45, 45, 0.1)
+      background: #d12d2d1a
     .action-required
       min-width: 80px
       color: #CD8214
       border-radius: 15px
-      background: rgba(205, 130, 20, 0.1)
+      background: #cd82141a
     
     .notify-badge
       cursor: pointer
@@ -489,11 +497,133 @@ $checkout-modal-width = 400px
         background: white;
         transform: rotate(-45deg);
 
+.clarifications-modal
+  height 620px
+  max-width 70%
+  @media screen and (max-width: 1024px)
+    max-width 80%
+  .container
+    padding 0
+    .sidebar
+      width $side-width
+      background $color-white
+      left 0
+      @media screen and (max-width: 1024px)
+        width $side-width-desktop-lg
+      .header
+        padding 24px
+        background $color-white
+        border 0
+      h3
+        font-weight bold
+        font-size 16px
+      .subtitle
+        margin 24px 0
+      ul
+        list-style none
+        padding 0
+        a
+          height 40px
+          display flex
+          justify-content space-between
+          align-items center
+          margin 2px 0
+          li
+            color #6A757A
+            padding-left 24px
+            margin 0 2px
+            align-self center
+          .i-chevron-right
+            color: $color-white
+            margin-top 5px
+            margin-right 16px
+        a.active
+          background #5D90E9
+          li
+            color $color-white
+            padding-right 0
+
+    .form-container
+      position fixed
+      left 0
+      width calc(100% - 240px)
+      margin-left $side-width
+      padding 30px
+      @media screen and (max-width: 1024px)
+        width calc(100% - 220px)
+        margin-left $side-width-desktop-lg
+      .form
+        max-height 470px
+        overflow-y scroll
+        scroll-behavior smooth
+      h3
+        font-weight bold
+        font-size 18px
+        margin: 10px
+      .modal-header
+        margin-bottom 30px
+        padding 0
+    .footer
+      position fixed
+      bottom 0
+      left 0
+      padding 20px
+      background #F6F6F6
+      width 100%
+      display flex
+      justify-content flex-end
+  .clarification-input
+    display flex
+    border 1px solid #0000000d;
+    background #F6F6F6
+    padding 12px 16px 24px 13px
+    margin-bottom 32px
+    .i-info-circle
+      display inline-block
+      margin-top 5px
+      margin-right 10px
+      color #E9BE17
+      font-size 20px
+    .input-container
+      width 100%
+      .input-label 
+        padding-bottom 12px
+
+      .textarea-container 
+        position relative
+        width 100%
+        textarea
+          width 100%
+          padding-top 8px
+          padding-left 8px
+        .i-file-attach
+          transform rotate(90deg)
+          display inline-block
+          font-size 26px
+          position absolute
+          right 15px
+          top 15px
+          @media screen and (max-width: 1024px) 
+            top 10px
+    .file-upload
+      margin-top: 24px
+      display flex
+      align-items center
+      .upload-label
+        margin-left 40px
+        font-weight 700
+        width: 140px
+      .Dropzone-cavity 
+        width 300px 
+        .small 
+          margin 12px
+        @media screen and (max-width: 1024px) 
+          .Dropzone-content-desc
+            font-size 14px 
 
 .paytm-wallet-integration
-  $side-width = 240px
   position: relative
-  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 0px 8px #0000004d;
   #white-background
     background: #fff
     margin-top: 60px
@@ -511,7 +641,7 @@ $checkout-modal-width = 400px
     position: absolute;
     width: 300px
     left: $checkout-modal-width
-    background: #ffffff
+    background: $color-white
     top: 30px
     bottom: 30px
     padding: 15px
@@ -542,7 +672,7 @@ $checkout-modal-width = 400px
 
   .wizard
     min-height: 527px
-    background: #ffffff
+    background: $color-white
     .register-account
       display: flex
       justify-content: space-between
@@ -579,7 +709,7 @@ $checkout-modal-width = 400px
     .form-description
       background: #fafafa
       padding: 0px 12px 0px
-      border: 1px solid rgba(173, 188, 201, 0.47)
+      border: 1px solid #ffffff78
       margin-top: 10px
       .form-control-input
         margin: 10px 0px
@@ -670,7 +800,7 @@ $checkout-modal-width = 400px
       & ~ footer .help-text
           width: 320px
   .footer
-    border-top: 1px solid rgba(173, 188, 201, 0.47);
+    border-top: 1px solid #adbcc978;
     padding: 22px 24px
     background: #EBEFF0
     .stepper

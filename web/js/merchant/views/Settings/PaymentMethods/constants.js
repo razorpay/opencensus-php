@@ -8,3 +8,7 @@ export const REQUESTABLE = 'requestable';
 export const ACCOUNT_LINKABLE = 'account_linkable';
 export const CANCELLED = 'cancelled';
 export const GREYED = 'greyed';
+
+export const WEBSITE_DETAILS = 'website_details';
+export const MERCHANT_DOCUMENTS = 'merchant_documents';
+export const MERCHANT_DETAILS = 'merchant_details';

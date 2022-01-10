@@ -13,6 +13,8 @@ const FETCH_REQUESTED_MERCHANT_INSTRUMENTS = 'FETCH_REQUESTED_MERCHANT_INSTRUMEN
 const CREATE_INSTRUMENT_REQUEST = 'CREATE_INSTRUMENT_REQUEST';
 const CANCEL_INSTRUMENT_REQUEST = 'CANCEL_INSTRUMENT_REQUEST';
 const SET_LOADING = 'SET_LOADING';
+const GET_DISCREPANCY_CATEGORIES = 'GET_DISCREPANCY_CATEGORIES';
+const GET_IIR_DISCREPANCIES = 'GET_IIR_DISCREPANCIES';
 
 export const clearIntermediateInstrument = () => {
   return {
@@ -78,6 +80,22 @@ export const cancelMerchantInstrumentRequest = (id) => {
 export const setLoading = () => {
   return {
     type: SET_LOADING,
+  };
+};
+
+export const getDiscrepanciesCategories = () => {
+  return {
+    type: GET_DISCREPANCY_CATEGORIES,
+    payload: merchantFetch('terminals/proxy/discrepancy_list_merchant'),
+  };
+};
+
+export const getIirDiscrepancies = (mirId) => {
+  return {
+    type: GET_IIR_DISCREPANCIES,
+    payload: merchantFetch(
+      `terminals/proxy/merchant_instrument_request/${mirId}/iir_discrepancies`,
+    ),
   };
 };
 
@@ -924,6 +942,12 @@ export default function instrumentRequestsReducer(state = initialState, action) 
       return set(state, 'leafInstrument', null);
     case SET_LOADING:
       return set(state, 'loading', true);
+    case `${GET_DISCREPANCY_CATEGORIES}::SUCCESS`:
+      return set(state, 'discrepancyCategories', action.payload.data);
+    case `${GET_IIR_DISCREPANCIES}::SUCCESS`:
+      return set(state, 'merchantDiscrepancies', action.payload?.data);
+    case `${GET_IIR_DISCREPANCIES}::ERROR`:
+      return set(state, 'merchantDiscrepancies', []);
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::ERROR`:
       return set(state, 'loading', false);
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`: {
@@ -989,6 +1013,7 @@ export default function instrumentRequestsReducer(state = initialState, action) 
       }
       return state;
     }
+
     case `${CANCEL_INSTRUMENT_REQUEST}::SUCCESS`: {
       let cancelLeafIndex, pathToCancel;
       const stateClone = cloneDeep(state);

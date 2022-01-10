@@ -70,6 +70,7 @@ class Service extends Base\Service
             'ticket_creation_flow_revamp_dashboard',
             'razorpay_chat_bot',
             'mobile_signup_care_changes_active',
+            'instrument_requests_smart_dashboard',
             'hide_call_slots_10_12_2',
             'website_self_serve',
             'settlement_ux_revamp_p2',

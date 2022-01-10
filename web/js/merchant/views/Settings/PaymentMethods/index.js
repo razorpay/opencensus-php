@@ -5,40 +5,57 @@ import IntermediateList from './components/IntermediateList';
 import LeafList from './components/LeafList';
 import Spinner from 'common/ui/Spinner';
 import Banner from 'common/ui/Banner';
-import { showNotification } from 'merchant_common/reducers/notifications';
+import { showNotification as sN } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import {
-  fetchMerchantInstruments,
-  fetchRequestedInstruments,
-  clearIntermediateInstrument,
-  clearLeafInstrument,
-  setLoading,
+  fetchMerchantInstruments as fMI,
+  fetchRequestedInstruments as fRI,
+  clearIntermediateInstrument as cII,
+  clearLeafInstrument as cLI,
+  setLoading as sL,
+  getDiscrepanciesCategories as gDC,
 } from 'merchant/reducers/instrumentRequests';
 
-const PaymentMethod = ({
-  intermediateInstrument,
-  loading,
-  /* eslint-disable no-shadow */
-  fetchMerchantInstruments,
-  fetchRequestedInstruments,
-  clearIntermediateInstrument,
-  clearLeafInstrument,
-  setLoading,
-  showNotification,
-  /* eslint-disable no-shadow */
-}) => {
+const user = window.rzp_user;
+
+const PaymentMethod = (props) => {
+  const {
+    intermediateInstrument,
+    loading,
+    fMI: fetchMerchantInstruments,
+    fRI: fetchRequestedInstruments,
+    cII: clearIntermediateInstrument,
+    cLI: clearLeafInstrument,
+    sL: setLoading,
+    sN: showNotification,
+    gDC: getDiscrepanciesCategories,
+  } = props;
+
   const fetchAllIntruments = async () => {
-    try {
-      await fetchMerchantInstruments();
-      await fetchRequestedInstruments();
-    } catch (errors) {
+    await Promise.all([
+      fetchMerchantInstruments(),
+      fetchRequestedInstruments(),
+      getDiscrepanciesCategories(),
+    ]).catch((errors) => {
       showNotification({
         type: 'error',
         message: errors[0],
       });
-    }
+    });
+  };
+
+  const onClickKnowMore = () => {
+    analyticsTrack({
+      objectName: 'know more',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'Payment Methods',
+        ...getCommonAnalyticsProperties(user),
+      },
+    });
   };
 
   useEffect(() => {
@@ -50,10 +67,10 @@ const PaymentMethod = ({
     };
   }, [fetchMerchantInstruments, fetchRequestedInstruments]);
 
-  const isActivatedUser = window.rzp_user.activation_status === 'activated';
+  const isActivatedUser = user.activation_status === 'activated';
 
   return loading ? (
-    <div class="page-spinner-container">
+    <div className="page-spinner-container">
       <Spinner />
     </div>
   ) : (
@@ -62,42 +79,30 @@ const PaymentMethod = ({
         <Banner className="no-margin">
           <span>
             <i className="i i-info-outline" /> KYC verification is mandatory to request for new
-            payment methods. Please complete your
-            <a> activation form</a>, if not done already.
+            payment methods. Please complete your<a> activation form</a>, if not done already.
           </span>
         </Banner>
       )}
 
-      <div class="content-wrapper" id="settings-payment-methods">
-        <div class="panel-heading">
-          <span class="title">Manage Payment Methods </span>
+      <div className="content-wrapper" id="settings-payment-methods">
+        <div className="panel-heading">
+          <span className="title">Manage Payment Methods </span>
           &nbsp;
-          <span class="toggler-btn">
+          <span className="toggler-btn">
             <a
               href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() =>
-                analyticsTrack({
-                  objectName: 'know more',
-                  actionName: 'clicked',
-                  screen: 'settings',
-                  properties: {
-                    location: 'Payment Methods',
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                })
-              }
+              onClick={onClickKnowMore}
             >
-              Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+              Know More <i className="i i-external-link" style={{ marginLeft: '5px' }} />
             </a>
           </span>
           <div style={{ marginTop: '5px', marginBottom: '20px' }}>
             We offer a host of payment methods. Some of them are available by default, while others
             require approval. Raise a request directly from here to enable such payment methods.
           </div>
-          {/* list view starts*/}
-          <div class="methods-view">
+          <div className="methods-view">
             <RootList />
             {intermediateInstrument && Array.isArray(intermediateInstrument.intermediateList) && (
               <IntermediateList instrument={intermediateInstrument} />
@@ -118,10 +123,11 @@ const mapStateToProps = (state) => {
 };
 
 export default connect(mapStateToProps, {
-  setLoading,
-  fetchMerchantInstruments,
-  fetchRequestedInstruments,
-  clearIntermediateInstrument,
-  clearLeafInstrument,
-  showNotification,
+  sL,
+  fMI,
+  fRI,
+  cII,
+  cLI,
+  sN,
+  gDC,
 })(PaymentMethod);

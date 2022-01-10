@@ -13,6 +13,7 @@ import {
   fetchMerchantInstruments,
   fetchRequestedInstruments,
   setIntrument,
+  getIirDiscrepancies,
 } from 'merchant/reducers/instrumentRequests';
 
 import { getIcon } from './InstrumentIcons';
@@ -32,8 +33,9 @@ import {
   CANCELLED,
   GREYED,
 } from '../constants';
-import { CreateTicketEmitter } from '../../../TicketSupport/utils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
+import Clarifications from './Modals/Clarifications';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -42,6 +44,19 @@ class LeafListItem extends React.Component {
   state = {
     loading: false,
     isImageLoaded: false,
+  };
+
+  tracker = (objectName, actionName, screen, properties) => {
+    return analyticsTrack({
+      objectName,
+      actionName,
+      screen,
+      properties: {
+        location: 'Payment Methods',
+        ...properties,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   };
 
   handleDrawerModal = (type) => {
@@ -87,16 +102,9 @@ class LeafListItem extends React.Component {
       leafInstrument && leafInstrument.slug
     }.${instrument.slug}`.replace(/\.null|\.undefined/g, '');
 
-    analyticsTrack({
-      objectName: 'instrument',
-      actionName: 'requested',
-      screen: 'settings',
-      properties: {
-        location: 'Payment Methods',
-        instrumentName: instrument.name,
-        method: leafInstrument.name,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
+    this.tracker('instrument', 'requested', 'settings', {
+      instrumentName: instrument.name,
+      method: leafInstrument.name,
     });
 
     this.context
@@ -119,32 +127,18 @@ class LeafListItem extends React.Component {
         affirmativePendingLabel: 'Requesting...',
         abortLabel: 'Cancel',
         action: () => {
-          analyticsTrack({
-            objectName: 'instrument request confirmation popup',
-            actionName: 'clicked',
-            screen: 'settings',
-            properties: {
-              location: 'Payment Methods',
-              actionName: 'confirm',
-              instrumentName: instrument.name,
-              method: leafInstrument.name,
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
+          this.tracker('instrument request confirmation popup', 'clicked', 'settings', {
+            actionName: 'confirm',
+            instrumentName: instrument.name,
+            method: leafInstrument.name,
           });
           return this.props
             .createMerchantInstrumentRequest(requestSlug)
             .then(() =>
-              analyticsTrack({
-                objectName: 'instrument request',
-                actionName: 'result',
-                screen: 'settings',
-                properties: {
-                  location: 'Payment Methods',
-                  instrumentName: instrument.name,
-                  method: leafInstrument.name,
-                  status: 'Success',
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
+              this.tracker('instrument request', 'result', 'settings', {
+                instrumentName: instrument.name,
+                method: leafInstrument.name,
+                status: 'Success',
               }),
             )
             .catch(({ errors }) => {
@@ -152,35 +146,21 @@ class LeafListItem extends React.Component {
                 type: 'error',
                 message: errors[0],
               });
-              analyticsTrack({
-                objectName: 'instrument request',
-                actionName: 'result',
-                screen: 'settings',
-                properties: {
-                  location: 'Payment Methods',
-                  instrumentName: instrument.name,
-                  method: leafInstrument.name,
-                  status: 'Failure',
-                  failureReason: errors[0],
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
+              this.tracker('instrument request', 'result', 'settings', {
+                instrumentName: instrument.name,
+                method: leafInstrument.name,
+                status: 'Failure',
+                failureReason: errors[0],
               });
             })
             .finally(() => this.setState({ loading: false }));
         },
         abort: () => {
           this.setState({ loading: false });
-          analyticsTrack({
-            objectName: 'instrument request confirmation popup',
-            actionName: 'clicked',
-            screen: 'settings',
-            properties: {
-              location: 'Payment Methods',
-              actionName: 'cancel',
-              instrumentName: instrument.name,
-              method: leafInstrument.name,
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
+          this.tracker('instrument request confirmation popup', 'clicked', 'settings', {
+            actionName: 'cancel',
+            instrumentName: instrument.name,
+            method: leafInstrument.name,
           });
         },
       })
@@ -189,16 +169,9 @@ class LeafListItem extends React.Component {
 
   handleCancelRequest = (instrument) => {
     const { leafInstrument } = this.props;
-    analyticsTrack({
-      objectName: 'instrument',
-      actionName: 'cancelled',
-      screen: 'settings',
-      properties: {
-        location: 'Payment Methods',
-        instrumentName: instrument.name,
-        method: leafInstrument.name,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
+    this.tracker('instrument', 'cancelled', 'settings', {
+      instrumentName: instrument.name,
+      method: leafInstrument.name,
     });
     this.context
       .confirm({
@@ -207,17 +180,10 @@ class LeafListItem extends React.Component {
         affirmativeLabel: 'Yes',
         abortLabel: 'No',
         action: () => {
-          analyticsTrack({
-            objectName: 'instrument cancel confirmation popup',
-            actionName: 'clicked',
-            screen: 'settings',
-            properties: {
-              location: 'Payment Methods',
-              actionName: 'Yes',
-              instrumentName: instrument.name,
-              method: leafInstrument.name,
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
+          this.tracker('instrument cancel confirmation popup', 'clicked', 'settings', {
+            actionName: 'Yes',
+            instrumentName: instrument.name,
+            method: leafInstrument.name,
           });
           this.props
             .cancelMerchantInstrumentRequest(instrument.merchant_instrument_request_id)
@@ -227,17 +193,10 @@ class LeafListItem extends React.Component {
                   type: 'success',
                   message: `Request for ${instrument.name} cancelled successfully`,
                 });
-                analyticsTrack({
-                  objectName: 'instrument cancel',
-                  actionName: 'result',
-                  screen: 'settings',
-                  properties: {
-                    location: 'Payment Methods',
-                    instrumentName: instrument.name,
-                    method: leafInstrument.name,
-                    status: 'Success',
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
+                this.tracker('instrument cancel', 'result', 'settings', {
+                  instrumentName: instrument.name,
+                  method: leafInstrument.name,
+                  status: 'Success',
                 });
               }
             })
@@ -246,33 +205,19 @@ class LeafListItem extends React.Component {
                 type: 'error',
                 message: errors[0],
               });
-              analyticsTrack({
-                objectName: 'instrument cancel',
-                actionName: 'result',
-                screen: 'settings',
-                properties: {
-                  location: 'Payment Methods',
-                  instrumentName: instrument.name,
-                  method: leafInstrument.name,
-                  status: 'Failure',
-                  failureReason: errors[0],
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
+              this.tracker('instrument cancel', 'result', 'settings', {
+                instrumentName: instrument.name,
+                method: leafInstrument.name,
+                status: 'Failure',
+                failureReason: errors[0],
               });
             });
         },
         abort: () => {
-          analyticsTrack({
-            objectName: 'instrument cancel confirmation popup',
-            actionName: 'clicked',
-            screen: 'settings',
-            properties: {
-              location: 'Payment Methods',
-              actionName: 'No',
-              instrumentName: instrument.name,
-              method: leafInstrument.name,
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
+          this.tracker('instrument cancel confirmation popup', 'clicked', 'settings', {
+            actionName: 'No',
+            instrumentName: instrument.name,
+            method: leafInstrument.name,
           });
         },
       })
@@ -280,25 +225,44 @@ class LeafListItem extends React.Component {
   };
 
   handleRaiseRequest = (instrument) => {
-    analyticsTrack({
-      objectName: `Raise Request from Instrument Dashboard`,
-      actionName: 'clicked',
-      screen: 'settings',
-      properties: {
-        location: 'Payment Methods',
-        actionName: 'No',
-        instrumentName: instrument.name,
-        status: instrument.status,
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
+    this.tracker('Raise Request from Instrument Dashboard', 'clicked', 'settings', {
+      actionName: 'No',
+      instrumentName: instrument.name,
+      status: instrument.status,
     });
     if (window.rzpTicketSystem) {
       CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
   };
 
+  handleUpdateForm = async (mir) => {
+    await this.props.getIirDiscrepancies(mir);
+    const { merchantDiscrepancies, discrepancyCategories } = this.props;
+    const clarifications =
+      (merchantDiscrepancies &&
+        merchantDiscrepancies.map((m) => {
+          return Object.assign(
+            {},
+            ...m,
+            ...discrepancyCategories.filter((d) => d.discrepancy_id === m.discrepancy_id),
+          );
+        })) ||
+      [];
+
+    return this.props.openModal({
+      component: (
+        <Clarifications
+          onCloseClick={this.props.closeModal}
+          clarifications={clarifications}
+          merchantDiscrepancies={merchantDiscrepancies}
+        />
+      ),
+      className: 'clarifications-modal',
+    });
+  };
+
   render() {
-    const { instrument, intermediateInstrument, instrumentsTat } = this.props;
+    const { instrument, intermediateInstrument, instrumentsTat, user } = this.props;
     const ctaClass = {
       Request: 'btn btn-primary',
       account_linkable: 'btn btn-primary',
@@ -312,7 +276,6 @@ class LeafListItem extends React.Component {
       activated_action_required: 'activated-action-required status',
       greyed: 'btn btn-primary disabled',
     };
-
     const getListClass = (status, path) => {
       if ([REJECTED, ACTION_REQUIRED].includes(status)) {
         return 'action-required-list-item';
@@ -394,11 +357,15 @@ class LeafListItem extends React.Component {
               ) : null} */}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
-            {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
-              <button className="btn btn-link" onClick={() => this.handleRaiseRequest(instrument)}>
-                Raise Request
-              </button>
-            )}
+            {[REJECTED, ACTION_REQUIRED].includes(instrument.status) &&
+              !user.isSmartDashboardActive && (
+                <button
+                  className="btn btn-link"
+                  onClick={() => this.handleRaiseRequest(instrument)}
+                >
+                  Raise Request
+                </button>
+              )}
             {![
               PENDING,
               ACTIVATED,
@@ -497,8 +464,28 @@ class LeafListItem extends React.Component {
 
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
           <div className="comment" title={instrument.comment}>
-            <i className="i i-info-outline" />
-            <p>{instrument.comment || 'No comments available'}</p>
+            <img
+              src="https://cdn.razorpay.com/static/assets/instrument-request/alert-triangle.svg"
+              alt="alert"
+              height="15px"
+              width="15px"
+            />
+            <p>
+              {user.isSmartDashboardActive ? (
+                <>
+                  <span>We need more information to proceed further with the application,</span>{' '}
+                  <a
+                    onClick={() => this.handleUpdateForm(instrument.merchant_instrument_request_id)}
+                  >
+                    update Request Form.
+                  </a>
+                </>
+              ) : !user.isSmartDashboardActive ? (
+                instrument.comment
+              ) : (
+                <span>No comments available</span>
+              )}
+            </p>
           </div>
         )}
         {/* {instrument.status === ACTIVATED_ACTION_REQUIRED && (
@@ -535,6 +522,9 @@ const mapStateToProps = (state) => ({
   leafInstrument: state.instrumentRequests.leafInstrument,
   userActivationStatus: state.session.user.activation_status,
   instrumentsTat: state.instrumentRequests.instrumentsTat,
+  discrepancyCategories: state.instrumentRequests.discrepancyCategories,
+  merchantDiscrepancies: state.instrumentRequests.merchantDiscrepancies,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) => {
@@ -547,6 +537,7 @@ const mapDispatchToProps = (dispatch) => {
       closeModal,
       fetchMerchantInstruments,
       fetchRequestedInstruments,
+      getIirDiscrepancies,
       setIntrument,
     },
     dispatch,
