@@ -30,7 +30,11 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL  => SegmentEvent::WEBSITE_SELF_SERVE_WORKFLOW,
 
-        PermissionName::INCREASE_TRANSACTION_LIMIT    => SegmentEvent::TRANSACTION_LIMIT_SELF_SERVE_WORKFLOW
+        PermissionName::INCREASE_TRANSACTION_LIMIT    => SegmentEvent::TRANSACTION_LIMIT_SELF_SERVE_WORKFLOW,
+
+        PermissionName::EDIT_MERCHANT_GSTIN_DETAIL    => SegmentEvent::ADD_GSTIN_WORKFLOW_STATUS,
+
+        PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL  => SegmentEvent::EDIT_GSTIN_WORKFLOW_STATUS
     ];
 
     const PERMISSION_VS_EVENTS = [

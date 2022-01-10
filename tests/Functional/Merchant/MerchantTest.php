@@ -38,6 +38,7 @@ use RZP\Models\RiskWorkflowAction\Constants;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
+use RZP\Services\Segment\SegmentAnalyticsClient;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
@@ -53,6 +54,7 @@ use RZP\Models\Workflow\Observer\MerchantActionObserver;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
+use RZP\Models\Workflow\Observer\MerchantSelfServeObserver;
 use RZP\Models\Workflow\Observer\PaymentMethodChangeObserver;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use \RZP\Models\Workflow\Observer\Constants as ObserverConstants;
@@ -14190,6 +14192,23 @@ The same has been enabled for the account.
         $this->esClient->indices()->refresh();
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+                                                             substr($workflowAction['id'], 9))[0]['_source'];
+
+        if (key_exists($action['permission'], MerchantSelfServeObserver::PERMISSION_VS_SEGMENTS))
+        {
+            $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                                ->setConstructorArgs([$this->app])
+                                ->setMethods(['pushIdentifyAndTrackEvent'])
+                                ->getMock();
+
+            $this->app->instance('segment-analytics', $segmentMock);
+
+            $segmentMock->expects($this->exactly(1))
+                        ->method('pushIdentifyAndTrackEvent')
+                        ->willReturn(true);
+        }
 
         $testData = $this->testData['testNeedClarificationOnWorkflow'];
 

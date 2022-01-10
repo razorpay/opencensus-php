@@ -326,6 +326,8 @@ class Service extends Base\Service
             return $comment;
         });
 
+        $this->core()->trackSelfServeEventForNeedClarification($workFlowAction);
+
         $this->core()->notifyMerchantForNeedClarification($workFlowAction, $input);
 
         return [

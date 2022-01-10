@@ -46,6 +46,20 @@ class EventCode
 
     const TRANSACTION_LIMIT_SELF_SERVE_WORKFLOW  = 'Transaction limit workflow status';
 
+    const EDIT_GSTIN_BVS_RESULT                  = 'Edit gstin bvs result';
+
+    const INVOICES_CREATE_RESULT                 = 'Invoices create result';
+
+    const EDIT_GSTIN_WORKFLOW_STATUS             = 'Edit gstin workflow status';
+
+    const EDIT_GSTIN_WORKFLOW_CREATED            = 'Edit gstin workflow created';
+
+    const ADD_GSTIN_BVS_RESULT                   = 'Add gstin bvs result';
+
+    const ADD_GSTIN_WORKFLOW_STATUS              = 'Add gstin workflow status';
+
+    const ADD_GSTIN_WORKFLOW_CREATED             = 'Add gstin workflow created';
+
     const EVENT_LABELS = [
         self::L1_SUBMISSION                             => "L1 Form Submit",
         self::L2_SUBMISSION                             => "L2 Form Submit",

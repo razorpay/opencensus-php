@@ -24,6 +24,7 @@ use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
+use RZP\Models\Workflow\Observer\MerchantSelfServeObserver;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Dashboard\Constants as MerchantNotificationsConstants;
 
@@ -1058,6 +1059,29 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    public function trackSelfServeEventForNeedClarification(Entity $action)
+    {
+        $workflowPermission = $action->permission->getName();
+
+        $diff = (new Differ\Service)->fetchRequest($action->getId());
+
+        $payload = $diff[Differ\Entity::PAYLOAD];
+
+        $merchantId = $this->getMerchantIdForWorkflowAction($action, $payload);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if (key_exists($workflowPermission, MerchantSelfServeObserver::PERMISSION_VS_SEGMENTS))
+        {
+            $segmentProperties = array_merge(
+                [CONSTANTS::STATUS => CONSTANTS::NEEDS_CLARIFICATION]
+            );
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, MerchantSelfServeObserver::PERMISSION_VS_SEGMENTS[$workflowPermission]);
+        }
     }
 
     public function notifyMerchantForNeedClarification(Entity $action, array $input)

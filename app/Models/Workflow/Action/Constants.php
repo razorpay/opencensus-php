@@ -54,6 +54,9 @@ class Constants
     const ADDED_TAG                                      = 'added_tag';
     const ADDED_COMMENT                                  = 'added_comment';
 
+    const STATUS                                         = 'status';
+    const NEEDS_CLARIFICATION                            = 'needs_clarification';
+
     public static function getActionRejectHandlerByPermissionName(string $permissionName): ?string
     {
         if (isset(self::ACTION_REJECT_CALLBACK_HANDLERS[$permissionName]) === false)

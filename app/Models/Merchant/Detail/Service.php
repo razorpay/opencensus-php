@@ -1978,9 +1978,42 @@ class Service extends Base\Service
         return $input;
     }
 
+    protected function pushBvsResultToSegmentForGstinSelfServe(Entity $detail, Merchant\BvsValidation\Entity $validation)
+    {
+        $input = $this->getGstinSelfServeInputFromCache();
+
+        $ruleExecution = $validation->getRuleExecutionList();
+
+        $segmentEventName = ($input[DEConstants::IS_ADD_GSTIN_OPERATION]) ? SegmentEvent::ADD_GSTIN_BVS_RESULT : SegmentEvent::EDIT_GSTIN_BVS_RESULT;
+
+        $segmentProperties = [];
+
+        $segmentProperties['result'] = $validation->getValidationStatus();
+
+        $segmentProperties['failure_reason'] = $validation->getErrorCode();
+
+        if ((isset($ruleExecution) === true) and
+            (isset($ruleExecution[0]) === true))
+        {
+            $segmentProperties['name_match_percentage_bvs'] = [
+                $ruleExecution[0]['rule_execution_result']['remarks'],
+                $ruleExecution[1]['rule_execution_result']['remarks']
+            ];
+        }
+        else
+        {
+            $segmentProperties['name_match_percentage_bvs'] = [];
+        }
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $detail->merchant, $segmentProperties, $segmentEventName);
+    }
+
     public function handleGstinSelfServeCallback(Entity $detail, Merchant\BvsValidation\Entity $validation)
     {
         $this->trace->info(TraceCode::GSTIN_SELF_SERVE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
+
+        $this->pushBvsResultToSegmentForGstinSelfServe($detail, $validation);
 
         switch ($validation->getValidationStatus())
         {
@@ -1994,6 +2027,17 @@ class Service extends Base\Service
         $this->deleteGstinSelfServeInput($detail->getId());
     }
 
+    protected function pushInvoicesResultToSegmentForGstinSelfServe(Entity $detail, array $result)
+    {
+        $segmentEventName = SegmentEvent::INVOICES_CREATE_RESULT;
+
+        $segmentProperties = [];
+
+        $segmentProperties['result'] = $result;
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $detail->merchant, $segmentProperties, $segmentEventName);
+    }
 
     /**
      * @param Entity $detail
@@ -2023,6 +2067,8 @@ class Service extends Base\Service
             {
                 $result = (new MerchantInvoiceService())->
                 backFillMerchantInvoiceB2cPDFs([$detail->getMerchantId()], "7", "2017", "2020", "12");
+
+                $this->pushInvoicesResultToSegmentForGstinSelfServe($detail, $result);
 
                 $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS, [$result]);
             }
@@ -2127,6 +2173,18 @@ class Service extends Base\Service
         return $stateCode;
     }
 
+    protected function pushWorkflowCreatedEventToSegmentForGstinSelfServe(Entity $detail, array $input)
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = ($input[DEConstants::IS_ADD_GSTIN_OPERATION]) ? SegmentEvent::ADD_GSTIN_WORKFLOW_CREATED : SegmentEvent::EDIT_GSTIN_WORKFLOW_CREATED;
+
+        $segmentProperties['workflow_type'] = ($input[DEConstants::IS_ADD_GSTIN_OPERATION]) ? 'Gstin Add' : 'Gstin Edit';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $detail->merchant, $segmentProperties, $segmentEventName);
+    }
+
     protected function isAddGstinSelfServeAction(Entity $merchantDetail)
     {
         return empty($merchantDetail->getGstin()) === true;
@@ -2185,6 +2243,8 @@ class Service extends Base\Service
             $permissionName
         );
 
+        $this->pushWorkflowCreatedEventToSegmentForGstinSelfServe($oldDetailEntity, $input);
+
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_CREATED : TraceCode::GSTIN_UPDATE_WORKFLOW_CREATED;
 
         $this->trace->info($traceCode, [
@@ -2232,6 +2292,8 @@ class Service extends Base\Service
         {
             $result = (new MerchantInvoiceService())->
             backFillMerchantInvoiceB2cPDFs([$merchant->getId()], "7", "2017", "2020", "12");
+
+            $this->pushInvoicesResultToSegmentForGstinSelfServe($merchantDetails, $result);
 
             $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS, [$result]);
         }

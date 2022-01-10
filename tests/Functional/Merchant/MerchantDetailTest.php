@@ -3501,33 +3501,47 @@ We look forward to transacting with you!
         Config::set('services.bvs.mock', true);
     }
 
-    //public function testUpdateGstinSelfServeWithGSTInvoices()
-    //{
-    //    $this->createMerchantAndInvoiceData();
-    //
-    //    $this->initiateGstinSelfServe();
-    //
-    //    $this->setBvsValidationDetailForGstinUpdateSelfServe();
-    //
-    //    $this->assertGstinSelfServeStatusAndRejectionReason([
-    //                                                            'workflow_exists'          => false,
-    //                                                            'request_under_validation' => true
-    //                                                        ]);
-    //
-    //    $this->processBvsResponseForGstinSelfServe();
-    //
-    //    $this->assertCacheDataNullForGstinSelfServe('10000000000000');
-    //
-    //    $entities = $this->getEntities('merchant_invoice', [], true);
-    //
-    //    $this->assertEquals(5, $entities['count']);
-    //
-    //    $file = $this->getLastEntity('file_store', true);
-    //
-    //    $this->assertEquals('10000000000000', $file['merchant_id']);
-    //
-    //    $this->assertEquals('merchant_pg_invoices/2018/2/10000000000000', $file['name']);
-    //}
+    public function testUpdateGstinSelfServeWithGSTInvoices()
+    {
+        $this->createMerchantAndInvoiceData();
+
+        $this->initiateGstinSelfServe();
+
+        $this->setBvsValidationDetailForGstinUpdateSelfServe();
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+                                                                'workflow_exists'          => false,
+                                                                'request_under_validation' => true
+                                                            ]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(2))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Invoices create result"], true));
+                    }));
+
+        $this->processBvsResponseForGstinSelfServe();
+
+        $this->assertCacheDataNullForGstinSelfServe('10000000000000');
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(5, $entities['count']);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $this->assertEquals('10000000000000', $file['merchant_id']);
+
+        $this->assertEquals('merchant_pg_invoices/2018/2/10000000000000', $file['name']);
+    }
 
     public function testUpdateGstinSelfServe()
     {
@@ -3562,6 +3576,19 @@ We look forward to transacting with you!
             'workflow_exists'          =>  false,
             'request_under_validation' =>  false
         ]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(3))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Add gstin workflow created", "Add gstin workflow status"], true));
+                    }));
 
         $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
 
@@ -3630,6 +3657,19 @@ We look forward to transacting with you!
             'workflow_exists'          =>  false,
             'request_under_validation' =>  false
         ]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(3))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Edit gstin workflow created", "Edit gstin workflow status"], true));
+                    }));
 
         $this->mockRavenAndStorkForUpdateGstWorkflowApprove();
 
@@ -3728,6 +3768,19 @@ Team Razorpay',
             'request_under_validation' =>  false
         ]);
 
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(3))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Add gstin workflow created", "Add gstin workflow status"], true));
+                    }));
+
         $this->setupWorkflow('edit_gstin_details', 'edit_merchant_gstin_detail');
 
         $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
@@ -3786,6 +3839,19 @@ Team Razorpay',
             'needs_clarification'      =>  null,
             'request_under_validation' =>  false
         ]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(3))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Edit gstin workflow created", "Edit gstin workflow status"], true));
+                    }));
 
         $this->mockRavenAndStorkForUpdateGstinRejectionReason();
 
@@ -4050,6 +4116,20 @@ Team Razorpay',
             'request_under_validation' =>  true
         ]);
 
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertEquals('success', $properties['result']);
+                        $this->assertEquals("Add gstin bvs result", $eventName);
+                    }));
+
         $this->processBvsResponseForGstinSelfServe();
 
         $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
@@ -4102,6 +4182,19 @@ Team Razorpay',
             'workflow_exists'          =>  false,
             'request_under_validation' =>  true
         ]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertEquals('success', $properties['result']);
+                        $this->assertEquals("Edit gstin bvs result", $eventName);
+                    }));
 
         $this->processBvsResponseForGstinSelfServe();
 
