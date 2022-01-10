@@ -21,7 +21,10 @@ const M2MSuccessModal = ({ referredMerchants, referredAmount, trackEvents, isRef
       objectName: 'Referral Success Modal',
       actionName: 'Viewed',
       screen: 'home page',
-      referralName: referredMerchants,
+      toCleverTap: true,
+      properties: {
+        referralName: referredMerchants,
+      },
     });
   }, []);
 

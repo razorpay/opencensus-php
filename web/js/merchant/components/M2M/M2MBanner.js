@@ -15,6 +15,12 @@ const M2MBanner = (props) => {
   } = props;
 
   useEffect(() => {
+    trackEvents({
+      objectName: 'Referral Widget',
+      actionName: 'Viewed',
+      screen: 'home page',
+      toCleverTap: true,
+    });
     window.friendbuyAPI.push([
       'track',
       'customer',
@@ -32,6 +38,7 @@ const M2MBanner = (props) => {
       objectName: 'Refer Now',
       actionName: 'clicked',
       screen: 'home page',
+      toCleverTap: true,
     });
   };
 
