@@ -139,9 +139,11 @@ class Core extends Base\Core
     {
         $validation = $this->buildValidationEntity($input, $merchant);
 
-        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) and
-            ($validation->isBalanceTypeBanking() === true) and
-            ($validation->getFundAccountType() !== FundAccount\Type::VPA))
+        $fundAccount = $this->createOrGetFundAccount($input, $merchant);
+
+        $validation->associateFundAccount($fundAccount);
+
+        if (self::shouldFavGoThroughLedgerReverseShadowFlow($validation) === true)
         {
             $validation = $this->processFavThroughLedger($validation, $merchant, $input);
 
@@ -150,10 +152,6 @@ class Core extends Base\Core
 
         $validation = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
-            $fundAccount = $this->createOrGetFundAccount($input, $merchant);
-
-            $validation->associateFundAccount($fundAccount);
-
             $this->runInputValidations($validation, $input);
 
             $processor = Processor\Factory::get($validation);
@@ -187,10 +185,6 @@ class Core extends Base\Core
         // Create the entity first, and calculate the pricing changes.
         list($validation, $feesSplit) = $this->repo->transaction(function () use ($input, $validation, $merchant)
         {
-            $fundAccount = $this->createOrGetFundAccount($input, $merchant);
-
-            $validation->associateFundAccount($fundAccount);
-
             $this->runInputValidations($validation, $input);
 
             $processor = Processor\Factory::get($validation);
@@ -261,6 +255,18 @@ class Core extends Base\Core
         }
 
         return $validation;
+    }
+
+    public static function shouldFavGoThroughLedgerReverseShadowFlow($validation)
+    {
+        if (($validation->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) and
+            ($validation->isBalanceTypeBanking() === true) and
+            ($validation->getFundAccountType() !== FundAccount\Type::VPA))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -636,7 +642,7 @@ class Core extends Base\Core
         }
 
         // return if reverse shadow is enabled
-        if ($fundAccountValidation->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+        if (self::shouldFavGoThroughLedgerReverseShadowFlow($fundAccountValidation) === true)
         {
             return;
         }
@@ -1039,7 +1045,7 @@ class Core extends Base\Core
     {
         $fav = $this->repo->fund_account_validation->find($entityId);
 
-        if($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        if(self::shouldFavGoThroughLedgerReverseShadowFlow($fav) === false)
         {
             throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
                 ,ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,

@@ -325,7 +325,7 @@ class Core extends Base\Core
 
         $reversal->balance()->associate($fav->balance);
 
-        if ($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+        if (FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true)
         {
             $this->repo->saveOrFail($reversal);
 

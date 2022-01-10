@@ -337,7 +337,7 @@ class BankAccount extends Base
                 // Will do nothing for reverse shadow
                 (new Core)->processLedgerFav($this->validation, Attempt\Status::REVERSED, $ftsSourceAccountInformation);
 
-                if ($this->validation->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === true)
+                if (Core::shouldFavGoThroughLedgerReverseShadowFlow($this->validation) === true)
                 {
                     try
                     {
@@ -423,7 +423,7 @@ class BankAccount extends Base
         // In reverse shadow, nothing happens here
         (new Core)->processLedgerFav($this->validation, null, $ftsSourceAccountInformation);
 
-        if ($this->validation->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW))
+        if (Core::shouldFavGoThroughLedgerReverseShadowFlow($this->validation) === true)
         {
             try
             {
