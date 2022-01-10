@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import lazy from 'merchant/routes/LazyLoader';
 import Loader from 'common/ui/Loader';
-import { pushSlider } from 'merchant_common/reducers/multiSlider';
+import { pushSlider as fnPushSlider } from 'merchant_common/reducers/multiSlider';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { classList } from 'common/utils/rzp-utils';
@@ -14,7 +14,7 @@ const WhatsNewLazyComponent = lazy(() =>
   import(/* webpackChunkName: "WhatsNewLazyComponent" */ 'common/ui/WhatsNew'),
 );
 
-const WhatsNewIcon = ({ user, showMobileNav, tracking }) => {
+const WhatsNewIcon = ({ user, showMobileNav, tracking, pushSlider }) => {
   const [isOpen, setOpen] = useState(false);
 
   const setUnreadMsgs = () => {
@@ -96,5 +96,5 @@ const WhatsNewIcon = ({ user, showMobileNav, tracking }) => {
 export default compose(
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('WhatsNewIcon')),
-  connect((state) => ({ user: state.session.user }), { pushSlider }),
+  connect((state) => ({ user: state.session.user }), { pushSlider: fnPushSlider }),
 )(WhatsNewIcon);

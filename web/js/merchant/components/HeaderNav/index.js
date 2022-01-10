@@ -204,9 +204,7 @@ export default class HeaderNav extends Component {
                 )}
                 <ShowWhen
                   additionalCondition={(usr) =>
-                    usr.isOrgAllowedFunctionality('external_links') &&
-                    (usr.isAnnouncementTextEnabled || usr.isWhatsNewTextEnabled) &&
-                    !usr.isOrgAxis
+                    usr.isOrgAllowedFunctionality('external_links') && !usr.isOrgAxis
                   }
                 >
                   <li id="whats-new-section">
