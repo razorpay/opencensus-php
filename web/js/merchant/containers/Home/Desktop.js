@@ -70,11 +70,11 @@ import StartupCongratulationBanner from '../../components/Announcements/StartupC
 import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
+import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
-import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
-import EndOfYearBanner from '../../components/Announcements/EndOfYearBanner';
 import * as EventActions from 'merchant/reducers/trackEvents';
 
 class AnalyticsDesktop extends Component {
@@ -625,6 +625,18 @@ class AnalyticsDesktop extends Component {
           <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
             <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
           </ShowWhen>
+          <ShowWhen
+            additionalCondition={(usr) =>
+              usr.isNitroIciciBrandedCampaignEnabled ||
+              usr.isNitroIciciRemarketingCampaignEnabled ||
+              usr.isProjectNitroEnabled
+            }
+          >
+            <NitroICICIBanner productName="home" />
+          </ShowWhen>
+          <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
+            <NitroCCCampaign productName="home" />
+          </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
             <CatalystCampaignBannerPhase2
               productName="Transactions"
@@ -660,20 +672,6 @@ class AnalyticsDesktop extends Component {
               cta2Link="paymentlinks/new"
               type="G"
             />
-            <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
-              <NitroCCCampaign productName="home" />
-            </ShowWhen>
-          </ShowWhen>
-
-          <ShowWhen
-            additionalCondition={(usr) =>
-              usr.isProjectNitroEnabled ||
-              usr.isNitroIciciBrandedCampaignEnabled ||
-              usr.isNitroIciciRemarketingCampaignEnabled ||
-              usr.isProjectNitroCorporateCard
-            }
-          >
-            <EndOfYearBanner productName="home" />
           </ShowWhen>
 
           {/* capital banner*/}

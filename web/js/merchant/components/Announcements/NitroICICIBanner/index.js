@@ -10,8 +10,9 @@ import {
 import RazorpayXNitroAnnouncement from '../../../../../js/common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 
 const bannerText =
-  'Enjoy the benefits of ICICI Powered RazorpayX current account with a reduced pricing of 1.65% on your payments 🎉';
+  'Enjoy the benefits of ICICI Powered RazorpayX current account with a reduced pricing of 1.65%* on your payments 🎉';
 let cardId = '';
+let bannerTitle = '';
 
 const cta1Text = 'Know More';
 
@@ -40,7 +41,14 @@ const NitroICICIBanner = React.memo(({ productName, openModal, closeModal }) => 
   const track = _track(productName, user.current);
   cardId = user.isNitroIciciBrandedCampaignEnabled
     ? 'OCT-NITRO-ICICIBranded'
-    : 'OCT-NITRO-ICICIRemarketing';
+    : user.isNitroIciciRemarketingCampaignEnabled
+    ? 'OCT-NITRO-ICICIRemarketing'
+    : 'OCT-NITRO-BaseCampaign';
+  bannerTitle = user.isNitroIciciBrandedCampaignEnabled
+    ? 'Get Reduced Pricing !'
+    : user.isNitroIciciRemarketingCampaignEnabled
+    ? 'Powered by ICICI !'
+    : 'Get Reduced Pricing !';
 
   const handleCTA1Click = () => {
     openModal({
@@ -52,7 +60,7 @@ const NitroICICIBanner = React.memo(({ productName, openModal, closeModal }) => 
 
   return (
     <AnnouncementBanner
-      title="Festive Bonanza!"
+      title={bannerTitle}
       canBeClosed={true}
       theme="primary"
       bannerKey={`nitro-icici-branded-${user.current}`}
