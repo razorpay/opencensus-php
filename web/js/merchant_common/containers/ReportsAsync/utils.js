@@ -4,7 +4,10 @@ const DATE_FORMAT = 'DD MMM YYYY';
 export const getFormattedDate = (unixTimeStamp) => moment(unixTimeStamp, 'X').format(DATE_FORMAT);
 
 export const getTimeUnix = (timeMoment) =>
-  timeMoment.clone().startOf('minute').diff(moment(timeMoment).clone().startOf('day'), 'seconds');
+  moment(timeMoment)
+    .clone()
+    .startOf('minute')
+    .diff(moment(timeMoment).clone().startOf('day'), 'seconds');
 
 export const getStartAndEndUnixTimeStampsForDaysFrom = (
   numberOfDays = 0,
