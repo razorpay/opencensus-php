@@ -27,6 +27,9 @@ import {
   NC_UPDATE_WEBSITE,
   NC_ADD_WEBSITE,
   NC_ADD_ADDITIONAL_WEBSITE,
+  RR_UPDATE_WEBSITE,
+  RR_ADD_WEBSITE,
+  RR_INCREASE_TXN_LIMIT,
 } from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
@@ -463,7 +466,9 @@ const MerchantDetails = ({
             )}
           />
 
-          <IntoView hashedWith={[NC_UPDATE_WEBSITE, NC_ADD_WEBSITE]}>
+          <IntoView
+            hashedWith={[NC_UPDATE_WEBSITE, NC_ADD_WEBSITE, RR_UPDATE_WEBSITE, RR_ADD_WEBSITE]}
+          >
             <DetailRow
               label={() => (
                 <div class="website-self-serve__listItem">
@@ -604,7 +609,7 @@ const MerchantDetails = ({
         )}
 
       {user.merchant && (
-        <IntoView hashedWith={[NC_INCREASE_TXN_LIMIT]}>
+        <IntoView hashedWith={[NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT]}>
           <DetailRow
             label={() => (
               <div class="transaction-limit">

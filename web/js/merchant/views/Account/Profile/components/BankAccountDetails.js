@@ -6,7 +6,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { UPDATE_BANK_ACC } from '../deeplink-constants';
+import { UPDATE_BANK_ACC } from 'merchant/views/Account/Profile/deeplink-constants';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import NeedsClarificationModal from './WorkflowRequests/NeedsClarificationModal';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';

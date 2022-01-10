@@ -16,6 +16,8 @@ import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRe
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import { UPDATE_GSTIN } from 'merchant/views/Account/Profile/deeplink-constants';
+import TextHighlighter from 'common/ui/TextHighlighter';
 
 class GSTDetails extends Component {
   state = {
@@ -276,7 +278,7 @@ class GSTDetails extends Component {
     return (
       <div className="panel panel-default gst-details-block" ref={this.GSTSection}>
         <div className="panel-heading" style={{ overflow: 'scroll' }}>
-          GST Details
+          <TextHighlighter hashedWith={UPDATE_GSTIN}>GST Details</TextHighlighter>
           <ShowWhen
             myRole="owner admin"
             additionalCondition={(usr) => usr.isAllowedEdit('profile')}

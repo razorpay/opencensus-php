@@ -37,7 +37,10 @@ import {
   NC_UPDATE_BANK_ACC,
   NC_UPDATE_GSTIN,
   VIEW_FIRC,
-} from './deeplink-constants';
+  RR_UPDATE_BANK_ACC,
+  RR_UPDATE_GSTIN,
+  UPDATE_GSTIN,
+} from 'merchant/views/Account/Profile/deeplink-constants';
 import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
@@ -579,12 +582,12 @@ class Profile extends Component {
               usr.isAllowedView('profile_gst') && !usr.isUnregisteredBusiness
             }
           >
-            <IntoView hashedWith={[NC_UPDATE_GSTIN]}>
+            <IntoView hashedWith={[UPDATE_GSTIN, NC_UPDATE_GSTIN, RR_UPDATE_GSTIN]}>
               <Gst />
             </IntoView>
           </ShowWhen>
           {bankAccount ? (
-            <IntoView hashedWith={[NC_UPDATE_BANK_ACC, UPDATE_BANK_ACC]}>
+            <IntoView hashedWith={[UPDATE_BANK_ACC, NC_UPDATE_BANK_ACC, RR_UPDATE_BANK_ACC]}>
               <BankAccountDetails
                 bankAccount={bankAccount}
                 isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}

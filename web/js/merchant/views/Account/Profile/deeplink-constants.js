@@ -1,4 +1,5 @@
 export const UPDATE_BANK_ACC = 'update_bank_account';
+export const UPDATE_GSTIN = 'update_gstin';
 export const BILLING_LABEL = 'billing_label';
 export const EMAIL_UPDATE = 'email_update';
 export const CONTACT_NUMBER_UPDATE = 'contact_number_update';
@@ -20,3 +21,4 @@ export const RR_INCREASE_TXN_LIMIT = 'rejection_increase_transaction_limit';
 export const RR_UPDATE_WEBSITE = 'rejection_update_website';
 export const RR_ADD_WEBSITE = 'rejection_add_website';
 export const RR_UPDATE_GSTIN = 'rejection_update_gstin';
+export const RR_UPDATE_BANK_ACC = 'rejection_update_bank_account';
