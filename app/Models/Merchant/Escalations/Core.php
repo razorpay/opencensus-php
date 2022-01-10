@@ -406,7 +406,7 @@ class Core extends Base\Core
         $this->app['segment-analytics']->buildRequestAndSend();
     }
 
-    private function applyMtuCouponIfEligible(Merchant\Entity $merchant)
+    public function applyMtuCouponIfEligible(Merchant\Entity $merchant)
     {
         if ($this->isEligibleForMtuCouponApplication($merchant) === true)
         {

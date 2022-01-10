@@ -36,7 +36,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
         $this->config = $this->app['config']->get('services.segment_analytics');
     }
 
-    public function pushIdentifyEvent(Merchant\Entity $merchant, array $properties)
+    public function pushIdentifyEvent(Merchant\Entity $merchant, array $properties, int $eventTimestamp = null)
     {
         if($this->shouldPushEvent($merchant) === false)
         {
@@ -52,6 +52,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 'traits'    => $properties
             ];
 
+            if($eventTimestamp != null)
+            {
+                $eventData['timestamp'] = $eventTimestamp;
+            }
+
             $this->pushEvent($merchant, $eventData);
         }
         catch (\Exception $e)
@@ -63,7 +68,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
     }
 
-    public function pushTrackEvent(Merchant\Entity $merchant, array $properties, string $eventName)
+    public function pushTrackEvent(
+        Merchant\Entity $merchant, array $properties, string $eventName, int $eventTimestamp = null)
     {
         if ($this->shouldPushEvent($merchant) === false)
         {
@@ -94,6 +100,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 Constants::INTEGRATIONS => $this->getIntegrations($merchant)
             ];
 
+            if($eventTimestamp != null)
+            {
+                $eventData['timestamp'] = $eventTimestamp;
+            }
+
             $this->pushEvent($merchant, $eventData);
         }
         catch (\Exception $e)
@@ -105,10 +116,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
     }
 
-    public function pushIdentifyAndTrackEvent(Merchant\Entity $merchant, array $properties, string $eventName)
+    public function pushIdentifyAndTrackEvent(
+        Merchant\Entity $merchant, array $properties, string $eventName, int $eventTimestamp = null)
     {
-        $this->pushIdentifyEvent($merchant, $properties);
-        $this->pushTrackEvent($merchant, $properties, $eventName);
+        $this->pushIdentifyEvent($merchant, $properties, $eventTimestamp);
+        $this->pushTrackEvent($merchant, $properties, $eventName, $eventTimestamp);
     }
 
     protected function shouldPushEvent(Merchant\Entity $merchant): bool

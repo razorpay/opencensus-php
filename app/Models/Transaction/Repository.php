@@ -538,10 +538,19 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function filterMerchantsWithFirstTransactionBetweenTimestamps(array $merchantIdList, int $from, int $to)
+    public function filterMerchantsWithFirstTransactionBetweenTimestamps(
+        array $merchantIdList, int $from, int $to, bool $withConnection = true)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
-            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+        if($withConnection === true)
+        {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        return $query->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
             ->having('first_created_at', '>=', $from)
@@ -551,15 +560,24 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function fetchTransactedMerchants(string $type, int $from, int $to = null, bool $regularMerchantsOnly = true)
+    public function fetchTransactedMerchants(
+        string $type, int $from, int $to = null, bool $regularMerchantsOnly = true, bool $withConnection = true)
     {
         $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
         $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
-        $query = $this->newQueryWithConnection($this->getMasterReplicaConnection())
-            ->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
+        if($withConnection === true)
+        {
+            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+        }
+        else
+        {
+            $query = $this->newQuery();
+        }
+
+        $query = $query->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->where($this->dbColumn(Entity::CREATED_AT), '>=', $from);
@@ -2595,7 +2613,8 @@ class Repository extends Base\Repository
             $transactionIdColumn,
             $transactionAmountColumn,
             $transactionCurrencyColumn,
-            $merchantIdColumn
+            $merchantIdColumn,
+            $createdAtColumn
         ];
 
         return $this->newQueryWithConnection($this->getReportingReplicaConnection())

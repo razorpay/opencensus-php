@@ -2275,6 +2275,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function handleOnboardingCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->handleCron($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function handleSendNotificationCron()
     {
         $input = Request::all();

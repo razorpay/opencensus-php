@@ -89,6 +89,7 @@ class Route
 
         'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                     ],
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'  ],
+        'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/crons',                     'MerchantController@handleOnboardingCrons'],
         'merchant_onboarding_notify'               => ['post',     'merchants/onboarding/notify',                    'MerchantController@handleSendNotificationCron'       ],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'           ],
@@ -3801,6 +3802,7 @@ class Route
         // cron for generating merchant report
         'merchant_report',
         'merchant_onboarding_escalations',
+        'merchant_onboarding_crons',
         'merchant_onboarding_notify',
         'settlement_ondemand_process',
         'internal_balance_fetch_by_merchant_id',
@@ -11027,6 +11029,7 @@ class Route
             'partner_commission_pending',
 
             'merchant_onboarding_escalations',
+            'merchant_onboarding_crons',
             'merchant_onboarding_notify',
             'setcronjob_webhook',
             // The rest are crons

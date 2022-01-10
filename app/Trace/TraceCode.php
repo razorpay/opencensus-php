@@ -4922,6 +4922,17 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ESCALATION_V2_SUCCESS                 = 'ESCALATION_V2_SUCCESS';
     const ESCALATION_V2_FAILURE                 = 'ESCALATION_V2_FAILURE';
 
+    const CREATE_CRON_JOB                       = 'CREATE_CRON_JOB';
+    const EDIT_CRON_JOB                         = 'EDIT_CRON_JOB';
+
+    const CRON_ATTEMPT_STARTED                  = 'CRON_ATTEMPT_STARTED';
+    const CRON_ATTEMPT_SKIPPED                  = 'CRON_ATTEMPT_SKIPPED';
+    const CRON_ATTEMPT_COMPLETE                 = 'CRON_ATTEMPT_COMPLETE';
+    const CRON_ATTEMPT_FAILURE                  = 'CRON_ATTEMPT_FAILURE';
+    const CRON_ATTEMPT_ACTION_FAILURE           = 'CRON_ATTEMPT_ACTION_FAILURE';
+
+    const CRON_DATA_COLLECTOR_TRACE             = 'CRON_DATA_COLLECTOR_TRACE';
+
     //Notifications
     const SEND_NOTIFICATION                     = 'SEND_NOTIFICATION';
     const SEND_NOTIFICATION_ATTEMPT_SKIPPED     = 'SEND_NOTIFICATION_ATTEMPT_SKIPPED';

@@ -13,17 +13,6 @@ class Service extends Base\Service
         $timeBound = $input[Constants::TIME_BOUND] ?? false;
         $core      = (new Core);
 
-        try
-        {
-            $core->handleMtuSegmentEvent();
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
-                'type'  => 'segment_mtu',
-                'error' => $e->getMessage()
-            ]);
-        }
 
         try
         {
