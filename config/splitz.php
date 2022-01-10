@@ -145,5 +145,7 @@ return [
         'CATALYST_EF_BANNER' => env('CATALYST_EF_BANNER', ''),
         'CATALYST_G_BANNER' => env('CATALYST_G_BANNER', ''),
 
+        //2FA Mobile Signup 
+        'ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ' => env('ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ', ''),
     ]
 ];

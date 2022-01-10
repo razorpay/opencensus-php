@@ -3,11 +3,10 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import RTracking from 'react-tracking';
 
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { updateSelfContact } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
-
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
@@ -15,8 +14,6 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import PasswordVerification from './PasswordVerification';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 @connect((state) => ({ user: state.session.user }), {
   openModal,
   closeModal,
@@ -32,7 +29,7 @@ class Toggle2FA extends Component {
   showModal = (component) => {
     this.props.openModal({
       size: 'small',
-      component: component,
+      component,
     });
   };
 
@@ -41,7 +38,7 @@ class Toggle2FA extends Component {
     const secondFactorAuthPayload = { second_factor_auth: flag };
 
     if (user.isCriticalRouteExperimentEnabled) {
-      return this.sendUpdateSecondFactorAuthRequest(secondFactorAuthPayload);
+      this.sendUpdateSecondFactorAuthRequest(secondFactorAuthPayload);
     } else {
       this.showModal(
         <PasswordVerification
@@ -160,7 +157,7 @@ class Toggle2FA extends Component {
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        return action(flag);
+        return action?.(flag);
       },
     });
   };
@@ -176,21 +173,31 @@ class Toggle2FA extends Component {
     });
   }
 
-  toggle2FA = (flag) => {
+  toggle2FA = (flag, options) => {
     //Hold the toggle state until a final API call is made & resolved
+    // eslint-disable-next-line no-async-promise-executor
     return new Promise((resolve) => {
       this.actionCompleted = resolve;
+      let action;
+      // skipping VerifyPassword flow if SetPasswordModal is triggered in TwoFactorVerificationProvider
+      if (options?.skipVerifyPassword) {
+        action = () => {
+          this.sendUpdateSecondFactorAuthRequest({ second_factor_auth: flag });
+        };
+      } else {
+        action = this.verifyPassword;
+      }
+
       if (flag) {
-        const action = this.verifyPassword;
         this.confirmEnable({ action, flag });
       } else {
-        this.confirmDisable({ action: this.verifyPassword, flag });
+        this.confirmDisable({ action, flag });
       }
     });
   };
 
-  onToggleChange = (flag, cb) =>
-    this.toggle2FA(flag).then((completed) => {
+  onToggleChange = (flag, cb, options = {}) =>
+    this.toggle2FA(flag, options).then((completed) => {
       //Set the sate in redux store to reflect the new changes
       if (completed) {
         this.props.onToggleComplete(flag);
@@ -241,6 +248,7 @@ class Toggle2FA extends Component {
   };
 }
 
+// eslint-disable-next-line babel/new-cap
 export default RTracking(() => {
   return window.rzpQ.component('Toggle2FA');
 })(Toggle2FA);

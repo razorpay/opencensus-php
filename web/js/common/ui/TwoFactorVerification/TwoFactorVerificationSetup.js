@@ -1,51 +1,19 @@
+import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
 import ModalHeader from 'common/ui/ModalHeader';
-
 import Form from 'common/new-ui/Form';
 import { AsyncBtn } from 'common/new-ui/Button';
-
-import VerifyContactMobile from 'common/ui/VerifyContactMobile';
-import UpdateContactMobile from 'common/ui/UpdateContactMobile';
-
 import DocsLink from 'merchant/components/DocsLink';
 
-@connect(
-  (state) => ({
-    currentUser: state.session.user.user,
-  }),
-  {
-    closeModal,
-    openModal,
-  },
-)
+@connect(null, {
+  closeModal,
+  openModal,
+})
 export default class TwoFactorVerificationSetup extends React.Component {
   onCloseClick = () => {
     this.props.onClose();
     this.props.closeModal();
-  };
-
-  initiateTwoFactorVerificationSetup = () => {
-    const currentUser = this.props.currentUser;
-
-    if (currentUser.contact_mobile) {
-      this.props.openModal({
-        size: 'small',
-        component: (
-          <VerifyContactMobile onComplete={this.props.onComplete} onClose={this.onCloseClick} />
-        ),
-      });
-    } else {
-      this.props.openModal({
-        size: 'small',
-        component: (
-          <UpdateContactMobile onComplete={this.props.onComplete} onClose={this.onCloseClick} />
-        ),
-      });
-    }
   };
 
   render() {
@@ -58,8 +26,9 @@ export default class TwoFactorVerificationSetup extends React.Component {
           </div>
 
           <p class="m-b">
-            You haven't set-up 2 step verification for your account. Please verify your mobile
-            number to set it up.
+            {
+              "You haven't set-up 2 step verification for your account. Please verify your mobile number to set it up."
+            }
           </p>
           <p class="m-b">
             <DocsLink
@@ -73,7 +42,7 @@ export default class TwoFactorVerificationSetup extends React.Component {
               pendingState="Processing..."
               type="submit"
               class="Button--full-width"
-              onClick={this.initiateTwoFactorVerificationSetup}
+              onClick={this.props.onClickSetup}
             >
               Setup 2-step Verification
             </AsyncBtn.Primary>

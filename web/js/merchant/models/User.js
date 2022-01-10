@@ -555,6 +555,11 @@ export default class User {
     return getSplitzExperimentVariant('zapier_integration')?.variables?.result === 'on';
   }
 
+  /* Method to check if 2FA is enabled for Mobile Signup Users */
+  get is2FAMobileSignupEnabled() {
+    return getSplitzExperimentVariant('twoFA_mobile_signup_exp')?.variables?.result === 'on';
+  }
+
   /* Method to get the Failure Analysis Text Variant */
   get faTextVariant() {
     return getSplitzExperimentVariant('failure_analysis_text_exp')?.variables?.result;

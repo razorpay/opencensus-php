@@ -138,6 +138,12 @@ class Profile extends Component {
 
   componentDidMount() {
     this.openNeedsClarificationModal();
+
+    const { profile } = this.props;
+    //only call checkPassword api once
+    if (profile.check_password.loading) {
+      this.props.checkPassword();
+    }
   }
 
   isAdminOrOwner() {
@@ -538,18 +544,20 @@ class Profile extends Component {
       <div class="content-wrapper content-sm">
         <div class="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
-          {user && !user.user?.org_enforced_second_factor_auth && !!user.user?.signup_via_email && (
+          {user &&
+          !user.user?.org_enforced_second_factor_auth &&
+          (user.user?.signup_via_email || user.is2FAMobileSignupEnabled) ? (
             <User2FASettings />
-          )}
+          ) : null}
           <div class="panel panel-default">
             {user && user.current && (
               <div class="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
-                {!!user.user?.signup_via_email && (
+                {user.user?.signup_via_email || profile.check_password.data.set_password ? (
                   <a class="pull-right" onClick={this.openChangePasswordModal}>
                     Change Password
                   </a>
-                )}
+                ) : null}
               </div>
             )}
 

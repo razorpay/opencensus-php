@@ -34,11 +34,12 @@ class Merchant2FASettings extends React.PureComponent {
     });
     return this.context.criticalFlow({
       mode: ['live', 'test'],
-      onUserTwoFaVerified: () => {
+      // forward additional data from TwoFactorVerificationProvider to Toggle2FA
+      onUserTwoFaVerified: (data) => {
         // Tempory implementation
         // to avoid requirement of both new and old context
         // In <Toggle2Fa/>
-        return onToggleChange(flag, callback);
+        return onToggleChange(flag, callback, data);
       },
 
       onFlowTermination: () => {

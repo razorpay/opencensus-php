@@ -33,7 +33,8 @@ class TwoFactorVerificationOTP extends React.Component {
         receiver: this.props.contactMobile,
       })
       .then((data) => {
-        this.onCloseClick();
+        // not calling onCloseClick onSuccess since it triggers onClose callback
+        // closeModal can be explicitly called in onSuccess callback if required
         this.props.onSuccess(data);
       })
       .catch(({ errors }) => {

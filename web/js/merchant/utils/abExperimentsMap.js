@@ -283,4 +283,10 @@ export default {
     // prod experiment ids,
     'IEEVIgNmiPJuUU',
   ],
+  twoFA_mobile_signup_exp: [
+    // beta experiment ids
+    'IY6LESvNlVJsV9',
+    // prod experiment ids
+    'IZcVhevcxJxejr',
+  ],
 };

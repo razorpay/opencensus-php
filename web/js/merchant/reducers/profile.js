@@ -11,6 +11,7 @@ const ADD_WEBSITE_WORKFLOW_STATUS = 'ADD_WEBSITE_WORKFLOW_STATUS';
 const FETCH_RESERVE_BALANCE = 'FETCH_RESERVE_BALANCE';
 const STORE_TICKET_DETAILS = 'STORE_TICKET_DETAILS';
 const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
+const CHECK_PASSWORD = 'CHECK_PASSWORD';
 
 export const fetchBankAccount = () => {
   return {
@@ -197,6 +198,28 @@ export const getTicketStatus = () => {
   };
 };
 
+export const checkPassword = () => {
+  return {
+    type: CHECK_PASSWORD,
+    payload: merchantFetch({
+      url: 'users/set/password',
+      method: 'get',
+      mode: 'live',
+    }),
+  };
+};
+
+export const setPassword = (data) => {
+  return () => {
+    return merchantFetch({
+      url: 'users/set/password',
+      method: 'post',
+      mode: 'live',
+      data,
+    });
+  };
+};
+
 // {"text_80g_12a":"some text","image_url_80g":"some_url"}
 export function set80gMerchantDetails(params) {
   return merchantFetch({
@@ -273,6 +296,11 @@ const initialState = {
     data: {},
     error: null,
   },
+  check_password: {
+    loading: true,
+    data: {},
+    error: null,
+  },
 };
 
 export default (state = initialState, action) => {
@@ -333,6 +361,19 @@ export default (state = initialState, action) => {
         loading: false,
         error: action.payload.errors,
         data: initialState.ticket_status.data,
+      });
+
+    case `${CHECK_PASSWORD}::SUCCESS`:
+      return set(state, 'check_password', {
+        data: action.payload.data,
+        loading: false,
+        error: null,
+      });
+    case `${CHECK_PASSWORD}::ERROR`:
+      return set(state, 'check_password', {
+        loading: false,
+        error: action.payload.errors,
+        data: initialState.check_password.data,
       });
     default:
       return state;
