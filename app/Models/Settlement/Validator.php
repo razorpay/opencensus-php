@@ -172,6 +172,10 @@ class Validator extends Base\Validator
         'enable'    => 'required|boolean',
     ];
 
+    protected static $settlementMerchantconfigGetRules = [
+        'merchant_id'    => 'required|string|size:14',
+    ];
+
     protected static $settlementBulkMigrationsRules = [
         'limit'              => 'required|integer|max:7000|min:1',
         'offset_id'          => 'sometimes|string|alpha_num|size:14',

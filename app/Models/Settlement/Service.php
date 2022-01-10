@@ -7,7 +7,9 @@ use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
+use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
+use RZP\Models\Schedule;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -19,6 +21,7 @@ use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
+use RZP\Models\Schedule\Type;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
@@ -26,6 +29,7 @@ use RZP\Models\FundTransfer\Kotak;
 use RZP\Jobs\Settlement\LedgerRecon;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
+use RZP\Models\Schedule\Task as scheduleTask;
 
 class Service extends Base\Service
 {
@@ -973,6 +977,109 @@ class Service extends Base\Service
     // RSR-1970 merchant config from merchant dashboard
     public function merchantDashboardConfigGet(array $input) : array
     {
+        (new Validator)->validateInput('settlement_merchantconfig_get', $input);
+
+        $mid = $input['merchant_id'];
+
+        $isNewService = $this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, array($mid));
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_MERCHANT_DASHBOARD_FETCH_REQUEST,
+            [
+                'merchant_id'    => $mid,
+                'is_new_service' => $isNewService
+            ]);
+
+        if (empty($isNewService) === true)
+        {
+            $merchant = $this->repo->merchant->findOrFail($mid);
+
+            $schedulesFetched = $this->repo->schedule_task->fetchByMerchant($merchant, 'settlement');
+
+            $scheduleTasks = [];
+
+            $schedulesFetched->each(function ($scheduleTask) use (& $scheduleTasks)
+            {
+                array_push($scheduleTasks, [
+                    ScheduleTask\Entity::METHOD                     => $scheduleTask->getAttribute(ScheduleTask\Entity::METHOD),
+                    Schedule\Entity::DELAY                          => $scheduleTask->schedule->getAttribute(Schedule\Entity::DELAY),
+                    ScheduleTask\Entity::INTERNATIONAL              => $scheduleTask->getAttribute(ScheduleTask\Entity::INTERNATIONAL),
+                ]);
+
+                return true;
+            });
+
+            $methodOfPayments = [
+                null,
+                Payment\Method::EMANDATE,
+                Payment\Method::EMI,
+                Payment\Method::CARD,
+                Payment\Method::UPI,
+                Payment\Method::BANK_TRANSFER,
+                Payment\Method::WALLET,
+                Payment\Method::NETBANKING,
+            ];
+
+            $newSettlementSchedules = array();
+            $response = array();
+
+            $response['config']['features'] = null;
+
+            foreach ($scheduleTasks as $schedule)
+            {
+
+                $scheduleMethod = $schedule[scheduleTask\Entity::METHOD];
+
+                //Setting schedule name, eg: name = 'T+7 Working days', where delay=7
+                $ScheduleName = 'T+' . $schedule[Schedule\Entity::DELAY] . ' Working days';
+
+                if(in_array($scheduleMethod, $methodOfPayments) === true)
+                {
+                    if($schedule[scheduleTask\Entity::INTERNATIONAL] === 0)
+                    {
+                        if($scheduleMethod === null)
+                        {
+                            $method = SettlementServiceMigration::PREFIX_DOMESTIC . SettlementServiceMigration::DEFAULT_CONST;
+                        }
+                        else
+                        {
+                            $method = SettlementServiceMigration::PREFIX_DOMESTIC . $scheduleMethod ;
+                        }
+
+                        $newSettlementSchedules['payment'][$method] = $ScheduleName;
+                    }
+                    else
+                    {
+                        if($scheduleMethod === null)
+                        {
+                            $method =  SettlementServiceMigration::PREFIX_INTERNATIONAL. SettlementServiceMigration::DEFAULT_CONST;
+                        }
+                        else
+                        {
+                            $method = SettlementServiceMigration::PREFIX_INTERNATIONAL . $scheduleMethod ;
+                        }
+
+                        $newSettlementSchedules['payment'][$method] = $ScheduleName;
+                    }
+
+                }
+                else
+                {
+                    $newSettlementSchedules[$scheduleMethod][SettlementServiceMigration::DEFAULT_CONST] = $ScheduleName;
+                }
+            }
+
+            foreach ($newSettlementSchedules as $type => $methods)
+            {
+                foreach ($methods as $method => $scheduleName)
+                {
+                    $response['config']['schedules'][$type][$method] = $scheduleName;
+                }
+            }
+            return $response;
+        }
+
+        // if merchant is on NSS, Fetch data from there itself
         return app('settlements_merchant_dashboard')->merchantDashboardConfigGet($input);
     }
 
