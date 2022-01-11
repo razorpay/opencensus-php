@@ -25,12 +25,13 @@ class OrderDetailsContainer extends Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
-    if (eventCategory)
-      window.rzpAnalytics({
+    if (eventCategory) {
+      window?.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Orders',
         eventLabel: `order_id=${id}`,
       });
+    }
   }
 
   componentWillUnmount() {
