@@ -32,6 +32,8 @@ RUN apk update && \
     apk upgrade && \
     apk add git
 
+RUN git config --global url.https://github.com/.insteadOf git://github.com/
+
 RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt \
     && /usr/local/openresty/luajit/bin/luarocks install lua-resty-redis \
     && /usr/local/openresty/luajit/bin/luarocks install lua-resty-lock \
