@@ -62,7 +62,7 @@ class Step extends Component {
         <div
           className={`step-indicator ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}
         >
-          {isLoading ? (
+          {isLoading || !possibleStatuses[status] ? (
             <PlaceholderLoader />
           ) : (
             <img

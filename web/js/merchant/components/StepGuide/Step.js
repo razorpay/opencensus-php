@@ -1,3 +1,4 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { PossibleStatuses } from 'merchant/helpers/data';
@@ -16,16 +17,13 @@ export default class Step extends React.Component {
     const isLoading = status === PossibleStatuses.loading;
 
     return (
-      <div
-        className={`StepGuide--Step status-${status}`}
-        onClick={this.props.onStepClick}
-      >
+      <div className={`StepGuide--Step status-${status}`} onClick={this.props.onStepClick}>
         <div className="Step--Connector">
           <div className="Connector--Content" />
         </div>
 
         <div className="Step--Indicator">
-          {isLoading ? (
+          {isLoading || !PossibleStatuses[status] ? (
             <PlaceholderLoader />
           ) : (
             <img src={`/dist/css/assets/onboarding/${status}.png`} />
@@ -34,9 +32,7 @@ export default class Step extends React.Component {
 
         <div className="Step--Content">
           {title && (
-            <div className="Content--Title">
-              {isLoading ? <PlaceholderLoader /> : title}
-            </div>
+            <div className="Content--Title">{isLoading ? <PlaceholderLoader /> : title}</div>
           )}
 
           {content && (
