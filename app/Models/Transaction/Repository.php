@@ -510,7 +510,7 @@ class Repository extends Base\Repository
         $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
         $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
 
-        $excludeMerchantIdList =  $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        $excludeMerchantIdList =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)

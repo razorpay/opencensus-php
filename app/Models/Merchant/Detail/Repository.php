@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Database\Connection;
 use DB;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -326,7 +328,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantIdsByActivationStatus(array $mids, array $activationStatusList): array
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->select(Entity::MERCHANT_ID)
                     ->whereIn(Entity::MERCHANT_ID, $mids)
                     ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
@@ -337,7 +339,7 @@ class Repository extends Base\Repository
 
     public function filterL1NotSubmittedMerchantIds(int $from, int $to): array
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
@@ -348,7 +350,7 @@ class Repository extends Base\Repository
 
     public function filterL2BankDetailsNotSubmittedMerchantIds(int $from, int $to): array
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
@@ -364,7 +366,7 @@ class Repository extends Base\Repository
 
     public function filterL2AadharDetailsNotSubmittedMerchantIds(int $from, int $to): array
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')

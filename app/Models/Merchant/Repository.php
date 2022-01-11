@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DB;
 use Closure;
 
+use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Models\Base;
@@ -431,7 +432,7 @@ class Repository extends Base\Repository
 
     public function fetchAllLiveAndActivatedRzpOrgMerchants(int $from, int $to)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->select(Entity::ID)
                     ->where(Entity::LIVE, '=', 1)
                     ->where(Entity::ACTIVATED, '=', 1)

@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\M2MReferral;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Base;
 
@@ -43,7 +44,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantsInReferralState(array $merchantIdList, array $status)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
                     ->whereIn(Entity::STATUS, $status)
                     ->get()

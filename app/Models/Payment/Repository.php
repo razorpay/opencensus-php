@@ -300,7 +300,7 @@ class Repository extends Base\Repository
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where($paymentStatus, '=', Status::CAPTURED)
@@ -497,7 +497,7 @@ class Repository extends Base\Repository
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where($paymentStatus, '=', Status::CAPTURED)
@@ -539,7 +539,7 @@ class Repository extends Base\Repository
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->join($tTableName, $paymentTerminalId, '=', $terminalId)
             ->join($cardTableName, $paymentCardId, '=', $cardId)
             ->join($iinTableName, $cardIin, '=', $iin)
@@ -1579,7 +1579,7 @@ class Repository extends Base\Repository
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
@@ -1833,7 +1833,7 @@ class Repository extends Base\Repository
 
     public function getPaymentVolumeBetweenTimestamp($from, $to)
     {
-        $vol = $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        $vol = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->betweenTime($from, $to)
                     ->statusSuccess()
                     ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
@@ -2684,7 +2684,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantsWithFirstPaymentAboveTimestamp(array $merchantIdList, int $timestamp)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
             ->groupBy(Entity::MERCHANT_ID)

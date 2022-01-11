@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use RZP\Models\Feature\Constants;
 use Illuminate\Database\Query\JoinClause;
 
@@ -1686,7 +1687,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn    = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)
@@ -1726,7 +1727,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)
