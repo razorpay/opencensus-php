@@ -672,6 +672,70 @@ class ActivationTest extends OAuthTestCase
         $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
+    public function testActivationDefaultMethodsBasedOnCategory4411()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+        $this->mockRaven();
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '4411';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'amex'          => false,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [],
+            'prepaid_card'  => true,
+            'paylater'      => true,
+            'airtelmoney'   => true,
+            'freecharge'    => true,
+            'jiomoney'      => true,
+            'mobikwik'      => true,
+            'mpesa'         => true,
+            'olamoney'      => true,
+            'payumoney'     => true,
+            'payzapp'       => true,
+            'sbibuddy'      => true,
+            'phonepe'       => true,
+            'cardless_emi'  => true,
+            'debit_emi_providers'=> [],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 1], $methodsArray['debit_emi_providers']);
+    }
+
     public function testActivationDefaultMethodsBasedOnCategory8661Others()
     {
         $merchantId = '1cXSLlUU8V9sXl';

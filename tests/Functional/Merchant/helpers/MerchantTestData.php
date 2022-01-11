@@ -8216,6 +8216,21 @@ return [
         ],
     ],
 
+    'testGetAutoDisabledMethodsForMerchantWithAmexBlockedMccs' => [
+        'request'  => [
+            'url'    => '/internal/auto_disabled_methods/10000000000000',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'auto_disabled_methods' => [
+                    "amex",
+                    ]
+            ],
+        ],
+    ],
+
     'testGetAutoDisabledMethodsForMerchantWithIgnoreBlacklistedForInstrument' => [
         'request'  => [
             'url'    => '/internal/auto_disabled_methods/10000000000000',
@@ -8225,11 +8240,15 @@ return [
             'status_code' => 200,
             'content'     => [
                 'auto_disabled_methods' =>
-                    ["credit_card",
-                     "emi",
-                     "cardless_emi",
-                     "prepaid_card",
-                     "paylater",
+                    [
+                        "credit_card",
+                        "amex",
+                        "emi",
+                        "cardless_emi",
+                        "prepaid_card",
+                        "paylater",
+                        "phonepe",
+                        "hdfc_debit_emi",
                     ]
             ],
         ],

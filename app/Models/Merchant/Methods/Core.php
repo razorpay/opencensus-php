@@ -72,10 +72,15 @@ class Core extends Base\Core
         // Setup workflow
         $workflow = $this->app['workflow']->setOriginal(clone $methods);
 
-        if ((isset($input['emi']['credit']) ===  true) || isset($input['emi']['debit']) === true)
+        $mcc = $merchant->getCategory();
+        if(isset($input['emi']['credit']) ===  true || isset($input['emi']['debit']) === true)
         {
-            $mcc = $merchant->getCategory();
             (new Validator)->validateCategoryForEmi($mcc);
+        }
+
+        if(isset($input['card_networks']['AMEX']) === true)
+        {
+            (new Validator)->validateCategoryForAmexCardNetwork($mcc);
         }
 
         $methods->setMethods($input);

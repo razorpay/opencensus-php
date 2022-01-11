@@ -439,6 +439,31 @@ return [
         ],
     ],
 
+        'testEnableCardnetworksAmexForBlacklistedMccs' => [
+            'request' => [
+                'url' => '/merchants/10000000000000/methods',
+                'method' => 'put',
+                'content'   => [
+                    'card_networks' => [
+                        'AMEX' => 1,
+                    ]
+                ]
+            ],
+            'response'  => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'AMEX card network cannot be enabled for this MCC: 4411',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+    ],
+
     'testEnableDebitEmi' => [
         'request' => [
             'url' => '/merchant/methods',

@@ -161,4 +161,13 @@ class Validator extends Base\Validator
                 'emi');
         }
     }
+
+    public function validateCategoryForAmexCardNetwork(string $mcc)
+    {
+        if (in_array($mcc, DefaultMethodsForCategory::AMEX_BLACKLISTED_MCCS)) {
+            throw new Exception\BadRequestValidationFailureException(
+                'AMEX card network cannot be enabled for this MCC: '.$mcc,
+                'card_networks');
+        }
+    }
 }
