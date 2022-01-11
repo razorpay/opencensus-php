@@ -25,6 +25,7 @@ use OpenCensus\Trace\Integrations\Grpc;
 
 use OpenCensus\Trace\Integrations\Postgres;
 use OpenCensus\Trace\Integrations\Redis;
+use OpenCensus\Trace\Integrations\Sqs;
 use OpenCensus\Trace\Propagator\JaegerPropagator;
 use OpenCensus\Trace\Tracer;
 use OpenCensus\Trace\Integrations\Laravel;
@@ -48,6 +49,7 @@ class OpenCensusProvider extends ServiceProvider
         Curl::load();
         Postgres::load();
         Redis::load();
+        Sqs::load();
         // Start the request tracing for this request
         $propagator = new JaegerPropagator();
         $tracerOptions = ['propagator' => $propagator];
