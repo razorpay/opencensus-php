@@ -160,7 +160,7 @@ export default class BaseForm extends React.PureComponent {
         </Input.TextareaAutoResize>
 
         <input name="field_type" value={this.fieldIndexInOptions} hidden readOnly />
-        <input name="required" value={Boolean(isRequired)} hidden readOnly />
+        <input name="required" value={Number(isRequired)} hidden readOnly />
 
         <div class={classList('Field--representation', _RepresentationClass)}>
           <div class="Field-wrapper placeholder-field">{_RepresentationEl}</div>
