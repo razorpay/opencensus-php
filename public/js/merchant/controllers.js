@@ -41,6 +41,7 @@ angular
               theme.apply(
                 angular.extend(baseTheme, {
                   ...data.merchant_styles,
+                  navBg: '#F0F3F4',
                 }),
               );
               break;
