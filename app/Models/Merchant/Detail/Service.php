@@ -2639,7 +2639,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        // check if the merchant has more or zero users as [OWNERS]
+        // check if the merchant has more or zero users as [OWNERS] with the old contact mobile
         $this->validator->validateUniqueMerchantOwnerUserForMobile($merchant, $input[DetailConstants::OLD_CONTACT_NUMBER]);
 
         // add validator for contact already exists

@@ -4198,4 +4198,57 @@ return [
         ],
     ],
 
+    'testUpdateContactMobileAlreadyVerifiedFailure' => [
+        'request'   => [
+            'url'     => '/users/contact/sendotp',
+            'method'  => 'post',
+            'content' => [
+                'contact_mobile' => '+919876543210',
+                'otp_auth_token' => 'otp_auth_token',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Contact mobile is already verified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUserContactMobileAlreadyTakenFailure' => [
+        'request'   => [
+            'url'     => '/users/contact/sendotp',
+            'method'  => 'post',
+            'content' => [
+                'contact_mobile' => '+919876543210',
+                'otp_auth_token' => 'otp_auth_token',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+        ],
+    ],
 ];

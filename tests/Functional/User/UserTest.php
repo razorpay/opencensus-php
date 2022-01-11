@@ -6223,4 +6223,80 @@ class UserTest extends TestCase
         $this->testAddEmailFromProfileSection();
     }
 
+    public function testUpdateContactMobileAlreadyVerifiedFailure()
+    {
+        $userAttributes = [
+            'contact_mobile'            => '9876543210',
+            'contact_mobile_verified'   => true,
+        ];
+
+        $user = $this->fixtures->create('user', $userAttributes);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->fixtures->merchant->setRestricted(true, $merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $user['id']);
+
+        $this->startTest();
+    }
+
+    public function testUserContactMobileAlreadyTakenFailure()
+    {
+        $user1Attributes = [
+            'contact_mobile'            => '1234567890',
+            'contact_mobile_verified'   => true,
+        ];
+
+        $user1 = $this->fixtures->create('user', $user1Attributes);
+
+        $merchant1 = $this->fixtures->create('merchant');
+
+        $merchantId1 = $merchant1->getId();
+
+        $mappingData1 = [
+            'user_id'     => $user1->getId(),
+            'merchant_id' => $merchantId1,
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData1);
+
+        $user2Attributes = [
+            'contact_mobile'            => '9876543210',
+            'contact_mobile_verified'   => true,
+        ];
+
+        $user2 = $this->fixtures->create('user', $user2Attributes);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $merchantId2 = $merchant2->getId();
+
+        $mappingData2 = [
+            'user_id'     => $user2->getId(),
+            'merchant_id' => $merchantId2,
+            'role'        => 'owner',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData2);
+
+        $this->fixtures->merchant->setRestricted(true, $merchantId1);
+
+        $this->fixtures->merchant->setRestricted(true, $merchantId2);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId1, $user1['id']);
+
+        $this->startTest();
+    }
 }

@@ -763,28 +763,34 @@ class Validator extends Base\Validator
      */
     public function validateMerchantUniqueNumberExcludingCurrentMerchantDetails($merchantId, $newNumber)
     {
-        $merchantDetail = (new Repository())->findMerchantDetailsWithContactMobile($newNumber);
+        $validNewMobileNumberFormats = (new PhoneBook($newNumber))->getMobileNumberFormats();
 
-        if (isset($merchantDetail) === true and $merchantDetail->getId() !== $merchantId)
+        $merchantDetail = (new Repository())->findMerchantWithContactNumbersExcludingMerchant($merchantId, $validNewMobileNumberFormats);
+
+        if (isset($merchantDetail) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN);
         }
     }
 
-    public function validateUniqueMerchantOwnerUserForMobile(Merchant\Entity $merchant, $old_contact_number)
+    public function validateUniqueMerchantOwnerUserForMobile(Merchant\Entity $merchant, $oldNumber)
     {
-        $merchantCount = $merchant->users()
-                                  ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
-                                  ->where(Entity::CONTACT_MOBILE, '=', $old_contact_number)
-                                  ->count();
+        $validOldMobileNumberFormats = (new PhoneBook($oldNumber))->getMobileNumberFormats();
 
-        if($merchantCount > 1){
+        $merchantCountForAllMobileNumberFormats = $merchant->users()
+                                                           ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
+                                                           ->whereIn(Entity::CONTACT_MOBILE, $validOldMobileNumberFormats)
+                                                           ->count();
+
+        if($merchantCountForAllMobileNumberFormats > 1)
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED);
         }
 
-        if($merchantCount === 0){
+        if($merchantCountForAllMobileNumberFormats === 0)
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED);
         }

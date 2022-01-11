@@ -104,11 +104,11 @@ class Repository extends Base\Repository
     }
 
 
-    public function findUniqueNumberExcludingCurrentUser(string $id, string $number)
+    public function findUserWithContactNumbersExcludingUser(string $userIdToBeExcluded, array $numbers)
     {
-        return $this->newQuery()
-                    ->where(Entity::CONTACT_MOBILE, '=', $number)
-                    ->where(Entity::ID, '!=', $id)
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->whereIn(Entity::CONTACT_MOBILE, $numbers)
+                    ->where(Entity::ID, '!=', $userIdToBeExcluded)
                     ->first();
     }
 

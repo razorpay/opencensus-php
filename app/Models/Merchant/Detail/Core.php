@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use Mail;
 use Queue;
 use Config;
+use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Encryption;
 use RZP\Exception;
@@ -5562,9 +5563,11 @@ class Core extends Base\Core
 
     public function changeMerchantUserMobile(Merchant\Entity $merchant, $input)
     {
+        $validOldMobileNumberFormats = (new PhoneBook($input[DetailConstants::OLD_CONTACT_NUMBER]))->getMobileNumberFormats();
+
         $user = $merchant->users()
                          ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
-                         ->where(Entity::CONTACT_MOBILE, '=', $input[DetailConstants::OLD_CONTACT_NUMBER])
+                         ->whereIn(Entity::CONTACT_MOBILE, $validOldMobileNumberFormats)
                          ->first();
 
         $this->trace->info(TraceCode::MERCHANT_USER_NUMBER_CHANGE, [
@@ -5594,7 +5597,7 @@ class Core extends Base\Core
     {
         $oldMerchantContact = $input[DetailConstants::OLD_CONTACT_NUMBER];
 
-        $newMerchantContact  = $input[DetailConstants::NEW_CONTACT_NUMBER];
+        $newMerchantContact = $input[DetailConstants::NEW_CONTACT_NUMBER];
 
         $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $newMerchantContact);
 

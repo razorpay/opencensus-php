@@ -1064,15 +1064,19 @@ class Validator extends Base\Validator
 
     public function validateUniqueNumberExcludingCurrentUser(Entity $user, $number)
     {
+        $validContactMobileNumberFormats = (new PhoneBook($number))->getMobileNumberFormats();
+
         // if same number already verified
-        if ($user->getContactMobile() === $number and $user->isContactMobileVerified() === true)
+        if ((in_array($user->getContactMobile(), $validContactMobileNumberFormats, true)) and
+            ($user->isContactMobileVerified() === true))
         {
             throw new BadRequestValidationFailureException('Contact mobile is already verified');
         }
 
-        $response = (new Repository())->findUniqueNumberExcludingCurrentUser($user->getId(), $number);
+        $response = (new Repository())->findUserWithContactNumbersExcludingUser($user->getId(), $validContactMobileNumberFormats);
 
-        if(isset($response) === true){
+        if (isset($response) === true)
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN);
         }

@@ -387,10 +387,11 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function findMerchantDetailsWithContactMobile(string $newNumber)
+    public function findMerchantWithContactNumbersExcludingMerchant(string $merchantIdToBeExcluded, array $numbers)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->where(Entity::CONTACT_MOBILE, '=', $newNumber)
+                    ->whereIn(Entity::CONTACT_MOBILE, $numbers)
+                    ->where(Entity::MERCHANT_ID, '!=', $merchantIdToBeExcluded)
                     ->first();
     }
 }

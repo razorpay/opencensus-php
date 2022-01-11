@@ -3071,4 +3071,69 @@ return [
             'status_code' => 200
         ],
     ],
+
+    'testUpdateContactUniqueOwnerWithContactMobileDifferentFormatSuccess' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '+911234567890',
+                'new_contact_number' => '9876543210'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateContactMultipleOwnersSameContactMobileWithDifferentFormatFailure' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '+919876543210',
+                'new_contact_number' => '1234567890'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>  PublicErrorDescription::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED,
+        ],
+    ],
+
+    'testUpdateMerchantContactWithContactAlreadyExistsWithDifferentFormatFailure' => [
+        'request'  => [
+            'content' => [
+                'old_contact_number' => '9876543210',
+                'new_contact_number' => '+911234567890'
+            ],
+            'url'     => '/merchants/{id}/mobile',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' =>  PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' =>  ErrorCode::BAD_REQUEST_CONTACT_MOBILE_ALREADY_TAKEN,
+        ],
+    ],
 ];
