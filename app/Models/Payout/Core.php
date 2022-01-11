@@ -2985,6 +2985,12 @@ class Core extends Base\Core
                     'failure_reason' => $ftaFailureReason,
                 ]);
         }
+        // the below logic tries to find entry in Banking account statement table(BAS) for a payout
+        // BAS table has rows only for CA payouts. So skipping below code for VA payouts
+        if ($payout->balance->isAccountTypeShared() === true)
+        {
+            return;
+        }
 
         $bas = null;
 

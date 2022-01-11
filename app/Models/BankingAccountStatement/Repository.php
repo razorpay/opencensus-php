@@ -169,7 +169,14 @@ class Repository extends Base\Repository
     {
         // TODO: check uniqueness logic for cms_ref_no
         // JIRA ticket: https://razorpay.atlassian.net/browse/RX-695
-        $cmsRefNumber = $payout->fundTransferAttempts->first()->getCmsRefNo();
+        $fta = $payout->fundTransferAttempts->first();
+
+        if ($fta === null)
+        {
+            return null;
+        }
+
+        $cmsRefNumber = $fta->getCmsRefNo();
 
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSACTION_ID, $cmsRefNumber);
