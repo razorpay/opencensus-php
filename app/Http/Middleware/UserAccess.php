@@ -26,9 +26,15 @@ use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\User\Metric as UserMetricCode;
+use RZP\Models\Merchant\Attribute;
 
 class UserAccess
 {
+    //TODO: decide where to place these constants
+    const MERCHANT_ALLOWED     = 'allowed';
+    const MERCHANT_DENIED      = 'denied';
+    const MERCHANT_NO_RULES    = 'no_rules';
+
     /**
      * @var BasicAuth
      */
@@ -98,12 +104,12 @@ class UserAccess
      * then all the users of the merchant will get access to that specific route.
      * Also the entire logic is application on proxy auth (but not admin auth).
      *
-     * @todo we should move from blacklisting to whitelisting.
-     *
-     * @param \Illuminate\Http\Request  $request
-     * @param Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param Closure $next
      *
      * @return mixed
+     * @todo we should move from blacklisting to whitelisting.
+     *
      */
     public function handle(Request $request, Closure $next)
     {
@@ -181,7 +187,7 @@ class UserAccess
     private function validateRouteUserRolesPolicy($route)
     {
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
-        $userRole   = $this->ba->getUserRole();
+        $userRole = $this->ba->getUserRole();
 
         if ($routeRoles === null)
         {
@@ -222,6 +228,13 @@ class UserAccess
         }
         catch (\Throwable $e)
         {
+
+           if ($this->hasMerchantRulesSupport($route))
+           {
+               return ApiResponse::unauthorized(
+                   ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+           }
+
             // TODO: This is added to identify impact on other clients if unauthorised requests are blocked
             $variant = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
                                                    RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED,
@@ -313,34 +326,44 @@ class UserAccess
         $org = 'RAZORPAY_X';
         // If role doesn't have route permission then deny otherwise allow
         //Checking if its a Axis User or a X User below
-        $isRoleValid = true;
+        $isRoleAllowedAccess = true;
 
-        if($routePermission === Permission::VIEW_TRANSACTION_STATEMENT) {
-            if ($this->getRoleTractionViewAccess($userRole) === 0) {
-                $isRoleValid = false;
+        //if custom permission not found, fall back to the system role
+            switch ($org) {
+                case 'RAZORPAY_X':
+                {
+                    $hasMerchantAllowedAccess = $this->verifyMerchantRules($userRole, $route, $routePermission);
+
+                    if ($hasMerchantAllowedAccess == self::MERCHANT_ALLOWED)
+                    {
+                        $isRoleAllowedAccess = true;
+                        break;
+                    }
+                    if ($hasMerchantAllowedAccess == self::MERCHANT_DENIED)
+                    {
+                        $isRoleAllowedAccess = false;
+                        break;
+                    }
+                    if ($hasMerchantAllowedAccess == self::MERCHANT_NO_RULES
+                        && UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
+                    {
+                        $isRoleAllowedAccess = false;
+                        break;
+                    }
+                    break;
+                }
+                case 'AXIS_CORPORATE':
+                {
+                    if (AxisCardsUser::isInvalidRolePermission($userRole, $routePermission)) {
+                        $isRoleAllowedAccess = false;
+                    }
+                    break;
+                }
             }
-        }
 
-        switch ($org)
+
+        if ($isRoleAllowedAccess !== true)
         {
-            case 'RAZORPAY_X':
-            {
-                if (UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))
-                {
-                    $isRoleValid = false;
-                }
-                break;
-            }
-            case 'AXIS_CORPORATE':
-            {
-                if (AxisCardsUser::isInvalidRolePermission($userRole, $routePermission))
-                {
-                    $isRoleValid = false;
-                }
-                break;
-            }
-        }
-        if($isRoleValid !== true){
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
     }
@@ -378,26 +401,46 @@ class UserAccess
         return $routePermissionList[$routeName];
     }
 
-    private function getRoleTractionViewAccess(string $userRole)
+    //TODO: decide if this list should be a part of Route.php
+    private function hasMerchantRulesSupport(string $route)
     {
-        $merchant = $this->ba->getMerchant();
+        //add routes to this array to allow merchant control access policies
+        $routesWithMerchantRules = [
+            'transaction_statement_fetch',
+            'transaction_statement_fetch_multiple',
+        ];
+        return in_array($route, $routesWithMerchantRules);
+    }
+
+    private function verifyMerchantRules(string $userRole, string $route, string $routePermission)
+    {
+        //merchant controlled access policies are at route permissions levels not at route levels
+        $attributeGroupNameMap = [
+            Permission::VIEW_TRANSACTION_STATEMENT => 'x_transaction_view',
+        ];
+
+        //merchant rules are not supported for this route
+        if (!$this->hasMerchantRulesSupport($route))
+        {
+            return self::MERCHANT_NO_RULES;
+        }
 
         try
         {
-            $merchantAttributes = $this->repo->merchant_attribute->getValue($merchant, 'primary', Group::X_TRANSACTION_VIEW, $userRole);
+            $merchant = $this->ba->getMerchant();
+            $merchantAttributes = (new Attribute\Core())->fetch(
+                $merchant,
+                'primary',
+                $attributeGroupNameMap[$routePermission],
+                $userRole);
         }
-        catch (\Throwable $e)
+        catch (\Exception $e)
         {
-            $this->trace->traceException($e);
-
-            return 1;
+            //zero entries in the table for this merchant for this route
+            return self::MERCHANT_NO_RULES;
         }
 
-        if($merchantAttributes['value'] === 'true')
-        {
-            return 1;
-        }
+        return $merchantAttributes['value'] === 'true' ? self::MERCHANT_ALLOWED : self::MERCHANT_DENIED;
 
-        return 0;
     }
 }

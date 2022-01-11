@@ -128,6 +128,103 @@ return [
         ],
     ],
 
+
+    'testFetchStatementWithAttributesPermissionTrue'          => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',
+            ],
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 2500,
+                'currency'       => 'INR',
+                'credit'         => 2500,
+                'debit'          => 0,
+                'balance'        => 102500,
+                'source'         => [
+                    'entity'         => 'bank_transfer',
+                    'mode'           => 'NEFT',
+                    'amount'         => 2500,
+                    'payer_name'     => null,
+                    'payer_account'  => '7654321234567',
+                    'payer_ifsc'     => 'HDFC0000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchStatementWithNoAttributes'          => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',
+            ],
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 2500,
+                'currency'       => 'INR',
+                'credit'         => 2500,
+                'debit'          => 0,
+                'balance'        => 102500,
+                'source'         => [
+                    'entity'         => 'bank_transfer',
+                    'mode'           => 'NEFT',
+                    'amount'         => 2500,
+                    'payer_name'     => null,
+                    'payer_account'  => '7654321234567',
+                    'payer_ifsc'     => 'HDFC0000001',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBillingLabelWithMerchantAttributesTrueForTransactionFetch' => [
+        'request'  => [
+            'url'     => '/merchants/billing_label/suggestions',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'Test Name Private Limited Ltd Ltd. Liability Partnership',
+                'TEST NAME PRIVATE LIMITED LTD LTD. LIABILITY PARTNERSHIP',
+                'Test Name',
+                'https://shopify.secondleveldomain.edu.in',
+                'secondleveldomain',
+                'SECONDLEVELDOMAIN',
+                'Secondleveldomain',
+                'secondleveldomain.edu.in',
+            ]
+        ]
+    ],
+
+    'testFetchStatementWithAttributesPermissionFalse'          => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',
+            ],
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content' => [
+                'error'       => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testFetchStatementForPayoutFromLedger' => [
         'request' => [
             'url'    => '/transactions/txn_00000000000001',

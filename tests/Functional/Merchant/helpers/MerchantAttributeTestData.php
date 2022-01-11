@@ -329,10 +329,6 @@ return [
         'request' => [
             'content' => [
                     [
-                        'type' => 'Owner',
-                        'value' => 'true',
-                    ],
-                    [
                         'type' => 'Admin',
                         'value' => 'true'
                     ],
@@ -357,10 +353,6 @@ return [
                 [
                     'type' => 'Finance L1',
                     'value' => 'false'
-                ],
-                [
-                    'type' => 'Owner',
-                    'value' => 'true'
                 ],
                 [
                     'type' => 'operations',

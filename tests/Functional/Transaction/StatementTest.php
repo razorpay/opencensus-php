@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Transaction;
 use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -79,6 +80,122 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($response['source']['id']);
         $this->assertNotEmpty($response['source']['bank_reference']);
         $this->assertNotEmpty($response['source']['payee_account']);
+    }
+
+    //merchant has rules and hitting a route with access control policies allowed with role allowed
+    public function testFetchStatementWithAttributesPermissionTrue()
+    {
+        $this->createBankTransferTransaction();
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] =  'https://x.razorpay.com';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $user =  (new User())->createBankingUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ],'admin');
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'primary',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'true'
+            ]);
+
+       $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+    }
+
+    //merchant has rules and hitting a route with access control policies allowed with role not allowed
+    public function testFetchStatementWithAttributesPermissionFalse()
+    {
+
+        $this->createBankTransferTransaction();
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] =  'https://x.razorpay.com';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $user =  (new User())->createBankingUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ],'admin');
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'primary',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'false'
+            ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+    }
+
+    //merchant has no rules and hitting a route with access control policies allowed
+    public function testFetchStatementWithNoAttributes()
+    {
+        $this->createBankTransferTransaction();
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Request-Origin'] =  'https://x.razorpay.com';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
+
+        $user =  (new User())->createBankingUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+    }
+
+    //merchant has rules and hitting a route with no access control policies allowed
+    public function testGetBillingLabelWithMerchantAttributesTrueForTransactionFetch()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'Test Name Private Limited ltd ltd. Liability partnership',
+            'business_website' =>  'https://shopify.secondleveldomain.edu.in'
+        ]);
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'primary',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'false'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function createMerchantAttribute(string $merchant_id, string $product, string $group, string $type, string $value)
+    {
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id'   => $merchant_id,
+                'product'       => $product,
+                'group'         => $group,
+                'type'          => $type,
+                'value'         => $value,
+                'updated_at'    => time(),
+                'created_at'    => time()
+            ]);
     }
 
     public function testFetchStatementForPayoutFromLedger()
