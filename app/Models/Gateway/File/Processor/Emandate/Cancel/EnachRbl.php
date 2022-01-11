@@ -117,7 +117,7 @@ class EnachRbl extends Base
 
             $undrlygCxlDtls->addChild(CancelRequestTags::CANCEL_RSN)
                 ->addChild(CancelRequestTags::RSN)
-                ->addChild(CancelRequestTags::PRTRY, 'NNBB');
+                ->addChild(CancelRequestTags::PRTRY, 'C002');
 
             $undrlygCxlDtls->addChild(CancelRequestTags::ORIGINAL_MANDATE)
                 ->addChild(CancelRequestTags::ORIGINAL_MANDATE_ID, $umrn);
