@@ -101,6 +101,8 @@ class Core extends Base\Core
                 ],
             ]);
 
+        unlink($pdfPath);
+
     }
 
     protected function getCommunicationData(Entity $debitNote): array

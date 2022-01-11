@@ -21,9 +21,9 @@
 	Please find below the details of the transaction(s), wherein there was no response from your end within the stipulated time frame. As a result, the chargeback request has been ruled in favour of the customer.
 
 	<br><br>
-	<b>Debit Note Id</b> : {{ $serial }}
+	<b>Commercial Debit Note Id</b> : {{ $serial }}
 
-	<br> <br><br> <br><br> <br><br> <br><br> <br>
+	<br> <br><br> <br><br> <br><br>
 	@php
 		$brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
@@ -64,7 +64,7 @@
                     <a href='. $paymentLink . ' target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;">
                     '. $data['payment_id'] . ' </a>
                     </td>
-                    ' . $rowColumnStyle . $data['amount'] . '</td>
+                    ' . $rowColumnStyle . 'INR ' . $data['amount'] . '</td>
                   </tr>';
         }
 
