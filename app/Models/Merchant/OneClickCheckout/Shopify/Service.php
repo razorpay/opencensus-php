@@ -277,13 +277,13 @@ class Service extends Base\Service
 
         if ($discountData['applicable'] === true)
         {
-            $value = ($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
+            $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
             return [
                 'response' => [
                     'promotion' => [
-                        'code' => $discountData['code'],
-                        'reference_id' => $discountData['code'],
-                        'value' => $value,
+                        'code'          => $discountData['code'],
+                        'reference_id'  => $discountData['code'],
+                        'value'         => $value,
                     ],
                 ],
                 'status_code' => 200,

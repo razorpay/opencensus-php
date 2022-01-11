@@ -72,4 +72,9 @@ class Utils
     ];
   }
 
+  public function formatNumber($num, $decimals = 2)
+  {
+    return number_format($num, $decimals, '.', '');
+  }
+
 }

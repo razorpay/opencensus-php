@@ -287,6 +287,7 @@ class Core extends Base\Core
      * in shopify shipping rate includes cod fee so we try and split it intelligently
      * this is a hack which might not scale
      * other option is we use cod slabs and ask merchant to not set diff fees in shopify
+     * NOTE: if multiple cod options are available the lowest is chosen, this may be incorrect
      */
     public function parseShippingRates($rates): array
     {
@@ -323,17 +324,17 @@ class Core extends Base\Core
         }
         if (isset($codRate) === true)
         {
-            $codFee = $codRate - $bestRate;
+            $codFee = (new Utils)->formatNumber($codRate - $bestRate);
             if ($codFee < 0) {
                 $codFee = 0;
             }
         }
 
         return [
-            'serviceable' => true,
+            'serviceable'  => true,
             'shipping_fee' => intval($bestRate)*100,
-            'cod' => $hasCod,
-            'cod_fee' => $codFee === null ? $codFee : intval($codFee)*100,
+            'cod'          => $hasCod,
+            'cod_fee'      => $codFee === null ? $codFee : intval($codFee)*100,
         ];
     }
 
