@@ -278,7 +278,7 @@ class SalesForceClient
 
     public function payloadGenerationForInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)
     {
-        return [
+        $payLoad = [
             [
                 "merchant_id"            => $merchant->getId(),
                 "name"                   => $merchant->getName(),
@@ -292,6 +292,15 @@ class SalesForceClient
                 "submitted"              => 1,
             ]
         ];
+
+        $contact = $merchant->merchantDetail->getContactMobile();
+
+        if (empty($contact) === false)
+        {
+            $payLoad[0]['contact_mobile'] = $contact;
+        }
+
+        return $payLoad;
     }
 
     public function captureInterestOfPrimaryMerchantInBanking(Merchant\Entity $merchant)

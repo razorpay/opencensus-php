@@ -7789,6 +7789,13 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        $contact = $merchant->merchantDetail->getContactMobile();
+
+        if (empty($contact) === false)
+        {
+            $input['contact_mobile'] = $contact;
+        }
+
         if ($merchant->getId() !== $merchant_id)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'The id provided does not exist');
