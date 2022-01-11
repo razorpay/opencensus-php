@@ -19,15 +19,13 @@ namespace App\Providers;
 
 
 use Illuminate\Support\ServiceProvider;
-use OpenCensus\Trace\Exporter\FileExporter;
 use OpenCensus\Trace\Exporter\JaegerExporter;
-use OpenCensus\Trace\Exporter\StackdriverExporter;
-use OpenCensus\Trace\Exporter\ZipkinExporter;
 use OpenCensus\Trace\Integrations\Curl;
 use OpenCensus\Trace\Integrations\Grpc;
 
 use OpenCensus\Trace\Integrations\Postgres;
 use OpenCensus\Trace\Integrations\Redis;
+use OpenCensus\Trace\Propagator\JaegerPropagator;
 use OpenCensus\Trace\Tracer;
 use OpenCensus\Trace\Integrations\Laravel;
 use OpenCensus\Trace\Integrations\Mysql;
@@ -45,20 +43,15 @@ class OpenCensusProvider extends ServiceProvider
         // Enable OpenCensus extension integrations
         Laravel::load();
         Mysql::load();
-        //Redis::load();
         PDO::load();
         Grpc::load();
         Curl::load();
         Postgres::load();
-
+        Redis::load();
         // Start the request tracing for this request
-        $options = [
-            'host' => '127.0.0.1',
-            'port' => 6831,
-            'tags' => [],
-            'client' => null
-        ];
-        Tracer::start(new JaegerExporter('demo-service', $options));
+        $propagator = new JaegerPropagator();
+        $tracerOptions = ['propagator' => $propagator];
+        Tracer::start(new JaegerExporter('demo-service'));
 
         // Create a span that starts from when Laravel first boots (public/index.php)
         Tracer::inSpan(['name' => 'bootstrap', 'startTime' => LARAVEL_START], function () {});

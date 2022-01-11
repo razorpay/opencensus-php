@@ -1,5 +1,7 @@
 <?php
 
+use Aws\Exception\AwsException;
+use Aws\Sqs\SqsClient;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use OpenCensus\Trace\Tracer;
@@ -15,40 +17,109 @@ use OpenCensus\Trace\Tracer;
 |
 */
 
-Route::get('/visits', function () {
+
+
+Route::get('/onboard', function () {
     // Creates a detached span
-    $span = Tracer::startSpan(['name' => 'visits-operation']);
+    $span = Tracer::startSpan(['name' => 'onboard-customer']);
     $scope = Tracer::withSpan($span);
     try {
-        $span = Tracer::startSpan(['name' => 'expensive-redis-operation']);
-        $scope = Tracer::withSpan($span);
-        $visits = Redis::incr('visits');
-        $span = Tracer::startSpan(['name' => 'db:get:user']);
-        $scope = Tracer::withSpan($span);
-        $users = DB::table('users')->get();
-        $span = Tracer::startSpan(['name' => 'GET:Guzzle:Repository']);
-        $scope = Tracer::withSpan($span);
-        $client = new \GuzzleHttp\Client();
-        $response = $client->request('GET', 'https://api.github.com/repos/guzzle/guzzle');
-        $response->getStatusCode();
+        createUser($scope);
+        incrementRedisCount($scope);
+        pushMessageSQS();
+        makeClientCall($scope);
+
+    } finally {
+        // Closes the scope (ends the span)
+        $scope->close();
+    }
+    makeAsyncClientCall();
+    return '';
+});
+
+
+function pushMessageSQS() {
+    Tracer::inSpan(['name' => 'SQS:BroadcastCreatedUser'], function () {});
+    $client = new SqsClient([
+        'profile' => 'default',
+        'region' => 'us-west-2',
+        'version' => '2012-11-05',
+    ]);
+
+    $params = [
+        'DelaySeconds' => 10,
+        'MessageAttributes' => [
+            "Title" => [
+                'DataType' => "String",
+                'StringValue' => "The Hitchhiker's Guide to the Galaxy"
+            ],
+            "Author" => [
+                'DataType' => "String",
+                'StringValue' => "Douglas Adams."
+            ],
+            "WeeksOn" => [
+                'DataType' => "Number",
+                'StringValue' => "6"
+            ]
+        ],
+        'MessageBody' => "Information about current NY Times fiction bestseller for week of 12/11/2016.",
+        'QueueUrl' => 'http://localhost:4566/000000000000/test'
+    ];
+
+    try {
+        $result = $client->sendMessage($params);
+        var_dump($result);
+    } catch (AwsException $e) {
+        // output error message if fails
+        error_log($e->getMessage());
+    }
+}
+
+function makeClientCall($span) {
+    $span = Tracer::startSpan(['name' => 'Sync:Guzzle:GETRepository']);
+    $scope = Tracer::withSpan($span);
+    $client = new \GuzzleHttp\Client();
+    $response = $client->request('GET', 'https://google.com');
+    $response->getStatusCode();
+
+}
+
+function incrementRedisCount($scope)
+{
+
+    $client =  new \Predis\Client([
+        'host'   => 'localhost',
+        'port'   => 6379,
+    ]);
+
+    $span = Tracer::startSpan(['name' => 'increment:liveUserCount']);
+    $scope = Tracer::withSpan($span);
+    try {
+        $client -> incr('visits');
+        Tracer::inSpan(['name' => 'Async:GETHelper'], function () {
+
+            $client = new \GuzzleHttp\Client();
+            $client->requestAsync('GET', 'https://google.com');
+
+
+        });
     } finally {
         // Closes the scope (ends the span)
         $scope->close();
     }
 
-    return "Total Redis Hit: ".$visits;
-});
+}
 
-Route::get('/list', function () {
+function makeAsyncClientCall() {
+    $span = Tracer::inSpan(['name' => 'Async:Guzzle:GETRepository'], function () {
+        $client = new \GuzzleHttp\Client();
+        $client->requestAsync('GET', 'https://api.github.com/repos/guzzle/guzzle');
+    });
+}
 
-    $users = DB::table('users')->get();
 
-    return "Total User Entries: ".count($users);
-});
-
-Route::get('/add', function () {
-
-    $span = Tracer::startSpan(['name' => 'db:add:user']);
+function createUser($scope){
+    $span = Tracer::startSpan(['name' => 'db:create:user']);
 // Opens a scope that attaches the span to the current context
     $scope = Tracer::withSpan($span);
     try {
@@ -61,13 +132,4 @@ Route::get('/add', function () {
         // Closes the scope (ends the span)
         $scope->close();
     }
-    $span = Tracer::startSpan(['name' => 'db:get:users']);
-    $scope = Tracer::withSpan($span);
-    try {
-        $users = DB::table('users')->get();
-    }finally {
-        // Closes the scope (ends the span)
-        $scope->close();
-    }
-    return "Total User Entries: ".count($users);
-});
+}
