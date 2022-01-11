@@ -1961,6 +1961,9 @@ trait PaymentTrait
                 'merchant_reference'    => 'IShcnbF6tsOy',
                 'gateway_merchant_id'   => 'SBI0000000000119',
                 'vpa'                   => 'razor.pay@sbi',
+                'gateway_data'          => [
+                    'addInfo2' => '7971807546'
+                ],
             ],
             'payment' => [
                 'method'    => 'upi',

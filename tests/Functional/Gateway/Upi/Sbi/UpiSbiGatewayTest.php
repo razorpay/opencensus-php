@@ -1283,6 +1283,14 @@ class UpiSbiGatewayTest extends TestCase
 
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
+        $upi = $this->getDbLastUpi();
+
+        $gatewayData = $upi->getGatewayData();
+
+        $this->assertNotEmpty($gatewayData);
+
+        $this->assertEquals($gatewayData['addInfo2'],$content['upi']['gateway_data']['addInfo2']);
+
         $this->assertNotEmpty($response['payment_Id']);
 
         $this->assertTrue($response['success']);
@@ -1319,6 +1327,14 @@ class UpiSbiGatewayTest extends TestCase
         $content['payment']['amount'] = 10000;
         //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $upi = $this->getDbLastUpi();
+
+        $gatewayData = $upi->getGatewayData();
+
+        $this->assertNotEmpty($gatewayData);
+
+        $this->assertEquals($gatewayData['addInfo2'],$content['upi']['gateway_data']['addInfo2']);
 
         $this->assertNotEmpty($response['payment_Id']);
 

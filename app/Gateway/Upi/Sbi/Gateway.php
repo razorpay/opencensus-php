@@ -1012,6 +1012,18 @@ class Gateway extends Base\Gateway
 
         $upiEntity = $this->repo->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
 
+        if ((isset($callbackData['upi']['gateway_data']) === false) or
+            (isset($callbackData['upi']['gateway_data']['addInfo2']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'addInfo2 is required for creating gateway payment',
+                null,
+                [
+                    'callbackData' => $callbackData
+                ]
+            );
+        }
+
         $gatewayPayment = $this->repo->transaction(function () use ($upiEntity, $callbackData)
         {
             if (empty($upiEntity) === false)

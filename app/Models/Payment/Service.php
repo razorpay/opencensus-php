@@ -4483,7 +4483,7 @@ class Service extends Base\Service
                     'gateway'                   => $gateway
                 ]);
 
-                $response = (new Payment\Service)->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
+                $response = $this->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
 
                 if (empty($response['payment_id']) === false)
                 {
