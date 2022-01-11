@@ -173,7 +173,18 @@ class ErrorCodeMapping
         'PBANK_VALIDATION_ERROR_PENDING'        => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'TXN_REJECTED_BENE_BANK_RETRIABLE'      => 'Transaction not permitted to beneficiary account.',
         'PARTNER_BANK_DOWN'                     => 'Payout failed as the partner bank is facing technical issues. Please retry',
-        'FTS_MANUAL_FAIL'                       => 'Payout failed due to bank window closed. Please try again in the next working window'
+        'FTS_MANUAL_FAIL'                       => 'Payout failed due to bank window closed. Please try again in the next working window',
+        'VAULT_SERVER_NOT_AVAILABLE'            => 'Payout failed. Contact support for help.',
+        'VAULT_RESPONSE_EXPIRED'                => 'Payout failed. Contact support for help.',
+        'VAULT_GENERIC_ERROR'                   => 'Payout failed. Contact support for help.',
+        'VAULT_INVALID_FORMAT'                  => 'Payout failed. Contact support for help.',
+        'VAULT_INVALID_VALUE'                   => 'Payout failed. Contact support for help.',
+        'VAULT_TOKEN_NOT_FOUND'                 => 'Payout failed. Contact support for help.',
+        'VAULT_TOKEN_INVALID_STATE'             => 'Payout failed. Contact support for help.',
+        'VAULT_INVALID_HASH'                    => 'Payout failed. Contact support for help.',
+        'VAULT_TOKEN_EXPIRED'                   => 'Payout failed. Contact support for help.',
+        'VAULT_PANREF_NOT_FOUND'                => 'Payout failed. Contact support for help.',
+        'CARD_NUMBER_UNAVAILABLE'               => 'Payout failed as the card number is not available. Please retry.'
     ];
 
     public static $alternateFailureReasonMapping = [

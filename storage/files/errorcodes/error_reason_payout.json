@@ -453,5 +453,89 @@
       "reason": "gateway_down",
       "description": "Payout failed as the partner bank is facing technical issues. Please retry"
     }
+  },
+  "VAULT_SERVER_NOT_AVAILABLE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_RESPONSE_EXPIRED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_GENERIC_ERROR": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_INVALID_FORMAT": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_INVALID_VALUE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_TOKEN_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_TOKEN_INVALID_STATE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_INVALID_HASH": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_TOKEN_EXPIRED": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "VAULT_PANREF_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "GATEWAY_ERROR_VAULT_FAILURE": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed. Contact support for help."
+    }
+  },
+  "CARD_NUMBER_UNAVAILABLE": {
+    "failed": {
+      "source": "internal",
+      "reason": "card_number_unavailable",
+      "description": "Payout failed as the card number is not available. Please retry"
+    }
   }
 }
