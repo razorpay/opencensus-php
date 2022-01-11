@@ -61,7 +61,7 @@ class Repository extends Base\Repository
         // in prod, irrespective of connection in argument, for payment analytics we will always fetch from warehouse/tidb
         if ($this->app['env'] === Environment::PRODUCTION)
         {
-            $connectionType = ConnectionType::DATA_WAREHOUSE_ADMIN;
+            $connectionType = ConnectionType::DATA_WAREHOUSE_MERCHANT;
         }
 
         $entities = parent::fetch($params, $merchantId, $connectionType);
