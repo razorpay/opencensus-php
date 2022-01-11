@@ -231,8 +231,9 @@ class Core extends Base\Core
             function () use ($cardMandateNotification, $status, $notification, &$isApproved) {
                 $this->repo->card_mandate_notification->lockForUpdateAndReload($cardMandateNotification);
 
-                if ($cardMandateNotification->getStatus() === Status::CREATED or
-                    $cardMandateNotification->getStatus() === Status::PENDING)
+                if (($cardMandateNotification->getStatus() === Status::CREATED or
+                    $cardMandateNotification->getStatus() === Status::PENDING) and
+                    $cardMandateNotification->getStatus() !== $status)
                 {
                     $cardMandateNotification->setStatus($status);
 
@@ -243,7 +244,8 @@ class Core extends Base\Core
                 }
 
                 if ($cardMandateNotification->isAfaRequired() and
-                    $cardMandateNotification->getAfaStatus() === AfaStatus::CREATED)
+                    $cardMandateNotification->getAfaStatus() === AfaStatus::CREATED and
+                    $cardMandateNotification->getAfaStatus() !== $notification->getAfaStatus())
                 {
                     $cardMandateNotification->setAfaStatus($notification->getAfaStatus());
 
