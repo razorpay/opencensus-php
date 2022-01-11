@@ -43,6 +43,7 @@ class Repository extends Base\Repository
     const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
     const BATCH_PAYOUTS_FETCH_LIMIT = 300;
     const SCHEDULED_PAYOUTS_FETCH_LIMIT = 5000;
+    const PENDING_PAYOUT_COUNT = 10;
 
     protected $entity = 'payout';
 
@@ -1992,6 +1993,67 @@ class Repository extends Base\Repository
             ->where($payoutStatus, Status::PENDING)
             ->orderBy($payoutCreatedAt,'desc')
             ->limit(5);
+
+        return $query->get();
+    }
+
+    public function fetchTenPendingPayoutsToDisplay($merchantId, $userRole)
+    {
+        /*
+            select `payouts`.`id`, `contacts`.`name` as `contact_name`, `payouts`.`amount`, `payouts`.`purpose`, `payouts`.`created_at`
+            from `payouts`
+            inner join `workflow_entity_map` on `payouts`.`id` = `workflow_entity_map`.`entity_id`
+                and `workflow_entity_map`.`entity_type` = ?
+            inner join `workflow_state_map` on `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
+                and `workflow_state_map`.`status` = ?
+                and `workflow_state_map`.`actor_type_value` in (?)
+            inner join `fund_accounts` on `payouts`.`fund_account_id` = `fund_accounts`.`id`
+            inner join `contacts` on `fund_accounts`.`source_id` = `contacts`.`id`
+            where `payouts`.`merchant_id` = ?
+                and `fund_accounts`.`source_type` = ?
+                and `payouts`.`status` = ?
+            order by `payouts`.`created_at` desc
+            limit 10
+        */
+
+        $payoutId               =       $this->dbColumn(Entity::ID);
+        $payoutStatus           =       $this->dbColumn(Entity::STATUS);
+        $payoutMerchantId       =       $this->dbColumn(Entity::MERCHANT_ID);
+        $payoutAmount           =       $this->dbColumn(Entity::AMOUNT);
+        $payoutPurpose          =       $this->dbColumn(Entity::PURPOSE);
+        $payoutCreatedAt        =       $this->dbColumn(Entity::CREATED_AT);
+        $payoutFundAccountId    =       $this->dbColumn(Entity::FUND_ACCOUNT_ID);
+
+        $fundAccountId              =       $this->repo->fund_account->dbColumn(FundAccount\Entity::ID);
+        $fundAccountSourceId        =       $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_ID);
+        $fundAccountSourceType      =       $this->repo->fund_account->dbColumn(FundAccount\Entity::SOURCE_TYPE);
+
+        $contactId                  =       $this->repo->contact->dbColumn(Contact\Entity::ID);
+        $contactName                =       $this->repo->contact->dbColumn(Contact\Entity::NAME);
+
+        $selectAttr = [
+            $payoutId,
+            $contactName.' AS contact_name',
+            $payoutAmount,
+            $payoutPurpose,
+            $payoutCreatedAt
+        ];
+
+        $query = $this->newQuery()
+            ->select($this->getTableName() . '.*')
+            ->select($selectAttr)
+            ->from(\DB::raw(Table::PAYOUT.' USE INDEX (payouts_merchant_id_created_at_index)'))
+            ->where($payoutMerchantId,'=',$merchantId);
+
+        //Workflow state map has only two status processed/created
+        $this->joinQueryWorkflowServiceEntities($query, [$userRole],Status::CREATED);
+
+        $query->join(Table::FUND_ACCOUNT,$payoutFundAccountId,'=',$fundAccountId)
+            ->join(Table::CONTACT,$fundAccountSourceId,'=',$contactId)
+            ->where($fundAccountSourceType,'=','contact')
+            ->where($payoutStatus, Status::PENDING)
+            ->orderBy($payoutCreatedAt,'desc')
+            ->limit(self::PENDING_PAYOUT_COUNT);
 
         return $query->get();
     }

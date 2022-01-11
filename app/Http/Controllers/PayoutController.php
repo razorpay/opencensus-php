@@ -215,6 +215,24 @@ class PayoutController extends Controller
         }
     }
 
+    public function pendingPayoutApprovalReminder()
+    {
+        try
+        {
+            $response = $this->service()->sendPendingPayoutApprovalReminder();
+
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PENDING_PAYOUT_APPROVAL_REMINDER_FAILED
+            );
+        }
+    }
+
     public function sendPendingPayoutsNotificationToSlack()
     {
         $response = $this->service()->sendPendingPayoutsNotificationToSlack();

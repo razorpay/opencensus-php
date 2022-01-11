@@ -1361,6 +1361,58 @@ class PayoutTest extends OAuthTestCase
 
     }
 
+    public function testReminderNotificationForPayoutPendingOnApproval()
+    {
+        Mail::fake();
+
+        $this->liveSetUp();
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflowEntities(12345,'2224440041626905',Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456,'2224440041626905',Payout\Purpose::CASHBACK,'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000,'2224440041626905',Payout\Purpose::SALARY,'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432,'2224440041626905',Payout\Purpose::REFUND,'FXMwu4HMK7ZT0H');
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        Mail::assertQueued(PendingApprovals::class, function ($mail)
+        {
+            $this->assertArrayHasKey('user_id', $mail->viewData);
+
+            $this->assertArrayHasKey('merchant_id', $mail->viewData);
+
+            $this->assertArrayHasKey('email', $mail->viewData);
+
+            $this->assertArrayHasKey('data', $mail->viewData);
+
+            $mail->hasTo('merchantuser01@razorpay.com');
+
+            $this->assertArrayHasKey('refund', $mail->viewData['data']);
+            $this->assertArrayHasKey('cashback', $mail->viewData['data']);
+            $this->assertArrayHasKey('salary', $mail->viewData['data']);
+
+            $this->assertEquals(count($mail->viewData['data']['refund']), 1);
+            $this->assertEquals(count($mail->viewData['data']['cashback']), 2);
+            $this->assertEquals(count($mail->viewData['data']['salary']), 2);
+
+            return true;
+        });
+
+    }
+
     public function createPayoutWithWorkflowEntities($amount, $account, $purpose, $workflowId)
     {
         $this->fixtures->on('live')->create(

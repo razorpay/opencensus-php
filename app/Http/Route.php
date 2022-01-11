@@ -1459,6 +1459,8 @@ class Route
         'payout_reject_internal'                   => ['post',     'payouts_internal/{id}/reject',                   'PayoutController@postRejectFundAccountPayoutInternal'              ],
         'payout_send_pending_approval_email'       => ['post',     'payouts/pending-payouts-approval-email',         'PayoutController@pendingPayoutApprovalEmail'                       ],
 
+        'payout_send_pending_approval_reminder'    => ['post',     'payouts/pending-payouts-approval-reminder',      'PayoutController@pendingPayoutApprovalReminder'                       ],
+
         'payout_wf_config_migrate'                 => ['post',     'payouts_configs/migrate',                        'PayoutController@migrateWorkflowConfigsToWorkflowService'          ],
         'payout_notification_to_slack_app'         => ['post',     'payout_notification/slack_app',                   'PayoutController@sendPendingPayoutsNotificationToSlack'],
 
@@ -4310,6 +4312,7 @@ class Route
 
         // cron to send emails about pending payouts
         'payout_send_pending_approval_email',
+        'payout_send_pending_approval_reminder',
 
         'terminal_fill_enabled_wallets',
         'payment_update_reference6',
@@ -11214,6 +11217,7 @@ class Route
             'merchant_action_notification_cron',
             'merchant_risk_identify_blacklist_country_alerts',
             'payout_send_pending_approval_email',
+            'payout_send_pending_approval_reminder',
             'terminal_fill_enabled_wallets',
             'refresh_payments_ongoing_downtimes_cron',
             'refresh_payments_resolved_downtimes_cron',

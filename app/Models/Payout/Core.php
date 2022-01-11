@@ -26,6 +26,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\External;
 use RZP\Models\Workflow;
+use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Jobs\FundTransfer;
@@ -62,6 +63,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\PushNotifications\Payout\PendingApprovals as PendingApprovalsPN;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
@@ -100,6 +102,8 @@ class Core extends Base\Core
     const BENE_BANK_DOWNTIME_STARTED = 'started';
 
     const BENEFICIARY = 'BENEFICIARY';
+
+    const EMAIL_COUNT_FOR_PENDING_PAYOUT_APPROVAL = 5;
 
     /**
      * @var Mutex
@@ -4386,6 +4390,152 @@ class Core extends Base\Core
         }
 
         return $input;
+    }
+
+    public function dispatchPendingPayoutApprovalEmail($pendingPayout)
+    {
+        if(empty($pendingPayout)) {
+            return;
+        }
+
+        $mailable = new PendingApprovals($pendingPayout);
+
+        Mail::queue($mailable);
+        $this->trace->info(TraceCode::EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS, [$pendingPayout]);
+    }
+
+    public function dispatchPendingPayoutApprovalPushNotification($pendingPayout)
+    {
+        if(empty($pendingPayout)) {
+            return;
+        }
+
+        $notificationData = array(
+            'ownerId'       => $pendingPayout['merchant_id'],
+            'ownerType'     => 'merchant',
+            'count'         => $pendingPayout['total_count'],
+            'amount'        => amount_format_IN($pendingPayout['amount_total']),
+            'identityList'  => [$pendingPayout['user_id']],
+            'tags'          => array(
+                'payoutIds'             => $pendingPayout['payoutIds'],
+                'merchantId'            => $pendingPayout['merchant_id'],
+                'userId'                => $pendingPayout['user_id'],
+                'payoutCount'           => $pendingPayout['total_count'],
+                'email'                 => $pendingPayout['email'],
+                'amount'                => amount_format_IN($pendingPayout['amount_total']),
+                'notificationPurpose'   => 'bulkaction',
+                'wzrk_dl'               => 'xmobile://payouts?status=pending&pending_on_roles=' . $pendingPayout['role']
+            )
+        );
+
+        $pushNotification = new PendingApprovalsPN($notificationData);
+        $pushNotification->send();
+
+        $this->trace->info(TraceCode::PUSH_NOTIFICATION_DISPATCHED_FOR_PENDING_PAYOUTS, [$notificationData]);
+    }
+
+    public function getPendingPayoutsDataAndDispatchEvents($approverList)
+    {
+        $pendingPayoutsCount = 0;
+
+        $response = ['reminderEventCount' => $pendingPayoutsCount];
+
+        if (empty($approverList)) {
+            return $response;
+        }
+
+        //User wise grouping the merchant - user information.
+        // We will be sending separate emails to a user for different merchants on whom user has payouts awaiting their approval.
+        $dataGroupedByUserId = $approverList->groupBy(Merchant\MerchantUser\Entity::USER_ID);
+
+        //picking a user one by one
+        foreach ($dataGroupedByUserId as $userData) {
+            //Merchant wise grouping the information for the picked up user.
+            $dataGroupedByMerchantId = $userData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID);
+
+            //Picking information specific to the selected merchant-user combination.
+            foreach ($dataGroupedByMerchantId as $merchantId => $data) {
+                $input = [
+                    'user_id'       => $data->first()['user_id'],
+                    'merchant_id'   => $data->first()['merchant_id'],
+                    'email'         => $data->first()['email'],
+                    'name'          => $data->first()['name'],
+                    'business_name' => $data->first()['business_name'],
+                    'role'          => $data->first()['role'],
+                    'amount_total'  => $data->first()['payout_total'],
+                    'total_count'   => $data->first()['payout_count'],
+                    'data'          => [],
+                    'payoutIds'     => [],
+                ];
+
+                $startAt = millitime();
+
+                //Fetching top 10 pending payouts in chronological order for selected merchant-user combination
+                $payouts = $this->repo->payout->fetchTenPendingPayoutsToDisplay($merchantId, $input['role']);
+
+                $this->trace->info(TraceCode::PENDING_APPROVAL_REMINDER_PAYOUTS_QUERY_DURATION, [
+                    'query_execution_time' => millitime() - $startAt,
+                    'merchant_user_data' => $input,
+                    'payouts_data' => $payouts
+                ]);
+
+                $eventData = self::preparePendingPayoutDataForEvents($payouts);
+
+                $input['data'] = $eventData['emailData'];
+                $input['payoutIds'] = $eventData['payoutIds'];
+
+                self::dispatchPendingPayoutEvents($input);
+
+                $pendingPayoutsCount++;
+            }
+        }
+        $response['reminderEventCount'] = $pendingPayoutsCount;
+        return $response;
+    }
+
+    private function preparePendingPayoutDataForEvents($payouts)
+    {
+        $payouts = $payouts->sortByDesc(Entity::CREATED_AT, 1);
+        $payoutsGroupedByPurpose = $payouts->groupBy(Entity::PURPOSE);
+
+        $data = $payoutsGroupedByPurpose->toArray();
+        $emailData = array();
+        $payoutIds = array();
+        $count = 0;
+        foreach ($payoutsGroupedByPurpose as $purpose => $payout) {
+            foreach ($payoutsGroupedByPurpose[$purpose] as $index => $p) {
+                $data[$purpose][$index]['contact_name'] = $p['contact_name'];
+                $data[$purpose][$index]['created_at'] = Carbon::createFromTimestamp($data[$purpose][$index]['created_at'], Timezone::IST)->format('d M\'y . g:i A');
+                $data[$purpose][$index]['amount'] = $data[$purpose][$index]['amount'];
+
+                //picking top 5 pendingPayouts for emails
+                if ($count < self::EMAIL_COUNT_FOR_PENDING_PAYOUT_APPROVAL) {
+                    if (empty($emailData[$purpose]))
+                        $emailData[$purpose] = array();
+                    array_push($emailData[$purpose], $data[$purpose][$index]);
+                }
+                $count++;
+
+                array_push($payoutIds, $data[$purpose][$index]['id']);
+
+            }
+        }
+
+        return [
+            'emailData' => $emailData,
+            'payoutIds' => $payoutIds
+        ];
+    }
+
+    private function dispatchPendingPayoutEvents($pendingPayout)
+    {
+        if(empty($pendingPayout))
+        {
+            return;
+        }
+
+        self::dispatchPendingPayoutApprovalEmail($pendingPayout);
+        self::dispatchPendingPayoutApprovalPushNotification($pendingPayout);
     }
 
     public function prepareTemplateAndDispatchEmail($approverList)

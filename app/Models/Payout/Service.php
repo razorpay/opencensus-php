@@ -394,6 +394,20 @@ class Service extends Base\Service
         return $this->core->prepareTemplateAndDispatchEmail($approverList);
     }
 
+    public function sendPendingPayoutApprovalReminder()
+    {
+        $startAt = millitime();
+
+        $approverList = $this->repo->payout->fetchMerchantUserDataHavingPendingPayouts();
+
+        $this->trace->info(TraceCode::PENDING_APPROVAL_REMINDER_MERCHANT_QUERY_DURATION, [
+            'query_execution_time' => millitime() - $startAt,
+            'approver_list'         => $approverList
+        ]);
+
+        return $this->core->getPendingPayoutsDataAndDispatchEvents($approverList);
+    }
+
     public function sendPendingPayoutsNotificationToSlack()
     {
         try
