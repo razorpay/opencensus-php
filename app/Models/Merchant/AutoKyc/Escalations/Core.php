@@ -108,7 +108,7 @@ class Core extends Base\Core
                     'type'   => Constants::SOFT_LIMIT,
                     'reason' => 'no merchants to run the cron'
                 ]);
-                return;
+                continue;
             }
 
             $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
