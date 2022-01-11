@@ -173,7 +173,7 @@ class Sbi extends Base
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('4096M');
+        RuntimeManager::setMemoryLimit('12288M');
 
         RuntimeManager::setTimeLimit(7200);
 

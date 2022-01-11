@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Carbon\Carbon;
 
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Utility;
@@ -88,5 +89,14 @@ class Hdfc extends Base
         $fileName = parent::getFileToWriteNameWithoutExt($data);
 
         return static::BASE_STORAGE_DIRECTORY . $fileName;
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('4096M');
+
+        RuntimeManager::setTimeLimit(7200);
+
+        RuntimeManager::setMaxExecTime(7200);
     }
 }
