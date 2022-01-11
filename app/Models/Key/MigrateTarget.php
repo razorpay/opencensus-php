@@ -27,16 +27,16 @@ class MigrateTarget implements Target
     /** {@inheritDoc} */
     public function migrate(Record $sourceRecord, bool $dryRun): Response
     {
-        /** @var Credcase */
-        $credcase = new Credcase;
-
         /** @var string */
         $mode = app('rzp.mode');
 
         // Credcase's migrate api internally does upsert.
         if ($dryRun === false)
         {
-            $credcase->migrate($sourceRecord->value, $mode);
+            app('repo')->transaction(function () use ($sourceRecord, $mode) {
+                $credcase = new Credcase;
+                $credcase->migrate($sourceRecord->value, $mode);
+            });
         }
 
         // Credcase's migrate api does not return the record, assuming same and returning source record itself.
