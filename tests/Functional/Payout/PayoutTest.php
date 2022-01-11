@@ -219,13 +219,57 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testStatusSummaryObjectInGetPayout()
+    {
+        $this->setmockRazorxTreatment(['status_details_timeline_view' => 'on'],'control');
+
+        $this->testCreatePayout();
+
+        $payout = $this->getLastEntity('payout',true);
+
+        $payout1 = $this->getDbLastEntity('payout');
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout1, [
+            'source_type' => 'payout',
+            'source_id' => $payout1->getId(),
+            'fta_status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'RTGS',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $this->ba->proxyAuth();
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts/'. $payout['id'];
+
+        $payout2 = $this->startTest();
+        $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
+        $this->assertEquals('beneficiary_bank_confirmation_pending',$payout2['status_summary']['processing'][0]['reason']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021',$payout2['status_summary']['processing'][0]['description']);
+    }
+
+    public function testPayoutStatusReasonMapping()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
+
     public function testErrorDescriptionForMinimumTransactionAmount()
     {
-
         $this->ba->privateAuth();
 
         $this->startTest();
-
     }
 
     public function testCreatePayoutWithNarrationNull()
@@ -4547,6 +4591,172 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['fees'], $responsePayout['fees']);
     }
 
+    public function testSearchPayoutByPayoutStatusReason()
+    {
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
+
+        $this->testCreatePayout();
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayout();
+        $payout1 = $this->getDbLastEntity('payout');
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'fta_status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'bank_window_closed',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+        $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('pout_'.$payout['id'],$response['items'][0]['id']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout1, [
+            'source_type' => 'payout',
+            'source_id' => $payout1->getId(),
+            'fta_status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'bank_window_closed',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response8 = $this->startTest();
+        $this->assertEquals(2, $response8['count']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'fta_status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'mode' => 'RTGS',
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $request['url'] = '/payouts?status=processing&reason=beneficiary_bank_confirmation_pending&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response1 = $this->startTest();
+        $this->assertEquals(1, $response1['count']);
+        $this->assertEquals('pout_'.$payout['id'],$response1['items'][0]['id']);
+
+        $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response2 = $this->startTest();
+        $this->assertEquals(1, $response2['count']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type' => 'payout',
+            'source_id' => $payout->getId(),
+            'fta_status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'payout_processing',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        $request['url'] = '/payouts?status=processing&reason=payout_processing&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response10 = $this->startTest();
+        $this->assertEquals(1, $response10['count']);
+        $this->assertEquals('pout_'.$payout['id'],$response10['items'][0]['id']);
+
+        $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response9 = $this->startTest();
+        $this->assertEquals(1, $response9['count']);
+        $this->assertEquals('pout_'.$payout1['id'],$response9['items'][0]['id']);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout1, [
+            'source_type' => 'payout',
+            'source_id' => $payout1->getId(),
+            'fta_status' => 'initiated',
+            'channel' => 'rbl',
+            'failure_reason' => '',
+            'utr' => 928337183,
+            'remarks' => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details' => [
+                'reason' => 'payout_processing',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        $request['url'] = '/payouts?status=processing&reason=payout_processing&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response3 = $this->startTest();
+        $this->assertEquals(2, $response3['count']);
+        $this->assertEquals('pout_'.$payout1['id'],$response3['items'][0]['id']);
+        $this->assertEquals('pout_'.$payout['id'],$response3['items'][1]['id']);
+
+        $request['url'] = '/payouts?status=processing&reason=bank_window_closed&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response4 = $this->startTest();
+        $this->assertEquals(0, $response4['count']);
+
+        $request['url'] = '/payouts?status=processing&reason=beneficiary_bank_confirmation_pending&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response5 = $this->startTest();
+        $this->assertEquals(0, $response5['count']);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => null,
+            'bank_status_code' => null
+        ]);
+
+        $request['url'] = '/payouts?reason=payout_processing&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response6 = $this->startTest();
+        $this->assertEquals(1, $response6['count']);
+        $this->assertEquals('pout_'.$payout1['id'],$response6['items'][0]['id']);
+
+        $request['url'] = '/payouts?status=processed&reason=payout_processed&account_number=2224440041626905';
+        $this->ba->privateAuth();
+        $response7 = $this->startTest();
+        $this->assertEquals(1, $response7['count']);
+        $this->assertEquals('pout_'.$payout['id'],$response7['items'][0]['id']);
+
+    }
 
     public function testSearchPayoutByPayoutContactType()
     {
@@ -6279,7 +6489,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'on', 'off', 'control',
             'on');
 
         $payoutQueuedEventData = $this->testData['testFiringOfWebhookOnQueuedPayoutEventData'];
@@ -12401,7 +12611,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'on', 'off', 'control',
             'on'
         );
 
@@ -12452,7 +12662,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'on', 'off', 'control',
             'on'
         );
 
@@ -12638,7 +12848,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'on', 'off', 'control',
             'on'
         );
 
@@ -12689,7 +12899,7 @@ class PayoutTest extends OAuthTestCase
             'on', 'on', 'off', 'on',
             'on', 'off', 'on', 'on',
             'off', 'control', 'on',
-            'on', 'off', 'control', 'off',
+            'on', 'off', 'control',
             'on'
         );
 
@@ -15858,15 +16068,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingRTGSMode()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
             $payloadUpdatedOne = null;
 
@@ -15925,15 +16127,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingNEFTMode()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 
@@ -15994,15 +16188,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingIMPSMode()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 
@@ -16058,15 +16244,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBeneficiaryBankConfirmationPendingUPIMode()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 
@@ -16121,15 +16299,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedNEFTMode()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 
@@ -16183,15 +16353,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForBankWindowClosedRTGSMode()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 
@@ -16246,15 +16408,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForPayoutProcessing()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 
@@ -16305,15 +16459,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutUpdatedWebhookWithRazorxExperimentForNullCase()
     {
-
-        $this->mockRazorxTreatment(
-            'yesbank', 'off', 'off', 'off', 'off',
-            'on', 'on', 'off', 'on',
-            'on', 'off', 'on', 'on',
-            'off', 'control', 'on',
-            'off', 'control', 'off',
-            'on'
-        );
+        $this->setmockRazorxTreatment(['enable_status_details_feature' => 'on'],'control');
 
         $payloadUpdatedOne = null;
 

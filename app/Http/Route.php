@@ -1453,6 +1453,10 @@ class Route
         'payouts_bulk_amount_type'                 => ['post',     'payouts/bulk/amount_type',                       'PayoutController@postBulkPayoutsAmountType'                        ],
         'payouts_bulk_amount_type_update'          => ['patch',    'payouts/bulk/amount_type',                       'PayoutController@updateBulkPayoutsAmountType'                       ],
 
+        // to show list of status reason available for different statuses
+        'payout_status_to_reason_mapping'          => ['get',      'payouts_status_reason_map',                      'PayoutController@getPayoutStatusReasonMap'                                 ],
+
+
         // Payout Workflows
         'payout_workflow_retry_admin_bulk'         => ['post',     'admin/payouts/workflow_retry',                   'PayoutController@bulkRetryWorkflowOnPayout'                        ],
         'payout_approve_internal'                  => ['post',     'payouts_internal/{id}/approve',                  'PayoutController@postApproveFundAccountPayoutInternal'             ],
@@ -5166,6 +5170,9 @@ class Route
         //Growth
         'growth_get_asset_details',
 
+        //payout status reason mapping
+        'payout_status_to_reason_mapping',
+
     ];
 
     //
@@ -7393,6 +7400,7 @@ class Route
         'payout_reject'                                => Permission::REJECT_PAYOUT,
         'payout_fetch_by_id'                           => Permission::VIEW_PAYOUT,
         'payout_fetch_multiple'                        => Permission::VIEW_PAYOUT,
+        'payout_status_to_reason_mapping'              => Permission::VIEW_PAYOUT,
         'payout_cancel'                                => Permission::CANCEL_PAYOUT,
         'payout_update_status'                         => Permission::UPDATE_PAYOUT,
         'payout_purpose_get'                           => Permission::VIEW_PAYOUT_PURPOSE,
@@ -8621,6 +8629,7 @@ class Route
             'payout_fetch_by_id',
             'payout_fetch_multiple',
             'payout_fetch_reversals',
+            'payout_status_to_reason_mapping',
             'payout_links_added_fund_accounts',
             'payout_links_added_fund_accounts_cors',
             'payout_links_batch_summary',

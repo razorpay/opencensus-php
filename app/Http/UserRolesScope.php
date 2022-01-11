@@ -759,6 +759,7 @@ class UserRolesScope
             'payout_create'                                        => [Role::OWNER, Role::ADMIN],
             'payout_create_with_otp'                               => [Role::OWNER, Role::ADMIN],
             'payout_fetch_by_id'                                   => [Role::OWNER, Role::ADMIN],
+            'payout_status_to_reason_mapping'                      => [Role::OWNER, Role::ADMIN],
             'payout_fetch_multiple'                                => [Role::OWNER, Role::ADMIN],
             'payout_fetch_reversals'                               => [Role::OWNER, Role::ADMIN],
             'payout_links_batch_create'                            => [Role::OWNER, Role::ADMIN],

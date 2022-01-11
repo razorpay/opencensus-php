@@ -715,39 +715,57 @@ class Core extends Base\Core
             Entity::RAZORX_RETRY_COUNT
         );
 
+        $firePayoutUpdatedWebhook = false;
         $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null ;
 
-        // checks condition to fire Payout.updated webhook in case
-        // if experiment is on and status details update has come or utr update comes
-        // if experiment is off checks for utr update
-        if ((strtolower($variant) === 'on' and
-                $ftaStatus === "initiated") and
+        // stores status details in case if unique status details update has come
+        if (($ftaStatus === "initiated") and
             ($isPayoutService === false))
         {
             $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
+            $lastId = $payout->getStatusDetailsId();
 
-            if (($statusDetails === null) and ($initialUtr === null) and ($payout->getUtr() !== null))
+            if($statusDetails !== null)
             {
-                $this->app->events->fire('api.payout.updated', [$payout]);
-            }
+                if ($lastId !== null)
+                {
+                    $lastStatusDetails = $this->repo->payouts_status_details->fetchStatusReasonFromStatusDetailsId($lastId);
 
-            else
-            {
-                (new PayoutsStatusDetailsCore())->createStatusDetails($payout,$ftaData);
-
-                $this->app->events->fire('api.payout.updated', [$payout]);
+                    // stores status details in case unique status details has come
+                    if (($statusDetails[Attempt\Entity::REASON]) !== $lastStatusDetails[0]['reason'])
+                    {
+                        (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
+                        // fire webhook if experiment is on
+                        if(strtolower($variant) === 'on' )
+                        {
+                            $firePayoutUpdatedWebhook = true;
+                        }
+                    }
+                }
+                //stores status details in case last status details id is null
+                else
+                {
+                    (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
+                    // fire webhook if experiment is on
+                    if(strtolower($variant) === 'on' )
+                    {
+                        $firePayoutUpdatedWebhook = true;
+                    }
+                }
             }
         }
 
-        else
-            {
-                if (($initialUtr === null) and
-                    ($payout->getUtr() !== null) and
-                    ($isPayoutService === false))
-                {
-                     $this->app->events->fire('api.payout.updated', [$payout]);
-                }
-            }
+        if (($initialUtr === null) and
+            ($payout->getUtr() !== null) and
+            ($isPayoutService === false))
+        {
+            $firePayoutUpdatedWebhook = true;
+        }
+
+        if ($firePayoutUpdatedWebhook === true)
+        {
+            $this->app->events->fire('api.payout.updated', [$payout]);
+        }
 
         $this->trace->info(
             TraceCode::PAYOUT_UPDATED_AFTER_FTA_RECON,
@@ -2152,6 +2170,8 @@ class Core extends Base\Core
                 function() use ($payout, $debit_bas) {
                     $payout->setStatus(Status::PROCESSED);
 
+                    (new PayoutsStatusDetailsCore())->create($payout);
+
                     $this->repo->saveOrFail($payout);
 
                     if ($payout->isBalanceAccountTypeDirect() === true)
@@ -2161,8 +2181,6 @@ class Core extends Base\Core
                         (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                     }
                 });
-
-            (new PayoutsStatusDetailsCore())->create($payout);
 
             $this->app->events->dispatch('api.payout.processed', [$payout]);
 

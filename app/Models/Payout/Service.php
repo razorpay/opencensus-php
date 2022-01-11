@@ -37,6 +37,7 @@ use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\Application\ApplicationMerchantMaps;
+use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
@@ -2433,4 +2434,10 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function getPayoutStatusReasonMap(): array
+    {
+        return StatusReasonMap::$payoutStatusToReasonMap;
+    }
+
 }

@@ -196,6 +196,9 @@ class CreatePayoutsTable extends Migration
             $table->char(Payout::CANCELLATION_USER_ID, User\Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Payout::STATUS_DETAILS_ID, Payout::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::REGISTERED_NAME, 255)
                   ->nullable();
 

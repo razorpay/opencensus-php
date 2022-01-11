@@ -409,6 +409,9 @@ final class RazorxTreatment
     //Experiment for showing status details to selected merchant
     const ENABLE_STATUS_DETAILS_FEATURE = 'enable_status_details_feature';
 
+    //Experiment for showing status details in timeline view on dashboard
+    const STATUS_DETAILS_TIMELINE_VIEW = 'status_details_timeline_view';
+
     // Experiment to block customer prefill on authlink checkout
     const BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK = 'block_customer_prefill_in_authlink';
 

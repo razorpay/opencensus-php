@@ -3,7 +3,6 @@
 namespace RZP\Models\Payout;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\View as View;
 
 use App;
 use RZP\Constants;
@@ -45,7 +44,6 @@ use RZP\Models\PayoutMeta\Entity as PayoutMetaEntity;
 use Razorpay\OAuth\Application\Repository as AppRepo;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
-use RZP\Models\FundTransfer\Attempt as Attempt;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 
 /**
@@ -132,8 +130,14 @@ class Entity extends Base\PublicEntity
     // to send reason and description for queued state
     const QUEUEING_DETAILS       = 'queueing_details';
 
-    // to send staus details reason and description for processing state now
+    // to send latest status details reason and description
    const STATUS_DETAILS          = 'status_details';
+
+   // to show status details for different statuses a payout has
+   const STATUS_SUMMARY          = 'status_summary';
+
+   // to store latest status details id
+   const STATUS_DETAILS_ID       = 'status_details_id';
 
     // scheduled_at is the timestamp for when the merchant schedules the payout to be processed
     const SCHEDULED_AT                          = 'scheduled_at';
@@ -487,6 +491,7 @@ class Entity extends Base\PublicEntity
         self::CANCELLATION_USER,
         self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
+        self::STATUS_DETAILS_ID,
     ];
 
     protected $public = [
@@ -538,7 +543,9 @@ class Entity extends Base\PublicEntity
         self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
         self::STATUS_DETAILS,
-        self::MERCHANT_ID
+        self::MERCHANT_ID,
+        self::STATUS_SUMMARY,
+        self::STATUS_DETAILS_ID,
     ];
 
     protected $webhook = [
@@ -610,6 +617,7 @@ class Entity extends Base\PublicEntity
         self::QUEUEING_DETAILS,
         self::ON_HOLD_AT,
         self::STATUS_DETAILS,
+        self::STATUS_SUMMARY,
     ];
 
     protected $defaults = [
@@ -635,6 +643,7 @@ class Entity extends Base\PublicEntity
         self::ORIGIN               => self::API,
         self::STATUS_CODE          => null,
         self::CANCELLATION_USER_ID => null,
+        self::STATUS_DETAILS_ID    => null,
     ];
 
     protected $amounts = [
@@ -1054,9 +1063,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULED_AT);
     }
 
-    public function getStatusDetails()
+    public function getStatusDetailsId()
     {
-        return $this->getAttribute(self::STATUS_DETAILS);
+        return $this->getAttribute(self::STATUS_DETAILS_ID);
     }
 
     public function hasBeenQueued()
@@ -1642,6 +1651,11 @@ class Entity extends Base\PublicEntity
     public function setId($id)
     {
         $this->setAttribute(self::ID, $id);
+    }
+
+    public function setStatusDetailsId($id)
+    {
+        $this->setAttribute(self::STATUS_DETAILS_ID, $id);
     }
 
     // ============================= END SETTERS =============================
@@ -2304,37 +2318,67 @@ class Entity extends Base\PublicEntity
     public function setPublicStatusDetailsAttribute(array &$attributes)
     {
                $app = App::getFacadeRoot();
-
         $merchantId = $this->getMerchantId();
-
               $mode = $app['rzp.mode'] ?? Mode::LIVE;
 
-           $variant = $app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
-            $mode,
-            Entity::RAZORX_RETRY_COUNT
-           );
+           $variant = $app->razorx->getTreatment($merchantId,
+                             Merchant\RazorxTreatment::ENABLE_STATUS_DETAILS_FEATURE,
+                             $mode, Entity::RAZORX_RETRY_COUNT);
 
         if ((strtolower($variant) === 'on'))
         {
-            $statusDetails = (new PayoutsStatusDetails\Repository())
-                    ->fetchPayoutStatusDetailsLatest($this->getId());
+            $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
-                $statusDetailsArray =
-                    [
-                        'reason'         => $statusDetails['reason'],
-                        'description'    => $statusDetails['description'],
-                    ];
+            $statusDetailsArray =
+                [
+                    'reason' => $statusDetails['reason'],
+                    'description' => $statusDetails['description'],
+                ];
 
-                $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
+            $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
         }
-
-       else
+        else
         {
             unset($attributes[self::STATUS_DETAILS]);
         }
+    }
 
+    public function setPublicStatusSummaryAttribute(array &$attributes)
+    {
+               $app = App::getFacadeRoot();
+        $merchantId = $this->getMerchantId();
+              $mode = $app['rzp.mode'] ?? Mode::LIVE;
+
+        $variant = $app->razorx->getTreatment(
+                          $merchantId,
+                          Merchant\RazorxTreatment::STATUS_DETAILS_TIMELINE_VIEW,
+                          $mode, Entity::RAZORX_RETRY_COUNT);
+
+        $statusSummary = null;
+
+        if (app('basicauth')->isProxyAuth() === true)
+        {
+            if ((strtolower($variant) === 'on'))
+            {
+                $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsByPayoutId($this->getId());
+
+                foreach ($statusDetails as $statusArray)
+                {
+                    $statusSummary [$statusArray['status']] [] =
+                        [
+                            PayoutsStatusDetails\Entity::REASON => $statusArray['reason'],
+                            PayoutsStatusDetails\Entity::DESCRIPTION => $statusArray['description'],
+                            'timestamp' => $statusArray['created_at'],
+                        ];
+                }
+                $attributes[self::STATUS_SUMMARY] = $statusSummary;
+            }
+        }
+
+        else
+        {
+            unset($attributes[self::STATUS_SUMMARY]);
+        }
     }
 
     // ============================= END PUBLIC SETTERS =============================

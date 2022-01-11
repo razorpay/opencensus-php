@@ -3604,7 +3604,33 @@ return [
         ],
     ],
 
+    'testPayoutStatusReasonMapping' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/payouts_status_reason_map',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testGetPayout' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testStatusSummaryObjectInGetPayout' => [
         'request' => [
             'method'  => 'get',
             'url'     => '/payouts/{id}',
@@ -4155,6 +4181,19 @@ return [
     ],
 
     'testSearchPayoutByPayoutStatus' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testSearchPayoutByPayoutStatusReason' => [
         'request' => [
             'method'  => 'get',
             'url'     => '/payouts',

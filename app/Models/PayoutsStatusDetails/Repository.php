@@ -9,13 +9,24 @@ class Repository extends Base\Repository
 {
     protected $entity = Table::PAYOUTS_STATUS_DETAILS;
 
-    public function getPayoutStatusDetailsByPayoutId(string $payoutId)
+    public function fetchStatusReasonFromStatusDetailsId(string $id)
     {
-        $payoutIdColumn = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
+        $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
 
-        return $this->newQuery()
-            ->where($payoutIdColumn, $payoutId)
-            ->get();
+        $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                        ->select(Entity::REASON)
+                        ->where($idColumn,$id)
+                        ->get();
+
+        if($result !== null)
+        {
+            return $result;
+        }
+
+        else
+        {
+            return $this->findOrFailOnMaster($id,Entity::REASON);
+        }
     }
 
     public function fetchPayoutStatusDetailsLatest(string $payoutId)
@@ -24,14 +35,28 @@ class Repository extends Base\Repository
             Entity::REASON,
             Entity::DESCRIPTION,
         ];
-        $payoutIdColumn = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
 
+        $payoutIdColumn = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
         $createdAtColumn = $this->repo->payouts_status_details->dbColumn(Entity::CREATED_AT);
 
         return $this->newQuery()
-            ->select($columnsToSelect)
-            ->where($payoutIdColumn, $payoutId)
-            ->orderBy($createdAtColumn,'desc')
-            ->first();
+                    ->select($columnsToSelect)
+                    ->where($payoutIdColumn, $payoutId)
+                    ->orderBy($createdAtColumn,'desc')
+                    ->first();
     }
+
+    public function fetchPayoutStatusDetailsByPayoutId(string $payoutId)
+    {
+        $payoutIdColumn  = $this->repo->payouts_status_details->dbColumn(Entity::PAYOUT_ID);
+        $idColumn = $this->repo->payouts_status_details->dbColumn(Entity::ID);
+
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->select(Table::PAYOUTS_STATUS_DETAILS.'.*')
+                    ->where($payoutIdColumn, $payoutId)
+                    ->orderBy($idColumn,'desc')
+                    ->get();
+
+    }
+
 }

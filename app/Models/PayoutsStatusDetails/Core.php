@@ -2,14 +2,16 @@
 
 namespace RZP\Models\PayoutsStatusDetails;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Payout;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Exception\BadRequestException;
-use RZP\Models\FundTransfer\Attempt\Entity as FTAEntity;
-use RZP\Models\FundTransfer\Attempt\Constants as FTAConstants;
-use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 use Illuminate\Support\Facades\View as View;
+use RZP\Models\FundTransfer\Attempt\Entity as FTAEntity;
+use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
+use RZP\Models\FundTransfer\Attempt\Constants as FTAConstants;
 
 class Core extends Base\Core
 {
@@ -20,63 +22,60 @@ class Core extends Base\Core
 
     public function create(Payout\Entity $payout)
     {
-        $payoutId = $payout->getId();
+            $payoutId = $payout->getId();
 
-        $status = $payout->getStatus();
+            $status = $payout->getStatus();
 
-        if($status === Payout\Status::PROCESSED)
-        {
-            $reason = "payout_processed";
+            if ($status === Payout\Status::PROCESSED)
+            {
+                $reason = "payout_processed";
 
-            $description = View::make('status_details.processed_status')->render();
+                $description = View::make('status_details.processed_status')->render();
 
-            $description = rtrim($description);
-        }
+                $description = rtrim($description);
+            }
+            else if ($status === Payout\Status::PENDING)
+            {
+                $reason = "pending_approval";
 
-       else if($status === Payout\Status::PENDING)
-       {
-            $reason = "pending_approval";
+                $description = View::make('status_details.pending_status')->render();
 
-            $description = View::make('status_details.pending_status')->render();
+                $description = rtrim($description);
+            }
+            else if ($status === Payout\Status::QUEUED)
+            {
+                $reason = $payout->getQueuedReason();
 
-            $description = rtrim($description);
-       }
+                $description = $payout->getDescriptionForQueuedReason($reason);
+            }
+            else if ($status === Payout\Status::REVERSED or $status === Payout\Status::FAILED)
+            {
 
-       else if($status === Payout\Status::QUEUED)
-       {
-            $reason = $payout->getQueuedReason();
+                $error = new Payout\PayoutError($payout);
 
-            $description = $payout->getDescriptionForQueuedReason($reason);
-       }
+                $errorDetails = $error->getErrorDetails();
 
-       else if($status === Payout\Status::REVERSED or $status === Payout\Status::FAILED)
-       {
+                $reason = $errorDetails['reason'] ?? null;
 
-           $error = new Payout\PayoutError($payout);
+                $description = $errorDetails['description'] ?? null;
 
-           $errorDetails = $error->getErrorDetails();
+            }
+            else
+            {
+                $reason = null;
+                $description = null;
+            }
 
-           $reason = $errorDetails['reason'] ?? null;
-
-           $description = $errorDetails['description'] ?? null;
-
-       }
-       else
-       {
-           $reason = null;
-           $description = null;
-       }
-
-        $this->savePayoutStatusDetailsEntity($payout, $status, $reason, $description);
+            $this->savePayoutStatusDetailsEntity($payout, $status, $reason, $description);
     }
 
     // creates status details entity for processing state
-    public function createStatusDetails(Payout\Entity $payout, array $ftadata)
+    public function createStatusDetailsProcessingState(Payout\Entity $payout, array $ftadata)
 
     {
         $payoutId = $payout->getId();
 
-        $status = $payout->getStatus();
+        $status = Payout\Status::PROCESSING;
 
         $statusDetails = $ftadata[FTAEntity::STATUS_DETAILS] ?? null;
 
@@ -116,23 +115,25 @@ class Core extends Base\Core
             PayoutsStatusDetails\Entity::MODE                      => 'system',
         ];
 
-        // if two fts webhook comes with same status details update then two rows will be created
-        if($reason !== null and $description !== null)
-        {
-            $this->trace->info(TraceCode::PAYOUTS_STATUS_DETAILS_CREATE_REQUEST, ['input' => $input]);
+         if($reason !== null and $description !== null)
+         {
+             $this->trace->info(TraceCode::PAYOUTS_STATUS_DETAILS_CREATE_REQUEST, ['input' => $input]);
 
-            $statusDetails = (new PayoutsStatusDetails\Entity)->build($input);
+             $statusDetails = (new PayoutsStatusDetails\Entity)->build($input);
 
-            $statusDetails->payout()->associate($payout);
+             $statusDetails->payout()->associate($payout);
 
-            $this->repo->saveOrFail($statusDetails);
+             $this->repo->saveOrFail($statusDetails);
 
-            $this->trace->info(
-                TraceCode::PAYOUTS_STATUS_DETAILS_ENTITY_CREATED,
-                $statusDetails->toArray()
-            );
+             $this->trace->info(
+                 TraceCode::PAYOUTS_STATUS_DETAILS_ENTITY_CREATED,
+                 $statusDetails->toArray()
+             );
 
-        }
+             $id = $statusDetails->getId();
+             $payout->setStatusDetailsId($id);
+             $this->repo->saveOrFail($payout);
+         }
     }
 }
 

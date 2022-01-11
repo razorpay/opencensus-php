@@ -34,6 +34,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 use RZP\Models\Workflow\Service\StateMap\Entity as WorkflowStateMap;
 use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
 
@@ -728,6 +729,42 @@ class Repository extends Base\Repository
         $mappedStatuses = Status::getInternalStatusFromPublicStatus($publicStatus);
 
         $query->whereIn($statusColumn, $mappedStatuses);
+    }
+
+    public function addQueryParamReason($query, $params)
+    {
+        $statusReason       = $params[PayoutsStatusDetails\Entity::REASON];
+        $statusReasonColumn = $this->repo->payouts_status_details->dbColumn(PayoutsStatusDetails\Entity::REASON);
+
+
+
+        $query->select($this->getTableName(). '.*');
+        $this->joinQueryPayoutsStatusDetails($query);
+
+        $query->where($statusReasonColumn,$statusReason);
+    }
+
+    protected function joinQueryPayoutsStatusDetails(BuilderEx $query)
+    {
+        $payoutsStatusDetailsTable = $this->repo->payouts_status_details->getTableName();
+
+        if ($query->hasJoin($payoutsStatusDetailsTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $payoutsStatusDetailsTable,
+            function(JoinClause $join)
+            {
+                //id column in payouts status details table
+                $payoutsStatusDetailsIdColumn = $this->repo->payouts_status_details->dbColumn(PayoutsStatusDetails\Entity::ID);
+
+                // status details id column in payout table
+                $payoutStatusDetailsIdColumn             = $this->dbColumn(Entity::STATUS_DETAILS_ID);
+
+                $join->on($payoutsStatusDetailsIdColumn, $payoutStatusDetailsIdColumn);
+            });
     }
 
     /**

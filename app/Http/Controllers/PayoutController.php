@@ -551,4 +551,12 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getPayoutStatusReasonMap()
+    {
+        $data = $this->service()->getPayoutStatusReasonMap();
+
+        return ApiResponse::json($data);
+    }
+
 }

@@ -1,3 +1,6 @@
+ALTER TABLE payouts
+    ADD COLUMN status_details_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
+
 ALTER TABLE pricing
     ADD COLUMN app_name varchar(16) DEFAULT NULL;
 
