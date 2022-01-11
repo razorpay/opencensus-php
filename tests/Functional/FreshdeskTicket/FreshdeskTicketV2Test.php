@@ -698,6 +698,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                                    [
                                                                        'description'   => 'ticket description',
                                                                        'subject'       => 'ticket subject',
+                                                                       'status'        => 2,
                                                                        'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
                                                                        'custom_fields' => [
                                                                            'cf_requester_category'    => 'Merchant',
@@ -746,31 +747,32 @@ class FreshdeskTicketV2Test extends TestCase
 
         $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpcap',
-            [
-                'description' => 'ticket description',
-                'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
-                'custom_fields' => [
-                    'cf_requester_category'       =>  'Merchant',
-                    'cf_requestor_subcategory'    =>  'Cash Advance',
-                    'cf_merchant_id_dashboard'    =>  'merchant_dashboard_10000000000000',
-                    'cf_merchant_id'              => '10000000000000',
-                ],
-                'email' =>  'test@razorpay.com',
-                'phone' => '9876543210',
-                'priority' =>  1,
-                'group_id' => 14000000007642,
-            ],
-            [
-                'id'            => '99',
-                'description'   => 'ticket description',
-                'fr_due_by'     => $frDueByFreshdeskFormat,
-                'custom_fields' => [
-                    'cf_requester_category'    => 'Merchant',
-                    'cf_requestor_subcategory' => 'Cash Advance',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                ],
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpcap',
+                                                               [
+                                                                   'description'   => 'ticket description',
+                                                                   'subject'       => 'ticket subject',
+                                                                   'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
+                                                                   'status'        => 2,
+                                                                   'custom_fields' => [
+                                                                       'cf_requester_category'    => 'Merchant',
+                                                                       'cf_requestor_subcategory' => 'Cash Advance',
+                                                                       'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                       'cf_merchant_id'           => '10000000000000',
+                                                                   ],
+                                                                   'email'         => 'test@razorpay.com',
+                                                                   'phone'         => '9876543210',
+                                                                   'priority'      => 1,
+                                                                   'group_id'      => 14000000007642,
+                                                               ],
+                                                               [
+                                                                   'id'            => '99',
+                                                                   'description'   => 'ticket description',
+                                                                   'fr_due_by'     => $frDueByFreshdeskFormat,
+                                                                   'custom_fields' => [
+                                                                       'cf_requester_category'    => 'Merchant',
+                                                                       'cf_requestor_subcategory' => 'Cash Advance',
+                                                                       'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                   ],
                 'priority' =>  1,
             ]);
 
@@ -799,8 +801,8 @@ class FreshdeskTicketV2Test extends TestCase
 
         $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpcap',
-            [
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpcap',
+                                                               [
                 'description'=>'ticket description',
                 'subject'=>'[Merchant] Corporate Credit Cards',
                 'custom_fields'=>[
@@ -821,7 +823,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'priority'=>1,
                 'status'=>2
             ],
-            [
+                                                               [
                 'id'            => '99',
                 'description'   => 'ticket description',
                 'fr_due_by'     => $frDueByFreshdeskFormat,
@@ -901,21 +903,22 @@ class FreshdeskTicketV2Test extends TestCase
 
         $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpx',
-            [
-                'description' => 'ticket description',
-                'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
-                'custom_fields' => [
-                    'cf_requester_category'    => 'Merchant',
-                    'cf_requestor_subcategory' => 'Activation',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                ],
-                'email' =>  'test@razorpay.com',
-                'phone' => '9876543210',
-                'priority' =>  1,
-            ],
-            [
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpx',
+                                                               [
+                                                                   'description'   => 'ticket description',
+                                                                   'subject'       => 'ticket subject',
+                                                                   'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
+                                                                   'custom_fields' => [
+                                                                       'cf_requester_category'    => 'Merchant',
+                                                                       'cf_requestor_subcategory' => 'Activation',
+                                                                       'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                                   ],
+                                                                   'email'         => 'test@razorpay.com',
+                                                                   'phone'         => '9876543210',
+                                                                   'priority'      => 1,
+                                                                   'status'        => 2,
+                                                               ],
+                                                               [
                 'id'            => '99',
                 'description'   => 'ticket description',
                 'fr_due_by'     => $frDueByFreshdeskFormat,
@@ -951,18 +954,19 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpx',
             [
-                'description' => 'ticket description',
-                'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_requestor_subcategory' => 'Activation',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                 ],
-                'email' =>  'user@razorpay.com',
-                'priority' =>  1,
-                'name' => '',
-                'phone' => '1234567890',
+                'email'         => 'user@razorpay.com',
+                'priority'      => 1,
+                'name'          => '',
+                'phone'         => '1234567890',
+                'status'        => 2,
             ],
             [
                 'id'            => '99',
@@ -1000,17 +1004,18 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpx',
             [
-                'description' => 'ticket description',
-                'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_requestor_subcategory' => 'Activation',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                 ],
-                'email' =>  'user@razorpay.com',
-                'phone' => '1234567890',
-                'priority' =>  1,
+                'email'         => 'user@razorpay.com',
+                'phone'         => '1234567890',
+                'priority'      => 1,
+                'status'        => 2,
             ],
             [
                 'id'            => '99',
@@ -1043,29 +1048,30 @@ class FreshdeskTicketV2Test extends TestCase
     public function testCreateTicketFreshdeskError()
     {
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
-            [
-                'description' => 'ticket description',
-                'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
-                'custom_fields' => [
-                    'cf_requester_category'    => 'Invalid',
-                    'cf_requestor_subcategory' => 'activation',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                    'cf_merchant_id'           => '10000000000000',
-                ],
-                'email'     =>  'test@razorpay.com',
-                'phone'     => '9876543210',
-                'priority'  =>  1,
-            ],            [
-                'description'   => 'Validation failed',
-                'errors'        => [
-                    [
-                        'field'     => 'custom_fields.cf_requester_category',
-                        'values'    => 'Merchant,Customer,Service request,Prospect,Other,Partner',
-                        'code'      => 'invalid value',
-                    ]
-                ]
-            ]);
+                                                    [
+                                                        'description'   => 'ticket description',
+                                                        'subject'       => 'ticket subject',
+                                                        'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
+                                                        'status'        => 2,
+                                                        'custom_fields' => [
+                                                            'cf_requester_category'    => 'Invalid',
+                                                            'cf_requestor_subcategory' => 'activation',
+                                                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                            'cf_merchant_id'           => '10000000000000',
+                                                        ],
+                                                        'email'         => 'test@razorpay.com',
+                                                        'phone'         => '9876543210',
+                                                        'priority'      => 1,
+                                                    ], [
+                                                        'description' => 'Validation failed',
+                                                        'errors'      => [
+                                                            [
+                                                                'field'  => 'custom_fields.cf_requester_category',
+                                                                'values' => 'Merchant,Customer,Service request,Prospect,Other,Partner',
+                                                                'code'   => 'invalid value',
+                                                            ]
+                                                        ]
+                                                    ]);
 
         $this->startTest();
     }
@@ -1452,27 +1458,28 @@ class FreshdeskTicketV2Test extends TestCase
 
 
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
-            [
-                'description' => 'ticket description',
-                'custom_fields' => [
-                    'cf_requester_category' => 'Merchant',
-                    'cf_requestor_subcategory' => 'Activation',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                    'cf_merchant_id'           => '10000000000000',
-                ],
-                'priority' => 1,
-            ],
-            [
-                'id' => '99',
-                'description' => 'ticket description',
-                'fr_due_by' => $frDueByFreshdeskFormat,
-                'custom_fields' => [
-                    'cf_requester_category' => 'Merchant',
-                    'cf_requestor_subcategory' => 'Activation',
-                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
-                ],
-                'priority' => 1,
-            ]);
+                                                    [
+                                                        'description'   => 'ticket description',
+                                                        'status'        => 2,
+                                                        'custom_fields' => [
+                                                            'cf_requester_category'    => 'Merchant',
+                                                            'cf_requestor_subcategory' => 'Activation',
+                                                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                            'cf_merchant_id'           => '10000000000000',
+                                                        ],
+                                                        'priority'      => 1,
+                                                    ],
+                                                    [
+                                                        'id'            => '99',
+                                                        'description'   => 'ticket description',
+                                                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                                                        'custom_fields' => [
+                                                            'cf_requester_category'    => 'Merchant',
+                                                            'cf_requestor_subcategory' => 'Activation',
+                                                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                                                        ],
+                                                        'priority'      => 1,
+                                                    ]);
 
         $response = $this->startTest();
 
@@ -1733,19 +1740,20 @@ class FreshdeskTicketV2Test extends TestCase
         if ($key === self::RZP_CREATE_TICKET_MOBILE_SIGNUP)
         {
             return [
-                'request'   =>  [
-                    'description' => 'ticket description',
-                    'subject' => 'ticket subject',
+                'request'  => [
+                    'description'   => 'ticket description',
+                    'subject'       => 'ticket subject',
+                    'status'        => 2,
                     'custom_fields' => [
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                         'cf_merchant_id'           => '10000000000000',
                     ],
-                    'phone' => '9876543210',
-                    'priority' =>  1,
+                    'phone'         => '9876543210',
+                    'priority'      => 1,
                 ],
-                'response'  =>
+                'response' =>
                     [
                         'id'            => '99',
                         'description'   => 'ticket description',
@@ -1764,19 +1772,20 @@ class FreshdeskTicketV2Test extends TestCase
         if ($key === self::RZP_CREATE_TICKET_HTML_TAGS)
         {
             return [
-                'request'   =>  [
-                    'description' => '<br>Ticket<b>Description</b><br>HTML',
-                    'subject' => 'ticket subject',
-                    'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
+                'request'   => [
+                    'description'   => '<br>Ticket<b>Description</b><br>HTML',
+                    'subject'       => 'ticket subject',
+                    'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
+                    'status'        => 2,
                     'custom_fields' => [
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                         'cf_merchant_id'           => '10000000000000',
                     ],
-                    'email' =>  'test@razorpay.com',
-                    'phone' => '9876543210',
-                    'priority' =>  1,
+                    'email'         => 'test@razorpay.com',
+                    'phone'         => '9876543210',
+                    'priority'      => 1,
                 ],
                 'response'  =>
                     [
@@ -1806,13 +1815,14 @@ class FreshdeskTicketV2Test extends TestCase
                         'id'            => '99',
                         'description'   => 'ticket description',
                         'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'status'        => 2,
                         'custom_fields' => [
                             'cf_requester_category'    => 'Merchant',
                             'cf_requestor_subcategory' => 'Activation',
                             'cf_merchant_id'           => '10000000000000',
                             'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                         ],
-                        'priority' =>  1,
+                        'priority'      => 1,
                     ]
             ];
         }
@@ -1820,19 +1830,20 @@ class FreshdeskTicketV2Test extends TestCase
         if ($key === self::RZP_CREATE_TICKET_SALESFORCE)
         {
             return [
-                'request'   =>  [
-                    'description' => 'ticket description',
-                    'subject' => 'ticket subject',
-                    'cc_emails' => ['a@b.com'],
+                'request'   => [
+                    'description'   => 'ticket description',
+                    'subject'       => 'ticket subject',
+                    'status'        => 2,
+                    'cc_emails'     => ['a@b.com'],
                     'custom_fields' => [
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                         'cf_merchant_id'           => '10000000000000',
                     ],
-                    'email' =>  'test@razorpay.com',
-                    'phone' => '9876543210',
-                    'priority' =>  1,
+                    'email'         => 'test@razorpay.com',
+                    'phone'         => '9876543210',
+                    'priority'      => 1,
                 ],
                 'response'  =>
                     [

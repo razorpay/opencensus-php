@@ -113,6 +113,11 @@ class Service extends Base\Service
 
         $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] = Constants::ACCOUNT_LOCKED;
 
+        if (empty ($input[Constants::TICKET_STATUS]) === true)
+        {
+            $input[Constants::TICKET_STATUS] = TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING);
+        }
+
         $input[Constants::SUBJECT] = Constants::ACCOUNT_LOCKED;
 
         return $input;
@@ -233,6 +238,11 @@ class Service extends Base\Service
     public function postTicket(array $input): array
     {
         $validator = (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('create_customer_ticket', $input);
+
+        if (empty ($input[Constants::TICKET_STATUS]) === true)
+        {
+            $input[Constants::TICKET_STATUS] = TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING);
+        }
 
         (new Core)->verifyOtp($input['email'], $input['otp']);
 
@@ -1309,6 +1319,11 @@ class Service extends Base\Service
 
         $input['priority'] = 1;
 
+        if (empty ($input[Constants::TICKET_STATUS]) === true)
+        {
+            $input[Constants::TICKET_STATUS] = TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING);
+        }
+        
         $input = $this->modifyRequestForCapital($input);
 
         $this->getGroupIdForTicketInput($input);
@@ -1325,6 +1340,11 @@ class Service extends Base\Service
     protected function makeInputForInternalPostTicket($input)
     {
         $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
+
+        if (empty ($input[Constants::TICKET_STATUS]) === true)
+        {
+            $input[Constants::TICKET_STATUS] = TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING);
+        }
 
         return $input;
     }

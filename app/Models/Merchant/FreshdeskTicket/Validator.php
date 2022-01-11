@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         'otp'                                    => 'required|string|min:4|max:6',
         'name'                                   => 'required|string|max:100',
         'phone'                                  => 'sometimes|contact_syntax',
+        'status'                                 => 'sometimes',
         'description'                            => 'required|string|max:1000',
         'subject'                                => 'required|string|max:500',
         'attachments'                            => 'sometimes',
@@ -53,6 +54,7 @@ class Validator extends Base\Validator
         'attachments'                            => 'sometimes',
         'attachments.*'                          => 'custom:attachment',
         'captcha'                                => 'required|string|custom',
+        'status'                                 => 'sometimes',
     ];
 
     protected static $raiseGrievanceRules = [
