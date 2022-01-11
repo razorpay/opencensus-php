@@ -1854,8 +1854,7 @@ const uploadFields = [
     getLabel: (activation) => (activation.isOnKYCTab() ? 'Contact Email' : ''),
     name: 'contact_email',
     type: 'email',
-    info: () =>
-      this.isOnKYCTab() ? 'We will reach out to this email for any account related issues.' : '',
+    info: 'We will reach out to this email for any account related issues.',
     customField: (activation) =>
       !activation.isOnKYCTab() &&
       activation.props.user.isEmailNonMandatoryOnL2Form &&
