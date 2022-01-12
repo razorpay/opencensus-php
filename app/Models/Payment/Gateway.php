@@ -4091,7 +4091,7 @@ class Gateway
             self::NETBANKING_BDBL,
             self::NETBANKING_UCO,
             self::EMERCHANTPAY,
-            Self::NETBANKING_TMB,
+            self::NETBANKING_TMB,
         ];
 
         $acquirerGateways = [
