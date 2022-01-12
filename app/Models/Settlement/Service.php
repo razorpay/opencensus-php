@@ -977,9 +977,8 @@ class Service extends Base\Service
     // RSR-1970 merchant config from merchant dashboard
     public function merchantDashboardConfigGet(array $input) : array
     {
-        (new Validator)->validateInput('settlement_merchantconfig_get', $input);
-
-        $mid = $input['merchant_id'];
+        $merchant = $this->merchant;
+        $mid=$merchant->getId();
 
         $isNewService = $this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, array($mid));
 
@@ -992,8 +991,6 @@ class Service extends Base\Service
 
         if (empty($isNewService) === true)
         {
-            $merchant = $this->repo->merchant->findOrFail($mid);
-
             $schedulesFetched = $this->repo->schedule_task->fetchByMerchant($merchant, 'settlement');
 
             $scheduleTasks = [];
@@ -1080,6 +1077,7 @@ class Service extends Base\Service
         }
 
         // if merchant is on NSS, Fetch data from there itself
+        $input['merchant_id']=$mid;
         return app('settlements_merchant_dashboard')->merchantDashboardConfigGet($input);
     }
 
