@@ -2413,7 +2413,7 @@ class Processor
         if ((empty($publicKey) === true) and
             (isset($data['razorpay_order_id']) === true))
         {
-            $order = $this->repo->order->find(Order\Entity::stripDefaultSign($data['razorpay_order_id']));
+            $order = $this->repo->order->findOrFail(Order\Entity::stripDefaultSign($data['razorpay_order_id']));
 
             $publicKey = $order->getPublicKey();
 
