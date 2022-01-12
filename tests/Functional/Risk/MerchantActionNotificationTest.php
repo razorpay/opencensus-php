@@ -41,6 +41,11 @@ class MerchantActionNotificationTest extends TestCase
         'hold_funds'                      => 'sms.risk.foh_confirmation_mobile_signup',
     ];
 
+    const FD_SUBCATEGORY = [
+        'disable_live' => 'Disable live',
+        'suspend'      => 'Suspended Merchants',
+    ];
+
     public function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantActionNotificationTestData.php';
@@ -99,6 +104,10 @@ class MerchantActionNotificationTest extends TestCase
     {
         $expectedContent = $this->getExpectedContent('suspend');
 
+        $expectedContent['email_config_id'] = (int) $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'];
+
+        $expectedContent['group_id'] = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
                                                     $expectedContent,
                                                     [
@@ -135,6 +144,10 @@ class MerchantActionNotificationTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
 
         $expectedContent = $this->getExpectedContent('disable_live');
+
+        $expectedContent['email_config_id'] = (int) $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'];
+
+        $expectedContent['group_id'] = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
                                                     $expectedContent,
@@ -199,7 +212,7 @@ class MerchantActionNotificationTest extends TestCase
 
         $this->assertRavenRequestForMerchantActionNotification('disable_international_permanent');
     }
-  
+
     public function testInternationalDisableBulkWorkflowFdTicketCreate()
     {
         $expectedContent = $this->getExpectedContentForFDTicket('disable_international_temporary');
@@ -250,7 +263,7 @@ class MerchantActionNotificationTest extends TestCase
             'custom_fields'   => [
                 'cf_ticket_queue' => 'Merchant',
                 'cf_category'     => 'Risk Report_Merchant',
-                'cf_subcategory'  => 'Funds on hold',
+                'cf_subcategory'  => self::FD_SUBCATEGORY[$action] ?? 'Funds on hold',
                 'cf_product'      => 'Payment Gateway',
             ],
             'subject'         => $subject,
@@ -302,7 +315,7 @@ class MerchantActionNotificationTest extends TestCase
             'custom_fields' => [
                 'cf_ticket_queue'          => 'Merchant',
                 'cf_category'              => 'Risk Report_Merchant',
-                'cf_subcategory'           => 'Funds on hold',
+                'cf_subcategory'           => self::FD_SUBCATEGORY[$action] ?? 'Funds on hold',
                 'cf_product'               => 'Payment Gateway',
                 'cf_created_by'            => 'agent',
                 'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',

@@ -799,6 +799,15 @@ final class Constants
     ];
 
     const FD_SUB_CATEGORY_FUNDS_ON_HOLD      = 'Funds on hold';
+    const FD_SUB_CATEGORY_DISABLE_LIVE       = 'Disable live';
+    const FD_SUB_CATEGORY_SUSPEND            = 'Suspended Merchants';
+
+
+    const FD_SUB_CATEGORY = [
+        Action::HOLD_FUNDS                      => self::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+        Action::LIVE_DISABLE                    => self::FD_SUB_CATEGORY_DISABLE_LIVE,
+        Action::SUSPEND                         => self::FD_SUB_CATEGORY_SUSPEND,
+    ];
 
     const LINKED_ACCOUNT_PENNY_TESTING = 'linked_account_penny_testing';
 

@@ -634,6 +634,10 @@ class Service extends Base\Service
 
             $viewTemplate = Constants::FOH_HEALTH_CHECKER_NEEDS_CLARIFICATION_MAIL_TPL[$rasTriggerReason];
 
+            $emailConfigId = (int) $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'];
+
+            $groupId = (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'];
+
             $data = [
                 'merchant_id'   => $merchant->getId(),
                 'merchant_name' => $merchant->getName(),
@@ -954,7 +958,8 @@ class Service extends Base\Service
             $requestParams = [
                 'type'          =>  'Question',
                 'tags'          =>  $fdTags,
-                'subCategory'   =>  Constants::FD_SUB_CATEGORY_FRAUD_ALERTS,
+                'subCategory'   =>  Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION,
+                'groupId'        => (int) $this->freshdeskConfig['group_ids']['rzpind']['foh'],
             ];
 
             $fdTicket = (new Merchant\RiskMobileSignupHelper())->createFdTicket($merchant, Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL, Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT, $data, $requestParams);
@@ -1033,11 +1038,11 @@ class Service extends Base\Service
 
         return $this->sendEmail($merchant, [
             $subject, $viewTemplate, $data,
-            Constants::FD_SUB_CATEGORY_FRAUD_ALERTS,
+            Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION,
             Constants::FOH_NC_NOTIFICATION,
             Constants::RAS_TRIGGER_REASON_NC_FLOW,
-            $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-            $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+            $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+            $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
         ], []);
     }
 

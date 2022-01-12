@@ -177,8 +177,8 @@ class MerchantActionNotification
 
             $groupIdMapping = [
                 Action::HOLD_FUNDS                      => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-                Action::SUSPEND                         => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                Action::LIVE_DISABLE                    => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::SUSPEND                         => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::LIVE_DISABLE                    => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
                 Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                 Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
                 Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP => $this->freshdeskConfig['group_ids']['rzpind']['foh'],
@@ -187,8 +187,8 @@ class MerchantActionNotification
 
             $emailConfigIdMapping = [
                 Action::HOLD_FUNDS                      => $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
-                Action::SUSPEND                         => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
-                Action::LIVE_DISABLE                    => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
+                Action::SUSPEND                         => $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
+                Action::LIVE_DISABLE                    => $this->freshdeskConfig['email_config_ids']['rzpind']['foh_notification'],
                 Action::DISABLE_INTERNATIONAL_PERMANENT => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
                 Action::DISABLE_INTERNATIONAL_TEMPORARY => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
                 Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP  => $this->freshdeskConfig['email_config_ids']['rzpind']['risk_notification'],
@@ -211,7 +211,7 @@ class MerchantActionNotification
                 'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
-                    'cf_subcategory'  => Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+                    'cf_subcategory'  => Constants::FD_SUB_CATEGORY[$action] ?? Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
                     'cf_product'      => 'Payment Gateway',
                 ],
             ];
@@ -278,8 +278,8 @@ class MerchantActionNotification
 
             $groupIdMapping = [
                 Action::HOLD_FUNDS                       =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
-                Action::SUSPEND                          =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
-                Action::LIVE_DISABLE                     =>  $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
+                Action::SUSPEND                          =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
+                Action::LIVE_DISABLE                     =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
                 Action::DEBIT_NOTE_CREATE_EMAIL_SIGNUP   =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
                 Action::DEBIT_NOTE_CREATE_MOBILE_SIGNUP  =>  $this->freshdeskConfig['group_ids']['rzpind']['foh'],
                 Action::DISABLE_INTERNATIONAL_PERMANENT   => $this->freshdeskConfig['group_ids']['rzpind']['merchant_risk'],
@@ -301,7 +301,7 @@ class MerchantActionNotification
                     'type'          =>  'Question',
                     'tags'          =>  $this->getTagsForAction($action),
                     'groupId'       =>  (int) $groupIdMapping[$action],
-                    'subCategory'   =>  Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
+                    'subCategory'   =>  Constants::FD_SUB_CATEGORY[$action] ?? Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD,
                 ], $requestParams);
 
 

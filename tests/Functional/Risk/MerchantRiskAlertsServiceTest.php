@@ -129,6 +129,14 @@ class MerchantRiskAlertsServiceTest extends TestCase
             [
                 'subject'   => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
                 'cc_emails' => ['chargeback.poc1@gmail.com', 'chargeback.poc2@gmail.com'],
+                'email_config_id' => 82000098428,    //FOH
+                'group_id' => 82000655429,           //FOH
+                'custom_fields'   => [
+                    'cf_ticket_queue'           => 'Merchant',
+                    'cf_category'               => 'Risk Report_Merchant',
+                    'cf_subcategory'            => 'Funds on hold',
+                    'cf_product'                => 'Payment Gateway',
+                ]
             ],
             [
                 'id' => '1234',
@@ -161,6 +169,14 @@ class MerchantRiskAlertsServiceTest extends TestCase
                                                     [
                                                         'subject'   => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
                                                         'cc_emails' => ['chargeback.poc1@gmail.com', 'chargeback.poc2@gmail.com', 'sales.poc@gmail.com'],
+                                                        'email_config_id' => 82000098428,         //FOH
+                                                        'group_id' => 82000655429,                //FOH
+                                                        'custom_fields'   => [
+                                                            'cf_ticket_queue'           => 'Merchant',
+                                                            'cf_category'               => 'Risk Report_Merchant',
+                                                            'cf_subcategory'            => 'Funds on hold',
+                                                            'cf_product'                => 'Payment Gateway',
+                                                        ]
                                                     ],
                                                     [
                                                         'id' => '1234',
@@ -275,15 +291,15 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
             [
                 'status'          => 6, // 6->wating on customer,
-                'group_id'        => 82000147768,
+                'group_id'        => 82000655429,
                 'tags'            => ['RAS_FOH', 'RAS_NC_FLOW_FOH'],
                 'priority'        => 1,
                 'email'           => 'merchant.email@gmail.com',
-                'email_config_id' => 82000098661,
+                'email_config_id' => 82000098428,
                 'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
-                    'cf_subcategory'  => 'Fraud alerts',
+                    'cf_subcategory'  => 'Need Clarification',
                     'cf_product'      => 'Payment Gateway',
                 ],
                 'subject'         => 'Razorpay Account Review: test merchant | 10000000000000 | Risk Clarification',
@@ -325,14 +341,14 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
         $this->expectFreshdeskRequestAndRespondWith('tickets', 'post',
                                                     [
-                                                        'group_id'        => 82000147768,
+                                                        'group_id'        => 82000655429,
                                                         'tags'            => ['RAS_FOH', 'RAS_NC_FLOW_FOH'],
                                                         'priority'        => 1,
                                                         'phone'           => '9991119991',
                                                         'custom_fields'   => [
                                                             'cf_ticket_queue'           => 'Merchant',
                                                             'cf_category'               => 'Risk Report_Merchant',
-                                                            'cf_subcategory'            => 'Fraud alerts',
+                                                            'cf_subcategory'            => 'Need Clarification',
                                                             'cf_product'                => 'Payment Gateway',
                                                             'cf_created_by'             => 'agent',
                                                             'cf_merchant_id_dashboard'  => 'merchant_dashboard_10000000000000',
@@ -390,7 +406,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
                 ], $input);
         });
     }
-  
+
     protected function setMerchantDedupeKey()
     {
         $request = [
