@@ -12,9 +12,9 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
-        "opencensus/opencensus-exporter-jaeger": "~0.1",
+        "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
         "predis/predis": "^1.1",
-        "opencensus/opencensus": "v0.7.5.8"
+        "opencensus/opencensus": "v0.7.7.0-alpha"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -40,6 +40,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/opencensus-php.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/opencensus-php-exporter-jaeger.git"
         }
     ],
     "scripts": {
