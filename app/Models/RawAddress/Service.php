@@ -39,6 +39,7 @@ class Service extends Base\Service
         try
         {
             $this->validateForAddressEntity($input);
+            $this->validateForUnicode($input);
 
             return $raw_address->toArrayPublic();
         }catch (\Exception $e)
@@ -142,5 +143,16 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,$addressObject);
         (new RawAddress\Validator())->validateInput("create_for_address",$addressObject);
+    }
+
+    private function validateForUnicode(array $input)
+    {
+        foreach ($input as $key => $value)
+        {
+            if(strlen(stringify($value)) != strlen(utf8_decode(stringify($value))))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            }
+        }
     }
 }

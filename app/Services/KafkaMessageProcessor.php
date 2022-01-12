@@ -14,7 +14,7 @@ class KafkaMessageProcessor
 {
     // Topic name constants to map job
     const API_BVS_EVENTS = 'api-bvs-validation-result-events';
-    const ADDRESS_DEDUPE_EVENT = 'event.address_dedupe_response.test';
+    const ADDRESS_DEDUPE_EVENT = 'address-dedupe-response';
 
     /** @var Application $app */
     protected $app;

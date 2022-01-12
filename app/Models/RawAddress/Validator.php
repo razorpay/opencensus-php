@@ -14,7 +14,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    const ADDRESSES = 'addresses';
+    const ADDRESSES   = 'addresses';
+    const STATUS_CODE = 'statusCode';
+    const MESSAGE     = 'message';
 
     protected static $createRules = [
         Entity::CONTACT          => 'sometimes|contact_syntax',
@@ -50,6 +52,8 @@ class Validator extends Base\Validator
     protected static $processKafkaMessageRules = [
         Entity::CONTACT     => 'required|contact_syntax',
         self::ADDRESSES     => 'required|array',
+        self::STATUS_CODE   => 'sometimes|in:200,400,500',
+        self::MESSAGE       => 'sometimes|string',
     ];
 
     protected function validateCountry($attribute, $value)

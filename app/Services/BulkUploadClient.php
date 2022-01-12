@@ -8,14 +8,13 @@ use RZP\Services\Kafka;
 use RZP\Trace\TraceCode;
 use RZP\Models\Address\Type;
 use RZP\Models\Customer;
-use RZP\Models\Merchant;
+use RZP\Http\Response;
 use RZP\Models\RawAddress;
 use RZP\Models\Address;
 
 class BulkUploadClient
 {
-    const ADDRESS_DEDUPE_REQUEST  = 'func-event.address_dedupe_request.test';
-    const ADDRESS_DEDUPE_RESPONSE = 'func-event.address_dedupe_response.test';
+    const ADDRESS_DEDUPE_REQUEST  = 'address-dedupe-request';
     const STATUS_PENDING         = 'pending';
     const STATUS_PROCESSING      = 'processing';
     const STATUS_PROCESSED       = 'processed';
@@ -116,7 +115,7 @@ class BulkUploadClient
     {
         try
         {
-            $rawAddress = (new RawAddress\Repository())->findByPublicId('rawaddr_'.$rawAddressId);
+            $rawAddress = (new RawAddress\Repository())->findOrFail($rawAddressId);
             $rawAddress->setStatus($statusValue);
             (new RawAddress\Repository())->saveOrFail($rawAddress);
         }
@@ -138,6 +137,12 @@ class BulkUploadClient
         {
             (new RawAddress\Validator())->validateInput('process_kafka_message', $kafkaMessage);
 
+            if ($kafkaMessage['statusCode'] !== Response\StatusCode::SUCCESS)
+            {
+               $this->handleErrorResponse($kafkaMessage);
+               return null;
+            }
+
             foreach ($kafkaMessage['addresses'] as $addressCluster)
             {
                 if (empty($addressCluster))
@@ -147,11 +152,14 @@ class BulkUploadClient
                 $firstAddress = $addressCluster[0];
                 $containsAddressEntity = $this->checkAddressEntity($addressCluster);
 
-                $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,[
-                    "address" => $firstAddress
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION,[
+                    "address" => $firstAddress,
+                    "containsAddressEntity" => $containsAddressEntity
                 ]);
+
                 if ($containsAddressEntity === false)
                 {
+                    $firstAddress = $this->unsetNullKeys($firstAddress);
                     $this->createNewAddress($firstAddress);
                 }
             }
@@ -171,7 +179,7 @@ class BulkUploadClient
         try
         {
             $firstAddress['type'] = Type::SHIPPING_ADDRESS;
-            $entity_id = $firstAddress['id'];
+            $entity_id = stringify($firstAddress['id']);
             unset($firstAddress['id']);
             unset($firstAddress['merchant_id']);
             unset($firstAddress['batch_id']);
@@ -181,7 +189,7 @@ class BulkUploadClient
             unset($firstAddress['updated_at']);
             unset($firstAddress['is_raw_address']);
 
-            (new Address\Core)->create((new RawAddress\Repository())->findByPublicId('rawaddr_'.$entity_id), Type::RAW_ADDRESS, $firstAddress,true);
+            (new Address\Core)->create((new RawAddress\Repository())->findOrFail($entity_id), Type::RAW_ADDRESS, $firstAddress,true);
         }
         catch (Exception $e)
         {
@@ -205,7 +213,7 @@ class BulkUploadClient
             else
             {
                 //update status for raw_address
-                $this->updateStatus($address[RawAddress\Entity::ID], self::STATUS_PROCESSED);
+                $this->updateStatus(stringify($address[RawAddress\Entity::ID]), self::STATUS_PROCESSED);
             }
         }
         return $addressEntity;
@@ -214,6 +222,25 @@ class BulkUploadClient
     protected function getCurrentTimeInMillis()
     {
         return round(microtime(true) * 1000);
+    }
+
+    protected function handleErrorResponse(array $kafkaMessage)
+    {
+        $this->trace->info(TraceCode::ERROR_EXCEPTION,[
+            "status_code" =>$kafkaMessage['statusCode'],
+            "error" => $kafkaMessage['message'],
+        ]);
+    }
+    protected function unsetNullKeys(array $firstAddress)
+    {
+        foreach($firstAddress as $key => $value)
+        {
+            if($value === null)
+            {
+                unset($firstAddress[$key]);
+            }
+        }
+        return $firstAddress;
     }
 
 }
