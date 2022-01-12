@@ -63,6 +63,8 @@ class Gateway extends BaseProcessor
     // sample UPI- UPI/120310176379/Test transfer RAZORPAY/razorpayx.
     const UPI_DEBIT_REGEX = '/^(UPI\/)(.*?)(\/)/';
 
+    const PAGINATION_KEY_REGEX = '/^[1-9][0-9]{9}_/';
+
     /** @var BasDetails\Entity */
     protected $basDetails;
 
@@ -426,16 +428,13 @@ class Gateway extends BaseProcessor
 
         $recordNumber = 1;
 
+        // This is for backward compatibility.
+        $this->updatePaginationKeyIfRequired();
+
         do
         {
-            $paginationKey = $this->basDetails->getPaginationKey();
-
             // We can fetch upto 1 month using pagination key. So when merchant doesn't have transactions in more than a 4 weeks, we will not use pagination key to fetch statement.
-            if (($attemptCount === 0) and
-                ($this->basDetails->getStatementClosingBalanceChangeAt() < Carbon::today(Timezone::IST)->subWeeks(self::PAGINATION_KEY_TTL_IN_WEEKS)->getTimestamp()))
-            {
-                $paginationKey = null;
-            }
+            $paginationKey = $this->fetchPaginationKey();
 
             // Rbl api supports 2 formats of requests.
             //     1. using from_date and to_date in api request
@@ -517,7 +516,10 @@ class Gateway extends BaseProcessor
 
             if ((count($formattedResponse) > 0) and ($this->savePaginationKey === true))
             {
-                $this->basDetails->setPaginationKey($bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY]);
+                $paginationKeyToSave =  last($formattedResponse)[Entity::POSTED_DATE] . '_' .
+                                        $bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY];
+
+                $this->basDetails->setPaginationKey($paginationKeyToSave);
             }
 
             $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
@@ -545,6 +547,51 @@ class Gateway extends BaseProcessor
         }
 
         return $finalFormattedResponse;
+    }
+
+    // In case of pagination key already stored in DB which don't have timestamp attached,
+    // we will pick last transaction and append it's posted_date.
+    protected function updatePaginationKeyIfRequired()
+    {
+        $paginationKey = $this->basDetails->getPaginationKey();
+
+        if (($paginationKey === null) or
+            (preg_match(self::PAGINATION_KEY_REGEX, $paginationKey,$matches) === 1))
+        {
+            return;
+        }
+
+        $bankTransaction = $this->getLastBankTransaction();
+
+        if (empty($bankTransaction) === true)
+        {
+            return;
+        }
+
+        $newPaginationKey = strval($bankTransaction->getPostedDate()) . '_' . $paginationKey;
+
+        $this->basDetails->setPaginationKey($newPaginationKey);
+
+        $this->repo->banking_account_statement_details->saveOrFail($this->basDetails);
+    }
+
+    protected function fetchPaginationKey()
+    {
+        $paginationKey = $this->basDetails->getPaginationKey();
+
+        if (preg_match(self::PAGINATION_KEY_REGEX, $paginationKey,$matches) === 1)
+        {
+            $timestamp = intval(substr($paginationKey, 0, 10));
+
+            if ($timestamp < Carbon::today(Timezone::IST)->subWeeks(self::PAGINATION_KEY_TTL_IN_WEEKS)->getTimestamp())
+            {
+                return null;
+            }
+
+            return substr($paginationKey, 11);
+        }
+
+        return $paginationKey;
     }
 
     protected function hasMoreDataV2(int $numberTransactions, array $request)

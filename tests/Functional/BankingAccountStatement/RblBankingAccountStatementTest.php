@@ -674,7 +674,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNotNull($basDetailsAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
-        $this->assertEquals('random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
+        $this->assertEquals('1451937993_random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
 
         $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
 
@@ -739,18 +739,25 @@ class RblBankingAccountStatementTest extends TestCase
     {
         $this->setRazorxMockForBankingAccountStatementV2Api();
 
+        $postedDateTimestamp = Carbon::now(Timezone::IST)->subDays(2);
+
         $this->app['rzp.mode'] = EnvMode::TEST;
 
         $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $mock->shouldReceive('sendRawRequest')
-             ->andReturnUsing(function(array $request) {
+             ->andReturnUsing(function(array $request) use ($postedDateTimestamp) {
 
                  $requestData = json_decode($request['content'], true);
 
+                 $rblResponseData =  $this->getRblDataResponse();
+                 $postedDate = $postedDateTimestamp->format('d-m-Y H:i:s');
+                 $rblResponseData['data']['PayGenRes']['Body']['transactionDetails'][0]['pstdDate'] = $postedDate;
+                 $rblResponseData['data']['PayGenRes']['Body']['transactionDetails'][1]['pstdDate'] = $postedDate;
+
                  if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
                  {
-                     $mockRblResponse =  $this->getRblDataResponse();
+                     $mockRblResponse =  $rblResponseData;
 
                      unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][1]);
 
@@ -758,7 +765,7 @@ class RblBankingAccountStatementTest extends TestCase
                  }
                  else if ($requestData['entities']['attempt']['next_key'] == 'random_next_key')
                  {
-                     $mockRblResponse =  $this->getRblDataResponse();
+                     $mockRblResponse =  $rblResponseData;
 
                      unset($mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]);
 
@@ -770,7 +777,7 @@ class RblBankingAccountStatementTest extends TestCase
                  }
                  else if ($requestData['entities']['attempt']['next_key'] == 'too_random_next_key')
                  {
-                     $mockRblResponse =  $this->getRblDataResponse();
+                     $mockRblResponse =  $rblResponseData;
 
                      $mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '228.05';
                      $mockRblResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnId'] = 'S444';
@@ -797,9 +804,12 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNull($basDetailsBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
+        // Adding a valid pagination key here. As the timestamp in pagination key is older than 4 weeks, this pagination key should not be used.
+        // If this pagination key gets picked up then the mozart mock will return 0 records and fail assertions in the test case.
         $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
                               $basDetailsBeforeTest[BasDetails\Entity::ID],
-                              [BasDetails\Entity::CREATED_AT => 1523781340]);
+                              [BasDetails\Entity::CREATED_AT => 1523781340,
+                               BasDetails\Entity::PAGINATION_KEY => '1523781340_random']);
 
         $this->ba->cronAuth();
 
@@ -829,7 +839,21 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertNotNull($basDetailsAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
-        $this->assertEquals('too_much_random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
+        // new format of pagination key for RBL: 'timestamp_key'. Example: '1523781340_random'
+        $this->assertEquals($postedDateTimestamp->timestamp . '_too_much_random_next_key', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
+
+        // This is to check code's backward compatability. Mock for pagination key 'abcdefg' is not present. So it will return 0 records.
+        // But since the pagination key is in older format, it should be converted to 'timestamp_abcdefg'
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                              $basDetailsAfterTest[BasDetails\Entity::ID],
+                              [BasDetails\Entity::PAGINATION_KEY => 'abcdefg']);
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basDetailsAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertEquals($postedDateTimestamp->timestamp . '_abcdefg', $basDetailsAfterTest[BasDetails\Entity::PAGINATION_KEY]);
 
         $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
 
@@ -839,7 +863,7 @@ class RblBankingAccountStatementTest extends TestCase
             BasEntity::TYPE                  => 'debit',
             BasEntity::AMOUNT                => 10095,
             BasEntity::BALANCE               => 11355,
-            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::POSTED_DATE           => $postedDateTimestamp->timestamp,
             BasEntity::TRANSACTION_DATE      => 1451932200,
             BasEntity::DESCRIPTION           => '123456-Z',
             BasEntity::CHANNEL               => 'rbl',
@@ -4586,7 +4610,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->payout->createPayoutWithoutTransaction($payoutAttributes);
 
         $this->fixtures->edit('balance', $this->balance->getId(), [
-            'balance' => -99999900
+            'balance' => -299999900
         ]);
 
         $this->ba->cronAuth();
@@ -9609,6 +9633,12 @@ class RblBankingAccountStatementTest extends TestCase
 
         $mockedResponse = $this->getRblBulkResponse();
 
+        $postedDateTimestamp = Carbon::now(Timezone::IST)->subDays(2);
+
+        $postedDate = $postedDateTimestamp->format('d-m-Y H:i:s');
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][3]['pstdDate'] = $postedDate;;
+
         $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '122';
 
         $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -9667,7 +9697,7 @@ class RblBankingAccountStatementTest extends TestCase
             BasEntity::TYPE                  => 'debit',
             BasEntity::AMOUNT                => 10000,
             BasEntity::BALANCE               => 21355,
-            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::POSTED_DATE           => $postedDateTimestamp->timestamp,
             BasEntity::TRANSACTION_DATE      => 1451932200,
             BasEntity::DESCRIPTION           => trim($txn['transactionSummary']['txnDesc']),
             BasEntity::CHANNEL               => 'rbl',
