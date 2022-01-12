@@ -14,7 +14,8 @@ class Sqs implements IntegrationInterface
         opencensus_trace_method('Sqs\SqsClient', 'sendMessage', function () {
             $query = func_num_args();
             return [
-                'attributes' => ['queueURL' => $query['QueueUrl']],
+                'attributes' => ['queueURL' => $query[0]['QueueUrl'],
+                    'delaySeconds' => $query[0]['DelaySeconds']],
                 'kind' => 'client',
                 'name' => 'Sqs sendMessage',
             ];
