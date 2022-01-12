@@ -122,6 +122,15 @@ return [
         ],
     ],
 
+    'sumo_logic'        => [
+        'url'   => env('SUMO_LOGIC_URL'),
+        'mock'  => env('SUMO_LOGIC_MOCK', false),
+        'auth'  => [
+            'access_id'     => env('SUMO_LOGIC_ACCESS_ID'),
+            'access_key'    => env('SUMO_LOGIC_ACCESS_KEY')
+        ]
+    ],
+
     'merchant_risk_alerts' => [
         'url'  => env('MERCHANT_RISK_ALERTS_URL'),
         'mock' => env('MERCHANT_RISK_ALERTS_MOCK', false),

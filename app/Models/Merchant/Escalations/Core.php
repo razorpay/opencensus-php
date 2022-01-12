@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Store;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Notifications\Onboarding\Events;
+use RZP\Services\Segment as SegmentAnalytics;
 use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Coupon\Constants as CouponCodeConstants;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -195,6 +196,8 @@ class Core extends Base\Core
             {
                 $segmentProperties["web_" . $key] = $value;
             }
+
+            $segmentProperties[SegmentAnalytics\Constants::EVENT_MILESTONE] = SegmentEvent::IDENTIFY_WEB_ATTRIBUTION;
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 

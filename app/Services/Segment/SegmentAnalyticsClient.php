@@ -4,6 +4,7 @@
 namespace RZP\Services\Segment;
 
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant;
 use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -228,6 +229,68 @@ class SegmentAnalyticsClient extends AbstractEventClient
         return $properties;
     }
 
+    protected function getEventMilestone(array $eventData)
+    {
+        $eventType = $eventData['type'];
+
+        if($eventType === 'track')
+        {
+            return $eventData['event'];
+        }
+        else
+        {
+            return $eventData['traits']['event_milestone'] ?? null;
+        }
+    }
+
+    protected function verifyPropertiesAndPushMetrics(array $eventData)
+    {
+        try
+        {
+            $eventType = $eventData['type'];
+
+            $eventProperties = [];
+            if($eventType === 'identify')
+            {
+                $eventProperties = $eventData['traits'] ?? [];
+            }
+            else
+            {
+                $eventProperties = $eventData['properties'] ?? [];
+            }
+
+            $eventMilestone = $this->getEventMilestone($eventData);
+
+            if(empty($eventMilestone) === true)
+            {
+                return;
+            }
+
+            $propertiesList = Config::MANDATORY_USER_PROPERTY_MAP[$eventMilestone] ?? null;
+
+            if(empty($propertiesList) === false)
+            {
+                foreach ($propertiesList as $property)
+                {
+                    if(isset($eventProperties[$property]) === false)
+                    {
+                        $this->app['trace']->count(Metrics::SEGMENT_PROPERTY_MISSING_COUNT, [
+                            'event_type'        => $eventType,
+                            'event_milestone'   => $eventMilestone,
+                            'property'          => $property
+                        ]);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_METRICS_PUSH_FAILURE, [
+                'eventData' => $eventData
+            ]);
+        }
+    }
+
     protected function pushEvent(Merchant\Entity $merchant, array $eventData)
     {
         $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
@@ -248,6 +311,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
         $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [
             'eventData' => $eventData
         ]);
+
+        $this->verifyPropertiesAndPushMetrics($eventData);
 
         $this->events[] = $eventData;
     }

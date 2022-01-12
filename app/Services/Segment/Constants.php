@@ -35,4 +35,6 @@ class Constants
     const APPSFLYERID   = 'appsFlyerId';
 
     const REGULAR_MERCHANT = "regular_merchant";
+
+    const EVENT_MILESTONE   = 'event_milestone';
 }

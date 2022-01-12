@@ -66,4 +66,10 @@ class EventCode
         self::MTU_TRANSACTED                            => "MTU Transacted",
         self::SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS    => "Email Verify Success"
     ];
+
+    // Milestones
+    const IDENTIFY_WEB_ATTRIBUTION  = "Identify Web Attribution";
+
+    const IDENTIFY_APP_ATTRIBUTION  = "Identify App Attribution";
+
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron\Collectors;
 
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Trace\TraceCode;
@@ -40,11 +41,11 @@ class MtuDatalakeCollector extends TimeBoundDbDataCollector
 
     protected function getStartInterval(): int
     {
-        return $this->lastCronTime - (1 * 60 * 60); // in seconds
+        return Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp();
     }
 
     protected function getEndInterval(): int
     {
-        return Carbon::now()->getTimestamp() - (1 * 60 * 60); // in seconds
+        return Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
     }
 }

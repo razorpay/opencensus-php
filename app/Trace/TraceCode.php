@@ -1998,6 +1998,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_SLACK_INTEGRATION_ERROR                        = 'SHIELD_SLACK_INTEGRATION_ERROR';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
+    const SUMO_LOGIC_REQUEST_INITIATED                          = 'SUMO_LOGIC_REQUEST_INITIATED';
+    const SUMO_LOGIC_REQUEST_COMPLETE                           = 'SUMO_LOGIC_REQUEST_COMPLETE';
+    const SUMO_LOGIC_INTEGRATION_ERROR                          = 'SUMO_LOGIC_INTEGRATION_ERROR';
+    const SUMO_LOGIC_REQUEST_FAILURE                            = 'SUMO_LOGIC_REQUEST_FAILURE';
+    const SUMO_LOGIC_JOB_TIMEDOUT                               = 'SUMO_LOGIC_JOB_TIMEDOUT';
+
     const NON_BLOCKING_HTTP_ERROR                               = 'NON_BLOCKING_HTTP_ERROR';
 
     // Gateway component error messages
@@ -4959,6 +4965,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ESCALATION_MTU_SEGMENT_FAILURE        = 'ESCALATION_MTU_SEGMENT_FAILURE';
     const SEGMENT_EVENT_PUSH                    = 'SEGMENT_EVENT_PUSH';
     const SEGMENT_EVENT_PUSH_FAILURE            = 'SEGMENT_EVENT_PUSH_FAILURE';
+    const SEGMENT_METRICS_PUSH_FAILURE          = 'SEGMENT_METRICS_PUSH_FAILURE';
 
     const TRANSACTION_DETAILS_CRON_TRACE                    = 'TRANSACTION_DETAILS_CRON_TRACE';
     const WEB_ATTRIBUTION_DETAILS_CRON_TRACE                = 'WEB_ATTRIBUTION_DETAILS_CRON_TRACE';

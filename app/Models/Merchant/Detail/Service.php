@@ -40,6 +40,7 @@ use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Services\Segment as SegmentAnalytics;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
@@ -1810,6 +1811,8 @@ class Service extends Base\Service
             ]);
         }
 
+        $segmentProperties[SegmentAnalytics\Constants::EVENT_MILESTONE] = SegmentEvent::IDENTIFY_APP_ATTRIBUTION;
+        
         $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
 
         $this->app['segment-analytics']->buildRequestAndSend(true);
