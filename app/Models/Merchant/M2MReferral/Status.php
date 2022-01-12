@@ -21,9 +21,9 @@ class Status
      * Allowed next statuses mapping
      */
     const ALLOWED_NEXT_STATUSES_MAPPING = [
-        self::SIGN_UP           => [self::SIGNUP_EVENT_SENT],
+        self::SIGN_UP           => [self::SIGNUP_EVENT_SENT,self::MTU],
         self::SIGNUP_EVENT_SENT => [self::MTU],
-        self::MTU               => [self::MTU_EVENT_SENT],
+        self::MTU               => [self::MTU_EVENT_SENT,self::REWARDED],
         self::MTU_EVENT_SENT    => [self::REWARDED],
 
     ];

@@ -252,7 +252,7 @@ class Service extends Base\Service
         try
         {
             if (empty($m2mReferral) === true or
-                $m2mReferral->getRefereeStatus() <> Status::MTU_EVENT_SENT)
+                ($m2mReferral->getRefereeStatus() <> Status::MTU_EVENT_SENT and $m2mReferral->getRefereeStatus() <> Status::MTU))
             {
                 $this->trace->info(TraceCode::FRIEND_BUY_REWARD_VALIDATION_FAILED, [
                     'request' => $request,
@@ -436,8 +436,8 @@ class Service extends Base\Service
 
                 if ($popupCount == env(Constants::M2M_REFERRAL_SUCCESS_POPUP_COUNT))
                 {
-                    $refereeName    = array_unique(array_merge($existingRefereeName, $refereeName));
-                    $refereeId      = array_unique(array_merge($existingRefereeId, $refereeId));
+                    $refereeName    = array_merge($existingRefereeName, $refereeName);
+                    $refereeId      = array_merge($existingRefereeId, $refereeId);
                     $referralAmount = $existingAmount + $referralAmount;
                 }
             }
