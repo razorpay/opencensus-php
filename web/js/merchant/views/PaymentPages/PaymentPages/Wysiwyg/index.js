@@ -29,6 +29,7 @@ import {
   rupeesToPaise,
   classList,
 } from 'common/utils/rzp-utils';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 import {
   initDefaultFormItems,
@@ -94,6 +95,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     isPageReady: false,
     isTemplatesViewOpened: !this.props.id, // isTemplatesViewOpened = false if editing existing Payment page
     onSvelteAppMount: false,
+    merchant_tnc: null,
+    isMerchantDataLoaded: false,
   };
 
   componentWillMount() {
@@ -220,6 +223,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentDidMount() {
+    this.fetchMerchantDetails();
+
     this.props.initDefaultFormItems();
 
     track.init(this.props.tracking.trackEvent, {
@@ -260,6 +265,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     document.title = 'Razorpay Dashboard'; // Revert title of dashboard
     this.props.closeModal();
   }
+
+  fetchMerchantDetails = () => {
+    const { mode, user } = this.props;
+    merchantFetch({ url: `merchant/${user.id}/tnc`, mode })
+      .then((res) => {
+        this.setState({ merchant_tnc: !res.error ? res.data : null });
+      })
+      .finally(() => {
+        this.setState({ isMerchantDataLoaded: true });
+      });
+  };
 
   handleClose = () => {
     trackWYSIWYGCloseIntent();
@@ -726,7 +742,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   render() {
-    const { isPageReady, isPageLoadError, onSvelteAppMount } = this.state;
+    const {
+      isPageReady,
+      isPageLoadError,
+      onSvelteAppMount,
+      merchant_tnc,
+      isMerchantDataLoaded,
+    } = this.state;
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS } = this.props;
     let isAllowedToSubmit, actionBtns, themeColor, content;
 
@@ -735,7 +757,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       brand_color:
         this.props.config.brand_color || this.props.org.merchant_styles?.checkout_theme_color,
       image: this.props.user.logo_url,
-      footer_variant: this.props.user.isPPNewFooterUX ? 'on' : 'control',
+      tnc_link: merchant_tnc ? merchant_tnc.link : null,
     };
 
     if (paymentPageEntity) {
@@ -808,7 +830,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           </div>
         );
       }
-    } else if (isPageReady) {
+    } else if (isPageReady && isMerchantDataLoaded) {
       content = (
         <React.Fragment>
           {onSvelteAppMount && !user.logo_url && <MerchantLogoTooltip />}

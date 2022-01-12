@@ -673,10 +673,6 @@ export default class User {
     return this.getExpStatus('pp_success_page');
   }
 
-  get isPPNewFooterUX() {
-    return this.getExpStatus('pp_hostedpage_new_footer');
-  }
-
   get isPPDonationGoalTracker() {
     return this.getExpStatus('pp_donation_goal_tracker');
   }

@@ -31,8 +31,6 @@ export default class Svelte extends React.Component {
       // Other keys are not required by Svelte app in isWYSIWYGMode
     };
 
-    console.log(this.props.user.isWhiteLabelledOrg, this.templateData);
-
     this._svelteInstance = window.RZP.renderApp(node, this.templateData);
   };
 

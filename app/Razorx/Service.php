@@ -182,7 +182,6 @@ class Service extends Base\Service
             'pp_success_page',
             'bvs_get_gst_details',
             'status_page_enable',
-            'pp_hostedpage_new_footer',
             'rx_gst_payments',
             'KARZA_BANK_ACCOUNT_VERIFICATION',
             'show_L1_Form_on_login',

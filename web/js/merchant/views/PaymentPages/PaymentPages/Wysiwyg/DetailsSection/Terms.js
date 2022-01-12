@@ -32,57 +32,9 @@ export default class extends React.PureComponent {
 
   render() {
     const isEditable = this.state.isEditable || this.props.terms;
-    const { isPPNewFooterUX, merchantName } = this.props;
+    const { merchantName } = this.props;
 
-    const content = (
-      <div id="terms-details">
-        {isEditable ? (
-          <React.Fragment>
-            <textarea class="fake-textarea" readOnly />
-            <label>Terms & Conditions:</label>
-            <Input.Textarea
-              name="terms"
-              placeholder="Enter Terms & Conditions"
-              defaultValue={this.props.terms}
-              onInput={this.handleOnInput}
-              onBlur={(e) => {
-                this.setState({ isEditable: false });
-                this.props.updateData(e);
-              }}
-              // eslint-disable-next-line consistent-return
-              validator={(val) => {
-                if (!val) {
-                  return '';
-                } else if (val.length < 5) {
-                  return 'Value should be minimum 5 characters';
-                }
-              }}
-              minLength="5"
-              autoFocus
-            />
-          </React.Fragment>
-        ) : (
-          <Button.Transparent
-            class="btn-link"
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'terms',
-                actionName: 'added',
-                screen: 'create payment page',
-                properties: {
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
-              this.setState({ isEditable: true });
-            }}
-          >
-            + Add Terms & Conditions
-          </Button.Transparent>
-        )}
-      </div>
-    );
-
-    const contentV2 = (
+    return (
       <div id="terms-details">
         {isEditable ? (
           <React.Fragment>
@@ -141,7 +93,5 @@ export default class extends React.PureComponent {
         </div>
       </div>
     );
-
-    return isPPNewFooterUX ? contentV2 : content;
   }
 }
