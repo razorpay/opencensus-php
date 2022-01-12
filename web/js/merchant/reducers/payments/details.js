@@ -15,6 +15,7 @@ const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 const FETCH_REFUND_FEE = 'FETCH_REFUND_FEE';
 const MERCHANT_MANUAL_PAYMENT_ACTION = 'MERCHANT_MANUAL_PAYMENT_ACTION';
 const FETCH_FAILURE_ANALYSIS = 'FETCH_FAILURE_ANALYSIS';
+const RESET_FAILURE_ANALYSIS = 'RESET_FAILURE_ANALYSIS';
 
 export const fetchItem = (id) => {
   const payment = new Payment();
@@ -122,6 +123,12 @@ export const fetchFA = (data) => {
   };
 };
 
+export const resetFA = () => {
+  return {
+    type: RESET_FAILURE_ANALYSIS,
+  };
+};
+
 export const fetchMerchantManualAction = (payment_id) => {
   return {
     type: MERCHANT_MANUAL_PAYMENT_ACTION,
@@ -175,7 +182,7 @@ const initialState = {
     error: null,
   },
   failureAnalysisData: {
-    loading: true,
+    loading: false,
     data: null,
     error: null,
   },
@@ -386,7 +393,10 @@ export default (state = initialState, action) => {
         data: null,
       });
 
-    case `${PAYMENT_RESET}`:
+    case RESET_FAILURE_ANALYSIS:
+      return set(state, 'failureAnalysisData', initialState.failureAnalysisData);
+
+    case PAYMENT_RESET:
       // maintaining the failure analysis data even in reset
       return {
         ...initialState,

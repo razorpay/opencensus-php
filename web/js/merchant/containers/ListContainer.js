@@ -112,6 +112,8 @@ export default class ListContainer extends Component {
         const dateDiff = toDate.diff(fromDate, 'days');
         if (dateDiff <= 90) {
           return this.fetchFA(params);
+        } else {
+          this.props.resetFA();
         }
       }
       return null;
