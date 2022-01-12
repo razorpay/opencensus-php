@@ -39,6 +39,8 @@ class Entity extends Base\Entity
     const ADMIN_SECOND_FACTOR_AUTH        = 'admin_second_factor_auth';
     const ADMIN_MAX_WRONG_2FA_ATTEMPTS    = 'admin_max_wrong_2fa_attempts';
     const SECOND_FACTOR_AUTH_MODE         = 'second_factor_auth_mode';
+    const PAYMENT_APPS_LOGO_URL           = 'payment_apps_logo_url';
+    const PAYMENT_BTN_LOGO_URL            = 'payment_btn_logo_url';
 
     /**
      * Org level features
@@ -146,6 +148,8 @@ class Entity extends Base\Entity
         self::ADMIN_SECOND_FACTOR_AUTH,
         self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
         self::SECOND_FACTOR_AUTH_MODE,
+        self::PAYMENT_APPS_LOGO_URL,
+        self::PAYMENT_BTN_LOGO_URL,
     ];
 
     protected $visible = [
@@ -178,6 +182,8 @@ class Entity extends Base\Entity
         self::ADMIN_SECOND_FACTOR_AUTH,
         self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
         self::SECOND_FACTOR_AUTH_MODE,
+        self::PAYMENT_APPS_LOGO_URL,
+        self::PAYMENT_BTN_LOGO_URL,
     ];
 
     protected $public = [
@@ -208,6 +214,8 @@ class Entity extends Base\Entity
         self::ADMIN_SECOND_FACTOR_AUTH,
         self::ADMIN_MAX_WRONG_2FA_ATTEMPTS,
         self::SECOND_FACTOR_AUTH_MODE,
+        self::PAYMENT_APPS_LOGO_URL,
+        self::PAYMENT_BTN_LOGO_URL,
     ];
 
     protected $guarded = [
@@ -453,6 +461,11 @@ class Entity extends Base\Entity
     public function getEmailLogo()
     {
         return $this->attributes[self::EMAIL_LOGO_URL];
+    }
+
+    public function getPaymentAppLogo()
+    {
+        return $this->attributes[self::PAYMENT_APPS_LOGO_URL];
     }
 
     public function getBackgroundImage()

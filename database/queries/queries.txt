@@ -1510,6 +1510,12 @@ UPDATE transactions
 ALTER TABLE orgs
     ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
 
+ALTER TABLE orgs
+    ADD COLUMN payment_apps_logo_url VARCHAR(500) NULL AFTER email_logo_url;
+
+ALTER TABLE orgs
+    ADD COLUMN payment_btn_logo_url VARCHAR(500) NULL AFTER payment_apps_logo_url;
+
 UPDATE orgs
     SET cross_org_access=1 WHERE id='100000razorpay';
 

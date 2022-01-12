@@ -125,6 +125,8 @@ class NegativeReserveBalanceMailers extends Base\Core
                                                               string $balanceSource,
                                                               string $txnType)
     {
+        $customBranding = isset($merchant) ? (new Merchant\Core())->isOrgCustomBranding($merchant):false;
+
         $data = [
             'email'                  => $merchant->getEmail(),
             'merchant_id'            => $merchant->getId(),
@@ -135,7 +137,15 @@ class NegativeReserveBalanceMailers extends Base\Core
             'balance_source'         => $balanceSource,
             'balance'                => ($balance / 100) . 'INR',
             'headers'                => MailTags::NEGATIVE_BALANCE_THRESHOLD_ALERT,
+            '$customBranding'        => $customBranding,
         ];
+
+        if ($customBranding === true)
+        {
+            $org = $merchant->org;
+
+            $data['email_logo'] = $org->getEmailLogo();
+        }
 
         $this->trace->info(TraceCode::NEGATIVE_BALANCE_THRESHOLD_ALERT, $data);
 
@@ -161,15 +171,25 @@ class NegativeReserveBalanceMailers extends Base\Core
                                                    int $balance,
                                                    string $balanceSource)
     {
+        $customBranding = isset($merchant) ? (new Merchant\Core())->isOrgCustomBranding($merchant):false;
+
         $data = [
-            'email'                  => $merchant->getEmail(),
+            'email'                 => $merchant->getEmail(),
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'balance'               => ($balance) / 100 . ' INR',
             'balance_source'        => $balanceSource,
-            'headers'                => MailTags::BALANCE_NEGATIVE_ALERT,
+            'headers'               => MailTags::BALANCE_NEGATIVE_ALERT,
+            '$customBranding'       => $customBranding,
         ];
+
+        if ($customBranding === true)
+        {
+            $org = $merchant->org;
+
+            $data['email_logo'] = $org->getEmailLogo();
+        }
 
         $negativeBalanceAlertMail = new NegativeBalanceAlertMail($data);
 
@@ -187,15 +207,26 @@ class NegativeReserveBalanceMailers extends Base\Core
                                                    int $newBalance,
                                                    string $balanceSource)
     {
+
+        $customBranding = isset($merchant) ? (new Merchant\Core())->isOrgCustomBranding($merchant):false;
+
         $data = [
-            'email'                  => $merchant->getEmail(),
+            'email'                 => $merchant->getEmail(),
             'merchant_id'           => $merchant->getId(),
             'merchant_name'         => $merchant->getName(),
             'balance'               => ($newBalance) / 100 . ' INR',
             'balance_source'        => $balanceSource,
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
-            'headers'                => MailTags::BALANCE_POSITIVE_ALERT,
+            'headers'               => MailTags::BALANCE_POSITIVE_ALERT,
+            '$customBranding'       => $customBranding,
         ];
+
+        if ($customBranding === true)
+        {
+            $org = $merchant->org;
+
+            $data['email_logo'] = $org->getEmailLogo();
+        }
 
         $balancePositiveAlertMail = new BalancePositiveAlertMail($data);
 
@@ -230,6 +261,9 @@ class NegativeReserveBalanceMailers extends Base\Core
         $dayCount = $reminderCount * (self::REMINDER_INTERVAL / 24);
         $since = date('Y-m-d', mktime(0, 0, 0, date("m") ,
                                     date("d") - $dayCount, date("Y")));
+
+        $customBranding = isset($merchant) ? (new Merchant\Core())->isOrgCustomBranding($merchant):false;
+
         $data = [
             'email'                 => $merchant->getEmail(),
             'merchant_id'           => $merchant->getId(),
@@ -237,7 +271,15 @@ class NegativeReserveBalanceMailers extends Base\Core
             'balance'               => ($balanceAmount) / 100 . ' INR',
             'timestamp'             => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
             'headers'               => MailTags::NEGATIVE_BALANCE_BREACH_REMINDER,
+            '$customBranding'       => $customBranding,
         ];
+
+        if ($customBranding === true)
+        {
+            $org = $merchant->org;
+
+            $data['email_logo'] = $org->getEmailLogo();
+        }
 
         $negativeBalanceBreachReminder = new NegativeBalanceBreachReminder($data);
 

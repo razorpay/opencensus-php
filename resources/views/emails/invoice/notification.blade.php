@@ -290,7 +290,7 @@
                                 <td class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
                                     <div class="footerRZP" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: right; padding-left: 10%; padding-bottom: 24px; font-size: 10px; color: #9B9B9B;">
                                         @if(isset($org) === true and empty($org['branding']) === false and empty($org['branding']['branding_logo']) === false)
-                                            Powered by Razorpay Payment Links
+                                            <img src="https://cdn.razorpay.com/static/assets/hostedpages/powered-by-rzp.svg" alt="logo" />
                                         @elseif($invoice['type_label'] === 'Invoice')
                                           @include('emails.partials.support')
                                         @else

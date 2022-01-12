@@ -1264,6 +1264,12 @@ class Service extends Base\Service
 
             $supportDetails = $this->repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $merchant->getId());
 
+            $response['branding_logo'] = $this->merchant->org->getPaymentAppLogo();
+
+            $response['login_logo'] = $this->merchant->org->getLoginLogo();
+
+            $response['custom_org_branding'] = $this->merchant->shouldShowCustomOrgBranding();
+
             $response[Entity::METHODS] = (new Methods\Core)->getUpiMethodForMerchant($merchant);
 
             if ($supportDetails !== null)

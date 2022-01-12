@@ -54,6 +54,12 @@ class CreateOrgs extends Migration
             $table->string(Org::INVOICE_LOGO_URL)
                   ->nullable();
 
+            $table->string(Org::PAYMENT_BTN_LOGO_URL)
+                  ->nullable();
+
+            $table->string(Org::PAYMENT_APPS_LOGO_URL)
+                  ->nullable();
+
             $table->string(Org::CHECKOUT_LOGO_URL)
                 ->nullable();
 

@@ -3083,6 +3083,11 @@ class Entity extends Base\PublicEntity
 
     public function shouldShowCustomOrgBranding(): bool
     {
+        if ($this->org->getId() === Org\Constants::RZP)
+        {
+            return false;
+        }
+
         if (($this->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING) === true) or
             ($this->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING) === true))
         {

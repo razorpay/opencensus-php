@@ -1249,15 +1249,25 @@ class Core extends Base\Core
             if (($feeCredits >= ($alertRatio * $feeCreditsThreshold)) and
                 (($feeCredits - $fee) < ($alertRatio * $feeCreditsThreshold)))
             {
+                $customBranding = isset($merchant) ? (new Merchant\Core())->isOrgCustomBranding($merchant):false;
+
                 $data = [
-                    'alert_ratio'  => $alertRatio,
-                    'email'        => $merchant->getTransactionReportEmail(),
-                    'merchant_id'  => $merchant->getId(),
-                    'merchant_dba'  => $merchant->getBillingLabel(),
-                    'fee_credits'  => '₹ '.(($feeCredits - $fee)/100),
-                    'org_hostname' => $merchant->org->getPrimaryHostName(),
-                    'timestamp'    => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+                    'alert_ratio'     => $alertRatio,
+                    'email'           => $merchant->getTransactionReportEmail(),
+                    'merchant_id'     => $merchant->getId(),
+                    'merchant_dba'    => $merchant->getBillingLabel(),
+                    'fee_credits'     => '₹ '.(($feeCredits - $fee)/100),
+                    'org_hostname'    => $merchant->org->getPrimaryHostName(),
+                    'timestamp'       => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+                    '$customBranding' => $customBranding,
                 ];
+
+                if ($customBranding === true)
+                {
+                    $org = $merchant->org;
+
+                    $data['email_logo'] = $org->getEmailLogo();
+                }
 
                 $this->trace->info(TraceCode::FEE_CREDITS_THRESHOLD_ALERT, $data);
 

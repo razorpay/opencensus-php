@@ -3883,8 +3883,10 @@ class Core extends Base\Core
             'name'  => $merchant->getName(),
             'email' => $merchant->getEmail(),
             'id'    => $merchant->getId(),
+            'org_id' => $org->getId(),
         ];
 
+        $data['email_logo'] = $org->getEmailLogo();
         // For marketplace accounts, send this email to the parent merchant
         if ($merchant->isLinkedAccount() === true)
         {

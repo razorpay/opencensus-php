@@ -133,16 +133,9 @@ class ViewDataSerializerHosted extends Base\Core
 
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
-            switch ($org->getCustomCode())
-            {
-                case 'axis':
+            $branding['show_rzp_logo'] = false;
 
-                    $branding['show_rzp_logo'] = false;
-
-                    $branding['branding_logo'] = 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
-
-                    break;
-            }
+            $branding['branding_logo'] = $org->getInvoiceLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
         }
 
         return [

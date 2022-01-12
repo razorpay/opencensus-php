@@ -420,6 +420,8 @@ return [
                 'login_logo_url' => null,
                 'main_logo_url' => null,
                 'auth_type' => 'password',
+                'payment_apps_logo_url' => null,
+                'payment_btn_logo_url'  => null
             ],
             'status_code' => 200,
         ],

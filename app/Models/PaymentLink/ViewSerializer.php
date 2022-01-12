@@ -273,20 +273,15 @@ class ViewSerializer extends Base\Core
 
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
-            switch ($org->getCustomCode())
-            {
-                case 'axis':
+            $branding['show_rzp_logo'] = false;
 
-                    $branding['show_rzp_logo'] = false;
+            $branding['branding_logo'] = $org->getPaymentAppLogo() ?: self::AXIS_BRANDING_LOGO;
 
-                    $branding['branding_logo'] = self::AXIS_BRANDING_LOGO;
-
-                    break;
-            }
         }
 
         return [
-            'branding'  => $branding
+            'branding'    => $branding,
+            'custom_code' => $org->getCustomCode(),
         ];
     }
 
