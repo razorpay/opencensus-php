@@ -637,6 +637,80 @@ return [
         ],
     ],
 
+    'testEditBulkVirtualAccounts' => [
+        'request'  => [
+            'content' => [
+                [
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
+                    'virtual_account_id'    => 'ASDF1234567890',
+                    'close_by'              => '2023-12-12 12:12',
+                ],
+                [
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaN',
+                    'virtual_account_id'    => 'ASDF1234567890',
+                    'close_by'              => '2023-12-12 12:12',
+                ],
+                [
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaO',
+                    'virtual_account_id'    => 'ASDF1234567890',
+                    'close_by'              => '2023-12-12 12:12',
+                ],
+            ],
+            'url'       => '/virtual_accounts/edit/bulk',
+            'method'    => 'post',
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 3,
+                'items'     => [
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaM',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaN',
+                        'success'           => false,
+                        'error'             => ['code' => 'BAD_REQUEST_INVALID_ID', 'description' => 'The id provided does not exist']
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaO',
+                        'success'           => false,
+                        'error'             => ['code' => 'BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_EXPIRY_DATE', 'description' => 'Expiry Date is not a valid date.']
+                    ],
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testEditBulkVirtualAccountsWithoutFeature' => [
+        'request'  => [
+            'content' => [
+                [
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaM',
+                    'virtual_account_id'    => 'ASDF1234567890',
+                    'close_by'              => '2023-12-12 12:12',
+                ]
+            ],
+            'url'       => '/virtual_accounts/edit/bulk',
+            'method'    => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Feature not enabled for merchant'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
+        ],
+    ],
+
     'testCreateVirtualAccountWithIdenticalDescriptor' => [
         'response' => [
             'content' => [

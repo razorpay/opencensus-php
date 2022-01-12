@@ -1400,8 +1400,6 @@ class Validator extends Base\Validator
                 throw new BadRequestValidationFailureException("Invalid date time format");
             }
 
-            var_dump($formattedDate);
-
             if ($dtTimestamp < $currentTimestamp)
             {
                 throw new BadRequestValidationFailureException("Expiry time must be greater than current time");

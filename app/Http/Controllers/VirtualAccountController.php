@@ -55,6 +55,15 @@ class VirtualAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function editVirtualAccountBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->editVirtualAccountBulk($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function addReceivers(string $id)
     {
         $input = Request::all();

@@ -597,6 +597,59 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($originId, $entityOrigin['origin_id']);
     }
 
+    public function testEditBulkVirtualAccounts()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 5000;
+
+        $this->fixtures->merchant->addFeatures(['va_edit_bulk']);
+
+        $dt = Carbon::createFromTimestamp($closeTimeStamp, Timezone::IST)
+                ->format('d-m-Y H:i');
+
+        $dt2 = Carbon::createFromTimestamp($closeTimeStamp, Timezone::IST)
+                ->format('d-m-Y H:i:s');
+
+        $virtualAccount1 = $this->createVirtualAccount();
+        $virtualAccount2 = $this->createVirtualAccount();
+
+        $this->ba->batchAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $va_id = $virtualAccount1['id'];
+        $va_id2 = $virtualAccount2['id'];
+
+        $testData['request']['content'][0]['virtual_account_id'] = $va_id;
+        $testData['request']['content'][0]['close_by'] = $dt;
+        $testData['request']['content'][2]['virtual_account_id'] = $va_id2;
+        $testData['request']['content'][2]['close_by'] = $dt2;
+
+        $this->startTest($testData);
+
+    }
+
+    public function testEditBulkVirtualAccountsWithoutFeature()
+    {
+        $closeTimeStamp = Carbon::now()->timestamp + 5000;
+
+        $dt = Carbon::createFromTimestamp($closeTimeStamp, Timezone::IST)
+                ->format('d-m-Y H:i');
+
+
+        $virtualAccount1 = $this->createVirtualAccount();
+
+        $this->ba->batchAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $va_id = $virtualAccount1['id'];
+
+        $testData['request']['content'][0]['virtual_account_id'] = $va_id;
+        $testData['request']['content'][0]['close_by'] = $dt;
+
+        $this->startTest($testData);
+    }
+
     public function testCreateVirtualAccountForOrder()
     {
         $order = $this->fixtures->create('order');

@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Order;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
@@ -27,6 +28,7 @@ use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\VirtualAccountProducts;
+use RZP\Models\VirtualAccount\Constant as VAConstants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Offline\Device as OfflineDevice;
 
@@ -278,8 +280,8 @@ class Service extends Base\Service
             ]);
 
         $virtualAccount = $this->repo
-            ->virtual_account
-            ->findByPublicIdAndMerchant($id, $this->merchant);
+                               ->virtual_account
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $virtualAccount->getValidator()->validateOfPrimaryBalance();
 
@@ -315,6 +317,63 @@ class Service extends Base\Service
 
         return $virtualAccount->toArrayPublic();
 
+    }
+
+    public function editVirtualAccountBulk($input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $this->trace->info(
+            TraceCode::BATCH_BULK_VIRTUAL_ACCOUNT_EDIT_REQUEST,
+            [
+                'input'       => $input,
+                'merchant_id' => $merchantId
+            ]);
+
+        // check feature enabled
+        if ($this->merchant->isFeatureEnabled(Constants::VA_EDIT_BULK) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
+        }
+
+        $virtualAccounts = new PublicCollection();
+
+        foreach ($input as $item)
+        {
+            $rowOutput = $this->processEditBulkVirtualAccounts($item);
+
+            $virtualAccounts = $virtualAccounts->push($rowOutput);
+        }
+
+        return $virtualAccounts->toArrayWithItems();
+    }
+
+    protected function processEditBulkVirtualAccounts($item)
+    {
+        $idempotencyKey = $item[VAConstants::IDEMPOTENCY_KEY];
+
+        $vId = $item[VAConstants::VIRTUAL_ACCOUNT_ID];
+
+        $input[Entity::CLOSE_BY]= $item[Entity::CLOSE_BY];
+
+        try
+        {
+            $this->editVirtualAccount($vId, $input);
+
+            return [VAConstants::VIRTUAL_ACCOUNT_ID => $item[VAConstants::VIRTUAL_ACCOUNT_ID], VAConstants::BATCH_SUCCESS => true, Constants::IDEMPOTENCY_KEY => $idempotencyKey];
+        }
+        catch (\Throwable $e)
+        {
+            return [
+                VAConstants::IDEMPOTENCY_KEY   => $idempotencyKey,
+                VAConstants::BATCH_SUCCESS     => false,
+                VAConstants::BATCH_ERROR       => [
+                    VAConstants::BATCH_ERROR_DESCRIPTION  => $e->getMessage(),
+                    VAConstants::BATCH_ERROR_CODE         => $e->getCode(),
+                ]
+            ];
+        }
     }
 
     public function closeVirtualAccountsByCloseBy()
