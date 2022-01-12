@@ -2063,23 +2063,9 @@ class PaymentLinkTest extends TestCase
 
     protected function activateMerchantToTriggerPaymentHandleCreation(string $billingLabel = 'Test Label 123')
     {
-        $handle = $this->createHandleFromBillingLabel($billingLabel);
+        $this->mockGimliPaymentHandle($billingLabel);
 
-        $gimli = $this->createMock(Gimli::class);
-
-        $gimli->method('expandAndGetMetadata')->willReturn(null);
-
-        $elfin = $this->createMock(ElfinService::class);
-
-        $elfin->method('driver')->willReturn($gimli);
-
-        $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/" . $handle
-        );
-
-        $this->app->instance('elfin', $elfin);
-
-        $this->app->instance('mode', 'live');
+        $this->ba->proxyAuthLive();
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
@@ -2093,8 +2079,6 @@ class PaymentLinkTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['billing_label' => $billingLabel]);
 
-        $this->ba->proxyAuth('rzp_live_10000000000000');
-
         // Activation request for instant activation
         $content = [
             'activation_form_milestone'   => 'L1',
@@ -2103,7 +2087,7 @@ class PaymentLinkTest extends TestCase
             'business_subcategory'        => 'fashion_and_lifestyle',
             'promoter_pan'                => 'ABCPE0000Z',
             'business_name'               => 'business_name',
-            'business_dba'                => 'tsest123',
+            'business_dba'                => $billingLabel,
             'business_type'               => 1,
             'business_model'              => '1245',
             'business_website'            => 'https://example.com',
@@ -2290,5 +2274,25 @@ class PaymentLinkTest extends TestCase
         $handle = '@' . strtolower(str_replace(' ', '', $billingLabel));
 
         return $handle;
+    }
+
+
+    protected function mockGimliPaymentHandle(string $billingLabel = 'Test Label 123')
+    {
+        $handle = $this->createHandleFromBillingLabel($billingLabel);
+
+        $gimli = $this->createMock(Gimli::class);
+
+        $gimli->method('expandAndGetMetadata')->willReturn(null);
+
+        $elfin = $this->createMock(ElfinService::class);
+
+        $elfin->method('driver')->willReturn($gimli);
+
+        $elfin->method('shorten')->willReturn(
+            "https://rzp.io/i/" . $handle
+        );
+
+        $this->app->instance('elfin', $elfin);
     }
 }

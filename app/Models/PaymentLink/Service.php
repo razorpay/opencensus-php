@@ -2,8 +2,12 @@
 
 namespace RZP\Models\PaymentLink;
 
+use App;
+use Razorpay\Trace\Logger as Trace;
 use Request;
+use RZP\Error\Error;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use Illuminate\Http\Request  as CurrentRequest;
 use RZP\Models\Base;
@@ -411,34 +415,47 @@ class Service extends Base\Service
     }
 
     /**
-     * @param \RZP\Models\Merchant\Entity $merchant
+     * @param string $merchantId
      *
      * @return array
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function createPaymentHandle() : array
+    public function createPaymentHandle(string $merchantId)
     {
-        if ($this->mode === Mode::TEST)
+        $prevBasicAuth = $this->getPrevAuthAndSetVariables($merchantId);
+
+        $prevMode = $this->mode;
+
+        try
         {
-            throw new BadRequestValidationFailureException(
-                'Payment handle can only be created in live mode.',
-                null,
-                null);
+            $input = $this->getDefaultValuesPaymentHandle();
+
+            $validator = (new Validator);
+
+            $validator->validateInput('createPaymentHandle',$input);
+
+            $validator->validatePaymentHandleCreation($input, $this->merchant);
+
+            $this->modifyInputForPaymentHandle($input);
+
+            $response = $this->core->createPaymentHandle($input, $this->merchant, $this->user);
+
+            return $this->modifyResponseForPaymentHandle($response);
         }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR,
+                TraceCode::PAYMENT_HANDLE_CREATION_FAILED,
+                [
+                    'merchant_id' => $merchantId,
+                ]);
+        }
+        finally
+        {
+            $this->app['basicauth'] = $prevBasicAuth;
 
-        $input = $this->getDefaultValuesPaymentHandle();
-
-        $validator = (new Validator);
-
-        $validator->validateInput('createPaymentHandle',$input);
-
-        $validator->validatePaymentHandleCreation($input, $this->merchant);
-
-        $this->modifyInputForPaymentHandle($input);
-
-        $response = $this->core->createPaymentHandle($input, $this->merchant, $this->user);
-
-        return $this->modifyResponseForPaymentHandle($response);
+            $this->app['basicauth']->setModeAndDbConnection($prevMode);
+        }
     }
 
     public function updatePaymentHandle(array $input, string $id): array
@@ -594,5 +611,24 @@ class Service extends Base\Service
         $input[Entity::TITLE] = $this->merchant->getBillingLabel();
 
         return $input;
+    }
+
+    protected function getPrevAuthAndSetVariables(string $merchantId)
+    {
+        $prevBasicAuth = $this->app['basicauth'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        $this->app['basicauth']->setModeAndDbConnection('live');
+
+        $this->app = App::getFacadeRoot();
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->merchant = $merchant;
+
+        $this->core = new Core;
+
+        return $prevBasicAuth;
     }
 }

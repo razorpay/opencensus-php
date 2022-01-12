@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
-use RZP\Jobs\PaymentPageProcessor;
 use RZP\Models\Feature\Constants;
 use Throwable;
 
@@ -20,6 +19,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
+use RZP\Models\PaymentLink;
 use RZP\Mail\Merchant\AxisActivation;
 use RZP\Models\BankingAccountTpv;
 use Razorpay\Trace\Logger as Trace;
@@ -134,11 +134,7 @@ class Activate extends Base\Core
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
-        PaymentPageProcessor::dispatch(Mode::LIVE, [
-            'event'     => PaymentPageProcessor::PAYMENT_HANDLE_CREATION,
-            'merchant_id'  => $merchant->getPublicId(),
-            'start_time'   => millitime(),
-        ]);
+        (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
 
         //to be removed once hold funds issue is resolved
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
@@ -213,11 +209,8 @@ class Activate extends Base\Core
 
         (new Core)->createBalanceConfig($merchantBalance, 'live');
 
-        PaymentPageProcessor::dispatch(Mode::LIVE, [
-            'event'     => PaymentPageProcessor::PAYMENT_HANDLE_CREATION,
-            'merchant_id'  => $merchant->getPublicId(),
-            'start_time'   => millitime(),
-        ]);
+
+        (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED, [
             'merchant_id'   => $merchant->getId()
