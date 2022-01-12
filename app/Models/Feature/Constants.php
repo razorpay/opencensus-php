@@ -61,6 +61,8 @@ class Constants
     const DISABLE_FREE_CREDIT_REG         = 'disable_free_credit_reg';
     const DISABLE_FREE_CREDIT_UNREG       = 'disable_free_credit_unreg';
     const EXPOSE_EXTRA_ATTRIBUTES         = 'expose_extra_attributes';
+    const SHOW_LATE_AUTH_ATTRIBUTES       = 'show_late_auth_attributes';
+    const SHOW_REFND_LATEAUTH_PARAM       = 'show_refnd_lateauth_param';
     const CHARGE_AT_WILL                  = 'charge_at_will';
     const SETTLEMENT_24X7                 = 'settlement_24x7';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
@@ -1370,6 +1372,8 @@ class Constants
         self::SETTLEMENTS_SMS_STOP            => true,
         self::ORG_CUSTOM_BRANDING             => true,
         self::EXPOSE_EXTRA_ATTRIBUTES         => true,
+        self::SHOW_LATE_AUTH_ATTRIBUTES       => true,
+        self::SHOW_REFND_LATEAUTH_PARAM       => true,
         self::DISABLE_FREE_CREDIT_UNREG       => true,
         self::DISABLE_FREE_CREDIT_REG         => true,
         self::LOGOUT_ADMIN_INACTIVITY         => true,
@@ -1894,6 +1898,14 @@ class Constants
         self::EXPOSE_EXTRA_ATTRIBUTES => [
             'feature' => self::EXPOSE_EXTRA_ATTRIBUTES,
             'display_name' => 'Exposing some extra entity attributes for an org',
+        ],
+        self::SHOW_LATE_AUTH_ATTRIBUTES => [
+            'feature' => self::SHOW_LATE_AUTH_ATTRIBUTES,
+            'display_name' => 'Exposing late auth attributes for the payments',
+        ],
+        self::SHOW_REFND_LATEAUTH_PARAM => [
+            'feature' => self::SHOW_REFND_LATEAUTH_PARAM,
+            'display_name' => 'Expose refund type for refunds'
         ],
         self::DISABLE_FREE_CREDIT_UNREG => [
             'feature' => self::DISABLE_FREE_CREDIT_UNREG,
