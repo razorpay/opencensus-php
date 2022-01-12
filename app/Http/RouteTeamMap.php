@@ -201,7 +201,7 @@ class RouteTeamMap
         'merchant_delete_config_logo'              => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_edit_email'                      => [self::TEAM_PAYMENTS_DASHBOARD],
         'user_confirm'                             => [self::TEAM_PAYMENTS_DASHBOARD],
-        'merchant_edit_config_logo'                => [self::TEAM_PAYMENTS_DASHBOARD],
+        'merchant_edit_config_logo'                => [self::TEAM_UNKNOWN],
         'merchant_edit_bank_account'               => [self::TEAM_PAYMENTS_DASHBOARD],
         'merchant_create_additional_email'         => [self::TEAM_PAYMENTS_DASHBOARD],
         'email_user_status_for_email_update'       => [self::TEAM_PAYMENTS_DASHBOARD],
