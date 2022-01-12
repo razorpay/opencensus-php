@@ -420,4 +420,49 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function saveOrFail($fundTransferAttempt, array $options = array())
+    {
+        $card = $this->stripCardRelationIfApplicable($fundTransferAttempt);
+
+        parent::saveOrFail($fundTransferAttempt, $options);
+
+        $this->associateCardIfApplicable($fundTransferAttempt, $card);
+    }
+
+    public function save($fundTransferAttempt, array $options = array())
+    {
+        $card = $this->stripCardRelationIfApplicable($fundTransferAttempt);
+
+        parent::save($fundTransferAttempt, $options);
+
+        $this->associateCardIfApplicable($fundTransferAttempt, $card);
+    }
+
+    public function associateCardIfApplicable($fundTransferAttempt, $card)
+    {
+        if ($card === null)
+        {
+            return;
+        }
+
+        $fundTransferAttempt->card()->associate($card);
+    }
+
+    protected function stripCardRelationIfApplicable(Entity $fundTransferAttempt)
+    {
+        $card = $fundTransferAttempt->card;
+
+        if (($card == null) ||
+            ($card->isExternal() === false))
+        {
+            return;
+        }
+
+        $fundTransferAttempt->card()->dissociate();
+
+        $fundTransferAttempt->setCardId($card->getId());
+
+        return $card;
+    }
 }

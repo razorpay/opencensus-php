@@ -389,6 +389,32 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::WALLET_ACCOUNT_ID));
     }
 
+    public function getCardAttribute()
+    {
+        if ($this->relationLoaded('card') === true)
+        {
+            return $this->getRelation('card');
+        }
+
+        $card = $this->card()->first();
+
+        if (empty($card) === false)
+        {
+            return $card;
+        }
+
+        if ($this->hasCard() === true)
+        {
+            $card = (new Card\Repository)->findOrFail($this->getCardId());
+
+            $this->card()->associate($card);
+
+            return $card;
+
+        }
+
+        return null;
+    }
     // ------------------------------- setters ---------------------------------
 
     public function setChannel($channel)

@@ -92,7 +92,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
             if ($attempt->hasCard() === true)
             {
-                $iin = $attempt->card->iinRelation;
+                $iin = $attempt->getCardAttribute()->iinRelation;
 
                 if (($iin !== null) and ($iin->getType() === Type::CREDIT))
                 {

@@ -306,6 +306,8 @@ class PGRouter
 
                 $card = (new Card\Entity)->forceFill($response['body']['data']['payment']['card']);
 
+                $card->setExternal(true);
+
                 unset($response['body']['data']['payment']['card']);
             }
 
