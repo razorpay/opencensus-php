@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import OffersForYouIcon from './OffersForYouIcon';
 import RazorpayXNitroAnnouncement, {
-  nitroCampaignId,
+  getCampaignID,
 } from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import RXPayrollMoonshineModal from 'common/ui/RXPayrollMoonshineModal';
@@ -34,7 +34,8 @@ const OffersForYou = ({
     if (!canShowOnboardingOffers) {
       tracking.trackEvent(
         window.rzpQ.merchantActions().success('merchant_dashboard.display_offer_for_you', {
-          ID: nitroCampaignId().version,
+          ID: getCampaignID(),
+          flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
         }),
       );
     }
@@ -112,7 +113,8 @@ const OffersForYou = ({
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
-        ID: nitroCampaignId().version,
+        ID: getCampaignID(),
+        flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
       }),
     );
     setIsStopped(true);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import axios from 'axios';
+import { getUser } from 'merchant/store';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import RTracking from 'react-tracking';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -330,6 +331,18 @@ export const nitroCampaignId = () => {
   };
 };
 
+export const getCampaignID = () => {
+  const user = getUser();
+
+  if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
+  if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
+  if (user.isProjectNitroCorporateCard) return 'Nitro_CardOfferNewYear';
+  if (user.isNitroIciciBrandedCampaignEnabled) return 'Nitro_ICICIBranded';
+  if (user.isNitroIciciRemarketingCampaignEnabled) return 'Nitro_ICICIRemarketing';
+  if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
+  return nitroCampaignId(user).version;
+};
+
 const selector = formValueSelector('customerDetails');
 
 @connect(
@@ -588,18 +601,6 @@ class DetailView extends React.Component {
     this.props.user.isProjectKeystoneCorporateCardsEnabled ||
     this.props.user.isProjectKeystoneCashAdvanceEnabled;
 
-  getCampaignID = () => {
-    const user = this.props.user;
-
-    if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
-    if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
-    if (user.isProjectNitroCorporateCard) return 'Nitro_CardOfferNewYear';
-    if (user.isNitroIciciBrandedCampaignEnabled) return 'Nitro_ICICIBranded';
-    if (user.isNitroIciciRemarketingCampaignEnabled) return 'Nitro_ICICIRemarketing';
-    if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
-    return nitroCampaignId(user).version;
-  };
-
   trackCTAClick = (status) => {
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
@@ -670,7 +671,7 @@ class DetailView extends React.Component {
           ...formValues,
           {
             name: 'campaignid',
-            value: this.getCampaignID(),
+            value: getCampaignID(),
           },
         ],
         context: {
@@ -720,7 +721,7 @@ class DetailView extends React.Component {
         interested_in_current_account: 1,
         product_name: user.isProjectNitroCorporateCard ? 'CARDS' : 'Current_Account',
         source: 'Project Nitro',
-        Campaign_ID: this.getCampaignID(),
+        Campaign_ID: getCampaignID(),
         form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
         ...formValues,
       },
