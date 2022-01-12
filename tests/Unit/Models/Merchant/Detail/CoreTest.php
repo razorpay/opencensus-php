@@ -793,7 +793,7 @@ class CoreTest extends TestCase
 
     public function testCouponFlowForForceExpireExistingCredits()
     {
-        $merchant = $this->fixtures->create('merchant',[
+        $merchant = $this->fixtures->on('live')->create('merchant',[
             'activated' => 1,
         ]);
 
@@ -822,7 +822,7 @@ class CoreTest extends TestCase
             'code' => $couponCode1
         ];
 
-        $balance = $this->fixtures->create('balance', [
+        $balance = $this->fixtures->on('live')->create('balance', [
             'id'            => '100def000def00',
             'balance'       => 0,
             'type'          => 'primary',
@@ -878,6 +878,77 @@ class CoreTest extends TestCase
 
         $this->assertTrue($response['applied']);
         $this->assertEquals(20, $primaryBalance->reload()->getAmountCredits());
+    }
+
+    public function testCouponFlowForExistingCreditsNotThroughCoupon()
+    {
+        $merchant = $this->fixtures->create('merchant',[
+            'activated' => 1,
+        ]);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $existingAmountCredits = 20000;
+
+        $credits = $this->fixtures->on('live')->create('credits', [
+            'merchant_id'  => $merchant->getId(),
+            'value'        => $existingAmountCredits,
+            'used'         => 0,
+            'campaign'     => 'OFFERMTU2',
+            'type'         => 'amount',
+            'promotion_id' => null,
+            'expired_at'   => Carbon::now()->addYear()->timestamp,
+        ]); //amount credits not through coupon flow
+
+        $merchantBalance = $this->fixtures->on('live')->create('balance', [
+            'id'            => '100def000def00',
+            'balance'       => 0,
+            'type'          => 'primary',
+            'merchant_id'   => $merchant->getId(),
+            'credits'       => $existingAmountCredits
+        ]);
+
+        $this->assertEquals($existingAmountCredits, $merchantBalance->getAmountCredits());
+
+        $couponCode1 = 'randomXYZ1';
+
+        $promotion1 = $this->fixtures->on('live')->create('promotion', [
+            'name'           => $couponCode1,
+            'product'        => 'primary',
+            'credit_amount'  => 999,
+            'iterations'     => 1,
+            'credits_expire' => 0,
+        ]);
+
+        $couponInput1 = [
+            "entity_id"     => "prom_".$promotion1->getId(),
+            "entity_type"   => "promotion",
+            "code"          => $couponCode1,
+            "max_count"     => "200",
+        ];
+
+        $coupon = (new Coupon\Core())->create($couponInput1);
+
+        $input = [
+            'code' => $couponCode1
+        ];
+
+        $response = (new MDS())->postApplyCoupon($input);
+
+        $this->assertFalse($response['applied']);
+        $this->assertEquals($existingAmountCredits, $response['data']['available_credits']);
+
+        $token = $response['token'];
+
+        $input = [
+            'code'  => $couponCode1,
+            'token' => $token
+        ];
+
+        $response = (new MDS())->postApplyCoupon($input);
+
+        $this->assertTrue($response['applied']);
+        $this->assertEquals(999, $merchantBalance->reload()->getAmountCredits());
     }
 
     public function testBusinessRegisteredStateCodeValidation()

@@ -37,6 +37,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Merchant\Credits as Credits;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -449,13 +450,18 @@ class Service extends Base\Service
             );
         }
 
+        $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(),
+            Merchant\Balance\Type::PRIMARY);
+
+        $existingCredits = $merchantBalance->reload()->getAmountCredits();
+
         $promotionIds = $this->repo->merchant_promotion->fetchActivePromotionIdsOfCreditTypeAmount($merchantId);
 
         $this->trace->info(TraceCode::AMOUNT_CREDITS_COUPON_APPLY_REQUEST,[
             "merchantId"            => $merchantId,
             "input"                 => $input,
             "existingPromotionIds"  => $promotionIds,
-            "existingCredits"       => $merchant->primaryBalance->reload()->getAmountCredits(),
+            "existingCredits"       => $existingCredits,
         ]);
 
         if(isset($input[DetailConstants::TOKEN]) === true)
@@ -478,6 +484,12 @@ class Service extends Base\Service
                 //expire existing credits
                 (new Merchant\Promotion\Core())->forceExpireExistingCredits($merchantId, $promotionIds);
 
+                //credits not through coupon flow
+                if($merchantBalance->reload()->getAmountCredits() != 0)
+                {
+                    $this->expireRemainingCredits($merchant);
+                }
+
                 (new Coupon\Core())->applyCouponCode($merchant, $coupon);
 
                 return [
@@ -497,11 +509,7 @@ class Service extends Base\Service
              when api is called for the first time, system will check if there is already an unexpired coupon applied.
              If yes, we will store the data [mid_token] in cache (with an expiry of 60 mins) and return token to the user
             */
-            $primaryBalance = $merchant->primaryBalance;
-
-            $availableCredits = $primaryBalance->reload()->getAmountCredits();
-
-            if((empty($promotionIds) === false) && ($availableCredits != 0))
+            if($existingCredits != 0)
             {
                 //User have unexpired coupon code in their profile
                 $token = UniqueIdEntity::generateUniqueId();
@@ -514,7 +522,7 @@ class Service extends Base\Service
                     DetailConstants::TOKEN            => $token,
                     'applied'                         => false,
                     'data'  => [
-                        'available_credits' => $availableCredits
+                        'available_credits' => $existingCredits
                     ],
                 ];
             }
@@ -526,6 +534,30 @@ class Service extends Base\Service
                     'applied' => true,
                 ];
             }
+        }
+    }
+
+    public function expireRemainingCredits(Merchant\Entity $merchant)
+    {
+        $creditsId = $this->repo->credits->getUnexpiredCreditIdsForMerchant($merchant->getMerchantId());
+
+        $credits = $this->repo->credits->getCreditEntities($creditsId);
+
+        foreach($credits as $credit)
+        {
+            $credit->setExpiredAt(Carbon::now()->getTimestamp());
+
+            $this->repo->saveOrFail($credit);
+
+            $creditsToExpire = $credit->getUnusedCredits();
+
+            $creditInput = [
+                Credits\Entity::CAMPAIGN     => $credit->getCampaign() . 'Expired',
+                Credits\Entity::VALUE        => $creditsToExpire * -1,
+                Credits\Entity::TYPE         => $credit->getType(),
+            ];
+
+            (new Merchant\Promotion\Core())->expireCreditsNotThroughCouponFlow($merchant, $creditInput);
         }
     }
 
@@ -1812,7 +1844,7 @@ class Service extends Base\Service
         }
 
         $segmentProperties[SegmentAnalytics\Constants::EVENT_MILESTONE] = SegmentEvent::IDENTIFY_APP_ATTRIBUTION;
-        
+
         $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
 
         $this->app['segment-analytics']->buildRequestAndSend(true);

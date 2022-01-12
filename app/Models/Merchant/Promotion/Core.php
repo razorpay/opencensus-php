@@ -301,6 +301,21 @@ class Core extends Base\Core
         }
     }
 
+    public function expireCreditsNotThroughCouponFlow(Merchant\Entity $merchant, $creditInput)
+    {
+        $credit = $this->creditCore->create($merchant, $creditInput);
+
+        $this->trace->info(
+            TraceCode::CREDITS_EXPIRED,
+            [
+                'merchant_id'  => $merchant->getId(),
+                'credit_input' => $creditInput,
+            ]
+        );
+
+        $this->repo->saveOrFail($credit);
+    }
+
     public function forceExpireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
     {
         $creditsToExpire = $this->calculateAndExpireRemainingCredits($merchant, $promotion);

@@ -400,4 +400,17 @@ class Repository extends Base\Repository
             $query->whereNull(Entity::PROMOTION_ID);
         }
     }
+
+    public function getUnexpiredCreditIdsForMerchant(string $merchantId)
+    {
+        //credits not assosciated with any promotion
+        return $this->newQuery()
+            ->select(Entity::ID)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereNull(Entity::PROMOTION_ID)
+            ->where(Entity::VALUE, '>', 0)
+            ->where(Entity::EXPIRED_AT, '>' ,Carbon::Now()->getTimestamp())
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
 }
