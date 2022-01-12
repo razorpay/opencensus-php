@@ -31,7 +31,7 @@ const CustomPaymentsCahnnel = ({
             <Input.Check
               name="physical_store"
               fieldLabel="Store/In-person"
-              onChange={() => {
+              onChange={(e) => {
                 trackEvents({
                   objectName: 'Checkbox',
                   actionName: 'Clicked',
@@ -43,7 +43,7 @@ const CustomPaymentsCahnnel = ({
                     Mandatory: 'Yes',
                   },
                 });
-                onChange();
+                onChange(e);
               }}
               autoRender={true}
               className="Input-channels"
@@ -53,7 +53,7 @@ const CustomPaymentsCahnnel = ({
             <Input.Check
               name="social_media"
               fieldLabel="Social Media (e.g. WhatsApp)"
-              onChange={() => {
+              onChange={(e) => {
                 trackEvents({
                   objectName: 'Checkbox',
                   actionName: 'Clicked',
@@ -65,7 +65,7 @@ const CustomPaymentsCahnnel = ({
                     Mandatory: 'Yes',
                   },
                 });
-                onChange();
+                onChange(e);
               }}
               autoRender={true}
               className="Input-channels"
@@ -75,7 +75,7 @@ const CustomPaymentsCahnnel = ({
             <Input.Check
               name="has_url"
               fieldLabel="Live Website/App"
-              onChange={() => {
+              onChange={(e) => {
                 trackEvents({
                   objectName: 'Checkbox',
                   actionName: 'Clicked',
@@ -87,7 +87,7 @@ const CustomPaymentsCahnnel = ({
                     Mandatory: 'Yes',
                   },
                 });
-                onChange();
+                onChange(e);
               }}
               autoRender={true}
               className="Input-channels"
@@ -105,7 +105,7 @@ const CustomPaymentsCahnnel = ({
                 name="app_website_url"
                 value="1"
                 fieldLabel="Accept payments on website"
-                onChange={() => {
+                onChange={(e) => {
                   trackEvents({
                     objectName: 'Checkbox',
                     actionName: 'Clicked',
@@ -117,7 +117,7 @@ const CustomPaymentsCahnnel = ({
                       Mandatory: 'Yes',
                     },
                   });
-                  onChange();
+                  onChange(e);
                 }}
                 autoRender={true}
                 className="Input-channels"
@@ -127,7 +127,7 @@ const CustomPaymentsCahnnel = ({
               <Input.Check
                 name="app_url"
                 fieldLabel="Accept payments on app"
-                onChange={() => {
+                onChange={(e) => {
                   trackEvents({
                     objectName: 'Checkbox',
                     actionName: 'Clicked',
@@ -139,7 +139,7 @@ const CustomPaymentsCahnnel = ({
                       Mandatory: 'Yes',
                     },
                   });
-                  onChange();
+                  onChange(e);
                 }}
                 autoRender={true}
                 className="Input-channels"
