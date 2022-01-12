@@ -510,4 +510,27 @@ return [
             'internal_error_code'   => 'BAD_REQUEST_NO_RECORDS_FOUND',
         ],
     ],
+    'testGetAllCustomerTokensWithNetworkTokenizedFlag' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'customer_id' => 'cust_100000customer',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+                'notes' => [
+                    'test1' => 'test2'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

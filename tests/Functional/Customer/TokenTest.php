@@ -212,11 +212,91 @@ class TokenTest extends TestCase
 
         $this->assertEquals('card', $response['method']);
 
+        $this->assertEquals(true, $response['compliant_with_tokenisation_guidelines']);
+
         $this->assertNotNull($response['service_provider_tokens']);
 
         $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
         $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+    }
+
+    public function testGetAllCustomerTokensWithNetworkTokenizedFlag()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($route, $method, $input)
+        {
+            if ($route === Constants::TOKENS_UPDATE)
+            {
+                return ['success' => true];
+            }
+
+            $response['success'] = true;
+
+            $token = base64_encode($input['card']['number']);
+            $response['id'] = 'token_Ankit';
+            $response['token']  = $token;
+            $response['length'] = '16';
+
+            $response['fingerprint'] = strrev($token);
+            $token_iin = substr($input['card']['number'] ?? null, 0, 6);
+
+            $expiry_year = $input['card']['expiry_year'];
+            if (strlen($expiry_year) == 2)
+            {
+                $expiry_year = '20' . $expiry_year;
+            }
+
+            $response['service_provider_tokens'] = [
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'visa',
+                    'status'                 => 'activated',
+                    'interoperable'          => true,
+                    'provider_data'  => [
+                        'token_reference_number' => $token,
+                        'card_reference_number'  => strrev($token),
+                        'token_expiry_month'     => $input['card']['expiry_month'],
+                        'token_expiry_year'      => $expiry_year,
+                        'token_iin'              => $token_iin,
+                        'token_number'           => $input['card']['number'],
+                        'cryptogram_value'       => '',
+                    ],
+                ]
+            ];
+
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+        $fetchTokenResponse = $this->doFetchTokenFromCustomerID($response['id']);
+        $this->assertTrue($fetchTokenResponse['compliant_with_tokenisation_guidelines']);
     }
 
     public function testMigrateTokenToTokenizedCard()
@@ -268,6 +348,7 @@ class TokenTest extends TestCase
         $this->assertEquals('12', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
         $this->assertEquals('2023', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals(true, $fetchResponse['compliant_with_tokenisation_guidelines']);
     }
 
     public function testFetchCryptogram()

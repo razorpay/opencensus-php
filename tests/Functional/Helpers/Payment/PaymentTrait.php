@@ -435,6 +435,25 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doFetchTokenFromCustomerID($tokenId)
+    {
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/customers/cust_100000customer/tokens/'.$tokenId
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SPrivateAuthJsonPayment($payment = null, $server = null)
     {
         if ($payment === null)

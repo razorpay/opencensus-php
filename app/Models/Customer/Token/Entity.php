@@ -22,7 +22,8 @@ use RZP\Models\Address;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
-
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -141,6 +142,7 @@ class Entity extends Base\PublicEntity
      * This will be deprecated after Dec 31st, 2021 once we stop saving cards on razorpay
      */
     public const CONSENT_TAKEN = 'consent_taken';
+    public const COMPLIANT_WITH_TOKENISATION_GUIDELINES = 'compliant_with_tokenisation_guidelines';
 
     /*
      * service provider tokens attributes
@@ -245,6 +247,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_TYPE,
         self::FREQUENCY,
         self::CONSENT_TAKEN,
+        self::COMPLIANT_WITH_TOKENISATION_GUIDELINES,
         self::STATUS,
         self::NOTES,
     ];
@@ -270,6 +273,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::START_TIME,
         self::CONSENT_TAKEN,
+        self::COMPLIANT_WITH_TOKENISATION_GUIDELINES,
         self::STATUS,
         self::NOTES,
         // TODO: uncomment when we start accepting token as input
@@ -972,6 +976,30 @@ class Entity extends Base\PublicEntity
             $publicArray[self::MAX_AMOUNT] = $this->getUpiMandate()->getMaxAmount();
 
             $publicArray[self::EXPIRED_AT] = $this->getUpiMandate()->getEndTime();
+        }
+
+        if($this->getMethod() === Entity::CARD)
+        {
+            $app = App::getFacadeRoot();
+            try {
+                $card = $app['repo']->card->fetchForToken($this);
+
+                if ($card->isNetworkTokenisedCard() === true) {
+                    $publicArray[self::COMPLIANT_WITH_TOKENISATION_GUIDELINES] = true;
+                } else {
+                    $publicArray[self::COMPLIANT_WITH_TOKENISATION_GUIDELINES] = false;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $app['trace']->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CUSTOMER_CARD_FETCH_FAILED,
+                    [
+                        'token'   => $this->getPublicId(),
+                    ]);
+            }
         }
 
         return $publicArray;

@@ -869,6 +869,13 @@ class Entity extends Base\PublicEntity
                 ($vault === Card\Vault::RZP_ENCRYPTION));
     }
 
+    public function isNetworkTokenisedCard()
+    {
+        $vault = $this->getVault();
+
+        return (($vault === 'rupay') or ($vault === 'visa') or ($vault === 'mastercard'));
+    }
+
     public function isCredit()
     {
         return ($this->getType() === Type::CREDIT);

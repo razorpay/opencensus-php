@@ -218,11 +218,12 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenCardRecurring()
     {
-        $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => true]);
+        $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => true, 'card_id' => '100000001lcard']);
 
         $token = $this->getTokenById('token_' . $token['id']);
 
         $this->assertTrue($token[Token\Entity::RECURRING]);
+        $this->assertFalse($token[Token\Entity::COMPLIANT_WITH_TOKENISATION_GUIDELINES]);
         $this->assertArrayHasKey(Token\Entity::RECURRING_STATUS_SHORT, $token[Token\Entity::RECURRING_DETAILS]);
         $this->assertArrayHasKey(Token\Entity::RECURRING_FAILURE_REASON_SHORT,$token[Token\Entity::RECURRING_DETAILS]);
 
@@ -269,13 +270,14 @@ class CustomerTokenTest extends TestCase
             [
                 'method' => 'card',
                 'recurring' => true,
-                'recurring_status' => 'pakka confirm'
+                'recurring_status' => 'pakka confirm',
+                'card_id' => '100000001lcard'
             ]);
 
         $token = $this->getTokenById('token_' . $token['id']);
 
         $this->assertTrue($token[Token\Entity::RECURRING]);
-
+        $this->assertFalse($token[Token\Entity::COMPLIANT_WITH_TOKENISATION_GUIDELINES]);
         $this->assertArrayHasKey(Token\Entity::RECURRING_STATUS_SHORT, $token[Token\Entity::RECURRING_DETAILS]);
         $this->assertArrayHasKey(Token\Entity::RECURRING_FAILURE_REASON_SHORT,$token[Token\Entity::RECURRING_DETAILS]);
 
@@ -284,7 +286,7 @@ class CustomerTokenTest extends TestCase
 
     public function testFetchTokenCardNotRecurring()
     {
-        $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => false]);
+        $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => false, 'card_id' => '100000001lcard']);
 
         $token = $this->getTokenById('token_' . $token['id']);
 
@@ -403,6 +405,7 @@ class CustomerTokenTest extends TestCase
                 'recurring_status' => 'confirmed',
                 'auth_type' => 'netbanking',
                 'gateway_token' => 'test',
+                'card_id' => '100000001lcard'
             ]);
 
         $token = $this->getTokenById('token_' . $token['id']);
@@ -451,9 +454,12 @@ class CustomerTokenTest extends TestCase
                 'recurring_status' => 'confirmed',
                 'auth_type' => 'otp',
                 'gateway_token' => 'test',
+                'card_id' => '100000001lcard'
             ]);
 
         $token = $this->getTokenById('token_' . $token['id']);
+
+        $this->assertEquals(false, $token['compliant_with_tokenisation_guidelines']);
 
         $this->assertNull($token[Token\Entity::MRN]);
     }
