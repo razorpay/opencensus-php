@@ -2150,6 +2150,11 @@ class Gateway
         IFSC::ESFB,
         IFSC::CIUB,
         IFSC::KVBL,
+        IFSC::UTIB,
+        IFSC::IDIB,
+        IFSC::MAHB,
+        IFSC::IOBA,
+        IFSC::FDRL,
     ];
 
     public static $directDebitCardNetworks = [
