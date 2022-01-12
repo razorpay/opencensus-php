@@ -131,6 +131,16 @@ return [
         ]
     ],
 
+    'x-segment' => [
+        'url'                => env('SEGMENT_ANALYTICS_URL'),
+        'mock'               => env('SEGMENT_ANALYTICS_MOCK', false),
+        'request_timeout'    => env('SEGMENT_ANALYTICS_TIMEOUT', 500),
+        'connection_timeout' => env('SEGMENT_ANALYTICS_CONNECTION_TIMEOUT', 500),
+        'auth' => [
+            'write_key'       => env('X_SEGMENT_WRITE_KEY'),
+        ],
+    ],
+
     'merchant_risk_alerts' => [
         'url'  => env('MERCHANT_RISK_ALERTS_URL'),
         'mock' => env('MERCHANT_RISK_ALERTS_MOCK', false),

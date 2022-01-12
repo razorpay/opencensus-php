@@ -58,6 +58,8 @@ class EventTracker
         $this->sendEventsToEventManager();
 
         $this->sendEventsToSegmentAnalytics();
+
+        $this->sendEventsToXSegment();
     }
 
     /**
@@ -68,6 +70,18 @@ class EventTracker
         try
         {
             $this->app['segment-analytics']->buildRequestAndSend();
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
+    }
+
+    protected function sendEventsToXSegment()
+    {
+        try
+        {
+            $this->app['x-segment']->buildRequestAndSend();
         }
         catch (\Throwable $e)
         {

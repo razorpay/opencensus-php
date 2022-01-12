@@ -343,6 +343,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new Segment\SegmentAnalyticsClient($app);
         });
 
+        $this->app->singleton('x-segment', function($app)
+        {
+            return new Segment\XSegmentClient($app);
+        });
+
         $this->app->singleton('eventManager', function($app)
         {
             $harvesterClientMock = $app['config']->get('applications.harvester.mock');
