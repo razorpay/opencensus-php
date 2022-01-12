@@ -2772,11 +2772,21 @@ class Entity extends Base\PublicEntity
 
     public function provideBeneBankName()
     {
-        $ifsc = $this->fundAccount->account->getIfscCode();
+        $entity = $this->fundAccount->account->getEntity();
 
-        $ifscCode = substr($ifsc,0,4);
+        if($entity === "bank_account")
+        {
+            $ifsc = $this->fundAccount->account->getIfscCode();
 
-        $beneBank = BaseIFSC::getBankName($ifscCode);
+            $ifscCode = substr($ifsc,0,4);
+
+            $beneBank = BaseIFSC::getBankName($ifscCode);
+        }
+
+        else
+        {
+            $beneBank = "beneficiary bank";
+        }
 
         return $beneBank;
 

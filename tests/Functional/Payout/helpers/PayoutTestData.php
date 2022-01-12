@@ -4063,6 +4063,19 @@ return [
         ],
     ],
 
+    'testConditionInVpaTypeFundAccount' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ]
+    ],
+
     'testSearchPayoutByTransactionId' => [
         'request' => [
             'method'  => 'get',

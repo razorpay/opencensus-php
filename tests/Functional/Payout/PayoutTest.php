@@ -272,6 +272,40 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testConditionInVpaTypeFundAccount()
+    {
+        $this->ba->privateAuth();
+
+        $this->createContact();
+
+        $this->fundAccount = $this->createVpaFundAccount();
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 104,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'mode'            => 'UPI',
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout1 = $this->getDbLastEntity('payout');
+        $beneBank = $payout1->provideBeneBankName();
+        $this->assertEquals('beneficiary bank',$beneBank);
+    }
+
     public function testCreatePayoutWithNarrationNull()
     {
         $this->ba->privateAuth();
