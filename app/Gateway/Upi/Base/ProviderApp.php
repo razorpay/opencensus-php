@@ -15,6 +15,8 @@ class ProviderApp
     const BANK_OF_INDIA         = 'com.infra.boiupi';
     const CANARA_BANK           = 'com.canarabank.mobility';
     const ICICI_BANK            = 'com.csam.icici.bank.imobile';
+    const NSDL_JIFFY            = 'com.nsdlpb.jiffy';
+    const BHIM_AXISPAY          = 'com.upi.axispay';
 
     // For all other PSP Apps
     const OTHER             = 'other';

@@ -1382,6 +1382,8 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['canarabank_cnrb_allow']         = ['razorpay@cnrb', $throwables['whitelisted']];
         $cases['imobile_icici_allow']           = ['razorpay@icici', $throwables['whitelisted']];
         $cases['gpay_okaxis_allow']             = ['razorpay@okaxis', $throwables['whitelisted']];
+        $cases['nsdlpb_nsdl_allow']             = ['razorpay@nsdl', $throwables['whitelisted']];
+        $cases['axispay_axisbank_allow']        = ['razorpay@axisbank', $throwables['whitelisted']];
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
         $cases['gpay_okicici_reject']           = ['razorpay@okicici', $throwables['not_whitelisted']];
@@ -1620,6 +1622,8 @@ class UpiInitialRecurringTestCase extends TestCase
         $throwableExpected = ($throwable !== null);
         $throwableThrown = false;
 
+        $messageFromThrowable = '';
+
         try
         {
             if (is_callable($closure) === true)
@@ -1633,7 +1637,8 @@ class UpiInitialRecurringTestCase extends TestCase
         }
         catch (\Throwable $t)
         {
-            $throwableThrown = true;
+            $throwableThrown        = true;
+            $messageFromThrowable   = $t->getMessage();
 
             $this->assertExceptionClass($t, $throwable['class']);
 
@@ -1641,12 +1646,20 @@ class UpiInitialRecurringTestCase extends TestCase
 
             if ($message !== null)
             {
-                $this->assertSame($message, $t->getMessage());
+                $this->assertSame($message, $messageFromThrowable);
             }
+
         }
         finally
         {
-            $this->assertSame($throwableExpected, $throwableThrown, 'Exception not thrown');
+            $errorMessage = 'Exception expected but none thrown';
+
+            if (($throwableExpected === false) and ($throwableThrown === true))
+            {
+                $errorMessage = 'Exception thrown but not expected. ' . $messageFromThrowable;
+            }
+
+            $this->assertSame($throwableExpected, $throwableThrown, $errorMessage);
         }
     }
 }

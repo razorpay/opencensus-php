@@ -14,6 +14,8 @@ class ProviderPsp
     const IMOBILE           = 'imobile';
     const BHIM_BOI_UPI      = 'bhim_boi_upi';
     const CANDI_CANARA_BANK = 'candi_canara_bank';
+    const NSDL_JIFFY        = 'nsdl_jiffy';
+    const BHIM_AXISPAY      = 'bhim_axispay';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

@@ -161,6 +161,7 @@ class ProviderCode
     const YESBANK            = 'yesbank';
     const YESBANKLTD         = 'yesbankltd';
     const YESB               = 'yesb';
+    const NSDL               = 'nsdl';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -311,6 +312,7 @@ class ProviderCode
         self::YESBANKLTD         => IFSC::YESB,
         self::RAZORPAY           => 'RZPY',
         self::YESB               => IFSC::YESB,
+        self::NSDL               => IFSC::NSPB,
     ];
 
     /**
@@ -387,6 +389,8 @@ class ProviderCode
         ProviderPsp::BHIM_BOI_UPI,
         ProviderPsp::CANDI_CANARA_BANK,
         ProviderPsp::IMOBILE,
+        ProviderPsp::NSDL_JIFFY,
+        ProviderPsp::BHIM_AXISPAY,
     ];
 
     /**
@@ -406,6 +410,8 @@ class ProviderCode
         self::CNRB          => ProviderPsp::CANDI_CANARA_BANK,
         self::ICICI         => ProviderPsp::IMOBILE,
         self::OKAXIS        => ProviderPsp::GOOGLE_PAY,
+        self::NSDL          => ProviderPsp::NSDL_JIFFY,
+        self::AXISBANK      => ProviderPsp::BHIM_AXISPAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
