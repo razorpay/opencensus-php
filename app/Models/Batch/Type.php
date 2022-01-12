@@ -135,6 +135,8 @@ class Type
 
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
 
+    const EARLY_SETTLEMENT_TRIAL = 'early_settlement_trial';
+
     const ECOLLECT_ICICI        = 'ecollect_icici';
 
     const MDR_ADJUSTMENTS       = 'mdr_adjustments';
@@ -236,6 +238,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
+        self::EARLY_SETTLEMENT_TRIAL,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
@@ -347,6 +350,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
+        self::EARLY_SETTLEMENT_TRIAL,
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
     ];
@@ -445,6 +449,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
+        self::EARLY_SETTLEMENT_TRIAL,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::REFUND,
         self::RAW_ADDRESS,
@@ -480,6 +485,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
+        self::EARLY_SETTLEMENT_TRIAL,
         self::PAYMENT_LINK_V2,
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,

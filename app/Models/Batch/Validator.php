@@ -370,6 +370,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE     => 'sometimes|numeric',
     ];
 
+    protected static $earlySettlementTrialCreateRules = [
+        Entity::TYPE         => 'required|in:early_settlement_trial',
+        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID      => 'required_without:file',
+        Entity::NAME         => 'filled|string|max:255',
+        Entity::SCHEDULE     => 'sometimes|numeric',
+    ];
+
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
@@ -670,6 +678,14 @@ class Validator extends Base\Validator
         Header::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_ELIGIBLE      => 'required|in:yes,no'
     ];
 
+    protected static $earlySettlementTrialTypeRowRules = [
+        Header::EARLY_SETTLEMENT_TRIAL_MERCHANT_ID  => 'required|string|size:14',
+        Header::EARLY_SETTLEMENT_TRIAL_FULL_ACCESS  => 'required|in:yes,no',
+        Header::EARLY_SETTLEMENT_TRIAL_DISABLE_DATE => 'required|string|custom',
+        Header::EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT => 'sometimes|integer',
+        Header::EARLY_SETTLEMENT_ES_PRICING         => 'required|integer'
+    ];
+
     protected static $terminalNetbankingHdfcRules = [
         Header::HDFC_NB_MERCHANT_ID          => 'required|string|size:14',
         Header::HDFC_NB_GATEWAY_MERCHANT_ID  => 'required|string|max:30|alpha_dash_space',
@@ -950,6 +966,18 @@ class Validator extends Base\Validator
         if (!$d || $d->format($expectedFormat) != $value)
         {
             throw new BadRequestValidationFailureException('Invalid Payout Date format, should be d/m/Y');
+        }
+    }
+
+    public function validateDisableDate($attribute, $value)
+    {
+        $expectedFormat = 'd/m/Y';
+
+        $d = DateTime::createFromFormat($expectedFormat, $value);
+
+        if (!$d || $d->format($expectedFormat) != $value)
+        {
+            throw new BadRequestValidationFailureException('Invalid Disable Date format, should be d/m/Y');
         }
     }
 
@@ -1980,6 +2008,14 @@ class Validator extends Base\Validator
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('capitalMerchantEligibilityConfigTypeRow', $entry);
+        });
+    }
+
+    public function validateEarlySettlementTrialEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('earlySettlementTrialTypeRow', $entry);
         });
     }
 

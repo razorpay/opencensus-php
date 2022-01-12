@@ -1013,6 +1013,12 @@ class Header
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_SEGMENT      = 'segment';
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_ELIGIBLE     = 'eligible';
 
+    const EARLY_SETTLEMENT_TRIAL_MERCHANT_ID  = 'merchant_id';
+    const EARLY_SETTLEMENT_TRIAL_FULL_ACCESS  = 'full_access';
+    const EARLY_SETTLEMENT_TRIAL_DISABLE_DATE = 'disable_date';
+    const EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT = 'amount_limit';
+    const EARLY_SETTLEMENT_ES_PRICING         = 'es_pricing';
+
     const ICICI_ECOLLECT_REMITTING_BANK_UTR_NO      = 'REMITTING BANK UTR NO.';
     const ICICI_ECOLLECT_PAYMENT_TYPE               = 'PAYMENT TYPE';
     const ICICI_ECOLLECT_CREDIT_ACCOUNT_NO          = 'CREDIT ACCOUNT NO.';
@@ -3599,6 +3605,23 @@ class Header
                 self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_SEGMENT,
                 self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG_ELIGIBLE,
             ],
+        ],
+
+        Type::EARLY_SETTLEMENT_TRIAL => [
+            self::INPUT => [
+                self::EARLY_SETTLEMENT_TRIAL_MERCHANT_ID,
+                self::EARLY_SETTLEMENT_TRIAL_FULL_ACCESS,
+                self::EARLY_SETTLEMENT_TRIAL_DISABLE_DATE,
+                self::EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT,
+                self::EARLY_SETTLEMENT_ES_PRICING,
+            ],
+            self::OUTPUT => [
+                self::EARLY_SETTLEMENT_TRIAL_MERCHANT_ID,
+                self::EARLY_SETTLEMENT_TRIAL_FULL_ACCESS,
+                self::EARLY_SETTLEMENT_TRIAL_DISABLE_DATE,
+                self::EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT,
+                self::EARLY_SETTLEMENT_ES_PRICING,
+            ]
         ],
 
         TYPE::REPORT => [
