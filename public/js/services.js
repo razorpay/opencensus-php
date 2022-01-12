@@ -1239,7 +1239,11 @@ angular
           eventTimestamp: new Date().toISOString(),
         });
         if (window.analytics && window.analytics.track) {
-          window.analytics.track(eventName, properties);
+          window.analytics.track(eventName, properties, {
+            integrations: {
+              CleverTap: false,
+            },
+          });
         }
       }
       /* Pass our backend userid to segment so that
