@@ -273,6 +273,7 @@ class Core extends Base\Core
     public function updateOndemandPricingPercentByFeature($merchant, $percentRate, $pricingFeature)
     {
         $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant, $pricingFeature);
+
         if(empty($settlementOndemandPricing) === false)
         {
             $pricingArray = $settlementOndemandPricing->toArray();

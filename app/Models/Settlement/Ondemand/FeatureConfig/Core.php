@@ -30,15 +30,30 @@ class Core extends Base\Core
 
     public function updateFeatureConfig($featureConfig, $input)
     {
-        $featureConfig->setMaxAmountLimit($input[Entity::MAX_AMOUNT_LIMIT]);
+        if (isset($input[Entity::MAX_AMOUNT_LIMIT]) === true)
+        {
+            $featureConfig->setMaxAmountLimit($input[Entity::MAX_AMOUNT_LIMIT]);
+        }
 
-        $featureConfig->setSettlementsCountLimit($input[Entity::SETTLEMENTS_COUNT_LIMIT]);
+        if (isset($input[Entity::SETTLEMENTS_COUNT_LIMIT]) === true)
+        {
+            $featureConfig->setSettlementsCountLimit($input[Entity::SETTLEMENTS_COUNT_LIMIT]);
+        }
 
-        $featureConfig->setPercentageOfBalanceLimit($input[Entity::PERCENTAGE_OF_BALANCE_LIMIT]);
+        if (isset($input[Entity::PERCENTAGE_OF_BALANCE_LIMIT]) === true)
+        {
+            $featureConfig->setPercentageOfBalanceLimit($input[Entity::PERCENTAGE_OF_BALANCE_LIMIT]);
+        }
 
-        $featureConfig->setPricingPercent($input[Entity::PRICING_PERCENT]);
+        if (isset($input[Entity::PRICING_PERCENT]) === true)
+        {
+            $featureConfig->setPricingPercent($input[Entity::PRICING_PERCENT]);
+        }
 
-        $featureConfig->setEsPricingPercent($input[Entity::ES_PRICING_PERCENT]);
+        if (isset($input[Entity::ES_PRICING_PERCENT]) === true)
+        {
+            $featureConfig->setEsPricingPercent($input[Entity::ES_PRICING_PERCENT]);
+        }
 
         $this->repo->saveOrFail($featureConfig);
 

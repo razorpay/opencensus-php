@@ -398,4 +398,42 @@ class Service extends Base\Service
         ];
 
     }
+
+    public function createOrUpdatePricingRule($merchant, $pricingPercent, $pricingFeature)
+    {
+        $pricing = $this->core()->getOndemandPricingByFeature($merchant, $pricingFeature);
+
+        if($pricing === null)
+        {
+            try
+            {
+                $this->core()->addDefaultPricing($merchant, $pricingPercent, $pricingFeature);
+            }
+            catch(\Throwable $e)
+            {
+                throw new Exception\ServerErrorException(
+                    'Failed to create pricing rule',
+                    ErrorCode::SERVER_ERROR_PRICING_RULE_CREATION_FAILURE,
+                    null,
+                    $e
+                );
+            }
+        }
+        else
+        {
+            try
+            {
+                $this->core()->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature);
+            }
+            catch(\Throwable $e)
+            {
+                throw new Exception\ServerErrorException(
+                    'Failed to update pricing rule',
+                    ErrorCode::SERVER_ERROR_PRICING_RULE_UPDATION_FAILURE,
+                    null,
+                    $e
+                );
+            }
+        }
+    }
 }

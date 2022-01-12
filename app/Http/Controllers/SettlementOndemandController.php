@@ -116,6 +116,24 @@ class SettlementOndemandController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function enableFeaturePeriod()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::EARLY_SETTLEMENT_FEATURE_PERIOD)->enableFeaturePeriod($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function disableFeaturePeriod()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::EARLY_SETTLEMENT_FEATURE_PERIOD)->disableFeaturePeriod($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function validateWithFeatureConfig()
     {
         $input = Request::all();

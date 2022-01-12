@@ -327,6 +327,7 @@ class Table
     const SETTLEMENT_ONDEMAND_BULK           = 'settlement_ondemand_bulk';
     const SETTLEMENT_ONDEMAND_ATTEMPT        = 'settlement_ondemand_attempts';
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement_ondemand_feature_configs';
+    const EARLY_SETTLEMENT_FEATURE_PERIOD    = 'early_settlement_feature_period';
 
     const CREDITNOTE           = 'creditnote';
 
@@ -437,6 +438,7 @@ class Table
         Entity::SETTLEMENT_ONDEMAND_TRANSFER       => self::SETTLEMENT_ONDEMAND_TRANSFER,
         Entity::SETTLEMENT_ONDEMAND_ATTEMPT        => self::SETTLEMENT_ONDEMAND_ATTEMPT,
         Entity::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
+        Entity::EARLY_SETTLEMENT_FEATURE_PERIOD    => self::EARLY_SETTLEMENT_FEATURE_PERIOD,
         Entity::MERCHANT_SLABS                     => self::MERCHANT_SLABS,
         Entity::MERCHANT_1CC_CONFIGS               => self::MERCHANT_1CC_CONFIGS,
     ];

@@ -5,11 +5,14 @@ namespace RZP\Tests\Functional\SettlementOndemand;
 use Hash;
 use Queue;
 use Config;
+use DateTime;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Feature;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Mock\RazorpayXClient;
 use RZP\Models\Settlement\OndemandPayout;
@@ -265,6 +268,14 @@ class SettlementOndemandTest extends TestCase
         $headers =['x-razorpay-signature' => [$signature]];
 
         (new OndemandPayout\Service)->statusUpdate($input, $headers, $rawContent);
+    }
+
+    private function parseDate($date)
+    {
+        return DateTime::createFromFormat('d/m/Y',
+                                    $date,
+                                    new \DateTimeZone('Asia/Kolkata'))->setTime(1,0)
+                                                                               ->getTimestamp();
     }
 
     public function testEnqueueJob()
@@ -2053,6 +2064,650 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($secondMerchantOndemandRestrictedFeature);
 
         $this->assertNotNull($secondMerchantOndemandFeature);
+    }
+
+    public function testEarlySettlementFeaturePeriodCreateFullAccess()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->create('schedule', [
+            'id'          => '30000000000000',
+            'name'        => 'Basic T+3',
+            'merchant_id' => '100000Razorpay',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'hour'        => 10,
+            'delay'       => 3,
+            'created_at'  => time(),
+            'updated_at'  => time(),
+        ]);
+
+        $this->fixtures->create('schedule_task', [
+            'merchant_id' => '10000000000001',
+            'entity_id'   => '10000000000001',
+            'entity_type' => 'merchant',
+            'type'        => 'settlement',
+            'schedule_id' => '30000000000000',
+            'next_run_at' => time() + 259200,
+            'created_at'  => time(),
+            'updated_at'  => time(),
+        ]);
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->create('pricing',[
+            'id'                  => '1zE3CYqf1zbyaa',
+            'plan_id'             => '1BFFkd38fFGbnh',
+            'plan_name'           => 'standard_plan',
+            'feature'             => Feature::SETTLEMENT_ONDEMAND,
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 25,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'es_on_demand']);
+
+        $this->fixtures->create('schedule', [
+            'id'        => 'IaVvw68vQ2lgp2',
+            'period'    => 'hourly',
+            'interval'  => 1,
+            'hour'      => 0,
+            'delay'     => 0,
+            'type'      => 'settlement'
+        ]);
+
+        $this->startTest();
+
+        $earlySettlementFeaturePeriods = $this->getEntities(
+            'early_settlement_feature_period',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'disable_date'                  => $this->parseDate('3/2/2022'),
+            'feature'                       => Constants::ES_AUTOMATIC,
+            'initial_ondemand_pricing'      => 25,
+            //'initial_schedule_id'           => 'IgXV8FfuP6MNVf',
+        ], $earlySettlementFeaturePeriods['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'disable_date'                  => $this->parseDate('4/2/2022'),
+            'feature'                       => Constants::ES_AUTOMATIC,
+            'initial_ondemand_pricing'      => 25,
+            'initial_schedule_id'           => '30000000000000',
+        ], $earlySettlementFeaturePeriods['items'][0]);
+
+        $firstScheduledTasks = $this->getDbEntity('schedule_task',['merchant_id' => '10000000000000'])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'schedule_id' => 'IaVvw68vQ2lgp2',
+        ], $firstScheduledTasks);
+
+        $secondScheduledTasks = $this->getDbEntity('schedule_task',['merchant_id' => '10000000000001'])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'schedule_id' => 'IaVvw68vQ2lgp2',
+        ], $secondScheduledTasks);
+
+        $scheduledEarlySettlementmethods = [
+            Payment\Method::AEPS,
+            Payment\Method::CARD,
+            Payment\Method::CARDLESS_EMI,
+            Payment\Method::EMI,
+            Payment\Method::NETBANKING,
+            Payment\Method::PAYLATER,
+            Payment\Method::TRANSFER,
+            Payment\Method::UPI,
+        ];
+
+        $merchant1 = $this->getDbEntity('merchant',
+            [   'id' => '10000000000000',
+            ],
+            'test');
+
+        $merchant2 = $this->getDbEntity('merchant',
+            [   'id' => '10000000000001',
+            ],
+            'test');
+
+        $merchantPricings = [
+            array("plan_id" => $merchant1['pricing_plan_id'], "percent_rate" => 17),
+            array("plan_id" => $merchant2['pricing_plan_id'], "percent_rate" => 18),
+        ];
+
+        foreach ($merchantPricings as $merchantPricing)
+        {
+            foreach ($scheduledEarlySettlementmethods as $method)
+            {
+                $esAutomaticPricingRule = $this->getDbEntity('pricing', ['feature'  => 'esautomatic',
+                    'plan_id'   => $merchantPricing['plan_id'], 'payment_method' => $method, 'international'=> 0])->toArray();
+
+                $this->assertArraySelectiveEquals([
+                    'percent_rate' => $merchantPricing['percent_rate'],
+                ], $esAutomaticPricingRule);
+            }
+        }
+
+    }
+
+    public function testEarlySettlementFeaturePeriodFullAccessUpdate()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->pricing->createStandardPlan();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'es_automatic']);
+
+        $this->fixtures->create('early_settlement_feature_period',
+            [
+                'merchant_id'               => '10000000000000',
+                'enable_date'               => '1234567',
+                'disable_date'              => '1234567',
+                'initial_ondemand_pricing'  => 15,
+                'initial_schedule_id'      => '12345678901234',
+                'feature'                   => 'es_automatic',
+                'deleted_at'                => null
+            ]);
+
+        $this->fixtures->create('early_settlement_feature_period',
+            [
+                'merchant_id'               => '10000000000001',
+                'enable_date'               => '1234567',
+                'disable_date'              => '1234567',
+                'initial_ondemand_pricing'  =>  15,
+                'initial_schedule_id'      => '12345678901234',
+                'feature'                   => 'es_automatic',
+                'deleted_at'                => null
+            ]);
+
+        $this->fixtures->create('settlement.ondemand.feature_config',
+        [
+            'merchant_id'                   => '10000000000000',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 100000,
+            'max_amount_limit'              => 2000,
+            'pricing_percent'               => 12,
+            'es_pricing_percent'            => 18,
+        ]);
+
+        $this->fixtures->create('settlement.ondemand.feature_config',
+            [
+                'merchant_id'                   => '10000000000001',
+                'percentage_of_balance_limit'   => 50,
+                'settlements_count_limit'       => 100000,
+                'max_amount_limit'              => 2000,
+                'pricing_percent'               => 12,
+                'es_pricing_percent'            => 18,
+            ]);
+
+        $this->startTest();
+
+        $earlySettlementFeaturePeriods = $this->getEntities(
+            'early_settlement_feature_period',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'disable_date'                  => $this->parseDate('3/2/2022'),
+        ], $earlySettlementFeaturePeriods['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'disable_date'                  => $this->parseDate('4/2/2022'),
+        ], $earlySettlementFeaturePeriods['items'][0]);
+
+        $settlementOndemandFeatureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'max_amount_limit'              => 2000000,
+            'es_pricing_percent'            => 15,
+        ], $settlementOndemandFeatureConfigs['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'max_amount_limit'              => 5000000,
+            'es_pricing_percent'            => 15
+        ], $settlementOndemandFeatureConfigs['items'][0]);
+
+        $scheduledEarlySettlementmethods = [
+            Payment\Method::PAYLATER,
+            Payment\Method::TRANSFER,
+            Payment\Method::CARD,
+        ];
+
+        $merchant1 = $this->getDbEntity('merchant',
+            [   'id' => '10000000000000',
+            ],
+            'test');
+
+        $merchant2 = $this->getDbEntity('merchant',
+            [   'id' => '10000000000001',
+            ],
+            'test');
+
+        $merchantPricings = [
+            array("plan_id" => $merchant1['pricing_plan_id'], "percent_rate" => 15),
+            array("plan_id" => $merchant2['pricing_plan_id'], "percent_rate" => 15),
+        ];
+
+        foreach ($merchantPricings as $merchantPricing)
+        {
+            foreach ($scheduledEarlySettlementmethods as $method)
+            {
+                $esAutomaticPricingRule = $this->getDbEntity('pricing', ['feature'  => 'esautomatic',
+                    'plan_id'   => $merchantPricing['plan_id'], 'payment_method' => $method])->toArray();
+
+                $this->assertArraySelectiveEquals([
+                    'percent_rate' => $merchantPricing['percent_rate'],
+                ], $esAutomaticPricingRule);
+            }
+        }
+
+    }
+
+    public function testEarlySettlementFeaturePeriodCreateRestrictedAccess()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->pricing->createStandardPlan();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->create('schedule', [
+            'id'          => '30000000000000',
+            'name'        => 'Basic T+3',
+            'merchant_id' => '100000Razorpay',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'hour'        => 10,
+            'delay'       => 3,
+            'created_at'  => time(),
+            'updated_at'  => time(),
+        ]);
+
+        $this->fixtures->create('schedule_task', [
+            'merchant_id' => '10000000000001',
+            'entity_id'   => '10000000000001',
+            'entity_type' => 'merchant',
+            'type'        => 'settlement',
+            'schedule_id' => '30000000000000',
+            'next_run_at' => time() + 259200,
+            'created_at'  => time(),
+            'updated_at'  => time(),
+        ]);
+
+        $this->startTest();
+
+        $earlySettlementFeaturePeriods = $this->getEntities(
+            'early_settlement_feature_period',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'disable_date'                  => $this->parseDate('3/2/2022'),
+            'feature'                       => Constants::ES_AUTOMATIC_RESTRICTED,
+            'initial_ondemand_pricing'      => 18,
+        ], $earlySettlementFeaturePeriods['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'disable_date'                  => $this->parseDate('4/2/2022'),
+            'feature'                       => Constants::ES_AUTOMATIC_RESTRICTED,
+            'initial_ondemand_pricing'      => 18,
+            'initial_schedule_id'           => '30000000000000',
+        ], $earlySettlementFeaturePeriods['items'][0]);
+
+        $settlementOndemandFeatureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'max_amount_limit'              => 2000000,
+            'settlements_count_limit'       => 1000000,
+            'percentage_of_balance_limit'   => 50,
+            'pricing_percent'               => 30,
+            'es_pricing_percent'            => 15
+        ], $settlementOndemandFeatureConfigs['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'max_amount_limit'              => 5000000,
+            'settlements_count_limit'       => 1000000,
+            'percentage_of_balance_limit'   => 50,
+            'pricing_percent'               => 30,
+            'es_pricing_percent'            => 15
+        ], $settlementOndemandFeatureConfigs['items'][0]);
+
+        $esAutomaticPricingRule = $this->getDbEntity('pricing', ['feature'  => 'esautomatic_restricted',
+            'plan_id'   => '1A0Fkd38fGZPVC',])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'percent_rate' => 15,
+        ], $esAutomaticPricingRule);
+    }
+
+    public function testEarlySettlementFeaturePeriodRestrictedAccessUpdate()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->pricing->createStandardPlan();
+
+        $this->fixtures->create('pricing',[
+            'id'                  => '1zE3CYqf1zbyaa',
+            'plan_id'             => '1A0Fkd38fGZPVC',
+            'plan_name'           => 'standard_plan',
+            'feature'             => Feature::ESAUTOMATIC_RESTRICTED,
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 25,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic_restricted']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'es_automatic_restricted']);
+
+        $this->fixtures->create('early_settlement_feature_period',
+            [
+                'merchant_id'               => '10000000000000',
+                'enable_date'               => '1234567',
+                'disable_date'              => '1234567',
+                'initial_ondemand_pricing'  => 15,
+                'initial_schedule_id'      => '12345678901234',
+                'feature'                   => 'es_automatic_restricted',
+                'deleted_at'                => null
+            ]);
+
+        $this->fixtures->create('early_settlement_feature_period',
+            [
+                'merchant_id'               => '10000000000001',
+                'enable_date'               => 1234567,
+                'disable_date'              => 1234567,
+                'initial_ondemand_pricing'  =>  15,
+                'initial_schedule_id'       => '12345678901234',
+                'feature'                   => 'es_automatic_restricted',
+                'deleted_at'                => null
+            ]);
+
+        $this->fixtures->create('settlement.ondemand.feature_config',
+            [
+                'merchant_id'                   => '10000000000000',
+                'percentage_of_balance_limit'   => 50,
+                'settlements_count_limit'       => 100000,
+                'max_amount_limit'              => 2000,
+                'pricing_percent'               => 12,
+                'es_pricing_percent'            => 25,
+            ]);
+
+        $this->fixtures->create('settlement.ondemand.feature_config',
+            [
+                'merchant_id'                   => '10000000000001',
+                'percentage_of_balance_limit'   => 50,
+                'settlements_count_limit'       => 100000,
+                'max_amount_limit'              => 2000,
+                'pricing_percent'               => 12,
+                'es_pricing_percent'            => 25,
+            ]);
+
+
+        $this->startTest();
+
+        $earlySettlementFeaturePeriods = $this->getEntities(
+            'early_settlement_feature_period',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'disable_date'                  => $this->parseDate( '3/2/2022'),
+        ], $earlySettlementFeaturePeriods['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'disable_date'                  => $this->parseDate( '4/2/2022'),
+        ], $earlySettlementFeaturePeriods['items'][0]);
+
+        $settlementOndemandFeatureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'es_pricing_percent'            => 15,
+            'max_amount_limit'              => 2000000
+        ], $settlementOndemandFeatureConfigs['items'][1]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'es_pricing_percent'            => 15,
+            'max_amount_limit'              => 5000000
+        ], $settlementOndemandFeatureConfigs['items'][0]);
+
+        $esAutomaticPricingRule = $this->getDbEntity('pricing', ['feature'  => 'esautomatic_restricted',
+            'plan_id'   => '1A0Fkd38fGZPVC',])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'percent_rate' => 15,
+        ], $esAutomaticPricingRule);
+    }
+
+    public function testEarlySettlementFeaturePeriodDisableFullES()
+    {
+        $this->ba->cronAuth('test');
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 'es_automatic'
+            ]
+        );
+
+        $this->fixtures->on(Mode::TEST)->create('early_settlement_feature_period',[
+            'merchant_id'                 => '10000000000000',
+            'enable_date'                 => 1609982042,
+            'disable_date'                => 1612660442,
+            'initial_schedule_id'         => '30000000000000',
+            'initial_ondemand_pricing'    => 25,
+            'feature'                     => Constants::ES_AUTOMATIC,
+        ]);
+
+        $this->fixtures->create('schedule', [
+            'id'          => '30000000000000',
+            'name'        => 'Basic T+3',
+            'merchant_id' => '100000Razorpay',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'hour'        => 10,
+            'delay'       => 3,
+            'created_at'  => time(),
+            'updated_at'  => time(),
+        ]);
+
+        $this->fixtures->pricing->createStandardPlan();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->startTest();
+
+        $featurePeriod = $this->getDbEntity('early_settlement_feature_period',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'test');
+
+        $this->assertNull($featurePeriod);
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'name'      => 'es_automatic'
+            ],
+            'test');
+
+        $this->assertNull($feature);
+
+        $ondemandPricingRule = $this->getDbEntity('pricing', ['feature'  => 'settlement_ondemand',
+            'plan_id'   => '1A0Fkd38fGZPVC',])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'percent_rate' => 25,
+        ], $ondemandPricingRule);
+
+
+        $scheduledTasks = $this->getDbEntity('schedule_task',['merchant_id' => '10000000000000'])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'schedule_id' => '30000000000000',
+        ], $scheduledTasks);
+
+    }
+
+    public function testEarlySettlementFeaturePeriodDisableRestrictedES()
+    {
+        $this->ba->cronAuth('test');
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 'es_automatic_restrcited'
+            ]
+        );
+
+        $this->fixtures->pricing->createStandardPlan();
+
+        $this->fixtures->create('pricing',[
+            'id'                  => '1zE3CYqf1zbyaa',
+            'plan_id'             => '1A0Fkd38fGZPVC',
+            'plan_name'           => 'standard_plan',
+            'feature'             => Feature::ESAUTOMATIC_RESTRICTED,
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 25,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->on(Mode::TEST)->create('early_settlement_feature_period',[
+            'merchant_id'                 => '10000000000000',
+            'enable_date'                 => 1609982042,
+            'disable_date'                => 1612660442,
+            'initial_schedule_id'         => '30000000000000',
+            'initial_ondemand_pricing'    => 30,
+            'feature'                     => 'es_automatic_restricted',
+        ]);
+
+        $this->startTest();
+
+        $featurePeriod = $this->getDbEntity('early_settlement_feature_period',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'test');
+
+        $this->assertNull($featurePeriod);
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'name'      => 'es_automatic_restricted'
+            ],
+            'test');
+
+        $ondemandPricingRule = $this->getDbEntity('pricing', ['feature'  => 'settlement_ondemand',
+            'plan_id'   => '1A0Fkd38fGZPVC',])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'percent_rate' => 30,
+        ], $ondemandPricingRule);
+
+        $this->assertNull($feature);
     }
 
     public function testEnableEsOnDemandRestrictedAccessForCrossOrgMerchantFromBatchRoute()

@@ -2083,7 +2083,10 @@ class Route
         'settlement_ondemand_partial_scheduled'    => ['post',      'settlements/ondemand/scheduled/process',        'SettlementOndemandController@processPartialSettlementScheduled'    ],
         'setl_ondemand_transfer_processed'         => ['post',      'settlements/ondemand/transfer/{id}/processed',  'SettlementOndemandController@markAsProcessed'                      ],
         'setl_ondemand_transfer_trigger'           => ['post',      'settlements/ondemand/transfer/trigger',         'SettlementOndemandController@triggerOndemandTransfer'              ],
-        'setl_ondemand_transfer_payout_update'     => ['post',      'settlements/ondemand/transfer/payout',          'SettlementOndemandController@updateOndemandTransferPayoutId'      ],
+        'setl_ondemand_transfer_payout_update'     => ['post',      'settlements/ondemand/transfer/payout',          'SettlementOndemandController@updateOndemandTransferPayoutId'       ],
+        'early_settlement_feature_period_create'   => ['post',      'es/feature/period',                             'SettlementOndemandController@enableFeaturePeriod'                  ],
+        'early_settlement_feature_period_disable'  => ['post',      'es/feature/disable',                            'SettlementOndemandController@disableFeaturePeriod'                 ],
+
 
 
         // OAuth routes
@@ -3813,6 +3816,7 @@ class Route
         'merchant_onboarding_crons',
         'merchant_onboarding_notify',
         'settlement_ondemand_process',
+        'early_settlement_feature_period_disable',
         'internal_balance_fetch_by_merchant_id',
         'internal_balance_fetch_by_merchant_id_old',
         'merchant_balance_create',
@@ -3959,6 +3963,7 @@ class Route
         'setl_reconcile_test',
         'setl_service_migration',
         'settlement_ondemand_feature_enable',
+        'early_settlement_feature_period_create',
         'settlement_ondemand_partial_scheduled',
         'subscription_cancel_due',
         'subscriptions_charge_invoices',
@@ -6232,6 +6237,7 @@ class Route
         'setl_ondemand_transfer_trigger'           => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_payout_update'     => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_feature_enable'       => Permission::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        'early_settlement_feature_period_create'   => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_merchant_id'    => Permission::CAPITAL_DEVELOPER,
@@ -11062,6 +11068,7 @@ class Route
             'setl_reconcile_pull',
             'setl_transaction_replay',
             'settlement_ondemand_process',
+            'early_settlement_feature_period_disable',
             'settlement_ondemand_partial_scheduled',
             'nodal_initiate_transfer',
             'payment_timeout',
@@ -11558,6 +11565,7 @@ class Route
             'merchants_access_map_upsert_bulk',
             'adj_add_batch',
             'settlement_ondemand_feature_enable',
+            'early_settlement_feature_period_create',
             'bank_transfer_process_icici_internal',
             'reporting_log_create',
             'bank_transfer_process_rbl_internal',

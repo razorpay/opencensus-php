@@ -44,13 +44,17 @@ class Service extends Base\Service
 
                             /* creates ondemand pricing and es automatic restricted rule if not present,
                                else updates the present pricing rule with given pricing_percent */
-                            $this->createOrUpdatePricingRule($merchant, $input[Entity::PRICING_PERCENT],
-                                                PricingFeature::SETTLEMENT_ONDEMAND);
+
+                            (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::PRICING_PERCENT],
+                                                                        PricingFeature::SETTLEMENT_ONDEMAND);
 
                             $input[Entity::ES_PRICING_PERCENT] = (isset($input[Entity::ES_PRICING_PERCENT]) === true) ?
                                                                  $input[Entity::ES_PRICING_PERCENT]: self::DEFAULT_ES_PRICING_PERCENT;
 
-                            $this->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT], PricingFeature::ESAUTOMATIC_RESTRICTED);
+
+                            (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT],
+                                                                PricingFeature::ESAUTOMATIC_RESTRICTED);
+
 
                             if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
                             {
@@ -165,43 +169,6 @@ class Service extends Base\Service
         }
     }
 
-    public function createOrUpdatePricingRule($merchant, $pricingPercent, $pricingFeature)
-    {
-        $pricing = (new Ondemand\Core)->getOndemandPricingByFeature($merchant, $pricingFeature);
-
-        if($pricing === null)
-        {
-            try
-            {
-                (new Ondemand\Core)->addDefaultPricing($merchant, $pricingPercent, $pricingFeature);
-            }
-            catch(\Throwable $e)
-            {
-                throw new Exception\ServerErrorException(
-                    'Failed to create pricing rule',
-                    ErrorCode::SERVER_ERROR_PRICING_RULE_CREATION_FAILURE,
-                    null,
-                    $e
-                );
-            }
-        }
-        else
-        {
-            try
-            {
-                (new Ondemand\Core)->updateOndemandPricingPercentByFeature($merchant, $pricingPercent, $pricingFeature);
-            }
-            catch(\Throwable $e)
-            {
-                throw new Exception\ServerErrorException(
-                    'Failed to update pricing rule',
-                    ErrorCode::SERVER_ERROR_PRICING_RULE_UPDATION_FAILURE,
-                    null,
-                    $e
-                );
-            }
-        }
-    }
 
     public function validateWithFeatureConfig()
     {

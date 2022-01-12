@@ -58,6 +58,7 @@ use RZP\Models\Admin\Org\Hostname;
 use RZP\Services\SalesForceClient;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\SubMerchantTaggingJob;
+use RZP\Models\Settlement\Ondemand;
 use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\CallBackFillReferredApp;
 use Razorpay\OAuth\Token as OAuthToken;
@@ -87,6 +88,7 @@ use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\BulkWorkflowAction as BulkAction;
 use RZP\Models\RiskWorkflowAction as RiskAction;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use Razorpay\OAuth\Application as OAuthApplication;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
@@ -3066,11 +3068,13 @@ class Service extends Base\Service
         return $finalSchedulePricing->toArrayPublic() + ['fee_bearer' => $this->merchant->getFeeBearer()];
     }
 
-    public function addDefaultScheduledEarlySettlementPricingForMerchant($pricingFeature, $pricingPlanId)
+    public function addDefaultScheduledEarlySettlementPricingForMerchant($pricingFeature, $pricingPlanId,
+                                                                         $percentRate = FeatureConfig\Service::DEFAULT_ES_PRICING_PERCENT)
     {
         if ($this->merchant->isPostpaid() === false)
         {
-            return $this->repo->transactionOnLiveAndTest(function () use($pricingFeature, $pricingPlanId)
+            return $this->repo->transactionOnLiveAndTest(function () use($pricingFeature, $pricingPlanId, $percentRate)
+
             {
                 // Replicates plan for this merchant if it was shared
                 if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
@@ -3085,11 +3089,12 @@ class Service extends Base\Service
 
                 if($pricingFeature === PricingFeature::ESAUTOMATIC_RESTRICTED)
                 {
-                    $defaultScheduledEarlySettlementPricing = $this->getDefaultPartialScheduledEarlySettlementPricing();
+                    $defaultScheduledEarlySettlementPricing = $this->getDefaultPartialScheduledEarlySettlementPricing($percentRate);
                 }
                 else
                 {
-                    $defaultScheduledEarlySettlementPricing = $this->getDefaultScheduledEarlySettlementPricing($pricingPlanId);
+                    $defaultScheduledEarlySettlementPricing = $this->getDefaultScheduledEarlySettlementPricing($pricingPlanId, $percentRate);
+
                 }
 
                 foreach($defaultScheduledEarlySettlementPricing as $scheduledEarlySettlementPricing)
@@ -3107,14 +3112,15 @@ class Service extends Base\Service
         }
     }
 
-    public function getDefaultPartialScheduledEarlySettlementPricing(): array
+
+    public function getDefaultPartialScheduledEarlySettlementPricing($percentRate): array
     {
         $defaultScheduledEarlySettlementPricings = [];
         $pricingRule = [
             'product'             => Product::PRIMARY,
             'feature'             => PricingFeature::ESAUTOMATIC_RESTRICTED,
             'payment_method'      => Payout\Method::FUND_TRANSFER,
-            'percent_rate'        => 12,
+            'percent_rate'        => $percentRate,
             'amount_range_active' => 0,
             'amount_range_max'    => 0,
             'amount_range_min'    => 0,
@@ -3125,7 +3131,45 @@ class Service extends Base\Service
         return $defaultScheduledEarlySettlementPricings;
     }
 
-    public function getDefaultScheduledEarlySettlementPricing($pricingPlanId)
+    public function createOrUpdateScheduledEarlySettlementPricing($pricingPlanId, $percentRate)
+    {
+        $scheduledPricings = $this->repo->pricing
+                            ->getPricingRulesByPlanIdFeatureAndInternationalWithoutOrgId($pricingPlanId,
+                                                                                        PricingFeature::ESAUTOMATIC,
+                                                                                        false);
+        if ($scheduledPricings->isEmpty() === true)
+        {
+            $this->addDefaultScheduledEarlySettlementPricingForMerchant(PricingFeature::ESAUTOMATIC,
+                                                                        $pricingPlanId,
+                                                                        $percentRate);
+        }
+        else
+        {
+            $this->updateScheduledEarlySettlementPricing($scheduledPricings, $percentRate);
+        }
+    }
+
+    public function updateScheduledEarlySettlementPricing($scheduledPricings, $percentRate)
+    {
+        $scheduledPricingsArray = $scheduledPricings->toArray();
+        $inputArray = [];
+        foreach($scheduledPricingsArray as $scheduledPricing)
+        {
+            if($scheduledPricing['payment_method'] === Payment\Method::WALLET and
+                $scheduledPricing['payment_network'] === Payment\Processor\Wallet::PAYPAL)
+            {
+                continue;
+            }
+            $scheduledPricing['idempotency_key'] ='random';
+            $scheduledPricing['update'] = true;
+            $scheduledPricing[Pricing\Entity::MERCHANT_ID] = $this->merchant->getId();
+            $scheduledPricing['percent_rate'] = $percentRate;
+            array_push($inputArray, $scheduledPricing);
+        }
+        (new Pricing\Service)->postAddBulkPricingRules($inputArray);
+    }
+
+    public function getDefaultScheduledEarlySettlementPricing($pricingPlanId, $percentRate)
     {
         $scheduledEarlySettlementmethods = [
             Payment\Method::AEPS,
@@ -3147,7 +3191,7 @@ class Service extends Base\Service
                 'product'             => Product::PRIMARY,
                 'feature'             => PricingFeature::ESAUTOMATIC,
                 'payment_method'      => $method,
-                'percent_rate'        => 12,
+                'percent_rate'        => $percentRate,
                 'amount_range_active' => 0,
                 'amount_range_max'    => 0,
                 'amount_range_min'    => 0,
@@ -3780,8 +3824,37 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function disableScheduledES($initialOndemandPricing, $initialScheduleId)
+    {
+        $this->repo->transactionOnLiveAndTest(function () use($initialOndemandPricing, $initialScheduleId)
+        {
 
-    private function enablePartialScheduledEs(): array
+            $scheduledTasks = (new ScheduleTask\Core)->getMerchantSettlementScheduleTasks($this->merchant,
+                                                                                            false);
+            foreach ($scheduledTasks as $scheduledTask) {
+                $input = [
+                    ScheduleTask\Entity::METHOD      => $scheduledTask[ScheduleTask\Entity::METHOD],
+                    ScheduleTask\Entity::TYPE        => $scheduledTask[ScheduleTask\Entity::TYPE],
+                    ScheduleTask\Entity::SCHEDULE_ID => $initialScheduleId
+                ];
+
+                $this->app['workflow']->skipWorkflows(function () use ($input) {
+                    (new ScheduleTask\Core)->createOrUpdate($this->merchant, $this->merchant, $input);
+                });
+            }
+
+            //TODO: avoid direct call here
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true) {
+
+                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(), Settlement\Core::PAYOUT, Mode::LIVE);
+
+                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(), Settlement\Core::PAYOUT, Mode::TEST);
+            }
+
+        });
+    }
+
+    public function enablePartialScheduledEs(): array
     {
         $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
 

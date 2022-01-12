@@ -203,6 +203,8 @@ class Entity
     const SETTLEMENT_ONDEMAND_ATTEMPT        = 'settlement.ondemand.attempt';
     const SETTLEMENT_ONDEMAND_FEATURE_CONFIG = 'settlement.ondemand.feature_config';
 
+    const EARLY_SETTLEMENT_FEATURE_PERIOD    = 'early_settlement_feature_period';
+
     const VIRTUAL_VPA_PREFIX            = 'virtual_vpa_prefix';
     const VIRTUAL_VPA_PREFIX_HISTORY    = 'virtual_vpa_prefix_history';
 
@@ -881,6 +883,8 @@ class Entity
         self::SETTLEMENT_ONDEMAND_ATTEMPT        => \RZP\Models\Settlement\Ondemand\Attempt::class,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => \RZP\Models\Settlement\Ondemand\FeatureConfig::class,
 
+        self::EARLY_SETTLEMENT_FEATURE_PERIOD   => \RZP\Models\Settlement\EarlySettlementFeaturePeriod::class,
+
         self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
 
         // gateways
@@ -1189,6 +1193,8 @@ class Entity
         self::SETTLEMENT_ONDEMAND_TRANSFER       => \RZP\Models\Settlement\Ondemand\Transfer::class,
         self::SETTLEMENT_ONDEMAND_ATTEMPT        => \RZP\Models\Settlement\Ondemand\Attempt::class,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => \RZP\Models\Settlement\Ondemand\FeatureConfig::class,
+
+        self::EARLY_SETTLEMENT_FEATURE_PERIOD   => \RZP\Models\Settlement\EarlySettlementFeaturePeriod::class,
 
         self::MERCHANT_E_INVOICE                => \RZP\Models\Merchant\Invoice\EInvoice::class,
     ];

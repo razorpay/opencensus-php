@@ -2010,5 +2010,9 @@ final class FactoryData
             'description' => 'Payout is being processed by our partner bank. Please check '
                               .'the final status after some time',
         ]);
+
+        $factory(\RZP\Models\Settlement\EarlySettlementFeaturePeriod\Entity::class, [
+            'id'                => $faker->uniqueid,
+        ]);
     }
 }

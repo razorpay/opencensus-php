@@ -1669,4 +1669,193 @@ return [
         ],
     ],
 
+    'testEarlySettlementFeaturePeriodCreateFullAccess' => [
+        'request'  => [
+            'url'     => '/es/feature/period',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'full_access'                   => 'yes',
+                    'amount_limit'                  => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000',
+                    'disable_date'                  => '3/2/2022',
+                    'es_pricing'                    => 17
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'full_access'                   => 'yes',
+                    'amount_limit'                  => 2000000,
+                    'idempotency_key'               => 'batch_100DemoAccount',
+                    'disable_date'                  => '4/2/2022',
+                    'es_pricing'                    => 18
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_100DemoAccount'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEarlySettlementFeaturePeriodCreateRestrictedAccess' => [
+        'request'  => [
+            'url'     => '/es/feature/period',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'full_access'                   => 'no',
+                    'amount_limit'                  => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000',
+                    'disable_date'                  => '3/2/2022',
+                    'es_pricing'                    => 15
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'full_access'                   => 'no',
+                    'amount_limit'                  => 5000000,
+                    'idempotency_key'               => 'batch_10000000000001',
+                    'disable_date'                  => '4/2/2022',
+                    'es_pricing'                    => 15
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testEarlySettlementFeaturePeriodFullAccessUpdate' => [
+        'request'  => [
+            'url'     => '/es/feature/period',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'full_access'                   => 'yes',
+                    'amount_limit'                  => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000',
+                    'disable_date'                  => '3/2/2022',
+                    'es_pricing'                    => 15
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'full_access'                   => 'yes',
+                    'amount_limit'                  => 5000000,
+                    'idempotency_key'               => 'batch_10000000000001',
+                    'disable_date'                  => '4/2/2022',
+                    'es_pricing'                    => 15
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testEarlySettlementFeaturePeriodRestrictedAccessUpdate' => [
+        'request'  => [
+            'url'     => '/es/feature/period',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'full_access'                   => 'no',
+                    'amount_limit'                  => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000',
+                    'disable_date'                  => '3/2/2022',
+                    'es_pricing'                    => 15
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'full_access'                   => 'no',
+                    'amount_limit'                  => 5000000,
+                    'idempotency_key'               => 'batch_10000000000001',
+                    'disable_date'                  => '4/2/2022',
+                    'es_pricing'                    => 15
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testEarlySettlementFeaturePeriodDisableFullES' =>[
+        'request'  => [
+            'url'     => '/es/feature/disable',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'DisableES job dispatched'
+            ],
+        ],
+    ],
+
+    'testEarlySettlementFeaturePeriodDisableRestrictedES' =>[
+        'request'  => [
+            'url'     => '/es/feature/disable',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'DisableES job dispatched'
+            ],
+        ],
+    ],
 ];
