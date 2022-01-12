@@ -20,7 +20,5 @@ class Sqs implements IntegrationInterface
                 'name' => 'Sqs sendMessage',
             ];
         });
-
-
     }
 }
