@@ -2,21 +2,20 @@ import { useEffect, useState, useRef } from 'react';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { showNotification as _showNotification } from 'merchant_common/reducers/notifications';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { fetchFeatureStatus as _fetchFeatureStatus } from 'merchant/reducers/config';
+import { fetchFeatureStatus as fnFetchFeatureStatus } from 'merchant/reducers/config';
 
-// eslint-disable-next-line no-shadow
 function WhatsappNotification({
   currentUser,
   showNotification,
+  fetchFeatureStatus,
   location,
   history,
   tracking,
-  fetchFeatureStatus,
   org,
 }) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
@@ -193,8 +192,8 @@ const mapStateToProps = (state) => ({
 });
 export default withRouter(
   connect(mapStateToProps, {
-    _showNotification,
-    _fetchFeatureStatus,
+    showNotification: fnShowNotification,
+    fetchFeatureStatus: fnFetchFeatureStatus,
   })(
     // eslint-disable-next-line babel/new-cap
     RTracking(() => {

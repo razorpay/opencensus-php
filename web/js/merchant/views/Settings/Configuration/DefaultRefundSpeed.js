@@ -78,7 +78,7 @@ class DefaultRefundSpeed extends Component {
 
       // check paypal MID feature
       this.props
-        .fetchFeatureStatus(this.props.user.id, 'axis_enable_refunds')
+        .fetchFeatureStatus(this.props.user.id, 'merchant_enable_refunds')
         .then((fetchFeatureStatusResp) => {
           if (fetchFeatureStatusResp?.data?.status) {
             this.setState({
