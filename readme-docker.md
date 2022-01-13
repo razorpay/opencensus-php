@@ -54,13 +54,6 @@ Now Log out and log back in once after last step.
 ##### Install docker-compose
 [Install Docker Compose](https://docs.docker.com/compose/install/)
 
-##### Login to Dockerhub (soon to be deprecated)
-Ensure that you have a dockerhub user that is added to the Razorpay Organization.
- - Admin Contact: `nemo@razorpay.com`, @giri : `giridaran.manivannan@razorpay.com`
-
-Note: if you are building up the docker with dockerhub creds it might fail with unauthorized error as we are moving to harbor private registry.
-Please follow the steps in Login to Harbor below
-
 ##### Login to Harbor
 1. Go to harbor.razorpay.com and login via OIDC provider
 2. On the page, go to top right hand corner and click on your user profile
