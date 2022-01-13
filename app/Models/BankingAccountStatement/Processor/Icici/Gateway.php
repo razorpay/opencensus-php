@@ -446,10 +446,8 @@ class Gateway extends BaseProcessor
 
     protected function getStatementStartTime(array $lastTransaction)
     {
-        // BAS Details entity is created at the time of activation. Hence when we fetch statement of the merchant
-        // for the first time, starting fetching of statement from 2 months before activation. 2 months is decided
-        // assuming all accounts onboarded will be new accounts and not existing accounts.
-        $startTime = Carbon::createFromTimestamp($this->basDetails->getCreatedAt())->subMonths(2)->getTimestamp();
+        // In case there are no transactions for the merchant in our DB then we will fetch statement from start of financial year.
+        $startTime = $this->getStartOfFinancialYear($this->basDetails->getCreatedAt())->getTimestamp();
 
         if (empty($lastTransaction) === false)
         {

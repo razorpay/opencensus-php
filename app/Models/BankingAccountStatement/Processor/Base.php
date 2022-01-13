@@ -156,4 +156,17 @@ abstract class Base extends BaseCore
     {
         return $this->accountNumber;
     }
+
+    protected function getStartOfFinancialYear($timestamp)
+    {
+        $currentTime = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $year = $currentTime->year;
+        $month = $currentTime->month;
+
+        if($month < Carbon::APRIL){
+            $year = $year-1;
+        }
+
+        return Carbon::create($year, Carbon::APRIL , 1, 0, 0, 0, Timezone::IST);
+    }
 }

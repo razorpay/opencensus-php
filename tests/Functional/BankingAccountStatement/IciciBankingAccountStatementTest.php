@@ -193,6 +193,49 @@ class IciciBankingAccountStatementTest extends TestCase
         return $response;
     }
 
+    protected function getIciciDataResponseForExistingAccounts()
+    {
+        $response = [
+            "data"              => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "9,999.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
+                        "TRANSACTIONID" => "S74203578",
+                        "TXNDATE"       => "18-02-2021 13:20:51",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "9,998.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
+                        "TRANSACTIONID" => "S86758818",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "SATYANAR"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        return $response;
+    }
+
     protected function getIciciMalFormedDataResponse()
     {
         $response = [
@@ -1401,5 +1444,97 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(999500, $basAfter[3][BasEntity::BALANCE]);
 
         $this->assertEquals(4, count($basEntities));
+    }
+
+    public function testIciciAccountStatementFetchExistingAccounts()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testIciciAccountStatementCase1'];
+
+        $mockedResponse = $this->getIciciDataResponseForExistingAccounts();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $basEntities = $this->getDbEntities('banking_account_statement');
+
+        $this->assertCount(2, $basEntities);
+
+        $transactions = $mockedResponse[F::DATA][F::RECORD];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $txnEntity->toArray();
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => trim($txn[F::TRANSACTION_ID]),
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 100,
+            BasEntity::BALANCE               => 999800,
+            BasEntity::POSTED_DATE           => 1613689192,
+            BasEntity::TRANSACTION_DATE      => 1613673000,
+            BasEntity::DESCRIPTION           => trim($txn[F::REMARKS]),
+            BasEntity::CHANNEL               => 'icici',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->bankingBalance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+
+
     }
 }

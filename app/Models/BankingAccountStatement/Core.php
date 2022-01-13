@@ -440,6 +440,8 @@ class Core extends Base\Core
 
         $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
 
+        $this->checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, $previousClosingBalance);
+
         $basEntitiesToSave = [];
         $totalRecordCount = 0;
         $initialOffset = 0;
@@ -571,6 +573,46 @@ class Core extends Base\Core
             ];
 
             (new BASDetails\Core)->createOrUpdate($basDetailInput);
+        }
+    }
+
+    protected function checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, & $previousClosingBalance)
+    {
+        if (($lastBankTxn === null) and
+            (empty($bankTransactions) === false))
+        {
+            $firstTransaction = $bankTransactions[0];
+
+            switch ($firstTransaction[Entity::TYPE])
+            {
+                Case Type::DEBIT:
+                    $previousClosingBalance = $firstTransaction[Entity::BALANCE] + $firstTransaction[Entity::AMOUNT];
+                    break;
+
+                Case Type::CREDIT:
+                    $previousClosingBalance = $firstTransaction[Entity::BALANCE] - $firstTransaction[Entity::AMOUNT];
+                    break;
+
+                default:
+                    $previousClosingBalance = 0;
+            }
+
+            /** @var Merchant\Balance\Entity $balance */
+            $balance = $this->basDetails->balance;
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_UPDATE_BALANCE_FOR_EXISTING_ACCOUNT,
+                [
+                    Entity::MERCHANT_ID => $this->basDetails->getMerchantId(),
+                    'balance_id'        => $balance->getId(),
+                    'previous_balance'  => $balance->getBalance(),
+                    'new_balance'       => $previousClosingBalance,
+                ]
+            );
+
+            $balance->setBalance($previousClosingBalance);
+
+            $this->repo->balance->saveOrFail($balance);
         }
     }
 

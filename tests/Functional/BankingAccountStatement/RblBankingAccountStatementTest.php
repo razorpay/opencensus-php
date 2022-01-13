@@ -905,6 +905,126 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertArraySubset($txnExpected, $txnActual, true);
     }
 
+    public function testRBLAccountStatementFetchExistingAccounts()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH          => 'on',
+                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $responseCount = 0;
+
+        $mock->shouldReceive('sendRawRequest')
+             ->andReturnUsing(function(array $request) use (& $responseCount){
+
+                 $responseCount++;
+
+                 $requestData = json_decode($request['content'], true);
+
+                 if ((array_key_exists('from_date',$requestData['entities']['attempt']) === true) and
+                     ($responseCount === 1))
+                 {
+                     $this->assertEquals("01-04-2017", $requestData['entities']['attempt']['from_date']);
+                     $mockRblResponse =  $this->getRblDataResponseForExistingAccounts();
+
+                     return json_encode($this->convertRblV1ResponseToV2Response($mockRblResponse));
+                 }
+
+                 $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                 $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                 return json_encode($mockRblResponse);
+             });
+
+        $this->app->instance('mozart', $mock);
+
+        $basDetailsBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basDetailsBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                              $basDetailsBeforeTest[BasDetails\Entity::ID],
+                              [BasDetails\Entity::CREATED_AT => 1516000000]);
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblAccountStatementV2ApiCase1'];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS => 1]);
+
+        $this->startTest();
+
+        $basEntities = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertEquals(2, count($basEntities));
+
+        $basActual = $basEntities[1]->toArray();
+
+        $externalActual = $this->getDbEntityById(EntityConstants::EXTERNAL, $basActual[BasEntity::ENTITY_ID])->toArray();
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $txnActual = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId)->toArray();
+
+        $basDetailsAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basDetailsAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => 'S807068',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10095,
+            BasEntity::BALANCE               => 11355,
+            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::TRANSACTION_DATE      => 1451932200,
+            BasEntity::DESCRIPTION           => '123456-Z',
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => EntityConstants::EXTERNAL,
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
     /**
      * Case where the no more data is received from RBL
      **/
@@ -3780,6 +3900,81 @@ class RblBankingAccountStatementTest extends TestCase
                                     'instrumentId' => '',
                                     'txnAmt' => [
                                         'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '214.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2016-01-05T01:36:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.95',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => '123456-Z',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '113.55'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807068',
+                                'txnSrlNo' => '  49',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblDataResponseForExistingAccounts()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '11.50',
                                         'currencyCode' => 'INR'
                                     ],
                                     'txnDate' => '2015-12-29T00:00:00.000',

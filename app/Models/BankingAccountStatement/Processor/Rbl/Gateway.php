@@ -645,9 +645,8 @@ class Gateway extends BaseProcessor
 
         $statementEndTime = Carbon::now()->getTimestamp();
 
-        // created at of bas details table will be used in case of newly onboarded merchant.
-        // In such a case fetching statement from 2 months before to ensure we get all data.
-        $statementStartTime = $this->basDetails->getCreatedAt() - 60 * $secondsPerDay;
+        // In case there are no transactions for the merchant in our DB then we will fetch statement from start of financial year.
+        $statementStartTime = $this->getStartOfFinancialYear($this->basDetails->getCreatedAt())->getTimestamp();
 
         if (array_key_exists(Fields::TO_DATE, $request[Fields::ATTEMPT]) === true)
         {
@@ -818,8 +817,8 @@ class Gateway extends BaseProcessor
         // TODO: Might want to use the transactions tables for this instead of BAS table.
         $bankTransaction = $this->getLastBankTransaction();
 
-        // TODO: fetch bank opening time from BankingAccount array
-        $startTime = 1;
+        // In case there are no transactions for the merchant in our DB then we will fetch statement from start of financial year.
+        $startTime = $this->getStartOfFinancialYear($this->basDetails->getCreatedAt())->getTimestamp();
 
         $secondsInDay = Carbon::SECONDS_PER_MINUTE * Carbon::MINUTES_PER_HOUR * Carbon::HOURS_PER_DAY;
 
