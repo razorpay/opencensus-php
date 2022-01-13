@@ -3630,9 +3630,11 @@ class Core extends Base\Core
                 RazorxTreatment::AUTO_KYC_COI);
 
             $this->trace->info(TraceCode::COI_EXPERIMENT,[
-                "merchantId" => $merchantDetails->getMerchantId(),
-                "isExperimentEnabledForCOI" => $isExperimentEnabledForCOI,
-                "type" => $type,
+                "merchantId"                 => $merchantDetails->getMerchantId(),
+                "isExperimentEnabledForCOI"  => $isExperimentEnabledForCOI,
+                "type"                       => $type,
+                "merchant_activation_status" => $merchantDetails->getActivationStatus(),
+                "bizzType"                   => $businessType,
             ]);
 
             if($isExperimentEnabledForCOI === false)
