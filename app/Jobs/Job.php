@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Constants\Mode;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -133,8 +134,10 @@ class Job implements ShouldQueue
 
     public function handle()
     {
+        $mode = $this->mode ?? MODE::LIVE;
+
         $attrs = ['jobName'         =>  $this->jobName,
-                    'mode'          =>  $this->mode,
+                    'mode'          =>  $mode,
                     'originProduct' =>  $this->originProduct,
                     'taskId'        =>  $this->taskId
                 ];
