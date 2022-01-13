@@ -91,6 +91,12 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateHdfcEcmsVirtualAccount()
     {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SET_VA_DEFAULT_EXPIRY,
+            'entity_id' => '6dLbNSpv5XbCOG',
+            'entity_type' => 'org',
+        ]);
+
         $key = $this->fixtures->create('key', ['merchant_id' => '10000000000035']);
 
         $order = $this->fixtures->create('order', ['merchant_id' => '10000000000035']);

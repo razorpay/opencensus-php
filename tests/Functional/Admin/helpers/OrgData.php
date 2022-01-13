@@ -589,4 +589,19 @@ return [
             ],
         ],
     ],
+    'testFeatureAddVAExpiry' => [
+        'request' => [
+            'url' => '/orgs/hostname/dashboard.razorpay.com',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'set_va_default_expiry'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

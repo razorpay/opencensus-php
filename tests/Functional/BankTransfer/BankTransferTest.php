@@ -2164,7 +2164,9 @@ class BankTransferTest extends TestCase
 
     public function testHdfcEcmsBankTransferCallbackAlreadyProcessed()
     {
+
         $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -2175,6 +2177,26 @@ class BankTransferTest extends TestCase
         $request = $testData['request'];
 
         $this->makeRequestAndGetContent($request);
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackExpiry()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SET_VA_DEFAULT_EXPIRY,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
 
         $this->startTest($testData);
     }

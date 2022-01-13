@@ -345,7 +345,7 @@ class OrgTest extends TestCase
         $testData['request']['content']['default_pricing_plan_id'] = '1hDYlICobzOCYt';
 
         $this->makeRequestAndCatchException(
-            function() use ($testData)
+            function () use ($testData)
             {
                 $this->runRequestResponseFlow($testData);
             },
@@ -359,5 +359,20 @@ class OrgTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertEquals('1hDYlICxbxOCYx', $response['default_pricing_plan_id']);
+    }
+
+
+    public function testFeatureAddVAExpiry()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->fixtures->create('feature', [
+            'name' => Constants::SET_VA_DEFAULT_EXPIRY,
+            'entity_id' => "100000razorpay",
+            'entity_type' => 'org',
+        ]);
+
+        $result = $this->startTest();
+        $this->assertEquals(['set_va_default_expiry'], $result['features']);
     }
 }

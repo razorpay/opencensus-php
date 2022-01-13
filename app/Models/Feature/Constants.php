@@ -1067,6 +1067,10 @@ class Constants
      */
     const ALLOW_COMPLETE_ERROR_DESC = 'allow_complete_error_desc';
 
+    /**
+     * Feature flag to add virtual account expiry
+     */
+    const SET_VA_DEFAULT_EXPIRY = 'set_va_default_expiry';
     // Feature to take mutex lock on linked account ID before transfer processing.
     const TRANSFER_PROCESS_LA_MUTEX = 'transfer_process_la_mutex';
 
@@ -1490,6 +1494,7 @@ class Constants
         self::NO_DOC_ONBOARDING               => true,
         self::SUBM_NO_DOC_ONBOARDING           => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
+        self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
     ];
     // Entity type constants

@@ -148,7 +148,7 @@ class Service extends Base\Service
 
     private function addCloseBy(&$createArray, $input)
     {
-        if ($this->merchant->getOrgId() === Admin\Org\Entity::HDFC_ORG_ID)
+        if ($this->merchant->org->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY) === true)
         {
             $expirySetting = $this->getMerchantDefaultVirtualAccountExpiry();
 
