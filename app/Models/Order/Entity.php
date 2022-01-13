@@ -290,6 +290,7 @@ class Entity extends Base\PublicEntity
         // self::DISCOUNT,
         self::TAX_INVOICE,
         self::ORDER_META_1CC,
+        self::TRANSFERS,
     ];
 
     protected $dates = [
@@ -870,6 +871,14 @@ class Entity extends Base\PublicEntity
         }
 
         unset($array[Type::TAX_INVOICE]);
+    }
+
+    public function setPublicTransfersAttribute(array & $array)
+    {
+        if (isset($array[self::TRANSFERS]) === false)
+        {
+            unset($array[self::TRANSFERS]);
+        }
     }
 
     public function setPublicOrderMeta1ccAttribute(array & $array)
