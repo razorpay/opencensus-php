@@ -2772,7 +2772,8 @@ class Repository extends Base\Repository
         $startTime = millitime();
 
         // check number of successful payments in last 12 months by contact.
-        $userPastPayments = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $userPastPayments = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(1500) */ `id`"))
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::CONTACT, $contact)
                     ->where(Entity::CREATED_AT, '>=', $minCreatedAt)
