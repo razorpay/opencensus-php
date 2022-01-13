@@ -12,6 +12,7 @@ Homestead.json
 !environment/.env.beta
 !environment/.env.stage
 !environment/.env.perf
+!environment/.env.perf1
 !environment/.env.func
 !environment/.env.sample
 !environment/.env.docker

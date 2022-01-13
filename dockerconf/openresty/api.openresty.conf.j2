@@ -24,7 +24,7 @@ log_format openresty-api escape=json
 server {
     listen 8080;
 
-    {% set qa = ['perf', 'func','automation','bvt'] %}
+    {% set qa = ['perf', perf1, 'func','automation','bvt'] %}
     {% if env in qa  %}
         server_name {{ env }}-api.stage.razorpay.in {{ env }}-invoices.stage.razorpay.in;
     {% elif env == 'echo' %}

@@ -2,7 +2,7 @@
   # {{ ansible_managed }}
   ServerAdmin serverlogs@razorpay.com
 
-  {% set qa = ['perf', 'func','automation','bvt','ephemeral'] %}
+  {% set qa = ['perf', perf1, 'func','automation','bvt','ephemeral'] %}
   {% if env in qa  %}
   ServerName {{ env }}-api.razorpay.in
   ServerAlias {{ env }}-invoices.razorpay.in
