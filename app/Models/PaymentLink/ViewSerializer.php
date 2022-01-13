@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Tnc;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
@@ -137,6 +138,13 @@ class ViewSerializer extends Base\Core
 
         $supportDetails = $this->getMerchantSupportDetails();
 
+        $merchantDetails = $this->merchant->merchantDetail ?? null;
+
+        $merchantTncDetails = $merchantDetails === null ? null : $merchantDetails->tnc;
+
+        $merchantTncLink = $merchantTncDetails === null ? null :
+                        (new Tnc\Core)->getMerchantTncLink($this->merchant, $merchantTncDetails['id']);
+
         return [
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
@@ -150,6 +158,7 @@ class ViewSerializer extends Base\Core
             'email_optional'   => $emailOptional,
             'support_email'    => $supportDetails['support_email'],
             'support_mobile'   => $supportDetails['support_mobile'],
+            'tnc_link'         => $merchantTncLink,
         ];
     }
 
