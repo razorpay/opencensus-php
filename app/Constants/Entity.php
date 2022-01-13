@@ -521,6 +521,8 @@ class Entity
     const NBPLUS_EMANDATE_REGISTRATION = 'payments_nbplus.emandate_registration';
     const NBPLUS_EMANDATE_DEBIT        = 'payments_nbplus.emandate_debit';
     const PAYMENTS_NBPLUS_APP_GATEWAY  = 'payments_nbplus.app_gateway';
+    const PAYMENTS_NBPLUS_WALLET_TRANSACTION       = 'payments_nbplus.wallet_transaction';
+    const PAYMENTS_NBPLUS_WALLET_AUTHORIZATION     = 'payments_nbplus.wallet_authorization';
 
     const PAYMENTS_NBPLUS_CARDLESS_EMI_GATEWAY     = 'payments_nbplus.cardless_emi_gateway';
 
@@ -1263,6 +1265,9 @@ class Entity
         self::PAYMENTS_NBPLUS_CARDLESS_EMI_GATEWAY  => \RZP\Services\NbPlus\CardlessEmi::class,
         self::PAYMENTS_NBPLUS_APP_GATEWAY   => \RZP\Services\NbPlus\AppMethod::class,
         self::PAYMENTS_NBPLUS_PAYLATER_GATEWAY      => \RZP\Services\NbPlus\Paylater::class,
+        self::PAYMENTS_NBPLUS_WALLET_TRANSACTION          => \RZP\Services\NbPlus\Wallet::class,
+        self::PAYMENTS_NBPLUS_WALLET_AUTHORIZATION        => \RZP\Services\NbPlus\Wallet::class,
+
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
         self::SETTINGS                      => \RZP\Models\Settings\Service::class,
 

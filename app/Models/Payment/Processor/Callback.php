@@ -608,12 +608,18 @@ trait Callback
             // Send a request to topup if balance is insufficient
             $this->callGatewayFunction(Payment\Action::CHECK_BALANCE, $input);
         }
-        else if ((isset($input['gateway']['type'])) and
+        else if ((Payment\Gateway::canRunOtpFlowViaNbPlus($input['payment'])) and
+            (isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp') and
-            $input['payment'][Payment\Entity::CPS_ROUTE] !== Payment\Entity::CARD_PAYMENT_SERVICE and
-            $input['payment'][Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE)
+            $input['payment'][Payment\Entity::CPS_ROUTE] !== Payment\Entity::CARD_PAYMENT_SERVICE)
         {
+            $this->validateCallbackInputIfApplicable($input);
+
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+
+            $this->postPaymentOtpCallbackProcessing($input, $data);
+
+            $this->callGatewayFunction(Payment\Action::AUTHORIZE, $input);
         }
         else
         {

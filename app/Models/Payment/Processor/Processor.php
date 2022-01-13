@@ -1948,10 +1948,11 @@ class Processor
             Payment\Method::APP, Payment\Method::PAYLATER,
         ];
 
-        if ((in_array($method, $cpsEnabledMethods, true) === false) or
-            ($payment->isGooglePayCard() === true) or
-            (empty($payment->getGooglePayMethods()) === false) or
-            ($payment->isAppCred() === true))
+        if (((in_array($method, $cpsEnabledMethods, true) === false) or
+                ($payment->isGooglePayCard() === true) or
+                (empty($payment->getGooglePayMethods()) === false) or
+                ($payment->isAppCred() === true)) and
+            ($payment->getWallet() !== Wallet::FREECHARGE))
         {
             $payment->disableCpsRoute();
 

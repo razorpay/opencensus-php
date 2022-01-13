@@ -37,6 +37,7 @@ class Service
         Payment\Method::CARDLESS_EMI,
         Payment\Method::APP,
         Payment\Method::PAYLATER,
+        Payment\Method::WALLET,
     ];
 
     protected $baseUrl;
@@ -264,6 +265,8 @@ class Service
     {
         unset($response[Response::RESPONSE][Response::DATA][Response::ACCOUNT_INFO]);
 
+        unset($response[Response::RESPONSE][Response::TOKEN]);
+
         $this->trace->info(TraceCode::NBPLUS_PAYMENT_SERVICE_RESPONSE, $response ?? []);
     }
 
@@ -458,6 +461,9 @@ class Service
                 break;
             case PAYMENT\METHOD::PAYLATER:
                 $class = new Paylater();
+                break;
+            case PAYMENT\METHOD::WALLET:
+                $class = new Wallet();
                 break;
             default:
                 throw new Exception\LogicException('Should not have reached here');

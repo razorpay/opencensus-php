@@ -34,7 +34,10 @@ trait OtpResend
 
             $this->prePaymentOtpResendProcessing($payment, $input, $gatewayInput);
 
-            if ($this->canRunOtpPaymentFlow($payment) === true)
+            if (
+                $this->canRunOtpPaymentFlow($payment) === true or
+                Payment\Gateway::canRunOtpFlowViaNbPlus($payment) //for all the nbplus supported OPT flow
+            )
             {
                 $data = $this->runOtpResendFlow($gatewayInput, $payment);
 

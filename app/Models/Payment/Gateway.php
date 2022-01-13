@@ -4097,6 +4097,7 @@ class Gateway
             self::NETBANKING_UCO,
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
+            self::WALLET_FREECHARGE,
         ];
 
         $acquirerGateways = [
@@ -4117,6 +4118,15 @@ class Gateway
         }
 
         return (in_array($gateway, $gateways, true));
+    }
+
+    public static function canRunOtpFlowViaNbPlus($payment)
+    {
+        $gateways = [
+            self::WALLET_FREECHARGE
+        ];
+
+        return ((in_array($payment[Payment\Entity::GATEWAY], $gateways, true)) and ($payment[Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE));
     }
 
     /**

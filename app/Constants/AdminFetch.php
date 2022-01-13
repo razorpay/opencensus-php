@@ -602,6 +602,14 @@ class AdminFetch
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
             ],
 
+            Entity::PAYMENTS_NBPLUS_WALLET_TRANSACTION => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+            ],
+
+            Entity::PAYMENTS_NBPLUS_WALLET_AUTHORIZATION => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::NBPLUS_EMANDATE_REGISTRATION => [],
 
             Entity::NBPLUS_EMANDATE_DEBIT => [],

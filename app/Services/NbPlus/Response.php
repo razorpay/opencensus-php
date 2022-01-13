@@ -7,6 +7,7 @@ class Response
     const RESPONSE = 'response';
     const ERROR    = 'error';
     const DATA     = 'data';
+    const TOKEN    = 'token';
 
     // account
     const ACCOUNT_NUMBER = 'account_number';
@@ -23,6 +24,9 @@ class Response
     const STATUS                   = 'status';
     const ACCOUNT_INFO             = 'account_info';
     const PAYMENT_ID               = 'payment_id';
+    const ACCESS_TOKEN             = 'access_token';
+    CONST REFRESH_TOKEN            = 'refresh_token';
+    CONST ACCESS_TOKEN_EXPIRY      = 'access_token_expiry';
 
     // Emandate Response Fields
     const RECURRING_STATUS         = 'recurring_status';

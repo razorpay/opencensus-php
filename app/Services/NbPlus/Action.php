@@ -17,6 +17,7 @@ class Action
     const OTP_GENERATE           = 'otp_generate';
     const CALLBACK_OTP_SUBMIT    = 'callback_otp_submit';
     const OTP_RESEND             = 'otp_resend';
+    const TOPUP                  = 'topup';
 
     const SUPPORTED_ACTIONS = [
         self::AUTHORIZE,
@@ -31,5 +32,6 @@ class Action
         self::OTP_GENERATE,
         self::OTP_RESEND,
         self::CALLBACK_OTP_SUBMIT,
+        self::TOPUP,
     ];
 }

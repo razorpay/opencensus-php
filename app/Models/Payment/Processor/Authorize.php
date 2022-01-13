@@ -5819,7 +5819,7 @@ trait Authorize
 
                 return $this->getIntentPaymentCreatedResponse($request, $payment);
 
-            case $this->canRunOtpPaymentFlow($payment):
+            case $this->canRunOtpPaymentFlow($payment) or Payment\Gateway::canRunOtpFlowViaNbPlus($payment):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
 
@@ -7407,6 +7407,12 @@ trait Authorize
             (($wallet === PayLater::ICICI) or ($wallet === Paylater::LAZYPAY)))
         {
             return true;
+        }
+
+        //When cps is 3 and nbplus can run OTP flow then we run OTP flow on nbplus with action name authorize.
+        if(Payment\Gateway::canRunOtpFlowViaNbPlus($payment))
+        {
+            return false;
         }
 
         // Only wallets have otp flow currently.
