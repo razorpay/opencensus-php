@@ -874,6 +874,25 @@ class RefundTest extends TestCase
         $this->startTest($payment['id'], 100);
     }
 
+    public function testRefundOnMissingCapturedPaymentTransaction()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $paymentTransaction = $this->getLastEntity('transaction', ['entity_id' => substr($payment['id'], 4)]);
+
+        $this->fixtures->payment->edit($payment['id'], ['transaction_id' => null]);
+        $this->fixtures->transaction->edit($paymentTransaction['id'], ['entity_id' => 'boohooboohooaa']);
+
+        // Now handling this before build refund.
+        $this->expectException('RZP\Exception\LogicException');
+
+        $response =  $this->refund(
+            [
+                'payment_id' => $payment['id'],
+            ]);
+    }
+
     public function testRefundByMerchantOnAuthorizedPayment()
     {
         $payment = $this->defaultAuthPayment();
@@ -1614,8 +1633,8 @@ class RefundTest extends TestCase
     {
         $this->markTestSkipped('Failing occasionally - to be fixed');
         // Case where refunded payment has no entry in hdfc
-        // 
-        // Refunds flow has changed. 
+        //
+        // Refunds flow has changed.
         // Before removing skip test, make sure Razorx experiment is turned ON.
 
         $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
@@ -1669,7 +1688,7 @@ class RefundTest extends TestCase
     public function testCreateMissingRefundTransaction()
     {
         $this->markTestSkipped('Transactions are getting created now');
-        // Refunds flow has changed. 
+        // Refunds flow has changed.
         // Before removing skip test, make sure Razorx experiment is turned ON.
 
         $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
@@ -7333,7 +7352,7 @@ class RefundTest extends TestCase
         $input = ['amount' => $payment['amount']];
 
         $refund = $this->refundAuthorizedPayment($payment['id'], $input);
-        $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+        $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport
 
         // $payment = $this->getLastEntity('payment', true);
         $payment = $this->getDbEntityById('payment', $payment['id']);
@@ -7369,7 +7388,7 @@ class RefundTest extends TestCase
         $input = ['amount' => $payment['amount']];
 
         $refund = $this->refundAuthorizedPayment($payment['id'], $input, true);
-        $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport 
+        $this->assertPassportKeyExists('consumer.id'); // just check for presence of passport
 
         // $payment = $this->getLastEntity('payment', true);
         $payment = $this->getDbEntityById('payment', $payment['id']);

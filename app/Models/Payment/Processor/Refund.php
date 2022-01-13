@@ -1025,17 +1025,28 @@ trait Refund
         }
 
         //
-        // We cannot have gateway_captured check here because
-        // if payment transaction is not created, we cannot
-        // create refund transaction. The ledger flow will not
-        // be right if we do that. We should create a refund
-        // transaction ONLY after payment transaction is created
-        // to ensure the ledger flow is correct.
+        // We should create a refund transaction ONLY after payment transaction is created
+        // to ensure the ledger flow is correct. If it's a non-captured payment and does not
+        // have transaction, then we will skip refund transaction creation. Captured payments
+        // should ideally have transactions so we will block refund creation in such cases.
         //
-        if ($payment->getTransactionId() === null)
-        {
-            return null;
-        }
+            if ($payment->getTransactionId() === null)
+            {
+                if ($payment->hasBeenCaptured() === false)
+                {
+                    return null;
+                }
+                else
+                {
+                    throw new Exception\LogicException(
+                        'Payment transaction should have been present',
+                        null,
+                        [
+                            'payment_id'    => $payment->getId(),
+                            'refund_id'     => $refund->getId(),
+                        ]);
+                }
+            }
 
         $txnCore = new Transaction\Core;
 
