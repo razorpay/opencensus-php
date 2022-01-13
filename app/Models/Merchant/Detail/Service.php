@@ -1780,15 +1780,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS, $input);
 
-        $eventName = $input['event_name'] ?? '';
-
-        $validEvents = ['install', 'Sign Up Create Account Result'];
-
-        if(empty($eventName) or in_array($eventName, $validEvents, true) === false)
-        {
-            return;
-        }
-
         $appsflyerId = $input['appsflyer_id'] ?? '';
 
         if(empty($appsflyerId) === true)
@@ -1803,6 +1794,18 @@ class Service extends Base\Service
 
         $this->app['rzp.mode'] = Mode::LIVE;
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
+
+        $attributionDetails = $this->repo->app_attribution_detail->fetchByAppsflyerId($appsflyerId);
+
+        if(empty($attributionDetails) === false)
+        {
+            $this->trace->info(TraceCode::APPSFLYER_ATTRIBUTION_DETAILS_ERROR, [
+                'data'  => $input,
+                'error' => 'attribution details already present'
+            ]);
+
+            return;
+        }
 
         $userDeviceDetails = $this->repo->user_device_detail->fetchByAppsflyerId($appsflyerId);
 
