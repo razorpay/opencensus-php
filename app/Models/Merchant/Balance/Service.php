@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Models\Counter;
 use RZP\Trace\TraceCode;

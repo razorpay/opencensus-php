@@ -16,6 +16,7 @@ use RZP\Exception;
 use RZP\Http\Edge\Metric;
 use RZP\Http\RequestContextV2;
 use RZP\Http\Route;
+use RZP\Models\Application\Entity;
 use RZP\Models\Key;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
@@ -2015,6 +2016,15 @@ class BasicAuth
             ((new Feature\Service())->checkFeatureEnabled(Feature\Constants::APPLICATION, $this->getOAuthApplicationId(), Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH))['status']);
     }
 
+    public function getSourceChannel()
+    {
+        if( $this->isSlackApp() === true)
+        {
+            return Entity::SLACK_APP;
+        }
+
+        return null;
+    }
 
     public function isProxyOrPrivilegeAuth()
     {
@@ -2744,6 +2754,27 @@ class BasicAuth
             {
                 $this->userRole = (new UserService)->syncMerchantUserOnProducts($merchantId);
             }
+        }
+    }
+
+    public function setUserRoleWithUserIdAndMerchantId(string $merchantId, string $userId, $product = Product::PRIMARY)
+    {
+        if (empty($merchantId) === true)
+        {
+            return;
+        }
+
+        // ToDo:: Once oauth tokens have product level segregation this can be removed and product can be derived from token.
+        if ($this->isSlackApp() === true)
+        {
+            $product = Product::BANKING;
+        }
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($merchantId, $userId, null, $product);
+
+        if (empty($userMapping) === false)
+        {
+            $this->userRole = $userMapping->pivot->role;
         }
     }
 

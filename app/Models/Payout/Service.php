@@ -4,6 +4,8 @@ namespace RZP\Models\Payout;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Product;
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Error\Error;
@@ -743,6 +745,9 @@ class Service extends Base\Service
             }
         }
 
+        //tracking slack app related events
+        $this->trackPayoutsFetchEvent($input, $payout);
+
         return $payout->toArrayPublic();
     }
 
@@ -796,6 +801,9 @@ class Service extends Base\Service
                     'useMasterConnection' => $useMasterConnection
                 ]);
         }
+
+        //tracking slack app related events
+        $this->trackPayoutsFetchEvent($input);
 
         return $payoutsArr;
     }
@@ -2435,9 +2443,37 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function trackPayoutsFetchEvent(array $input, $payout = null)
+    {
+        $merchantId = $this->merchant->getId();
+        $user   = $this->auth->getUser();
+        $role   = $this->auth->getUserRole();;
+
+        $userId = null;
+        //For outh user will be there for normal private auth user won't be there
+        if (isset($user) === true )
+        {
+            $userId        = $user->getId();
+        }
+
+        //tracking slack app related events
+        $eventAttribute = [
+            'merchant_id'   => $merchantId,
+            'request'       => $this->app['api.route']->getCurrentRouteName(),
+            'user_id'       => $userId,
+            'user_role'     => $role,
+            'channel'       => $this->auth->getSourceChannel(),
+            'filters'       => $input
+        ];
+
+        $this->app['diag']->trackPayoutsFetchEvent(EventCode::PAYOUT_FETCH_REQUESTS,
+            $payout,
+            null,
+            $eventAttribute);
+    }
+  
     public function getPayoutStatusReasonMap(): array
     {
         return StatusReasonMap::$payoutStatusToReasonMap;
     }
-
 }

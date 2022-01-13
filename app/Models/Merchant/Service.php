@@ -37,6 +37,7 @@ use RZP\Base\JitValidator;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Application;
 use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
@@ -1442,6 +1443,9 @@ class Service extends Base\Service
                 $b[Balance\Entity::ACCOUNT_NUMBER] = mask_except_last4($b[Balance\Entity::ACCOUNT_NUMBER]);
             });
         }
+
+        // Tracking balance fetch requests - currently for slack app
+        $this->trackBalanceEvent( $input);
 
         return $balance;
     }
@@ -8669,5 +8673,33 @@ class Service extends Base\Service
         $response['api_integration'] = $this->repo->entity_origin->isOriginApplicationPresentForPartner($partnerId);
 
         return $response;
+    }
+
+    public function trackBalanceEvent($input)
+    {
+        $merchantId = $this->merchant->getId();
+        $user   = $this->auth->getUser();
+        $role   = $this->auth->getUserRole();;
+
+        $userId = null;
+        //For outh user will be there for normal private auth user won't be there
+        if (isset($user) === true )
+        {
+            $userId        = $user->getId();
+        }
+
+        $eventAttribute = [
+            'merchant_id'   => $merchantId,
+            'request'       => 'balance_fetch_multiple',
+            'user_id'       => $userId,
+            'user_role'     => $role,
+            'channel'       => $this->auth->getSourceChannel(),
+            'filters'       => $input
+        ];
+
+        $this->app['diag']->trackBalanceEvents(EventCode::BALANCE_FETCH_REQUESTS,
+            null,
+            null,
+            $eventAttribute);
     }
 }

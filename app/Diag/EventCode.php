@@ -988,4 +988,19 @@ class EventCode
         'group'   => 'nbplus',
         'name'    => 'payment.nbplus.request.processed'
     ];
+
+    const PENDING_PAYOUT_APPROVE_REJECT_ACTION = [
+        'group'   => 'external_payouts',
+        'name'    => 'external_payouts.approve.reject.request'
+    ];
+
+    const PAYOUT_FETCH_REQUESTS = [
+        'group'   => 'external_payouts',
+        'name'    => 'external_payouts.fetch.request'
+    ];
+
+    const BALANCE_FETCH_REQUESTS = [
+        'group'   => 'external_balance',
+        'name'    => 'external_balance.fetch.request'
+    ];
 }

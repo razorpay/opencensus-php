@@ -5,9 +5,11 @@ namespace RZP\Models\Payout;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -1488,6 +1490,26 @@ class Core extends Base\Core
                         }
 
                         $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+                        $e = null;
+
+                        if((empty($actionChecker) === true))
+                        {
+                            $e = new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                                null,
+                                [
+                                    'create_params'       => $actionCheckerCreateParams,
+                                    'payout_id'           => $payout->getId(),
+                                    'workflows_action_id' => $workflowAction->getId(),
+                                    'action'              => $action,
+                                ]);
+                        }
+
+                        //tracking slack app related events
+                        $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                            $payout,
+                            $e);
 
                         if ((empty($actionChecker) === true) and
                             ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
@@ -3767,10 +3789,21 @@ class Core extends Base\Core
             }
 
             // Dashboard user actions
-            return $this->workflowService->createActionOnEntity($payout, $input);
+            $actionResponse =  $this->workflowService->createActionOnEntity($payout, $input);
+
+            //tracking slack app related events
+            $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                $payout);
+
+            return $actionResponse;
         }
         catch (\Throwable $e)
         {
+            //tracking slack app related events
+            $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                $payout,
+                $e);
+
             $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
 
             $this->trace->error(TraceCode::PAYOUT_WORKFLOW_SERVICE_ACTION_CREATE_FAILED, [
@@ -3805,10 +3838,21 @@ class Core extends Base\Core
         try
         {
             // Dashboard user actions
-            return $this->workflowService->createActionOnEntity($payout, $input);
+            $actionResponse =  $this->workflowService->createActionOnEntity($payout, $input);
+
+            //tracking slack app related events
+            $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                $payout);
+
+            return $actionResponse;
         }
         catch (\Throwable $e)
         {
+            //tracking slack app related events
+            $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                $payout,
+                $e);
+
             $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
 
             $this->trace->error(TraceCode::PAYOUT_WORKFLOW_SERVICE_ACTION_CREATE_FAILED, [
@@ -4692,5 +4736,41 @@ class Core extends Base\Core
             'entity' => $payout->getPublicId(),
             'txn'    => $txn->getPublicId(),
         ];
+    }
+
+    public function trackPayoutEvent(array $eventCode, $payout = null, $error = null)
+    {
+        $auth       = $this->app['basicauth'];
+        $merchantId = null;
+
+        //In case of admin auth merchnat won't be set
+        if (isset($this->merchant) === false)
+        {
+            return;
+        }
+
+        $merchantId = $this->merchant->getId();
+        $user   = $auth->getUser();
+        $role   = $auth->getUserRole();;
+
+        $userId = null;
+        //For outh user will be there for normal private auth user won't be there
+        if (isset($user) === true )
+        {
+            $userId        = $user->getId();
+        }
+
+        $eventAttribute = [
+            'merchant_id'   => $merchantId,
+            'request'       => $this->app['api.route']->getCurrentRouteName(),
+            'user_id'       => $userId,
+            'user_role'     => $role,
+            'channel'       => $auth->getSourceChannel()
+        ];
+
+        $this->app['diag']->trackPayoutApproveRejectActionEvents($eventCode,
+            $payout,
+            $error,
+            $eventAttribute);
     }
 }

@@ -390,6 +390,7 @@ class OAuth
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
         $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION_ID]);
+        $this->ba->setUserRoleWithUserIdAndMerchantId($merchantId, $userId);
 
         //Fetches partnerMerchantId from applicationId and adds to ba.
         $application = (new Repository())->findOrFail($response[OAuthToken::APPLICATION_ID]);

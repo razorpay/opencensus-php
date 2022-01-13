@@ -704,6 +704,31 @@ return [
         ],
     ],
 
+    'testBalancesWithBearerAuth' => [
+        'request' => [
+            'method'    => 'GET',
+            'content'   => [
+                'type' => 'banking'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' =>
+                    [
+                        [
+                            'type'           => 'banking',
+                            'account_type'   => 'shared',
+                            'balance'        => 10000000,
+                            'currency'       => 'INR',
+                            'account_number' => 'XXXXXXXXXXXX6905',
+                        ],
+                    ],
+            ]
+        ]
+    ],
+
     'testCreatePayoutWithOtp' => [
         'request'  => [
             'method'  => 'POST',
@@ -15607,6 +15632,9 @@ return [
 
     'testGetPayoutsWithBearerAuth' => [
         'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'method'  => 'GET',
             'url'     => '/payouts',
             'content' => [

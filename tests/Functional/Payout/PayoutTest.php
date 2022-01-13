@@ -12,6 +12,7 @@ use Mockery;
 use Requests_Response;
 
 use Carbon\Carbon;
+use RZP\Services\DiagClient;
 use RZP\Services\Raven;
 use RZP\Jobs\Transactions;
 use RZP\Exception\RuntimeException;
@@ -2526,6 +2527,55 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
     }
 
+    public function testBalancesWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id'     => $client->application_id,
+            'entity_type'   => 'application',
+            'name'          => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'       => 'owner'
+        ], 'live');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/balances';
+
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 12000]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $expectedProperties = [
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request' => 'balance_fetch_multiple',
+                'user_id' => '20000000000000',
+                'user_role' => 'owner',
+                'channel' => 'slack_app',
+                'filters' => [
+                    'type' => 'banking',
+                ]
+            ]
+        ];
+
+        $this->verifyBalanceEvent($expectedProperties);
+
+        $this->startTest();
+    }
+
     public function testApprovePayoutWithBearerAuth()
     {
         $this->mockLedgerSns(0);
@@ -2537,9 +2587,9 @@ class PayoutTest extends OAuthTestCase
         $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
 
         $this->fixtures->on('live')->create('feature', [
-            'entity_id' => $client->application_id,
-            'entity_type' => 'application',
-            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+            'entity_id'     => $client->application_id,
+            'entity_type'   => 'application',
+            'name'          => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
 
@@ -2555,6 +2605,27 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         $this->ba->oauthBearerAuth($accessToken);
+
+        $expectedProperties = [
+            'payout' => [
+                'status' => 'pending',
+                'created_by' => 'api_user',
+            ],
+            'merchant' => [
+                'id' => '10000000000000',
+                'name' => 'Test Merchant',
+            ],
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request' => 'payout_approve',
+                'user_id' => '20000000000000',
+                'user_role' => 'owner',
+                'channel' => 'slack_app',
+            ]
+        ];
+
+        $this->verifyPayoutsEvent($expectedProperties);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
@@ -2596,6 +2667,27 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
 
         $this->ba->oauthBearerAuth($accessToken);
+
+        $expectedProperties = [
+            'payout' => [
+                'status' => 'pending',
+                'created_by' => 'api_user',
+            ],
+            'merchant' => [
+                'id' => '10000000000000',
+                'name' => 'Test Merchant',
+            ],
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request' => 'payout_reject',
+                'user_id' => '20000000000000',
+                'user_role' => 'owner',
+                'channel' => 'slack_app',
+            ]
+        ];
+
+        $this->verifyPayoutsEvent($expectedProperties);
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
@@ -2639,8 +2731,29 @@ class PayoutTest extends OAuthTestCase
             'user_id'     => '20000000000000',
             'merchant_id' => '10000000000000',
             'product'     => 'banking',
-            'role'       => 'owner'
+            'role'        => 'owner'
         ], 'live');
+
+        $expectedProperties = [
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request' => 'payout_fetch_multiple',
+                'user_id' => '20000000000000',
+                'user_role' => 'owner',
+                'channel' => 'slack_app',
+                'filters' => [
+                    'product' => 'banking',
+                    'count' => '10',
+                    'expand' => [
+                        0 => 'fund_account.contact',
+                        1 => 'user',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->verifyPayoutsEvent($expectedProperties);
 
         $this->ba->oauthBearerAuth($accessToken);
 
@@ -2649,8 +2762,6 @@ class PayoutTest extends OAuthTestCase
         $this->assertPassport();
         $this->assertPassportKeyExists('oauth.client_id');
         $this->assertPassportKeyExists('oauth.app_id');
-
-        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
     }
 
     public function testCreatePayoutWithOtpBearerAuth()
@@ -16730,6 +16841,58 @@ class PayoutTest extends OAuthTestCase
 
         Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
 
+    }
+
+    private function mockDiag()
+    {
+        $diagMock = $this->getMockBuilder(DiagClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['trackEvent'])
+            ->getMock();
+
+        $this->app->instance('diag', $diagMock);
+    }
+
+    private function verifyPayoutsEvent($expectedProperties)
+    {
+        $this->mockDiag();
+
+        $this->app->diag->method('trackEvent')
+            ->will($this->returnCallback(
+                function (string $eventType,
+                          string $eventVersion,
+                          array $event,
+                          array $properties) use ($expectedProperties)
+                {
+                    if (($event['group'] === 'payouts') and
+                        ($event['name'] === 'payouts.fetch.request'))
+                    {
+                        $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                    }
+
+                    return;
+                }));
+    }
+
+    private function verifyBalanceEvent($expectedProperties)
+    {
+        $this->mockDiag();
+
+        $this->app->diag->method('trackEvent')
+            ->will($this->returnCallback(
+                function (string $eventType,
+                          string $eventVersion,
+                          array $event,
+                          array $properties) use ($expectedProperties)
+                {
+                    if (($event['group'] === 'balance') and
+                        ($event['name'] === 'balance.fetch.request'))
+                    {
+                        $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                    }
+
+                    return;
+                }));
     }
 
     public function testCreatePayoutInLedgerReverseShadowMode()

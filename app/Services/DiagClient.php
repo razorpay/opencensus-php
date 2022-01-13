@@ -9,21 +9,23 @@ use RZP\Diag\Traits;
 
 class DiagClient extends EventTrackerClient
 {
+    use Traits\IINEvent;
     use Traits\EmailEvent;
     use Traits\OrderEvent;
+    use Traits\RewardEvent;
+    use Traits\PayoutEvent;
+    use Traits\BalanceEvent;
     use Traits\PaymentEvent;
+    use Traits\DisputeEvent;
     use Traits\SettlementEvent;
     use Traits\OnBoardingEvent;
     use Traits\PaymentPageEvent;
     use Traits\UpiTransferEvent;
     use Traits\BankTransferEvent;
+    use Traits\TrustedBadgeEvent;
+    use Traits\PaymentConfigEvent;
     use Traits\VirtualAccountEvent;
     use Traits\VirtualVpaPrefixEvent;
-    use Traits\PaymentConfigEvent;
-    use Traits\DisputeEvent;
-    use Traits\RewardEvent;
-    use Traits\TrustedBadgeEvent;
-    use Traits\IINEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, array $event,
                                array $properties,

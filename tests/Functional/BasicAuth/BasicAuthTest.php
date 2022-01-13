@@ -8,10 +8,15 @@ use Razorpay\Edge\Passport\Kid;
 use Razorpay\Edge\Passport\Passport;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use Razorpay\OAuth\Client;
+use RZP\Models\Pricing\Fee;
+use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -1029,9 +1034,44 @@ class BasicAuthTest extends TestCase
 
         $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 12000]);
 
+        $this->verifyBalanceEventNotTracked();
+
         $this->startTest();
 
         $this->assertPassport();
+    }
+
+    private function mockDiag()
+    {
+        $diagMock = $this->getMockBuilder(DiagClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['trackEvent'])
+            ->getMock();
+
+        $this->app->instance('diag', $diagMock);
+    }
+
+    // For the request other that slack app the event should not be triggered
+    private function verifyBalanceEventNotTracked()
+    {
+        $this->mockDiag();
+
+        $this->app->diag->method('trackEvent')
+            ->will($this->returnCallback(
+                function (string $eventType,
+                          string $eventVersion,
+                          array $event,
+                          array $properties)
+                {
+                    $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        [
+                            'STATUS' => 'this event should not be tracked'
+                        ]);
+
+                    throw $e;
+                }));
     }
 
     protected function createBankingAccount(array $attributes = [], string $mode = 'test')

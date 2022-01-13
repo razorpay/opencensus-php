@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
     const FEATURE                = 'feature';
     const HOME_APP               = 'home_app';
 
+    const SLACK_APP              = 'slack_app';
+
     protected $fillable = [
         self::ID,
         self::NAME,
