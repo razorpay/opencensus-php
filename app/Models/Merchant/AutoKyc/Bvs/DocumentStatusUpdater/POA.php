@@ -30,7 +30,12 @@ class POA extends BaseStatusUpdater
      */
     public function updateValidationStatus(): void
     {
-        $validation = $this->fetchValidOcrDocumentValidation($this->merchant);
+        $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
+            $this->merchantId,
+            $this->artefactType,
+            $this->validationUnit,
+            Constant::MERCHANT
+        );
 
         $documentValidationStatus = $this->getFailedStatus();
 
