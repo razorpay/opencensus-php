@@ -1,0 +1,189 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "authz/enforcer/v1/enforcer_api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "EnforcerAPI"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/enforce": {
+      "post": {
+        "summary": "Enforce does the policy enforcement for a particular request.",
+        "operationId": "EnforcerAPI_Enforce",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1EnforceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1EnforceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EnforcerAPI"
+        ]
+      }
+    },
+    "/v1/implicit_permissions": {
+      "post": {
+        "summary": "GetImplicitPermissions returns the list of all permissions for a particular subject.\nThis resolves the complete role hierarchy and returns the effective permissions.",
+        "operationId": "EnforcerAPI_GetImplicitPermissions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetImplicitPermissionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1InternalRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EnforcerAPI"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Claims": {
+      "type": "object",
+      "properties": {
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "subject": {
+          "type": "string"
+        },
+        "org": {
+          "type": "string"
+        }
+      },
+      "description": "Claims is the JWT token claims which contains the fields relevant for authorisation enforcement."
+    },
+    "v1EnforceRequest": {
+      "type": "object",
+      "properties": {
+        "claims": {
+          "$ref": "#/definitions/v1Claims"
+        },
+        "resource": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        }
+      }
+    },
+    "v1EnforceResponse": {
+      "type": "object",
+      "properties": {
+        "isAllowed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1GetImplicitPermissionsResponse": {
+      "type": "object",
+      "properties": {
+        "permission": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Permission"
+          }
+        }
+      }
+    },
+    "v1InternalRequest": {
+      "type": "object",
+      "properties": {
+        "claims": {
+          "$ref": "#/definitions/v1Claims"
+        }
+      }
+    },
+    "v1Permission": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string"
+        },
+        "object": {
+          "type": "string"
+        },
+        "effect": {
+          "type": "string"
+        }
+      },
+      "description": "Permission defines the struct for GetImplicitPermissions response."
+    }
+  }
+}

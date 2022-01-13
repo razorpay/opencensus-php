@@ -2,9 +2,12 @@
 
 namespace RZP\Services;
 
+use GuzzleHttp\Client;
 use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
+use Swagger\Client\Api\AdminAPIApi;
+use Swagger\Client\Configuration;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
 use Razorpay\Outbox\Job\Core;
@@ -612,6 +615,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerGrowth();
 
         $this->registerPspx();
+
+        $this->registerAuthzClient();
     }
 
     protected function registerCacheManager()
@@ -1174,6 +1179,32 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
             return new $implementation;
+        });
+    }
+
+    protected function registerAuthzClient()
+    {
+        $this->app->singleton('authz', function($app)
+        {
+            $config = $app['config']->get('applications.authz');
+            $mock = $config['mock'];
+            if ($mock === true) {
+                return new Mock\AuthzClient();
+            }
+            $client = new Client([
+                'base_uri' => $config['url'],
+                'timeout'  => 10,
+                'auth'     => [
+                    $config['auth']['username'],
+                    $config['auth']['password'],
+                ],
+            ]);
+            $configuration = new Configuration;
+            $configuration->setUsername($config['auth']['username']);
+            $configuration->setPassword($config['auth']['password']);
+            $configuration->setHost($config['url']);
+
+            return new AdminAPIApi($client, $configuration);
         });
     }
 

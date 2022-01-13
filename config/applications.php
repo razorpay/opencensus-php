@@ -1188,4 +1188,13 @@ return [
     'tokenization' => [
         'secret' => env('TOKENIZATION_SECRET'),
     ],
+    'authz' => [
+        'auth' => [
+            'username' => env('AUTHZ_USER'),
+            'password' => env('AUTHZ_SECRET'),
+        ],
+        'mock'     => env('AUTHZ_MOCK', false),
+        'url'      => env('AUTHZ_BASE_URL'),
+        'mock_url' => env('AUTHZ_BASE_MOCK_URL')
+    ]
 ];

@@ -1,0 +1,1893 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "authz/admin/v1/admin_api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "AdminAPI"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/actions": {
+      "get": {
+        "summary": "ListAction returns a list of actions based on the supplied filters.",
+        "operationId": "AdminAPI_ListAction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListActionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "actionNamePrefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateAction creates the action entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateAction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Action"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Action"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdateAction creates the action entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdateAction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Action"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Action"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/actions/{id}": {
+      "delete": {
+        "summary": "DeleteAction deletes the action entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteAction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ACTION_TYPE_C",
+              "ACTION_TYPE_R",
+              "ACTION_TYPE_U",
+              "ACTION_TYPE_D"
+            ],
+            "default": "ACTION_TYPE_C"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/permissions": {
+      "get": {
+        "summary": "ListPermission returns a list of permissions satisfying the filter conditions.",
+        "operationId": "AdminAPI_ListPermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPermissionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceGroupIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "resourceIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "actionIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreatePermission creates the permission entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreatePermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Permission"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Permission"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdatePermission creates the permission entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdatePermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Permission"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Permission"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/permissions/{id}": {
+      "delete": {
+        "summary": "DeletePermission deletes the permission entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeletePermission",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "actionId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "effect",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "EFFECT_UNKNOWN",
+              "EFFECT_ALLOW",
+              "EFFECT_DENY"
+            ],
+            "default": "EFFECT_UNKNOWN"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/policies": {
+      "get": {
+        "summary": "ListPolicy returns a list of policies satisfying the filter conditions.",
+        "operationId": "AdminAPI_ListPolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListPolicyResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceGroupIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "resourceIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "roleId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "serviceIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "permissionIdList",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreatePolicy creates the policy entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreatePolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Policy"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Policy"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdatePolicy creates the policy entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdatePolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Policy"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Policy"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/policies/{id}": {
+      "delete": {
+        "summary": "DeletePolicy deletes the policy entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeletePolicy",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "originServiceId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "permissionId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ROLE_POLICY_TYPE_INTERNAL",
+              "ROLE_POLICY_TYPE_EXTERNAL"
+            ],
+            "default": "ROLE_POLICY_TYPE_INTERNAL"
+          },
+          {
+            "name": "isAssignable",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/recon": {
+      "post": {
+        "summary": "Recon is to be used for reconciliation of policies between MySQL \u0026 Consul.",
+        "operationId": "AdminAPI_Recon",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/resource_group_mappings": {
+      "delete": {
+        "summary": "DeleteResourceGroupMapping deletes the resource group mapping from AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteResourceGroupMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "groupId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateResourceGroupMapping creates the resource group mapping in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateResourceGroupMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResourceGroupMapping"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResourceGroupMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/resource_groups": {
+      "get": {
+        "summary": "ListResourceGroup returns a list of resource group entities from AuthZ policy store.",
+        "operationId": "AdminAPI_ListResourceGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListResourceGroupResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceGroupNamePrefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateResourceGroup creates the resource group entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateResourceGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResourceGroup"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResourceGroup"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdateResourceGroup updates the given resource group entity.",
+        "operationId": "AdminAPI_UpdateResourceGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ResourceGroup"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ResourceGroup"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/resource_groups/{id}": {
+      "delete": {
+        "summary": "DeleteResourceGroup deletes the resource group entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteResourceGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/resources": {
+      "get": {
+        "summary": "ListResource returns a list of resources based on the supplied filters.",
+        "operationId": "AdminAPI_ListResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceGroupId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceGroupNamePrefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resourceNamePrefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateResource creates the resource entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Resource"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Resource"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdateResource creates the resource entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdateResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Resource"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Resource"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/resources/{id}": {
+      "delete": {
+        "summary": "DeleteResource deletes the resource entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/role_policy_mappings": {
+      "delete": {
+        "summary": "DeleteRolePolicyMapping deletes a policy from the given role in AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteRolePolicyMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "policyId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateRolePolicyMapping adds a policy to the given role in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateRolePolicyMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RolePolicyMapping"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RolePolicyMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/roles": {
+      "get": {
+        "summary": "ListRole returns a list of roles matching the filter condition.",
+        "operationId": "AdminAPI_ListRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListRoleResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roleNamePrefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roleNames",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "roleIds",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateRole creates the role entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdateRole creates the role entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdateRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Role"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/roles/{id}": {
+      "delete": {
+        "summary": "DeleteRole deletes the role entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteRole",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ROLE_POLICY_TYPE_INTERNAL",
+              "ROLE_POLICY_TYPE_EXTERNAL"
+            ],
+            "default": "ROLE_POLICY_TYPE_INTERNAL"
+          },
+          {
+            "name": "ownerType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/services": {
+      "get": {
+        "summary": "ListService returns a list of services based on the supplied filters.",
+        "operationId": "AdminAPI_ListService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListServiceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "paginationToken",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "serviceNamePrefix",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateService creates the service entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Service"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Service"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "put": {
+        "summary": "UpdateService creates the service entity in AuthZ policy store.",
+        "operationId": "AdminAPI_UpdateService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Service"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1Service"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/services/{id}": {
+      "delete": {
+        "summary": "DeleteService deletes the service entity from AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/subject_role_mappings": {
+      "delete": {
+        "summary": "DeleteSubjectRoleMapping detaches the role from a subject entity in AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteSubjectRoleMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "key.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roleNames",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      },
+      "post": {
+        "summary": "CreateSubjectRoleMapping assigns the role to a subject entity in AuthZ policy store.",
+        "operationId": "AdminAPI_CreateSubjectRoleMapping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SubjectRoleMapping"
+            }
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    },
+    "/v1/subjects": {
+      "delete": {
+        "summary": "DeleteSubject detaches all roles for the given subject entity in AuthZ policy store.",
+        "operationId": "AdminAPI_DeleteSubject",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Null"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "roleId",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "key.id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key.ownerId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "roleNames",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "AdminAPI"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ActionActionType": {
+      "type": "string",
+      "enum": [
+        "ACTION_TYPE_C",
+        "ACTION_TYPE_R",
+        "ACTION_TYPE_U",
+        "ACTION_TYPE_D"
+      ],
+      "default": "ACTION_TYPE_C",
+      "description": "ActionType is the enum defining the supported action types."
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1Action": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/ActionActionType"
+        }
+      }
+    },
+    "v1Effect": {
+      "type": "string",
+      "enum": [
+        "EFFECT_UNKNOWN",
+        "EFFECT_ALLOW",
+        "EFFECT_DENY"
+      ],
+      "default": "EFFECT_UNKNOWN",
+      "description": "Effect are the supported permission effects."
+    },
+    "v1ExpandedPermission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "resource": {
+          "$ref": "#/definitions/v1Resource"
+        },
+        "action": {
+          "$ref": "#/definitions/v1Action"
+        },
+        "effect": {
+          "$ref": "#/definitions/v1Effect"
+        }
+      },
+      "description": "ExpandedPermission is the struct defining a permission which has all sub entities expanded."
+    },
+    "v1ExpandedPolicy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "service": {
+          "$ref": "#/definitions/v1Service"
+        },
+        "permission": {
+          "$ref": "#/definitions/v1ExpandedPermission"
+        },
+        "type": {
+          "$ref": "#/definitions/v1RolePolicyType"
+        },
+        "isAssignable": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      },
+      "description": "ExpandedPolicy is the struct defining a policy which has all sub entities expanded."
+    },
+    "v1KeySubject": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "ownerType": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        }
+      },
+      "description": "KeySubject is the type of subject used for Private Auth."
+    },
+    "v1ListActionResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Action"
+          }
+        }
+      }
+    },
+    "v1ListPermissionResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ExpandedPermission"
+          }
+        }
+      }
+    },
+    "v1ListPolicyResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ExpandedPolicy"
+          }
+        }
+      }
+    },
+    "v1ListResourceGroupResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1ResourceGroup"
+          }
+        }
+      }
+    },
+    "v1ListResourceResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Resource"
+          }
+        }
+      }
+    },
+    "v1ListRoleResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Role"
+          }
+        }
+      }
+    },
+    "v1ListServiceResponse": {
+      "type": "object",
+      "properties": {
+        "paginationToken": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Service"
+          }
+        }
+      }
+    },
+    "v1Null": {
+      "type": "object",
+      "description": "Null defines an empty message which the service uses when it doesn't have any data to return."
+    },
+    "v1Permission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "resourceId": {
+          "type": "string"
+        },
+        "actionId": {
+          "type": "string"
+        },
+        "effect": {
+          "$ref": "#/definitions/v1Effect"
+        }
+      }
+    },
+    "v1Policy": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "originServiceId": {
+          "type": "string"
+        },
+        "permissionId": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1RolePolicyType"
+        },
+        "isAssignable": {
+          "type": "boolean"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "v1Resource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ResourceGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ResourceGroupMapping": {
+      "type": "object",
+      "properties": {
+        "resourceId": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1Role": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/v1RolePolicyType"
+        },
+        "ownerType": {
+          "type": "string"
+        },
+        "ownerId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RolePolicyMapping": {
+      "type": "object",
+      "properties": {
+        "roleId": {
+          "type": "string"
+        },
+        "policyId": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RolePolicyType": {
+      "type": "string",
+      "enum": [
+        "ROLE_POLICY_TYPE_INTERNAL",
+        "ROLE_POLICY_TYPE_EXTERNAL"
+      ],
+      "default": "ROLE_POLICY_TYPE_INTERNAL",
+      "description": "RolePolicyType defines the allowed types for role \u0026 policy entities."
+    },
+    "v1Service": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SubjectRoleMapping": {
+      "type": "object",
+      "properties": {
+        "roleId": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "key": {
+          "$ref": "#/definitions/v1KeySubject"
+        },
+        "roleNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

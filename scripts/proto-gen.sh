@@ -25,3 +25,26 @@ protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/probe/v1/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/obs/verification/v1/*
 
+# this will generate swagger json files
+protoc -I "$parentdir"/proto --openapiv2_out "$parentdir"/api/generated/proto \
+  --openapiv2_opt grpc_api_configuration="$parentdir"/authz/grpc_api_configuration.yaml \
+  "$parentdir"/proto/authz/admin/v1/*
+
+protoc -I "$parentdir"/proto --openapiv2_out "$parentdir"/api/generated/proto \
+  --openapiv2_opt grpc_api_configuration="$parentdir"/authz/grpc_api_configuration.yaml \
+  "$parentdir"/proto/authz/enforcer/v1/*
+
+# using those json we can generate AuthzClient
+#https://github.com/swagger-api/swagger-codegen#getting-started
+
+#java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+#   -i /Users/anand/Desktop/workspace/api/generated/proto/authz/admin/v1/admin_api.swagger.json \
+#   -l php \
+#   -o /Users/anand/Desktop/workspace/api/generated/proto/authz/admin/v1/
+
+#java -jar modules/swagger-codegen-cli/target/swagger-codegen-cli.jar generate \
+#   -i /Users/anand/Desktop/workspace/api/generated/proto/authz/enforcer/v1/enforcer_api.swagger.json \
+#   -l php \
+#   -o /Users/anand/Desktop/workspace/api/generated/proto/authz/enforcer/v1/
+
+# After generating client please run - composer dump-autoload -o
