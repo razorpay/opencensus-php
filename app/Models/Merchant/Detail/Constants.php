@@ -151,6 +151,8 @@ class Constants
     const GSTIN_OPERATION                                   = 'gstin_operation';
     const ADDED                                             = 'added';
     const UPDATED                                           = 'updated';
+    const CACHE_KEY                                         = 'cache_key';
+    const CACHE_DATA                                        = 'cache_data';
 
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';

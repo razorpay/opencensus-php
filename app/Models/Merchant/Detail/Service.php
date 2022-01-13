@@ -1981,25 +1981,19 @@ class Service extends Base\Service
 
         $payload = $this->getUpdateGstinSelfServeBvsPayload($input);
 
-        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
-
-        if ($validation === null)
-        {
-            throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
-        }
-
-        $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_VALIDATION_CREATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED;
-
-        $this->trace->info($traceCode, [
-            $validation->toArrayPublic()
-        ]);
-
         $fileId = $this->uploadGstInCertificateForGstinSelfServe(
             $input[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE],
             $this->merchant->merchantDetail
         );
 
         unset($input[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE]);
+
+        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
+
+        if ($validation === null)
+        {
+            throw new Exception\ServerErrorException('bvs validation create failed', ErrorCode::SERVER_ERROR);
+        }
 
         $input = array_merge($input, [
             Merchant\Entity::MERCHANT_ID               => $this->merchant->getId(),
@@ -2010,38 +2004,56 @@ class Service extends Base\Service
 
         $this->storeGstinSelfServeInput($input);
 
+        $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_VALIDATION_CREATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED;
+
+        $this->trace->info($traceCode, [
+            $validation->toArrayPublic()
+        ]);
+
         return $input;
     }
 
     protected function pushBvsResultToSegmentForGstinSelfServe(Entity $detail, Merchant\BvsValidation\Entity $validation)
     {
-        $input = $this->getGstinSelfServeInputFromCache();
-
-        $ruleExecution = $validation->getRuleExecutionList();
-
-        $segmentEventName = ($input[DEConstants::IS_ADD_GSTIN_OPERATION]) ? SegmentEvent::ADD_GSTIN_BVS_RESULT : SegmentEvent::EDIT_GSTIN_BVS_RESULT;
-
-        $segmentProperties = [];
-
-        $segmentProperties['result'] = $validation->getValidationStatus();
-
-        $segmentProperties['failure_reason'] = $validation->getErrorCode();
-
-        if ((isset($ruleExecution) === true) and
-            (isset($ruleExecution[0]) === true))
+        try
         {
-            $segmentProperties['name_match_percentage_bvs'] = [
-                $ruleExecution[0]['rule_execution_result']['remarks'],
-                $ruleExecution[1]['rule_execution_result']['remarks']
-            ];
-        }
-        else
-        {
-            $segmentProperties['name_match_percentage_bvs'] = [];
-        }
+            $input = $this->getGstinSelfServeInputFromCache($detail->getMerchantId());
 
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $detail->merchant, $segmentProperties, $segmentEventName);
+            $ruleExecution = $validation->getRuleExecutionList();
+
+            $segmentEventName = ($input[DEConstants::IS_ADD_GSTIN_OPERATION]) ? SegmentEvent::ADD_GSTIN_BVS_RESULT : SegmentEvent::EDIT_GSTIN_BVS_RESULT;
+
+            $segmentProperties = [];
+
+            $segmentProperties['result'] = $validation->getValidationStatus();
+
+            $segmentProperties['failure_reason'] = $validation->getErrorCode();
+
+            if ((isset($ruleExecution) === true) and
+                (isset($ruleExecution[0]) === true))
+            {
+                $segmentProperties['name_match_percentage_bvs'] = [
+                    $ruleExecution[0]['rule_execution_result']['remarks'],
+                    $ruleExecution[1]['rule_execution_result']['remarks']
+                ];
+            }
+            else
+            {
+                $segmentProperties['name_match_percentage_bvs'] = [];
+            }
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $detail->merchant, $segmentProperties, $segmentEventName);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::GSTIN_SEGMENT_EVENT_PUSH_FAIL
+            );
+        }
     }
 
     public function handleGstinSelfServeCallback(Entity $detail, Merchant\BvsValidation\Entity $validation)
@@ -2081,13 +2093,11 @@ class Service extends Base\Service
     {
         $input = $this->getGstinSelfServeInputFromCache($detail->getId());
 
-        $this->trace->info(TraceCode::GSTIN_CACHE_INPUT, [
-            Constants::INPUT  => $input,
-        ]);
-
         if (isset($input[Entity::GSTIN]) === false)
         {
-            return;
+            throw new Exception\ServerErrorException(
+                'Failed to get gstin data from cache',
+                ErrorCode::SERVER_ERROR);
         }
 
         $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
@@ -2229,13 +2239,11 @@ class Service extends Base\Service
     {
         $input = $this->getGstinSelfServeInputFromCache($oldDetailEntity->getId());
 
-        $this->trace->info(TraceCode::GSTIN_CACHE_INPUT, [
-            Constants::INPUT  => $input,
-        ]);
-
         if (isset($input[Entity::GSTIN]) === false)
         {
-            return;
+            throw new Exception\ServerErrorException(
+                'Failed to get gstin data from cache',
+                ErrorCode::SERVER_ERROR);
         }
 
         $newDetailsEntity = clone $oldDetailEntity;
@@ -2347,12 +2355,21 @@ class Service extends Base\Service
     {
         $cacheKey = $this->getGstinSelfServeInputCacheKey();
 
+        $this->trace->info(TraceCode::GSTIN_SELF_SERVE_SET_CACHE_DATA, [
+            DEConstants::CACHE_KEY   => $cacheKey,
+            DEConstants::CACHE_DATA  => $input,
+        ]);
+
         $this->app['cache']->put($cacheKey, $input, DEConstants::GSTIN_SELF_SERVE_INPUT_CACHE_TTL);
     }
 
     protected function deleteGstinSelfServeInput($merchantId)
     {
         $cacheKey = $this->getGstinSelfServeInputCacheKey($merchantId);
+
+        $this->trace->info(TraceCode::GSTIN_SELF_SERVE_DELETE_CACHE_DATA, [
+            DetailConstants::CACHE_KEY => $cacheKey,
+        ]);
 
         $this->app['cache']->delete($cacheKey);
     }
@@ -2371,7 +2388,14 @@ class Service extends Base\Service
     {
         $cacheKey = $this->getGstinSelfServeInputCacheKey($merchantId);
 
-        return $this->app['cache']->get($cacheKey);
+        $data = $this->app['cache']->get($cacheKey);
+
+        $this->trace->info(TraceCode::GSTIN_SELF_SERVE_GET_CACHE_DATA, [
+            DetailConstants::CACHE_KEY  => $cacheKey,
+            DetailConstants::CACHE_DATA => $data,
+        ]);
+
+        return $data;
     }
 
     /**
