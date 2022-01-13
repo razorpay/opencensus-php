@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
@@ -186,6 +187,15 @@ class Service extends Base\Service
         $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin);
 
         $currentStatus = $bankingAccount->getStatus();
+
+        if($currentStatus !== $previousStatus AND $currentStatus === 'processed') {
+            $merchant = $bankingAccount->merchant;
+            $segmentProperties = [
+                BankingAccountService\Constants::STATUS => $currentStatus,
+            ];
+
+            $this->app['x-segment']->pushTrackEvent($merchant, $segmentProperties, SegmentEvent::CA_ACTIVATED);
+        }
 
         if ($this->isNeoStoneExperiment($account) === false)
         {

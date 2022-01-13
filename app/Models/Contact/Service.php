@@ -4,6 +4,7 @@ namespace RZP\Models\Contact;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
@@ -64,6 +65,13 @@ class Service extends Base\Service
         $entity = $this->core->create($input, $this->merchant);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
+
+        if($responseCode === Response::HTTP_CREATED){
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            $this->app['x-segment']->pushTrackEvent($merchant, [], SegmentEvent::CONTACT_CREATED);
+
+        }
 
         $this->trace->info(TraceCode::CONTACT_CREATION_RESPONSE,
             [

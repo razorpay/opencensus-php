@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Contacts;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Services\Segment\XSegmentClient;
 use RZP\Models\Feature;
 use RZP\Models\Contact\Entity;
 use RZP\Services\RazorXClient;
@@ -25,6 +27,21 @@ class ContactsTest extends TestCase
         parent::setUp();
 
         $this->ba->privateAuth();
+    }
+
+    protected function createAndFetchMocks()
+    {
+        $mockMC = $this->getMockBuilder(MerchantCore::class)
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
+
+        $mockMC->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        return [
+            "merchantCoreMock"    => $mockMC
+        ];
     }
 
     public function testGetContact()
@@ -276,6 +293,23 @@ class ContactsTest extends TestCase
     public function testCreateContact()
     {
         $this->startTest();
+    }
+
+    public function testSegmentEventCreateContact(){
+
+        $this->createAndFetchMocks();
+
+        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
+            ->setMethods(['pushTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('x-segment', $xsegmentMock);
+
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushTrackEvent')
+            ->willReturn(true);
+
+        $this->testCreateContact();
     }
 
     public function testCreateContactWithNbsp()

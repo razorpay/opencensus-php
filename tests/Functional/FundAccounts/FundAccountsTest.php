@@ -11,7 +11,9 @@ use RZP\Models\FundAccount;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Contact\Type;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\RazorXClient;
+use RZP\Services\Segment\XSegmentClient;
 use RZP\Jobs\FTS\CreateAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\FundAccountDetailsPropagatorJob;
@@ -34,6 +36,21 @@ class FundAccountsTest extends TestCase
         parent::setUp();
 
         $this->ba->privateAuth();
+    }
+
+    protected function createAndFetchMocks()
+    {
+        $mockMC = $this->getMockBuilder(MerchantCore::class)
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
+
+        $mockMC->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        return [
+            "merchantCoreMock"    => $mockMC
+        ];
     }
 
     public function testGetFundAccounts()
@@ -93,6 +110,22 @@ class FundAccountsTest extends TestCase
         $this->assertEquals($expectedHash, $uniqueHash);
 
         Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testSegmentEventFundAccount(){
+        $this->createAndFetchMocks();
+
+        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
+            ->setMethods(['pushTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('x-segment', $xsegmentMock);
+
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushTrackEvent')
+            ->willReturn(true);
+
+        $this->testCreateFundAccountBankAccount();
     }
 
     public function testCreateFundAccountBankAccountWithFeatureFlagEnabled()

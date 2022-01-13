@@ -22,7 +22,7 @@ use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
-use RZP\Services\Segment\SegmentAnalyticsClient;
+use RZP\Services\Segment\XSegmentClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -2428,6 +2428,21 @@ class BankingAccountTest extends TestCase
             return $mail->hasTo($bankingAccountEntity->spocs()->first()['email']);
         });
         $this->assertTrue($expectedHubspotCall);
+    }
+
+    public function testSegmentEventCAActivated(){
+        $this->createAndFetchMocks();
+
+        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
+            ->setMethods(['pushTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('x-segment', $xsegmentMock);
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushTrackEvent')
+            ->willReturn(true);
+
+        $this->testUpdateBankingAccountStatusAsProcessed();
     }
 
     public function testUpdateBankingAccountStatusAsProcessedFailed()
