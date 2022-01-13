@@ -682,6 +682,13 @@ const initialState = {
               slug: 'cardless_emi.sezzle',
               icon: 'sezzle',
             },
+            {
+              name: 'Walnut369',
+              description: '',
+              status: 'Request',
+              slug: 'cardless_emi.walnut369',
+              icon: 'walnut369',
+            },
           ],
         },
       ],
