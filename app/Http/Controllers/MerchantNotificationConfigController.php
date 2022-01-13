@@ -80,11 +80,4 @@ class MerchantNotificationConfigController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function alert()
-    {
-        $response = $this->service()->alert();
-
-        return ApiResponse::json($response);
-    }
 }

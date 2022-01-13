@@ -255,29 +255,40 @@ return [
 
     'testFetchActiveDowntimesWithCurrentTimeAndParameters' => [
         'request'  => [
-            'url'     => '/fund_loading/downtimes/active?channel=icicibank',
+            'url'     => '/fund_loading/downtimes/active?channel=icicibank&source=Partner%20Bank',
             'method'  => 'GET',
             'content' => []
         ],
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 2,
+                'count'  => 3,
                 'admin'  => true,
                 'items'  => [
                     [
+                        'id'      => 'fdown_100003downtime',
                         'type'    => 'Scheduled Maintenance Activity',
                         'source'  => 'Partner Bank',
                         'channel' => 'icicibank',
-                        'mode'    => 'IMPS',
+                        'mode'    => 'RTGS',
                         'entity'  => 'fund_loading_downtimes',
                         'admin'   => true,
                     ],
                     [
+                        'id'      => 'fdown_100001downtime',
                         'type'    => 'Scheduled Maintenance Activity',
                         'source'  => 'Partner Bank',
                         'channel' => 'icicibank',
                         'mode'    => 'UPI',
+                        'entity'  => 'fund_loading_downtimes',
+                        'admin'   => true,
+                    ],
+                    [
+                        'id'      => 'fdown_100002downtime',
+                        'type'    => 'Scheduled Maintenance Activity',
+                        'source'  => 'Partner Bank',
+                        'channel' => 'icicibank',
+                        'mode'    => 'IMPS',
                         'entity'  => 'fund_loading_downtimes',
                         'admin'   => true,
                     ],
@@ -405,13 +416,13 @@ return [
                 'update_details' => [
                     [
                         'id'         => '100000downtime',
-                        'start_time' => 1632413321,
-                        'end_time'   => 1632443321,
+                        'start_time' => 1640802600,
+                        'end_time'   => 1640889000,
                     ],
                     [
                         'id'         => '100001downtime',
-                        'start_time' => 1632413321,
-                        'end_time'   => 1632443321,
+                        'start_time' => 1640802600,
+                        'end_time'   => 1640889000,
 
                     ],
                 ],
@@ -433,8 +444,8 @@ return [
                     'channel'             => 'icicibank',
                     'durations_and_modes' => [
                         0 => [
-                            'start_time' => 1632413321,
-                            'end_time'   => 1632443321,
+                            'start_time' => 1640802600,
+                            'end_time'   => 1640889000,
                             "modes"      => "IMPS,NEFT",
                         ],
                     ],
@@ -524,6 +535,115 @@ return [
                         0 => [
                             'start_time' => 1632413321, // Sep 23, 2021 9:38 PM
                             'end_time'   => 1632443321, // Sep 24, 2021 5:58 AM
+                            "modes"      => "NEFT,IMPS",
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCancellationFlowWithNeitherSMSNorEmailNotifications' => [
+        'request'  => [
+            'url'     => '/fund_loading/downtime/notification/cancellation',
+            'method'  => 'POST',
+            'content' => [
+                "send_sms"     => false,
+                "send_email"   => false,
+                'downtime_ids' => [
+                    '100000downtime',
+                    '100001downtime',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'downtime_information' => [
+                    'type'                => 'Scheduled Maintenance Activity',
+                    'source'              => 'Partner Bank',
+                    'channel'             => 'icicibank',
+                    'durations_and_modes' => [
+                        0 => [
+                            'start_time' => 1632413321,
+                            'end_time'   => 1632443321,
+                            "modes"      => "NEFT,IMPS",
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCancellationFlowWithOnlySmsNotification' => [
+        'request'  => [
+            'url'     => '/fund_loading/downtime/notification/cancellation',
+            'method'  => 'POST',
+            'content' => [
+                "send_sms"     => true,
+                "send_email"   => false,
+                'downtime_ids' => [
+                    '100000downtime',
+                    '100001downtime',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "sms"                  => [
+                    "successes" => 2,
+                    "failures"  => 0,
+                ],
+                'email'                => [
+                    "successes" => 0,
+                    "failures"  => 0,
+                ],
+                'downtime_information' => [
+                    'type'                => 'Scheduled Maintenance Activity',
+                    'source'              => 'Partner Bank',
+                    'channel'             => 'icicibank',
+                    'durations_and_modes' => [
+                        0 => [
+                            'start_time' => 1632413321,
+                            'end_time'   => 1632443321,
+                            "modes"      => "NEFT,IMPS",
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCancellationFlowWithOnlyEmailNotification' => [
+        'request'  => [
+            'url'     => '/fund_loading/downtime/notification/cancellation',
+            'method'  => 'POST',
+            'content' => [
+                "send_sms"     => false,
+                "send_email"   => true,
+                'downtime_ids' => [
+                    '100000downtime',
+                    '100001downtime',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "sms"                  => [
+                    "successes" => 0,
+                    "failures"  => 0,
+                ],
+                'email'                => [
+                    "successes" => 1,
+                    "failures"  => 0,
+                ],
+                'downtime_information' => [
+                    'type'                => 'Scheduled Maintenance Activity',
+                    'source'              => 'Partner Bank',
+                    'channel'             => 'icicibank',
+                    'durations_and_modes' => [
+                        0 => [
+                            'start_time' => 1632413321,
+                            'end_time'   => 1632443321,
                             "modes"      => "NEFT,IMPS",
                         ],
                     ],

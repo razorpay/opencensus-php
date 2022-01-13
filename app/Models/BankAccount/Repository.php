@@ -539,28 +539,30 @@ class Repository extends Base\Repository
      * another join with balance table on `balance`.id column and then fetches the bank account numbers of active virtual
      * accounts linked to a merchant id where the account_type is shared and the balance type is banking
      *
-     * @param string $merchantId
+     * @param array $merchantId
      *
      */
-    public function getBankAccountAccountNumbersOfActiveVirtualAccountsFromMerchantId(string $merchantId)
+    public function getBankAccountAccountNumbersOfActiveVirtualAccountsFromMerchantIds(array $merchantIds)
     {
-        $virtualAccountIdCol            = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
-        $virtualAccountBalanceIdColumn  = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::BALANCE_ID);
+        $virtualAccountIdCol           = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
+        $virtualAccountBalanceIdColumn = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::BALANCE_ID);
+
         $bankAccountEntityIdColumn      = $this->repo->bank_account->dbColumn(Entity::ENTITY_ID);
         $bankAccountAccountNumberColumn = $this->repo->bank_account->dbColumn(Entity::ACCOUNT_NUMBER);
-        $balanceTypeColumn              = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
-        $balanceAccountTypeColumn       = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
-        $balanceIdColumn                = $this->repo->balance->dbColumn(Balance\Entity::ID);
-        $balanceMerchantIdColumn        = $this->repo->balance->dbColumn(Balance\Entity::MERCHANT_ID);
+
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceMerchantIdColumn  = $this->repo->balance->dbColumn(Balance\Entity::MERCHANT_ID);
 
         return $this->newQuery()
-                    ->select($bankAccountAccountNumberColumn)
+                    ->select($balanceMerchantIdColumn, $bankAccountAccountNumberColumn)
                     ->join(Table::VIRTUAL_ACCOUNT, $virtualAccountIdCol, '=', $bankAccountEntityIdColumn)
                     ->join(Table::BALANCE, $virtualAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->whereIn($balanceMerchantIdColumn, $merchantIds)
                     ->where(VirtualAccount\Entity::STATUS, '=', VirtualAccount\Status::ACTIVE)
                     ->where($balanceAccountTypeColumn, '=', 'shared')
                     ->where($balanceTypeColumn, '=', 'banking')
-                    ->where($balanceMerchantIdColumn, '=', $merchantId)
                     ->get();
     }
 }

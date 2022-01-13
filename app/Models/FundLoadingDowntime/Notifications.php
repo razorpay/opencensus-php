@@ -3,13 +3,14 @@
 namespace RZP\Models\FundLoadingDowntime;
 
 use App;
+use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-use Illuminate\Support\Facades\Mail;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Payout\Notifications\SmsConstants;
 use RZP\Models\FundLoadingDowntime\Entity as Entity;
 use RZP\Mail\FundLoadingDowntime\FundLoadingDowntimeMail;
 use RZP\Models\FundLoadingDowntime\Constants as Constants;
@@ -19,6 +20,8 @@ class Notifications
 {
     protected $app;
 
+    protected $ba;
+
     /**
      * Trace instance used for tracing
      *
@@ -26,7 +29,7 @@ class Notifications
      */
     protected $trace;
 
-    protected $raven;
+    protected $stork;
 
     /**
      * Repository manager instance
@@ -36,6 +39,13 @@ class Notifications
     protected $repo;
 
     protected $flowType;
+
+    protected $downtimeInformation;
+
+    protected $sendSMS;
+
+    protected $sendEmail;
+
 
     const SMS        = 'sms';
     const EMAIL      = 'email';
@@ -60,78 +70,123 @@ class Notifications
         'creation_1'   => 'sms.fund_loading_downtime.creation_1',
         'creation_2'   => 'sms.fund_loading_downtime.creation_2',
         'creation_3'   => 'sms.fund_loading_downtime.creation_3',
-        'updation_1'   => 'sms.fund_loading_downtime.updation_1',
-        'updation_2'   => 'sms.fund_loading_downtime.updation_2',
+        'updation_1'   => 'sms.fund_loading_downtime.update_1',
+        'updation_2'   => 'sms.fund_loading_downtime.update_2',
         'resolution'   => 'sms.fund_loading_downtime.resolution',
         'cancellation' => 'sms.fund_loading_downtime.cancellation',
     ];
 
-    public function __construct($flowType)
+    public function __construct($input, $flowType)
     {
         $this->app = App::getFacadeRoot();
 
+        $this->ba = $this->app['basicauth'];
+
         $this->trace = $this->app['trace'];
 
-        $this->raven = $this->app['raven'];
+        $this->stork = $this->app['stork_service'];
 
         $this->repo = $this->app['repo'];
 
-        $this->flowType = $flowType;
+        $this->downtimeInformation = $input[Constants::DOWNTIME_INFO];
 
+        $this->sendSMS = boolval($input[self::SEND_SMS]);
+
+        $this->sendEmail = boolval($input[self::SEND_EMAIL]);
+
+        $this->flowType = $flowType;
     }
 
-    public function sendNotifications($downtimeInformation, $sendSMS, $sendEmail)
+    public function sendNotifications()
     {
+        $response = $this->initializeResponse();
+        $response[Constants::DOWNTIME_INFO] = $this->downtimeInformation;
 
-        $response[Constants::DOWNTIME_INFO] = $downtimeInformation;
+        $bankThatIsDown              = $this->downtimeInformation[Entity::CHANNEL];
+        $merchantNotificationConfigs = $this->repo->merchant_notification_config->getEnabledConfigsForNotificationType(NotificationType::FUND_LOADING_DOWNTIME);
 
-        $bankThatIsDown = $downtimeInformation[Entity::CHANNEL];
+        $merchantIds = $merchantNotificationConfigs->pluck(Constants::MERCHANT_ID)->toArray();
 
-        $merchantContactDetails = $this->repo->merchant_notification_config
-                                             ->getEnabledConfigsForNotificationType(NotificationType::FUND_LOADING_DOWNTIME);
+        // get a mapping of merchant ids with the virtual accounts assigned to them
+        $merchantIdsWithVAsAssigned = $this->getChannelsAssignedToMerchants($merchantIds);
 
-        $response[self::SMS][self::SUCCESSES]   = 0;
-        $response[self::SMS][self::FAILURES]    = 0;
-        $response[self::EMAIL][self::SUCCESSES] = 0;
-        $response[self::EMAIL][self::FAILURES]  = 0;
+        $skippedMerchantIds = array_diff_key(array_flip($merchantIds), $merchantIdsWithVAsAssigned);
 
-        foreach ($merchantContactDetails as $merchantContacts)
+        // if merchant ids retrieved as a result of table joins do not match entirely with the enabled
+        // merchant_notification_configs merchant ids, we trace it for better debugging
+        if (count($skippedMerchantIds) > 0)
         {
-            $emailIds      = explode(',', $merchantContacts->getNotificationEmails());
-            $mobileNumbers = explode(',', $merchantContacts->getNotificationMobileNumbers());
-            $merchantId    = $merchantContacts->getMerchantId();
+            $this->trace->info(TraceCode::BULK_SKIP_FUND_LOADING_DOWNTIME_NOTIFICATION_TO_MERCHANT,
+                               [
+                                   'expected_count'       => count($merchantIds),
+                                   'actual_count'         => count($merchantIdsWithVAsAssigned),
+                                   'skipped_merchant_ids' => array_keys($skippedMerchantIds),
+                                   'reason'               => 'No active virtual accounts'
+                               ]);
+        }
+
+        foreach ($merchantNotificationConfigs as $notificationConfig)
+        {
+            $emailIds      = explode(',', $notificationConfig->getNotificationEmails());
+            $mobileNumbers = explode(',', $notificationConfig->getNotificationMobileNumbers());
+            $merchantId    = $notificationConfig->getMerchantId();
+
             $smsResponse   = [];
             $emailResponse = [];
 
-            $channelsAssigned = $this->getChannelsAssignedToMerchant($merchantId);
+            $virtualAccountsAssigned = $merchantIdsWithVAsAssigned[$merchantId] ?? null;
+
+            // if no active virtual account exists for a merchant, continue with next merchant
+            if($virtualAccountsAssigned === null)
+            {
+                continue;
+            }
+
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNTS_ASSIGNED_TO_MERCHANT,
+                               [
+                                   Constants::MERCHANT_ID => $merchantId,
+                                   'channels_assigned'    => $virtualAccountsAssigned,
+                                   'channel_down'         => $bankThatIsDown
+                               ]);
 
             if ($bankThatIsDown === Constants::ALL)
             {
-                if ($channelsAssigned[Constants::YES_BANK] === true or
-                    $channelsAssigned[Constants::ICICI_BANK] === true)
+                if (($virtualAccountsAssigned[Constants::YES_BANK] === true) or
+                    ($virtualAccountsAssigned[Constants::ICICI_BANK] === true))
                 {
-                    if ((boolval($sendEmail) === true) and (count($emailIds) > 0))
+                    if (($this->sendEmail === true) and (count($emailIds) > 0))
                     {
-                        $emailResponse = $this->sendEmail($downtimeInformation, $emailIds, $merchantId);
+                        $emailResponse = $this->sendEmail($emailIds, $merchantId);
                     }
 
-                    if ((boolval($sendSMS) === true) and (count($mobileNumbers) > 0))
+                    if (($this->sendSMS === true) and (count($mobileNumbers) > 0))
                     {
-                        $smsResponse = $this->sendSms($downtimeInformation, $mobileNumbers, $merchantId);
+                        $smsResponse = $this->sendSms($mobileNumbers, $merchantId);
                     }
                 }
             }
-            elseif ($channelsAssigned[$bankThatIsDown] === true)
+            elseif ($virtualAccountsAssigned[$bankThatIsDown] === true)
             {
-                if ((boolval($sendEmail) === true) and (count($emailIds) > 0))
+                if (($this->sendEmail === true) and (count($emailIds) > 0))
                 {
-                    $emailResponse = $this->sendEmail($downtimeInformation, $emailIds, $merchantId);
+                    $emailResponse = $this->sendEmail($emailIds, $merchantId);
                 }
 
-                if ((boolval($sendSMS) === true) and (count($mobileNumbers) > 0))
+                if (($this->sendSMS === true) and (count($mobileNumbers) > 0))
                 {
-                    $smsResponse = $this->sendSms($downtimeInformation, $mobileNumbers, $merchantId);
+                    $smsResponse = $this->sendSms($mobileNumbers, $merchantId);
                 }
+            }
+            else
+            {
+                $this->trace->info(TraceCode::SKIP_FUND_LOADING_DOWNTIME_NOTIFICATION_TO_MERCHANT,
+                                   [
+                                       Constants::MERCHANT_ID => $merchantId,
+                                       'channel_down'         => $bankThatIsDown,
+                                       'channels_assigned'    => $virtualAccountsAssigned,
+                                       'reason'               => "No active virtual account in $bankThatIsDown"
+                                   ]
+                );
             }
 
             $response[self::SMS][self::SUCCESSES]   += $smsResponse[self::SUCCESSES] ?? 0;
@@ -143,16 +198,25 @@ class Notifications
         return $response;
     }
 
-
-    protected function sendEmail($downtimeInformation, $emailIds, $merchantId)
+    public function initializeResponse()
     {
-        $response[self::SUCCESSES] = 0;
-        $response[self::FAILURES]  = 0;
-        $response["merchant_id"]   = $merchantId;
-        $emailParams               = $this->getEmailParams($downtimeInformation);
+        $response[self::SMS][self::SUCCESSES]   = 0;
+        $response[self::SMS][self::FAILURES]    = 0;
+        $response[self::EMAIL][self::SUCCESSES] = 0;
+        $response[self::EMAIL][self::FAILURES]  = 0;
+
+        return $response;
+    }
+
+    protected function sendEmail($emailIds, $merchantId)
+    {
+        $response[self::SUCCESSES]        = 0;
+        $response[self::FAILURES]         = 0;
+        $response[Constants::MERCHANT_ID] = $merchantId;
+        $emailParams                      = $this->getEmailParams();
 
         $this->trace->info(
-            TraceCode::FUND_LOADING_DOWNTIME_EMAIL_INIT,
+            TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_INIT,
             [
                 'count'                => count($emailIds),
                 'params'               => $emailParams,
@@ -173,16 +237,23 @@ class Notifications
             {
                 Mail::send($email);
                 $response[self::SUCCESSES]++;
+
+                $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_SENT,
+                                   [
+                                       Constants::MERCHANT_ID => $merchantId,
+                                       'email_id_index'       => $index
+                                   ]
+                );
             }
             catch (\Throwable $e)
             {
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
-                    TraceCode::FAILED_TO_SEND_FUND_LOADING_DOWNTIME_EMAIL,
+                    TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_FAILED,
                     [
-                        Constants::MERCHANT_ID    => $merchantId,
-                        'email_id_index' => $index
+                        Constants::MERCHANT_ID => $merchantId,
+                        'email_id_index'       => $index
                     ]
                 );
 
@@ -191,29 +262,23 @@ class Notifications
         }
 
         $this->trace->info(
-            TraceCode::FUND_LOADING_DOWNTIME_EMAIL_COMPLETE,
+            TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_PROCESSED,
             $response
         );
 
         return $response;
     }
 
-
-    protected function sendSms($downtimeInformation, $mobileNumbers, $merchantId)
+    protected function sendSms($mobileNumbers, $merchantId)
     {
         $response[self::SUCCESSES]        = 0;
         $response[self::FAILURES]         = 0;
         $response[Constants::MERCHANT_ID] = $merchantId;
 
-        $smsPayload = [
-            'source'   => self::SOURCE,
-            'template' => $this->getSMSTemplate($downtimeInformation[Constants::DURATIONS_AND_MODES]),
-            'sender'   => self::SENDER,
-            'params'   => $this->getSmsParams($downtimeInformation),
-        ];
+        $smsPayload = $this->getSmsPayload($merchantId);
 
         $this->trace->info(
-            TraceCode::FUND_LOADING_DOWNTIME_SMS_INIT,
+            TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_INIT,
             [
                 'count'                => count($mobileNumbers),
                 'payload'              => $smsPayload,
@@ -221,14 +286,24 @@ class Notifications
             ]
         );
 
+        $storkResponse = null;
+
         foreach ($mobileNumbers as $key => $mobileNumber)
         {
-            $smsPayload['receiver'] = trim($mobileNumber);
+            $smsPayload['destination'] = trim($mobileNumber);
 
             try
             {
-                $this->raven->sendSms($smsPayload, false);
+                $storkResponse = $this->stork->sendSms($this->ba->getMode(), $smsPayload, false);
                 $response[self::SUCCESSES]++;
+
+                $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_SENT,
+                                   [
+                                       Constants::MERCHANT_ID => $merchantId,
+                                       'mobile_number_index'  => $key,
+                                       'stork_response'       => $storkResponse,
+                                   ]
+                );
             }
             catch (\Throwable $e)
             {
@@ -237,26 +312,43 @@ class Notifications
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
-                    TraceCode::FAILED_TO_SEND_FUND_LOADING_DOWNTIME_SMS,
+                    TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_FAILED,
                     [
                         Constants::MERCHANT_ID => $merchantId,
-                        'mobile_number_index'  => $key
+                        'mobile_number_index'  => $key,
+                        'stork_response'       => $storkResponse,
                     ]
                 );
             }
         }
 
         $this->trace->info(
-            TraceCode::FUND_LOADING_DOWNTIME_SMS_COMPLETE,
+            TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_PROCESSED,
             $response
         );
 
         return $response;
     }
 
-    public function getSmsParams($downtime)
+    public function getSmsPayload($merchantId)
     {
-        $channel = $downtime[Entity::CHANNEL];
+        return [
+            SmsConstants::SOURCE                      => self::SOURCE,
+            SmsConstants::OWNER_ID                    => $merchantId,
+            SmsConstants::OWNER_TYPE                  => 'merchant',
+            SmsConstants::ORG_ID                      => $this->ba->getAdmin()->getOrgId() ?? '',
+            SmsConstants::TEMPLATE_NAME               => $this->getSMSTemplate(),
+            SmsConstants::TEMPLATE_NAMESPACE          => SmsConstants::PAYOUTS_CORE_TEMPLATE_NAMESPACE,
+            SmsConstants::LANGUAGE                    => SmsConstants::ENGLISH,
+            SmsConstants::SENDER                      => self::SENDER,
+            SmsConstants::CONTENT_PARAMS              => $this->getSmsParams(),
+            SmsConstants::DELIVERY_CALLBACK_REQUESTED => false
+        ];
+    }
+
+    public function getSmsParams()
+    {
+        $channel = $this->downtimeInformation[Entity::CHANNEL];
 
         switch ($channel)
         {
@@ -270,7 +362,7 @@ class Notifications
                 $params[Entity::CHANNEL] = studly_case($channel);
         }
 
-        foreach ($downtime[Constants::DURATIONS_AND_MODES] as $key => $value)
+        foreach ($this->downtimeInformation[Constants::DURATIONS_AND_MODES] as $key => $value)
         {
             if ($this->flowType === Constants::RESOLUTION)
             {
@@ -301,10 +393,10 @@ class Notifications
         return $params;
     }
 
-    public function getEmailParams($downtime)
+    public function getEmailParams()
     {
         $durationsAndModes = [];
-        $channel           = $downtime[Entity::CHANNEL];
+        $channel           = $this->downtimeInformation[Entity::CHANNEL];
         switch ($channel)
         {
             case Constants::ICICI_BANK :
@@ -317,7 +409,7 @@ class Notifications
                 $channel = 'All';
         }
 
-        foreach ($downtime[Constants::DURATIONS_AND_MODES] as $duration)
+        foreach ($this->downtimeInformation[Constants::DURATIONS_AND_MODES] as $duration)
         {
             $start = Carbon::createFromTimestamp($duration[Entity::START_TIME], Timezone::IST)->toDayDateTimeString();
 
@@ -338,54 +430,81 @@ class Notifications
         }
 
         return [
-            Entity::TYPE                   => $downtime[Entity::TYPE],
-            Entity::SOURCE                 => $downtime[Entity::SOURCE],
+            Entity::TYPE                   => $this->downtimeInformation[Entity::TYPE],
+            Entity::SOURCE                 => $this->downtimeInformation[Entity::SOURCE],
             Entity::CHANNEL                => $channel,
             Constants::DURATIONS_AND_MODES => $durationsAndModes,
         ];
     }
 
-    public function getSMSTemplate($durationsAndModes)
+    public function getSMSTemplate()
     {
         $templateKey = $this->flowType;
+        $distinctIntervalCount = count($this->downtimeInformation[Constants::DURATIONS_AND_MODES]);
 
         if (($this->flowType !== Constants::CANCELLATION) and
             ($this->flowType !== Constants::RESOLUTION))
         {
-            $templateKey .= '_' . strval(count($durationsAndModes));
+            $templateKey .= '_' . strval($distinctIntervalCount);
         }
 
         return self::SMS_TEMPLATE_MAP[$templateKey];
     }
 
-    protected function getChannelsAssignedToMerchant($merchantId)
+    /** Does a DB call and fetches the active virtual accounts assigned all mid's in the input array
+     * Some mid's in the input may not be present in the output if there is no active virtual account for those mids in
+     * in the input array
+     * @param array $merchantIds
+     * @return array
+     */
+    protected function getChannelsAssignedToMerchants(array $merchantIds)
     {
-        $bankAccountNumbers = $this->repo->bank_account->getBankAccountAccountNumbersOfActiveVirtualAccountsFromMerchantId($merchantId);
+        // get MID's and bank account numbers of shared virtual accounts which are active
+        $merchantIdAndAccountNumberColumns = $this->repo->bank_account->getBankAccountAccountNumbersOfActiveVirtualAccountsFromMerchantIds($merchantIds);
 
-        $channels[Constants::YES_BANK]   = false;
-        $channels[Constants::ICICI_BANK] = false;
+        $merchantIdsAndAccountNumbersMap = $this->combineMerchantIdsWitChannelsAssigned($merchantIdAndAccountNumberColumns);
 
-        foreach ($bankAccountNumbers as $accountNumberColumn)
+        $merchantIdsWithChannelsAssigned = [];
+
+        // finally for each MID, determine which virtual accounts they hold based on the account number prefixes
+        foreach ($merchantIdsAndAccountNumbersMap as $merchantId => $accountNumbers )
         {
-            $accountNumber   = $accountNumberColumn->getAccountNumber();
-            $firstSixDigits  = substr($accountNumber, 0, 6);
-            $firstFourDigits = substr($accountNumber, 0, 4);
+            $merchantIdsWithChannelsAssigned[$merchantId][Constants::YES_BANK] = false;
+            $merchantIdsWithChannelsAssigned[$merchantId][Constants::ICICI_BANK] = false;
 
-            if (in_array($firstSixDigits, self::YES_BANK_PREFIXES) == true)
+            foreach( $accountNumbers as $accountNumber)
             {
-                $channels[Constants::YES_BANK] = true;
-            }
-            if (in_array($firstFourDigits, self::ICICI_BANK_PREFIXES) === true)
-            {
-                $channels[Constants::ICICI_BANK] = true;
-            }
-            if (($channels[Constants::YES_BANK] === true) and
-                ($channels[Constants::ICICI_BANK] === true))
-            {
-                return $channels;
+                $firstSixDigits  = substr($accountNumber, 0, 6);
+                $firstFourDigits = substr($accountNumber, 0, 4);
+
+                if (in_array($firstSixDigits, self::YES_BANK_PREFIXES) == true)
+                {
+                    $merchantIdsWithChannelsAssigned[$merchantId][Constants::YES_BANK] = true;
+                }
+                if (in_array($firstFourDigits, self::ICICI_BANK_PREFIXES) === true)
+                {
+                    $merchantIdsWithChannelsAssigned[$merchantId][Constants::ICICI_BANK] = true;
+                }
             }
         }
+        // return an array of MID's as key and and array of active virtual accounts assigned as the key's value
+        // for example [ '10000000000000' => [ 'yesbank' => true, 'icicibank' => false ] , .... ]
 
-        return $channels;
+        return $merchantIdsWithChannelsAssigned;
+    }
+
+    protected function combineMerchantIdsWitChannelsAssigned($merchantIdAndAccountNumberColumns)
+    {
+        $merchantIdsWithAccountNumbers = [];
+
+        foreach ($merchantIdAndAccountNumberColumns as $midAndAccountNumber)
+        {
+            $merchantId    = $midAndAccountNumber->getAttribute(Constants::MERCHANT_ID);
+            $accountNumber = $midAndAccountNumber->getAttribute(\RZP\Models\BankAccount\Entity::ACCOUNT_NUMBER);
+
+            $merchantIdsWithAccountNumbers[$merchantId][] = $accountNumber;
+        }
+
+        return $merchantIdsWithAccountNumbers;
     }
 }

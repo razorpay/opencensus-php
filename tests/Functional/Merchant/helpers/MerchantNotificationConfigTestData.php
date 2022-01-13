@@ -10,10 +10,6 @@ return [
             'url'     => '/merchant_notification_configs',
             'method'  => 'POST',
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
             ],
@@ -23,13 +19,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => '120',
-                'lower_threshold'             => '12',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => '900',
+                'notification_type'           => 'bene_bank_downtime',
             ]
         ],
     ],
@@ -39,10 +32,6 @@ return [
             'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
             'method'  => 'POST',
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
             ],
@@ -52,13 +41,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => '120',
-                'lower_threshold'             => '12',
+                'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => '900',
             ]
         ],
     ],
@@ -103,14 +89,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'A merchant notification config already exists for the given mode.',
+                    'description' => 'A merchant notification config already exists for the given notification type.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_NOTIFICATION_TYPE,
         ],
 
     ],
@@ -119,10 +105,6 @@ return [
             'url'     => '/merchant_notification_configs',
             'method'  => 'POST',
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
             ],
@@ -134,14 +116,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'A merchant notification config already exists for the given mode.',
+                    'description' => 'A merchant notification config already exists for the given notification type.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_NOTIFICATION_TYPE,
         ],
     ],
 
@@ -150,10 +132,6 @@ return [
             'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
             'method'  => 'POST',
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
             ],
@@ -165,172 +143,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'A merchant notification config already exists for the given mode.',
+                    'description' => 'A merchant notification config already exists for the given notification type.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_MODE,
-        ],
-    ],
-
-    'testUpdateUpperThresholdForMerchantNotificationConfig' => [
-        'request'  => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'PATCH',
-            'content' => [
-                'upper_threshold' => 150,
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'upper_threshold'             => '150',
-                'lower_threshold'             => 12,
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-                'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
-            ],
-        ],
-    ],
-
-    'testUpdateUpperThresholdForMerchantNotificationConfigAsAdmin' => [
-        'request'  => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'PATCH',
-            'content' => [
-                'upper_threshold' => 150,
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'upper_threshold'             => '150',
-                'lower_threshold'             => 12,
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-                'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
-            ],
-        ],
-    ],
-
-    'testUpdateLowerThresholdForMerchantNotificationConfig' => [
-        'request'  => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'PATCH',
-            'content' => [
-                'lower_threshold' => 10,
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => '10',
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-                'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
-            ],
-        ],
-    ],
-
-    'testUpdateLowerThresholdForMerchantNotificationConfigAsAdmin' => [
-        'request'  => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'PATCH',
-            'content' => [
-                'lower_threshold' => 10,
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => '10',
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-                'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
-            ],
-        ],
-    ],
-
-    'testCreateMerchantNotificationConfigWithWrongThresholds' => [
-        'request'   => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'POST',
-            'content' => [
-                'upper_threshold'             => 12,
-                'lower_threshold'             => 120,
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The lower threshold is greater than the upper threshold.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD,
-        ],
-    ],
-
-    'testCreateMerchantNotificationConfigAsAdminWithWrongThresholds' => [
-        'request'   => [
-            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
-            'method'  => 'POST',
-            'content' => [
-                'upper_threshold'             => 12,
-                'lower_threshold'             => 120,
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The lower threshold is greater than the upper threshold.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_LOWER_THRESHOLD_GREATER_THAN_UPPER_THRESHOLD,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_ALREADY_EXISTS_FOR_NOTIFICATION_TYPE,
         ],
     ],
 
@@ -347,13 +167,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
                 'notification_emails'         => ['tipsByCrizal@razorpay.com', 'chiruyu@xyz.com'],
                 'notification_mobile_numbers' => ['9468620969'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
+                'notification_type'           => 'bene_bank_downtime',
             ],
         ],
     ],
@@ -371,13 +188,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
+                'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['tipsByCrizal@razorpay.com', 'chiruyu@xyz.com'],
                 'notification_mobile_numbers' => ['9468620969'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
             ],
         ],
     ],
@@ -395,13 +209,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
+                'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
             ],
         ],
     ],
@@ -419,13 +230,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
+                'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
             ],
         ],
     ],
@@ -453,54 +261,6 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testUpdateNotifyAfterForMerchantNotificationConfig' => [
-        'request'  => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'PATCH',
-            'content' => [
-                'notify_after' => 288
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-                'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => '288',
-            ],
-        ],
-    ],
-
-    'testUpdateNotifyAfterForMerchantNotificationConfigAsAdmin' => [
-        'request'  => [
-            'url'     => '/merchant_notification_configs',
-            'method'  => 'PATCH',
-            'content' => [
-                'notify_after' => 288
-            ],
-            'server'  => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
-                'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                'notification_mobile_numbers' => ['9468620969'],
-                'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => '288',
-            ],
         ],
     ],
 
@@ -611,13 +371,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
+                'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
             ]
         ],
     ],
@@ -633,13 +390,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'upper_threshold'             => 120,
-                'lower_threshold'             => 12,
+                'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9468620969'],
                 'config_status'               => 'enabled',
-                'mode'                        => 'IMPS',
-                'notify_after'                => 900,
             ]
         ],
     ],
@@ -660,18 +414,12 @@ return [
                 'has_more' => false,
                 'items'    => [
                     [
-                        'upper_threshold'             => 120,
-                        'lower_threshold'             => 12,
-                        'mode'                        => 'IMPS',
-                        'notify_after'                => 900,
+                        'notification_type'           => 'bene_bank_downtime',
                         'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                         'notification_mobile_numbers' => ['9468620969'],
                     ],
                     [
-                        'upper_threshold'             => 320,
-                        'lower_threshold'             => 32,
-                        'mode'                        => 'NEFT',
-                        'notify_after'                => 1000,
+                        'notification_type'           => 'fund_loading_downtime',
                         'notification_emails'         => ['test@razorpay.com', 'test@gmail.com'],
                         'notification_mobile_numbers' => ['9587612341'],
                     ],
@@ -682,7 +430,7 @@ return [
 
     'testFetchMultipleMerchantNotificationConfigsAsAdmin' => [
         'request'  => [
-            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
+            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs?notification_type=fund_loading_downtime',
             'method'  => 'GET',
             'content' => [],
             'server'  => [
@@ -695,21 +443,41 @@ return [
                 'count'    => 2,
                 'items'    => [
                     [
-                        'upper_threshold'             => 120,
-                        'lower_threshold'             => 12,
-                        'mode'                        => 'IMPS',
-                        'notify_after'                => 900,
-                        'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
-                        'notification_mobile_numbers' => ['9468620969'],
+                        'notification_type'           => 'fund_loading_downtime',
+                        'notification_emails'         => ['test1@razorpay.com', 'test11@gmail.com'],
+                        'notification_mobile_numbers' => ['9587612341','814582777'],
                     ],
                     [
-                        'upper_threshold'             => 320,
-                        'lower_threshold'             => 32,
-                        'mode'                        => 'NEFT',
-                        'notify_after'                => 1000,
-                        'notification_emails'         => ['test@razorpay.com', 'test@gmail.com'],
-                        'notification_mobile_numbers' => ['9587612341'],
+                        'notification_type'           => 'fund_loading_downtime',
+                        'notification_emails'         => ['test2@razorpay.com', 'test22@gmail.com'],
+                        'notification_mobile_numbers' => ['9587612341','6363200000'],
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultipleNotificationConfigsWithQueryParamsAsAdmin' => [
+        'request'  => [
+            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items' => [
+                    [
+                        'id'                          => 'mnc_abcdefghiljkmn',
+                        'merchant_id'                 => '10000000000000',
+                        'notification_type'           => 'fund_loading_downtime',
+                        'notification_emails'         => ['test1@razorpay.com', 'test11@gmail.com'],
+                        'notification_mobile_numbers' => ['9587612341', '814582777'],
+                    ]
                 ],
             ],
         ],

@@ -7,18 +7,12 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
-use RZP\Mail\Base\Mailable;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use RZP\Mail\Payout\DowntimeNotification;
 use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Tests\Functional\Fixtures\Entity\Payout;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\MerchantNotificationConfig\Entity;
 
 class MerchantNotificationConfigTest extends TestCase
@@ -107,56 +101,6 @@ class MerchantNotificationConfigTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateUpperThresholdForMerchantNotificationConfig()
-    {
-        $merchantNotificationConfig = $this->testCreateMerchantNotificationConfig();
-
-        $testData                   = &$this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/merchant_notification_configs/' . $merchantNotificationConfig['id'];
-        $this->startTest();
-    }
-
-    public function testUpdateUpperThresholdForMerchantNotificationConfigAsAdmin()
-    {
-        $merchantNotificationConfig = $this->testCreateMerchantNotificationConfigAsAdmin();
-
-        $testData = &$this->testData[__FUNCTION__];
-        $testData['request']['url']
-                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
-        $this->startTest();
-    }
-
-    public function testUpdateLowerThresholdForMerchantNotificationConfig()
-    {
-        $merchantNotificationConfig = $this->testCreateMerchantNotificationConfig();
-
-        $testData                   = &$this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/merchant_notification_configs/' . $merchantNotificationConfig['id'];
-        $this->startTest();
-    }
-
-    public function testUpdateLowerThresholdForMerchantNotificationConfigAsAdmin()
-    {
-        $merchantNotificationConfig = $this->testCreateMerchantNotificationConfigAsAdmin();
-
-        $testData = &$this->testData[__FUNCTION__];
-        $testData['request']['url']
-                  = '/admin/merchants/10000000000000/merchant_notification_configs/' . $merchantNotificationConfig['id'];
-        $this->startTest();
-    }
-
-    public function testCreateMerchantNotificationConfigWithWrongThresholds()
-    {
-        $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
-        $this->startTest();
-    }
-
-    public function testCreateMerchantNotificationConfigAsAdminWithWrongThresholds()
-    {
-        $this->ba->adminAuth();
-        $this->startTest();
-    }
-
     public function testUpdateNotificationEmailsForMerchantNotificationConfig()
     {
         $config = $this->testCreateMerchantNotificationConfig();
@@ -200,24 +144,6 @@ class MerchantNotificationConfigTest extends TestCase
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
 
-        $this->startTest();
-    }
-
-    public function testUpdateNotifyAfterForMerchantNotificationConfig()
-    {
-        $config = $this->testCreateMerchantNotificationConfig();
-
-        $testData                   = &$this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/merchant_notification_configs/' . $config['id'];
-        $this->startTest();
-    }
-
-    public function testUpdateNotifyAfterForMerchantNotificationConfigAsAdmin()
-    {
-        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
-
-        $testData                   = &$this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
         $this->startTest();
     }
 
@@ -395,10 +321,7 @@ class MerchantNotificationConfigTest extends TestCase
 
         $this->fixtures->on('live')->create('merchant_notification_config', [
             'id'                          => 'Fz2IHRXebge3l0',
-            'upper_threshold'             => '320',
-            'lower_threshold'             => '32',
-            'mode'                        => 'NEFT',
-            'notify_after'                => '1000',
+            'notification_type'           => 'fund_loading_downtime',
             'notification_emails'         => 'test@razorpay.com,test@gmail.com',
             'notification_mobile_numbers' => '9587612341',
             'created_at'                  => $time->subHour()->timestamp,
@@ -417,14 +340,52 @@ class MerchantNotificationConfigTest extends TestCase
 
         $this->fixtures->on('test')->create('merchant_notification_config', [
             'id'                          => 'Fz2IHRXebge3l0',
-            'upper_threshold'             => '320',
-            'lower_threshold'             => '32',
-            'mode'                        => 'NEFT',
-            'notify_after'                => '1000',
-            'notification_emails'         => 'test@razorpay.com,test@gmail.com',
-            'notification_mobile_numbers' => '9587612341',
+            'notification_type'           => 'fund_loading_downtime',
+            'notification_emails'         => 'test1@razorpay.com,test11@gmail.com',
+            'notification_mobile_numbers' => '9587612341,814582777',
             'created_at'                  => $time->subHour()->timestamp,
         ]);
+
+        $this->fixtures->on('test')->create('merchant_notification_config', [
+            'id'                          => 'Fz2IHRXebge3l1',
+            'notification_type'           => 'fund_loading_downtime',
+            'notification_emails'         => 'test2@razorpay.com,test22@gmail.com',
+            'notification_mobile_numbers' => '9587612341,6363200000',
+            'created_at'                  => $time->subHour()->timestamp,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testFetchMultipleNotificationConfigsWithQueryParamsAsAdmin()
+    {
+        $time = Carbon::now();
+
+        Carbon::setTestNow($time);
+
+        $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $this->fixtures->on('test')->create('merchant_notification_config', [
+            'id'                          => 'abcdefghiljkmn',
+            'notification_type'           => 'fund_loading_downtime',
+            'notification_emails'         => 'test1@razorpay.com,test11@gmail.com',
+            'notification_mobile_numbers' => '9587612341,814582777',
+            'created_at'                  => $time->subHour()->timestamp,
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_notification_config', [
+            'id'                          => 'bcdefghiljkmno',
+            'notification_type'           => 'fund_loading_downtime',
+            'notification_emails'         => 'test2@razorpay.com,test22@gmail.com',
+            'notification_mobile_numbers' => '9587612341,814582777',
+            'created_at'                  => $time->subHour()->timestamp,
+            'config_status'               => 'disabled',
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        // add query params in url
+        $testData['request']['url'] .= '?notification_type=fund_loading_downtime&config_status=enabled';
 
         $this->startTest();
     }
@@ -506,98 +467,5 @@ class MerchantNotificationConfigTest extends TestCase
         ];
 
         $this->makeRequestAndGetContent($request);
-    }
-
-    // This test is used to check the stuck payouts alert functionality
-    public function testStuckPayoutsAlert()
-    {
-        Mail::fake();
-
-        $testDate = Carbon::create(2021, 01, 01, 12, null, null);
-
-        Carbon::setTestNow($testDate);
-
-        // Create a test config
-        $this->testCreateMerchantNotificationConfigAsAdmin();
-
-        // Fetch the created config for using later in this code
-        $config = $this->getDbLastEntity('merchant_notification_config');
-
-        $this->ba->cronAuth();
-
-        // Create a number of payouts, so as to trigger stuck payouts alert
-        $this->createLotsOfPayoutsStuckInInitiatedState($config->getUpperThreshold());
-
-        // Hit the alert route
-        $request = [
-            'url'    => '/merchant_notification_configs/alert',
-            'method' => 'POST',
-        ];
-
-        $this->makeRequestAndGetContent($request);
-
-        // This flow creates mails in sync mode
-        // We chose sync mode because we don't expect a lot of mails to be generated right now.
-        // This was decided as a part of a focus group task to quickly build an alerting solution for stuck payouts.
-        Mail::assertSent(DowntimeNotification::class);
-
-        // Fetch the updated config to check if notifyAt has become negative
-        $newConfig = $this->getDbLastEntity('merchant_notification_config');
-
-        // Assert that the new notify_at value is negative
-        // i.e. an email has been sent
-        $this->assertTrue(($newConfig->getNotifyAt()) < 0);
-
-        // Assert that the value of notify_at is correct.
-        $this->assertEquals(
-            -1 * (Carbon::now()->timestamp + $config->getNotifyAfter()), $newConfig->getNotifyAt());
-
-        // Change the value of notifyAt to be below currentTime so as to re-trigger alerting
-        $this->fixtures->edit('merchant_notification_config', $newConfig->getId(), ['notify_at' => -1]);
-
-        $this->makeRequestAndGetContent($request);
-
-        Mail::assertSent(DowntimeNotification::class);
-
-        $newConfig = $this->getDbLastEntity('merchant_notification_config');
-
-        // Assert that notifyAt is still negative, since resolution hasn't happened yet
-        $this->assertTrue(($newConfig->getNotifyAt()) < 0);
-
-        // Assert that value of notifyAt is correct
-        $this->assertEquals(
-            -1 * (1 + $config->getNotifyAfter()), $newConfig->getNotifyAt());
-
-        // clear the payouts table, so as to trigger resolution mail
-        $this->app['db']->statement('DELETE FROM payouts');
-
-        $this->makeRequestAndGetContent($request);
-
-        Mail::assertSent(DowntimeNotification::class);
-
-        // Fetch updated config, as we expect notifyAt to get updated
-        $newConfig = $this->getDbLastEntity('merchant_notification_config');
-
-        // Check if notifyAt has flipped back to positive, asserting that resolution mail has been sent.
-        $this->assertTrue(($newConfig->getNotifyAt()) > 0);
-    }
-
-    protected function createLotsOfPayoutsStuckInInitiatedState(int $upperThreshold)
-    {
-        // The number of stuck payouts should be (at least one) more than the upper threshold, hence loop starts from 0
-        // with less than or equal to comparator
-        for ($x = 0; $x <= $upperThreshold; $x++)
-        {
-            (new Payout())
-                ->createPayoutWithoutTransaction(
-                    [
-                        'merchant_id' => '10000000000000',
-                        'mode'        => 'IMPS',
-                        'status'      => 'initiated',
-                        'amount'      => 100,
-                        'currency'    => 'INR',
-                    ]
-                );
-        }
     }
 }

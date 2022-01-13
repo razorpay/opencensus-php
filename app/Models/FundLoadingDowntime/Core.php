@@ -13,6 +13,8 @@ class Core extends \RZP\Models\Base\Core
     public function create($input)
     {
         $input['created_by'] = $this->app['basicauth']->getAdmin()->getId();
+        // comment above line and uncomment below line for testing in local using private auth
+        //$input['created_by'] = $this->app['basicauth']->getMerchant()->getId();
         $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_CREATE_REQUEST, ['input' => $input]);
 
         $duplicateDowntime = $this->repo->fund_loading_downtimes->getSimilarDowntime($input);
@@ -35,7 +37,8 @@ class Core extends \RZP\Models\Base\Core
 
         $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_CREATED,
                            [
-                               'id' => $downtime->getId()
+                               'id' => $downtime->getId(),
+                               'values' => $downtime->toArrayPublic()
                            ]);
 
         return $downtime;
@@ -43,14 +46,14 @@ class Core extends \RZP\Models\Base\Core
 
     public function update($id, $input)
     {
+        $id         = trim($id);
         $downtimeId = Entity::verifyIdAndSilentlyStripSign($id);
 
-        $this->trace->info(
-            TraceCode::FUND_LOADING_DOWNTIME_UPDATE_REQUEST,
-            [
-                'input' => $input,
-                'id'    => $downtimeId
-            ]);
+        $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_UPDATE_REQUEST,
+                           [
+                               'input' => $input,
+                               'id'    => $downtimeId
+                           ]);
 
         if (empty($input) === true)
         {
@@ -63,12 +66,11 @@ class Core extends \RZP\Models\Base\Core
 
         if (empty($duplicateDowntime) === false)
         {
-            $this->trace->info(
-                TraceCode::DUPLICATE_FUND_LOADING_DOWNTIME_WHILE_UPDATE,
-                [
-                    Entity::ID      => $duplicateDowntime->getPublicId(),
-                    'update_params' => $input,
-                ]
+            $this->trace->info(TraceCode::DUPLICATE_FUND_LOADING_DOWNTIME_WHILE_UPDATE,
+                               [
+                                   Entity::ID      => $duplicateDowntime->getPublicId(),
+                                   'update_params' => $input,
+                               ]
             );
 
             return $duplicateDowntime;
@@ -78,11 +80,10 @@ class Core extends \RZP\Models\Base\Core
 
         $this->repo->fund_loading_downtimes->saveOrFailEntity($downtime);
 
-        $this->trace->info(
-            TraceCode::FUND_LOADING_DOWNTIME_UPDATED,
-            [
-                Entity::ID => $downtime->getPublicId(),
-            ]
+        $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_UPDATED,
+                           [
+                               Entity::ID => $downtime->getPublicId(),
+                           ]
         );
 
         return $downtime;
@@ -124,6 +125,8 @@ class Core extends \RZP\Models\Base\Core
         $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_DELETE_REQUEST, ['id' => $downtime->getId()]);
 
         $this->repo->fund_loading_downtimes->deleteOrFail($downtime);
+
+        $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_DELETED, ['id' => $downtime->getId()]);
     }
 
     public function createMultipleDowntimesAndNotify($input, $flowType)
@@ -275,6 +278,8 @@ class Core extends \RZP\Models\Base\Core
     public function sendNotifications($input, $flowType)
     {
         $downtimeInformation = $this->getDowntimeInformation($input[Constants::DOWNTIME_INPUTS]);
+        unset($input[Constants::DOWNTIME_INPUTS]);
+        $input[Constants::DOWNTIME_INFO] = $downtimeInformation;
 
         // if neither sms nor email option is selected, we return here
         if (boolval($input[Notification::SEND_SMS]) === false and boolval($input[Notification::SEND_EMAIL]) === false)
@@ -288,7 +293,9 @@ class Core extends \RZP\Models\Base\Core
                 ]
             );
 
-            return $downtimeInformation;
+            return [
+                Constants::DOWNTIME_INFO => $downtimeInformation
+            ];
         }
 
         // As at least one of the options (send_email,send_sms) has been selected, we go forward with the flow and send notifications
@@ -302,9 +309,7 @@ class Core extends \RZP\Models\Base\Core
             ]
         );
 
-        $response = (new Notifications($flowType))->sendNotifications($downtimeInformation,
-                                                                      $input[Notification::SEND_SMS],
-                                                                      $input[Notification::SEND_EMAIL]);
+        $response = (new Notifications($input, $flowType))->sendNotifications();
 
         $this->trace->info(
             TraceCode::FUND_LOADING_DOWNTIME_NOTIFICATIONS_SENT,

@@ -16,12 +16,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByMerchantIdNotificationTypeAndMode(string $merchantId, $notificationType, $mode = 'ALL')
+    public function findByMerchantIdAndNotificationType(string $merchantId, $notificationType)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::NOTIFICATION_TYPE, '=', $notificationType)
-                    ->where(Entity::MODE, '=', $mode)
                     ->get();
     }
 

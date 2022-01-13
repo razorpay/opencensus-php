@@ -2882,6 +2882,29 @@ class AdminFetch
                 ],
             ],
 
+            Entity::MERCHANT_NOTIFICATION_CONFIG => [
+                'merchant_id'       => [
+                    Fetch::LABEL => 'Merchant ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'notification_type' => [
+                    Fetch::LABEL  => 'Notification Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'fund_loading_downtime',
+                        'bene_bank_downtime'
+                    ],
+                ],
+                'config_status'     => [
+                    Fetch::LABEL  => 'Config Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'enabled',
+                        'disabled',
+                    ],
+                ],
+            ],
+
             Entity::METHODS => [
                 'amex' => [
                     Fetch::LABEL  => 'Amex',
@@ -4362,6 +4385,47 @@ class AdminFetch
                 'is_created'            => [
                     Fetch::LABEL => 'Is Created',
                     Fetch::TYPE  => Fetch::TYPE_BOOLEAN,
+                ],
+            ],
+
+            Entity::FUND_LOADING_DOWNTIMES => [
+                'type'    => [
+                    Fetch::LABEL  => 'Type of Downtime',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'Scheduled Maintenance Activity',
+                        'Sudden Downtime',
+                    ]
+                ],
+                'source'  => [
+                    Fetch::LABEL  => 'Source of Downtime',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'RBI',
+                        'NPCI',
+                        'Partner Bank',
+                    ]
+                ],
+                'channel' => [
+                    Fetch::LABEL  => 'Banks Down',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'yesbank',
+                        'icicibank',
+                        'all',
+                    ],
+                ],
+                'active' => [
+                    Fetch::LABEL => 'Show Active',
+                    Fetch::TYPE => Fetch::TYPE_BOOLEAN,
+                ],
+                'start_time' => [
+                    Fetch::LABEL => 'Start After',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ],
+                'end_time'   => [
+                    Fetch::LABEL => 'End Before',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
                 ],
             ],
         ];

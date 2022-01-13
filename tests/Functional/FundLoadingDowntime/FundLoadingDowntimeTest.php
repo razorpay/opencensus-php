@@ -177,6 +177,9 @@ class FundLoadingDowntimeTest extends TestCase
 
     public function testFetchActiveDowntimesWithCurrentTimeAndParameters()
     {
+
+        Carbon::setTestNow(Carbon::createFromTimestamp(1637930829,Timezone::IST));
+
         $attributes = [
             'id'         => '100001downtime',
             'type'       => 'Scheduled Maintenance Activity',
@@ -185,6 +188,8 @@ class FundLoadingDowntimeTest extends TestCase
             'mode'       => 'UPI',
             'start_time' => 1537930829,
             'end_time'   => 1737930829,
+            'created_at' => Carbon::now(Timezone::IST)->subSeconds(2000)->getTimestamp(),
+            'updated_at' => Carbon::now(Timezone::IST)->subSeconds(2000)->getTimestamp(),
         ];
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
@@ -195,20 +200,24 @@ class FundLoadingDowntimeTest extends TestCase
             'source'     => 'Partner Bank',
             'channel'    => 'icicibank',
             'mode'       => 'IMPS',
-            'start_time' => 1537930829,
+            'start_time' => 1537920829,
             'end_time'   => null,
+            'created_at' => Carbon::now(Timezone::IST)->subSeconds(3000)->getTimestamp(),
+            'updated_at' => Carbon::now(Timezone::IST)->subSeconds(3000)->getTimestamp(),
         ];
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
 
         $attributes = [
             'id'         => '100003downtime',
-            'type'       => 'Sudden Downtime',
+            'type'       => 'Scheduled Maintenance Activity',
             'source'     => 'Partner Bank',
             'channel'    => 'icicibank',
             'mode'       => 'RTGS',
-            'start_time' => 1537930829,
-            'end_time'   => 1557930829,
+            'start_time' => 1537940829,
+            'end_time'   => 1737930829,
+            'created_at' => Carbon::now(Timezone::IST)->subSeconds(1000)->getTimestamp(),
+            'updated_at' => Carbon::now(Timezone::IST)->subSeconds(1000)->getTimestamp(),
         ];
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
@@ -218,6 +227,8 @@ class FundLoadingDowntimeTest extends TestCase
 
     public function testFetchActiveDowntimesWithStartTimeAndParameters()
     {
+        Carbon::setTestNow(Carbon::createFromTimestamp(1637930829,Timezone::IST));
+
         $attributes = [
             'id'               => '100000downtime',
             'type'             => 'Sudden Downtime',
@@ -245,7 +256,7 @@ class FundLoadingDowntimeTest extends TestCase
 
         $data = &$this->testData[__FUNCTION__];
 
-        $url = $data['request']['url'] . "&start_time=" . Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $url = $data['request']['url'] . "&start_time=" . Carbon::now(Timezone::IST)->subSeconds(30000)->getTimestamp();
 
         $data['request']['url'] = $url;
 
@@ -254,6 +265,8 @@ class FundLoadingDowntimeTest extends TestCase
 
     public function testFetchActiveDowntimesWithStartAndEndTimeAndParameters()
     {
+        Carbon::setTestNow(Carbon::createFromTimestamp(1637930829,Timezone::IST));
+
         $attributes = [
             'id'         => '100000downtime',
             'type'       => 'Sudden Downtime',
@@ -567,6 +580,221 @@ class FundLoadingDowntimeTest extends TestCase
         });
     }
 
+    public function testCancellationFlowWithNeitherSMSNorEmailNotifications()
+    {
+        Mail::fake();
+
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+
+        $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+
+        $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+
+        $this->createBalance('xbalance111111');
+
+        $attributes = [
+            'id'         => '100000downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'NEFT',
+            'start_time' => 1632413321,
+            'end_time'   => 1632443321,
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100001downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'IMPS',
+            'start_time' => 1632413321,
+            'end_time'   => 1632443321,
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100002downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'UPI',
+            'start_time' => 1632413321,
+            'end_time'   => 1632443321,
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $this->startTest();
+
+        $remainingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
+
+        $this->assertEquals(1, count($remainingDowntimes));
+
+        $this->assertArraySelectiveEquals($attributes, $remainingDowntimes[0]);
+
+    }
+
+    public function testCancellationFlowWithOnlySmsNotification()
+    {
+        Mail::fake();
+
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+
+        $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+
+        $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+
+        $this->createBalance('xbalance111111');
+
+        $attributes = [
+            'id'         => '100000downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'NEFT',
+            'start_time' => 1632413321,
+            'end_time'   => 1632443321,
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100001downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'IMPS',
+            'start_time' => 1632413321,
+            'end_time'   => 1632443321,
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100002downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'UPI',
+            'start_time' => 1632413321,
+            'end_time'   => 1632443321,
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $this->startTest();
+
+        $remainingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
+
+        $this->assertCount(1, $remainingDowntimes);
+
+        $this->assertArraySelectiveEquals($attributes, $remainingDowntimes[0]);
+
+    }
+
+    public function testCancellationFlowWithOnlyEmailNotification()
+    {
+        Mail::fake();
+
+        $this->createMerchantConfigs('10000000000000', ['sagnik@razorpay.com'], ['9468620910', '9468620911']);
+
+        $this->createMerchantConfigs('20000000000000', ['sagnik2@razorpay.com'], ['9468620910', '9468620911']);
+
+        $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+
+        $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+
+        $this->createBalance('xbalance111111');
+
+        $attributes = [
+            'id'         => '100000downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'NEFT',
+            'start_time' => 1632413321, // Thursday, 23 September 2021 21:38 PM
+            'end_time'   => 1632443321, // Friday, 24 September 2021 05:58 AM
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100001downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'IMPS',
+            'start_time' => 1632413321, // Thursday, 23 September 2021 21:38 PM
+            'end_time'   => 1632443321, // Friday, 24 September 2021 05:58:AM
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100002downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'UPI',
+            'start_time' => 1632413321, // Thursday, 23 September 2021 21:38 PM
+            'end_time'   => 1632443321, // Friday, 24 September 2021 05:58 AM
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $this->startTest();
+
+        $remainingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
+
+        $this->assertCount(1, $remainingDowntimes);
+
+        $this->assertArraySelectiveEquals($attributes, $remainingDowntimes[0]);
+
+        Mail::assertSent(FundLoadingDowntimeMail::class, function($mail)
+        {
+            $this->assertSame(Constants::CANCELLATION, $mail->flowType);
+
+            $expectedDowntimeParams = [
+                'type'                => "Scheduled Maintenance Activity",
+                'source'              => "Partner Bank",
+                'channel'             => "ICICI Bank",
+                'durations_and_modes' => [
+                    [
+                        'start_time' => "Thu, Sep 23, 2021 9:38 PM",
+                        'end_time'   => "to Fri, Sep 24, 2021 5:58 AM",
+                        'modes'      => "NEFT,IMPS",
+                    ]
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedDowntimeParams, $mail->downtimeParams);
+
+            $this->assertSame(
+                [
+                    'name'    => 'Team RazorpayX',
+                    'address' => 'x.support@razorpay.com'
+                ],
+                $mail->from[0]
+            );
+
+            $this->assertArraySelectiveEquals(
+                [
+                    'address' => "sagnik@razorpay.com"
+                ],
+                $mail->to[0]
+            );
+
+            $this->assertSame('Update on Downtime communication for loading funds to RazorpayX virtual account',
+                              $mail->subject);
+
+            return true;
+        });
+
+    }
     public function createMerchantConfigs($mid, $emails, $mobiles)
     {
         $merchantConfigs = [

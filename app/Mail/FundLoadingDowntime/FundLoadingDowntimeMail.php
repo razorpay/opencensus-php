@@ -28,6 +28,24 @@ class FundLoadingDowntimeMail extends Mailable
         $this->flowType = $flowType;
     }
 
+    protected function addSubject()
+    {
+        switch ($this->flowType)
+        {
+            case Constant::CREATION:
+
+                $this->subject('Downtime communication for loading funds to RazorpayX virtual account');
+                break;
+
+            Default:
+
+                $this->subject('Update on Downtime communication for loading funds to RazorpayX virtual account');
+                break;
+        }
+
+        return $this;
+    }
+
     protected function addSender()
     {
         // for stage testing, use .in instead of .com in the email id
@@ -55,24 +73,6 @@ class FundLoadingDowntimeMail extends Mailable
     {
         $templateName = self::SOURCE . '.' . $this->flowType;
         $this->view($templateName);
-        return $this;
-    }
-
-    protected function addSubject()
-    {
-        switch ($this->flowType)
-        {
-            case Constant::CREATION:
-
-                $this->subject('Downtime communication for loading funds to RazorpayX virtual account');
-                break;
-
-            Default:
-
-                $this->subject('Update on Downtime communication for loading funds to RazorpayX virtual account');
-                break;
-        }
-
         return $this;
     }
 

@@ -760,4 +760,6 @@ return [
     E::PAYMENT_PAGE_ITEM => [],
 
     E::LEDGER_STATEMENT => [],
+
+    E::MERCHANT_NOTIFICATION_CONFIG => [],
 ];

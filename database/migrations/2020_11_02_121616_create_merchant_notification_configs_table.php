@@ -28,31 +28,10 @@ class CreateMerchantNotificationConfigsTable extends Migration
             $table->string(Entity::CONFIG_STATUS)
                   ->default(MerchantNotificationConfig\Status::ENABLED);
 
-            $table->integer(Entity::UPPER_THRESHOLD)
-                  ->nullable();
-
-            $table->integer(Entity::LOWER_THRESHOLD)
-                  ->nullable();
-
-            $table->string(Entity::MODE)
-                  ->nullable();
-
             $table->text(Entity::NOTIFICATION_EMAILS)
                   ->nullable();
 
             $table->text(Entity::NOTIFICATION_MOBILE_NUMBERS)
-                  ->nullable();
-
-            $table->unsignedInteger(Entity::NOTIFY_AFTER)
-                  ->default(900);
-
-            $table->integer(Entity::NOTIFY_AT)
-                  ->default(0);
-
-            $table->integer(Entity::LAST_ENABLED_AT)
-                  ->nullable();
-
-            $table->integer(Entity::LAST_DISABLED_AT)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);
@@ -67,11 +46,10 @@ class CreateMerchantNotificationConfigsTable extends Migration
 
             $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
-            $table->index([Entity::MERCHANT_ID, Entity::MODE]);
-
             $table->index([Entity::MERCHANT_ID, Entity::CONFIG_STATUS]);
 
             $table->index([Entity::CONFIG_STATUS, Entity::CREATED_AT, Entity::ID]);
+
         });
     }
 

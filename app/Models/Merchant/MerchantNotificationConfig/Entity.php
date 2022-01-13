@@ -27,25 +27,15 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID                 = 'merchant_id';
     const CONFIG_STATUS               = 'config_status';
     const NOTIFICATION_TYPE           = 'notification_type';
-    const UPPER_THRESHOLD             = 'upper_threshold';
-    const LOWER_THRESHOLD             = 'lower_threshold';
-    const MODE                        = 'mode';
-    const NOTIFY_AFTER                = 'notify_after'; // it is in seconds
-    const NOTIFY_AT                   = 'notify_at';
     const NOTIFICATION_EMAILS         = 'notification_emails';
     const NOTIFICATION_MOBILE_NUMBERS = 'notification_mobile_numbers';
-    const LAST_ENABLED_AT             = 'last_enabled_at';
-    const LAST_DISABLED_AT            = 'last_disabled_at';
     const CREATED_AT                  = 'created_at';
     const UPDATED_AT                  = 'updated_at';
     // End of Schema Constants
 
     // Default values
     protected $defaults = [
-        self::NOTIFY_AT         => 0,
-        self::NOTIFY_AFTER      => 900, // 15 minutes*/
         self::CONFIG_STATUS     => Status::ENABLED,
-        self::MODE              => 'ALL',
         self::NOTIFICATION_TYPE => NotificationType::BENE_BANK_DOWNTIME,
     ];
 
@@ -56,13 +46,9 @@ class Entity extends Base\PublicEntity
 
     // Fillable attributes
     protected $fillable = [
-        self::UPPER_THRESHOLD,
-        self::LOWER_THRESHOLD,
         self::NOTIFICATION_TYPE,
         self::NOTIFICATION_EMAILS,
         self::NOTIFICATION_MOBILE_NUMBERS,
-        self::NOTIFY_AFTER,
-        self::MODE,
     ];
 
     protected $visible = [
@@ -70,11 +56,6 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CONFIG_STATUS,
         self::NOTIFICATION_TYPE,
-        self::UPPER_THRESHOLD,
-        self::LOWER_THRESHOLD,
-        self::MODE,
-        self::NOTIFY_AFTER,
-        self::NOTIFY_AT,
         self::NOTIFICATION_EMAILS,
         self::NOTIFICATION_MOBILE_NUMBERS,
         self::CREATED_AT,
@@ -83,15 +64,13 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::UPPER_THRESHOLD,
-        self::LOWER_THRESHOLD,
+        self::MERCHANT_ID,
         self::NOTIFICATION_TYPE,
         self::NOTIFICATION_EMAILS,
         self::NOTIFICATION_MOBILE_NUMBERS,
         self::CONFIG_STATUS,
-        self::MODE,
-        self::NOTIFY_AFTER,
         self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     // Public Setters
@@ -102,15 +81,6 @@ class Entity extends Base\PublicEntity
     ];
 
     // Getters
-    public function getUpperThreshold()
-    {
-        return $this->getAttribute(self::UPPER_THRESHOLD);
-    }
-
-    public function getLowerThreshold()
-    {
-        return $this->getAttribute(self::LOWER_THRESHOLD);
-    }
 
     public function getNotificationEmails()
     {
@@ -122,34 +92,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTIFICATION_MOBILE_NUMBERS);
     }
 
-    public function getNotifyAfter()
-    {
-        return $this->getAttribute(self::NOTIFY_AFTER);
-    }
-
-    public function getNotifyAt()
-    {
-        return $this->getAttribute(self::NOTIFY_AT);
-    }
-
     public function getConfigStatus()
     {
         return $this->getAttribute(self::CONFIG_STATUS);
-    }
-
-    public function getMode()
-    {
-        return $this->getAttribute(self::MODE);
-    }
-
-    public function getLastEnabledAt()
-    {
-        return $this->getAttribute(self::LAST_ENABLED_AT);
-    }
-
-    public function getLastDisabledAt()
-    {
-        return $this->getAttribute(self::LAST_DISABLED_AT);
     }
 
     public function getNotificationType()
@@ -162,34 +107,6 @@ class Entity extends Base\PublicEntity
     public function setConfigStatus(string $status)
     {
         $this->setAttribute(self::CONFIG_STATUS, $status);
-        if($status === Status::ENABLED)
-        {
-            $this->setLastEnabledAt(now()->timestamp);
-        }
-        if($status === Status::DISABLED)
-        {
-            $this->setLastDisabledAt(now()->timestamp);
-        }
-    }
-
-    public function setNotifyAt(int $notifyAt)
-    {
-        $this->setAttribute(self::NOTIFY_AT, $notifyAt);
-    }
-
-    public function setNotifyAfter(int $notifyAfter)
-    {
-        $this->setAttribute(self::NOTIFY_AFTER, $notifyAfter);
-    }
-
-    protected function setLastEnabledAt(int $time)
-    {
-        return $this->setAttribute(self::LAST_ENABLED_AT, $time);
-    }
-
-    protected function setLastDisabledAt(int $time)
-    {
-        return $this->setAttribute(self::LAST_DISABLED_AT, $time);
     }
     // End of Setters
 

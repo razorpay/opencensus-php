@@ -6614,3 +6614,13 @@ ALTER TABLE settlement_ondemands ADD COLUMN scheduled tinyint(1) DEFAULT 0;
 ALTER TABLE tnc_map
     ADD COLUMN business_unit varchar(20) COLLATE utf8mb4_bin,
     ADD CONSTRAINT tnc_map_business_unit_unique UNIQUE (business_unit);
+
+ALTER TABLE merchant_notification_configs
+    DROP INDEX `merchant_notification_configs_merchant_id_mode_index`,
+    DROP COLUMN `upper_threshold`,
+    DROP COLUMN `lower_threshold`,
+    DROP COLUMN `notify_at`,
+    DROP COLUMN `notify_after`,
+    DROP COLUMN `mode`,
+    DROP COLUMN `last_enabled_at`,
+    DROP COLUMN `last_disabled_at`;

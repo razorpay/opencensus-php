@@ -14,7 +14,7 @@ class Fetch extends Base\Fetch
             Entity::CHANNEL          => 'filled|string|max:255',
             Entity::MODE             => 'filled|string|max:255',
             Entity::START_TIME       => 'filled|epoch',
-            Entity::END_TIME         => 'sometimes|required_with:start_time|gt:start_time|epoch',
+            Entity::END_TIME         => 'sometimes|nullable|epoch',
             Entity::DOWNTIME_MESSAGE => 'sometimes|string',
             Entity::CREATED_BY       => 'filled|string|max:255',
         ],

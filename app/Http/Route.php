@@ -2881,7 +2881,6 @@ class Route
         'delete_merchant_notification_config'     => ['delete', 'merchant_notification_configs/{id}',         'MerchantNotificationConfigController@delete'],
         'disable_merchant_notification_config'    => ['post',   'merchant_notification_configs/{id}/disable', 'MerchantNotificationConfigController@disableConfig'],
         'enable_merchant_notification_config'     => ['post',   'merchant_notification_configs/{id}/enable',  'MerchantNotificationConfigController@enableConfig'],
-        'merchant_notification_config_alert_cron' => ['post',   'merchant_notification_configs/alert',        'MerchantNotificationConfigController@alert'],
 
         // Admin merchant notification config APIs
         'create_merchant_notification_config_admin'     => ['post',   'admin/merchants/{merchantId}/merchant_notification_configs',              'MerchantNotificationConfigController@createAsAdmin'],
@@ -4076,7 +4075,6 @@ class Route
         'unclaimed_merchant_poc_update',
         'low_balance_config_alert_cron',
         'payouts_intermediate_transactions_cron_update',
-        'merchant_notification_config_alert_cron',
         'refund_scrooge_fetch_fee',
         'refund_scrooge_payment_update',
         'refund_scrooge_transaction_create',
@@ -11189,7 +11187,6 @@ class Route
             'tokens_upi_vpa_bulk_cron',
             'low_balance_config_alert_cron',
             'payouts_intermediate_transactions_cron_update',
-            'merchant_notification_config_alert_cron',
             'terminals_proxy_delete_submerchant',
             'terminals_proxy_create_submerchant',
             'terminals_proxy_update_recurring',
