@@ -5,7 +5,7 @@ namespace RZP\Models\QrPayment;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
 class Repository extends Base\Repository
 {
@@ -14,7 +14,7 @@ class Repository extends Base\Repository
     public function isEsSyncNeeded(string $action, array $dirty = null, PublicEntity $qrPayment = null): bool
     {
         // Sync in ES only for payments on QRv2 created via API, DASHBOARD
-        if ($qrPayment->qrCode->getRequestSource() === RequestSource::CHECKOUT)
+        if ($qrPayment->qrCode->getRequestSource() === QrV2\RequestSource::CHECKOUT)
         {
             return false;
         }
@@ -62,5 +62,18 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::PAYMENT_ID)
                     ->toArray();
+    }
+
+    public function getLatestExpectedPaymentIdForQrCodeId(string $qrCodeId)
+    {
+        QrV2\Entity::verifyIdAndStripSign($qrCodeId);
+
+        return $this->newQuery()
+                    ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
+                    ->where(Entity::EXPECTED, '=', 1)
+                    ->latest()
+                    ->get()
+                    ->pluck(Entity::PAYMENT_ID)
+                    ->first();
     }
 }

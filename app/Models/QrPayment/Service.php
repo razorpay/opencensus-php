@@ -13,6 +13,9 @@ use RZP\Models\QrPaymentRequest\Type;
 
 class Service extends Base\Service
 {
+    const UNPROCESSED_RESPONSE = 'unprocessed';
+    const RAZORPAY_PAYMENT_ID  = 'razorpay_payment_id';
+
     public function fetchPaymentsForQrCode($input, $id)
     {
         $input[Entity::QR_CODE_ID] = $id;
@@ -99,17 +102,24 @@ class Service extends Base\Service
 
     public function fetchCapturedPaymentByQrCodeId($qrCodeId)
     {
-        $response = $this->repo->payment->fetchCapturedByPublicQrCodeIdAndMerchant($qrCodeId, $this->merchant);
+        $paymentId = $this->repo->qr_payment->getLatestExpectedPaymentIdForQrCodeId($qrCodeId);
 
-        if ($response === null)
+        if ($paymentId === null)
         {
-            return ['status' => 'unprocessed'];
+            return [Payment\Entity::STATUS => self::UNPROCESSED_RESPONSE];
+        }
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $this->merchant->getId());
+
+        if (($payment === null) or ($payment->getStatus() !== Payment\Status::CAPTURED))
+        {
+            return [Payment\Entity::STATUS => self::UNPROCESSED_RESPONSE];
         }
 
         return [
-            'razorpay_payment_id' => $response->getPublicId(),
-            'status'              => $response->getStatus(),
-            'created_at'          => $response->getCreatedAt()
+            self::RAZORPAY_PAYMENT_ID  => $payment->getPublicId(),
+            Payment\Entity::STATUS     => $payment->getStatus(),
+            Payment\Entity::CREATED_AT => $payment->getCreatedAt()
         ];
     }
 }
