@@ -1326,6 +1326,17 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(Order\Status::PAID, $order->getStatus());
     }
 
+    public function testFetchQrCodeOnCheckout()
+    {
+        $order = $this->fixtures->create('order');
+
+        $this->createQrCodeForCheckout($order);
+
+        $response = $this->fetchQrCode();
+
+        $this->assertEquals(0, $response['count']);
+    }
+
     public function testPaymentOnQrCodeWithoutOrder()
     {
         $qrCode = $this->createQrCodeForCheckout(null, 4510);

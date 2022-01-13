@@ -48,6 +48,7 @@ class Fetch extends BaseFetch
         Entity::NAME,
         Entity::PROVIDER,
         Entity::CUSTOMER_ID,
+        Entity::ENTITY_TYPE,
         EsRepository::CUSTOMER_EMAIL,
         EsRepository::CUSTOMER_NAME,
         EsRepository::CUSTOMER_CONTACT,
@@ -55,6 +56,5 @@ class Fetch extends BaseFetch
 
     const COMMON_FIELDS = [
         Entity::MERCHANT_ID,
-        Entity::ENTITY_TYPE,
     ];
 }
