@@ -72,6 +72,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
 import NitroCCCampaign from '../../components/Announcements/NitroCCCampaign';
+import NitroMMRemarketingBanner from '../../components/Announcements/NitroMMRemarketingBanner';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
@@ -636,6 +637,11 @@ class AnalyticsDesktop extends Component {
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isNitroCCCampaignEnabled}>
             <NitroCCCampaign productName="home" />
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(usr) => usr.isNitroNitromidmarketRemarketingCampaignEnabled}
+          >
+            <NitroMMRemarketingBanner productName="home" />
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
             <CatalystCampaignBannerPhase2

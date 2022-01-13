@@ -141,6 +141,10 @@ export default {
     'IKaYgajoyBVov7', // Prod
     'IKbzEcTvvsVk8D', // Beta
   ],
+  nitro_mm_remarketing_experiment: [
+    'IiqMArt58Yaj5E', // Prod
+    'IKbzEcTvvsVk8D', // Beta
+  ],
 
   catalyst_campaign_experiment: [
     'HYimXrRKRI0V7y', // Prod

@@ -9,9 +9,8 @@ import {
 } from 'merchant_common/reducers/modals';
 import RazorpayXNitroAnnouncement from '../../../../../js/common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 
-const bannerText =
-  'Get a reduced pricing of 1.65% on your transactions when you open a RazorpayX current account. Grab before it’s gone! 🎉';
-const cardId = 'DEC-NITRO-NEWYEAR';
+const bannerText = 'Enjoy unlimited benefits when you open a RazorpayX current account  🎉';
+const cardId = 'JAN-NITRO-MIDMARKET';
 
 const cta1Text = 'Know More';
 
@@ -35,7 +34,7 @@ function _track(source, merchant_id) {
   };
 }
 
-const EndOfYearBanner = React.memo(({ productName, openModal, closeModal }) => {
+const NitroMMRemarketingBanner = React.memo(({ productName, openModal, closeModal }) => {
   const user = getUser();
   const track = _track(productName, user?.current);
   const handleCTA1Click = () => {
@@ -48,10 +47,10 @@ const EndOfYearBanner = React.memo(({ productName, openModal, closeModal }) => {
 
   return (
     <AnnouncementBanner
-      title="Year End Offer!"
+      title="Savings & More !"
       canBeClosed={true}
       theme="primary"
-      bannerKey={`dec-nitro-newyear-${user.current}`}
+      bannerKey={`jan-nitro-midmarket-remarketing-${user.current}`}
       card_id={cardId}
     >
       <span class="display-inline">{bannerText}</span>
@@ -63,5 +62,5 @@ const EndOfYearBanner = React.memo(({ productName, openModal, closeModal }) => {
 });
 
 export default compose(connect(null, { openModal: openModalProp, closeModal: fnCloseModal }))(
-  EndOfYearBanner,
+  NitroMMRemarketingBanner,
 );

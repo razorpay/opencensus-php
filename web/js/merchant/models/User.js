@@ -526,6 +526,12 @@ export default class User {
     return getSplitzExperimentVariant('nitro_CC_experiment')?.variables?.result === 'on';
   }
 
+  get isNitroNitromidmarketRemarketingCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('nitro_mm_remarketing_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }

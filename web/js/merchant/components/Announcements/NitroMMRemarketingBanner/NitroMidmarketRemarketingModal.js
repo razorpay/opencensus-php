@@ -4,21 +4,14 @@ import { connect } from 'react-redux';
 import React from 'react';
 import { AsyncBtn } from 'common/new-ui/Button';
 
-const EndOfYearModal = ({ save, user }) => {
+const NitroMidmarketRemarketingModal = ({ save }) => {
   return (
     <>
       <div className="nitro-end-of-year-self-serve" id="nitro-end-of-year-self-serve">
-        {user.isNitroIciciBrandedCampaignEnabled || user.isNitroIciciRemarketingCampaignEnabled ? (
-          <img
-            className="background-img"
-            src="https://cdn.razorpay.com/static/assets/final-modal/EndOfYearIciciModal.png"
-          />
-        ) : (
-          <img
-            className="background-img"
-            src="https://cdn.razorpay.com/static/assets/final-modal/XMasOffer.png"
-          />
-        )}
+        <img
+          className="background-img"
+          src="https://cdn.razorpay.com/static/assets/final-modal/NitroMMRemarketingCampaignModal.png"
+        />
       </div>
       <div id="nitro-end-of-year-self-serve-footer">
         <p className="para">
@@ -33,4 +26,6 @@ const EndOfYearModal = ({ save, user }) => {
   );
 };
 
-export default compose(connect(null, { closeModal: closeModalProp }))(EndOfYearModal);
+export default compose(connect(null, { closeModal: closeModalProp }))(
+  NitroMidmarketRemarketingModal,
+);
