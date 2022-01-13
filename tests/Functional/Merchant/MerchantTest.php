@@ -3565,21 +3565,34 @@ class MerchantTest extends TestCase
 
         $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
 
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $this->app->instance('raven', $ravenMock);
+        $this->app->instance('stork_service', $storkMock);
 
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bank_account_change_request', '1234567890');
+        $expectedStorkParametersForBankAccountChangeRequestTemplate = [
+            'name'              => 'testname',
+            'beneficiary_name'  => 'Test R4zorpay:',
+            'account_number'    => '0000009999999999999',
+            'ifsc_code'         => 'ICIC0001206'
+        ];
 
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bank_account_change_penny_testing_failure', '1234567890');
+        $expectedStorkParametersForBankAccountChangeSuccessfulTemplate = [
+            'beneficiary_name'  => 'Test R4zorpay:',
+            'account_number'    => '0000009999999999999',
+            'ifsc_code'         => 'ICIC0001206'
+        ];
 
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bank_account_change_successful', '1234567890');
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_change_request', '1234567890', $expectedStorkParametersForBankAccountChangeRequestTemplate);
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_change_penny_testing_failure', '1234567890', []);
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_change_successful', '1234567890', $expectedStorkParametersForBankAccountChangeSuccessfulTemplate);
 
         $this->setupWorkflowForBankAccountUpdate();
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
-        $this->mockStorkForBankAccountUpdate($merchantId);
+        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId);
 
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
@@ -3617,12 +3630,16 @@ class MerchantTest extends TestCase
         // triggers a bank account update workflow
         $merchantId = $this->testUpdateBankAccountPennyTestingEventNameMismatch();
 
+        $expectedStorkParametersForSMSTemplate = [
+            'merchant_name'  => 'testname',
+        ];
+
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
             'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your Razorpay bank account number. Please click https://dashboard.razorpay.com/app/profile/clarification_update_bank_account to share the details. -Team Razorpay',
             'expected_index_of_comment' => 2,
             'expected_sms_template'     => 'sms.dashboard.merchant_bank_account_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_update_bank_account'
-        ]);
+        ], $expectedStorkParametersForSMSTemplate);
 
         return $merchantId;
     }
@@ -3634,12 +3651,8 @@ class MerchantTest extends TestCase
         $this->getNeedsClarificationQueryAndAssert($merchantId, 'bank_detail_update');
     }
 
-    protected function mockStorkForBankAccountUpdate($merchantId)
+    protected function mockStorkForBankAccountUpdate($storkMock, $merchantId)
     {
-        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $this->app->instance('stork_service', $storkMock);
-
         $this->expectStorkWhatsappRequest($storkMock,
             'We have received a request for changing the bank account for testname. The details for the request are as follows :
 Beneficiary Name Test R4zorpay:
@@ -3739,32 +3752,37 @@ IFSC Code  ICIC0001206
             });
     }
 
-    public function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver)
+    protected function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
-        $ravenMock->shouldReceive('sendSms')
-            ->times(1)
-            ->with(
-                Mockery::on(function ($actualPayload) use ($templateName, $receiver)
-                {
-                    if (($templateName !== $actualPayload['template']) or
-                        ($receiver !== $actualPayload['receiver']))
-                    {
-                        return false;
-                    }
+        $storkMock->shouldReceive('sendSms')
+                  ->times(1)
+                  ->with(
+                      Mockery::on(function ($mockInMode)
+                      {
+                          return true;
+                      }),
+                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                      {
 
-                    return true;
-                }),  Mockery::on(function ($mockInTestMode)
-            {
-                if ($mockInTestMode === true)
-                {
-                    return false;
-                }
-                return true;
-            }))
-            ->andReturnUsing(function ()
-            {
-                return ['success' => true];
-            });
+                          // We are sending null in contentParams in the payload if there is no SMS_TEMPLATE_KEYS present for that event
+                          // Reference: app/Notifications/Dashboard/SmsNotificationService.php L:99
+                          if(isset($actualPayload['contentParams']) === true)
+                          {
+                              $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                          }
+
+                          if (($templateName !== $actualPayload['templateName']) or
+                              ($destination !== $actualPayload['destination']))
+                          {
+                              return false;
+                          }
+
+                          return true;
+                      }))
+                  ->andReturnUsing(function ()
+                  {
+                      return ['success' => true];
+                  });
     }
 
     protected function assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued($org = null)
@@ -13550,7 +13568,7 @@ IFSC Code  ICIC0001206
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
-        $this->mockRavenAndStorkForTransactionLimitSelfServe();
+        $this->mockStorkForTransactionLimitSelfServe();
 
         $this->setupWorkflow('increase_transaction_limit', PermissionName::INCREASE_TRANSACTION_LIMIT, 'test');
 
@@ -13600,7 +13618,7 @@ IFSC Code  ICIC0001206
 
     public function testRegisteredIncreaseTransactionLimitWorkflowApprove()
     {
-        $this->mockRavenAndStorkForTransactionLimitSelfServe();
+        $this->mockStorkForTransactionLimitSelfServe();
 
         $merchantId = $this->createTransactionLimitUpdateWorkflow();
 
@@ -13648,12 +13666,17 @@ IFSC Code  ICIC0001206
     {
         $merchantId = $this->createTransactionLimitUpdateWorkflow();
 
+        $expectedStorkParametersForSMSTemplate = [
+            'merchant_name'      => 'testname',
+            'max_payment_amount' => 10000
+        ];
+
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
             'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your transaction limit to 10000. Please click https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit to share the details. -Team Razorpay',
             'expected_index_of_comment' => 1,
             'expected_sms_template'     => 'sms.dashboard.increase_transaction_limit_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit'
-        ]);
+        ], $expectedStorkParametersForSMSTemplate);
 
         return $merchantId;
     }
@@ -13881,23 +13904,19 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
-    protected function mockRavenAndStorkForTransactionLimitSelfServe()
+    protected function mockStorkForTransactionLimitSelfServe()
     {
         $this->enableRazorXTreatmentForFeature('whatsapp_notifications');
-
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'updated_transaction_limit' => '8000'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.increase_transaction_limit_request_approve', '1234567890', $expectedRavenParametersForTemplate);
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'updated_transaction_limit' => 8000
+        ];
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.increase_transaction_limit_request_approve', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'With regards to the request we received an update from the partner banks to increase the transaction limit to ₹8000
@@ -13924,7 +13943,7 @@ The same has been enabled for the account.
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
-        $this->mockRavenAndStorkForTransactionLimitSelfServe();
+        $this->mockStorkForTransactionLimitSelfServe();
 
         $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
             ->setConstructorArgs([$this->app])
@@ -14183,19 +14202,15 @@ The same has been enabled for the account.
         $this->assertTrue(array_key_exists('country', $tokens['items'][0]['card']) === true);
     }
 
-    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data)
+    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate)
     {
         $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $this->expectRavenSendSmsRequest($ravenMock,$data['expected_sms_template'], '1234567890');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSmsRequest($storkMock, $data['expected_sms_template'], '1234567890', $expectedStorkParametersForSMSTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             $data['expected_whatsapp_text'],

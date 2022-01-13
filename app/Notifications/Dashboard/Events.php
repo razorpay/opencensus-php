@@ -137,7 +137,6 @@ class Events
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => 'whatsapp.merchant.dashboard.merchant_gstin_auto_updated',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => 'whatsapp.merchant.dashboard.merchant_gstin_workflow_approve',
         self::BULK_REGENERATE_API_KEYS                                  => 'whatsapp.merchant.dashboard.bulk_regenerate_api_keys',
-        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => 'whatsapp.merchant.dashboard.merchant_add_gstin_auto_update2',
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => 'whatsapp.merchant.dashboard.merchant_add_gstin_workflow_approve',
         self::GSTIN_ADD_REJECTION_REASON                                => 'whatsapp.merchant.dashboard.merchant_add_gstin_rejection',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'whatsapp.merchant.dashboard.merchant_add_gstin_needs_clarification',
@@ -163,10 +162,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW            => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW               => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => [Constants::MERCHANT_NAME],
-        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => [Constants::GSTIN,Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
+        self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => [Constants::GSTIN, Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => [Constants::GSTIN],
         self::BULK_REGENERATE_API_KEYS                                  => [],
-        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => [Constants::GSTIN,Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => [Constants::GSTIN],
         self::GSTIN_ADD_REJECTION_REASON                                => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Constants::MERCHANT_NAME],
@@ -310,12 +308,5 @@ class Events
         self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => [Channel::EMAIL],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-    ];
-
-    const STORK_SMS_SERVICE = [
-        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS,
-        self::GSTIN_ADDED_ON_WORKFLOW_APPROVE,
-        self::GSTIN_ADD_REJECTION_REASON,
-        self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW
     ];
 }

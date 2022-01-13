@@ -309,34 +309,37 @@ class KeyTest extends TestCase
         return $keyIds;
     }
 
-    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver, $expectedParms = [])
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
-        $ravenMock->shouldReceive('sendSms')
-            ->times(1)
-            ->with(
-                Mockery::on(function ($actualPayload) use ($templateName, $receiver, $expectedParms)
-                {
-                    $this->assertArraySelectiveEquals($expectedParms, $actualPayload['params']);
+        $storkMock->shouldReceive('sendSms')
+                  ->times(1)
+                  ->with(
+                      Mockery::on(function ($mockInMode)
+                      {
+                          return true;
+                      }),
+                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                      {
 
-                    if (($templateName !== $actualPayload['template']) or
-                        ($receiver !== $actualPayload['receiver']))
-                    {
-                        return false;
-                    }
+                          // We are sending null in contentParams in the payload if there is no SMS_TEMPLATE_KEYS present for that event
+                          // Reference: app/Notifications/Dashboard/SmsNotificationService.php L:99
+                          if(isset($actualPayload['contentParams']) === true)
+                          {
+                              $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                          }
 
-                    return true;
-                }),  Mockery::on(function ($mockInTestMode)
-            {
-                if ($mockInTestMode === true)
-                {
-                    return false;
-                }
-                return true;
-            }))
-            ->andReturnUsing(function ()
-            {
-                return ['sms_id' => '10000000000sms'];
-            });
+                          if (($templateName !== $actualPayload['templateName']) or
+                              ($destination !== $actualPayload['destination']))
+                          {
+                              return false;
+                          }
+
+                          return true;
+                      }))
+                  ->andReturnUsing(function ()
+                  {
+                      return ['success' => true];
+                  });
     }
 
     protected function expectStorkWhatsappRequest($storkMock, $text, $destination): void
@@ -407,15 +410,11 @@ class KeyTest extends TestCase
 
         $this->enableRazorXTreatmentForFeature(RazorxTreatment::WHATSAPP_NOTIFICATIONS, 'on');
 
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.bulk_regenerate_api_key', '1234567890', []);
-
-        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.dashboard.bulk_regenerate_api_key', '1234567890', []);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi,

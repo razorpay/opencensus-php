@@ -5,7 +5,6 @@ namespace RZP\Notifications\Dashboard;
 
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\User\Entity as UserEntity;
@@ -77,10 +76,10 @@ class WhatsappNotificationService extends BaseNotificationService
         $templateName = Events::WHATSAPP_TEMPLATES[$this->event];
 
         $payload = [
-            Constants::OWNER_ID      => $merchant->getMerchantId(),
-            Constants::OWNER_TYPE    => Constants::MERCHANT,
-            Constants::TEMPLATE_NAME => $templateName,
-            Constants::PARAMS        => [
+            Constants::OWNER_ID               => $merchant->getMerchantId(),
+            Constants::OWNER_TYPE             => Constants::MERCHANT,
+            Constants::WHATSAPP_TEMPLATE_NAME => $templateName,
+            Constants::PARAMS                 => [
                 Constants::MERCHANT_NAME => $merchant->getName(),
             ]
         ];

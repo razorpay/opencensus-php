@@ -1328,34 +1328,36 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
-    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver, $expectedParms = [])
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
-        $ravenMock->shouldReceive('sendSms')
+        $storkMock->shouldReceive('sendSms')
                   ->times(2)
                   ->with(
-                      Mockery::on(function ($actualPayload) use ($templateName, $receiver, $expectedParms)
+                      Mockery::on(function ($mockInMode)
                       {
-                          $this->assertArraySelectiveEquals($expectedParms, $actualPayload['params']);
+                          return true;
+                      }),
+                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                      {
 
-                          if (($templateName !== $actualPayload['template']) or
-                              ($receiver !== $actualPayload['receiver']))
+                          // We are sending null in contentParams in the payload if there is no SMS_TEMPLATE_KEYS present for that event
+                          // Reference: app/Notifications/Dashboard/SmsNotificationService.php L:99
+                          if(isset($actualPayload['contentParams']) === true)
                           {
-                              s($templateName);
+                              $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                          }
+
+                          if (($templateName !== $actualPayload['templateName']) or
+                              ($destination !== $actualPayload['destination']))
+                          {
                               return false;
                           }
 
                           return true;
-                      }),  Mockery::on(function ($mockInTestMode)
-                  {
-                      if ($mockInTestMode === true)
-                      {
-                          return false;
-                      }
-                      return true;
-                  }))
+                      }))
                   ->andReturnUsing(function ()
                   {
-                      return ['sms_id' => '10000000000sms'];
+                      return ['success' => true];
                   });
     }
 
@@ -1403,21 +1405,17 @@ class FeaturesTest extends OAuthTestCase
                   });
     }
 
-    public function mockRavenAndStorkForFeatureEnabledVirtualAccounts()
+    public function mockStorkForFeatureEnabledVirtualAccounts()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'feature' => 'Smart Collect'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.feature_enabled', '1234567890', $expectedRavenParametersForTemplate);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'feature' => 'Smart Collect'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.feature_enabled', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
                                           'Hi,
@@ -1463,7 +1461,7 @@ Regards,
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->mockRavenAndStorkForFeatureEnabledVirtualAccounts();
+        $this->mockStorkForFeatureEnabledVirtualAccounts();
 
         $this->bulkUpdateFeatureActivationStatus(Constants::VIRTUAL_ACCOUNTS, $merchantId , 'approved');
 

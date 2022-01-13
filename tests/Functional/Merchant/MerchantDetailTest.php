@@ -962,7 +962,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails([], ['activation_status' => 'activated']);
 
-        $this->mockRavenAndStorkForBusinessWebsiteAdd();
+        $this->mockStorkForBusinessWebsiteAdd();
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
@@ -990,21 +990,17 @@ class MerchantDetailTest extends OAuthTestCase
         });
     }
 
-    protected function mockRavenAndStorkForBusinessWebsiteAdd()
+    protected function mockStorkForBusinessWebsiteAdd()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'updated_business_website' => 'https://www.example.com'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_add', '1234567890', $expectedRavenParametersForTemplate);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'updated_business_website' => 'https://www.example.com'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_business_website_add', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'As per your request, we have granted the API keys for the website https://www.example.com
@@ -3653,7 +3649,11 @@ We look forward to transacting with you!
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_workflow_approve', '1234567890');
+        $expectedStorkParametersForTemplate = [
+            'gstin'  => '18AABCU9603R1ZM'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_workflow_approve', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi,
@@ -3663,31 +3663,6 @@ Cheers,
 Team Razorpay',
             '1234567890'
         );
-    }
-
-    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination)
-    {
-        $storkMock->shouldReceive('sendSms')
-            ->times(1)
-            ->with(
-                Mockery::on(function ($mode)
-                {
-                    return true;
-                }),
-                Mockery::on(function ($actualPayload) use ($templateName, $destination)
-                {
-                    if (($templateName !== $actualPayload['templateName']) or
-                        ($destination !== $actualPayload['destination']))
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }))
-            ->andReturnUsing(function ()
-            {
-                return ['success' => true];
-            });
     }
 
     public function testUpdateGstinSelfServeValidationFailWorkflowApprove()
@@ -3716,7 +3691,7 @@ Team Razorpay',
                         $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Edit gstin workflow created", "Edit gstin workflow status"], true));
                     }));
 
-        $this->mockRavenAndStorkForUpdateGstWorkflowApprove();
+        $this->mockStorkForUpdateGstWorkflowApprove();
 
         $this->setupWorkflow('edit_gstin_details', 'update_merchant_gstin_detail');
 
@@ -3773,21 +3748,17 @@ Team Razorpay',
         ]);
     }
 
-    protected function mockRavenAndStorkForUpdateGstWorkflowApprove()
+    protected function mockStorkForUpdateGstWorkflowApprove()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'gstin'                       => '18AABCU9603R1ZM'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_gstin_workflow_approve', '1234567890', $expectedRavenParametersForTemplate);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'gstin'    => '18AABCU9603R1ZM'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_gstin_workflow_approve', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hey,
@@ -3879,13 +3850,15 @@ Team Razorpay',
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_rejection', '1234567890');
+        $expectedStorkParametersForTemplate = [
+            'merchant_name'  => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_rejection', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi Test name, Your request for adding the GSTIN to Razorpay account has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_gstin to know more.
--Team Razorpay
-
-',
+-Team Razorpay',
             '1234567890'
         );
     }
@@ -3917,7 +3890,7 @@ Team Razorpay',
                         $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Edit gstin workflow created", "Edit gstin workflow status"], true));
                     }));
 
-        $this->mockRavenAndStorkForUpdateGstinRejectionReason();
+        $this->mockStorkForUpdateGstinRejectionReason();
 
         $this->setupWorkflow('edit_gstin_details', 'update_merchant_gstin_detail');
 
@@ -3964,21 +3937,17 @@ Team Razorpay',
         ]);
     }
 
-    protected function mockRavenAndStorkForUpdateGstinRejectionReason()
+    protected function mockStorkForUpdateGstinRejectionReason()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'merchant_name' => 'Test name'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_gstin_rejection', '1234567890', $expectedRavenParametersForTemplate);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'merchant_name' => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_gstin_rejection', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
                                           'Hi Test name, Your request for updating the GSTIN has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_gstin to know more.
@@ -4240,7 +4209,15 @@ Team Razorpay',
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_auto_update_V1', '1234567890');
+        $expectedStorkParametersForTemplate = [
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+            'business_registered_pin'     => '400018',
+            'business_registered_city'    => 'Mumbai City',
+            'business_registered_state'   => 'MH'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_auto_update_V1', '1234567890', $expectedStorkParametersForTemplate);
 
 //Commented this from UT because Whatsapp has been removed from the channel for this event for now.
 //        $this->expectStorkWhatsappRequest($storkMock,
@@ -4264,7 +4241,7 @@ Team Razorpay',
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
-        $this-> mockRavenAndStorkForUpdateGstBvsValidationSuccess();
+        $this->mockStorkForUpdateGstBvsValidationSuccess();
 
         $this->assertGstinSelfServeStatusAndRejectionReason([
             'workflow_exists'          =>  false,
@@ -4322,13 +4299,13 @@ Team Razorpay',
         ]);
     }
 
-    protected function mockRavenAndStorkForUpdateGstBvsValidationSuccess()
+    protected function mockStorkForUpdateGstBvsValidationSuccess()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $this->app->instance('raven', $ravenMock);
+        $this->app->instance('stork_service', $storkMock);
 
-        $expectedRavenParametersForTemplate = [
+        $expectedStorkParametersForTemplate = [
             'gstin'                       => '18AABCU9603R1ZM',
             'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
             'business_registered_pin'     => '400018',
@@ -4336,11 +4313,7 @@ Team Razorpay',
             'business_registered_state'   => 'MH'
         ];
 
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_gstin_auto_updated', '1234567890', $expectedRavenParametersForTemplate);
-
-        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $this->app->instance('stork_service', $storkMock);
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_gstin_auto_updated', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hey,
@@ -5265,20 +5238,16 @@ Team Razorpay',
     {
         Mail::fake();
 
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
-        $this->app->instance('raven', $ravenMock);
+        $this->app->instance('stork_service', $storkMock);
 
-        $expectedRavenParametersForTemplate = [
+        $expectedStorkParametersForTemplate = [
             'updated_business_website'  => 'https://www.example.com',
             'previous_business_website' => 'https://www.sample.com'
         ];
 
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_update', '1234567890', $expectedRavenParametersForTemplate);
-
-        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
-
-        $this->app->instance('stork_service', $storkMock);
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_business_website_update', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'As per your request, we have changed your website from https://www.sample.com to https://www.example.com
@@ -5330,7 +5299,7 @@ You can now start accepting payments from https://www.example.com.
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId);
 
-        $this->mockRavenAndStorkForBusinessWebsiteAdd();
+        $this->mockStorkForBusinessWebsiteAdd();
 
         $this->validateBusinessWebsiteWorkflowApprove($merchantId, $workflowActionId);
 
@@ -5356,12 +5325,16 @@ You can now start accepting payments from https://www.example.com.
 
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['activation_status' => 'activated']);
 
+        $expectedStorkParametersForSMSTemplate = [
+            'merchant_name'  => 'Test name',
+        ];
+
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
             'expected_whatsapp_text'    => 'Hi Test name, we need a few more details to process the request on adding website/app to your Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_add_website to share the details. -Team Razorpay',
             'expected_index_of_comment' => 2,
             'expected_sms_template'     => 'sms.dashboard.merchant_website_add_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_add_website'
-        ]);
+        ], $expectedStorkParametersForSMSTemplate);
 
         return $merchantId;
     }
@@ -5372,12 +5345,16 @@ You can now start accepting payments from https://www.example.com.
 
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
+        $expectedStorkParametersForSMSTemplate = [
+            'merchant_name'  => 'Test name',
+        ];
+
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
             'expected_whatsapp_text'    => 'Hi Test name, we need a few more details to process the request on updating your Razorpay website/app. Please click https://dashboard.razorpay.com/app/profile/clarification_update_website to share the details. -Team Razorpay',
             'expected_index_of_comment' => 2,
             'expected_sms_template'     => 'sms.dashboard.merchant_website_update_needs_clarification',
             'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_update_website'
-        ]);
+        ], $expectedStorkParametersForSMSTemplate);
 
         return $merchantId;
     }
@@ -5389,19 +5366,15 @@ You can now start accepting payments from https://www.example.com.
         $this->getNeedsClarificationQueryAndAssert($merchantId, 'update_business_website');
     }
 
-    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data)
+    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate)
     {
         $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
-
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $this->expectRavenSendSmsRequest($ravenMock,$data['expected_sms_template'], '1234567890');
 
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock,$data['expected_sms_template'], '1234567890', $expectedStorkParametersForSMSTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             $data['expected_whatsapp_text'],
@@ -5523,7 +5496,7 @@ You can now start accepting payments from https://www.example.com.
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
 
-        $this->mockRavenAndStorkForUpdateWebsiteRejectionReason();
+        $this->mockStorkForUpdateWebsiteRejectionReason();
 
         $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
 
@@ -5566,21 +5539,17 @@ You can now start accepting payments from https://www.example.com.
         });
     }
 
-    protected function mockRavenAndStorkForUpdateWebsiteRejectionReason()
+    protected function mockStorkForUpdateWebsiteRejectionReason()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'merchant_name' => 'Test name'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_update_rejection', '1234567890', $expectedRavenParametersForTemplate);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'merchant_name' => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_business_website_update_rejection', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi Test name, Your request for updating the website/app has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_website to know more.
@@ -5633,34 +5602,37 @@ You can now start accepting payments from https://www.example.com.
             });
     }
 
-    protected function expectRavenSendSmsRequest($ravenMock, $templateName, $receiver, $expectedParms = [])
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
-        $ravenMock->shouldReceive('sendSms')
-            ->times(1)
-            ->with(
-                Mockery::on(function ($actualPayload) use ($templateName, $receiver, $expectedParms)
-                {
-                    $this->assertArraySelectiveEquals($expectedParms, $actualPayload['params']);
+        $storkMock->shouldReceive('sendSms')
+                  ->times(1)
+                  ->with(
+                      Mockery::on(function ($mockInMode)
+                      {
+                          return true;
+                      }),
+                      Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                      {
 
-                    if (($templateName !== $actualPayload['template']) or
-                        ($receiver !== $actualPayload['receiver']))
-                    {
-                        return false;
-                    }
+                          // We are sending null in contentParams in the payload if there is no SMS_TEMPLATE_KEYS present for that event
+                          // Reference: app/Notifications/Dashboard/SmsNotificationService.php L:99
+                          if(isset($actualPayload['contentParams']) === true)
+                          {
+                              $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                          }
 
-                    return true;
-                }),  Mockery::on(function ($mockInTestMode)
-            {
-                if ($mockInTestMode === true)
-                {
-                    return false;
-                }
-                return true;
-            }))
-            ->andReturnUsing(function ()
-            {
-                return ['sms_id' => '10000000000sms'];
-            });
+                          if (($templateName !== $actualPayload['templateName']) or
+                               ($destination !== $actualPayload['destination']))
+                          {
+                              return false;
+                          }
+
+                          return true;
+                      }))
+                  ->andReturnUsing(function ()
+                  {
+                      return ['success' => true];
+                  });
     }
 
     public function testAddAdditionalWebsiteSelfServeWorkflowApprove()
@@ -6178,7 +6150,7 @@ You can now start accepting payments from https://www.example.com.
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL);
 
-        $this->mockRavenAndStorkForAddWebsiteRejectionReason();
+        $this->mockStorkForAddWebsiteRejectionReason();
 
         $this->validateBusinessWebsiteWorkflowReject($merchantId, $workflowActionId);
 
@@ -6204,21 +6176,17 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 
-    protected function mockRavenAndStorkForAddWebsiteRejectionReason()
+    protected function mockStorkForAddWebsiteRejectionReason()
     {
-        $ravenMock = Mockery::mock('RZP\Services\Raven', [$this->app])->makePartial();
-
-        $this->app->instance('raven', $ravenMock);
-
-        $expectedRavenParametersForTemplate = [
-            'merchant_name' => 'Test name'
-        ];
-
-        $this->expectRavenSendSmsRequest($ravenMock,'sms.dashboard.merchant_business_website_add_rejection', '1234567890', $expectedRavenParametersForTemplate);
-
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'merchant_name' => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_business_website_add_rejection', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
                                           'Hi Test name, Your request for adding your website/app to your Razorpay account has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_add_website to know more.
@@ -6627,7 +6595,11 @@ You can now start accepting payments from https://www.example.com.
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_needs_clarification_V1', '1234567890');
+        $expectedStorkParametersForTemplate = [
+            'merchant_name'  => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_needs_clarification_V1', '1234567890', $expectedStorkParametersForTemplate);
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi Test name, we need a few more details to process the request on adding your GSTIN to Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_update_gstin to share the details.

@@ -8,6 +8,42 @@ class Constants
 {
     const PARAMS                                   = 'params';
 
+    const PAYMENTS_DASHBOARD                       = 'payments_dashboard';
+
+    const MERCHANT                                 = 'merchant';
+
+    const RECEIVER                                 = 'receiver';
+
+    const TEMPLATE                                 = 'template';
+
+    const OWNER_ID                                 = 'ownerId';
+
+    const OWNER_TYPE                               = 'ownerType';
+
+    const SOURCE                                   = 'source';
+
+    const ORG_ID                                   = 'orgId';
+
+    const LANGUAGE                                 = 'language';
+
+    const ENGLISH                                  = 'english';
+
+    const TEMPLATE_NAMESPACE                       = 'templateNamespace';
+
+    const CONTENT_PARAMS                           = 'contentParams';
+
+    const DESTINATION                              = 'destination';
+
+    const SENDER                                   = 'sender';
+
+    const RZRPAY                                   = 'RZRPAY';
+
+    const SMS_TEMPLATE_NAME                        = 'templateName';
+
+    const WHATSAPP_TEMPLATE_NAME                   = 'template_name';
+
+    const DELIVERY_CALLBACK_REQUESTED              = 'deliveryCallbackRequested';
+
     const PREVIOUS_BUSINESS_WEBSITE                = 'previous_business_website';
 
     const UPDATED_BUSINESS_WEBSITE                 = 'updated_business_website';
@@ -47,42 +83,6 @@ class Constants
     const MAX_PAYMENT_AMOUNT                       = 'max_payment_amount';
 
     const FEATURE                                  = 'feature';
-
-    const RAVEN                                    = 'raven';
-
-    const STORK                                    = 'stork';
-
-    const DESTINATION                              = 'destination';
-
-    const LANGUAGE                                 = 'language';
-
-    const ENGLISH                                  = 'english';
-
-    const TEMPLATE_NAMESPACE                       = 'templateNamespace';
-
-    const PAYMENTS_DASHBOARD                       = 'payments_dashboard';
-
-    const CONTENT_PARAMS                           = 'contentParams';
-
-    const SENDER                                   = 'sender';
-
-    const RZRPAY                                   = 'RZRPAY';
-
-    const SMS_TEMPLATE_NAME                        = 'templateName';
-
-    const MERCHANT                                 = 'merchant';
-
-    const RECEIVER                                 = 'receiver';
-
-    const TEMPLATE                                 = 'template';
-
-    const OWNER_ID                                 = 'ownerId';
-
-    const OWNER_TYPE                               = 'ownerType';
-
-    const SOURCE                                   = 'source';
-
-    const ORG_ID                                   = 'orgId';
 
     const WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT = [
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL   => Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW,
