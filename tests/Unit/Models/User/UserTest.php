@@ -2971,7 +2971,7 @@ class UserTest extends TestCase
 
     public function testOptInForWhatsappException()
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(BadRequestValidationFailureException::class);
 
         $this->expectExceptionMessage('User does not have a mobile number associated with the account');
 

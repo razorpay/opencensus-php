@@ -1743,7 +1743,7 @@ class Service extends Base\Service
 
         if (empty($contact) === true)
         {
-            throw new Exception\LogicException('User does not have a mobile number associated with the account');
+            throw new Exception\BadRequestValidationFailureException('User does not have a mobile number associated with the account');
         }
 
         try
