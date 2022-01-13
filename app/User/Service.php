@@ -604,6 +604,7 @@ class Service extends Base\Service
             (($isBankingRequest === false) and ($user->currentMerchant()->role !== null))))
         {
             $res['currentMerchantId'] = $currentMerchantId;
+            $res['otp_auth_token'] = $genericUser->otp_auth_token ?? null;
         }
 
         if (isset($logged_in_via))
