@@ -118,6 +118,11 @@ class Service extends Base\Service
 
         $additionalDetails = json_decode($activationDetail->getAdditionalDetails(), true);
 
+        if($additionalDetails === null)
+        {
+            return [];
+        }
+
         $bookingId = null;
 
         if (array_key_exists('booking_id', $additionalDetails) === true)
