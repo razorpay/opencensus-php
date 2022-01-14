@@ -160,6 +160,58 @@ class BankTransferTest extends TestCase
         );
     }
 
+    public function testBankTransferProcessPgWhenLedgerReverseShadowEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+        Queue::fake();
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('SHRDBANKACC3DS', $payment['terminal_id']);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals('bank_account', $payment['receiver_type']);
+        $this->assertEquals('bt_dashboard', $payment['gateway']);
+
+        // Customer bank account created
+        $bankAccount = $this->getDbLastEntity('bank_account');
+        $bankAccount = $bankAccount->toArray();
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
+
+        $this->runBankTransferRequestAssertions(
+            true,
+            '',
+            [
+                'intended_virtual_account_id'   => $bankTransfer['virtual_account_id'],
+                'actual_virtual_account_id'     => $bankTransfer['virtual_account_id'],
+                'merchant_id'                   => $bankTransfer['merchant_id'],
+                'bank_transfer_id'              => $bankTransfer['id'],
+                'payment_id'                    => $bankTransfer['payment_id'],
+            ]
+        );
+
+        Queue::assertPushed(Transactions::class, 0);
+    }
+
     public function testBankTransferProcessXDemoCron()
     {
         $merchant_id = \RZP\Models\Merchant\Account::X_DEMO_PROD_ACCOUNT;

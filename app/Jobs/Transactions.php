@@ -169,7 +169,7 @@ class Transactions extends Job
                 {
                     $bankTransfer = clone $tempBankTransfer;
 
-                    list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($tempBankTransfer))->createTransactionWithIdAndUpdateBalance($journalId, intval($balance));
+                    list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($tempBankTransfer))->createTransactionWithIdAndLedgerBalance($journalId, intval($balance));
                     $this->repoManager->saveOrFail($txn);
                     return [$bankTransfer, $txn];
                 });
@@ -206,7 +206,7 @@ class Transactions extends Job
                 {
                     $adjustment = clone $tempAdjustment;
 
-                    list ($txn, $feeSplit) = (new Transaction\Processor\Adjustment($adjustment))->createTransactionWithIdAndUpdateBalance($journalId, intval($balance));
+                    list ($txn, $feeSplit) = (new Transaction\Processor\Adjustment($adjustment))->createTransactionWithIdAndLedgerBalance($journalId, intval($balance));
                     $this->repoManager->saveOrFail($txn);
 
                     // need to update txn id in adj table

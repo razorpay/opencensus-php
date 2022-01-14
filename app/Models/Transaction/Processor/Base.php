@@ -102,18 +102,44 @@ abstract class Base extends BaseCore
         $this->setTransaction($txn);
     }
 
-    public function createTransactionWithIdAndUpdateBalance(string $txnId, int $balance)
+    /**
+     * This is used to create transaction entity in api with journal id and
+     * balance information from ledger system
+     *
+     * @param string $txnId
+     * @param int $balance
+     *
+     * @return array
+     */
+    public function createTransactionWithIdAndLedgerBalance(string $txnId, int $balance)
     {
-        list ($txn, $feeSplit) = $this->createTransaction($txnId);
+        // Creates new or fetches existing transaction entity for the source entity
+        $this->setTransactionForSource($txnId);
+        // set transaction attributes from the source entity
+        $this->setSourceDefaults();
+        // fills the transaction attributes from the merchant attributes
+        $this->fillDetails();
 
-        // update balances
+        $this->setCreditDebitDetails($this);
+        // updates entity specific attributes in transaction
+        $this->updateTransaction();
+
+        $negativeLimit = (new Balance\Core)->getNegativeLimit($this->txn);
+        $this->merchantBalance = $this->source->balance ?? $this->txn->merchant->primaryBalance;
+
+        $this->updateCredits($negativeLimit);
+
+        // update balances from ledger
         $this->txn->setBalance($balance);
-
         // update balance entity's balance
+
+        // set merchant balance
         $this->merchantBalance->setBalance($balance);
+        $this->repo->balance->updateBalance($this->merchantBalance);
+
         $this->txn->accountBalance()->associate($this->merchantBalance);
 
-        return [$this->txn, $feeSplit];
+        return [$this->txn, $this->feesSplit];
     }
 
     public function createTransaction($txnId = null)
