@@ -10,7 +10,7 @@ import { AbsoluteView, RelativeView, Container } from './styles';
 import Header from './components/Header';
 import InfoContainer from './components/InfoContainer';
 import RefereeBanner from './components/RefereeBanner';
-import { getURLQueryParams, isMobileSignupEnabled } from '../utils';
+import { getURLQueryParams, isMobileSignupEnabled, isPasswordUXImprovementEnabled } from '../utils';
 import { setCookie } from 'common/utils/cookies';
 
 const SignUp = () => {
@@ -111,6 +111,7 @@ const SignUp = () => {
                       authClientId={window.OAUTH_CLIENT_ID}
                       oneTapInfo={oneTapInfo}
                       showMobileSignup={isMobileSignupEnabled()}
+                      showPasswordRules={isPasswordUXImprovementEnabled()}
                     />
                   </AbsoluteView>
                   <InfoContainer handleContactUsClick={handleContactUsClick} />

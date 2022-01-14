@@ -111,6 +111,10 @@ export const isMobileSignupEnabled = () => {
   return !!window.isMobileSignup || isMobileSignupParam === 'true';
 };
 
+export const isPasswordUXImprovementEnabled = () => {
+  return window.isPasswordUXExpEnabled || location.search.includes('password_ux=true'); // set from optimize
+};
+
 /**
  * window.isTestEnv is set by QA env
  * or else this can be passed via URL param as well
