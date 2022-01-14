@@ -175,14 +175,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getCreditsForMerchantAndPromotion(string $merchantId, string $promotionId)
-    {
-        return $this->newQuery()
-            ->merchantId($merchantId)
-            ->where(Entity::PROMOTION_ID, '=', $promotionId)
-            ->first();
-    }
-
     public function getMerchantCreditsOfType(string $merchantId, string $type): int
     {
         if ($type === Type::REFUND)
@@ -401,13 +393,12 @@ class Repository extends Base\Repository
         }
     }
 
-    public function getUnexpiredCreditIdsForMerchant(string $merchantId)
+    public function getUnexpiredCreditIdsForMerchantOfType(string $merchantId, string $type)
     {
-        //credits not assosciated with any promotion
         return $this->newQuery()
             ->select(Entity::ID)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->whereNull(Entity::PROMOTION_ID)
+            ->where(Entity::TYPE, '=', $type)
             ->where(Entity::VALUE, '>', 0)
             ->where(Entity::EXPIRED_AT, '>' ,Carbon::Now()->getTimestamp())
             ->pluck(Entity::ID)

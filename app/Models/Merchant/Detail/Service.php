@@ -455,12 +455,9 @@ class Service extends Base\Service
 
         $existingCredits = $merchantBalance->reload()->getAmountCredits();
 
-        $promotionIds = $this->repo->merchant_promotion->fetchActivePromotionIdsOfCreditTypeAmount($merchantId);
-
         $this->trace->info(TraceCode::AMOUNT_CREDITS_COUPON_APPLY_REQUEST,[
             "merchantId"            => $merchantId,
             "input"                 => $input,
-            "existingPromotionIds"  => $promotionIds,
             "existingCredits"       => $existingCredits,
         ]);
 
@@ -482,13 +479,7 @@ class Service extends Base\Service
                 ]);
 
                 //expire existing credits
-                (new Merchant\Promotion\Core())->forceExpireExistingCredits($merchantId, $promotionIds);
-
-                //credits not through coupon flow
-                if($merchantBalance->reload()->getAmountCredits() != 0)
-                {
-                    $this->expireRemainingCredits($merchant);
-                }
+                $this->expireRemainingCredits($merchant);
 
                 (new Coupon\Core())->applyCouponCode($merchant, $coupon);
 
@@ -539,7 +530,7 @@ class Service extends Base\Service
 
     public function expireRemainingCredits(Merchant\Entity $merchant)
     {
-        $creditsId = $this->repo->credits->getUnexpiredCreditIdsForMerchant($merchant->getMerchantId());
+        $creditsId = $this->repo->credits->getUnexpiredCreditIdsForMerchantOfType($merchant->getMerchantId(), "amount");
 
         $credits = $this->repo->credits->getCreditEntities($creditsId);
 
@@ -551,13 +542,16 @@ class Service extends Base\Service
 
             $creditsToExpire = $credit->getUnusedCredits();
 
-            $creditInput = [
-                Credits\Entity::CAMPAIGN     => $credit->getCampaign() . 'Expired',
-                Credits\Entity::VALUE        => $creditsToExpire * -1,
-                Credits\Entity::TYPE         => $credit->getType(),
-            ];
+            if($creditsToExpire > 0)
+            {
+                $creditInput = [
+                    Credits\Entity::CAMPAIGN => $credit->getCampaign() . 'Expired',
+                    Credits\Entity::VALUE    => $creditsToExpire * -1,
+                    Credits\Entity::TYPE     => $credit->getType(),
+                ];
 
-            (new Merchant\Promotion\Core())->expireCreditsNotThroughCouponFlow($merchant, $creditInput);
+                (new Merchant\Promotion\Core())->forceExpireCredits($merchant, $creditInput);
+            }
         }
     }
 

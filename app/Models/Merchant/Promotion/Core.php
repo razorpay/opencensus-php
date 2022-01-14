@@ -301,7 +301,7 @@ class Core extends Base\Core
         }
     }
 
-    public function expireCreditsNotThroughCouponFlow(Merchant\Entity $merchant, $creditInput)
+    public function forceExpireCredits(Merchant\Entity $merchant, $creditInput)
     {
         $credit = $this->creditCore->create($merchant, $creditInput);
 
@@ -314,58 +314,5 @@ class Core extends Base\Core
         );
 
         $this->repo->saveOrFail($credit);
-    }
-
-    public function forceExpireCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
-    {
-        $creditsToExpire = $this->calculateAndExpireRemainingCredits($merchant, $promotion);
-
-        $this->expireCreditsUtility($creditsToExpire, $merchant, $promotion);
-    }
-
-    public function calculateAndExpireRemainingCredits(Merchant\Entity $merchant, Promotion\Entity $promotion)
-    {
-        $credit = $this->repo->credits->getCreditsForMerchantAndPromotion(
-            $merchant->getId(), $promotion->getId());
-
-        if ($credit === null)
-        {
-            return 0;
-        }
-
-        $credit->setExpiredAt(Carbon::now()->getTimestamp());
-
-        $this->repo->saveOrFail($credit);
-
-        return $credit->getUnusedCredits();
-    }
-
-    public function forceExpireExistingCredits(string $merchantId, array $promotionIds)
-    {
-        //expire existing credits
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        foreach ($promotionIds as $promotionId) {
-            $promotion = $this->repo->promotion->findOrFailPublic($promotionId);
-
-            $merchantPromotion = $this->repo
-                ->merchant_promotion
-                ->findByMerchantAndPromotionId(
-                    $merchant->getId(),
-                    $promotion->getId());
-
-            $this->repo->transaction(
-                function () use (
-                    $merchant,
-                    $promotion,
-                    $merchantPromotion
-                ) {
-                    (new Merchant\Promotion\Core())->forceExpireCredits($merchant, $promotion);
-
-                    $merchantPromotion->setExpired();
-
-                    $this->repo->saveOrFail($merchantPromotion);
-                });
-        }
     }
 }
