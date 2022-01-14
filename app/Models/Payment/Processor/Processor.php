@@ -2045,6 +2045,26 @@ class Processor
             return;
         }
 
+        $feature = 'api'. '_' . $payment->getGateway() . '_v1';
+
+        // hit razorx service to get the variant
+        $variant = $this->app->razorx->getTreatment($payment->getId(),
+            $feature, $this->mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
+        [
+            'payment_id'    => $payment->getId(),
+            'variant'       => $variant,
+            'gateway'       => $payment->getGateway(),
+            'feature'       => $feature,
+            'mode'          => $this->mode,
+        ]);
+
+        if ($variant !== 'upips')
+        {
+            return;
+        }
+
         // set upi cps_route route for a payment.
         $this->setPaymentService($payment, 'upips');
     }

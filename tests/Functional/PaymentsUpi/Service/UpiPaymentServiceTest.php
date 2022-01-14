@@ -52,6 +52,11 @@ class UpiPaymentServiceTest extends TestCase
         $this->fixtures->merchant->activate();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_airtel_v1', 'upips');
+        });
     }
 
     /**
@@ -233,6 +238,8 @@ class UpiPaymentServiceTest extends TestCase
      */
     public function testCollectPaymentFailure()
     {
+        $this->testCollectPaymentCreateSuccess('payment_failed');
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                     ->setConstructorArgs([$this->app])
                     ->onlyMethods(['getTreatment'])
@@ -240,20 +247,10 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->app->instance('razorx', $razorxMock);
 
-        $this->app->razorx
-        ->method('getTreatment')
-        ->will($this->returnCallback(
-            function ($mid, $feature, $mode)
-            {
-                if ($feature === 'ups_upi_airtel_pre_process_v1')
-                {
-                    return 'upi_airtel';
-                }
-                return 'control';
-            })
-        );
-
-        $this->testCollectPaymentCreateSuccess('payment_failed');
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
 
         $this->mockServerContentFunction(
             function (&$error)
@@ -309,27 +306,12 @@ class UpiPaymentServiceTest extends TestCase
      */
     public function testCollectPaymentSuccess($description = 'create_collect_success')
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                    ->setConstructorArgs([$this->app])
-                    ->onlyMethods(['getTreatment'])
-                    ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx
-        ->method('getTreatment')
-        ->will($this->returnCallback(
-            function ($mid, $feature, $mode)
-            {
-                if ($feature === 'ups_upi_airtel_pre_process_v1')
-                {
-                    return 'upi_airtel';
-                }
-                return 'control';
-            })
-        );
-
         $this->testCollectPaymentCreateSuccess($description);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
 
         $payment = $this->getDbLastpayment();
 
@@ -365,36 +347,20 @@ class UpiPaymentServiceTest extends TestCase
      *
      * @return void
      */
-    public function testCollectPaymentSuccessWithApiPreProcess()
+    public function testCollectPaymentSuccesWithApiPreProcess()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                    ->setConstructorArgs([$this->app])
-                    ->onlyMethods(['getTreatment'])
-                    ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
         $this->gateway = 'upi_mozart';
 
         $this->setMockGatewayTrue();
 
         $this->gateway = 'upi_airtel';
 
-        $this->app->razorx
-        ->method('getTreatment')
-        ->will($this->returnCallback(
-            function ($mid, $feature, $mode)
-            {
-                if ($feature === 'api_upi_airtel_pre_process_v1')
-                {
-                    return 'upi_airtel';
-                }
-
-                return 'control';
-            })
-        );
-
         $this->testCollectPaymentCreateSuccess();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
 
         $payment = $this->getDbLastpayment();
 
@@ -429,35 +395,18 @@ class UpiPaymentServiceTest extends TestCase
      */
     public function testCollectPaymentFailureWithApiPreProcess()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                    ->setConstructorArgs([$this->app])
-                    ->onlyMethods(['getTreatment'])
-                    ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
         $this->gateway = 'upi_mozart';
 
         $this->setMockGatewayTrue();
 
         $this->gateway = 'upi_airtel';
 
-        $this->app->razorx
-        ->method('getTreatment')
-        ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === 'api_upi_airtel_pre_process_v1')
-                    {
-                        return 'upi_airtel';
-                    }
-
-                    return 'control';
-                }
-            )
-        );
-
         $this->testCollectPaymentCreateSuccess('payment_failed');
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
 
         $this->mockServerContentFunction(
             function (&$error)
@@ -944,5 +893,43 @@ class UpiPaymentServiceTest extends TestCase
     protected function mockServerContentFunction($closure)
     {
         $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
     }
 }
