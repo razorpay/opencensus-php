@@ -31,6 +31,7 @@ class Type
     const CORPORATE_CARDS               = 'corporate_cards';
     const INSTANT_SETTLEMENTS           = 'instant_settlements';
     const MARKETPLACE_IS                = 'marketplace_is';
+    const DEMO_ONBOARDING               = 'demo_onboarding';
     const OTHERS                        = 'others';
 
     //SOURCE Types

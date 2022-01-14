@@ -362,6 +362,8 @@ class MerchantAttributeTest extends TestCase
 
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'tax_payments', 'true');
 
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'demo_onboarding', 'true');
+
         $this->ba->proxyAuth();
 
         $this->startTest();

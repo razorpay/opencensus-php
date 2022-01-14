@@ -37,6 +37,7 @@ class GroupType
             Type::CORPORATE_CARDS,
             Type::INSTANT_SETTLEMENTS,
             Type::MARKETPLACE_IS,
+            Type::DEMO_ONBOARDING,
             Type::OTHERS
         ],
 

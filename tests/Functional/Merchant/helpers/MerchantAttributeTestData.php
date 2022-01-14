@@ -142,6 +142,10 @@ return [
                 [
                     'type'  => 'instant_settlements',
                     'value' => 'true'
+                ],
+                [
+                    'type'  => 'demo_onboarding',
+                    'value' => 'true'
                 ]
             ],
             'url' => '/merchant/preferences/x_merchant_intent',
@@ -154,6 +158,10 @@ return [
             'content' => [
                 [
                     'type'  => 'current_account',
+                    'value' => 'true'
+                ],
+                [
+                    'type'  => 'demo_onboarding',
                     'value' => 'true'
                 ],
                 [
@@ -651,6 +659,10 @@ return [
                 [
                     'type' => 'current_account',
                     'value' => 'false'
+                ],
+                [
+                    'type'  => 'demo_onboarding',
+                    'value' => 'true'
                 ],
                 [
                     'type' => 'tax_payments',
