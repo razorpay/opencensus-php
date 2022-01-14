@@ -915,6 +915,10 @@ class Constants
 
     const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
 
+    const ONE_CC_GA_ANALYTICS = 'one_cc_ga_analytics';
+
+    const ONE_CC_FB_ANALYTICS = 'one_cc_fb_analytics';
+
     const ORG_EMAIL_UPDATE_2FA_ENABLED = 'email_update_2fa_enabled';
 
     const ORG_TPV_DISABLE    = 'axis_tpv';
@@ -1102,7 +1106,8 @@ class Constants
         self::DISABLE_SIFT_JS,
         self::ONE_CC_COUPONS,
         self::ONE_CC_MANDATORY_LOGIN,
-        self::ONE_CC_MERCHANT_DASHBOARD,
+        self::ONE_CC_GA_ANALYTICS,
+        self::ONE_CC_FB_ANALYTICS,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1480,6 +1485,8 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN          => true,
         self::ONE_CC_MERCHANT_DASHBOARD       => true,
         self::ONE_CC_COUPONS                  => true,
+        self::ONE_CC_GA_ANALYTICS             => true,
+        self::ONE_CC_FB_ANALYTICS             => true,
         self::ONBOARD_TOKENIZATION            => true,
         self::EXCLUDE_DEDUCT_DISPUTE          => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
@@ -2150,6 +2157,16 @@ class Constants
             'display_name'  => 'Mutex lock on linked account ID before transfer processing',
             'documentation' => '',
         ],
+        self::ONE_CC_GA_ANALYTICS => [
+            'feature'       => self::ONE_CC_GA_ANALYTICS,
+            'display_name'  => 'Enable GA analytics for One Click checkout',
+            'documentation' => '',
+        ],
+        self::ONE_CC_FB_ANALYTICS => [
+            'feature'       => self::ONE_CC_FB_ANALYTICS,
+            'display_name'  => 'Enable FB analytics for One Click checkout',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -2204,6 +2221,8 @@ class Constants
         self::ONE_CC_MANDATORY_LOGIN,
         self::ONE_CC_MERCHANT_DASHBOARD,
         self::DISABLE_COLLECT_CONSENT,
+        self::ONE_CC_GA_ANALYTICS,
+        self::ONE_CC_FB_ANALYTICS,
     ];
 
     /*
