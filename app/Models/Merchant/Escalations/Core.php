@@ -319,7 +319,7 @@ class Core extends Base\Core
         $this->app['segment-analytics']->buildRequestAndSend(true);
     }
 
-    public function handleMtuSegmentEvent()
+    public function handleMtuCouponApply()
     {
         $lastCronTime = $this->getLastCronTime(Constants::SEGMENT_MTU_CACHE_KEY);
 
@@ -341,7 +341,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
-            'type'            => 'segment_mtu_init',
+            'type'            => 'mtu_coupon_apply_init',
             'merchants_count' => count($transactedMerchants),
         ]);
 
@@ -355,7 +355,7 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
                 'last_cron_time'  => $lastCronTime,
-                'type'            => 'segment_mtu',
+                'type'            => 'mtu_coupon_apply',
                 'merchants_count' => count($filteredMerchants),
                 'merchants'       => $filteredMerchants
             ]);
@@ -372,41 +372,16 @@ class Core extends Base\Core
             {
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                $previousActivationStatus = $this->repo->state->getPreviousActivationStatus($merchant->getId());
-
-                $code = (new M2MService())->getReferralCodeIfApplicable($merchant);
-
-                $properties = [
-                    'mtu'                         => true,
-                    'first_transaction_timestamp' => Carbon::now()->getTimestamp(),
-                    'activation_status'           => $merchant->merchantDetail->getActivationStatus(),
-                    'previous_activation_status'  => $previousActivationStatus['name'],
-                    'referral_code'               => $code,
-                    'is_m2m_referral'             => $code != null
-                ];
-
-                $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchantId);
-
-                if (empty($userDeviceDetail) === false)
-                {
-                    $properties['signup_source'] = $userDeviceDetail->getSignupSource();
-                }
-
-                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                    $merchant, $properties, SegmentEvent::MTU_TRANSACTED);
-
                 $this->applyMtuCouponIfEligible($merchant);
             }
             catch (\Exception $e)
             {
-                $this->trace->error(TraceCode::ESCALATION_MTU_SEGMENT_FAILURE, [
+                $this->trace->error(TraceCode::MTU_COUPON_APPLY_FAILURE, [
                     'merchant_id' => $merchantId,
                     'exception'   => $e->getMessage()
                 ]);
             }
         }
-
-        $this->app['segment-analytics']->buildRequestAndSend();
     }
 
     public function applyMtuCouponIfEligible(Merchant\Entity $merchant)

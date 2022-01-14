@@ -91,16 +91,6 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks();
 
-        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('segment-analytics', $segmentMock);
-
-        $segmentMock->expects($this->exactly(1))
-            ->method('pushIdentifyAndTrackEvent')
-            ->willReturn(true);
-
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
 
         $merchantId = $merchantDetail->getMerchantId();
@@ -108,7 +98,7 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
     }
 
     protected function enableRazorXTreatmentForRazorX()
@@ -157,7 +147,7 @@ class CoreTest extends TestCase
 
         (new StoreCore())->updateMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
 
         $data = (new StoreCore())->fetchValuesFromStore(
             $merchantId,
@@ -222,7 +212,7 @@ class CoreTest extends TestCase
 
         (new StoreCore())->updateMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
 
         $data = (new StoreCore())->fetchValuesFromStore(
             $merchantId,
@@ -269,7 +259,7 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
 
         $data = (new StoreCore())->fetchValuesFromStore(
             $merchantId,
@@ -365,16 +355,6 @@ class CoreTest extends TestCase
     {
         $this->createAndFetchMocks();
 
-        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('segment-analytics', $segmentMock);
-
-        $segmentMock->expects($this->exactly(1))
-            ->method('pushIdentifyAndTrackEvent')
-            ->willReturn(true);
-
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
 
         $this->fixtures->on('live')->create('user_device_detail', [
@@ -390,22 +370,12 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
     }
 
     public function testSegmentEventSkipIfNotFirstTransaction()
     {
         $this->createAndFetchMocks();
-
-        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('segment-analytics', $segmentMock);
-
-        $segmentMock->expects($this->exactly(0))
-            ->method('pushIdentifyAndTrackEvent')
-            ->willReturn(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
 
@@ -420,22 +390,12 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantId, 'payment', 10000);
         $this->createPayment($merchantId, 10000);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
     }
 
     public function testSegmentEventIfTwoTransactionsDuringSameTime()
     {
         $this->createAndFetchMocks();
-
-        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
-            ->setMethods(['pushIdentifyAndTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('segment-analytics', $segmentMock);
-
-        $segmentMock->expects($this->exactly(1))
-            ->method('pushIdentifyAndTrackEvent')
-            ->willReturn(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
 
@@ -448,7 +408,7 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
         $this->createPayment($merchantId, 10000);
 
-        (new Escalations\Core)->handleMtuSegmentEvent();
+        (new Escalations\Core)->handleMtuCouponApply();
     }
 
 

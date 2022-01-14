@@ -13,6 +13,17 @@ class Service extends Base\Service
         $timeBound = $input[Constants::TIME_BOUND] ?? false;
         $core      = (new Core);
 
+        try
+        {
+            $core->handleMtuCouponApply();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'mtu_coupon_apply',
+                'error' => $e->getMessage()
+            ]);
+        }
 
         try
         {

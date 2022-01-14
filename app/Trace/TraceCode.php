@@ -6092,6 +6092,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const THROTTLE_UPDATE_CONTACT_MOBILE_KEY_CACHE_CREATED  = 'THROTTLE_UPDATE_CONTACT_MOBILE_KEY_CACHE_CREATED';
     const UPDATED_CONTACT_MOBILE_CACHE_VALUE_INCREASE       = 'UPDATED_CONTACT_MOBILE_CACHE_VALUE_INCREASE';
 
+    const MTU_COUPON_APPLY_FAILURE                          = 'MTU_COUPON_APPLY_FAILURE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
