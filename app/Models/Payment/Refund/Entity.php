@@ -341,7 +341,7 @@ class Entity extends Base\PublicEntity
 
         $app = \App::getFacadeRoot();
 
-        $exposeExtraAttributes = (new Merchant\Core())->exposeExtraAttributes($this->merchant);
+        $exposeExtraAttributes = (new Merchant\Core())->isShowRefundTypeParamFeatureEnabled($this->merchant);
 
         $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
             [
@@ -1196,7 +1196,7 @@ class Entity extends Base\PublicEntity
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
         $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
 
-        if ((new Merchant\Core())->exposeExtraAttributes($this->merchant) === true)
+        if ((new Merchant\Core())->isShowRefundTypeParamFeatureEnabled($this->merchant) === true)
         {
             $data[self::PROCESSED_AT] = $this->getProcessedAt();
             $data['refund_type'] = (new Core)->getRefundType($this->getId(), $this->merchant, $this->getBatchId(), $this->isScrooge());

@@ -5169,14 +5169,24 @@ class Core extends Base\Core
         return $this->isOrgFeatureEnabled($merchant, $featureName);
     }
 
-    public function exposeExtraAttributes(Entity $merchant) : bool
+    public function isShowLateAuthAttributeFeatureEnabled(Entity $merchant) : bool
     {
         if ($merchant->isRazorpayOrgId() === true )
         {
             return false;
         }
 
-        return $this->isOrgFeatureEnabled($merchant, Feature\Constants::EXPOSE_EXTRA_ATTRIBUTES);
+        return $this->isOrgFeatureEnabled($merchant, Feature\Constants::SHOW_LATE_AUTH_ATTRIBUTES);
+    }
+
+    public function isShowRefundTypeParamFeatureEnabled(Entity $merchant) : bool
+    {
+        if ($merchant->isRazorpayOrgId() === true )
+        {
+            return false;
+        }
+
+        return $this->isOrgFeatureEnabled($merchant, Feature\Constants::SHOW_REFND_LATEAUTH_PARAM);
     }
 
     protected function isOrgFeatureEnabled(Entity $merchant, string $featureName)

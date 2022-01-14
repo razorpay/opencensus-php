@@ -339,7 +339,7 @@ class PaymentFetchTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type'   => 'org',
             'entity_id'     => $org->getId(),
-            'name'          => 'expose_extra_attributes',
+            'name'          => 'show_late_auth_attributes',
         ]);
 
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -870,7 +870,7 @@ class PaymentFetchTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type'   => 'org',
             'entity_id'     => $org->getId(),
-            'name'          => 'expose_extra_attributes',
+            'name'          => 'show_late_auth_attributes',
         ]);
 
         $this->fixtures->edit('merchant', '10000000000000', [

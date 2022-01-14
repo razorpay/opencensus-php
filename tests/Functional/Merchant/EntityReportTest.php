@@ -80,7 +80,7 @@ class EntityReportTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type'   => 'org',
             'entity_id'     => $org->getId(),
-            'name'          => 'expose_extra_attributes',
+            'name'          => 'show_refnd_lateauth_param',
         ]);
 
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -131,7 +131,7 @@ class EntityReportTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type'   => 'org',
             'entity_id'     => $org->getId(),
-            'name'          => 'expose_extra_attributes',
+            'name'          => 'show_refnd_lateauth_param',
         ]);
 
         $this->fixtures->edit('merchant', '10000000000000', [
