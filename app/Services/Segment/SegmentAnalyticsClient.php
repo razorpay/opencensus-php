@@ -120,6 +120,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
     public function pushIdentifyAndTrackEvent(
         Merchant\Entity $merchant, array $properties, string $eventName, int $eventTimestamp = null)
     {
+        if(empty($eventName) === false)
+        {
+            $properties['event_milestone'] = $eventName;
+        }
+
         $this->pushIdentifyEvent($merchant, $properties, $eventTimestamp);
         $this->pushTrackEvent($merchant, $properties, $eventName, $eventTimestamp);
     }

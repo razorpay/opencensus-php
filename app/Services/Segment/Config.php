@@ -107,11 +107,11 @@ class Config
         ],
 
         EventCode::IDENTIFY_APP_ATTRIBUTION     => [
-            'appsflyer_id',
-            'campaign_type',
-            'conversion_type',
-            'media_source',
-            'event_source',
+            'app_appsflyer_id',
+            'app_campaign_type',
+            'app_conversion_type',
+            'app_media_source',
+            'app_event_source',
         ]
     ];
 }
