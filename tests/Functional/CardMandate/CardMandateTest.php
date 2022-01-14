@@ -1017,6 +1017,60 @@ class CardMandateTest extends TestCase
         $this->assertEquals('captured', $payment->getStatus());
     }
 
+    public function testCreateCardMandateOptOutOfPayment()
+    {
+        $this->markTestSkipped('until fixed');
+
+        $this->testCreateCardMandatePayment();
+
+        $this->mockCreatePreDebitNotification(false);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $exception = false;
+        try
+        {
+            $this->doS2SRecurringPayment($paymentInput);
+        }
+        catch (BadRequestException $e)
+        {
+            $exception = true;
+            $this->assertEquals('Payment debit notification failed to deliver to customer', $e->getMessage());
+            $this->assertEquals('BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT', $e->getCode());
+        }
+        finally
+        {
+            $this->assertTrue($exception);
+        }
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('failed', $payment->getStatus());
+        $this->assertEquals('BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT', $payment->internal_error_code);
+        $this->assertEquals('Payment debit notification failed to deliver to customer', $payment->error_description);
+
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('failed', $cardMandateNotification->getStatus());
+        $this->assertEquals('rejected', $cardMandateNotification->getAfaStatus());
+    }
+
     public function testSubscriptionRegistrationAutoCardMandatePaymentAmountGreaterThanMaxAmountWithAFA()
     {
         $this->testSubscriptionRegistrationInitialCardMandatePaymentAmountGreaterThanMaxAmount();

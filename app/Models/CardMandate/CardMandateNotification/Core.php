@@ -82,7 +82,8 @@ class Core extends Base\Core
 
         if ($payment !== null and
             !$cardMandateNotification->isAfaRequired() and
-            $cardMandateNotification->getStatus() === Status::NOTIFIED)
+            $cardMandateNotification->getStatus() === Status::NOTIFIED and
+            $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED)
         {
             $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
 
@@ -92,7 +93,9 @@ class Core extends Base\Core
         }
 
         if (($payment !== null) and
-            (!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
+            (!$cardMandateNotification->isAfaRequired() and
+                ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                    $cardMandateNotification->getStatus() === Status::FAILED)) or
             ($cardMandateNotification->isAfaRequired() and
                 ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
                     $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED)))
@@ -140,6 +143,12 @@ class Core extends Base\Core
             $cardMandateNotification->getStatus() !== Status::NOTIFIED)
         {
             $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_NOTIFIED;
+        }
+
+        if (!$cardMandateNotification->isAfaRequired() and
+            $cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_OPTED_OUT_OF_PAYMENT;
         }
 
         if ($cardMandateNotification->isAfaRequired() and
@@ -266,7 +275,8 @@ class Core extends Base\Core
         {
             if ($cardMandateNotification->payment !== null and
                 !$cardMandateNotification->isAfaRequired() and
-                $cardMandateNotification->getStatus() === Status::NOTIFIED)
+                $cardMandateNotification->getStatus() === Status::NOTIFIED and
+                $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED)
             {
                 $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
 
@@ -283,7 +293,9 @@ class Core extends Base\Core
                 (new Reminders\CardAutoRecurringReminderProcessor)->process(E::PAYMENT, $namespace, $paymentId, []);
             }
 
-            if (((!$cardMandateNotification->isAfaRequired() and $cardMandateNotification->getStatus() === Status::FAILED) or
+            if (((!$cardMandateNotification->isAfaRequired() and
+                    ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
+                        $cardMandateNotification->getStatus() === Status::FAILED)) or
                     ($cardMandateNotification->isAfaRequired() and
                         ($cardMandateNotification->getAfaStatus() === AfaStatus::REJECTED ||
                             $cardMandateNotification->getAfaStatus() === AfaStatus::EXPIRED))) and

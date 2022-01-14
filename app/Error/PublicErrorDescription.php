@@ -97,6 +97,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CARD_MANDATE_NOTIFICATION_PAYMENT_CURRENCY_MISMATCH       = 'notification currency does not match with payment currency';
     const BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_NOTIFIED                        = 'customer not notified';
     const BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED                        = 'customer not approved the debit';
+    const BAD_REQUEST_CARD_MANDATE_CUSTOMER_OPTED_OUT_OF_PAYMENT                = 'customer opted out of the payment';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED                        = 'The payment has already been either captured or voided';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Currency is not supported';

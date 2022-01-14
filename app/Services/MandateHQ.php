@@ -45,6 +45,7 @@ class MandateHQ
         'notification AFA approval is rejected'                           => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED,
         'notification AFA approval is expired'                            => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED,
         'notification AFA approval is pending'                            => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED,
+        'customer opted out of the payment'                               => ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_OPTED_OUT_OF_PAYMENT,
         'mandate debit not as per frequency'                              => ErrorCode::BAD_REQUEST_CARD_MANDATE_PAYMENT_DEBIT_NOT_AS_PER_FREQUENCY,
 
         // common
