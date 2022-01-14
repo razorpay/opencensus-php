@@ -103,6 +103,7 @@ class Tooltip extends Component {
   }
 
   showTooltip(data = {}) {
+    if (!this.node) return null;
     const node = this.node;
     const align = data.align || this.props.align;
 
@@ -271,7 +272,7 @@ class Tooltip extends Component {
     }, this.props.delay);
   }
 
-  handleMouseEnter(e) {
+  handleMouseEnter(_) {
     this.onShowTooltip();
   }
 
@@ -386,10 +387,10 @@ Tooltip.defaultProps = {
 
 Tooltip.propTypes = {
   align: PropTypes.oneOf(['top', 'bottom', 'left', 'right']),
-  followPointer: PropTypes.bool.isRequired,
-  persistent: PropTypes.bool.isRequired,
-  delay: PropTypes.number.isRequired,
-  offset: PropTypes.number.isRequired,
+  followPointer: PropTypes.bool,
+  persistent: PropTypes.bool,
+  delay: PropTypes.number,
+  offset: PropTypes.number,
   onAdjustment: PropTypes.func,
   onAlignmentChange: PropTypes.func,
   theme: PropTypes.oneOf(['light', 'dark']),
