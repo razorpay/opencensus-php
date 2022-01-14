@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Constants::MERCHANT_SAVE_BUSINESS_WEBSITE        => 'rejection_reason_data',
         Constants::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => 'rejection_reason_data',
         Constants::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => 'rejection_reason_data',
+        Constants::MERCHANT_BANK_ACCOUNT_UPDATE          => 'rejection_reason_data',
         Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => 'approved_transaction_limit',
     ];
 

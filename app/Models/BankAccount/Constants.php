@@ -25,4 +25,16 @@ class Constants
     const COMMENT                                           = 'comment';
     const ERROR_MESSAGE                                     = 'error_message';
     const DEDUPE_FALSE_COMMENT                              = 'dedupe_status: false';
+    const RESULT                                            = 'result';
+    const RESULT1                                           = 'result1';
+    const RESULT2                                           = 'result2';
+    const FAILURE_REASON                                    = 'failure_reason';
+    const RULE_EXECUTION_RESULT                             = 'rule_execution_result';
+    const OPERANDS                                          = 'operands';
+    const OPERANDS1                                         = 'operand_1';
+    const OPERANDS2                                         = 'operand_2';
+    const REMARKS                                           = 'remarks';
+    const MATCH_PERCENTAGE                                  = 'match_percentage';
+    const NAME_MATCH_RESULT                                 = 'name_match_result';
+    const PENNY_TEST_RESULT                                 = 'penny_test_result';
 }

@@ -25,6 +25,8 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Settlement\SettlementServiceMigration;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -36,6 +38,7 @@ use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
 use RZP\Notifications\Dashboard\Events as MerchantDashboardEvent;
 use RZP\Models\Merchant\Detail\PennyTesting as DetailsPennyTesting;
+use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater\BankAccount as BankAccountStatusUpdater;
@@ -739,6 +742,17 @@ class Core extends Base\Core
 
         $status = (new BankAccountStatusUpdater($merchant, $validation))->getDocumentValidationStatus($validation);
 
+        try
+        {
+            $this->pushBvsResultToSegmentForBankAccountUpdate($merchant, $validation, $status);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_SEGMENT_EVENT_PUSH_FAILED, [
+                Constants::ERROR_MESSAGE => $exception->getMessage()
+            ]);
+        }
+
         switch ($validation->getValidationStatus())
         {
             case BvsConstant::SUCCESS:
@@ -757,7 +771,26 @@ class Core extends Base\Core
 
         $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
 
+        $this->stopShowingRejectionReasonForBankAccountUpdateSelfServe($merchant->bankAccount->getId(), $merchant->bankAccount->getEntityName());
+
         $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, ["merchant_id"=>$merchant->getId(),"status"=>$status]);
+    }
+
+    protected function stopShowingRejectionReasonForBankAccountUpdateSelfServe($entityId, $entity)
+    {
+        $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [Permission\Name::EDIT_MERCHANT_BANK_DETAIL]
+        );
+
+        if ((empty($action) === false) and
+            ($action->isRejected() === true))
+        {
+            (new WorkflowService())->updateWorkflowObserverData(WorkflowAction\Entity::getSignedId($action->getId()),[
+                WorkflowObserverConstants::SHOW_REJECTION_REASON_ON_DASHBOARD => 'false'
+            ]);
+        }
     }
 
     protected function handleBankAccountUpdateCallbackFailure($merchant, $data, $status)
@@ -769,21 +802,25 @@ class Core extends Base\Core
 
     protected function createWorkflowForBankAccountUpdate($merchant, $data)
     {
-        $newBankAccountArray = $data[Constants::NEW_BANK_ACCOUNT_ARRAY];
-        $oldBankAccountArray = $data[Constants::OLD_BANK_ACCOUNT_ARRAY];
-
-
-        // here we are rolling back the transaction as there is no need to save the new bank account
-        // if penny testing suceeds, we will create it at that time
-        // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
-        $newBankAccount = $this->repo->beginTransactionAndRollback(function () use ($data, $merchant) {
-            return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
-        });
-
-        $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE);
+        $segmentProperties = [
+            'workflow_crated' => true,
+        ];
 
         try
         {
+            $newBankAccountArray = $data[Constants::NEW_BANK_ACCOUNT_ARRAY];
+            $oldBankAccountArray = $data[Constants::OLD_BANK_ACCOUNT_ARRAY];
+
+
+            // here we are rolling back the transaction as there is no need to save the new bank account
+            // if penny testing suceeds, we will create it at that time
+            // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
+            $newBankAccount = $this->repo->beginTransactionAndRollback(function () use ($data, $merchant) {
+                return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
+            });
+
+            $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE);
+
             $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
             if (is_null($data[Constants::ADMIN_EMAIL]) === false)
@@ -811,13 +848,30 @@ class Core extends Base\Core
                 ->setController(Constants::BANK_ACCOUNT_UPDATE_POST_PENNY_TESTING_CONTROLLER)
                 ->setMethod('POST')
                 ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
-                ->handle($oldBankAccountArray, $newBankAccountArray);
+                ->handle($oldBankAccountArray, $newBankAccountArray, true);
+
+            $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED, []);
 
         }
-        catch (Exception\EarlyWorkflowResponse $exception)
+        catch (\Throwable $exception)
         {
-            $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_WORKFLOW_CREATED, []);
+            $segmentProperties['failure_reason'] = $exception->getMessage();
         }
+
+
+        try
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, SegmentEvent::BANK_ACCOUNT_UPDATE_WORKFLOW_CREATED);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_SEGMENT_EVENT_PUSH_FAILED, [
+                Constants::ERROR_MESSAGE => $exception->getMessage()
+            ]);
+        }
+
+
 
         $this->app['workflow']
             ->setInput(null)
@@ -1002,6 +1056,70 @@ class Core extends Base\Core
         $this->merchant->merchantDetail->edit($oldDetail);
 
         return [$status, $matchedMIDs];
+    }
+
+    protected function pushBvsResultToSegmentForBankAccountUpdate($merchant, Merchant\BvsValidation\Entity $validation, $status)
+    {
+        $ruleExecution = $validation->getRuleExecutionList();
+
+        $segmentProperties = [];
+
+        $segmentProperties[Constants::RESULT]         = $validation->getValidationStatus();
+
+        $segmentProperties[Constants::FAILURE_REASON] = $validation->getErrorCode();
+
+        $configName = (new BankAccountRequestDispatcher($merchant, $merchant->merchantDetail))->getConfigName();
+
+        if (($configName === BvsConstant::BANK_ACCOUNT_WITH_PERSONAL_PAN) or
+            ($configName === BvsConstant::BANK_ACCOUNT_WITH_BUSINESS_PAN))
+        {
+            $namesTobeMatched  = $ruleExecution[0][Constants::RULE_EXECUTION_RESULT][Constants::OPERANDS][Constants::OPERANDS1][Constants::OPERANDS][Constants::OPERANDS1][Constants::OPERANDS] ?? [];
+
+            $matchedPercentage = $ruleExecution[0][Constants::RULE_EXECUTION_RESULT][Constants::OPERANDS][Constants::OPERANDS1][Constants::REMARKS][Constants::MATCH_PERCENTAGE] ?? null;
+
+            $result = array_merge($namesTobeMatched, [
+                Constants::MATCH_PERCENTAGE => $matchedPercentage
+            ]);
+
+            $segmentProperties[Constants::NAME_MATCH_RESULT] = [
+                Constants::RESULT => $result,
+            ];
+        }
+        else
+        {
+            $namesTobeMatched  = $ruleExecution[0][Constants::RULE_EXECUTION_RESULT][Constants::OPERANDS][Constants::OPERANDS1][Constants::OPERANDS][Constants::OPERANDS1][Constants::OPERANDS] ?? [];
+
+            $matchedPercentage = $ruleExecution[0][Constants::RULE_EXECUTION_RESULT][Constants::OPERANDS][Constants::OPERANDS1][Constants::REMARKS][Constants::MATCH_PERCENTAGE] ?? null;
+
+            $result1 = array_merge($namesTobeMatched, [
+                Constants::MATCH_PERCENTAGE  => $matchedPercentage
+            ]);
+
+            $namesTobeMatched  = $ruleExecution[0][Constants::RULE_EXECUTION_RESULT][Constants::OPERANDS][Constants::OPERANDS2][Constants::OPERANDS][Constants::OPERANDS1][Constants::OPERANDS] ?? [];
+
+            $matchedPercentage = $ruleExecution[0][Constants::RULE_EXECUTION_RESULT][Constants::OPERANDS][Constants::OPERANDS2][Constants::REMARKS][Constants::MATCH_PERCENTAGE] ?? null;
+
+            $result2 = array_merge($namesTobeMatched, [
+                Constants::MATCH_PERCENTAGE  => $matchedPercentage
+            ]);
+
+            $segmentProperties[Constants::NAME_MATCH_RESULT] = [
+                Constants::RESULT1 => $result1,
+                Constants::RESULT2 => $result2,
+            ];
+
+        }
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $segmentProperties, SegmentEvent::BANK_ACCOUNT_UPDATE_BVS_FUZZY_MATCH_RESULT);
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant,
+            [
+                Constants::PENNY_TEST_RESULT => $status
+            ],
+            SegmentEvent::BANK_ACCOUNT_UPDATE_PENNY_TEST_RESULT
+        );
     }
 
     public function bankAccountUpdatePostPennyTestingWorkflow(MerchantEntity $merchant, array $input)

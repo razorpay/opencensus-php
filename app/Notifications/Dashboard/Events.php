@@ -21,6 +21,8 @@ class Events
 
     const BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE                     = 'BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE';
 
+    const BANK_ACCOUNT_CHANGE_REJECTION_REASON                          = 'BANK_ACCOUNT_CHANGE_REJECTION_REASON';
+
     const INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE                    = 'INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE';
 
     const BUSINESS_WEBSITE_ADD_REJECTION_REASON                         = 'BUSINESS_WEBSITE_ADD_REJECTION_REASON';
@@ -84,6 +86,7 @@ class Events
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => 'sms.dashboard.merchant_add_gstin_workflow_approve',
         self::GSTIN_ADD_REJECTION_REASON                                => 'sms.dashboard.merchant_add_gstin_rejection',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'sms.dashboard.merchant_add_gstin_needs_clarification_V1',
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'sms.dashboard.bank_account_rejection',
     ];
 
     /**
@@ -114,6 +117,7 @@ class Events
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => [Constants::GSTIN],
         self::GSTIN_ADD_REJECTION_REASON                                => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Constants::MERCHANT_NAME],
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs whatsapp templates mapping
@@ -140,6 +144,7 @@ class Events
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => 'whatsapp.merchant.dashboard.merchant_add_gstin_workflow_approve',
         self::GSTIN_ADD_REJECTION_REASON                                => 'whatsapp.merchant.dashboard.merchant_add_gstin_rejection',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'whatsapp.merchant.dashboard.merchant_add_gstin_needs_clarification',
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'whatsapp.merchant.dashboard.bank_account_rejection'
     ];
 
     /**
@@ -168,6 +173,7 @@ class Events
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => [Constants::GSTIN],
         self::GSTIN_ADD_REJECTION_REASON                                => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Constants::MERCHANT_NAME],
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs email templates mapping
@@ -196,6 +202,7 @@ class Events
         self::BULK_REGENERATE_API_KEYS                                  => 'emails.merchant.bulk_regenerate_api_keys',
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => 'emails.merchant.needs_clarification_on_workflow',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'emails.merchant.needs_clarification_on_workflow',
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'emails.merchant.rejection_reason_notification',
     ];
 
     // Event vs email Tags mapping
@@ -223,7 +230,8 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW               => MailTags::MERCHANT_CLARIFICATION_ON_WEBSITE_ADD_WORKFLOW,
         self::BULK_REGENERATE_API_KEYS                                  => MailTags::BULK_API_KEYS_REGENERATE,
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_UPDATE_WORKFLOW,
-        self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_ADD_WORKFLOW
+        self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_ADD_WORKFLOW,
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => MailTags::MERCHANT_BANK_ACCOUNT_UPDATE_REJECTION_REASON,
     ];
 
     // Event vs email subject mapping
@@ -252,6 +260,7 @@ class Events
         self::BULK_REGENERATE_API_KEYS                                  => 'API key De-activated',
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => '%s',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => '%s',
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => '%s',
     ];
 
     // Event vs recipients role mapping
@@ -280,6 +289,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW               => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [UserRole::OWNER],
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -308,5 +318,6 @@ class Events
         self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => [Channel::EMAIL],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
     ];
 }

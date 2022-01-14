@@ -18,11 +18,15 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 {
     protected $repo;
 
-    protected $segmentAnalatyics;
+    protected $segmentAnalytics;
 
     protected $entityId;
 
     protected $permissionName;
+
+    protected $entityName;
+
+    protected $payload;
 
     const PERMISSION_VS_SEGMENTS = [
 
@@ -32,9 +36,12 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
         PermissionName::INCREASE_TRANSACTION_LIMIT    => SegmentEvent::TRANSACTION_LIMIT_SELF_SERVE_WORKFLOW,
 
+        PermissionName::EDIT_MERCHANT_BANK_DETAIL     => SegmentEvent::BANK_ACCOUNT_UPDATE_WORKFLOW,
+
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL    => SegmentEvent::ADD_GSTIN_WORKFLOW_STATUS,
 
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL  => SegmentEvent::EDIT_GSTIN_WORKFLOW_STATUS
+
     ];
 
     const PERMISSION_VS_EVENTS = [
@@ -48,6 +55,8 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => DashboardEvents::GSTIN_UPDATE_REJECTION_REASON,
 
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => DashboardEvents::GSTIN_ADD_REJECTION_REASON,
+
+        PermissionName::EDIT_MERCHANT_BANK_DETAIL      => DashboardEvents::BANK_ACCOUNT_CHANGE_REJECTION_REASON,
     ];
 
     public function __construct($input)
@@ -59,6 +68,10 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         $this->segmentAnalytics = $app['segment-analytics'];
 
         $this->entityId         = $input[Entity::ENTITY_ID];
+
+        $this->entityName       = $input[Entity::ENTITY_NAME];
+
+        $this->payload          = $input[Entity::PAYLOAD];
 
         $this->permissionName   = $input[Entity::PERMISSION];
     }
@@ -108,6 +121,13 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
     public function getMerchantId()
     {
+        if (($this->entityName !== 'merchant') and
+            ($this->entityName !== 'merchant_detail') and
+            (empty($this->payload['merchant_id']) === false))
+        {
+            return $this->payload['merchant_id'];
+        }
+
         return $this->entityId;
     }
 

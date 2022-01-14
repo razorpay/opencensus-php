@@ -3938,6 +3938,8 @@ IFSC Code  ICIC0001206
     {
         Config(['services.bvs.mock' => true]);
 
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
         $this->setupWorkflowForBankAccountUpdate();
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
@@ -3958,7 +3960,9 @@ IFSC Code  ICIC0001206
 
         $this->esClient->indices()->refresh();
 
-        $this->performWorkflowAction($workflowAction['id'], false);
+        $this->mockStorkForBankAccountUpdateRejectionReason();
+
+        $this->rejectWorkFlowWithRejectionReason($workflowAction['id']);
 
         $this->assertBankAccountForMerchant($merchantId, [
             'entity'            => 'bank_account',
@@ -3976,11 +3980,48 @@ IFSC Code  ICIC0001206
             return false;
         });
 
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            if ($mail->view === 'emails.merchant.rejection_reason_notification')
+            {
+                $data = $mail->viewData;
+
+                $this->assertEquals('Test body', $data['messageBody']);
+
+                return true;
+            }
+        });
+
         $afterCount = $this->getBankAccountsCount($merchantId);
 
         $this->assertEquals($beforeCount, $afterCount);
 
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    protected function mockStorkForBankAccountUpdateRejectionReason()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_rejection', '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi testname, Your request for updating the Razorpay bank account has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_bank_account to know more -Team Razorpay',
+            '1234567890'
+        );
+    }
+
+    protected function rejectWorkFlowWithRejectionReason($workflowActionId)
+    {
+        $rejectionReason = ['subject' => 'Test subject', 'body' => 'Test body'];
+
+        $observerData = [ 'rejection_reason' => $rejectionReason, 'ticket_id' => '123', 'fd_instance' => 'rzpind' ];
+
+        $this->updateObserverData($workflowActionId, $observerData);
+
+        $this->performWorkflowAction($workflowActionId, false);
     }
 
     public function updateUploadDocumentData(string $callee, string $documentType)

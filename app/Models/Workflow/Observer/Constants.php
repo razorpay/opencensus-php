@@ -20,6 +20,8 @@ class Constants
 
     const MERCHANT_GSTIN_SELF_SERVE_UPDATE      =   'merchant_gstin_self_serve_update';
 
+    const MERCHANT_BANK_ACCOUNT_UPDATE          = 'merchant_bank_account_update';
+
     const APPROVED_TRANSACTION_LIMIT            =   'approved_transaction_limit';
 
     const APPROVE                               =   'approve';
@@ -43,6 +45,8 @@ class Constants
         self::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => MerchantSelfServeObserver::class,
 
         self::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => MerchantSelfServeObserver::class,
+
+        self::MERCHANT_BANK_ACCOUNT_UPDATE          => MerchantSelfServeObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [

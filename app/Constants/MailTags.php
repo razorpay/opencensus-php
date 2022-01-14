@@ -270,6 +270,8 @@ class MailTags
 
     const MERCHANT_GSTIN_ADD_REJECTION_REASON                    = 'merchant_gstin_add_rejection_reason';
 
+    const MERCHANT_BANK_ACCOUNT_UPDATE_REJECTION_REASON          = 'merchant_bank_account_update_rejection_reason';
+
     /**
      * Razorpay Trusted Business/Badge Constants
      */

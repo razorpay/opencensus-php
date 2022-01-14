@@ -60,6 +60,14 @@ class EventCode
 
     const ADD_GSTIN_WORKFLOW_CREATED             = 'Add gstin workflow created';
 
+    const BANK_ACCOUNT_UPDATE_WORKFLOW                 = 'Bank account update workflow status';
+
+    const BANK_ACCOUNT_UPDATE_BVS_FUZZY_MATCH_RESULT   = 'bank account fuzzy match result';
+
+    const BANK_ACCOUNT_UPDATE_PENNY_TEST_RESULT        = 'bank account penny test result';
+
+    const BANK_ACCOUNT_UPDATE_WORKFLOW_CREATED         = 'bank account workflow created';
+
     const CA_ACTIVATED              = 'Current Account Activated';
 
     const CONTACT_CREATED           = 'Contact Created';
