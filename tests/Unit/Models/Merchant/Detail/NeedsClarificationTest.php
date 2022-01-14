@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Unit\Models\Merchant\Detail;
 
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\UpdateMerchantContext;
@@ -941,6 +943,142 @@ class NeedsClarificationTest extends TestCase
                         'reason_code'   => 'invalid_personal_pan_number'
                     ]
                 ],
+            ]
+        ];
+
+        $this->assertEquals($expectedKycClarificationReasons, $kycClarificationReasons);
+    }
+
+    public function testReasonComposerForIncorrectBusinessPanAndBankWithNoDocFeature()
+    {
+        $input          = [
+            'company_pan_verification_status'       => 'incorrect_details',
+            'bank_details_verification_status'      => 'incorrect_details',
+            'business_type'                         => 4
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_type'        => 'merchant',
+            'owner_id'          => $mid,
+            'artefact_type'     => 'business_pan',
+            'validation_unit'   => 'identifier',
+            'error_code'        => 'INPUT_DATA_ISSUE',
+            'validation_status' => 'failed'
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_type'        => 'merchant',
+            'owner_id'          => $mid,
+            'artefact_type'     => 'bank_account',
+            'validation_unit'   => 'identifier',
+            'error_code'        => 'INPUT_DATA_ISSUE',
+            'validation_status' => 'failed'
+        ]);
+
+        $kycClarificationReasons =  (new Core())->composeNeedsClarificationReason($merchantDetail);
+
+        $expectedKycClarificationReasons = [
+            'additional_details' =>  [
+                'cancelled_cheque' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "document",
+                        'field_value' => null,
+                        'reason_code' => "bank_account_change_request_for_pvt_public_llp"
+                    ]
+                ],
+                'bank_account_name' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "test",
+                        'reason_code' => "bank_account_change_request_for_pvt_public_llp"
+                    ]
+                ],
+                'bank_account_number' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "123456789012345",
+                        'reason_code' => "bank_account_change_request_for_pvt_public_llp"
+                    ]
+                ],
+                'bank_branch_ifsc' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "ICIC0000001",
+                        'reason_code' => "bank_account_change_request_for_pvt_public_llp"
+                    ]
+                ]
+            ],
+            'clarification_reasons' =>  [
+                'company_pan' => [
+                    [
+                        'reason_type'   => 'predefined',
+                        'field_type'    => 'text',
+                        'reason_code'   => 'invalid_company_pan_number'
+                    ]
+                ],
+            ]
+        ];
+
+        $this->assertEquals($expectedKycClarificationReasons, $kycClarificationReasons);
+    }
+
+    public function testReasonComposerForIncorrectGstWithNoDocFeature()
+    {
+        $input          = [
+            'poi_verification_status'               => 'verified',
+            'bank_details_verification_status'      => 'verified',
+            'gstin_verification_status'             => 'incorrect_details',
+            'business_type'                         => 11
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'gstin',
+            'error_code'    => 'INPUT_DATA_ISSUE',
+            'validation_status' => 'failed'
+        ]);
+
+        $kycClarificationReasons =  (new Core())->composeNeedsClarificationReason($merchantDetail);
+
+        $expectedKycClarificationReasons = [
+            'clarification_reasons' =>  [
+                'gstin' => [
+                    [
+                        'reason_type' =>  'predefined',
+                        'field_type' => 'text',
+                        'reason_code' => 'invalid_gstin_number'
+                    ]
+                ]
             ]
         ];
 

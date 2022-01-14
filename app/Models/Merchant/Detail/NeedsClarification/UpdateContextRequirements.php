@@ -70,6 +70,41 @@ class UpdateContextRequirements
         self::STATUS_KEY                  => Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
     ];
 
+    const UPDATE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS = [
+        BusinessType::PROPRIETORSHIP      => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+        BusinessType::PRIVATE_LIMITED     => [
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::COMPANY_PAN_VERIFICATION],
+        ],
+        BusinessType::PARTNERSHIP         => [
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::COMPANY_PAN_VERIFICATION],
+        ],
+        BusinessType::LLP                 => [
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::COMPANY_PAN_VERIFICATION],
+        ],
+        BusinessType::INDIVIDUAL          => [
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::COMPANY_PAN_VERIFICATION],
+        ],
+        BusinessType::TRUST               => [
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::COMPANY_PAN_VERIFICATION],
+        ],
+        BusinessType::SOCIETY             => [
+            [self::BANK_DETAILS_VERIFICATION],
+            [self::COMPANY_PAN_VERIFICATION],
+        ],
+        BusinessType::NOT_YET_REGISTERED  => [
+            [self::PERSONAL_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
+    ];
+
     const UPDATE_MERCHANT_CONTEXT_REQUIREMENTS = [
         self::default                 => [
             [self::POA_VERIFICATION],
@@ -270,6 +305,10 @@ class UpdateContextRequirements
      */
     public function getUpdateContextRequirement(PublicEntity $entity): array
     {
+        if ($entity->merchant->isFeatureEnabled('no_doc_onboarding') === true){
+            return $this->getNoDocUpdateContextRequirement($entity);
+        }
+        
         switch ($entity->getEntityName())
         {
             case E::PARTNER_ACTIVATION:
@@ -291,6 +330,26 @@ class UpdateContextRequirements
         if (isset($updateContextRequirements[$type]) === true)
         {
             $requirementList = $updateContextRequirements[$type];
+        }
+
+        return $requirementList;
+    }
+
+    public function getNoDocUpdateContextRequirement(PublicEntity $entity): array
+    {
+        $updateContextRequirements = self::UPDATE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS;
+
+        $type = $entity->getBusinessType();
+
+        $requirementList = [];
+
+        if (isset($updateContextRequirements[$type]) === true)
+        {
+            $requirementList = $updateContextRequirements[$type];
+        }
+
+        if(empty($entity[Entity::GSTIN]) === false) {
+            $requirementList = array_merge($requirementList, [[self::GSTIN_VERIFICATION]]);
         }
 
         return $requirementList;
