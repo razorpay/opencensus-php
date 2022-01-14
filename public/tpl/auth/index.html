@@ -57,7 +57,7 @@
   <div class="auth-inner">
     <div class="auth-header">
       <div class="rzp-logo">
-        <img class="logo" src="{{login_logo}}" alt='Logo' height="">
+        <img class="logo" ng-src="{{login_logo}}" alt='Logo' height="">
         <div class="pull-right" ng-if="isOrgRZP">
           <span ng-if="!rightLayout || isLoggedIn" class="auth-header-text">Already a user?</span>
           <span ng-if="rightLayout && !isLoggedIn && !lockme" class="auth-header-text">New to Razorpay?</span>
