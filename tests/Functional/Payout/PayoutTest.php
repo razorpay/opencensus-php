@@ -340,6 +340,75 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['channel'], 'yesbank');
     }
 
+    public function testCreatePayoutWithNarrationNullTypeWithFeatureEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NULL_NARRATION_ALLOWED]);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals(null, $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+    }
+
+    /*
+     * This test creates a payout with narration as null types, which is replaced by the default message
+     * in the response since null types are treated as null values
+     */
+    public function testCreatePayoutWithNarrationNullType()
+    {
+        $this->testData[__FUNCTION__]['request']['content']['narration'] = "null";
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+
+        $this->testData[__FUNCTION__]['request']['content']['narration'] = "none";
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+
+        $this->testData[__FUNCTION__]['request']['content']['narration'] = "empty";
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+
     public function testCreatePayoutWithASyncFtsTransferCall()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_FTS_TRANSFER]);

@@ -161,6 +161,12 @@ class Entity extends Base\PublicEntity
     const DEFAULT   = 'default';
     const ON_DEMAND = 'on_demand';
 
+    //Constants for null types
+    // These strings if passed by the merchant will be treated as null
+    const NULL  = 'null';
+    const NONE  = 'none';
+    const EMPTY = 'empty';
+
     // Additional input/output attributes
     const CONTACT_NAME  = 'contact_name';
     const CONTACT_PHONE = 'contact_phone';
@@ -263,6 +269,12 @@ class Entity extends Base\PublicEntity
         self::NEXT_WEEK,
         self::NEXT_MONTH,
         self::ALL_TIME
+    ];
+
+    const IS_NULL = [
+        self::NULL,
+        self::NONE,
+        self::EMPTY
     ];
 
     const API       = 'api';
@@ -2389,9 +2401,15 @@ class Entity extends Base\PublicEntity
     {
         $narration = $input[self::NARRATION] ?? null;
 
-        if ((empty($narration) === false) or
+        if (((empty($narration) === false) and
+             (in_array($narration, self::IS_NULL, true) === false)) or
             ($this->merchant->isFeatureEnabled(Features::NULL_NARRATION_ALLOWED)))
         {
+            if(in_array($narration, self::IS_NULL, true) === true)
+            {
+                $input[self::NARRATION] = null;
+            }
+
             return;
         }
 
