@@ -201,6 +201,8 @@ class Type
 
     const DEBIT_NOTE          = 'debit_note';
 
+    const CREATE_PAYMENT_FRAUD  =  'create_payment_fraud';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -264,6 +266,7 @@ class Type
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
         self::DEBIT_NOTE,
+        self::CREATE_PAYMENT_FRAUD,
     ];
 
     /**
@@ -528,6 +531,7 @@ class Type
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
         self::DEBIT_NOTE,
+        self::CREATE_PAYMENT_FRAUD,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

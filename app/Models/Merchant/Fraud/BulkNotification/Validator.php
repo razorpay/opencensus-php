@@ -11,7 +11,7 @@ use Illuminate\Http\UploadedFile;
 class Validator extends Base\Validator
 {
     protected static $notifyRules = [
-        Constants::FILE => 'required|file|custom'
+        Constants::FILE     => 'required|file|custom',
     ];
 
     protected static $rowRules = [

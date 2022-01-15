@@ -1246,6 +1246,26 @@ class Header
     const URL                           = 'url';
     const COMMENTS                      = 'comments';
 
+    // Create Fraud
+    // Input Headers
+    const FRAUD_HEADER_ARN        = 'arn';
+    const FRAUD_HEADER_RRN        = 'rrn';
+    const FRAUD_HEADER_TYPE       = 'type';
+    const SUB_TYPE                = 'sub_type';
+    const FRAUD_HEADER_CURRENCY   = 'currency';
+    const FRAUD_HEADER_AMOUNT     = 'amount';
+    const BASE_AMOUNT             = 'base_amount';
+    const REPORTED_TO_ISSUER_AT   = 'reported_to_issuer_at';
+    const CHARGEBACK_CODE         = 'chargeback_code';
+    const REPORTED_BY             = 'reported_by';
+    const ERROR_REASON            = 'error_reason';
+    // Output Headers
+    const FRAUD_OUTPUT_HEADER_ARN           =   'ARN';
+    const FRAUD_OUTPUT_HEADER_PAYMENT_ID    =   'Payment ID';
+    const FRAUD_OUTPUT_HEADER_FRAUD_ID      =   'Fraud ID';
+    const FRAUD_OUTPUT_HEADER_STATUS        =   'Status';
+    const FRAUD_OUTPUT_HEADER_ERROR_REASON  =   'Error Reason';
+
     const ONBOARD_TO_LEDGER = 'onboard_to_ledger';
 
     // Debit note
@@ -4238,6 +4258,29 @@ class Header
                 self::MERCHANT_ID,
                 self::DEBIT_NOTE_PAYMENT_IDS,
                 self::DEBIT_NOTE_SKIP_VALIDATION,
+            ],
+        ],
+
+        Type::CREATE_PAYMENT_FRAUD => [
+            self::INPUT => [
+                self::FRAUD_HEADER_ARN,
+                self::FRAUD_HEADER_TYPE,
+                self::SUB_TYPE,
+                self::FRAUD_HEADER_AMOUNT,
+                self::BASE_AMOUNT,
+                self::REPORTED_TO_ISSUER_AT,
+                self::CHARGEBACK_CODE,
+                self::FRAUD_HEADER_RRN,
+                self::FRAUD_HEADER_CURRENCY,
+                self::REPORTED_BY,
+                self::ERROR_REASON,
+            ],
+            self::OUTPUT => [
+                self::FRAUD_OUTPUT_HEADER_ARN,
+                self::FRAUD_OUTPUT_HEADER_PAYMENT_ID,
+                self::FRAUD_OUTPUT_HEADER_FRAUD_ID,
+                self::FRAUD_OUTPUT_HEADER_STATUS,
+                self::FRAUD_OUTPUT_HEADER_ERROR_REASON,
             ],
         ],
     ];

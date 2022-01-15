@@ -420,6 +420,9 @@ class Table
     const LEDGER_ENTRY      = 'ledger_entries';
     const LEDGER_STATEMENT  = 'ledger_entries';
 
+    // Payment Fraud Entity
+    const PAYMENT_FRAUD = 'payment_fraud';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

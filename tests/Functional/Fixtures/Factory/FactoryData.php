@@ -1389,6 +1389,18 @@ final class FactoryData
                                                             ]
         );
 
+        $factory(\RZP\Models\Payment\Fraud\Entity::class, [
+                                                                'id'                    => $faker->uniqueid,
+                                                                'payment_id'            => $faker->uniqueid,
+                                                                'reported_by'           => 'Visa',
+                                                                'amount'                => '100',
+                                                                'base_amount'           => '100',
+                                                                'currency'              => 'INR',
+                                                                'created_at'            => $faker->timestamp,
+                                                                'updated_at'            => $faker->timestamp,
+                                                            ]
+        );
+
         $factory(\RZP\Models\FundAccount\Entity::class, [
                                                           'id'          => $faker->uniqueid,
                                                           'active'      => 1,

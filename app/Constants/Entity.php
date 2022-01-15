@@ -604,6 +604,8 @@ class Entity
     const SEGMENTATION = 'segmentation';
 
     // Merchant Fraud
+    const PAYMENT_FRAUD = 'payment_fraud';
+
     const MERCHANT_HEALTH_CHECKER = 'merchant_health_checker';
 
     const MERCHANT_FRAUD_CHECKER = 'merchant_fraud_checker';
@@ -1118,6 +1120,8 @@ class Entity
         self::MERCHANT_1CC_CONFIGS       => \RZP\Models\Merchant\Merchant1ccConfig::class,
 
         self::MERCHANT_1CC_AUTH_CONFIGS  => \RZP\Models\Merchant\OneClickCheckout\AuthConfig::class,
+
+        self::PAYMENT_FRAUD              => \RZP\Models\Payment\Fraud::class,
     ];
 
     protected static $repository = [

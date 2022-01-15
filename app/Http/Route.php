@@ -3118,7 +3118,7 @@ class Route
         'merchant_rtb_details_fetch'              => ['get',     'badge_details',                                           'MerchantController@getRZPTrustedBadgeDetails'                 ],
         'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
         // Merchant Fraud
-        'bulk_fraud_notify'                      => ['post',    'merchant/notify/fraud/bulk',                              'MerchantController@bulkFraudNotify'                           ],
+        'bulk_fraud_notify'                      => ['post',    'fraud/bulk/{source}',                                            'MerchantController@bulkFraudNotify'                          ],
         'health_checker'                         => ['post',    'merchant/{checker_type}/checker',                                'MerchantController@healthChecker'                            ],
         'health_checker_periodic_cron'           => ['post',    'merchant/{checker_type}/checker/cron',                           'MerchantController@healthCheckerPeriodicCron'                ],
         'health_checker_milestone_cron'          => ['post',    'merchant/{checker_type}/checker/milestone/cron',                 'MerchantController@healthCheckerMilestoneCron'               ],
@@ -3126,6 +3126,8 @@ class Route
         'health_checker_retry_cron'              => ['post',    'merchant/{checker_type}/checker/retry/cron',                     'MerchantController@healthCheckerRetryCron'                   ],
         'health_checker_reminder_cron'           => ['post',    'merchant/{checker_type}/checker/reminder/cron',                  'MerchantController@healthCheckerReminderCron'                ],
         'fraud_checker_milestone_cron'           => ['post',    'merchant/fraud/{category}/milestone/checker',                    'MerchantController@fraudCheckerMilestoneCron'                ],
+        'create_fraud_batch'                     => ['post',    'fraud/batch',                                                    'MerchantController@createFraudBatch'                         ],
+        'post_batch_bulk_fraud_notify'           => ['post',    'notify/fraud/bulk',                                              'MerchantController@bulkFraudNotifyPostBatch'                 ],
 
         // Merchant Risk Notes
         'merchant_risk_notes_get'              => ['get',       'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@getAll'    ],
@@ -4385,6 +4387,9 @@ class Route
         'growth_filter_and_sync_cron',
 
         'payment_create_upi_unexpected',
+
+        'create_fraud_batch',
+        'post_batch_bulk_fraud_notify',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11598,6 +11603,8 @@ class Route
             'chargeback_poc',
             'whitelisted_domain',
             'debit_note_batch',
+            'create_fraud_batch',
+            'post_batch_bulk_fraud_notify',
         ],
 
         'stork' => [

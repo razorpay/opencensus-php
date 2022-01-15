@@ -575,6 +575,7 @@ class AdminFetch
                         'transfer_reversal',
                         'chargeback_poc',
                         'whitelisted_domain',
+                        'create_payment_fraud',
                     ],
                 ],
             ],

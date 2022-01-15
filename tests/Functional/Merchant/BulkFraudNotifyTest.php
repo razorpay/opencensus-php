@@ -3,13 +3,15 @@
 
 namespace Functional\Merchant;
 
+use Mail;
+use Mockery;
 use RZP\Models;
 use RZP\Gateway;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Batch\CreatePaymentFraud;
 use RZP\Services\FreshdeskTicketClient;
+use RZP\Models\Card\IIN\Import\XLSFileHandler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Fraud\BulkNotification\File;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -23,6 +25,8 @@ class BulkFraudNotifyTest extends TestCase
 
     use FreshdeskTrait;
 
+    protected $druidMock;
+
     public function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BulkFraudNotifyTestData.php';
@@ -32,6 +36,48 @@ class BulkFraudNotifyTest extends TestCase
         $this->setUpFreshdeskClientMock();
 
         $this->setUpSalesforceMock();
+
+        $this->setUpDruidMock();
+    }
+
+    protected function setUpDruidMock(): void
+    {
+        $this->druidMock = Mockery::mock('RZP\Services\DruidService')->makePartial();
+
+        $this->druidMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['druid.service'] = $this->druidMock;
+    }
+
+    protected function validateContent($actualContent, $expectedContent): bool
+    {
+        foreach ($expectedContent as $key => $value)
+        {
+            if (isset($actualContent[$key]) === false)
+            {
+                return false;
+            }
+
+            if ($expectedContent[$key] !== $actualContent[$key])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function mockDruidRequest($expectedContent, $response, $times = 1): void
+    {
+        $this->druidMock->shouldReceive('getDataFromDruid')
+                        ->times($times)
+                        ->with(Mockery::on(function($request) use ($expectedContent) {
+                            return $this->validateContent($request, $expectedContent);
+                        }))
+                        ->andReturnUsing(function() use ($response) {
+                            return $response;
+                        });
+
     }
 
     public function testNotifyWithChargebackPocEmail()
@@ -302,6 +348,80 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, true);
     }
 
+    public function testVisaFraudReportBatchCreated()
+    {
+        $this->prepareAndTestBatchCreatedVisaMastercard();
+    }
+
+    public function testMastercardFraudReportBatchCreated()
+    {
+        $this->prepareAndTestBatchCreatedVisaMastercard('mastercard');
+    }
+
+    public function testCreateFraudBatchMastercard()
+    {
+        $paymentId = '10000000000002';
+
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('02705601344033737573894')"],
+                                [null,[]]);
+
+        $this->mockDruidRequest(['query' => "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('003373757389')"],
+                                [
+                                    null,
+                                    [
+                                        [
+                                            'authorization_rrn' => '003373757389',
+                                            'authorization_payment_id' => $paymentId,
+                                            'payments_merchant_id' => '10000000000000'
+                                        ]
+                                    ]
+                                ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $fraudId = $this->assertFraudEntityExists($response[0]['Payment ID'], 'MasterCard');
+
+        $this->assertEquals($response[0]['Fraud ID'], $fraudId);
+    }
+
+    public function testCreateFraudBatchVisa()
+    {
+        $paymentId = '10000000000002';
+
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('74110751299033415520957','74110751299033415520957')"],
+                                [
+                                    null,
+                                    [
+                                        [
+                                            'payments_reference1' => '74110751299033415520957',
+                                            'payments_id' => $paymentId,
+                                            'payments_merchant_id' => '10000000000000'
+                                        ]
+                                    ]
+                                ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $fraudId = $this->assertFraudEntityExists($response[0]['Payment ID']);
+
+        $this->assertEquals($response[0]['Fraud ID'], $fraudId);
+
+        $this->assertEquals($response[1]['Fraud ID'], $fraudId);
+    }
+
+    public function testCreateFraudBatchVisaDruidQueryFails()
+    {
+        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('74110751299033415520957')"], null);
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
     public function testNotifyIgnoreOnSecondCall()
     {
         $this->testNotifyWithPaymentId();
@@ -334,6 +454,55 @@ class BulkFraudNotifyTest extends TestCase
         ];
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, false);
+    }
+
+    protected function assertFraudEntityExists($paymentId, $reportedBy = 'Visa')
+    {
+        $fraud = \DB::connection('test')->table('payment_fraud')
+             ->where('payment_id', $paymentId);
+
+        $this->assertEquals(1, $fraud->count());
+
+        $this->assertEquals($paymentId, $fraud->first()->payment_id);
+        $this->assertEquals($reportedBy, $fraud->first()->reported_by);
+
+        return $fraud->first()->id;
+    }
+
+    public function testNotifySingleForSamePaymentIdAndReportedBy()
+    {
+        $payment = $this->fixtures->create('payment');
+
+        $fileData = [
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment->getPublicId(),
+                'type' => '',
+                'arn' => ''
+            ],
+            [
+                'reported_to_razorpay_at' => '11/08/2021',
+                'payment_method' => '',
+                'reported_by' => 'Visa',
+                'payment_id' => $payment->getPublicId(),
+                'type' => '0',
+                'arn' => ''
+            ],
+        ];
+
+        $expectedOutputFileRows = [
+            ["arn", "payment_id", "merchant_id", "fd_ticket_id", "error"],
+            [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null],
+            [null, $payment->getPublicId(), $payment->getMerchantId(), 123, null],
+        ];
+
+        $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
+
+        $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
+
+        $this->assertFraudEntityExists($payment->getId());
     }
 
     public function testNotifySingleForOneMerchant()
@@ -372,6 +541,10 @@ class BulkFraudNotifyTest extends TestCase
         $this->mockSalesforceRequest('10000000000000','abc@gmail.com');
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 1, true);
+
+        $this->assertFraudEntityExists($payment1->getId());
+
+        $this->assertFraudEntityExists($payment2->getId());
     }
 
     public function testNotifySingleForOneMerchantMobileSignup()
@@ -473,6 +646,81 @@ class BulkFraudNotifyTest extends TestCase
         $this->mockSalesforceRequest($payment2->getMerchantId(),'abc@gmail.com');
 
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 2, true);
+    }
+
+    public function testNotifyPostBatch()
+    {
+        Mail::fake();
+
+        $this->ba->batchAppAuth();
+
+        $payment = $this->fixtures->create('payment');
+
+        $this->fixtures->create('payment_fraud', [
+            'payment_id'    => $payment->getId(),
+            'batch_id'      => '100000Razorpay',
+        ]);
+
+        $this->mockFreshdesk(1);
+
+        $this->startTest();
+
+        Mail::assertSent(CreatePaymentFraud::class);
+    }
+
+    private function assertBatchInputForMastercard($csvRows)
+    {
+        $this->assertContains('02705601344033737573894', $csvRows[1]);
+
+        $this->assertContains('2975', $csvRows[1]);
+
+        $this->assertContains('003373757389', $csvRows[1]);
+
+        $this->assertContains('USD', $csvRows[1]);
+
+        $this->assertContains('MasterCard', $csvRows[1]);
+    }
+
+    private function assertBatchInputForVisa($csvRows)
+    {
+        $this->assertContains('74110751299033415520957', $csvRows[1]);
+
+        $this->assertContains('2694', $csvRows[1]);
+
+        $this->assertContains('USD', $csvRows[1]);
+
+        $this->assertContains('Visa', $csvRows[1]);
+
+        $this->assertContains('ARN not found for the following row', $csvRows[2]);
+    }
+
+    private function prepareAndTestBatchCreatedVisaMastercard(string $fileSource = 'visa')
+    {
+        $fileData = $this->testData[$fileSource . '_file_data'];
+
+        $testData = $this->testData['commonTestData'];
+
+        $testData['request']['url'] = '/fraud/bulk/' . $fileSource;
+
+        $testData['request']['files']['file'] = $this->getBulkFraudNotifyUploadedXLSXFileFromFileData($fileData);
+
+        $this->ba->adminAuth();
+
+        $this->addAdminPermission();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response);
+
+        $batchId = last(explode('/', $response['link']));
+
+        $filePath = storage_path('files/filestore/batch/upload') . '/' . $batchId . '.csv';
+
+        $csvRows = (new XLSFileHandler)->getCsvData($filePath)['data'];
+
+        $functionName = camel_case('assertBatchInputFor' . $fileSource);
+
+        $this->$functionName($csvRows);
     }
 
     private function prepareAndDoTest(array $fileData, array $expectedOutputFileRows, int $expectFdCallCount, bool $addPermission, bool $mobileSignupTest = false)

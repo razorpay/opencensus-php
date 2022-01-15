@@ -2440,11 +2440,20 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function bulkFraudNotify()
+    public function bulkFraudNotify($source)
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_BULK_FRAUD_NOTIFY)->notify($input);
+        $response = $this->service(E::MERCHANT_BULK_FRAUD_NOTIFY)->notify($input, $source);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkFraudNotifyPostBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_BULK_FRAUD_NOTIFY)->notifyPostBatch($input);
 
         return ApiResponse::json($response);
     }
@@ -2789,6 +2798,15 @@ class MerchantController extends Controller
     public function getFUXDetailsForPartner()
     {
         $response = $this->service()->getFUXDetailsForPartner();
+
+        return ApiResponse::json($response);
+    }
+
+    public function createFraudBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_BULK_FRAUD_NOTIFY)->createFraudBatch($input);
 
         return ApiResponse::json($response);
     }

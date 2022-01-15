@@ -24,27 +24,36 @@ class Freshdesk extends Base\Core
      */
     protected $entity;
 
-    public function __construct(Entity $entity)
+    protected $batchId;
+
+    public function __construct($entity, $batchId = null)
     {
         parent::__construct();
 
         $this->entity = $entity;
 
+        $this->batchId = $batchId;
+
         $this->cache = $this->app['cache'];
     }
 
-    public function notify(array $aggregatedData, array &$output)
+    public function notify(array $aggregatedData, array &$output = null)
     {
         foreach ($aggregatedData as $merchantId => $merchantData)
         {
             try
             {
-                $this->notifySingle($merchantData, $output[$merchantId], $merchantId);
+                $fdTicketId = $this->notifySingle($merchantData, $merchantId);
+
+                if (isset($output) === true)
+                {
+                    $this->setMerchantOutputRows($fdTicketId, $output[$merchantId]);
+                }
             }
             catch (\Throwable $e)
             {
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_REQUEST_FAILED, [
-                    'entity_id'     => $this->entity->getId(),
+                    'entity_id'     => $this->batchId ?? $this->entity->getId(),
                     'merchant_id'   => $merchantId,
                     'merchant_data' => $merchantData,
                 ]);
@@ -119,7 +128,7 @@ class Freshdesk extends Base\Core
         }
     }
 
-    protected function notifySingle(array $merchantData, array &$merchantOutput, string $merchantId)
+    protected function notifySingle(array $merchantData, string $merchantId)
     {
         $redisKey = sprintf(Constants::REDIS_KEY_FMT, Carbon::now(Timezone::IST)->format("d_m_Y"), $merchantId);
 
@@ -131,7 +140,7 @@ class Freshdesk extends Base\Core
         $fdOutboundEmailRequest = $this->getFdRequestPayload($merchant, $merchantData);
 
         $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_REQUEST, [
-            'entity_id'       => $this->entity->getId(),
+            'entity_id'       => $this->batchId ?? $this->entity->getId(),
             'request_payload' => $fdOutboundEmailRequest,
         ]);
 
@@ -144,7 +153,7 @@ class Freshdesk extends Base\Core
             $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest, FreshdeskConstants::URLIND);
 
             $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_FRESHDESK_RESPONSE, [
-                'entity_id' => $this->entity->getId(),
+                'entity_id' => $this->batchId ?? $this->entity->getId(),
                 'response'  => $response,
             ]);
 
@@ -154,7 +163,7 @@ class Freshdesk extends Base\Core
 
         $this->cache->set($redisKey, $notifyCount + 1, Constants::REDIS_KEY_TTL);
 
-        $this->setMerchantOutputRows($fdTicketId, $merchantOutput);
+        return $fdTicketId;
     }
 
     private function renderBody(array $merchantData): string
@@ -219,7 +228,7 @@ class Freshdesk extends Base\Core
 
     private function setMerchantOutputRows($fdTicketId, array &$merchantOutput)
     {
-        if (is_null($fdTicketId) === false)
+        if (is_null($fdTicketId) === false and isset($merchantOutput) === true)
         {
             foreach ($merchantOutput as &$merchantOutputRow)
             {

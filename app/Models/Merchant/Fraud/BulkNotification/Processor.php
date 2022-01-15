@@ -4,17 +4,23 @@ namespace RZP\Models\Merchant\Fraud\BulkNotification;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Gateway\Hitachi;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Gateway\Paysecure;
 use RZP\Constants\Timezone;
 use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Fraud;
 use RZP\Gateway\Upi\Base as Upi;
-use RZP\Models\FileStore\Creator;
+use RZP\Models\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Netbanking\Base as Netbanking;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
  * @property Entity entity
@@ -22,6 +28,8 @@ use RZP\Gateway\Netbanking\Base as Netbanking;
 
 class Processor extends Base\Core
 {
+    use FileHandlerTrait;
+
     public function __construct(Entity $entity)
     {
         parent::__construct();
@@ -29,7 +37,36 @@ class Processor extends Base\Core
         $this->entity = $entity;
     }
 
-    public function process(array $data, array $headers): Creator
+    protected function processForVisaAndMastercard($data, $headers, $fileSource)
+    {
+        $batchCsvInput = [];
+
+        foreach ($data as $row)
+        {
+            $batchCsvInput []= $this->processRowForVisaOrMastercard($row, $headers, $fileSource);
+        }
+
+        $url = $this->createCsvFile($batchCsvInput, 'fraud_report', null, 'files/batch');
+
+        $uploadedFile = new UploadedFile(
+            $url,
+            'fraud_report.csv',
+            'text/csv',
+            filesize($url),
+            null,
+            true);
+
+        $params = [
+            'file'  => $uploadedFile,
+            'type'  => Constants::BATCH_TYPE_CREATE_PAYMENT_FRAUD,
+        ];
+
+        $batchResult = (new Batch\Core)->create($params, (new Merchant\Core())->get('100000Razorpay'));
+
+        return sprintf(Constants::BATCH_URL_TPL, $batchResult['id']);
+    }
+
+    protected function processForBuyerRisk($data, $headers)
     {
         list($aggregatedData, $output) = $this->aggregateData($data, $headers);
 
@@ -43,7 +80,21 @@ class Processor extends Base\Core
         // save output file
         $outputTable = $this->getOutputTableFromOutputMap($output);
 
-        return (new File())->saveFile($outputTable, $this->entity->getId() . '_output', $this->entity);
+        return (new File())->saveFile($outputTable, $this->entity->getId() . '_output', $this->entity)->getSignedUrl()['url'];
+    }
+
+    public function process(array $data, array $headers, $fileSource)
+    {
+        switch ($fileSource)
+        {
+            case Constants::FILE_SOURCE_BUYER_RISK:
+                return $this->processForBuyerRisk($data, $headers);
+            case Constants::FILE_SOURCE_VISA:
+            case Constants::FILE_SOURCE_MASTERCARD:
+                return $this->processForVisaAndMastercard($data, $headers, $fileSource);
+            default:
+                throw new \Exception(sprintf('Unexpected file source %s.', $fileSource));
+        }
     }
 
     public function aggregateData(array $data, array $headers): array
@@ -68,6 +119,60 @@ class Processor extends Base\Core
         ]);
 
         return [$aggregatedData, $output];
+    }
+
+    protected function saveFraudEntityForBuyerRisk($rowMap, $payment): array
+    {
+        return (new Fraud\Core())->createOrUpdateFraudEntity([
+            Fraud\Entity::ARN                           => $rowMap[Constants::INPUT_KEY_ARN],
+            Fraud\Entity::PAYMENT_ID                    => $payment->getId(),
+            Fraud\Entity::AMOUNT                        => $payment->getAmount(),
+            Fraud\Entity::BASE_AMOUNT                   => $payment->getBaseAmount(),
+            Fraud\Entity::CURRENCY                      => $payment->getCurrency(),
+            Fraud\Entity::TYPE                          => $rowMap[Constants::INPUT_KEY_TYPE],
+            Fraud\Entity::REPORTED_TO_RAZORPAY_AT       => Carbon::createFromFormat('d/m/Y', $rowMap[Constants::INPUT_KEY_REPORTED_TO_RAZORPAY_AT])->getTimestamp(),
+            Fraud\Entity::REPORTED_BY                   => $rowMap[Constants::INPUT_KEY_REPORTED_BY],
+        ]);
+    }
+
+    public static function getFraudNotificationRowData($payment, $fraud): array
+    {
+        $source = null;
+        if (in_array($fraud->getReportedBy(), Constants::BANK_SOURCES, true) === true)
+        {
+            $source = Constants::SOURCE_BANK;
+        }
+        else if (in_array($fraud->getReportedBy(), Constants::CYBERCELL_SOURCES, true) === true)
+        {
+            $source = Constants::SOURCE_CYBERCELL;
+        }
+
+        $orderReceipt = '';
+        if ($payment->hasOrder() === true)
+        {
+            $orderReceipt = $payment->order->getReceipt();
+        }
+
+        $respondBy = Carbon::createFromTimestamp($fraud->getReportedToRazorpayAt());
+
+        $curTimestamp = Carbon::now(Timezone::IST);
+        if ($curTimestamp->greaterThan($respondBy))
+        {
+            $respondBy = $curTimestamp;
+        }
+
+        $respondBy = $respondBy->addDay()->timezone(Timezone::IST)->format('d/m/Y');
+
+        return [
+            Constants::MERCHANT_DATA_KEY_NOTES                  => json_encode($payment->getNotes()),
+            Constants::MERCHANT_DATA_KEY_AMOUNT                 => $fraud->getBaseAmount() / 100,
+            Constants::MERCHANT_DATA_KEY_RESPOND_BY             => $respondBy,
+            Constants::MERCHANT_DATA_KEY_PAYMENT_ID             => $payment->getPublicId(),
+            Constants::MERCHANT_DATA_KEY_ORDER_RECEIPT          => $orderReceipt,
+            Constants::MERCHANT_DATA_KEY_CUSTOMER_CONTACT       => $payment->getContact(),
+            Constants::MERCHANT_DATA_KEY_TRANSACTION_DATE       => $payment->getDateInFormatDMY(Payment\Entity::CREATED_AT),
+            Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION => $source,
+        ];
     }
 
     // aggregatedData = merchant_id => list([payment_id, transaction_date, amount, source_of_notification, respond_by, notes, customer_contact, order_receipt])
@@ -99,44 +204,11 @@ class Processor extends Base\Core
 
             $rowOutput[Constants::OUTPUT_KEY_MERCHANT_ID] = $merchantId;
 
-            $source = null;
-            if (in_array($rowMap[Constants::INPUT_KEY_REPORTED_BY], Constants::BANK_SOURCES, true) === true)
-            {
-                $source = Constants::SOURCE_BANK;
-            }
-            else if (in_array($rowMap[Constants::INPUT_KEY_REPORTED_BY], Constants::CYBERCELL_SOURCES, true) === true)
-            {
-                $source = Constants::SOURCE_CYBERCELL;
-            }
+            [$isEntityCreated, $fraudEntity] = $this->saveFraudEntityForBuyerRisk($rowMap, $payment);
 
-            $orderReceipt = '';
-            if ($payment->hasOrder() === true)
-            {
-                $orderReceipt = $payment->order->getReceipt();
-            }
+            $fraudRowResult = self::getFraudNotificationRowData($payment, $fraudEntity);
 
-            $respondBy = Carbon::createFromFormat('d/m/Y H:i:s', $rowMap[Constants::INPUT_KEY_REPORTED_TO_RAZORPAY_AT] . ' 00:00:00', Timezone::IST);
-
-            $curTimestamp = Carbon::now(Timezone::IST);
-            if ($curTimestamp->greaterThan($respondBy))
-            {
-                $respondBy = $curTimestamp;
-            }
-
-            $respondBy = $respondBy->addDay()->timezone(Timezone::IST)->format('d/m/Y');
-
-            $result = [
-                Constants::MERCHANT_DATA_KEY_NOTES                  => json_encode($payment->getNotes()),
-                Constants::MERCHANT_DATA_KEY_AMOUNT                 => $payment->getAmount() / 100,
-                Constants::MERCHANT_DATA_KEY_RESPOND_BY             => $respondBy,
-                Constants::MERCHANT_DATA_KEY_PAYMENT_ID             => $payment->getPublicId(),
-                Constants::MERCHANT_DATA_KEY_ORDER_RECEIPT          => $orderReceipt,
-                Constants::MERCHANT_DATA_KEY_CUSTOMER_CONTACT       => $payment->getContact(),
-                Constants::MERCHANT_DATA_KEY_TRANSACTION_DATE       => $payment->getDateInFormatDMY(Payment\Entity::CREATED_AT),
-                Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION => $source,
-            ];
-
-            $aggregatedData[$merchantId] [] = $result;
+            $aggregatedData[$merchantId] [] = $fraudRowResult;
         }
         catch (\Throwable $e)
         {
@@ -155,6 +227,111 @@ class Processor extends Base\Core
                 $output['-'] [] = $rowOutput;
             }
         }
+    }
+
+    protected function mapKeysFromFraudSourceMap(&$rowOutput, $sourceMap, $rowMap)
+    {
+        foreach ($sourceMap as $inputKey => $outputKey)
+        {
+            try
+            {
+                $rowOutput[$inputKey] = $rowMap[$outputKey] ?? '';
+
+                if ($inputKey === Constants::BATCH_KEY_AMOUNT)
+                {
+                    $rowOutput[$inputKey] *= 100;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $rowOutput[$inputKey] = '';
+            }
+        }
+    }
+
+    protected function fetchRrnFromArnIfApplicable(&$rowOutput, $fileSource)
+    {
+        if ($fileSource === Constants::FILE_SOURCE_MASTERCARD and strlen($rowOutput[Constants::BATCH_KEY_ERROR_REASON]) === 0)
+        {
+            try
+            {
+                $rowOutput[Constants::BATCH_KEY_RRN] = sprintf('00%s', substr($rowOutput[Constants::BATCH_KEY_ARN], 12, 10));
+            }
+            catch (\Throwable $e)
+            {
+                $rowOutput[Constants::BATCH_KEY_RRN] = '';
+
+                $rowOutput[Constants::BATCH_KEY_ERROR_REASON] = Constants::FRAUD_ERROR_REASON_ARN_TO_RRN;
+            }
+        }
+    }
+
+    protected function getDefaultRowOutputValues($fileSource): array
+    {
+        return [
+            Constants::BATCH_KEY_RRN                    =>  '',
+            Constants::BATCH_KEY_ARN                    =>  '',
+            Constants::BATCH_KEY_TYPE                   =>  '',
+            Constants::BATCH_KEY_SUB_TYPE               =>  '',
+            Constants::BATCH_KEY_AMOUNT                 =>  '',
+            Constants::BATCH_KEY_BASE_AMOUNT            =>  '',
+            Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT  =>  '',
+            Constants::BATCH_KEY_CHARGEBACK_CODE        =>  '',
+            Constants::BATCH_KEY_ERROR_REASON           =>  '',
+            Constants::BATCH_KEY_CURRENCY               =>  Currency\Currency::USD,
+            Constants::BATCH_KEY_REPORTED_BY            =>  $fileSource == Constants::FILE_SOURCE_VISA
+                ? Constants::REPORTED_BY_VISA
+                : Constants::REPORTED_BY_MASTERCARD,
+        ];
+    }
+
+    protected function getOutputRowForVisaOrMastercard($rowMap, $fileSource): array
+    {
+        $rowOutput = $this->getDefaultRowOutputValues($fileSource);
+
+        $sourceMap = ($fileSource === Constants::FILE_SOURCE_VISA) ? Constants::VISA_MAP : Constants::MASTERCARD_MAP;
+
+        $this->mapKeysFromFraudSourceMap($rowOutput, $sourceMap, $rowMap);
+
+        if (strlen($rowOutput[Constants::BATCH_KEY_ARN]) === 0)
+        {
+            $rowOutput[Constants::BATCH_KEY_ERROR_REASON] = Constants::FRAUD_ERROR_REASON_ARN_NOT_FOUND;
+
+            return $rowOutput;
+        }
+
+        if (strlen($rowOutput[Constants::BATCH_KEY_AMOUNT]) > 0)
+        {
+            $rowOutput[Constants::BATCH_KEY_BASE_AMOUNT] = (new Currency\Core)->getBaseAmount(
+                $rowOutput[Constants::BATCH_KEY_AMOUNT],
+                $rowOutput[Constants::BATCH_KEY_CURRENCY]);
+        }
+
+        $this->fetchRrnFromArnIfApplicable($rowOutput, $fileSource);
+
+        return $rowOutput;
+    }
+
+    public function processRowForVisaOrMastercard(array $row, array $headers, $fileSource): array
+    {
+        $this->trace->debug(TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_ROW_PROCESS_STARTED, ['row' => $row]);
+
+        $rowMap = $this->getMapFromRow($row, $headers);
+
+        $rowOutput = [];
+
+        try
+        {
+            $rowOutput = $this->getOutputRowForVisaOrMastercard($rowMap, $fileSource);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::MERCHANT_BULK_FRAUD_NOTIFICATION_ERROR);
+
+            $rowOutput[Constants::BATCH_KEY_ERROR_REASON] = $e->getMessage();
+        }
+
+        return $rowOutput;
     }
 
     public function getMapFromRow(array $row, array $headers): array

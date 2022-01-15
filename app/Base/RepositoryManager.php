@@ -174,6 +174,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Dispute\Repository                             $dispute;
  * @property Models\Dispute\DebitNote\Repository                      $debit_note;
  * @property Models\Dispute\DebitNote\Detail\Repository               $debitNoteDetail;
+ * @property Models\Payment\Fraud\Repository                       $payment_fraud;
  * @property Models\DeviceDetail\Repository                        $user_device_detail
  * @property Models\DeviceDetail\Attribution\Repository            $app_attribution_detail
  * @property Models\Coupon\Repository                              $coupon
