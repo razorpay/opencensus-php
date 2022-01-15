@@ -28,7 +28,6 @@ Route::get('/onboard', function () {
         incrementRedisCount($scope);
         pushMessageSQS();
         makeClientCall($scope);
-
     } finally {
         // Closes the scope (ends the span)
         $scope->close();
@@ -38,12 +37,16 @@ Route::get('/onboard', function () {
 });
 
 
-function pushMessageSQS() {
-    Tracer::inSpan(['name' => 'SQS:BroadcastCreatedUser'], function () {});
+function pushMessageSQS()
+{
+    //Tracer::inSpan(['name' => 'SQS:BroadcastCreatedUser'], function () {});
     $client = new SqsClient([
-        'profile' => 'default',
-        'region' => 'us-west-2',
+        'region' => 'us-east-1',
         'version' => '2012-11-05',
+        'credentials' => [
+            'key'    => '',
+            'secret' => '',
+        ]
     ]);
 
     $params = [
@@ -75,13 +78,13 @@ function pushMessageSQS() {
     }
 }
 
-function makeClientCall($span) {
+function makeClientCall($span)
+{
     $span = Tracer::startSpan(['name' => 'Sync:Guzzle:GETRepository']);
     $scope = Tracer::withSpan($span);
     $client = new \GuzzleHttp\Client();
     $response = $client->request('GET', 'https://google.com');
     $response->getStatusCode();
-
 }
 
 function incrementRedisCount($scope)
@@ -100,17 +103,15 @@ function incrementRedisCount($scope)
 
             $client = new \GuzzleHttp\Client();
             $client->requestAsync('GET', 'https://google.com');
-
-
         });
     } finally {
         // Closes the scope (ends the span)
         $scope->close();
     }
-
 }
 
-function makeAsyncClientCall() {
+function makeAsyncClientCall()
+{
     $span = Tracer::inSpan(['name' => 'Async:Guzzle:GETRepository'], function () {
         $client = new \GuzzleHttp\Client();
         $client->requestAsync('GET', 'https://api.github.com/repos/guzzle/guzzle');
@@ -118,7 +119,8 @@ function makeAsyncClientCall() {
 }
 
 
-function createUser($scope){
+function createUser($scope)
+{
     $span = Tracer::startSpan(['name' => 'db:create:user']);
 // Opens a scope that attaches the span to the current context
     $scope = Tracer::withSpan($span);
