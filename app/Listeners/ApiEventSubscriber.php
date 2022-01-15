@@ -235,6 +235,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onProductPaymentGatewayActivatedKycPending($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onProductPaymentLinksActivated($merchantProduct)
     {
         $payload = $this->getMerchantProductPayload($merchantProduct);
@@ -270,12 +277,26 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onProductPaymentLinksActivatedKycPending($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountUnsuspended($merchant)
     {
         $this->dispatchEventToPlService($merchant);
     }
 
     protected function onAccountActivatedMccPending($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onAccountActivatedKycPending($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);
 

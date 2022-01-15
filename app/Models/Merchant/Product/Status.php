@@ -13,6 +13,7 @@ class Status
         MerchantActivationStatus::UNDER_REVIEW          => MerchantActivationStatus::UNDER_REVIEW,
         MerchantActivationStatus::NEEDS_CLARIFICATION   => MerchantActivationStatus::NEEDS_CLARIFICATION,
         MerchantActivationStatus::ACTIVATED_MCC_PENDING => MerchantActivationStatus::ACTIVATED,
+        MerchantActivationStatus::ACTIVATED_KYC_PENDING => MerchantActivationStatus::ACTIVATED_KYC_PENDING,
     ];
 
     //Payment links and payment gateway product status are same

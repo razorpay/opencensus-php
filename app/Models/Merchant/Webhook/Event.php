@@ -87,6 +87,7 @@ class Event
     const ACCOUNT_INTERNATIONAL_ENABLED     = 'account.international_enabled';
     const ACCOUNT_INTERNATIONAL_DISABLED    = 'account.international_disabled';
     const ACCOUNT_INSTANTLY_ACTIVATED       = 'account.instantly_activated';
+    const ACCOUNT_ACTIVATED_KYC_PENDING     = 'account.activated_kyc_pending';
     const ACCOUNT_UNDER_REVIEW              = 'account.under_review';
     const ACCOUNT_NEEDS_CLARIFICATION       = 'account.needs_clarification';
     const ACCOUNT_ACTIVATED                 = 'account.activated';
@@ -132,6 +133,8 @@ class Event
     const PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION   = 'product.payment_links.needs_clarification';
     const PAYMENT_LINKS_PRODUCT_REJECTED              = 'product.payment_links.rejected';
     const PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED   = 'product.payment_links.instantly_activated';
+    const PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING = 'product.payment_gateway.activated_kyc_pending';
+    const PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   = 'product.payment_links.activated_kyc_pending';
 
     //toeknisation events
     const TOKEN_SERVICE_PROVIDER_ACTIVATED                   = 'token.service_provider.activated';
@@ -213,6 +216,7 @@ class Event
         self::ACCOUNT_INTERNATIONAL_ENABLED,
         self::ACCOUNT_INTERNATIONAL_DISABLED,
         self::ACCOUNT_INSTANTLY_ACTIVATED,
+        self::ACCOUNT_ACTIVATED_KYC_PENDING,
         self::ACCOUNT_UNDER_REVIEW,
         self::ACCOUNT_NEEDS_CLARIFICATION,
         self::ACCOUNT_ACTIVATED,
@@ -247,8 +251,10 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
         self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
@@ -338,6 +344,7 @@ class Event
         self::ACCOUNT_INTERNATIONAL_ENABLED,
         self::ACCOUNT_INTERNATIONAL_DISABLED,
         self::ACCOUNT_INSTANTLY_ACTIVATED,
+        self::ACCOUNT_ACTIVATED_KYC_PENDING,
         self::ACCOUNT_UNDER_REVIEW,
         self::ACCOUNT_NEEDS_CLARIFICATION,
         self::ACCOUNT_ACTIVATED,
@@ -373,8 +380,10 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
         self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING,
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
@@ -506,6 +515,10 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => 46,
         self::SHIPROCKET_PAYMENT_PAGE_PAID_V1             => 47,
         self::PAYMENT_DOWNTIME_UPDATED                    => 48,
+
+        self::ACCOUNT_ACTIVATED_KYC_PENDING                 => 49,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => 50,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => 51,
     ];
 
     /**
@@ -580,6 +593,7 @@ class Event
         self::ACCOUNT_INTERNATIONAL_ENABLED     => [Product::PRIMARY],
         self::ACCOUNT_INTERNATIONAL_DISABLED    => [Product::PRIMARY],
         self::ACCOUNT_INSTANTLY_ACTIVATED       => [Product::PRIMARY],
+        self::ACCOUNT_ACTIVATED_KYC_PENDING     => [Product::PRIMARY],
         self::ACCOUNT_UNDER_REVIEW              => [Product::PRIMARY],
         self::ACCOUNT_NEEDS_CLARIFICATION       => [Product::PRIMARY],
         self::ACCOUNT_ACTIVATED                 => [Product::PRIMARY],
@@ -628,6 +642,9 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => [Product::PRIMARY],
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => [Product::PRIMARY],
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => [Product::PRIMARY],
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => [Product::PRIMARY],
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => [Product::PRIMARY],
+
     ];
 
     /**
@@ -702,6 +719,7 @@ class Event
         self::ACCOUNT_INTERNATIONAL_ENABLED     => Entity::MERCHANT,
         self::ACCOUNT_INTERNATIONAL_DISABLED    => Entity::MERCHANT,
         self::ACCOUNT_INSTANTLY_ACTIVATED       => Entity::MERCHANT,
+        self::ACCOUNT_ACTIVATED_KYC_PENDING     => Entity::MERCHANT,
         self::ACCOUNT_UNDER_REVIEW              => Entity::MERCHANT,
         self::ACCOUNT_NEEDS_CLARIFICATION       => Entity::MERCHANT,
         self::ACCOUNT_ACTIVATED                 => Entity::MERCHANT,
@@ -744,6 +762,8 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => Entity::TOKEN,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => Entity::TOKEN,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => Entity::TOKEN,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Entity::MERCHANT_PRODUCT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -786,6 +806,7 @@ class Event
         self::ACCOUNT_INTERNATIONAL_ENABLED     => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INTERNATIONAL_DISABLED    => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INSTANTLY_ACTIVATED       => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_ACTIVATED_KYC_PENDING     => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_UNDER_REVIEW              => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_NEEDS_CLARIFICATION       => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_ACTIVATED                 => Feature\Constants::SUBMERCHANT_ONBOARDING,
@@ -827,6 +848,9 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED            => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED          => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => Feature\Constants::NETWORK_TOKENIZATION_LIVE,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+
     ];
 
     /**
