@@ -11,7 +11,7 @@ class Sqs implements IntegrationInterface
             trigger_error('opencensus extension required to load Sqs integrations.', E_USER_WARNING);
         }
 
-        opencensus_trace_method('Aws\Sqs\SqsClient', 'sendMessage', function ($params) {
+        opencensus_trace_method('Aws\Sqs\SqsClient', 'execute', function ($params) {
             return [
                 'attributes' => ['queueURL' => $params[0]['QueueUrl'],
                     'delaySeconds' => $params[0]['DelaySeconds']],
@@ -19,5 +19,15 @@ class Sqs implements IntegrationInterface
                 'name' => 'Sqs sendMessage',
             ];
         });
+
+        opencensus_trace_method('Aws\Sqs\SqsClient', 'executeAsync', function ($params) {
+            return [
+                'attributes' => ['queueURL' => $params[0]['QueueUrl'],
+                    'delaySeconds' => $params[0]['DelaySeconds']],
+                'kind' => 'client',
+                'name' => 'Sqs sendMessage',
+            ];
+        });
+
     }
 }
