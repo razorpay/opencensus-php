@@ -25,10 +25,12 @@ class Payout extends Base
     const PAYOUT_INITIATED = "payout_initiated";
     const PAYOUT_PROCESSED = "payout_processed";
     const PAYOUT_REVERSED  = "payout_reversed";
+    const PAYOUT_FAILED    = "payout_failed";
 
     const INTER_ACCOUNT_PAYOUT_INITIATED = "inter_account_payout_initiated";
     const INTER_ACCOUNT_PAYOUT_PROCESSED = "inter_account_payout_processed";
     const INTER_ACCOUNT_PAYOUT_REVERSED  = "inter_account_payout_reversed";
+    const INTER_ACCOUNT_PAYOUT_FAILED    = "inter_account_payout_failed";
 
     public function pushTransactionToLedger(Entity $payout,
                                             string $transactorEvent,
@@ -89,6 +91,15 @@ class Payout extends Base
                     }
 
                     $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
+
+                    break;
+
+                case self::INTER_ACCOUNT_PAYOUT_FAILED:
+                case self::PAYOUT_FAILED:
+                        $transactorDate = $payout->getCreatedAt();
+                        $transactorId = $payout->getPublicId();
+                        $transactionId = $payout->getTransactionId();
+                        $apiTransactionId = $payout->getTransactionId();
 
                     break;
 
@@ -186,7 +197,9 @@ class Payout extends Base
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
-        $identifiers = array_merge($identifiers, $ftsSourceAccountData);
+        if ($status !== self::PAYOUT_FAILED) {
+            $identifiers = array_merge($identifiers, $ftsSourceAccountData);
+        }
 
         $payload = [
             self::TENANT           => self::X,

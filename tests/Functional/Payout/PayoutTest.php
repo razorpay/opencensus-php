@@ -762,7 +762,7 @@ class PayoutTest extends OAuthTestCase
 
         $ledgerSnsPayloadArray = [];
 
-        $this->mockLedgerSns(3, $ledgerSnsPayloadArray);
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
 
         $this->ba->privateAuth();
 
@@ -793,21 +793,17 @@ class PayoutTest extends OAuthTestCase
 
         $payoutCreated = $this->getDbLastEntity('payout');
 
-        $reversalCreated = $this->getDbLastEntity('reversal');
-
         // Since there are multiple events within the flow,
         // following is a list of events in the order in which they occur in the test flow
         $transactorTypeArray = [
             'inter_account_payout_initiated',
-            'inter_account_payout_processed',
-            'inter_account_payout_reversed',
+            'inter_account_payout_failed',
         ];
 
         // The first event passes the payout Id, the reversal event passes the reversal Id
         $transactorIdArray = [
             $payoutCreated->getPublicId(),
             $payoutCreated->getPublicId(),
-            $reversalCreated->getPublicId()
         ];
 
         for ($index = 0; $index < count($ledgerSnsPayloadArray); $index++) {
@@ -830,13 +826,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
         $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
-        // Passed in payout processed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
-
-        // Passed in payout reversed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
+        // Not passed in payout failed payload
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[1]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[1]['identifiers']);
     }
 
     public function testCreatePayoutWithoutFundAccountId()
@@ -960,7 +952,7 @@ class PayoutTest extends OAuthTestCase
     {
         $ledgerSnsPayloadArray = [];
 
-        $this->mockLedgerSns(3, $ledgerSnsPayloadArray);
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
 
         $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
 
@@ -1039,21 +1031,17 @@ class PayoutTest extends OAuthTestCase
 
         $payoutCreated = $this->getDbLastEntity('payout');
 
-        $reversalCreated = $this->getDbLastEntity('reversal');
-
         // Since there are multiple events within the flow,
         // following is a list of events in the order in which they occur in the test flow
         $transactorTypeArray = [
             'payout_initiated',
-            'payout_processed',
-            'payout_reversed',
+            'payout_failed',
         ];
 
         // The first event passes the payout Id, the reversal event passes the reversal Id
         $transactorIdArray = [
             $payoutCreated->getPublicId(),
             $payoutCreated->getPublicId(),
-            $reversalCreated->getPublicId()
         ];
 
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
@@ -1085,13 +1073,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
         $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
 
-        // Passed in payout processed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
-
-        // Passed in payout reversed payload
-        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
-        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
+        // Not passed in payout failed payload
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[1]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[1]['identifiers']);
     }
 
     public function testPayoutReversalWithMultipleRewards()
@@ -17011,10 +16995,10 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals(2001062, $reversal['amount']);
 
-        // pushed twice
+        // pushed once
         // once for payout creation transaction
-        // once for reversal transaction
-        Queue::assertPushed(Transactions::class, 2);
+        // no job to be pushed for payout failed ledger event
+        Queue::assertPushed(Transactions::class, 1);
     }
 
     public function testPayoutProcessedInLedgerReverseShadowMode()

@@ -270,12 +270,14 @@ class Status
         self::CREATED   => Ledger\Payout::PAYOUT_INITIATED,
         self::PROCESSED => Ledger\Payout::PAYOUT_PROCESSED,
         self::REVERSED  => Ledger\Payout::PAYOUT_REVERSED,
+        self::FAILED    => Ledger\Payout::PAYOUT_FAILED,
     ];
 
     public static $payoutStatusToLedgerEventMapForInterAccount = [
         self::CREATED   => Ledger\Payout::INTER_ACCOUNT_PAYOUT_INITIATED,
         self::PROCESSED => Ledger\Payout::INTER_ACCOUNT_PAYOUT_PROCESSED,
         self::REVERSED  => Ledger\Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
+        self::FAILED    => Ledger\Payout::INTER_ACCOUNT_PAYOUT_FAILED,
     ];
 
     /**
