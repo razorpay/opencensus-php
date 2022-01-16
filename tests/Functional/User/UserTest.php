@@ -32,8 +32,6 @@ use RZP\Services\SalesForceClient;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Services\Segment\XSegmentClient;
 use RZP\Mail\User\AccountVerification;
 use RZP\Models\Merchant\Attribute\Type;
 use Illuminate\Database\Eloquent\Factory;
@@ -78,21 +76,6 @@ class UserTest extends TestCase
         $this->app->make(Factory::class)->load($factoryPath);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
-    }
-
-    protected function createAndFetchMocks()
-    {
-        $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
-            ->getMock();
-
-        $mockMC->expects($this->any())
-            ->method('isRazorxExperimentEnable')
-            ->willReturn(true);
-
-        return [
-            "merchantCoreMock"    => $mockMC
-        ];
     }
 
     public function testCreate()
@@ -773,21 +756,6 @@ class UserTest extends TestCase
         $this->assertFalse(isset($response['invitations']));
         $this->assertFalse(isset($response['settings']));
         $this->assertFalse(isset($response['merchants'][0]['methods']));
-    }
-
-    public function testSegmentEventLogin(){
-
-        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('x-segment', $xsegmentMock);
-
-        $xsegmentMock->expects($this->exactly(1))
-            ->method('pushTrackEvent')
-            ->willReturn(true);
-
-        $this->testLogin();
     }
 
     public function testMobileLoginWithPassword()

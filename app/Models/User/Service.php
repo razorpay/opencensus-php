@@ -226,7 +226,6 @@ class Service extends Base\Service
 
         $customProperties = [
             Entity::EMAIL                      => $user[Entity::EMAIL] ?? null,
-            Entity::CONTACT_MOBILE             => $user[Entity::CONTACT_MOBILE] ?? null,
             Entity::VISITOR_ID                 => $visitorId,
             Merchant\Constants::PARTNER_INTENT => $partnerIntent,
             'is_m2m_referral'                  => $isM2MReferral
@@ -470,9 +469,6 @@ class Service extends Base\Service
         if(empty($merchant) === false)
         {
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-                $merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
-
-            $this->app['x-segment']->pushIdentifyAndTrackEvent(
                 $merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
         }
 
@@ -826,12 +822,6 @@ class Service extends Base\Service
         {
             $response = $this->core->login($input);
 
-            $merchant = $this->findMerchant($response[Entity::ID]);
-
-            if($merchant !== null) {
-                $this->app['x-segment']->pushTrackEvent($merchant, [], SegmentEvent::USER_LOGIN);
-            }
-
             return $this->setOtpAuthTokenForBankingRequest($response, $response[Entity::ID]);
         }
         catch (\Throwable $ex)
@@ -840,25 +830,6 @@ class Service extends Base\Service
 
             throw $ex;
         }
-    }
-
-    public function findMerchant($userId){
-
-        try {
-            $user = $this->repo->user->findOrFailPublic($userId);
-            $merchant = $user->getMerchantEntity();
-
-            return $merchant;
-        }
-        catch (\Throwable $ex ){
-
-            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED_FOR_LOGIN_EVENT,
-                [
-                    'user_id' => $userId
-                ]);
-            return null;
-        }
-
     }
 
     public function loginWithOtp(array $input): array

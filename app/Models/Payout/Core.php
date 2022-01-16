@@ -29,7 +29,6 @@ use RZP\Models\Merchant;
 use RZP\Models\External;
 use RZP\Models\Workflow;
 use RZP\Services\Stork;
-use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Jobs\FundTransfer;
@@ -2209,14 +2208,6 @@ class Core extends Base\Core
 
             (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION,
                                                      $payout)->notify();
-
-            if($payout->isBalanceAccountTypeDirect() === true) {
-                $merchantId = $payout->getMerchantId();
-
-                $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-                $this->app['x-segment']->pushTrackEvent($merchant, [], SegmentEvent::CA_PAYOUT_PROCESSED);
-            }
         }
 
         // if purpose_type = inter_account_payout then create an internal entity

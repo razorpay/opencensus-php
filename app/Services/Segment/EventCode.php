@@ -68,16 +68,6 @@ class EventCode
 
     const BANK_ACCOUNT_UPDATE_WORKFLOW_CREATED         = 'bank account workflow created';
 
-    const CA_ACTIVATED              = 'Current Account Activated';
-
-    const CONTACT_CREATED           = 'Contact Created';
-
-    const FUND_ACCOUNT_ADDED        = 'Fund Account Added';
-
-    const USER_LOGIN                = 'User Login';
-
-    const CA_PAYOUT_PROCESSED            = 'CA Payout Processed';
-
     const EVENT_LABELS = [
         self::L1_SUBMISSION                             => "L1 Form Submit",
         self::L2_SUBMISSION                             => "L2 Form Submit",
