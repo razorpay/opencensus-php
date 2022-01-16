@@ -46,37 +46,6 @@ return [
         ],
     ],
 
-    'testCreatePayoutWithDecimalAmount' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/payouts',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'amount'          => 53217.999999999,
-                'currency'        => 'INR',
-                'purpose'         => 'refund',
-                'narration'       => 'Batman',
-                'mode'            => 'IMPS',
-                'fund_account_id' => 'fa_100000000000fa',
-                'notes'           => [
-                    'abc' => 'xyz',
-                ],
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'description' => 'The amount must be an integer.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testErrorDescriptionForMinimumTransactionAmount' => [
         'request'  => [
             'method'  => 'POST',

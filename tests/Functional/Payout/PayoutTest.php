@@ -208,19 +208,6 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
-    // In testcases the values in request payload gets converted to string. Hence we can write testcase to test amount with
-    // upto certain decimal places. We need to test more decimal places and bool values for amount on stage env or local.
-    public function testCreatePayoutWithDecimalAmount()
-    {
-        $this->ba->privateAuth();
-
-        $this->startTest();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $this->assertNull($payout);
-    }
-
     public function testUpdatePayout()
     {
         $this->testCreatePayout();
