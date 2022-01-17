@@ -73,7 +73,6 @@ function pushMessageSQS($scope)
 
         try {
             $result = $client->sendMessage($params);
-            var_dump($result);
         } catch (AwsException $e) {
             // output error message if fails
             error_log($e->getMessage());
@@ -117,7 +116,6 @@ function pushMessageSQS($scope)
 
         try {
             $result = $client->sendMessage($params);
-            var_dump($result);
         } catch (AwsException $e) {
             // output error message if fails
             error_log($e->getMessage());
