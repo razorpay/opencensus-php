@@ -723,6 +723,11 @@ class Constants
     const ORG_HIDE_ACTIVATION_FORM  = 'hide_activation_form';
 
     /**
+     * Control enablement of Admin Dashboard Reports for Orgs
+     */
+    const ORG_ADMIN_REPORT_ENABLE      = 'admin_reports_enable';
+
+    /**
      * Marks the seller eligible for automated loc as per https://jira.corp.razorpay.com/browse/CAP-519
      */
     const AUTOMATED_LOC_ELIGIBLE = 'automated_loc_eligible';
@@ -1441,6 +1446,7 @@ class Constants
         self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
         self::ORG_HIDE_ACTIVATION_FORM        => true,
+        self::ORG_ADMIN_REPORT_ENABLE         => true,
         self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
         self::HDFC_CHECKOUT_2                 => true,
         self::SHOW_OLD_ERROR_DESC             => true,

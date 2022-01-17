@@ -1014,6 +1014,10 @@ return [
             Permission::ADMIN_LEAD_VERIFY => [
                 'assignable'  => true
             ],
+            Permission::VIEW_ADMIN_REPORTS => [
+                'description' => 'View Admin Reports',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::ACTION     => [

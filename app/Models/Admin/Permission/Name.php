@@ -369,6 +369,9 @@ class Name
     const EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK = 'execute_merchant_disable_international_bulk';
     const EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK  = 'execute_merchant_enable_international_bulk';
 
+    // Admin Dashboard Reports
+    const VIEW_ADMIN_REPORTS                  = 'view_admin_reports';
+
     // Sub VA constants
     const ADMIN_SUB_VIRTUAL_ACCOUNT             = 'admin_sub_virtual_account';
     const MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT    = 'merchant_fetch_sub_virtual_account';

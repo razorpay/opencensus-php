@@ -229,6 +229,7 @@ class Entity
     const ADMIN_TOKEN           = 'admin_token';
     const ORG_HOSTNAME          = 'org_hostname';
     const ORG_FIELD_MAP         = 'org_field_map';
+    const ADMIN_REPORT          = 'admin_report';
 
     //
     // Workflow Entities
@@ -998,6 +999,7 @@ class Entity
         self::ROLE                         => \RZP\Models\Admin\Role::class,
         self::ADMIN                        => \RZP\Models\Admin\Admin::class,
         self::GROUP                        => \RZP\Models\Admin\Group::class,
+        self::ADMIN_REPORT                 => \RZP\Models\Admin\Report::class,
         self::ADMIN_LEAD                   => \RZP\Models\Admin\AdminLead::class,
         self::PERMISSION                   => \RZP\Models\Admin\Permission::class,
         self::ADMIN_TOKEN                  => \RZP\Models\Admin\Admin\Token::class,

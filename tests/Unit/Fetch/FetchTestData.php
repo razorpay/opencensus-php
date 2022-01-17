@@ -34,6 +34,8 @@ return [
         ],
     ],
 
+    E::ADMIN_REPORT => [],
+
     E::GROUP => [
         Type::PRIVILEGE_AUTH => [
             [

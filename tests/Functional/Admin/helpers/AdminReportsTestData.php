@@ -1,0 +1,63 @@
+<?php
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
+return [
+    'testFiltersGetByType' => [
+        'request'  => [
+            'url'     => '/admin/reports/filters/detailed_transaction',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetReportsData' => [
+        'request'  => [
+            'url'     => '/admin/reports/detailed_transaction',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetReportsByType' => [
+        'request'  => [
+            'url'     => '/admin/reports/fetch/detailed_transaction',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testGetReportsForAdmin' => [
+        'request'  => [
+            'url'     => '/admin/reports/download/report_id',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testReportsGetReportById' => [
+        'request'  => [
+            'url'     => '/admin/reports/filters/detailed_transaction',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+];
