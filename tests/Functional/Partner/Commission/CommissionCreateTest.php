@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Partner\Commission;
 
 use DB;
 
+use App;
 use Mail;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
@@ -235,6 +236,10 @@ class CommissionCreateTest extends TestCase
 
         $this->assertEquals('under_review', $invoice['status']);
 
+        $app = App::getFacadeRoot();
+
+        $app['workflow']->setMethod('DELETE');
+
         $testData = $this->testData['testInvoiceActionApproved'];
 
         $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
@@ -242,6 +247,11 @@ class CommissionCreateTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $this->runRequestResponseFlow($testData);
+
+        // Check that when the CommissionTdsSettlement job is triggered,
+        // the dirty data set in the workflow singleton should be reset or get updated as per the job flow.
+        // Taking an example of workflow data gets resetted as the HTTP method wouldn't be DELETE in the flow above
+        $this->assertFalse($app['workflow']->getMethod() === 'DELETE');
 
         $invoice = $this->getDbLastEntity('commission_invoice');
 

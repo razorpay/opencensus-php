@@ -14,6 +14,7 @@ final class Metric
 
     const COMMISSION_ON_HOLD_CLEAR_PROCESS_TIME_MS      = "commission_on_hold_clear_process_time_ms";
     const COMMISSION_TDS_SETTLEMENT_PROCESS_TIME_MS     = "commission_tds_settlement_process_time_ms";
+    const COMMISSION_TDS_SETTLEMENT_JOB_FAILURE_TOTAL   = "commission_tds_settlement_job_failure_total";
     const SUBMERCHANT_INVITE_BATCH_DAILY_LIMIT_EXCEEDED = 'submerchant_invite_batch_daily_limit_exceeded';
 
     const PARTNER_ACTIVATION_AUTO_ACTIVATE_SUCCESS_TOTAL     = 'partner_activation_auto_activate_success_total';

@@ -5,8 +5,9 @@ namespace RZP\Jobs\ProductConfig;
 use App;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Services\Workflow;
 use RZP\Models\Merchant\Product;
+use Razorpay\Trace\Logger as Trace;
 
 class AutoUpdateMerchantProducts extends Job
 {
@@ -32,6 +33,7 @@ class AutoUpdateMerchantProducts extends Job
         $this->source          = $source;
         $this->merchant        = $merchant;
         $this->merchantDetails = $merchantDetails;
+        $this->resetWorkflowSingleton();
     }
 
     public function handle()
@@ -85,5 +87,11 @@ class AutoUpdateMerchantProducts extends Job
         {
             $this->release(self::RETRY_INTERVAL);
         }
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $app = App::getFacadeRoot();
+        $app['workflow'] =  new Workflow\Service($app);
     }
 }

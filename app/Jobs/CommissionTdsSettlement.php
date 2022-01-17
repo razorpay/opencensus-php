@@ -8,6 +8,7 @@ use App;
 use RZP\Error\ErrorCode;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
+use RZP\Services\Workflow;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
@@ -60,6 +61,7 @@ class CommissionTdsSettlement extends Job
         $this->updateInvoiceStatus = $input[Invoice\Constants::UPDATE_INVOICE_STATUS] ?? true;
         $this->createTds = $input[Invoice\Constants::CREATE_TDS] ?? true;
         $this->skipProcessed = $input[Invoice\Constants::SKIP_PROCESSED] ?? false;
+        $this->resetWorkflowSingleton();
     }
 
     public function handle()
@@ -177,8 +179,11 @@ class CommissionTdsSettlement extends Job
                     'partner_id'    => $this->partnerId,
                     'toTimestamp'   => $this->toTimestamp,
                     'fromTimestamp' => $this->fromTimestamp,
+                    'invoice_id'    => $this->invoiceId
                 ]
             );
+
+            $this->trace->count(PartnerMetric::COMMISSION_TDS_SETTLEMENT_JOB_FAILURE_TOTAL);
 
             $this->delete();
         }
@@ -198,5 +203,11 @@ class CommissionTdsSettlement extends Job
                 'create_tds'     => $this->createTds,
                 'update_status'  => $this->updateInvoiceStatus,
             ]);
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $app = App::getFacadeRoot();
+        $app['workflow'] =  new Workflow\Service($app);
     }
 }
