@@ -7,12 +7,14 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
+use Illuminate\Support\Facades\Config;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -43,6 +45,7 @@ class Entity extends Base\PublicEntity
     const TYPE               = 'type';
     const URL                = 'url';
     const TEMPLATE_TYPE      = 'template_type';
+    const HANDLE_URL         = 'handle_url';
 
     const PAYMENT_PAGE_ITEMS   = 'payment_page_items';
     const PAYMENT_PAGE_ITEM_ID = 'payment_page_item_id';
@@ -762,6 +765,18 @@ class Entity extends Base\PublicEntity
         }
 
         return ['branding_logo' => $brandingLogo];
+    }
+
+    public function getHandleUrl(): string
+    {
+        if($this->getViewType() !== ViewType::PAYMENT_HANDLE)
+        {
+            throw new BadRequestException('URL exist for Payment Handle');
+        }
+
+        $phHostedViewUrl = Config::get('app.payment_handle_hosted_base_url');
+
+        return $phHostedViewUrl . '/' . $this->getSlugFromShortUrl();
     }
 
     // -------------------------------------- End Getters -----------------------------

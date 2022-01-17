@@ -595,7 +595,7 @@ class Service extends Base\Service
 
         $modifiedResponse[ENTITY::SLUG]  = $merchantHandleSetting[Entity::DEFAULT_PAYMENT_HANDLE];
 
-        $modifiedResponse[ENTITY::URL]   = $this->app['config']->get('app.payment_handle_hosted_base_url'). '/' . $modifiedResponse[Entity::SLUG]; ;
+        $modifiedResponse[ENTITY::URL]   = $response->getHandleUrl();
 
         return $modifiedResponse;
     }

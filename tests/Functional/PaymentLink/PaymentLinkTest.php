@@ -1988,7 +1988,7 @@ class PaymentLinkTest extends TestCase
         $elfin->method('driver')->willReturn($gimli);
 
         $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/@testmerchant"
+            "https://rzp.io/i/@newHandle"
         );
 
         $this->app->instance('elfin', $elfin);

@@ -191,6 +191,7 @@ class ViewSerializer extends Base\Core
         $this->addFormattedEpochAttributesForPaymentLink($serialized);
         $this->addSettingsOfPaymentLink($serialized);
         $this->serializePaymentPageItems($serialized);
+        $this->serializeAttributesForHandle($serialized);
 
         return $serialized;
     }
@@ -222,6 +223,14 @@ class ViewSerializer extends Base\Core
         $settings = $paymentPageItemSerialized[PaymentPageItem\Entity::SETTINGS];
 
         $paymentPageItemSerialized[PaymentPageItem\Entity::SETTINGS] = $settings->toArray();
+    }
+
+    protected function serializeAttributesForHandle(array & $handleSerialized)
+    {
+        if($this->paymentLink->getViewType() === ViewType::PAYMENT_HANDLE)
+        {
+            $handleSerialized[Entity::HANDLE_URL] = $this->paymentLink->getHandleUrl();
+        }
     }
 
     protected function addAdditionalAttributesForPaymentLink(array & $serialized)

@@ -6,6 +6,7 @@ use RZP\Models\Admin;
 use RZP\Models\Feature;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\PaymentLink;
 use RZP\Models\PaymentLink\ViewSerializer;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
 
@@ -36,7 +37,9 @@ class ViewSerializerTest extends TestCase
             ]);
         }
 
-        $pl = $this->createPaymentLink();
+        $attributes = [ PaymentLink\Entity::VIEW_TYPE => PaymentLink\ViewType::PAGE ];
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, $attributes);
         $mockViewSerializer = \Mockery::mock(ViewSerializer::class, [$pl])->makePartial();
         $mockViewSerializer->shouldAllowMockingProtectedMethods();
 
@@ -84,7 +87,10 @@ class ViewSerializerTest extends TestCase
                 ]
             );
         }
-        $pl = $this->createPaymentLink();
+
+        $attributes = [ PaymentLink\Entity::VIEW_TYPE => PaymentLink\ViewType::PAGE ];
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, $attributes);
         $mockViewSerializer = \Mockery::mock(ViewSerializer::class, [$pl])->makePartial();
         $mockViewSerializer->shouldAllowMockingProtectedMethods();
 
