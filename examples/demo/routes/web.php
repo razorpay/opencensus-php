@@ -26,8 +26,9 @@ Route::get('/onboard', function () {
     try {
         createUser($scope);
         incrementRedisCount($scope);
-        pushMessageSQS();
+        pushMessageSQS($scope);
         makeClientCall($scope);
+
     } finally {
         // Closes the scope (ends the span)
         $scope->close();
@@ -37,45 +38,97 @@ Route::get('/onboard', function () {
 });
 
 
-function pushMessageSQS()
+function pushMessageSQS($scope)
 {
-    //Tracer::inSpan(['name' => 'SQS:BroadcastCreatedUser'], function () {});
-    $client = new SqsClient([
-        'region' => 'us-east-1',
-        'version' => '2012-11-05',
-        'credentials' => [
-            'key'    => '',
-            'secret' => '',
-        ]
-    ]);
+    Tracer::inSpan(['name' => 'SQS:FirstBroadcastCreatedUser'], function () {
 
-    $params = [
-        'DelaySeconds' => 10,
-        'MessageAttributes' => [
-            "Title" => [
-                'DataType' => "String",
-                'StringValue' => "The Hitchhiker's Guide to the Galaxy"
-            ],
-            "Author" => [
-                'DataType' => "String",
-                'StringValue' => "Douglas Adams."
-            ],
-            "WeeksOn" => [
-                'DataType' => "Number",
-                'StringValue' => "6"
+        $client = new SqsClient([
+            'region' => 'us-east-1',
+            'version' => '2012-11-05',
+            'credentials' => [
+                'key'    => '',
+                'secret' => '',
             ]
-        ],
-        'MessageBody' => "Information about current NY Times fiction bestseller for week of 12/11/2016.",
-        'QueueUrl' => 'http://localhost:4566/000000000000/test'
-    ];
+        ]);
 
+        $params = [
+            'DelaySeconds' => 10,
+            'MessageAttributes' => [
+                "Title" => [
+                    'DataType' => "String",
+                    'StringValue' => "The Hitchhiker's Guide to the Galaxy"
+                ],
+                "Author" => [
+                    'DataType' => "String",
+                    'StringValue' => "Douglas Adams."
+                ],
+                "WeeksOn" => [
+                    'DataType' => "Number",
+                    'StringValue' => "6"
+                ]
+            ],
+            'MessageBody' => "Information about current NY Times fiction bestseller for week of 12/11/2016.",
+            'QueueUrl' => 'http://localhost:4566/000000000000/test'
+        ];
+
+        try {
+            $result = $client->sendMessage($params);
+            var_dump($result);
+        } catch (AwsException $e) {
+            // output error message if fails
+            error_log($e->getMessage());
+        }
+
+
+    });
+
+    $span = Tracer::startSpan(['name' => 'SQS:SecondBroadcastCreatedUser']);
+    $scope = Tracer::withSpan($span);
     try {
-        $result = $client->sendMessage($params);
-        var_dump($result);
-    } catch (AwsException $e) {
-        // output error message if fails
-        error_log($e->getMessage());
+
+        $client = new SqsClient([
+            'region' => 'us-east-1',
+            'version' => '2012-11-05',
+            'credentials' => [
+                'key'    => '',
+                'secret' => '',
+            ]
+        ]);
+
+        $params = [
+            'DelaySeconds' => 11,
+            'MessageAttributes' => [
+                "Title" => [
+                    'DataType' => "String",
+                    'StringValue' => "The Next book"
+                ],
+                "Author" => [
+                    'DataType' => "String",
+                    'StringValue' => "John Doe"
+                ],
+                "WeeksOn" => [
+                    'DataType' => "Number",
+                    'StringValue' => "3"
+                ]
+            ],
+            'MessageBody' => "Information",
+            'QueueUrl' => 'http://localhost:4566/000000000000/test'
+        ];
+
+        try {
+            $result = $client->sendMessage($params);
+            var_dump($result);
+        } catch (AwsException $e) {
+            // output error message if fails
+            error_log($e->getMessage());
+        }
+
+    } finally {
+        // Closes the scope (ends the span)
+        $scope->close();
     }
+
+
 }
 
 function makeClientCall($span)

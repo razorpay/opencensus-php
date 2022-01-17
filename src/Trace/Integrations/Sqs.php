@@ -11,54 +11,45 @@ class Sqs implements IntegrationInterface
             trigger_error('opencensus extension required to load Sqs integrations.', E_USER_WARNING);
         }
 
-        opencensus_trace_method('Aws\AwsClient', 'execute', function ($command){
-            $v='s';
-        });
-        opencensus_trace_method('Aws\AwsClientInterface', 'execute', function ($command){
-            $v='s';
-        });
-        opencensus_trace_method('Aws\AwsClientTrait', 'execute', function ($command){
-            $v='s';
-        });
-        opencensus_trace_method('Aws\Sqs\SqsClient', 'execute', function ($command){
-            $v='s';
-        });
-        opencensus_trace_method('Aws\Sqs\SqsClient', '__construct',function ($config){
-            $v = 's';
-        });
-
-        //debug
         opencensus_trace_method('Aws\AwsClient', 'execute', function ($command, $args){
-            $v='s';
+            if(get_class($command) === 'Aws\Sqs\SqsClient'){
+                $attributes = [
+                    'command'              => $args[0],
+                    'sqs.QueueUrl' => $args->data["QueueUrl"],
+                    'sqs.DelaySeconds'         => $args->data["DelaySeconds"],
+                    'sqs.region'              => $command->getRegion(),
+                    'sqs.apiVersion'        => ($command->getApi())->getApiVersion(),
+                    'sqs.host'        => ($command->getEndpoint())->getHost(),
+                    'service.name'         => ($command->getApi())->getServiceName(),
+                    'span.kind'            => 'client',
+                ];
+                var_dump($attributes);
+                return [
+                    'attributes' => $attributes,
+                    'kind' => 'client',
+                    'name' => 'Sqs '.$args[0],
+                    'sameProcessAsParentSpan' => false
+                ];
+            }
+            return [];
         });
-        opencensus_trace_method('Aws\AwsClientInterface', 'execute', function ($command, $args){
-            $v='s';
-        });
-        opencensus_trace_method('Aws\AwsClientTrait', 'execute', function ($command, $args){
-            $v='s';
-        });
-        opencensus_trace_method('Aws\Sqs\SqsClient', 'execute', function ($command, $args){
-            $v='s';
-        });
+
         opencensus_trace_method('Aws\Sqs\SqsClient', '__construct',function ($command, $args){
-            $v = 's';
+            if (get_class($command) === 'Aws\Sqs\SqsClient'){
+                return [
+                    'attributes' => [
+                        'sqs.region'              => $command->getRegion(),
+                        'sqs.apiVersion'        => ($command->getApi())->getApiVersion(),
+                        'sqs.host'        => ($command->getEndpoint())->getHost(),
+                        'service.name'         => ($command->getApi())->getServiceName(),
+                    ],
+                    'kind' => 'client',
+                    'name' => 'Sqs '.$args[0],
+                    'sameProcessAsParentSpan' => false
+                ];
+            }
+            return [];
         });
-
-    }
-
-    static function handleExecuteCommand($sqs, $command)
-    {
-
-        error_log($sqs);
-        error_log($command);
-        return [
-            'attributes' => ['queueURL' => 'const',
-                'delaySeconds' => '2'],
-            'kind' => 'client',
-            'name' => 'Sqs sendMessage',
-            'sameProcessAsParentSpan' => false,
-        ];
-
 
     }
 
