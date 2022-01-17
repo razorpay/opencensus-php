@@ -1,9 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import numeral from 'numeral';
-import moment from 'moment';
-
-import Amount from 'common/ui/Amount';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 import {
   titleCase,
@@ -11,16 +7,12 @@ import {
   getPercentage,
   paiseToRupees,
   getFixedNumber,
+  groupBy,
 } from 'common/utils/rzp-utils';
-import {
-  humanReadableIndian,
-  humanReadableIndianCurrency,
-} from 'common/utils/numerals';
-import Popover, { PopoverTitle, PopoverBody } from 'common/ui/Popover';
+import { humanReadableIndian, humanReadableIndianCurrency } from 'common/utils/numerals';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { groupBy } from 'common/utils/rzp-utils';
-import Change from 'common/ui/Change';
 
 import { fetch } from 'merchant/reducers/pokedex';
 import {
@@ -39,7 +31,6 @@ import {
   TRANSACTION_VOLUME,
   REFUNDS,
   SAVED_CARDS,
-  SUCCESS_RATE,
   PLATFORM,
   CUMULATIVE,
   METHOD,
@@ -47,15 +38,10 @@ import {
   tabsOrder,
   tabsMeta,
   getQuery,
-  breakdownVals,
   breakdownValsMap,
   getTimelineData,
 } from './data';
-import {
-  trackTabClick,
-  trackBreakdownChange,
-  trackSavedCardsHidden,
-} from './ga';
+import { trackTabClick, trackBreakdownChange, trackSavedCardsHidden } from './ga';
 import Panel from './Panel';
 import MiniChart from './TinyAreaChart';
 import Mobile from './Mobile';
@@ -65,14 +51,12 @@ const csvDateFormat = 'DD-MM-YYYY';
 const gutterBetweenTabs = 16; // 16px
 
 const TabContent = ({
-  name,
   value,
   percent,
   isCurrency,
   title,
   isLoading,
   error,
-  trend,
   histogram,
   isActive,
   helpText,
@@ -89,13 +73,7 @@ const TabContent = ({
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
   } else {
-    formattedValue = getFixedNumber(percent) + '%';
-  }
-
-  let trendValue = 0;
-
-  if (!trend.loading) {
-    trendValue = trend.currentCount - trend.previousCount;
+    formattedValue = `${getFixedNumber(percent)}%`;
   }
 
   const hasNoData = !histogram || histogram.datasets.length === 0;
@@ -156,14 +134,14 @@ const TabContent = ({
 };
 
 @connect(
-  state => {
+  (state) => {
     return {
       ...state.session,
     };
   },
   {
     showNotification,
-  }
+  },
 )
 class KeyMetricsContainer extends Component {
   constructor(props) {
@@ -178,14 +156,17 @@ class KeyMetricsContainer extends Component {
       loading: true,
     };
 
-    this.requestId = this.trendRequestID = this.otherTabsReqId = 0;
+    this.requestId = 0;
+    this.trendRequestID = 0;
+    this.otherTabsReqId = 0;
 
     // Populating default value
-    tabsOrder.forEach(tabName => {
-      const { grouping, filters } = tabsMeta[tabName],
-        // assigment on R.H.S is intentional, puts value and declares
-        // variable at the same time
-        tabState = (this.state.tabsState[tabName] = {});
+    tabsOrder.forEach((tabName) => {
+      const { grouping, filters } = tabsMeta[tabName];
+      // assigment on R.H.S is intentional, puts value and declares
+      // variable at the same time
+      // eslint-disable-next-line no-multi-assign, react/no-direct-mutation-state
+      const tabState = (this.state.tabsState[tabName] = {});
 
       tabState.name = tabName;
 
@@ -196,8 +177,8 @@ class KeyMetricsContainer extends Component {
 
       if (filters && filters.length > 0) {
         tabState.selectedFilters = filters.reduce((result, filter) => {
-          const filterName = filter.name,
-            firstFilter = filter.values[0];
+          const filterName = filter.name;
+          const firstFilter = filter.values[0];
 
           result[filterName] = firstFilter;
 
@@ -243,17 +224,17 @@ class KeyMetricsContainer extends Component {
       };
     });
 
-    this.state.tabWidth = 100 / tabsOrder.length + '%';
+    this.state.tabWidth = `${100 / tabsOrder.length}%`;
 
     this.node = null;
 
-    this.onGroupingChange = ::this.onGroupingChange;
-    this.onFilterChange = ::this.onFilterChange;
-    this.onBreakdownChange = ::this.onBreakdownChange;
-    this.handleTabChange = ::this.handleTabChange;
-    this.onScreenshot = ::this.onScreenshot;
-    this.setTabWidth = ::this.setTabWidth;
-    this.getVisibleTabs = ::this.getVisibleTabs;
+    this.onGroupingChange = this.onGroupingChange.bind(this);
+    this.onFilterChange = this.onFilterChange.bind(this);
+    this.onBreakdownChange = this.onBreakdownChange.bind(this);
+    this.handleTabChange = this.handleTabChange.bind(this);
+    this.onScreenshot = this.onScreenshot.bind(this);
+    this.setTabWidth = this.setTabWidth.bind(this);
+    this.getVisibleTabs = this.getVisibleTabs.bind(this);
   }
 
   setTabWidth() {
@@ -261,25 +242,24 @@ class KeyMetricsContainer extends Component {
       return;
     }
 
-    const nodeWidth = this.node.clientWidth,
-      numVisibleTabs = this.getVisibleTabs().length;
+    const nodeWidth = this.node.clientWidth;
+    const numVisibleTabs = this.getVisibleTabs().length;
 
     if (!numVisibleTabs) {
       return;
     }
 
-    const tabWidth =
-      (nodeWidth - gutterBetweenTabs * (numVisibleTabs - 1)) / numVisibleTabs;
+    const tabWidth = (nodeWidth - gutterBetweenTabs * (numVisibleTabs - 1)) / numVisibleTabs;
 
     this.setState({
-      tabWidth: tabWidth + 'px',
+      tabWidth: `${tabWidth}px`,
     });
   }
 
   getVisibleTabs() {
     const { tabsState } = this.state;
 
-    return tabsOrder.filter(tabName => tabsState[tabName].data.showTab);
+    return tabsOrder.filter((tabName) => tabsState[tabName].data.showTab);
   }
 
   tabStateMixin({ tabState, histogram, refreshTinyGraphs }) {
@@ -293,19 +273,19 @@ class KeyMetricsContainer extends Component {
      * refreshTinyGraphs will be true only when someone changes the dates
      */
 
-    const { selectedGrouping, selectedBreakdown, name: tabName } = tabState,
-      tabMeta = tabsMeta[tabName],
-      {
-        title,
-        isCurrency,
-        noGrouping,
-        valueKey = 'value',
-        groupTitleMap = { Mobile: 'mWeb' },
-      } = tabMeta,
-      groupByColumnName = !isDefined(tabMeta.groupByColumnName)
-        ? selectedGrouping && selectedGrouping.value
-        : tabMeta.groupByColumnName,
-      { startDate, endDate, sectionTitle } = this.props;
+    const { selectedGrouping, selectedBreakdown, name: tabName } = tabState;
+    const tabMeta = tabsMeta[tabName];
+    const {
+      title,
+      isCurrency,
+      noGrouping,
+      valueKey = 'value',
+      groupTitleMap = { Mobile: 'mWeb' },
+    } = tabMeta;
+    const groupByColumnName = !isDefined(tabMeta.groupByColumnName)
+      ? selectedGrouping && selectedGrouping.value
+      : tabMeta.groupByColumnName;
+    const { startDate, endDate, sectionTitle } = this.props;
 
     /*
      * Preparing options for `getTimelineData`
@@ -316,12 +296,10 @@ class KeyMetricsContainer extends Component {
       startTime: startDate.unix(),
       endTime: endDate.unix(),
       breakdown: selectedBreakdown,
-      groupTitleMap: groupTitleMap,
+      groupTitleMap,
       isCurrency,
       valueKey,
-      noGrouping: isDefined(noGrouping)
-        ? noGrouping
-        : groupByColumnName === CUMULATIVE,
+      noGrouping: isDefined(noGrouping) ? noGrouping : groupByColumnName === CUMULATIVE,
     };
 
     /*
@@ -351,16 +329,16 @@ class KeyMetricsContainer extends Component {
     if (labels.length === 0) {
       trackNoData(
         `${tabMeta.title} in ${sectionTitle} from ${startDate.format(
-          csvDateFormat
-        )} to ${endDate.format(csvDateFormat)}`
+          csvDateFormat,
+        )} to ${endDate.format(csvDateFormat)}`,
       );
     }
 
     // preparing csv and png
-    const downloadFileName = `${title}, ${startDate.format(
-      csvDateFormat
-    )} to ${endDate.format(csvDateFormat)}, ${titleCase(selectedBreakdown)}${
-      selectedGrouping ? ' ' + selectedGrouping.text : ''
+    const downloadFileName = `${title}, ${startDate.format(csvDateFormat)} to ${endDate.format(
+      csvDateFormat,
+    )}, ${titleCase(selectedBreakdown)}${
+      selectedGrouping ? ` ${selectedGrouping.text}` : ''
     }(Razorpay)`;
 
     tabState.data.downloadFileName = downloadFileName;
@@ -377,6 +355,7 @@ class KeyMetricsContainer extends Component {
     };
 
     if (refreshTinyGraphs) {
+      // eslint-disable-next-line no-multi-assign
       const data = (tabState.data.tinyGraphData = {
         labels,
         datasets: [],
@@ -386,7 +365,7 @@ class KeyMetricsContainer extends Component {
         // need to filter and show only "Saved Card Payments" in tiny chart,
         // as the tab has no cumulative like other tabs
         if (tabName === SAVED_CARDS) {
-          const savedCardsDataset = datasets.filter(dataset => {
+          const savedCardsDataset = datasets.filter((dataset) => {
             return dataset.label === SAVED_CARD_PAYMENTS;
           })[0];
 
@@ -409,12 +388,8 @@ class KeyMetricsContainer extends Component {
      * `tabsOrder` and only counts for the rest of the tabs.
      */
 
-    const {
-        selectedFilters,
-        selectedGrouping,
-        selectedBreakdown,
-      } = this.state.tabsState[tabName],
-      { startDate, endDate, isMobile } = this.props;
+    const { selectedFilters, selectedGrouping, selectedBreakdown } = this.state.tabsState[tabName];
+    const { startDate, endDate, isMobile } = this.props;
 
     let filterBy = null;
 
@@ -442,38 +417,36 @@ class KeyMetricsContainer extends Component {
      * Makes query and prepares data for tabs other than the selected tab
      */
 
-    const { selectedTab, tabsState } = this.state,
-      otherTabs = this.getVisibleTabs().filter(
-        tabName => tabName !== selectedTab
-      ),
-      { mode, analyticsFetch } = this.props;
+    const { selectedTab, tabsState } = this.state;
+    const otherTabs = this.getVisibleTabs().filter((tabName) => tabName !== selectedTab);
+    const { mode, analyticsFetch } = this.props;
 
     const query = otherTabs.reduce(
       (result, tabName) => {
-        const query = this.makeQueryForTab(tabName),
-          tabState = tabsState[tabName];
+        const tabQuery = this.makeQueryForTab(tabName);
+        const tabState = tabsState[tabName];
 
         tabState.data.loading = true;
         tabState.data.error = '';
 
-        result.filters = { ...result.filters, ...query.filters };
+        result.filters = { ...result.filters, ...tabQuery.filters };
 
         result.aggregations = {
           ...result.aggregations,
-          [`${tabName}Histogram`]: query.aggregations[`${tabName}Histogram`],
+          [`${tabName}Histogram`]: tabQuery.aggregations[`${tabName}Histogram`],
         };
 
         return result;
       },
-      { filters: {}, aggregations: {} }
+      { filters: {}, aggregations: {} },
     );
 
     const requestId = ++this.otherTabsReqId;
 
     return (analyticsFetch || fetch)(query, mode)
-      .then(resp => {
+      .then((resp) => {
         if (requestId !== this.otherTabsReqId) {
-          return;
+          return null;
         }
 
         if (!resp.data) {
@@ -482,24 +455,22 @@ class KeyMetricsContainer extends Component {
 
         return resp;
       })
-      .catch(e => {
+      .catch((e) => {
         console.error(e);
 
         if (requestId !== this.otherTabsReqId) {
-          return;
+          return null;
         }
 
         return e;
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           return;
         }
 
         if (data.error) {
-          trackError(
-            `Error while fetching data for Keymetrics - Remaining tabs data`
-          );
+          trackError(`Error while fetching data for Keymetrics - Remaining tabs data`);
 
           this.props.showNotification({
             type: 'error',
@@ -508,10 +479,10 @@ class KeyMetricsContainer extends Component {
           });
         }
 
-        otherTabs.forEach(tabName => {
+        otherTabs.forEach((tabName) => {
           const tabState = tabsState[tabName];
 
-          if (!data.error) {
+          if (!data.error && data.data) {
             const histogram = data.data[`${tabName}Histogram`];
 
             this.tabStateMixin({
@@ -526,30 +497,28 @@ class KeyMetricsContainer extends Component {
           tabState.data.error = data.error;
         });
 
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState(this.state);
       });
   }
 
   fetchData(fetchAllCounts) {
     /*
-	 * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
-	 * and the selected tab's graph data, when ever the tab is
-	 * switched, latest data including stat for the selected tab is fetched
-	 */
-
+     * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
+     * and the selected tab's graph data, when ever the tab is
+     * switched, latest data including stat for the selected tab is fetched
+     */
     const isInitialLoad = this.state.loading;
 
-    const { tabsState, selectedTab } = this.state,
-      tabState = tabsState[selectedTab],
-      { selectedGrouping, selectedFilters } = tabState,
-      { startDate, endDate, mode, isAdmin, analyticsFetch } = this.props;
+    const { tabsState, selectedTab } = this.state;
+    const tabState = tabsState[selectedTab];
+    const { mode, analyticsFetch } = this.props;
 
     const query = this.makeQueryForTab(selectedTab, fetchAllCounts);
 
     if (this.props.isMobile && fetchAllCounts) {
-      tabsOrder.forEach(tabName => {
-        const tabState = tabsState[tabName];
-        tabState.data.loading = true;
+      tabsOrder.forEach((tabName) => {
+        tabsState[tabName].data.loading = true;
       });
     } else {
       tabState.data.loading = true;
@@ -562,7 +531,7 @@ class KeyMetricsContainer extends Component {
     const requestId = ++this.requestId;
 
     return (analyticsFetch || fetch)(query, mode)
-      .then(resp => {
+      .then((resp) => {
         if (requestId !== this.requestId) {
           return null;
         }
@@ -571,26 +540,24 @@ class KeyMetricsContainer extends Component {
           return API_INVALID_RESP;
         }
 
-        tabsOrder.forEach(tabName => {
-          const tabState = tabsState[tabName],
-            { selectedBreakdown } = tabState,
-            tabMeta = tabsMeta[tabName],
-            { isCurrency, isPercent, title, valueKey = 'value' } = tabMeta;
+        tabsOrder.forEach((tabName) => {
+          const tabMeta = tabsMeta[tabName];
+          const { isPercent, valueKey = 'value' } = tabMeta;
 
           // Main stat showin in the taib
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
             if (tabName === SAVED_CARDS) {
-              const data = groupBy(mainStat.result, tabMeta.groupByColumnName),
-                savedCardsValue = data['1'] ? data['1'][0].value : 0,
-                otherCardsValue = data['0'] ? data['0'][0].value : 0;
+              const data = groupBy(mainStat.result, tabMeta.groupByColumnName);
+              const savedCardsValue = data['1'] ? data['1'][0].value : 0;
+              const otherCardsValue = data['0'] ? data['0'][0].value : 0;
 
-              tabState.data.count = savedCardsValue;
+              tabsState[tabName].data.count = savedCardsValue;
 
-              tabState.data.percent = getPercentage(
+              tabsState[tabName].data.percent = getPercentage(
                 savedCardsValue + otherCardsValue,
-                savedCardsValue
+                savedCardsValue,
               );
 
               /*
@@ -601,22 +568,20 @@ class KeyMetricsContainer extends Component {
                * 3) Decide to show the tab or not only on initial load
                */
               if (isInitialLoad) {
-                tabState.data.showTab =
-                  tabState.data.showTab || tabState.data.percent > 15;
+                tabsState[tabName].data.showTab =
+                  tabsState[tabName].data.showTab || tabsState[tabName].data.percent > 15;
 
-                if (!tabState.data.showTab) {
-                  trackSavedCardsHidden(tabState.data.percent);
+                if (!tabsState[tabName].data.showTab) {
+                  trackSavedCardsHidden(tabsState[tabName].data.percent);
                 }
               }
             } else {
-              const value = mainStat.result[0]
-                ? mainStat.result[0][valueKey]
-                : 0;
+              const value = mainStat.result[0] ? mainStat.result[0][valueKey] : 0;
 
-              tabState.data.count = value;
+              tabsState[tabName].data.count = value;
 
               if (isPercent) {
-                tabState.data.percent = value;
+                tabsState[tabName].data.percent = value;
               }
             }
           }
@@ -626,7 +591,7 @@ class KeyMetricsContainer extends Component {
 
           if (histogram) {
             this.tabStateMixin({
-              tabState,
+              tabState: tabsState[tabName],
               histogram,
               refreshTinyGraphs: fetchAllCounts,
             });
@@ -634,10 +599,12 @@ class KeyMetricsContainer extends Component {
         });
 
         if (isInitialLoad) {
+          // eslint-disable-next-line react/no-direct-mutation-state
           this.state.loading = false;
         }
 
         if (!this.props.isMobile) {
+          // eslint-disable-next-line react/no-access-state-in-setstate
           this.setState(this.state, () => {
             this.setTabWidth();
 
@@ -649,7 +616,7 @@ class KeyMetricsContainer extends Component {
 
         return resp;
       })
-      .catch(e => {
+      .catch((e) => {
         console.error(e);
 
         if (requestId !== this.requestId) {
@@ -658,15 +625,13 @@ class KeyMetricsContainer extends Component {
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           return;
         }
 
         if (data.error) {
-          trackError(
-            `Error while fetching data for Keymetrics - ${selectedTab}`
-          );
+          trackError(`Error while fetching data for Keymetrics - ${selectedTab}`);
 
           this.props.showNotification({
             type: 'error',
@@ -676,17 +641,17 @@ class KeyMetricsContainer extends Component {
         }
 
         if (isInitialLoad) {
+          // eslint-disable-next-line react/no-direct-mutation-state
           this.state.loading = false;
         }
 
-        tabsOrder.forEach(tabName => {
-          const tabState = tabsState[tabName];
-
-          tabState.data.loading = false;
-          tabState.data.fetchData = false;
-          tabState.data.error = data.error;
+        tabsOrder.forEach((tabName) => {
+          tabsState[tabName].data.loading = false;
+          tabsState[tabName].data.fetchData = false;
+          tabsState[tabName].data.error = data.error;
         });
 
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState(this.state);
       });
   }
@@ -696,27 +661,27 @@ class KeyMetricsContainer extends Component {
 
     tabState.data.png = {
       name: `${tabState.data.downloadFileName}.png`,
-      url: url,
+      url,
     };
 
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState(this.state, cb);
   }
 
   fetchPrevData(fetchAllReq, oldestTransactionDate) {
     const { tabsState } = this.state;
 
-    oldestTransactionDate =
-      oldestTransactionDate || this.props.oldestTransactionDate;
+    oldestTransactionDate = oldestTransactionDate || this.props.oldestTransactionDate;
 
-    const { analyticsFetch } = this.props,
-      { startDate, endDate, value } = oldestTransactionDate;
+    const { analyticsFetch } = this.props;
+    const { startDate, endDate } = oldestTransactionDate;
 
     if (
       oldestTransactionDate.error ||
       !oldestTransactionDate.value ||
       startDate.unix() < oldestTransactionDate.value
     ) {
-      tabsOrder.forEach(tabName => {
+      tabsOrder.forEach((tabName) => {
         tabsState[tabName].data.trend.show = false;
       });
 
@@ -727,7 +692,7 @@ class KeyMetricsContainer extends Component {
       return Promise.resolve();
     }
 
-    tabsOrder.forEach(tabName => {
+    tabsOrder.forEach((tabName) => {
       const { trend } = tabsState[tabName].data;
 
       trend.loading = true;
@@ -748,7 +713,7 @@ class KeyMetricsContainer extends Component {
     });
 
     return (analyticsFetch || fetch)(query, this.props.mode)
-      .then(data => {
+      .then((data) => {
         if (trendRequestID !== this.trendRequestID) {
           return null;
         }
@@ -763,7 +728,7 @@ class KeyMetricsContainer extends Component {
 
         return data.data;
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
 
         if (trendRequestID !== this.trendRequestID) {
@@ -772,26 +737,22 @@ class KeyMetricsContainer extends Component {
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           return;
         }
 
         if (!data.error) {
           fetchAllReq.then(() => {
-            tabsOrder.forEach(tabName => {
-              const tabState = tabsState[tabName],
-                { trend } = tabState.data;
+            tabsOrder.forEach((tabName) => {
+              const tabState = tabsState[tabName];
+              const { trend } = tabState.data;
 
-              let previousCount = data[tabName].result[0]
-                  ? data[tabName].result[0].value
-                  : 0,
-                currentCount = tabState.data.count;
+              let previousCount = data[tabName].result[0] ? data[tabName].result[0].value : 0;
+              const currentCount = tabState.data.count;
 
               if (tabName === SAVED_CARDS) {
-                const savedCardData = data[tabName].result.filter(
-                  item => item.saved_card
-                )[0];
+                const savedCardData = data[tabName].result.filter((item) => item.saved_card)[0];
 
                 previousCount = savedCardData ? savedCardData.value : 0;
               }
@@ -816,14 +777,14 @@ class KeyMetricsContainer extends Component {
             hidePrevious: true,
           });
 
-          tabsOrder.forEach(tabName => {
+          tabsOrder.forEach((tabName) => {
             const tabState = tabsState[tabName];
 
             tabState.data.trend.error = data.error;
           });
         }
 
-        tabsOrder.forEach(tabName => {
+        tabsOrder.forEach((tabName) => {
           tabsState[tabName].data.trend.loading = false;
         });
 
@@ -834,6 +795,7 @@ class KeyMetricsContainer extends Component {
   }
 
   componentWillMount() {
+    // eslint-disable-next-line no-multi-assign
     const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
 
     if (this.props.oldestTransactionDate.value) {
@@ -862,16 +824,16 @@ class KeyMetricsContainer extends Component {
         // this func gets new data only when the tab data is not loading and
         // fetchData is true
         return !data.loading && data.fetchData && this.fetchData();
-      }
+      },
     );
 
     trackTabClick(tabsMeta[tabName].title);
   }
 
   onFilterChange(tabName, selectedFilter) {
-    const { tabsState } = this.state,
-      { onFilterChange } = this.props,
-      tabState = tabsState[tabName];
+    const { tabsState } = this.state;
+    const { onFilterChange } = this.props;
+    const tabState = tabsState[tabName];
 
     tabState.selectedFilters = {
       ...tabState.selectedFilters,
@@ -896,8 +858,8 @@ class KeyMetricsContainer extends Component {
   }
 
   onGroupingChange(tabName, selectedGrouping) {
-    const { tabsState } = this.state,
-      tabState = tabsState[tabName];
+    const { tabsState } = this.state;
+    const tabState = tabsState[tabName];
 
     tabState.selectedGrouping = selectedGrouping;
 
@@ -908,7 +870,7 @@ class KeyMetricsContainer extends Component {
 
   clearCache(tabsState) {
     // hint to fetch new data
-    tabsOrder.forEach(tabName => {
+    tabsOrder.forEach((tabName) => {
       tabsState[tabName].data.fetchData = true;
     });
   }
@@ -932,8 +894,7 @@ class KeyMetricsContainer extends Component {
       startDate.toDate() - this.props.startDate.toDate() !== 0 ||
       endDate.toDate() - this.props.endDate.toDate() !== 0
     ) {
-      const { tabsState, selectedTab } = this.state,
-        { selectedBreakdown } = tabsState[selectedTab];
+      const { tabsState } = this.state;
 
       // when switched tabs, new data should be fetched as the global
       // daterange changed
@@ -941,15 +902,14 @@ class KeyMetricsContainer extends Component {
 
       // check the daterange and correct the breakdown in each tab
       // if needed
-      tabsOrder.forEach(tabName => {
-        const tabState = tabsState[tabName],
-          selectedBreakdown = tabState.selectedBreakdown,
-          { hourly, weekly, monthly } = breakdownValsMap;
+      tabsOrder.forEach((tabName) => {
+        const selectedBreakdown = tabsState[tabName].selectedBreakdown;
+        const { hourly, weekly, monthly } = breakdownValsMap;
 
         if (selectedBreakdown !== 'daily') {
-          const showHourly = hourly.isEnabled(startDate, endDate),
-            showWeekly = weekly.isEnabled(startDate, endDate),
-            showMonthly = monthly.isEnabled(startDate, endDate);
+          const showHourly = hourly.isEnabled(startDate, endDate);
+          const showWeekly = weekly.isEnabled(startDate, endDate);
+          const showMonthly = monthly.isEnabled(startDate, endDate);
 
           if (
             (selectedBreakdown === 'hourly' && !showHourly) ||
@@ -960,7 +920,7 @@ class KeyMetricsContainer extends Component {
              * if the changed daterange doesn't fit for the
              * selected breakdown switch to daily
              */
-            tabState.selectedBreakdown = 'daily';
+            tabsState[tabName].selectedBreakdown = 'daily';
           }
         }
       });
@@ -970,23 +930,15 @@ class KeyMetricsContainer extends Component {
 
         this.fetchPrevData(fetchAllReq, oldestTransactionDate);
       });
-    } else if (
-      oldestTransactionDate.value !== this.props.oldestTransactionDate.value
-    ) {
+    } else if (oldestTransactionDate.value !== this.props.oldestTransactionDate.value) {
       this.fetchPrevData(this.fetchAllReq, oldestTransactionDate);
     }
   }
 
   render() {
-    const { tabsState, loading, tabWidth, selectedTab } = this.state,
-      {
-        startDate,
-        endDate,
-        showGroupingByPtfm,
-        sectionTitle,
-        isMobile,
-      } = this.props,
-      visibleTabs = this.getVisibleTabs();
+    const { tabsState, loading, tabWidth, selectedTab } = this.state;
+    const { startDate, endDate, showGroupingByPtfm, sectionTitle } = this.props;
+    const visibleTabs = this.getVisibleTabs();
 
     if (this.props.isMobile) {
       return (
@@ -1003,7 +955,7 @@ class KeyMetricsContainer extends Component {
 
     return (
       <div
-        ref={node => (this.node = node)}
+        ref={(node) => (this.node = node)}
         className={`keymetrics-container ${loading ? 'loading' : ''}`}
       >
         <Tabs
@@ -1012,8 +964,8 @@ class KeyMetricsContainer extends Component {
           tabsWrapperProps={{ id: 'analytics-keymetrics-section' }}
         >
           {visibleTabs.map((tabName, index) => {
-            const tabData = tabsState[tabName].data,
-              { isCurrency, title, helpText } = tabsMeta[tabName];
+            const tabData = tabsState[tabName].data;
+            const { isCurrency, title, helpText } = tabsMeta[tabName];
 
             return (
               <Tab
@@ -1021,8 +973,8 @@ class KeyMetricsContainer extends Component {
                 onClick={() => this.handleTabChange(tabName)}
                 style={{
                   width: tabWidth,
-                  marginLeft: (index === 0 ? 0 : gutterBetweenTabs) + 'px',
-                  marginBottom: gutterBetweenTabs + 'px',
+                  marginLeft: `${index === 0 ? 0 : gutterBetweenTabs}px`,
+                  marginBottom: `${gutterBetweenTabs}px`,
                 }}
               >
                 <TabContent
@@ -1043,8 +995,8 @@ class KeyMetricsContainer extends Component {
           })}
 
           {visibleTabs.map((tabName, index) => {
-            const tabState = tabsState[tabName],
-              { isCurrency } = tabsMeta[tabName];
+            const tabState = tabsState[tabName];
+            const { isCurrency } = tabsMeta[tabName];
 
             return (
               <TabPane key={index}>
