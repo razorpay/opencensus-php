@@ -373,13 +373,54 @@ class Validator extends Base\Validator
         if (($partialPaymentAllowed === false) and
             ($orderAmountDue !== $paymentAmount))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
-                Entity::AMOUNT,
-                [
-                    'order_amount'   => $orderAmountDue,
-                    'payment_amount' => $paymentAmount,
-                ]);
+            if ($payment->getMethod() === 'bank_transfer')
+            {
+
+                if ($paymentAmount <= 0)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT,
+                        Entity::AMOUNT,
+                        [
+                            'order_amount' => $orderAmountDue,
+                            'payment_amount' => $paymentAmount,
+                        ]);
+                }
+
+                if (($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false) and
+                    ($orderAmountDue < $paymentAmount))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                        Entity::AMOUNT,
+                        [
+                            'order_amount' => $orderAmountDue,
+                            'payment_amount' => $paymentAmount,
+                        ]);
+                }
+
+                if (($order->merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === false) and
+                    ($orderAmountDue > $paymentAmount))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                        Entity::AMOUNT,
+                        [
+                            'order_amount' => $orderAmountDue,
+                            'payment_amount' => $paymentAmount,
+                        ]);
+                }
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                    Entity::AMOUNT,
+                    [
+                        'order_amount'   => $orderAmountDue,
+                        'payment_amount' => $paymentAmount,
+                    ]);
+            }
         }
 
         if ($partialPaymentAllowed === true)
@@ -412,6 +453,18 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE);
+        }
+
+        if ($amountDue <= 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
+        }
+
+        if ($amountPaid + $paymentAmount > $order->merchant->getMaxPaymentAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_TXN_LIMIT_EXCEEDED);
         }
     }
 

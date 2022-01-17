@@ -2552,7 +2552,7 @@ class VirtualAccountTest extends TestCase
         $this->merchantId = '10000000000000';
 
         //add feature
-        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA_EXPIRY, '10000000000000');
 
         $testData = $this->testData['testMerchantVAUpdateExpiry'];
         $va_id = $virtualAccount['id'];
@@ -2578,7 +2578,7 @@ class VirtualAccountTest extends TestCase
         $this->merchantId = '10000000000000';
 
         //add feature
-        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA_EXPIRY, '10000000000000');
 
         $testData = $this->testData['testMerchantVAUpdateInvalidExpiry'];
         $va_id = $virtualAccount['id'];
@@ -2604,7 +2604,7 @@ class VirtualAccountTest extends TestCase
         $this->merchantId = '10000000000000';
 
         //add feature
-        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA_EXPIRY, '10000000000000');
 
         $testData = $this->testData['testMerchantVAUpdateInvalidFormat'];
         $va_id = $virtualAccount['id'];
@@ -2630,7 +2630,7 @@ class VirtualAccountTest extends TestCase
         $this->merchantId = '10000000000000';
 
         //add feature
-        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA_EXPIRY, '10000000000000');
 
         $testData = $this->testData['testMerchantVAUpdateExpiryLessThanCurrent'];
         $va_id = $virtualAccount['id'];
@@ -2656,7 +2656,7 @@ class VirtualAccountTest extends TestCase
         $this->merchantId = '10000000000000';
 
         //add feature
-        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA, '10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EDIT_SINGLE_VA_EXPIRY, '10000000000000');
 
         $testData = $this->testData['testMerchantVAUpdateClosed'];
         $va_id = $virtualAccount['id'];

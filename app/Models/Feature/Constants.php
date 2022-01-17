@@ -1063,7 +1063,9 @@ class Constants
 
     const ENABLE_IFSC_VALIDATION       = 'enable_ifsc_validation';
 
-    const EDIT_SINGLE_VA = 'edit_single_va';
+    const EDIT_SINGLE_VA_EXPIRY = 'edit_single_va_expiry';
+
+    const ACCEPT_LOWER_AMOUNT = 'accept_lower_amount';
 
     /**
      * Feature flag to show entire error description for each row in error csv file generated in case
@@ -1496,11 +1498,12 @@ class Constants
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
-        self::EDIT_SINGLE_VA                  => true,
+        self::EDIT_SINGLE_VA_EXPIRY           => true,
         self::ADDRESS_NAME_REQUIRED           => true,
         self::NO_DOC_ONBOARDING               => true,
         self::SUBM_NO_DOC_ONBOARDING           => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
+        self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
     ];

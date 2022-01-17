@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use App;
 use Exception;
 use RZP\Constants;
+use RZP\Models\Feature;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Payment;
@@ -499,15 +500,50 @@ abstract class Processor extends Base\Core
                 return true;
             }
 
-            if ($this->virtualAccount->getAmountExpected() !== $entity->getAmount())
+            $expectedAmount = $this->virtualAccount->getAmountExpected();
+
+            $amountReceived = $entity->getAmount();
+
+            $order = $this->virtualAccount->entity;
+
+            $partialPayment = $order->isPartialPaymentAllowed();
+
+            if (($expectedAmount !== $amountReceived) and ($amountReceived > 0) and ($partialPayment === false))
             {
-                $this->setUnexpectedReason($entity, StatusCode::AMOUNT_MISMATCH);
 
-                $this->trace->info(
-                    TraceCode::VIRTUAL_ACCOUNT_ECMS_AMOUNT_MISMATCH,
-                    $entity->toArray());
+                if ($merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false &&
+                    ($expectedAmount < $amountReceived))
+                    {
+                        $this->setUnexpectedReason($entity, StatusCode::HIGHER_PAYMENT_AMOUNT);
 
-                return true;
+                        $this->trace->info(
+                            TraceCode::VIRTUAL_ACCOUNT_ECMS_HIGHER_PAYMENT_AMOUNT,
+                            $entity->toArray());
+
+                        return true;
+                    }
+                    if ($merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === false &&
+                    $expectedAmount > $amountReceived)
+                {
+                    $this->setUnexpectedReason($entity, StatusCode::LOWER_PAYMENT_AMOUNT);
+
+                    $this->trace->info(
+                        TraceCode::VIRTUAL_ACCOUNT_ECMS_LOWER_PAYMENT_AMOUNT,
+                        $entity->toArray());
+
+                    return true;
+                }
+
+                if ($merchant->getMaxPaymentAmount() < $amountReceived)
+                {
+                    $this->setUnexpectedReason($entity, StatusCode::MAXIMUM_AMOUNT_THRESHOLD_BREACH);
+
+                    $this->trace->info(
+                        TraceCode::VIRTUAL_ACCOUNT_ECMS_MAXIMUM_AMOUNT_THRESHOLD_BREACH,
+                        $entity->toArray());
+
+                    return false;
+                }
             }
         }
 

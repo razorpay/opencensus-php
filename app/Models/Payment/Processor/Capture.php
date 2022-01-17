@@ -1271,16 +1271,30 @@ trait Capture
         }
 
         if (($virtualAccount->hasAmountExpected() === true) and
-            ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
+                ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
+        {
+            $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::PAID);
+            return;
+        }
+
+        /*
+          *  If amount paid is lesser than amount expected, then
+          *  we will check the flag ACCEPT_LOWER_AMOUNT is enabled/not.
+          * if not enabled the virtual account will stay in active state
+          *  and payment will be refunded later by cron.
+          */
+        
+        $order = $virtualAccount->entity;
+
+        $merchant = $virtualAccount->merchant;
+
+        if (($order !== null) and ($order->isPartialPaymentAllowed() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === true) and
+            ($virtualAccount->getAmountPaid() > 0))
         {
             $virtualAccountCore->updateStatus($virtualAccount, VirtualAccount\Status::PAID);
         }
 
-        /*
-         *  If amount paid is lesser than amount expected, then
-         *  we will leave the virtual account in active state
-         *  which will be refunded later by cron.
-         */
     }
 
     protected function updateVirtualAccountStatusForOrder(Payment\Entity $payment)
@@ -1462,6 +1476,14 @@ trait Capture
         }
 
         if ($order->getAmountPaid() > $order->getAmount())
+        {
+            return true;
+        }
+
+        $merchant = $order->merchant;
+        if (($order->isPartialPaymentAllowed() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === true) and
+            ($order->getAmountPaid() > 0))
         {
             return true;
         }

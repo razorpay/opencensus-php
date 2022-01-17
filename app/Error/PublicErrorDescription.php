@@ -457,6 +457,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                        = 'Max terminal count limit reached for this merchant';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
+    const BAD_REQUEST_MERCHANT_TXN_LIMIT_EXCEEDED                               = 'Amount exceeds total payment limit threshold';
     const BAD_REQUEST_OPERATION_NOT_ALLOWED_FOR_TEST_ACCOUNT                    = 'This operation is not allowed for test accounts';
     const BAD_REQUEST_TERMINAL_WITH_SAME_FIELD_ALREADY_EXISTS                   = 'A terminal with the same field exists - ';
     const BAD_REQUEST_TERMINAL_STATUS_SHOULD_BE_ACTIVATED_OR_PENDING_TO_ENABLE  = 'Terminal status should be activated or pending for enabling a terminal';

@@ -11941,7 +11941,7 @@ class Route
         'qr_payment_fetch_for_qr_code'         => [Feature::QR_CODES],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
-        'merchant_virtual_account_edit'        => [Feature::EDIT_SINGLE_VA],
+        'merchant_virtual_account_edit'        => [Feature::EDIT_SINGLE_VA_EXPIRY],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch'                => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],

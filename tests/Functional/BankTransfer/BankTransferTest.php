@@ -18,6 +18,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Header;
 use RZP\Models\Admin\Service;
+use RZP\Models\Order;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Services\RazorXClient;
@@ -2260,6 +2261,333 @@ class BankTransferTest extends TestCase
         $this->ba->iciciAuth();
 
         $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackMaxAmountThresholdExceeded()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1000010]);
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackFeatureHigherAmount()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackFeatureHigherAmountFailure()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackFeatureLowerAmount()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::ACCEPT_LOWER_AMOUNT, '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackFeatureLowerAmountFailure()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::ACCEPT_LOWER_AMOUNT, '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackFeatureHigherAndLowerAmount()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+        $this->fixtures->merchant->addFeatures(Feature\Constants::ACCEPT_LOWER_AMOUNT, '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['Virtual_Account_No'] = $this->getHdfcEcmsVaBankAccount();
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackFeatureHigherWithPartialPayment()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature/
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+        $virtualAccount = $this->createVirtualAccountForOrder($order)['receivers'][0];
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['Virtual_Account_No'] = $virtualAccount['account_number'];
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+        }
+
+    public function testHdfcEcmsBankTransferCallbackPartialPaymentExceedsOrderAmount()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature/
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->order->edit($order['id'], ['amount_paid' => 1150000]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['Virtual_Account_No'] = $virtualAccount['receivers'][0]['account_number'];
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsBankTransferCallbackPartialPaymentExceedsThresholdAmount()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $order = $this->fixtures->create('order', ['partial_payment' => true]);
+
+        $this->merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 1200000]);
+
+        //add feature/
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT, '10000000000000');
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $this->fixtures->order->edit($order['id'], ['amount_paid' => 115000]);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['Virtual_Account_No'] = $virtualAccount['receivers'][0]['account_number'];
+
+        $this->ba->hdfcEcmsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testHdfcEcmsSingleVAwithFeatureExcessPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT);
+
+        $this->customer = $this->getEntityById('customer', 'cust_100000customer');
+
+        $order1 = $this->fixtures->create('order');
+
+        $virtualAccount1 = $this->createVirtualAccountForOrder($order1);
+        $this->fixtures->base->editEntity(
+            'virtual_account',
+            $virtualAccount1['id'],
+            [
+                'customer_id' => '100000customer'
+            ]);
+
+        $this->payVirtualAccount($virtualAccount1['id'], ['amount' => ($order1['amount_due'] / 100) + 100]);
+
+        $virtualAccountEntity1 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $virtualAccountEntity1['status']);
+        $this->assertEquals($virtualAccount1['amount_expected']+10000, $virtualAccountEntity1['amount_paid']);
+
+        $order = $this->getEntityById('order', $order1['id'], true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $order['status']);
+
+        $order2 = $this->fixtures->create('order', ['amount' => 50000]);
+
+        $virtualAccount2 = $this->createVirtualAccountForOrder($order2, ['customer_id' => $virtualAccountEntity1['customer_id']]);
+
+        $this->assertEquals($virtualAccount1['id'], $virtualAccount2['id']);
+        $this->assertEquals(VirtualAccount\Status::ACTIVE, $virtualAccount2['status']);
+
+        $this->payVirtualAccount($virtualAccount2['id'], ['amount' => $order2['amount_due'] / 100]);
+
+        $virtualAccountEntity2 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $virtualAccountEntity2['status']);
+        $this->assertEquals($virtualAccount2['amount_expected'], $virtualAccountEntity2['amount_paid']);
+
+        $order = $this->getEntityById('order', $order2['id'], true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $order['status']);
+    }
+
+    public function testHdfcEcmsSingleVAwithFeatureLowerPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
+        $this->fixtures->merchant->addFeatures(Feature\Constants::ACCEPT_LOWER_AMOUNT);
+
+        $order1 = $this->fixtures->create('order');
+
+        $virtualAccount1 = $this->createVirtualAccountForOrder($order1);
+        $this->fixtures->base->editEntity(
+            'virtual_account',
+            $virtualAccount1['id'],
+            [
+                'customer_id' => '100000customer'
+            ]);
+
+        $this->payVirtualAccount($virtualAccount1['id'], ['amount' => ($order1['amount_due'] / 100) - 100]);
+
+        $virtualAccountEntity1 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $virtualAccountEntity1['status']);
+        $this->assertEquals($virtualAccount1['amount_expected'] - 10000, $virtualAccountEntity1['amount_paid']);
+
+        $order = $this->getEntityById('order', $order1['id'], true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $order['status']);
+
+        $order2 = $this->fixtures->create('order', ['amount' => 50000]);
+
+        $virtualAccount2 = $this->createVirtualAccountForOrder($order2, ['customer_id' => $virtualAccountEntity1['customer_id']]);
+
+        $this->assertEquals($virtualAccount1['id'], $virtualAccount2['id']);
+        $this->assertEquals(VirtualAccount\Status::ACTIVE, $virtualAccount2['status']);
+
+        $this->payVirtualAccount($virtualAccount2['id'], ['amount' => $order2['amount_due'] / 100]);
+
+        $virtualAccountEntity2 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $virtualAccountEntity2['status']);
+        $this->assertEquals($virtualAccount2['amount_expected'], $virtualAccountEntity2['amount_paid']);
+
+        $order = $this->getEntityById('order', $order2['id'], true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $order['status']);
+    }
+
+    public function testHdfcEcmsSingleVAwithFeatureHigherPaymentAndPartialPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['checkout_va_with_customer']);
+        $this->fixtures->merchant->addFeatures(Feature\Constants::EXCESS_ORDER_AMOUNT);
+
+        $order1 = $this->fixtures->create('order',['partial_payment' => true]);
+
+        $virtualAccount1 = $this->createVirtualAccountForOrder($order1);
+        $this->fixtures->base->editEntity(
+            'virtual_account',
+            $virtualAccount1['id'],
+            [
+                'customer_id' => '100000customer'
+            ]);
+
+        $this->payVirtualAccount($virtualAccount1['id'], ['amount' => ($order1['amount_due'] / 100) - 100]);
+
+        $virtualAccountEntity1 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::ACTIVE, $virtualAccountEntity1['status']);
+        $this->assertEquals($virtualAccount1['amount_expected'] - 10000, $virtualAccountEntity1['amount_paid']);
+
+        $order = $this->getEntityById('order', $order1['id'], true);
+        $this->assertEquals(Order\Status::ATTEMPTED, $order['status']);
+
+        $this->payVirtualAccount($virtualAccount1['id'], ['amount' => 1000]);
+
+        $virtualAccountEntity1 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $virtualAccountEntity1['status']);
+
+        $order = $this->getEntityById('order', $order1['id'], true);
+        $this->assertEquals(Order\Status::PAID, $order['status']);
+
+
+        $order2 = $this->fixtures->create('order', ['amount' => 50000]);
+
+        $virtualAccount2 = $this->createVirtualAccountForOrder($order2, ['customer_id' => $virtualAccountEntity1['customer_id']]);
+
+        $this->assertEquals($virtualAccount1['id'], $virtualAccount2['id']);
+        $this->assertEquals(VirtualAccount\Status::ACTIVE, $virtualAccount2['status']);
+
+        $this->payVirtualAccount($virtualAccount2['id'], ['amount' => $order2['amount_due'] / 100]);
+
+        $virtualAccountEntity2 = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $virtualAccountEntity2['status']);
+        $this->assertEquals($virtualAccount2['amount_expected'], $virtualAccountEntity2['amount_paid']);
+
+        $order = $this->getEntityById('order', $order2['id'], true);
+        $this->assertEquals(VirtualAccount\Status::PAID, $order['status']);
     }
 
     public function testBankTransferRblRefund()
