@@ -62,6 +62,7 @@ class Constants
     const TMB              = 'tmb';
     const NSDL             = 'nsdl';
     const BDBL             = 'bdbl';
+    const UCO              = 'uco';
     const ICICI_EMI        = 'icici_emi';
     const HSBC             = 'hsbc';
     const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
@@ -150,6 +151,7 @@ class Constants
             self::TMB,
             self::NSDL,
             self::BDBL,
+            self::UCO,
         ],
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING,
@@ -264,7 +266,8 @@ class Constants
             self::DLB         => ['dlb-netbanking-refunds@razorpay.com'],
             self::TMB         => ['tmb-netbanking-refunds@razorpay.com'],
             self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
-            self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com']
+            self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com'],
+            self::UCO         => ['uco-netbanking-refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

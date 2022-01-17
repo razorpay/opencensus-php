@@ -189,6 +189,7 @@ class Netbanking
         IFSC::UCBA,
         IFSC::CNRB,
         IFSC::DCBL,
+        IFSC::UCBA,
         IFSC::TMBL,
     ];
 

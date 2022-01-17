@@ -176,6 +176,8 @@ class Type
 
     const BDBL_NETBANKING_REFUND            = 'bdbl_netbanking_refund';
 
+    const UCO_NETBANKING_REFUND             = 'uco_netbanking_refund';
+
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
     const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
@@ -378,6 +380,7 @@ class Type
             self::KOTAK_CORP_NETBANKING_REFUND,
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
+            self::UCO_NETBANKING_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -518,6 +521,7 @@ class Type
         self::NSDL_NETBANKING_REFUND,
         self::NSDL_NETBANKING_CLAIM,
         self::BDBL_NETBANKING_REFUND,
+        self::UCO_NETBANKING_REFUND,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
@@ -702,6 +706,7 @@ class Type
             self::RBL_ENACH_CANCEL,
             self::BDBL_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
+            self::UCO_NETBANKING_REFUND,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

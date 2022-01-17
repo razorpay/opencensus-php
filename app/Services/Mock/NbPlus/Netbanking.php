@@ -18,6 +18,7 @@ class Netbanking extends NetbankingBase
         Payment\Gateway::NETBANKING_CANARA => 'gateway_payment_callback_canara_post',
         Payment\Gateway::NETBANKING_KOTAK  => 'gateway_payment_callback_kotak_corp_post',
         Payment\Gateway::NETBANKING_RBL    => 'gateway_payment_static_callback_post',
+        Payment\Gateway::NETBANKING_UCO    => 'gateway_payment_static_callback_post'
     ];
 
     public function sendRawRequest($request)

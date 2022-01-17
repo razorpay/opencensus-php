@@ -52,6 +52,7 @@ class Base extends BaseProcessor
         Constants::NSDL,
         Constants::INDUSIND,
         Constants::BDBL,
+        Constants::UCO,
     ];
 
     public function fetchEntities(): PublicCollection

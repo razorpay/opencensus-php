@@ -1284,6 +1284,7 @@ class Gateway
         Payment\Gateway::NETBANKING_KOTAK,
         Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::NETBANKING_BDBL,
+        Payment\Gateway::NETBANKING_UCO,
         Payment\Gateway::EBS,
         Payment\Gateway::PAYTM,
         Payment\Gateway::MPGS,
@@ -2848,6 +2849,7 @@ class Gateway
         IFSC::DLXB => Gateway::NETBANKING_DLB,
         IFSC::NSPB => Gateway::NETBANKING_NSDL,
         IFSC::BDBL => Gateway::NETBANKING_BDBL,
+        IFSC::UCBA => Gateway::NETBANKING_UCO,
         IFSC::TMBL => Gateway::NETBANKING_TMB,
     ];
 

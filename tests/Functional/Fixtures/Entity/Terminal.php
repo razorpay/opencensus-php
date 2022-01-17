@@ -132,6 +132,7 @@ class Terminal extends Base
         $this->createSharedNetbankingDlbTerminal();
         $this->createSharedNetbankingNsdlTerminal();
         $this->createSharedNetbankingBdblTerminal();
+        $this->createSharedNetbankingUcoTerminal();
         $this->createSharedNetbankingTmbTerminal();
     }
 
@@ -4405,6 +4406,23 @@ class Terminal extends Base
 
         return $this->create($attributes);
 
+    }
+
+    public function createSharedNetbankingUcoTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                  => '1ShrdNBUBCATml',
+            'merchant_id'         => $merchantId,
+            'gateway'             => Gateway::NETBANKING_UCO,
+            'gateway_merchant_id' => 'netbanking_uco_merchant_id',
+            'netbanking'          => 1,
+         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
     }
 
     public function createSharedNetbankingTmbTerminal(array $attributes = [])

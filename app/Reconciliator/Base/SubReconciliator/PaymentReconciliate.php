@@ -96,6 +96,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::FULCRUM,
         RequestProcessor\Base::CHECKOUT_DOT_COM,
         RequestProcessor\Base::NETBANKING_BDBL,
+        RequestProcessor\Base::NETBANKING_UCO,
         RequestProcessor\Base::PAYLATER_LAZYPAY,
         RequestProcessor\Base::CARDLESS_EMI_EARLYSALARY,
         RequestProcessor\Base::EMERCHANTPAY,

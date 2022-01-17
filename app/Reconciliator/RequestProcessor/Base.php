@@ -101,6 +101,7 @@ class Base extends Core
     const NETBANKING_KOTAK_V2      = 'NetbankingKotakV2';
     const NETBANKING_NSDL          = 'NetbankingNsdl';
     const NETBANKING_BDBL          = 'NetbankingBdbl';
+    const NETBANKING_UCO           = 'NetbankingUco';
     const VIRTUAL_ACC_KOTAK        = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK      = 'VirtualAccYesBank';
     const VIRTUAL_ACC_RBL          = 'VirtualAccRbl';
@@ -245,6 +246,7 @@ class Base extends Core
         self::CARDLESS_EMI_ZESTMONEY   => ['finops.settlements@zestmoney.in'],
         self::PAYLATER_LAZYPAY         => [],
         self::NETBANKING_BDBL          => ['imps.dispute@bandhanbank.com'],
+        self::NETBANKING_UCO           => ['hoe_banking.calcutta@ucobank.co.in'],
         self::CARDLESS_EMI_EARLYSALARY => [],
         self::EMERCHANTPAY             => ['finance@emerchantpay.com'],
 
@@ -327,6 +329,7 @@ class Base extends Core
         Gateway::NETBANKING_DLB         => self::NETBANKING_DLB,
         Gateway::NETBANKING_NSDL        => self::NETBANKING_NSDL,
         Gateway::NETBANKING_BDBL        => self::NETBANKING_BDBL,
+        Gateway::NETBANKING_UCO         => self::NETBANKING_UCO,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,

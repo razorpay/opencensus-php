@@ -68,6 +68,7 @@ class Mailgun extends Base
         self::NETBANKING_RBL,
         self::CARDLESS_EMI_ZESTMONEY,
         self::NETBANKING_BDBL,
+        self::NETBANKING_UCO,
         self::EMERCHANTPAY,
     ];
 
