@@ -2953,6 +2953,7 @@ class Route
 
         // Routes related to payments rearch for fetching/writing data
         'api_entity_fetch'                        => ['get',     'entities/{entity}/{id}',                                 'CardPSController@FetchEntity'                                  ],
+        'cps_iin_flow_disable'                    => ['post',    'cardps/iins/disable',                                    'IinController@disableMultipleIINFlows'                         ],
         'cps_backfill_entities'                   => ['get',     'cardps/backfill/{entity}/{column}',                      'CardPSController@BackfillRouteProxy'                           ],
         'cps_card_entity_create'                  => ['post',    'cardps/entity/create/card',                              'CardPSController@CreateCardEntity'                             ],
 
@@ -3845,6 +3846,7 @@ class Route
         'vendor_payment_composite_expands_helper',
         'los_mail',
         'api_entity_fetch',
+        'cps_iin_flow_disable',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
         'subscription_fetch_by_id_data_fix',
@@ -11702,7 +11704,8 @@ class Route
 
         'card_payment_service' => [
             'api_entity_fetch',
-            'cps_card_entity_create'
+            'cps_card_entity_create',
+            'cps_iin_flow_disable'
         ],
 
         'workflows' => [

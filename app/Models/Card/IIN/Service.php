@@ -613,4 +613,27 @@ class Service extends Base\Service
             'merchant'      => $this->merchant->getId(),
         ];
     }
+
+    public function disableMultipleIINFlows($input)
+    {
+        if (empty($input['iin']) === false) {
+            $flows = $input['flows'] ?? [];
+
+            if ((is_array($flows) === true) && (empty($flows) === false))
+            {
+                $editInput = [
+                    'flows' => []
+                ];
+
+                foreach ($flows as $flow)
+                {
+                    $editInput['flows'][$flow] = '0';
+                }
+
+                return $this->editIin($input['iin'], $editInput);
+            }
+        }
+
+        return [];
+    }
 }

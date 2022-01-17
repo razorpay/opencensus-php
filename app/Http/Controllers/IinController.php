@@ -132,4 +132,13 @@ class IinController extends Controller
         return ApiResponse::json($data);
 
     }
+
+    public function disableMultipleIINFlows()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->disableMultipleIINFlows($input);
+
+        return ApiResponse::json($response);
+    }
 }

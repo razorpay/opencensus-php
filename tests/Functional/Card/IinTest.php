@@ -878,6 +878,22 @@ class IinTest extends TestCase
         });
     }
 
+    public function testDisableMultipleIinFlows()
+    {
+        $this->testAddIin();
+
+        $flows = [
+            'headless_otp' => '1',
+            'ivr'          => '1',
+        ];
+
+        $this->fixtures->edit('iin', 112333, ['flows' => $flows, 'country' => 'US', 'recurring' => true, 'type' => 'credit', 'emi' => true]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

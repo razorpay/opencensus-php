@@ -1333,4 +1333,21 @@ return [
             ],
         ],
     ],
+
+    'testDisableMultipleIinFlows' => [
+        'request' => [
+            'url'     => '/cardps/iins/disable',
+            'method'  => 'POST',
+            'content' => [
+                'iin'   => '112333',
+                'flows' => ['headless_otp']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'iin'       => '112333',
+                'flows'     => ['ivr'],
+            ],
+        ],
+    ],
 ];
