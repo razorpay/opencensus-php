@@ -40,15 +40,12 @@ export const fetchHolidayList = () => {
   };
 };
 
-export const fetchSettlementConfig = (id) => {
+export const fetchSettlementConfig = () => {
   return {
     type: SETTLEMENT_CONFIG_FETCH,
     payload: merchantFetch({
       url: 'settlements/dashboard/merchant_config/get',
       method: 'post',
-      data: {
-        merchant_id: id,
-      },
     }),
   };
 };

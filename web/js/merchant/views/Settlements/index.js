@@ -52,9 +52,7 @@ const Settlements = ({
   useEffect(() => {
     checkIfFirstEverSettlement();
     fetchCurrentBalance();
-    if (user.isNewSettlementServiceEnabled) {
-      fetchSettlementConfig(user.id);
-    }
+    fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
   }, []);
 

@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { openModal as fnOpenModal, closeModal } from 'merchant_common/reducers/modals';
-import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import { handleAnalytics } from '../Settlements/analytics';
 import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
@@ -15,7 +15,6 @@ function SettlementsHeader(props) {
     settlement_amount,
     settlementConfig,
     openModal,
-    holidayList,
     settlementExists,
     checkIfFirstEverSettlement,
     esOndemandSettlementEnabled,
@@ -31,7 +30,7 @@ function SettlementsHeader(props) {
   const viewSettlementCycle = () => {
     openModal({
       size: 'medium',
-      component: <SettlementSchedule holidayList={holidayList} location="settlements" />,
+      component: <SettlementScheduleV2 />,
     });
 
     window.rzpAnalytics({

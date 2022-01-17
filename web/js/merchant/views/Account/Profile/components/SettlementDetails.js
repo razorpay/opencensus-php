@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
-import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import {
   fetchSchedule as fnFetchSchedule,
   fetchHolidayList as fnFetchHolidayList,
@@ -32,9 +32,7 @@ class SettlementDetails extends Component {
     fetchSchedule();
     fetchHolidayList();
     fetchCurrentBalance();
-    if (user.isNewSettlementServiceEnabled) {
-      fetchSettlementConfig(user.id);
-    }
+    fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
   }
 
@@ -50,7 +48,7 @@ class SettlementDetails extends Component {
     });
     openModal({
       size: 'medium',
-      component: <SettlementSchedule location="my account" />,
+      component: <SettlementScheduleV2 />,
     });
 
     window.rzpAnalytics({

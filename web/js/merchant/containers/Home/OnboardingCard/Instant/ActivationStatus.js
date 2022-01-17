@@ -5,7 +5,7 @@ import { Step, StepTitle, StepContent, possibleStatuses } from './Step';
 import RTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import { openModal } from 'merchant_common/reducers/modals';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
@@ -485,7 +485,7 @@ class ActivationCard extends Component {
               onClick={() => {
                 this.props.openModal({
                   size: 'medium',
-                  component: <SettlementSchedule />,
+                  component: <SettlementScheduleV2 />,
                 });
               }}
             >
@@ -507,7 +507,7 @@ class ActivationCard extends Component {
               onClick={() => {
                 this.props.openModal({
                   size: 'medium',
-                  component: <SettlementSchedule />,
+                  component: <SettlementScheduleV2 />,
                 });
               }}
             >
@@ -529,7 +529,7 @@ class ActivationCard extends Component {
               onClick={() => {
                 this.props.openModal({
                   size: 'medium',
-                  component: <SettlementSchedule />,
+                  component: <SettlementScheduleV2 />,
                 });
               }}
             >

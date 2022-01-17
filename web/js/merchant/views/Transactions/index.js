@@ -47,12 +47,10 @@ class TransactionsContainer extends Component {
   }
 
   componentDidMount() {
-    const { user, fetchSettlementAmount, fetchOpenDisputes, fetchSettlementConfig } = this.props;
+    const { fetchSettlementAmount, fetchOpenDisputes, fetchSettlementConfig } = this.props;
     fetchSettlementAmount();
     fetchOpenDisputes();
-    if (user.isNewSettlementServiceEnabled) {
-      fetchSettlementConfig(user.id);
-    }
+    fetchSettlementConfig();
 
     const mwebPopupLS = !!getItem('transactions_mweb_popup'); // Check if popup is already shown to user once.
     const mwebPopupSS = !!getItem('payment links_mweb_popup'); // Check if popup is shown in session on another scrren.

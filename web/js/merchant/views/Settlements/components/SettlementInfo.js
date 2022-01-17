@@ -13,9 +13,7 @@ import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from '
 class SettlementInfo extends Component {
   componentDidMount() {
     const { user, fetchSettlementConfig, fetchBankAccountChangeStatus } = this.props;
-    if (user.isNewSettlementServiceEnabled) {
-      fetchSettlementConfig(user.id);
-    }
+    fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
   }
 

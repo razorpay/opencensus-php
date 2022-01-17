@@ -13,7 +13,7 @@ import SettlementGuideText from 'merchant_common/components/SettlementGuideText'
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Alert from 'common/ui/Forms/Alert';
-import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import EmptySettleNow from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/EmptySettleNow';
 import InstantSettlementListFilter from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/ListFilter';
 import trackIS, {
@@ -165,7 +165,7 @@ class InstantSettlements extends ListContainer {
   viewSettlementCycle = () => {
     this.props.openModal({
       size: 'medium',
-      component: <SettlementSchedule holidayList={this.props.holidayList} />,
+      component: <SettlementScheduleV2 />,
     });
 
     window.rzpAnalytics({

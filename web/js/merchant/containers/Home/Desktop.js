@@ -130,9 +130,7 @@ class AnalyticsDesktop extends Component {
       },
     });
     fetchInternationalProductsStatus();
-    if (user.isNewSettlementServiceEnabled) {
-      fetchSettlementConfig(user.id);
-    }
+    fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
 
     this.checkIfFirstEverSettlement();

@@ -30,7 +30,7 @@ import {
   fetchHolidayList as fnFetchHolidayList,
 } from 'merchant/reducers/settlements/details';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
-import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
+import SettlementScheduleV2 from 'merchant/views/Settlements/components/SettlementScheduleV2';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import { handleAnalytics } from './analytics';
 
@@ -299,7 +299,7 @@ class SettlementsListContainer extends ListContainer {
   viewSettlementCycle = () => {
     this.props.openModal({
       size: 'medium',
-      component: <SettlementSchedule holidayList={this.props.holidayList} location="settlements" />,
+      component: <SettlementScheduleV2 />,
     });
 
     window.rzpAnalytics({

@@ -9,6 +9,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import PaymentSchedule from './PaymentSchedule';
+import EntitySchedule from './EntitySchedule';
 
 const paymentTypes = ['domestic', 'international'];
 
@@ -50,17 +51,21 @@ const SettlementScheduleV2 = (props) => {
                 <div className="schedule-info">T is the date of payment capture</div>
               </li>
             )}
-            {schedules?.refund?.default && (
-              <li>Refunds take {schedules.refund.default} to get adjusted from your settlement</li>
-            )}
-            {schedules?.reversal?.default && (
+            {(schedules?.refund?.default ||
+              schedules?.reversal?.default ||
+              schedules?.transfer?.default) && (
               <li>
-                Reversals take {schedules.reversal.default} to get adjusted from your settlement
-              </li>
-            )}
-            {schedules?.reversal?.default && (
-              <li>
-                Transfers take {schedules.transfer.default} to get adjusted from your settlement
+                Other Settlement cycle
+                {schedules?.refund?.default && (
+                  <EntitySchedule entityType="refunds" schedule={schedules.refund.default} />
+                )}
+                {schedules?.reversal?.default && (
+                  <EntitySchedule entityType="reversals" schedule={schedules.reversal.default} />
+                )}
+                {schedules?.transfer?.default && (
+                  <EntitySchedule entityType="transfers" schedule={schedules.transfer.default} />
+                )}
+                <div className="schedule-info">T is the date of initiation</div>
               </li>
             )}
           </ul>
