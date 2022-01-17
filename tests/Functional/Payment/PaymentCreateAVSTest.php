@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Address\Entity;
 use RZP\Models\Address\Repository;
 use RZP\Models\Address\Type;
@@ -510,11 +512,84 @@ class PaymentCreateAVSTest extends TestCase
         $paymentArray['_']['library'] = 'razorpayjs';
 
         $response = $this->doAuthPayment($paymentArray);
-       
+
         $paymentEntity = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
 
         $paymentAddressEntity = (new Repository)->fetchPrimaryAddressOfEntityOfType($paymentEntity, Type::BILLING_ADDRESS);
 
         $this->assertNull($paymentAddressEntity);
+    }
+
+    public function testCreatePaymentAVSInvalidAddress()
+    {
+        $this->fixtures->merchant->addFeatures(['address_required']);
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        unset($billingAddressArray['postal_code']);
+        $payment = $this->getPaymentArray($billingAddressArray, 1);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestException::class);
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        $billingAddressArray['postal_code'] = 'text';
+        $payment = $this->getPaymentArray($billingAddressArray, 1);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestValidationFailureException::class);
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        $billingAddressArray['postal_code'] = 'text%1';
+        $payment = $this->getPaymentArray($billingAddressArray, 1);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestValidationFailureException::class);
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        $billingAddressArray['postal_code'] = 'A B';
+        $payment = $this->getPaymentArray($billingAddressArray, 1);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestValidationFailureException::class);
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        $billingAddressArray['line1'] = '';
+        $payment = $this->getPaymentArray($billingAddressArray, 1);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestValidationFailureException::class);
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+        $billingAddressArray['city'] = 'c';
+        $payment = $this->getPaymentArray($billingAddressArray, 1);
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            },
+            BadRequestValidationFailureException::class);
+
     }
 }

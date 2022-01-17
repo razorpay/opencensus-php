@@ -1900,7 +1900,7 @@ class Service extends Base\Service
 
         $data['dcc_info'] = $dccInfo;
 
-        $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+        $library = $this->getLibraryFromPayment($payment);
         //Check if Address is required for DCC transaction
         $data['avs_required'] = $this->isAddressRequired($library, $iin, $merchant);
 
@@ -4542,5 +4542,24 @@ class Service extends Base\Service
            return true;
        }
        return false;
+    }
+
+    public function getLibraryFromPayment($payment)
+    {
+        $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+
+        if(is_null($library))
+        {
+
+            $paymentAnalytics = $payment->analytics;
+
+            if (isset($paymentAnalytics))
+            {
+                $library = $paymentAnalytics->library;
+            }
+        }
+
+        return $library;
+
     }
 }

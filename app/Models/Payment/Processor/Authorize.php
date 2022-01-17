@@ -10121,7 +10121,7 @@ trait Authorize
             }
 
             if (($payment->isCard() === true) and ($payment->card !== null)) {
-                $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+                $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
                 $addressRequired = (new Payment\Service)->isAddressRequired($library, $payment->card->iinRelation, $payment->merchant);
             }
@@ -10141,6 +10141,17 @@ trait Authorize
                     "Billing Address is Empty"
                 );
             }
+
+            if (isset($input[Payment\Entity::BILLING_ADDRESS]['postal_code']) === false){
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    null,
+                    null,
+                    "Zipcode is Mandatory"
+                );
+            }
+
             if (($addressRequiredWithName === true) and
                 ((isset($input[Payment\Entity::BILLING_ADDRESS]['first_name']) === false) or
                 (isset($input[Payment\Entity::BILLING_ADDRESS]['last_name']) === false))){

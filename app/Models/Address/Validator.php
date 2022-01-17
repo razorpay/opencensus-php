@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::LINE1   => 'required|string|between:1,255',
         Entity::LINE2   => 'sometimes|string|between:1,255|custom',
         Entity::CITY    => 'required|string|between:2,32',
-        Entity::ZIPCODE => 'sometimes|between:2,10',
+        Entity::ZIPCODE => 'sometimes|between:2,10|regex:/^(?=.*[0-9])[A-Za-z0-9\s]*$/',
         Entity::STATE   => 'sometimes|string|between:2,32',
         Entity::COUNTRY => 'required|string|between:2,64|custom',
         Entity::PRIMARY => 'sometimes|in:0,1',
