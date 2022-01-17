@@ -707,18 +707,6 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('settlement_transactions_replay', $input);
 
-        $ignoreMids = $this->repo->feature->getMerchantIdsHavingFeature(
-            Constants::BLOCK_SETTLEMENTS, $input['merchant_ids']);
-
-        $ignoreMids = array_merge($ignoreMids, Merchant\Preferences::NO_SETTLEMENT_MIDS);
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_TRANSACTION_REPLAY_SKIP,
-            $ignoreMids
-        );
-
-        $input['merchant_ids'] = array_diff($input['merchant_ids'], $ignoreMids);
-
         $this->core()->enqueueForReplay($input);
 
         return [
