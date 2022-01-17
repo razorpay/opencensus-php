@@ -51,12 +51,14 @@ class Announcement extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      hovered: false,
+    };
+
     this.isPure = props.hasOwnProperty('hidden');
 
     if (!this.isPure) {
-      this.state = {
-        hidden: false,
-      };
+      this.state.hidden = false;
     }
 
     this.handleClose = this.handleClose.bind(this);

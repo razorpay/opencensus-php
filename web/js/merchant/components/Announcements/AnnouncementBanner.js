@@ -4,29 +4,23 @@ import AnnouncementBanner from 'common/ui/AnnouncementBanner';
 import { getItem, setItem } from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
 
+function getBannerState(key) {
+  const val = getItem(key);
+  if (!val) return false; // return 'false' if key/value is 'null'
+  return JSON.parse(val);
+}
 class AnnouncementBannerComponent extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    hidden: getBannerState(this.props.bannerKey),
+  };
 
-    this.state = {
-      hidden: !!getItem(this.props.bannerKey),
-    };
-
-    this.handleClose = this.handleClose.bind(this);
-  }
-
-  handleClose() {
+  handleClose = () => {
     if (this.props.bannerKey) {
-      setItem(this.props.bannerKey, 1);
-      this.setState({
-        hidden: true,
-      });
+      setItem(this.props.bannerKey, true);
+      this.setState({ hidden: true });
     }
-
-    if (this.props.handleClose) {
-      this.props.handleClose();
-    }
-  }
+    if (this.props.handleClose) this.props.handleClose();
+  };
 
   render() {
     const {
@@ -36,6 +30,7 @@ class AnnouncementBannerComponent extends Component {
       canBeClosed,
       bannerKey,
       fullPage = false,
+      hidden = false,
       ...props
     } = this.props;
 
@@ -59,6 +54,7 @@ class AnnouncementBannerComponent extends Component {
           class={classList('Announcement_Banner', className)}
           onClose={canBeClosed && this.handleClose}
           fullPage={fullPage}
+          hidden={hidden}
           {...props}
         >
           {this.props.children}

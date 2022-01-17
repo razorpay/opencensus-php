@@ -1,5 +1,7 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
+/* eslint-disable import/no-cycle */
 import {
   getQuickGuideLocalStorageKey,
   getQuickGuideIsClosedFromLocalStorage,
@@ -16,20 +18,17 @@ import {
   FEATURE: Product name
 */
 
-export default params => {
-  const {
-    feature: FEATURE,
-    data_points: DATA_POINTS,
-    dataTransformer = _dataTransformer,
-  } = params;
+const _dataTransformer = (key, state) => state[key];
 
-  let _WrappedComponent;
+export default (params) => {
+  const { feature: FEATURE, data_points: DATA_POINTS, dataTransformer = _dataTransformer } = params;
 
+  let WrappedComponent;
   @connect(
-    state => {
-      let newState = {};
+    (state) => {
+      const newState = {};
 
-      DATA_POINTS.forEach(key => {
+      DATA_POINTS.forEach((key) => {
         newState[key] = dataTransformer(key, state);
       });
 
@@ -40,7 +39,7 @@ export default params => {
         currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
       };
     },
-    { handleProductQuickGuide }
+    { handleProductQuickGuide },
   )
   class QuickGuideHOC extends React.PureComponent {
     constructor(props) {
@@ -57,15 +56,14 @@ export default params => {
       }
     }
 
-    generateDataPointFromProps = type => {
+    generateDataPointFromProps = (type) => {
       const latestEle = this.props[type].items[0] || {};
 
-      const lastItemId =
-        this.props.currentOnboarding.lastElementId || latestEle.id;
+      const lastItemId = this.props.currentOnboarding.lastElementId || latestEle.id;
 
       return {
         [type]: {
-          type: type,
+          type,
           lastItemId,
           items: [],
           loading: false,
@@ -84,7 +82,7 @@ export default params => {
       }, {});
     };
 
-    componentWillUnMount() {
+    componentWillUnmount() {
       if (this.props.currentOnboarding.isTour) {
         const newState = this.getInitState();
 
@@ -106,30 +104,27 @@ export default params => {
 
       let isLoading = false;
 
-      const dataPointsFromPropsList = DATA_POINTS.map(type => {
+      const dataPointsFromPropsList = DATA_POINTS.map((type) => {
         return nextProps[type];
       });
 
-      dataPointsFromPropsList.forEach(dataPoint => {
+      dataPointsFromPropsList.forEach((dataPoint) => {
         if (dataPoint.loading) {
           isLoading = true;
-
           return false;
         }
+        return true;
       });
 
       if (isLoading) return;
 
       const newState = {};
 
-      DATA_POINTS.forEach(type => {
-        const stateDataPoint = this.state[type],
-          propDataPoint = nextProps[type].items[0] || {};
+      DATA_POINTS.forEach((type) => {
+        const stateDataPoint = this.state[type];
+        const propDataPoint = nextProps[type].items[0] || {};
 
-        if (
-          stateDataPoint.lastItemId &&
-          propDataPoint.id !== stateDataPoint.lastItemId
-        ) {
+        if (stateDataPoint.lastItemId && propDataPoint.id !== stateDataPoint.lastItemId) {
           newState[type] = {
             ...stateDataPoint,
             items: [propDataPoint],
@@ -158,20 +153,17 @@ export default params => {
       };
 
       if (this.props.currentOnboarding.isTour) {
-        DATA_POINTS.forEach(key => {
+        DATA_POINTS.forEach((key) => {
           extraProps[key] = this.state[key];
         });
       }
 
-      return (
-        <_WrappedComponent onClickClose={this.onClickClose} {...extraProps} />
-      );
+      return <WrappedComponent onClickClose={this.onClickClose} {...extraProps} />;
     }
   }
 
-  return function(WrappedComponent) {
-    _WrappedComponent = WrappedComponent;
-
+  return (_WrappedComponent) => {
+    WrappedComponent = _WrappedComponent;
     return QuickGuideHOC;
   };
 };
@@ -181,5 +173,3 @@ export {
   getQuickGuideLocalStorageKey,
   setQuickGuideIsClosedInLocalStorage,
 };
-
-const _dataTransformer = (key, state) => state[key];

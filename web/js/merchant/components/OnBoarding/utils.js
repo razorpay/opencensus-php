@@ -1,14 +1,26 @@
 import moment from 'moment';
-
-import LocalStorageService from 'common/utils/localStorage';
-
 import { getUser, getMode } from 'merchant/store';
+import { getItem, setItem } from 'common/utils/localStorage';
 
 export const getOnBoardingKey = (feature) => {
-  const mode = getMode(),
-    user = getUser();
+  const mode = getMode();
+  const user = getUser();
 
   return `rzp_onboarding_${user.current}_${mode}_${feature}`;
+};
+
+export const getOnBoardingDataFromLocalState = (feature) => {
+  const KEY = getOnBoardingKey(feature);
+
+  const state = getItem(KEY);
+
+  return state
+    ? JSON.parse(state)
+    : {
+        isEnabled: undefined,
+        lastVisitedScreen: 0,
+        lastVisitedTime: null,
+      };
 };
 
 export const setOnBoardingDataInLocalState = ({ feature, data }) => {
@@ -21,28 +33,14 @@ export const setOnBoardingDataInLocalState = ({ feature, data }) => {
     ...data,
   });
 
-  LocalStorageService.setItem(KEY, state);
-};
-
-export const getOnBoardingDataFromLocalState = (feature) => {
-  const KEY = getOnBoardingKey(feature);
-
-  const state = LocalStorageService.getItem(KEY);
-
-  return state
-    ? JSON.parse(state)
-    : {
-        isEnabled: undefined,
-        lastVisitedScreen: 0,
-        lastVisitedTime: null,
-      };
+  setItem(KEY, state);
 };
 
 export const getIsAllowedResetBoarding = (feature) => {
   const { lastVisitedTime } = getOnBoardingDataFromLocalState(feature);
 
-  const momentLastVisitedTime = moment(lastVisitedTime),
-    currentTime = moment(Date.now());
+  const momentLastVisitedTime = moment(lastVisitedTime);
+  const currentTime = moment(Date.now());
 
   return currentTime.diff(momentLastVisitedTime, 'days') >= 15;
 };
@@ -61,11 +59,13 @@ export const GTAG_KEYS = {
 /**
  * Invokes GTAG for conversion tracking.
  */
+
 export const invokeGtag = (GTAG_KEY) => {
-  if (window.location.hostname !== 'dashboard.razorpay.com') {
-    return;
+  if (window.location.hostname !== 'dashboard.razorpay.com') return;
+
+  if (window && typeof window.gtag === 'function') {
+    window.gtag('event', 'conversion', {
+      send_to: GTAG_KEY,
+    });
   }
-  gtag('event', 'conversion', {
-    send_to: GTAG_KEY,
-  });
 };
