@@ -23,10 +23,12 @@ class Core extends Base\Core
 {
     const GATEWAY_VISA = 'tokenisation_visa';
     const GATEWAY_MC   = 'tokenisation_mastercard';
+    const GATEWAY_RUPAY = 'tokenisation_rupay';
 
     const TokenizationGateways = [
         self::GATEWAY_VISA,
         self::GATEWAY_MC,
+        self::GATEWAY_RUPAY
     ];
 
     /**
