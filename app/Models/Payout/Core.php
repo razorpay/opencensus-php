@@ -1533,13 +1533,17 @@ class Core extends Base\Core
                                 'payout_id'       => $payout->getId(),
                             ]);
 
+                        // This check is similar in processApprovePayout function
+                        // If Logic is changed then it needs to be changed at both the places
+                        $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ? boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
+
                         if (($approve === true) and
                             ($workflowAction->getApproved() === true))
                         {
                             if ($payout->getIsPayoutService() == true) {
                                 $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
                                     $payout->getId(),
-                                    $input[Entity::QUEUE_IF_LOW_BALANCE]
+                                    $queueFlag
                                 );
                             }
                             else {
@@ -1553,8 +1557,7 @@ class Core extends Base\Core
                             {
                                 if ($payout->getIsPayoutService() == true) {
                                     $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
-                                        $payout->getId(),
-                                        $input[Entity::QUEUE_IF_LOW_BALANCE]
+                                        $payout->getId()
                                     );
                                 }
                                 else {
@@ -3737,8 +3740,10 @@ class Core extends Base\Core
      */
     protected function processApprovePayout(Entity $payout, array $input): Entity
     {
-        //setting default queue flag to be true since Queued Payouts is always enabled
+        // setting default queue flag to be true since Queued Payouts is always enabled
         // alongside Payout Workflows till now
+        // This check is similar in processWorkflowActionOnPayout function
+        // If Logic is changed then it needs to be changed at both the places
         $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ?
             boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
 

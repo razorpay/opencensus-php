@@ -48,11 +48,9 @@ class Workflow extends Base
      *
      * @return array
      */
-    public function rejectPayoutViaMicroservice(string $payoutId, bool $queueIfLowBalance = true)
+    public function rejectPayoutViaMicroservice(string $payoutId)
     {
-        $input = [
-            Payout\Entity::QUEUE_IF_LOW_BALANCE => $queueIfLowBalance
-        ];
+        $input = [];
 
         $this->trace->info(TraceCode::PAYOUT_REJECT_VIA_MICROSERVICE_REQUEST,
             [
