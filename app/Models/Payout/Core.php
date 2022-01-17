@@ -2810,6 +2810,7 @@ class Core extends Base\Core
 
             if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
             {
+                $response = null;
                 if ($ftaStatus !== Attempt\Status::FAILED) {
                     // reversal for ledger
                     try {
@@ -2875,7 +2876,7 @@ class Core extends Base\Core
                             Trace::CRITICAL,
                             null,
                             [
-                                'payout_id' => $payout->getId(),
+                                'payout_id' => $clonedPayout->getId(),
                             ]
                         );
 
@@ -2891,6 +2892,20 @@ class Core extends Base\Core
                             Trace::ALERT,
                             TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
                         );
+                    }
+                    // This is a payout reversal for API so
+                    // dispatch to queue for transactions creation
+                    try {
+                        Transactions::dispatch($this->mode, $reversal->getId(), Constants\Entity::REVERSAL, $response);
+                    } catch (\Throwable $ex) {
+                        // Todo: check how to handle this failure
+                        $this->trace->info(
+                            TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+                            [
+                                'bank_transfer_id' => $reversal->getId(),
+                                'entity_name' => Constants\Entity::REVERSAL,
+                                'ledgerResponse' => $response,
+                            ]);
                     }
                 }
             }

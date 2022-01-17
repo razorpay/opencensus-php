@@ -17142,10 +17142,10 @@ class PayoutTest extends OAuthTestCase
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals(2001062, $reversal['amount']);
 
-        // pushed once
+        // pushed twice
         // once for payout creation transaction
-        // no job to be pushed for payout failed ledger event
-        Queue::assertPushed(Transactions::class, 1);
+        // once for reversal transaction
+        Queue::assertPushed(Transactions::class, 2);
     }
 
     public function testPayoutProcessedInLedgerReverseShadowMode()
