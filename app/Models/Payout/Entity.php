@@ -119,6 +119,7 @@ class Entity extends Base\PublicEntity
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
     const CANCELLATION_USER                     = 'cancellation_user';
     const QUEUED_REASON                         = 'queued_reason';
+    const SOURCE_TYPE_EXCLUDE                   = 'source_type_exclude';
     const ON_HOLD_AT                            = 'on_hold_at';
 
     // status code send from bank side

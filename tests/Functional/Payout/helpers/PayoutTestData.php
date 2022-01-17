@@ -11316,7 +11316,6 @@ return [
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Razorpay-Account'   => '10000000000000',
-                'HTTP_X-Payout-Idempotency' => 'test_i_key',
             ],
             'url'     => '/payouts_internal',
             'content' => [
@@ -11786,6 +11785,37 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testGetXpayrollPayoutWithExperimentOn' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testGetXpayrollPayoutWithExperimentOff' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
         ],
     ],
 

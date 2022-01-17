@@ -13843,6 +13843,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testFetchPayoutSkipXpayrollOnProxyAuth()
     {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -13856,18 +13858,19 @@ class PayoutTest extends OAuthTestCase
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
-        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&mask_sources[]=xpayroll';
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
 
         $this->ba->proxyAuth();
 
         $response = $this->startTest();
 
-        $this->assertEquals(4, $response['count']);
-        $this->assertEquals(0, $response['items'][3]['amount']);
+        $this->assertEquals(3, $response['count']);
     }
 
-    public function testFetchPayoutSkipXpayrollOnPrivateAuth()
+    public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndSomePayrollPayouts()
     {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+
         // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
         $this->testCreateXpayrollPayoutWithSourceDetails();
@@ -13881,33 +13884,135 @@ class PayoutTest extends OAuthTestCase
 
         $accountNumber = $this->bankingBalance->getAccountNumber();
 
-        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&mask_sources[]=xpayroll';
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
 
         $this->ba->privateAuth();
 
         $response = $this->startTest();
 
-        $this->assertEquals(4, $response['count']);
-        $this->assertEquals(0, $response['items'][3]['amount']);
+        $this->assertEquals(3, $response['count']);
     }
 
-    public function testGetXpayrollPayout()
+    public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndSomePayrollPayouts()
     {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+
+        // create 5 payouts [2 xpayroll + 3 payout_link]
         $this->testCreateXpayrollPayoutWithSourceDetails();
-
-        $payout = $this->getLastEntity('payout', true);
-
-        $this->ba->privateAuth();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
-        $request = & $this->testData[__FUNCTION__]['request'];
+        $testData = & $this->testData[__FUNCTION__];
 
-        $request['url'] = '/payouts/'. $payout['id'] . '?mask_sources[]=xpayroll';
+        $accountNumber = $this->bankingBalance->getAccountNumber();
 
-        $payout2 = $this->startTest();
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
 
-        $this->assertEquals(0, $payout2['amount']);
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(5, $response['count']);
+    }
+
+    public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndNoPayrollPayouts()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        // create 3 payouts [3 payout_link]
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(3, $response['count']);
+    }
+
+    public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndNoPayrollPayouts()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+
+        // create 3 payouts [3 payout_link]
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+        $this->testCreatePayoutLinkPayoutWithSourceDetailsWithoutIKey();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(3, $response['count']);
+    }
+
+    public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOnAndAllPayrollPayouts()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        // create 3 payouts [3 xpayroll]
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(0, $response['count']);
+    }
+
+    public function testFetchPayoutSkipXpayrollOnPrivateAuthWithExperimentOffAndAllPayrollPayouts()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+
+        // create 3 payouts [3 xpayroll]
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber;
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(3, $response['count']);
     }
 
     public function testFetchPayoutWithSourceIdAndSourceTypeOnPrivateAuth()
@@ -13932,6 +14037,48 @@ class PayoutTest extends OAuthTestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testGetXpayrollPayoutWithExperimentOn()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testGetXpayrollPayoutWithExperimentOn'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/'. $payout['id'];
+
+        $this->startTest();
+
+    }
+
+    public function testGetXpayrollPayoutWithExperimentOff()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'off', 'imps_mode_payout_filter' => 'control']);
+
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testGetXpayrollPayoutWithExperimentOff'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/'. $payout['id'];
+
+        $result = $this->startTest();
+
+        $this->assertEquals(2000, $result['amount']);
+
     }
 
     public function testBeneficiaryNameInPayoutsResponse()

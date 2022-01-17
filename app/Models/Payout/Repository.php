@@ -1010,6 +1010,20 @@ class Repository extends Base\Repository
         $query->where($productColumn, $product);
     }
 
+    protected function addQueryParamSourceTypeExclude(BuilderEx $query, array $params)
+    {
+        $sourceType = $params[Entity::SOURCE_TYPE_EXCLUDE];
+        $query->select($this->getTableName() . '.*');
+        $this->leftJoinQueryPayoutSource($query);
+
+        $query->where(function ($query) use ($sourceType) {
+            $sourceTypeColumn = $this->repo->payout_source->dbColumn(PayoutSource\Entity::SOURCE_TYPE);
+            $query->whereNotIn($sourceTypeColumn, [$sourceType])
+                ->orWhereNull($sourceTypeColumn);
+        });
+        $query->groupBy(Payout\Entity::ID);
+    }
+
     /**
      * Refer: addQueryParamContactId()
      *
@@ -1348,6 +1362,25 @@ class Repository extends Base\Repository
                 $payoutBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
                 $join->on($balanceIdColumn, $payoutBalanceIdColumn);
+            });
+    }
+
+    protected function leftJoinQueryPayoutSource(BuilderEx $query)
+    {
+        $payoutSourceTable = $this->repo->payout_source->getTableName();
+
+        if ($query->hasJoin($payoutSourceTable) === true)
+        {
+            return;
+        }
+        $query->leftJoin(
+            $payoutSourceTable,
+            function(JoinClause $join)
+            {
+                $payoutSourcePayoutIdColumn = $this->repo->payout_source->dbColumn(PayoutSource\Entity::PAYOUT_ID);
+                $payoutIdColumn             = $this->dbColumn(Entity::ID);
+
+                $join->on($payoutSourcePayoutIdColumn, $payoutIdColumn);
             });
     }
 

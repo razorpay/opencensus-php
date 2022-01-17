@@ -77,6 +77,7 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON_ME_VIA_WFS           => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES_VIA_WFS        => 'sometimes|array',
             Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            Entity::SOURCE_TYPE_EXCLUDE             => 'sometimes|string|max:255',
         ]
     ];
 
@@ -106,6 +107,7 @@ class Fetch extends BaseFetch
             EsRepository::QUERY,
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
+            Entity::SOURCE_TYPE_EXCLUDE,
             PayoutsStatusDetails::REASON,
         ],
         AuthType::PROXY_AUTH     => [

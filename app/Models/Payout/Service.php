@@ -35,6 +35,7 @@ use RZP\Models\BankingAccountService;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Vpa\Entity as VpaEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
@@ -42,6 +43,7 @@ use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
+use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
@@ -732,18 +734,13 @@ class Service extends Base\Service
             return $payout;
         }
 
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
-        if (array_key_exists('mask_sources', $input))
+        // currently keeping this feature under razorx
+        if ($this->shouldSkipPayrollEntries())
         {
-            if (in_array('xpayroll', $input['mask_sources'], TRUE))
-            {
-                $payoutSources = $payout->getSourceDetails();
-                // vanilla payouts will not have payout_source. So check if a source is present or not.
-                if (count($payoutSources) > 0 && $payoutSources[0]['source_type'] === 'xpayroll') {
-                    $this->maskPayoutPIIDetails($payout);
-                }
-            }
+            $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
+
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         //tracking slack app related events
         $this->trackPayoutsFetchEvent($input, $payout);
@@ -761,13 +758,6 @@ class Service extends Base\Service
         $merchantValidator = $this->merchant->getValidator();
 
         $merchantValidator->validateAndTranslateToAccountNumberForBankingIfApplicable($input);
-        $to_mask_sources = [];
-        if (array_key_exists('mask_sources', $input))
-        {
-            $to_mask_sources = $input['mask_sources'];
-            // unset 'exclude_sources' since its not part of the payout entity and will throw validation error
-            unset($input['mask_sources']);
-        }
 
         $useMasterConnection = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::USE_MASTER_DB_CONNECTION]);
 
@@ -786,11 +776,17 @@ class Service extends Base\Service
             $input['from'] = (string)$maxFrom;
         }
 
+        // currently keeping this feature under razorx
+        if ($this->shouldSkipPayrollEntries())
+        {
+            $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
+        }
+
         $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant->getId(), $useMasterConnection);
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
-        $payoutsArr = $this->mergePendingPayoutsViaWorkflowService($input, $payouts, $to_mask_sources);
+        $payoutsArr = $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
 
         if (empty($payoutsArr) == true) {
             $this->trace->info(
@@ -806,6 +802,16 @@ class Service extends Base\Service
         $this->trackPayoutsFetchEvent($input);
 
         return $payoutsArr;
+    }
+
+    public function shouldSkipPayrollEntries()
+    {
+        $skipPayrollPayoutsExperimentVariant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::RX_SKIP_PAYROLL_PAYOUTS,
+            $this->mode);
+
+        return strtolower($skipPayrollPayoutsExperimentVariant) === 'on';
     }
 
     public function processReversedPayout(string $id)
@@ -1919,10 +1925,9 @@ class Service extends Base\Service
     /**
      * @param array $input
      * @param Base\PublicCollection $payouts
-     * @param array $to_mask_sources
      * @return array
      */
-    protected function mergePendingPayoutsViaWorkflowService(array $input, Base\PublicCollection $payouts, array $to_mask_sources)
+    protected function mergePendingPayoutsViaWorkflowService(array $input, Base\PublicCollection $payouts)
     {
         $pendingPayoutsViaWfs = [];
 
@@ -1958,20 +1963,6 @@ class Service extends Base\Service
             }
         }
 
-        if (in_array('xpayroll', $to_mask_sources, TRUE))
-        {
-            foreach ($payouts as $key => $value)
-            {
-                $currPayout = $payouts[$key];
-                $payoutSources = $currPayout->getSourceDetails();
-                // vanilla payouts will not have payout_source. So check if a source is present or not.
-                if (count($payoutSources) > 0 && $payoutSources[0]['source_type'] === 'xpayroll')
-                {
-                    $this->maskPayoutPIIDetails($currPayout);
-                }
-            }
-        }
-
         $payoutsArr = $payouts->toArrayPublic();
 
         $payoutItems = & $payoutsArr['items'];
@@ -1983,17 +1974,6 @@ class Service extends Base\Service
         });
 
         return $payoutsArr;
-    }
-
-    /*
-     * Mask the Personally Identifiable Information (PII) of the payout. Basically, the amount, tax and fees
-     */
-    public function maskPayoutPIIDetails(&$payout)
-    {
-        //Set the default value
-        $payout->setAmount(0);
-        $payout->setFees(0);
-        $payout->setTax(0);
     }
 
     public function postBulkPayoutsAmountType(array $input)

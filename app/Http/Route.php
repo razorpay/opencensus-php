@@ -3794,6 +3794,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+
         'm2m_referral_link_get_public',
         'payout_links_customer_hosted_page_data',
         'payout_links_customer_hosted_page_demo_data',

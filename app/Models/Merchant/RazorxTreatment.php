@@ -143,6 +143,9 @@ final class RazorxTreatment
     // Experiment for 2FA on critical actions
     const VALIDATE_USER_2FA_STATUS = 'validate_user_2fa_status';
 
+    // Experiment to skip payroll payouts in the payouts list/detail view
+    const RX_SKIP_PAYROLL_PAYOUTS = 'rx_skip_payroll_payouts';
+
     // Experiment to send login email notification to user
     const USER_LOGIN_EMAIL_NOTIFICATION = 'user_login_email_notification';
 

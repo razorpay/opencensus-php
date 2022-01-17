@@ -21,6 +21,7 @@ class Fetch
     const COUNT                = 'count';
     const SKIP                 = 'skip';
     const DELETED              = 'deleted';
+    const SOURCE_TYPE_EXCLUDE  = 'source_type_exclude';
 
     //
     // Different constants used in AdminFetch response to dashboard
@@ -87,6 +88,7 @@ class Fetch
         self::EXPAND,
         self::EXPAND_EACH,
         self::DELETED,
+        self::SOURCE_TYPE_EXCLUDE,
     ];
 
     /**
