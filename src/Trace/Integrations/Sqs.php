@@ -13,25 +13,14 @@ class Sqs implements IntegrationInterface
 
         opencensus_trace_method('Aws\AwsClient', 'execute', function ($command, $args) {
             if (get_class($command) === 'Aws\Sqs\SqsClient') {
-                $internalFields = Sqs::formatArguments($args);
-                $attributes = [
-                    'command' => $args->getName(),
-                    'sqs.QueueUrl' => $internalFields[1],
-                    'sqs.DelaySeconds' => $internalFields[0],
-                    'sqs.region' => $command->getRegion(),
-                    'sqs.apiVersion' => ($command->getApi())->getApiVersion(),
-                    'sqs.host' => ($command->getEndpoint())->getHost(),
-                    'service.name' => ($command->getApi())->getServiceName(),
-                    'span.kind' => 'client',
-                ];
+                $internalFields = Sqs::formatArguments($command, $args);
                 return [
-                    'attributes' => $attributes,
+                    'attributes' => $internalFields,
                     'kind' => 'client',
                     'name' => 'Sqs ' . $args->getName(),
                     'sameProcessAsParentSpan' => false
                 ];
             }
-            return [];
         });
 
         opencensus_trace_method('Aws\Sqs\SqsClient', '__construct', function ($command, $args) {
@@ -44,20 +33,23 @@ class Sqs implements IntegrationInterface
                         'service.name' => ($command->getApi())->getServiceName(),
                     ],
                     'kind' => 'client',
-                    'name' => 'Sqs',
+                    'name' => 'Sqs:Constructor',
                     'sameProcessAsParentSpan' => false
                 ];
             }
-            return [];
         });
 
     }
 
-    public static function formatArguments($arguments)
+    public static function formatArguments($command, $arguments)
     {
         $delaySeconds = 0;
         $QueueUrl = '';
-
+        $name = $arguments->getName();
+        $region = $command->getRegion();
+        $apiVersion = $command->getApi()->getApiVersion();
+        $getHost = ($command->getEndpoint())->getHost();
+        $serviceName = ($command->getApi())->getServiceName();
         $iterator = $arguments->getIterator();
         while ($iterator->valid()) {
             if ($iterator->key() === 'DelaySeconds') {
@@ -68,8 +60,17 @@ class Sqs implements IntegrationInterface
             }
             $iterator->next();
         }
-
-        return array('delaySeconds' => $delaySeconds, 'QueueUrl' => $QueueUrl);
+        $attributes = [
+            'command' => $name,
+            'sqs.QueueUrl' => $QueueUrl,
+            'sqs.DelaySeconds' => $delaySeconds,
+            'sqs.region' => $region,
+            'sqs.apiVersion' => $apiVersion,
+            'sqs.host' => $getHost,
+            'service.name' => $serviceName,
+            'span.kind' => 'client',
+        ];
+        return $attributes;
     }
 
 }
