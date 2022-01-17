@@ -962,9 +962,23 @@ class Validator extends Base\Validator
         $oldPassword1 = $this->entity->getAttribute(Entity::OLD_PASSWORD_1);
         $oldPassword2 = $this->entity->getAttribute(Entity::OLD_PASSWORD_2);
 
-        $oauthProvider = $this->entity->getAttribute(Entity::OAUTH_PROVIDER);
+        $user   = $this->entity;
 
-        assertTrue((empty($oldPassword) === false) or (empty($oauthProvider) === false));
+        $disableOldPasswordRequiredExperimentIsOn = (new Merchant\Core)->isRazorxExperimentEnable(
+            $user->getAttribute(Entity::ID),
+            Merchant\RazorxTreatment::DISABLE_OLD_PASSWORD_REQUIRED_FOR_PASSWORD_RESET
+        );
+
+        if ($disableOldPasswordRequiredExperimentIsOn !== true)
+        {
+            $oauthProvider = $user->getAttribute(Entity::OAUTH_PROVIDER);
+            if((empty($oldPassword) === true) and (empty($oauthProvider) === true))
+            {
+                throw new BadRequestValidationFailureException(
+                    'The password cannot be reset since it has not yet been set. Please login with other method to set a password.'
+                );
+            }
+        }
 
         foreach (array_filter([$oldPassword, $oldPassword1, $oldPassword2]) as $old)
         {
@@ -1001,18 +1015,15 @@ class Validator extends Base\Validator
     protected static function validatePassword($input)
     {
         $app = App::getFacadeRoot();
-        $razorx = $app['razorx'];
         $ba = $app['basicauth'];
-
         $merchantId = $ba->getMerchantId();
-        $mode = $ba->getMode();
 
-        $user2FaCheckExperimentVariant = $razorx->getTreatment(
+        $user2FaCheckExperimentIsOn = (new Merchant\Core)->isRazorxExperimentEnable(
             $merchantId,
-            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS,
-            $mode);
+            Merchant\RazorxTreatment::VALIDATE_USER_2FA_STATUS
+        );
 
-        if (strtolower($user2FaCheckExperimentVariant) !== 'on')
+        if ($user2FaCheckExperimentIsOn !== true)
         {
             if (isset($input[Entity::PASSWORD]) === true)
             {

@@ -432,4 +432,7 @@ final class RazorxTreatment
 
     // experiment to send partner and source details to SF on each lead (sub-merchant) & opportunity creation
     const SEND_PARTNER_AND_SOURCE_DETAILS_TO_SALESFORCE = 'send_partner_and_source_details_to_salesforce';
+
+    // experiment to no longer require old password for password reset flow
+    const DISABLE_OLD_PASSWORD_REQUIRED_FOR_PASSWORD_RESET = 'disable_old_password_required_for_password_reset';
 }
