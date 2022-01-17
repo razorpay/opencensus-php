@@ -283,8 +283,6 @@ class Core extends Base\Core
 
         $this->dispatchFtaInitiate($payout);
 
-        $this->processLedgerPayout($payout);
-
         return $payout;
     }
 
@@ -975,13 +973,13 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processQueuedPayout($payout);
 
+                $this->processLedgerPayout($payout);
+
                 //
                 // There might be some type of payouts where we don't want to dispatch FTA.
                 // Should handle that before adding any other type of payouts as queued.
                 //
                 $this->dispatchFtaInitiate($payout);
-
-                $this->processLedgerPayout($payout);
 
                 return $payout;
             },
@@ -1047,13 +1045,13 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processBatchSubmittedPayout($payout);
 
+                $this->processLedgerPayout($payout);
+
                 //
                 // There might be some type of payouts where we don't want to dispatch FTA.
                 // Should handle that before adding any other type of payouts as batch_submitted.
                 //
                 $this->dispatchFtaInitiate($payout);
-
-                $this->processLedgerPayout($payout);
 
                 return $payout;
             },
@@ -1075,8 +1073,6 @@ class Core extends Base\Core
                 $payout = $this->getProcessor('fund_account_payout')
                                 ->setMerchant($payout->merchant)
                                 ->processPayoutPostCreate($payout, $queueFlag);
-
-                $this->processLedgerPayout($payout);
 
                 return $payout;
             },
@@ -1101,8 +1097,6 @@ class Core extends Base\Core
                 $payout = $this->getProcessor('fund_account_payout')
                                ->setMerchant($payout->merchant)
                                ->processPayoutPostCreate($payout, $queueFlag);
-
-                $this->processLedgerPayout($payout);
 
                 return $payout;
             },
@@ -1304,9 +1298,9 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processScheduledPayout($payout);
 
-                $this->dispatchFtaInitiate($payout);
-
                 $this->processLedgerPayout($payout);
+
+                $this->dispatchFtaInitiate($payout);
 
                 return $payout;
             },
@@ -2257,7 +2251,7 @@ class Core extends Base\Core
      * Push to ledger sns when a payout status is changed. This will create this payout in ledger DB.
      * Since ledger keeps different records for all payout states, these events are triggered.
      */
-    protected function processLedgerPayout(Entity $payout,
+    public function processLedgerPayout(Entity $payout,
                                            Reversal\Entity $reversal = null,
                                            array $ftsSourceAccountInformation = [])
     {
@@ -3524,9 +3518,9 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processPendingPayout($payout, $queueFlag);
 
-                $this->dispatchFtaInitiate($payout);
-
                 $this->processLedgerPayout($payout);
+
+                $this->dispatchFtaInitiate($payout);
 
                 return $payout;
             },

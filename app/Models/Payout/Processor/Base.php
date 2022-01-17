@@ -343,6 +343,8 @@ class Base extends BaseCore
             $downstreamProcessor->processPayoutThroughLedger();
         }
 
+        (new Payout\Core)->processLedgerPayout($payout);
+
         if (($payout->isStatusBeforeCreate() === false) and
             ($payout->makeSyncFtsFundTransfer() === true))
         {
@@ -1209,6 +1211,8 @@ class Base extends BaseCore
                 });
             }
         }
+
+        (new Payout\Core)->processLedgerPayout($payout);
 
         if (($payout->isStatusBeforeCreate() === false) and
             ($payout->makeSyncFtsFundTransfer() === true))
