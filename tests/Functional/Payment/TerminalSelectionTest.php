@@ -1461,6 +1461,57 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('fulcrumDirectTerminalId', $terminal->getGatewayTerminalId());
     }
 
+    public function testFulcrumTerminalIsDisabledOnMerchantMccEdit()
+    {
+        $this->enableRazorXTreatmentForFulcrumTerminal();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $merchantId = $this->setUpMerchantForHitachiTerminalDisableTest();
+
+        $oldMccTerminal = $this->fixtures->create('terminal', $this->getTerminalCreateArrayForFulcrumTerminalDisableTest([
+            'category'    => '1234',
+            'merchant_id' => $merchantId,
+        ]));
+
+        $this->assertTrue($oldMccTerminal->isEnabled());
+
+        $this->editMerchant($merchantId, ['category' => "4321"]);
+
+        $oldMccTerminal = $this->getEntityById('terminal', $oldMccTerminal['id'], true);
+
+        $this->assertFalse($oldMccTerminal['enabled']);
+
+        $this->assertEquals(Terminal\Status::DEACTIVATED, $oldMccTerminal[Terminal\Entity::STATUS]);
+
+        // start onboarding flow
+
+        $input = $this->getInputForHitachiTerminalTestOnMccUpdate($merchantId);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+        $category = "4321";
+        $this->mockTerminalsServiceConsecutiveSendRequest($this->getHitachiOnboardResponseAndCreate($category, $merchantId),
+            $this->getFulcrumOnboardResponseAndCreate($category, $merchantId));
+
+        $selectedTerminals = $selector->select();
+        $this->assertEquals(2, sizeof($selectedTerminals));
+
+        $selectedTerminalGateways = array_map(function($term) {
+            return $term->getGateway();
+        }, $selectedTerminals);
+
+        $selectedTerminalCategory = array_map(function($term) {
+            return $term->getCategory();
+        }, $selectedTerminals);
+
+        $this->assertTrue(in_array("fulcrum", $selectedTerminalGateways));
+        $this->assertTrue(in_array("4321", $selectedTerminalCategory));
+    }
+
     public function testHitachiTerminalCreationOnRun()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -2736,6 +2787,21 @@ class TerminalSelectionTest extends TestCase
         $defaults = [
             "category"           => "1234",
             "gateway"            => "hitachi",
+            "gateway_merchant_id"=> "10",
+            "gateway_terminal_id"=> "8",
+            "gateway_acquirer"   =>"ratn",
+            "mode"               => "3",
+            "enabled"            => true,
+        ];
+
+        return array_merge($defaults, $attributes);
+    }
+
+    protected function getTerminalCreateArrayForFulcrumTerminalDisableTest(array $attributes = [])
+    {
+        $defaults = [
+            "category"           => "1234",
+            "gateway"            => "fulcrum",
             "gateway_merchant_id"=> "10",
             "gateway_terminal_id"=> "8",
             "gateway_acquirer"   =>"ratn",

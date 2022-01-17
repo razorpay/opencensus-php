@@ -776,6 +776,7 @@ class Core extends Base\Core
         }
 
         $this->processMerchantMccUpdateForHitachiTerminals($merchant, $oldCategory);
+        $this->processMerchantMccUpdateForFulcrumTerminals($merchant, $oldCategory);
     }
 
     protected function validateExistingTerminalGatewayMerchantId(Entity $terminal, $gateway)
@@ -923,10 +924,9 @@ class Core extends Base\Core
         return $config[Merchant\Account::SHARED_ACCOUNT];
     }
 
-    protected function processMerchantMccUpdateForHitachiTerminals($merchant, $oldCategory)
-    {
+    protected function processMerchantMccUpdateForTerminals($merchant, $oldCategory, $gateway, $traceCode) {
         $fetchParams = [
-            Entity::GATEWAY  => Payment\Gateway::HITACHI,
+            Entity::GATEWAY  => $gateway,
             Entity::CATEGORY => $oldCategory,
             Entity::ENABLED  => '1',
             Entity::STATUS   => Status::ACTIVATED,
@@ -934,16 +934,16 @@ class Core extends Base\Core
 
         if (strlen($oldCategory) === 4)
         {
-            $hitachiDirectTerminalsToBeDisabled = $this->repo->terminal->fetch($fetchParams, $merchant->getId());
+            $directTerminalsToBeDisabled = $this->repo->terminal->fetch($fetchParams, $merchant->getId());
 
-            $this->repo->transaction(function() use (& $hitachiDirectTerminalsToBeDisabled) {
-                foreach ($hitachiDirectTerminalsToBeDisabled as $directTerminal)
+            $this->repo->transaction(function() use (& $directTerminalsToBeDisabled, $traceCode) {
+                foreach ($directTerminalsToBeDisabled as $directTerminal)
                 {
                     $directTerminal->setStatus(Status::DEACTIVATED);
 
                     $directTerminal->setEnabled(false);
 
-                    $this->app['trace']->info(TraceCode::HITACHI_TERMINAL_EDIT_ON_MCC_EDIT, [
+                    $this->app['trace']->info($traceCode, [
                         Entity::ID         => $directTerminal->getId(),
                         Entity::STATUS     => Status::DEACTIVATED,
                         Entity::ENABLED    => false,
@@ -954,6 +954,16 @@ class Core extends Base\Core
             });
 
         }
+    }
+
+    protected function processMerchantMccUpdateForFulcrumTerminals($merchant, $oldCategory)
+    {
+        $this->processMerchantMccUpdateForTerminals($merchant, $oldCategory, Payment\Gateway::FULCRUM, TraceCode::FULCRUM_TERMINAL_EDIT_ON_MCC_EDIT);
+    }
+
+    protected function processMerchantMccUpdateForHitachiTerminals($merchant, $oldCategory)
+    {
+        $this->processMerchantMccUpdateForTerminals($merchant, $oldCategory, Payment\Gateway::HITACHI, TraceCode::HITACHI_TERMINAL_EDIT_ON_MCC_EDIT);
     }
 
     protected function validateAndTokenizeMpansIfPresentInInput(array &$input)
