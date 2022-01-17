@@ -140,7 +140,7 @@ class BuyPricing
     const TRUSTLY                       = 'trustly';
     const POLI                          = 'poli';
 
-    protected static $cardIssuers = [
+    protected static $cardGateways = [
         self::HDFC,
         self::AXIS_MIGS,
         self::FIRST_DATA,
@@ -166,7 +166,7 @@ class BuyPricing
         self::SHARP,
     ];
 
-    protected static $netbankingIssuers = [
+    protected static $netbankingGateways = [
         self::NETBANKING_HDFC,
         self::SBIN,
         self::NETBANKING_CIUB,
@@ -219,7 +219,7 @@ class BuyPricing
         self::SHARP,
     ];
 
-    protected static $emiIssuers = [
+    protected static $emiGateways = [
         self::AMEX,
         self::AXIS_MIGS,
         self::FIRST_DATA,
@@ -229,7 +229,7 @@ class BuyPricing
         self::SHARP,
     ];
 
-    protected static $cardlessEmiIssuers = [
+    protected static $cardlessEmiGateways = [
         self::ZESTMONEY,
         self::FLEXMONEY,
         self::EARLYSALARY,
@@ -239,7 +239,7 @@ class BuyPricing
         self::SHARP,
     ];
 
-    protected static $paylaterIssuers = [
+    protected static $paylaterGateways = [
         self::PAYLATER,
         self::PAYLATER_ICICI,
         self::SHARP,
@@ -256,7 +256,7 @@ class BuyPricing
         'GetSimpl'   => self::GETSIMPL,
     ];
 
-    protected static $walletIssuers = [
+    protected static $walletGateways = [
         self::PAYU,
         self::CCAVENUE,
         self::MOBIKWIK,
@@ -280,7 +280,7 @@ class BuyPricing
         self::MOBIKWIK,
     ];
 
-    protected static $upiIssuers = [
+    protected static $upiGateways = [
         self::PAYU,
         self::CASHFREE,
         self::PAYTM,
@@ -300,7 +300,7 @@ class BuyPricing
         self::SHARP,
     ];
 
-    protected static $emandateIssuers = [
+    protected static $emandateGateways = [
         self::NETBANKING_HDFC,
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
@@ -310,13 +310,13 @@ class BuyPricing
         self::SHARP,
     ];
 
-    protected static $nachIssuers = [
+    protected static $nachGateways = [
         self::NACH_ICICI,
         self::NACH_CITI,
         self::SHARP,
     ];
 
-    protected static $appIssuers = [
+    protected static $appGateways = [
         self::CRED,
         self::TWID,
         self::TRUSTLY,
@@ -337,21 +337,21 @@ class BuyPricing
         'ICICI' => self::ICICI,
     ];
 
-    public static function issuerForMethod($method)
+    public static function gatewayForMethod($method)
     {
         switch ($method)
         {
-            case $method === Method::CARD:       return self::$cardIssuers;
-            case $method === Method::NETBANKING: return self::$netbankingIssuers;
-            case $method === Method::WALLET:     return self::$walletIssuers;
-            case $method === Method::EMI:        return self::$emiIssuers;
-            case $method === Method::UPI:        return self::$upiIssuers;
-            case $method === Method::EMANDATE:   return self::$emandateIssuers;
-            case $method === Method::NACH:       return self::$nachIssuers;
-            case $method === Method::CARDLESS_EMI: return self::$cardlessEmiIssuers;
-            case $method === Method::PAYLATER:   return self::$paylaterIssuers;
-            case $method === Method::APP:        return self::$appIssuers;
-            default:                             return [];
+            case $method === Method::CARD:         return self::$cardGateways;
+            case $method === Method::NETBANKING:   return self::$netbankingGateways;
+            case $method === Method::WALLET:       return self::$walletGateways;
+            case $method === Method::EMI:          return self::$emiGateways;
+            case $method === Method::UPI:          return self::$upiGateways;
+            case $method === Method::EMANDATE:     return self::$emandateGateways;
+            case $method === Method::NACH:         return self::$nachGateways;
+            case $method === Method::CARDLESS_EMI: return self::$cardlessEmiGateways;
+            case $method === Method::PAYLATER:     return self::$paylaterGateways;
+            case $method === Method::APP:          return self::$appGateways;
+            default:                               return [];
         }
     }
 
@@ -373,9 +373,9 @@ class BuyPricing
         return in_array($network, self::networksForMethod($method));
     }
 
-    public static function isValidBuyPricingIssuer($method, $issuer)
+    public static function isValidBuyPricingGateway($method, $issuer)
     {
-        return in_array($issuer, self::issuerForMethod($method));
+        return in_array($issuer, self::gatewayForMethod($method));
     }
 
     public static function getPaymentFromBuyPricingCostInput($input)

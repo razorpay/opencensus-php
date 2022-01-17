@@ -103,6 +103,7 @@ class Validator extends Base\Validator
         'addPlanRuleAuthType',
         'addPlanRuleProcurer',
         'addPlanRulePaymentIssuer',
+        'addPlanRuleGateway',
         // Skipped for now as it blocks the creation of 0-pricing rules.
         // 'addPlanRuleBankTransfer',
     ];
@@ -195,13 +196,8 @@ class Validator extends Base\Validator
             'procurer is not required when feature is optimizer.');
     }
 
-    protected function validateAddPlanRulePaymentIssuer($input)
+    protected function validateAddPlanRuleGateway($input)
     {
-        if (isset($input[Entity::PAYMENT_ISSUER]) === false)
-        {
-            return;
-        }
-
         if ($input[Entity::TYPE] === Type::BUY_PRICING)
         {
             if (in_array($input[Entity::PAYMENT_METHOD], Payment\Method::getAllPaymentMethods()) === false)
@@ -210,46 +206,58 @@ class Validator extends Base\Validator
                     'invalid method sent for buy pricing: '. $input[Entity::PAYMENT_METHOD]);
             }
 
-            if (BuyPricing::isValidBuyPricingIssuer($input[Entity::PAYMENT_METHOD], $input[Entity::PAYMENT_ISSUER]) === false)
+            if (isset($input[Entity::GATEWAY]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'invalid issuer '. $input[Entity::PAYMENT_ISSUER] .' sent for buy pricing method '. $input[Entity::PAYMENT_METHOD]);
+                    'gateway field is required for buy_pricing');
+            }
+
+            if (BuyPricing::isValidBuyPricingGateway($input[Entity::PAYMENT_METHOD], $input[Entity::GATEWAY]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'invalid gateway '. $input[Entity::GATEWAY] .' sent for buy pricing method '. $input[Entity::PAYMENT_METHOD]);
             }
 
         }
-        else
-        {
-            $validMethods = [
-                Payment\Method::CARD,
-                Payment\Method::EMI,
-                Payment\Method::CARDLESS_EMI,
-                Payment\Method::EMANDATE,
-                Payment\Method::PAYLATER,
-                Payment\Method::NACH,
-            ];
+    }
 
-            if (in_array($input[Entity::PAYMENT_METHOD], $validMethods) === false)
+    protected function validateAddPlanRulePaymentIssuer($input)
+    {
+        if (isset($input[Entity::PAYMENT_ISSUER]) === false)
+        {
+            return;
+        }
+
+        $validMethods = [
+            Payment\Method::CARD,
+            Payment\Method::EMI,
+            Payment\Method::CARDLESS_EMI,
+            Payment\Method::EMANDATE,
+            Payment\Method::PAYLATER,
+            Payment\Method::NACH,
+        ];
+
+        if (in_array($input[Entity::PAYMENT_METHOD], $validMethods) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $input[Entity::PAYMENT_ISSUER] .' is not required for method: '. $input[Entity::PAYMENT_METHOD]);
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI)
+        {
+            if (CardlessEmi::exists($input[Entity::PAYMENT_ISSUER]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    $input[Entity::PAYMENT_ISSUER] .' is not required for method: '. $input[Entity::PAYMENT_METHOD]);
+                    'Provider selected for cardless emi should be valid');
             }
+        }
 
-            if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARDLESS_EMI)
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::PAYLATER)
+        {
+            if (Payment\Processor\PayLater::exists($input[Entity::PAYMENT_ISSUER]) === false)
             {
-                if (CardlessEmi::exists($input[Entity::PAYMENT_ISSUER]) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Provider selected for cardless emi should be valid');
-                }
-            }
-
-            if ($input[Entity::PAYMENT_METHOD] === Payment\Method::PAYLATER)
-            {
-                if (Payment\Processor\PayLater::exists($input[Entity::PAYMENT_ISSUER]) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Provider selected for paylater should be valid');
-                }
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provider selected for paylater should be valid');
             }
         }
     }
@@ -451,11 +459,6 @@ class Validator extends Base\Validator
                 Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE], $input[Entity::PAYMENT_METHOD]);
             }
 
-            if ($input[Entity::TYPE] === Type::BUY_PRICING)
-            {
-                return;
-            }
-
             if (isset($input[Entity::PAYMENT_ISSUER]) === true)
             {
                 Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
@@ -475,11 +478,6 @@ class Validator extends Base\Validator
 
     protected function validateAddPlanRuleNB($input)
     {
-        if ($input[Entity::TYPE] === Type::BUY_PRICING)
-        {
-            return;
-        }
-
         // Check that payment_method_type is not defined when mode is net-banking
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING)
         {

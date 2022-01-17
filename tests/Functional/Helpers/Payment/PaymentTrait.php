@@ -2832,6 +2832,7 @@ trait PaymentTrait
             [
                 'payment_method'        => 'card',
                 'payment_method_type'   => 'credit',
+                'gateway'               => 'hdfc',
                 'payment_issuer'        => ['hdfc'],
                 'payment_network'       => ['VISA', 'MC'],
                 'percent_rate'          => '10',
@@ -2843,6 +2844,7 @@ trait PaymentTrait
             [
                 'payment_method'        => 'card',
                 'payment_method_type'   => 'credit',
+                'gateway'               => 'hdfc',
                 'payment_issuer'        => ['hdfc'],
                 'payment_network'       => ['VISA', 'MC'],
                 'percent_rate'          => '10',
@@ -2854,6 +2856,7 @@ trait PaymentTrait
             [
                 'payment_method'        => 'card',
                 'payment_method_type'   => 'debit',
+                'gateway'               => 'hdfc',
                 'payment_issuer'        => ['hdfc'],
                 'payment_network'       => ['VISA', 'MC'],
                 'percent_rate'          => '10',
@@ -2865,6 +2868,7 @@ trait PaymentTrait
             [
                 'payment_method'        => 'card',
                 'payment_method_type'   => 'debit',
+                'gateway'               => 'hdfc',
                 'payment_issuer'        => ['hdfc'],
                 'payment_network'       => ['VISA', 'MC'],
                 'percent_rate'          => '10',
@@ -2876,6 +2880,7 @@ trait PaymentTrait
             [
                 'payment_method'        => 'card',
                 'payment_method_type'   => 'debit',
+                'gateway'               => 'hdfc',
                 'payment_issuer'        => ['hdfc'],
                 'payment_network'       => ['VISA', 'MC'],
                 'percent_rate'          => '10',

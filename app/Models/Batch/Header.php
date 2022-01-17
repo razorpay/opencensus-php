@@ -917,6 +917,7 @@ class Header
     const PRICING_RULE_RECEIVER_TYPE            = 'receiver_type';
     const PRICING_RULE_PAYMENT_ISSUER           = 'payment_issuer';
     const PRICING_RULE_PAYMENT_NETWORK          = 'payment_network';
+    const PRICING_RULE_GATEWAY                  = 'gateway';
     const PRICING_RULE_INTERNATIONAL            = 'international';
     const PRICING_RULE_EMI_DURATION             = 'emi_duration';
     const PRICING_RULE_PERCENT_RATE             = 'percent_rate';
@@ -3424,6 +3425,7 @@ class Header
                 self::PRICING_RULE_RECEIVER_TYPE,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_EMI_DURATION,
+                self::PRICING_RULE_GATEWAY,
                 self::PRICING_RULE_PAYMENT_ISSUER,
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
@@ -3439,6 +3441,7 @@ class Header
                 self::PRICING_RULE_RECEIVER_TYPE,
                 self::PRICING_RULE_INTERNATIONAL,
                 self::PRICING_RULE_EMI_DURATION,
+                self::PRICING_RULE_GATEWAY,
                 self::PRICING_RULE_PAYMENT_ISSUER,
                 self::PRICING_RULE_PAYMENT_NETWORK,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,

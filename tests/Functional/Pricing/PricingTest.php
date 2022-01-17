@@ -1713,6 +1713,7 @@ class PricingTest extends TestCase
                 'payment_method_type'   => 'credit',
                 'payment_method_subtype'=> 'business',
                 'receiver_type'         => '',
+                'gateway'               => 'hdfc',
                 'payment_issuer'        => 'hdfc',
                 'payment_network'       => 'Visa,MasterCard',
                 'percent_rate'          => '10',
