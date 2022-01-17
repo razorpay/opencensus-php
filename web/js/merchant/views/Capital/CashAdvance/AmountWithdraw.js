@@ -1113,6 +1113,7 @@ export default class AmountWithdraw extends React.Component {
     } = this.props;
 
     const isApplicationAtHold = status === 'ONHOLD' && reason !== 'end_of_credit_line_tenure';
+    const isApplicationKudosHold = status === 'ONHOLD' && reason === 'not_migrated_to_gromor';
 
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
@@ -1133,6 +1134,18 @@ export default class AmountWithdraw extends React.Component {
 
     return (
       <div className="withdrawals__action-container card flex">
+        {isApplicationKudosHold ? (
+          <React.Fragment>
+            <div class="cash-advance-kudos-onhold">
+              <i class="i i-warning" />
+              The account is put on hold as we have changed our lending partner. Please reach out to
+              us at <a href="mailto:harshit.jain@razorpay.com">harshit.jain@razorpay.com</a>, so we
+              can help you activate cash advance account
+            </div>
+            <span />
+          </React.Fragment>
+        ) : null}
+
         {showFirstWithdrawalOffer ? (
           <React.Fragment>
             <div class="cash-advance-first-withdrawal">
@@ -1729,12 +1742,16 @@ export default class AmountWithdraw extends React.Component {
   render() {
     const { currentView, showRepaymentDetailsBreakup } = this.state;
     const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    const status = withdrawalConfigurationDetails.data.status;
+    const reason = withdrawalConfigurationDetails.data.comments.reason;
+    const isApplicationKudosHold = status === 'ONHOLD' && reason === 'not_migrated_to_gromor';
 
     return (
       <div
         class={`withdrawals__top-summary${showRepaymentDetailsBreakup ? ' move-right' : ''}${
           showFirstWithdrawalOffer ? ' show-first-withdrawal-offer' : ''
-        }`}
+        }${isApplicationKudosHold ? ' show-kudos-onhold' : ''} `}
       >
         <div
           className={`repayment_details_wrapper card ${
