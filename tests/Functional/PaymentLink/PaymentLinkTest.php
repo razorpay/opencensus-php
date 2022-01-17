@@ -2059,6 +2059,59 @@ class PaymentLinkTest extends TestCase
         $this->assertStringContainsString('payment-handle/error.js', $view->getContent());
     }
 
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testUpdatePageWithGoalTrackerInactiveAndEndDatePastShouldNotThrowValidationError()
+    {
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'page']);
+        $this->createPaymentPageItem();
+        $settings = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+                Entity::GOAL_IS_ACTIVE  => "0",
+                Entity::META_DATA       => [
+                    Entity::DISPLAY_AVAILABLE_UNITS => "0",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "0",
+                    Entity::DISPLAY_SOLD_UNITS      => "0",
+                    Entity::AVALIABLE_UNITS         => "55",
+                    Entity::GOAL_END_TIMESTAMP      => (string) (new Carbon())->subDays(1)->getTimestamp()
+                ]
+            ]
+        ];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_donation_goal_tracker
+     */
+    public function testUpdatePageWithGoalTrackerActiveEndDatePastShouldThrowValidationError()
+    {
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'page']);
+        $this->createPaymentPageItem();
+        $settings = [
+            Entity::GOAL_TRACKER    => [
+                Entity::TRACKER_TYPE    => PaymentLink\DonationGoalTrackerType::DONATION_SUPPORTER_BASED,
+                Entity::GOAL_IS_ACTIVE  => "1",
+                Entity::META_DATA       => [
+                    Entity::DISPLAY_AVAILABLE_UNITS => "0",
+                    Entity::DISPLAY_DAYS_LEFT       => "0",
+                    Entity::DISPLAY_SUPPORTER_COUNT => "0",
+                    Entity::DISPLAY_SOLD_UNITS      => "0",
+                    Entity::AVALIABLE_UNITS         => "55",
+                    Entity::GOAL_END_TIMESTAMP      => (string) (new Carbon())->subDays(1)->getTimestamp()
+                ]
+            ]
+        ];
+
+         $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function activateMerchantToTriggerPaymentHandleCreation(string $billingLabel = 'Test Label 123')

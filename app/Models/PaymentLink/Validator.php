@@ -211,7 +211,7 @@ class Validator extends Base\Validator
      * @var string[]
      */
     protected static $metaDataRules = [
-        Entity::GOAL_END_TIMESTAMP      => 'epoch|custom',
+        Entity::GOAL_END_TIMESTAMP      => 'epoch',
         Entity::AVALIABLE_UNITS         => 'numeric|min:1|max:4294967295',
         Entity::DISPLAY_AVAILABLE_UNITS => 'string|in:0,1',
         Entity::DISPLAY_SOLD_UNITS      => 'string|in:0,1',
@@ -430,6 +430,9 @@ class Validator extends Base\Validator
         $this->validateInput('udfSchema', [Entity::UDF_SCHEMA => $udfSchema]);
     }
 
+    /**
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
     public function validateGoalTracker(array $input)
     {
         $tracker = array_get($input, Entity::SETTINGS . '.' . Entity::GOAL_TRACKER, []);
@@ -445,13 +448,20 @@ class Validator extends Base\Validator
             return;
         }
 
+        $endTimeStamp = array_get($metadata, Entity::GOAL_END_TIMESTAMP);
+
         $this->validateInput('metaData', $metadata);
+
+        if ($tracker[Entity::GOAL_IS_ACTIVE] === '1' && empty($endTimeStamp) === false)
+        {
+            $this->validateGoalEndTimestamp($endTimeStamp);
+        }
     }
 
     /**
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function validateGoalEndTimestamp(string $attribute, $value)
+    public function validateGoalEndTimestamp($value)
     {
         $now    = Carbon::now(Timezone::IST);
         $future = $now->copy()->addMinutes(30);

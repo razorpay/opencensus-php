@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\PaymentLink;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -3040,6 +3041,76 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Payment Handle does not exists for this merchant. Please create a new one'
                 ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePageWithGoalTrackerInactiveAndEndDatePastShouldNotThrowValidationError' => [
+        'request' => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'payment_page_items'         => [
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID
+                    ]
+                ],
+                "settings" => [
+                    'goal_tracker'    => [
+                        'tracker_type'  => 'donation_supporter_based',
+                        "is_active"     => "0",
+                        "meta_data"     => [
+                            "display_available_units"   => "0",
+                            "display_days_left"         => "0",
+                            "display_supporter_count"   => "0",
+                            "display_sold_units"        => "0",
+                            "available_units"           => "55",
+                            "goal_end_timestamp"        => (string) (new Carbon())->subDays(1)->getTimestamp()
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdatePageWithGoalTrackerActiveEndDatePastShouldThrowValidationError' => [
+        'request' => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'payment_page_items'         => [
+                    [
+                        'id' => 'ppi_' . PaymentLinkTest::TEST_PPI_ID
+                    ]
+                ],
+                "settings" => [
+                    'goal_tracker'    => [
+                        'tracker_type'  => 'donation_supporter_based',
+                        "is_active"     => "1",
+                        "meta_data"     => [
+                            "display_available_units"   => "0",
+                            "display_days_left"         => "0",
+                            "display_supporter_count"   => "0",
+                            "display_sold_units"        => "0",
+                            "available_units"           => "55",
+                            "goal_end_timestamp"        => (string) (new Carbon())->subDays(1)->getTimestamp()
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
             ],
             'status_code' => 400,
         ],

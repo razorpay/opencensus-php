@@ -416,9 +416,21 @@ class ViewSerializer extends Base\Core
         $settings[Entity::GOAL_TRACKER][Entity::META_DATA][Entity::SOLD_UNITS]          = $soldUnits;
 
         $expiryKey      = $this->getEpochFormattedKey(Entity::GOAL_END_TIMESTAMP);
-        $expiryValue    = array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA .'.'.Entity::GOAL_END_TIMESTAMP);
-        $diffInDays     = stringify(Carbon::createFromTimestamp($expiryValue, Timezone::IST)->diffInDays());
+
+        $diffInDays = $this->getGoalTrackerExpiryDiffInDays($settings);
 
         $settings[Entity::GOAL_TRACKER][Entity::META_DATA][$expiryKey] = $diffInDays;
+    }
+
+    protected function getGoalTrackerExpiryDiffInDays(array $settings): string
+    {
+        $expiryValue = array_get($settings, Entity::GOAL_TRACKER.'.'.Entity::META_DATA .'.'.Entity::GOAL_END_TIMESTAMP);
+
+        if (empty($expiryValue) === true)
+        {
+            return '0';
+        }
+
+        return stringify(Carbon::createFromTimestamp($expiryValue, Timezone::IST)->diffInDays());
     }
 }
