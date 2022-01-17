@@ -1259,6 +1259,10 @@ export default class User {
   get secondFactorAuthOfUser() {
     return this.user.second_factor_auth;
   }
+  // Expirment return the MID account has VA on Yes bank or ICICI account
+  get isVAAccountOnSCMigration() {
+    return this.getExpStatus('rbl_migration_banner');
+  }
 
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {

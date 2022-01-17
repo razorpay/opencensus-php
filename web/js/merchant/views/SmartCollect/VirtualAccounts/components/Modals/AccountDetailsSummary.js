@@ -1,4 +1,3 @@
-import react from 'react';
 import moment from 'moment';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -16,9 +15,7 @@ const AccountDetailsSummary = ({
   showUPIAddressDetails = true,
   showBankAccountDetails = true,
 }) => {
-  const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
-    virtualAccount
-  );
+  const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(virtualAccount);
   const valueToCopy = getVirtualAccountDetailsToCopy({
     bankAccount1,
     bankAccount2,
@@ -46,11 +43,7 @@ const AccountDetailsSummary = ({
 
         {virtualAccount.close_by && (
           <EntityDetailRow label="Close By">
-            <b>
-              {moment(virtualAccount.close_by * 1000).format(
-                'DD MMM YYYY, hh:mm a'
-              )}
-            </b>
+            <b>{moment(virtualAccount.close_by * 1000).format('DD MMM YYYY, hh:mm a')}</b>
           </EntityDetailRow>
         )}
 

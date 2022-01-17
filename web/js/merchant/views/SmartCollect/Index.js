@@ -14,9 +14,11 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
 import PaymentsList from './Payments/List';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import VirtualAccountsList from './VirtualAccounts/List';
 import BlockOnBoarding from './BlockOnBoarding';
 
+import ShowWhen from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import BatchExpiryUpdate from './BatchExpiryUpdate/List';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -85,6 +87,22 @@ export default class SmartCollectContainer extends React.Component {
 
     return (
       <div class="SmartCollect-Container">
+        <ShowWhen additionalCondition={(usr) => usr.isVAAccountOnSCMigration}>
+          <div className="banner-container">
+            <AnnouncementBanner
+              class="rewards-anc"
+              theme="danger"
+              title="Virtual Account Expiring"
+              card_id="sc-yes-bank-monotorium"
+            >
+              <span class="display-inline">
+                As per new RBI guidelines, your Virtual Account details have been updated. Share the
+                new account details with your customers
+              </span>{' '}
+            </AnnouncementBanner>
+          </div>
+        </ShowWhen>
+
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
 

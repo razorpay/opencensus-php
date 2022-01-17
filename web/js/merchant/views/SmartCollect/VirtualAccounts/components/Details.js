@@ -6,7 +6,7 @@ import Banner from 'common/ui/Banner';
 import Button from 'common/new-ui/Button';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
-import Alert from 'common/ui/Forms/Alert';
+import Alert from 'common/new-ui/Alert';
 import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { VirtualAccountStatusLabel } from 'merchant/components/StatusLabel';
@@ -68,7 +68,6 @@ export default class extends React.Component {
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(
       this.props.virtualaccount,
     );
-
     this.props.track('enable');
 
     this.props.openModal({
@@ -127,7 +126,6 @@ export default class extends React.Component {
       va_payments,
       mode,
       isLoading,
-      statusMsg,
       onClose,
       onMakeTestPaymentClick,
       onCopy = () => {},
@@ -138,16 +136,28 @@ export default class extends React.Component {
     const isClosed = virtualaccount.status === 'closed';
 
     const { bankAccount1, bankAccount2, upiAddress } = getVirtualAccountDetails(virtualaccount);
-
+    const isYesBankOrICICIValidation = (bankName) => {
+      if (bankName?.toLowerCase() === 'yes bank' || bankName?.toLowerCase() === 'icici bank') {
+        return true;
+      }
+      return false;
+    };
     const hasBankAccount = bankAccount1 || bankAccount2;
+    const isYesBankorICICI =
+      isYesBankOrICICIValidation(bankAccount1?.bank_name) ||
+      isYesBankOrICICIValidation(bankAccount2?.bank_name);
 
     const valueToCopy = getVirtualAccountDetailsToCopy({
       bankAccount1,
       bankAccount2,
       upiAddress,
     });
-
+    const bankAccount2valueToCopy = getVirtualAccountDetailsToCopy({
+      bankAccount2,
+      upiAddress,
+    });
     const showTestPaymentBtn = mode === 'test' && virtualaccount.status === 'active';
+    const yesBankExpiryDate = new Date('2022-01-31');
     let closeByContent = () => <span>No closing date</span>;
     if (!isClosed && this.state.isEditSingleVaMid) {
       closeByContent = () => (
@@ -181,28 +191,76 @@ export default class extends React.Component {
               <i class="i i-account-balance text-success icon--formal" />{' '}
               <strong>{virtualaccount.id}</strong>
             </div>
-
             <div class="SliderPanel__Body">
-              <Alert type={statusMsg.type} message={statusMsg.message} />
               <div class="panel-body">
-                <div class="VirtualAccountDetails">
-                  <EntityDetailRow label={<b>Account Details</b>}>
-                    <CustomClipboard
-                      value={valueToCopy}
-                      onCopy={() => {
-                        onCopy(virtualaccount);
-                      }}
+                {isYesBankorICICI && (
+                  <Alert.Warning iconBefore="i-warning">
+                    Share new account details with your customers to accept payments. Your older
+                    account will not accept payments from 31 Jan 2022.
+                    <a
+                      class="redirect-text"
+                      alt="yes bank moratorium razorpay"
+                      target="_blank"
+                      href="https://razorpay.com/docs/smart-collect/pa-pg-migration/#frequently-asked-questions-faqs"
+                      rel="noreferrer"
                     >
-                      <div class="copy btn btn-link no-padding">Copy Details</div>
-                    </CustomClipboard>
+                      {' '}
+                      Why ?
+                    </a>
+                  </Alert.Warning>
+                )}
+                <div class="VirtualAccountDetails">
+                  <EntityDetailRow
+                    label={<b>{bankAccount2 ? 'Old Account Details' : 'Account Details'}</b>}
+                  >
+                    {isYesBankorICICI ? (
+                      <CustomClipboard
+                        value={valueToCopy}
+                        onCopy={() => {
+                          onCopy(virtualaccount);
+                        }}
+                      >
+                        <div style={{ fontSize: '12px' }}>
+                          {new Date() > yesBankExpiryDate ? 'Expired' : 'Expires on 31 Jan'}
+                        </div>
+                      </CustomClipboard>
+                    ) : (
+                      <CustomClipboard
+                        value={valueToCopy}
+                        onCopy={() => {
+                          onCopy(virtualaccount);
+                        }}
+                      >
+                        <div class="copy btn btn-link no-padding">Copy Details</div>
+                      </CustomClipboard>
+                    )}
                   </EntityDetailRow>
 
                   <div class="divider" />
                   <AccountDetails
                     bankAccount1={bankAccount1}
-                    bankAccount2={bankAccount2}
-                    upiAddress={upiAddress}
+                    upiAddress={bankAccount2 === undefined ? upiAddress : null}
                   />
+                  {bankAccount2 && (
+                    <div>
+                      <div class="divider" />
+                      <EntityDetailRow
+                        label={
+                          <b style={{ color: '#58666e', fontSize: '14px' }}>New Account Details</b>
+                        }
+                      >
+                        <CustomClipboard
+                          value={bankAccount2valueToCopy}
+                          onCopy={() => {
+                            onCopy(virtualaccount);
+                          }}
+                        >
+                          <div class="copy btn btn-link no-padding">Copy Details</div>
+                        </CustomClipboard>
+                      </EntityDetailRow>
+                      <AccountDetails bankAccount1={bankAccount2} upiAddress={upiAddress} />
+                    </div>
+                  )}
                 </div>
 
                 {!user.isVACreationBankAccountDisabled && !isClosed && !hasBankAccount && (
@@ -227,7 +285,7 @@ export default class extends React.Component {
 
                 <div style={{ margin: '24px 0' }}>
                   <EntityDetailRow label="Amount Paid">
-                    <Amount value={virtualaccount.amount_paid} currency={'INR'} />
+                    <Amount value={virtualaccount.amount_paid} currency="INR" />
                   </EntityDetailRow>
 
                   <EntityDetailRow label="Status">
