@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Enach\Rbl;
 use Mail;
 use Excel;
 use Cache;
+use ZipArchive;
 use Carbon\Carbon;
 use Illuminate\Http\Testing\File as TestingFile;
 
@@ -1458,6 +1459,70 @@ class EnachRblGatewayTest extends TestCase
         $fileStore = $this->getDbLastEntityToArray(Entity::FILE_STORE);
 
         $this->assertEquals("rbl/nach/input_file/MMS-CANCEL-RATN-RATNA0001-$date-ESIGN000001-INP", $fileStore['name']);
+    }
+
+    public function testMandateCancellationRblBankSuccessResponseFile()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('confirmed', $payment->localToken->getRecurringStatus());
+
+        $this->assertTrue($payment->isCreated());
+
+        $fileStatuses = [
+            'status'     => 'PAID',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $response = $this->deleteCustomerToken(
+            'token_' . $payment['token_id'], 'cust_' . $payment['customer_id']);
+
+        $this->assertTrue($response['deleted']);
+
+        $batchFile = $this->getBatchFileToUploadForMandateCancelRes($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile,'cancel');
+
+        $token = $this->getTrashedDbEntityById('token', $payment->getTokenId());
+
+        $this->assertEquals('cancelled', $token['recurring_status']);
+    }
+
+    protected function getBatchFileToUploadForMandateCancelRes(Payment $payment): TestingFile
+    {
+        $paymentId = $payment->getId();
+
+        $xmlData = file_get_contents(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.xml');
+
+        $responseXml = strtr($xmlData, ['$paymentId' => $paymentId]);
+
+        $zip = new ZipArchive();
+
+        $zip->open(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', ZipArchive::CREATE);
+
+        $zip->addFromString( 'MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.xml', $responseXml);
+
+        $zip->close();
+
+        $handle = fopen(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', 'r');
+
+        return (new TestingFile('MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', $handle));
     }
 
     protected function makeDebitPayment()

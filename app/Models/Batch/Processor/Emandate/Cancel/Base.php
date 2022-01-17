@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Batch\Processor\Nach\Base as BaseProcessor;
+use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.012.001.04">
+    <MndtAccptncRpt>
+        <GrpHdr>
+            <MsgId>Hw9yHhxUemMHl4</MsgId>
+            <CreDtTm>2022-01-11T00:00:00+05:30</CreDtTm>
+            <InstgAgt>
+                <FinInstnId>
+                    <ClrSysMmbId>
+                        <MmbId>CNRB0003163</MmbId>
+                    </ClrSysMmbId>
+                    <Nm>CANARA BANK</Nm>
+                </FinInstnId>
+            </InstgAgt>
+            <InstdAgt>
+                <FinInstnId>
+                    <ClrSysMmbId>
+                        <MmbId>RATN0TREASU</MmbId>
+                    </ClrSysMmbId>
+                    <Nm>RBL BANK LIMITED</Nm>
+                </FinInstnId>
+            </InstdAgt>
+        </GrpHdr>
+        <UndrlygAccptncDtls>
+            <OrgnlMsgInf>
+                <MsgId>$paymentId</MsgId>
+                <MsgNmId>pain.011.001.04</MsgNmId>
+                <CreDtTm>2022-01-11T17:42:20+05:30</CreDtTm>
+            </OrgnlMsgInf>
+            <AccptncRslt>
+                <Accptd>true</Accptd>
+                <RjctRsn>
+                    <Prtry>sack</Prtry>
+                </RjctRsn>
+            </AccptncRslt>
+            <OrgnlMndt>
+                <OrgnlMndtId>HDFC6000000005844847</OrgnlMndtId>
+            </OrgnlMndt>
+        </UndrlygAccptncDtls>
+    </MndtAccptncRpt>
+</Document>
