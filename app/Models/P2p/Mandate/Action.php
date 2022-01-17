@@ -6,16 +6,42 @@ use RZP\Models\P2p\Base;
 
 class Action extends Base\Action
 {
-    const CUSTOMER_MANDATE_INITIATE_AUTHORIZE       = 'customerMandateInitiateAuthorize';
-    const CUSTOMER_MANDATE_INITIATE_REJECT          = 'customerMandateInitiateReject';
-    const CUSTOMER_MANDATE_INITIATE_PAUSE           = 'customerMandateInitiatePause';
-    const CUSTOMER_MANDATE_INITIATE_UNPAUSE         = 'customerMandateInitiateUnPause';
-    const CUSTOMER_MANDATE_INITIATE_REVOKE          = 'customerMandateInitiateRevoke';
+    const FETCH_ALL                                 = 'fetchAll';
+    const FETCH_ALL_SUCCESS                         = 'fetchAllSuccess';
 
-    const CUSTOMER_MANDATE_AUTHORIZE                = 'customerMandateAuthorize';
-    const CUSTOMER_MANDATE_REJECT                   = 'customerMandateReject';
-    const CUSTOMER_MANDATE_PAUSE                    = 'customerMandatePause';
-    const CUSTOMER_MANDATE_UNPAUSE                  = 'customerMandateUnpause';
-    const CUSTOMER_MANDATE_REVOKE                   = 'customerMandateRevoke';
+    const FETCH                                     = 'fetch';
+    const FETCH_SUCCESS                             = 'fetchSuccess';
 
+    const INCOMING_COLLECT                          = 'incomingCollect';
+    const INCOMING_COLLECT_SUCCESS                  = 'incomingCollectSuccess';
+
+    const INITIATE_AUTHORIZE                        = 'initiateAuthorize';
+    const INITIATE_AUTHORIZE_SUCCESS                = 'initiateAuthorizeSuccess';
+
+    const AUTHORIZE_MANDATE                         = 'authorize';
+    const AUTHORIZE_MANDATE_SUCCESS                 = 'authorizeSuccess';
+
+    const INITIATE_REJECT                           = 'initiateReject';
+    const INITIATE_REJECT_SUCCESS                   = 'initiateRejectSuccess';
+
+    const REJECT                                    = 'reject';
+    const REJECT_SUCCESS                            = 'rejectSuccess';
+
+    const INITIATE_PAUSE                            = 'initiatePause';
+    const INITIATE_PAUSE_SUCCESS                    = 'initiatePauseSuccess';
+
+    const PAUSE                                     = 'pause';
+    const PAUSE_SUCCESS                             = 'pauseSuccess';
+
+    const INITIATE_UNPAUSE                          = 'initiateUnPause';
+    const INITIATE_UNPAUSE_SUCCESS                  = 'initiateUnPauseSuccess';
+
+    const UNPAUSE                                   = 'unpause';
+    const UNPAUSE_SUCCESS                           = 'unpauseSuccess';
+
+    const INITIATE_REVOKE                           = 'initiateRevoke';
+    const INITIATE_REVOKE_SUCCESS                   = 'initiateRevokesSuccess';
+
+    const REVOKE                                    = 'revoke';
+    const REVOKE_SUCCESS                            = 'revokeSuccess';
 }

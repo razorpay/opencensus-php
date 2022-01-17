@@ -12,7 +12,7 @@ class Processor extends Base\Processor
 {
     public function initiateAuthorize(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_INITIATE_AUTHORIZE, $input);
+        $this->initialize(Action::INITIATE_AUTHORIZE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -27,7 +27,7 @@ class Processor extends Base\Processor
 
     public function authorizeMandate(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_AUTHORIZE, $input);
+        $this->initialize(Action::AUTHORIZE_MANDATE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -42,7 +42,7 @@ class Processor extends Base\Processor
 
     public function initiateReject(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_INITIATE_REJECT, $input);
+        $this->initialize(Action::INITIATE_REJECT, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -57,7 +57,7 @@ class Processor extends Base\Processor
 
     public function rejectMandate(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_REJECT, $input);
+        $this->initialize(Action::REJECT, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -72,7 +72,7 @@ class Processor extends Base\Processor
 
     public function initiatePause(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_INITIATE_PAUSE, $input);
+        $this->initialize(Action::INITIATE_PAUSE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -87,7 +87,7 @@ class Processor extends Base\Processor
 
     public function pauseMandate(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_PAUSE, $input);
+        $this->initialize(Action::PAUSE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -102,7 +102,7 @@ class Processor extends Base\Processor
 
     public function initiateUnpause(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_INITIATE_UNPAUSE, $input);
+        $this->initialize(Action::INITIATE_UNPAUSE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -117,7 +117,7 @@ class Processor extends Base\Processor
 
     public function unpauseMandate(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_UNPAUSE, $input);
+        $this->initialize(Action::UNPAUSE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -132,7 +132,7 @@ class Processor extends Base\Processor
 
     public function initiateRevoke(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_INITIATE_REVOKE, $input);
+        $this->initialize(Action::INITIATE_REVOKE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
@@ -147,7 +147,7 @@ class Processor extends Base\Processor
 
     public function revokeMandate(array $input): array
     {
-        $this->initialize(Action::CUSTOMER_MANDATE_REVOKE, $input);
+        $this->initialize(Action::REVOKE, $input);
 
         $mandate = $this->core->fetch($input['id']);
 
