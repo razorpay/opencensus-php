@@ -32,6 +32,9 @@
         paymentPages: function() {
             return window.rzpQ;
         },
+        paymentPage: function() {
+            return window.rzpQ;
+        },
         paymentStores: function() {
             return window.rzpQ;
         },
