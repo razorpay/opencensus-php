@@ -98,6 +98,65 @@ return [
         ],
     ],
 
+    'testFetchMultipleStatementsWithMerchantRules' => [
+        'request' => [
+            'url'    => '/transactions',
+            'method' => 'get',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 102500,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchStatement'          => [
         'request' => [
             'url'    => '/transactions/txn_00000000000001',
@@ -207,6 +266,25 @@ return [
     ],
 
     'testFetchStatementWithAttributesPermissionFalse'          => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',
+            ],
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content' => [
+                'error'       => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testFetchStatementWithNoAttributesWithOperationsRole'          => [
         'request' => [
             'server' => [
                 'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',

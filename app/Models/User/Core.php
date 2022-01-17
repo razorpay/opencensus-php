@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
+use RZP\Models\Admin\Permission\Name as Permission;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -3123,6 +3124,50 @@ class Core extends Base\Core
         return Adapter\Base::getActorInfo();
     }
 
+    private function fetchUserPermissions($merchant)
+    {
+        // Fetch static role permissions map
+        $basePermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
+
+        try {
+            // Fetch merchant role permissions preferences for this specific user role
+            $merchantOverrides  = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId(
+                $merchant[Entity::ID],
+                Product::BANKING,
+                Merchant\Attribute\Group::X_TRANSACTION_VIEW,
+                [$merchant[Entity::BANKING_ROLE]]
+            )->toArrayPublic();
+
+        } catch (\Exception $e) {
+            $merchantOverrides = [];
+        }
+
+        // If merchant has no rules for this role configured then return static permissions
+        if (sizeof($merchantOverrides) === 0 || sizeof($merchantOverrides['items']) === 0)
+        {
+            return $basePermissions;
+        }
+
+        $hasMerchantAllowedViewTransaction = $merchantOverrides['items'][0]['value'] === 'true';
+
+        // If merchant has allowed access for this role then attach it to permissions list
+        if ($hasMerchantAllowedViewTransaction)
+        {
+            // Unique is needed because for every other role than operations VIEW_TRANSACTION is by default allowed
+            // Taking unique will keep the code open for extension in future without having to write permission level conditions
+            return array_values(
+                    array_unique(
+                        array_merge($basePermissions, [Permission::VIEW_TRANSACTION_STATEMENT])
+                    )
+                );
+        }
+
+        // If merchant has denied access for this role then remove the item from array
+        return array_values(
+            array_diff($basePermissions, [Permission::VIEW_TRANSACTION_STATEMENT])
+        );
+    }
+
     /**
      * Appends banking specific details in serialized unique list of merchants where applies.
      * @param array $merchants
@@ -3145,14 +3190,21 @@ class Core extends Base\Core
                     $merchant[Merchant\Entity::BUSINESS_BANKING_SIGNUP_AT] = $this->repo->merchant_user->fetchBankingSignUpTimeStampOfOwner($merchant['id']);
                 }
 
-                // Attach Permission
-                $userMerchantPermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
-
-                $merchant[Constants::PERMISSIONS] = $userMerchantPermissions;
+                // Attach Permissions
+                $merchant[Constants::PERMISSIONS] = $this->fetchUserPermissions($merchant);
 
                 // Attach merchant attributes of specific groups
-                $signupAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::X_SIGNUP)->toArrayPublic();
-                $currentAccountAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS)->toArrayPublic();
+                $signupAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId(
+                                                                            $merchant['id'],
+                                                                            Product::BANKING,
+                                                                            Merchant\Attribute\Group::X_SIGNUP
+                                                                    )->toArrayPublic();
+
+                $currentAccountAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId(
+                                                                            $merchant['id'],
+                                                                            Product::BANKING,
+                                                                            Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS
+                                                                    )->toArrayPublic();
 
                 $currentAccountAttributesFromPG = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::PRIMARY, Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS)->toArrayPublic();
 

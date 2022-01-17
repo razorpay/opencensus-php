@@ -3411,6 +3411,48 @@ return [
         ],
     ],
 
+    'testGetBankingUserWithMerchantRulesWithPermissionNotPresent'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'operations',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithMerchantRulesWithPermissionFalse'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'admin',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBankingUserWithMerchantRules'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'admin',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testGetBankingUserWithPermissionsNull'   => [
         'response'      => [
             'content'     => [

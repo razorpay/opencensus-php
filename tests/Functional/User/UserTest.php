@@ -17,10 +17,10 @@ use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
+use RZP\Models\User\Constants;
 use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
 use RZP\Services\Mock\Raven;
-use RZP\Models\User\Constants;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
@@ -4684,6 +4684,140 @@ class UserTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+    }
+
+    public function testGetBankingUserWithMerchantRules()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'admin',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'true'
+            ]);
+
+        $merchantAttribute = $this->getDbLastEntity('merchant_attribute');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+    }
+
+    public function testGetBankingUserWithMerchantRulesWithPermissionNotPresent()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'operations',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'x_transaction_view',
+                'type'        => 'operations',
+                'value'       => 'true'
+            ]);
+
+        $merchantAttribute = $this->getDbLastEntity('merchant_attribute');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+    }
+
+    public function testGetBankingUserWithMerchantRulesWithPermissionFalse()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'admin',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'false'
+            ]);
+
+        $merchantAttribute = $this->getDbLastEntity('merchant_attribute');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
     }
 
     public function testGetBankingUserWithPermissionsNull()

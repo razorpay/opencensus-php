@@ -430,7 +430,7 @@ class UserAccess
             $merchant = $this->ba->getMerchant();
             $merchantAttributes = (new Attribute\Core())->fetch(
                 $merchant,
-                'primary',
+                $this->ba->getRequestOriginProduct(),
                 $attributeGroupNameMap[$routePermission],
                 $userRole);
         }

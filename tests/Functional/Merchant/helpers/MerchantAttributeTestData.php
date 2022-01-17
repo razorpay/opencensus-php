@@ -337,7 +337,7 @@ return [
         'request' => [
             'content' => [
                     [
-                        'type' => 'Admin',
+                        'type' => 'admin',
                         'value' => 'true'
                     ],
                     [
@@ -345,7 +345,7 @@ return [
                         'value' => 'false'
                     ],
                     [
-                        'type' => 'Finance L1',
+                        'type' => 'finance_l1',
                         'value' => 'false'
                     ]
             ],
@@ -355,11 +355,11 @@ return [
         'response' => [
             'content' => [
                 [
-                    'type' => 'Admin',
+                    'type' => 'admin',
                     'value' => 'true'
                 ],
                 [
-                    'type' => 'Finance L1',
+                    'type' => 'finance_l1',
                     'value' => 'false'
                 ],
                 [

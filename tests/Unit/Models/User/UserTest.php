@@ -2307,7 +2307,7 @@ class UserTest extends TestCase
 
         $merchantAttributeEntityMock = Mockery::mock('RZP\Models\Merchant\Attribute\Entity');
 
-        $merchantAttributeEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn(['attr' => 'value']);
+        $merchantAttributeEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn(['items' => []]);
 
         $bankingAccountEntityMock = Mockery::mock('RZP\Models\BankingAccount\Entity')->makePartial();
 

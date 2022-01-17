@@ -38,9 +38,9 @@ class Type
     const PG                            = 'pg';
     const WEBSITE                       = 'website';
 
-    const FINANCE_L1                    = 'Finance L1';
-    const OWNER                         = 'Owner';
-    const ADMIN                         = 'Admin';
+    const FINANCE_L1                    = 'finance_l1';
+    const OWNER                         = 'owner';
+    const ADMIN                         = 'admin';
     const OPERATIONS                    = 'operations';
     const VIEW_ONLY                     = 'view_only';
     const CHARTERED_ACCOUNTANT          = 'chartered_accountant';
