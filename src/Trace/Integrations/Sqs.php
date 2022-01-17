@@ -19,12 +19,12 @@ class Sqs implements IntegrationInterface
 
         error_log($sqs);
         error_log($command);
-//        return [
-//            'attributes' => ['queueURL' => $params[0]['QueueUrl'],
-//                'delaySeconds' => $params[0]['DelaySeconds']],
-//            'kind' => 'client',
-//            'name' => 'Sqs sendMessage',
-//        ];
+        return [
+            'attributes' => ['queueURL' => 'const',
+                'delaySeconds' => '2'],
+            'kind' => 'client',
+            'name' => 'Sqs sendMessage',
+        ];
 
 
     }
