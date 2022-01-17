@@ -2224,6 +2224,7 @@ class Route
 
         // Growth service
         'growth_get_asset_details'                          => ['post',     'growth/assets',                                  'GrowthController@getAssetDetails'                                  ],
+        'growth_get_public_asset_details'                   => ['post',     'growth/public/assets',                                  'GrowthController@getPublicAssetDetails'                                  ],
         'growth_downtime_for_x'                             => ['post',     'growth/assets/enable_downtime_for_x',                     'GrowthController@enableDowntimeNotificationForXDashboard' ],
         'growth_filter_and_sync_cron'                       => ['post',     'growth/assets/sync',                             'GrowthController@filterAndSyncEventsFromPinot'            ],
         // Account API routes
@@ -7855,6 +7856,9 @@ class Route
 
         // Banking Account Service
         'banking_account_service_pincode_serviceability_check_bulk',
+
+        // Growth Public Route
+        'growth_get_public_asset_details',
     ];
 
     /**
@@ -9045,6 +9049,8 @@ class Route
             'state_fetch',
 
             'raw_address_failed_file',
+
+            'growth_get_public_asset_details',
         ],
 
         'admin_dashboard' => [

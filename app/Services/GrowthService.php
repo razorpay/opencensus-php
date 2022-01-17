@@ -19,13 +19,14 @@ class GrowthService extends Base\Service
     const CONTENT_TYPE_JSON = 'application/json';
 
     const GET_ASSET_URL              = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
+    const GET_PUBLIC_ASSET_URL       = 'twirp/rzp.growth.asset.v1.AssetAPI/GetPublic';
 
     const EDIT_TEMPLATE_URL          = 'twirp/rzp.growth.template.v1.TemplateAPI/Update';
 
     const GET_SUBCAMPAIGN_URL        = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Get';
 
     const SUBCAMPAIGN_ACTION_URL     = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Action';
-    
+
     const FILTER_AND_SYNC_URL        = '/twirp/rzp.growth.counting.v1.CountingAPI/FilterAndSync';
 
     const ACTIVATED                  = 'ACTIVATED';
@@ -88,6 +89,11 @@ class GrowthService extends Base\Service
         return $this->sendRequest($parameters, self::GET_ASSET_URL, Requests::POST);
     }
 
+    public function getPublicAssetDetails($parameters)
+    {
+        return $this->sendRequest($parameters, self::GET_PUBLIC_ASSET_URL, Requests::POST);
+    }
+
     public function editTemplateAndEnableDowntimeNotificationForXDashboard($parameters)
     {
         $templateParameters = ["template" => $parameters['template']];
@@ -107,7 +113,7 @@ class GrowthService extends Base\Service
 
         return ["status_code" => "200"];
     }
-    
+
     public function filterAndSyncEventsFromPinot()
     {
         return $this->sendRequest([], self::FILTER_AND_SYNC_URL, Requests::POST);
@@ -145,7 +151,7 @@ class GrowthService extends Base\Service
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
-        
+
         $options = [
             'timeout' => $this->requestTimeout,
         ];
@@ -186,14 +192,4 @@ class GrowthService extends Base\Service
         return $growthResponse;
     }
 
-    public function allowCors()
-    {
-        $response = ApiResponse::json([]);
-
-        $response->headers->set(self::ACCESS_CONTROL_ALLOW_METHODS, 'POST, OPTIONS' );
-
-        $response->headers->set(self::ACCESS_CONTROL_ALLOW_HEADERS, self::CONTENT_TYPE);
-
-        return $response;
-    }
 }

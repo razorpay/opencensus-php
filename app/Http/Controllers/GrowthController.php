@@ -32,13 +32,29 @@ class GrowthController extends Controller
             }
         } catch (\Throwable $e)
         {
-            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+            throw new Exception\ServerErrorException('Error completing the getAssetDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
 
         return $response;
     }
-    
-    
+
+    public function getPublicAssetDetails(){
+        $parameters = Request::all();
+        $response = [];
+        try {
+            if (empty($parameters) === false)
+            {
+                $response = $this->app->growthService->getPublicAssetDetails($parameters);
+                $response = ApiResponse::json($response);
+            }
+        } catch (\Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the getPublicAssetDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+        return $response;
+    }
+
+
     public function enableDowntimeNotificationForXDashboard()
     {
         $parameters = Request::all();
@@ -60,13 +76,13 @@ class GrowthController extends Controller
 
         return $response;
     }
-    
+
     public function filterAndSyncEventsFromPinot()
     {
         try {
             $response = $this->app->growthService->filterAndSyncEventsFromPinot();
             $response = ApiResponse::json($response);
-            
+
         } catch (\Throwable $e)
         {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
