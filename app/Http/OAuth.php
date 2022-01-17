@@ -352,6 +352,7 @@ class OAuth
         // TODO: Move this to a common auth class
         //
         $this->ba->setMerchantById($merchantId);
+        $userId = null;
 
         try
         {

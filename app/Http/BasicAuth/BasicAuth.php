@@ -2757,9 +2757,9 @@ class BasicAuth
         }
     }
 
-    public function setUserRoleWithUserIdAndMerchantId(string $merchantId, string $userId, $product = Product::PRIMARY)
+    public function setUserRoleWithUserIdAndMerchantId($merchantId, $userId, $product = Product::PRIMARY)
     {
-        if (empty($merchantId) === true)
+        if (empty($merchantId) === true || empty($userId) === true)
         {
             return;
         }
