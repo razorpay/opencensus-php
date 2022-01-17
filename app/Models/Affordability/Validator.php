@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         'cardless_emi',
         'emi',
         'offers',
+        'options',
         'paylater',
     ];
 

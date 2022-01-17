@@ -3,6 +3,7 @@
 namespace RZP\Models\Affordability;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Checkout;
 use RZP\Models\Offer\Core as OfferCore;
 
 class Service extends Base\Service
@@ -75,6 +76,13 @@ class Service extends Base\Service
     protected function fetchPaylaterComponent(array &$data): void
     {
         $data['entities']['paylater']['providers'] = [];
+    }
+
+    protected function fetchOptionsComponent(array &$data): void
+    {
+        $data['options']['theme']['color'] = $this->merchant->getBrandColor();
+
+        $data['options']['image'] = $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
     }
 
     /**

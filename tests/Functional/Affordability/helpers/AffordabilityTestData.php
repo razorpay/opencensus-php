@@ -67,4 +67,23 @@ return [
             ],
         ],
     ],
+    'testColorAndImageAreSentInOptionsField' => [
+        'request' => [
+            'content' => [
+                'key' => 'rzp_test_TheTestAuthKey',
+                'components' => ['options'],
+            ],
+            'method' => 'GET',
+            'url' => '/v1/affordability',
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => true,
+                'options' => [
+                    'theme' => ['color' => '#1234FF'],
+                    'image' => 'https://dummycdn.razorpay.com/logos/merchant_logo_medium.png',
+                ],
+            ],
+        ],
+    ],
 ];

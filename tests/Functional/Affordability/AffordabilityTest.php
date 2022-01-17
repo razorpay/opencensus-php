@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Affordability;
 
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Offer\Entity as OfferEntity;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -13,12 +15,7 @@ class AffordabilityTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-
-        $this->testDataFilePath = __DIR__ . '/helpers/AffordabilityTestData.php';
-    }
+    protected $testDataFilePath = __DIR__ . '/helpers/AffordabilityTestData.php';
 
     protected function setUp(): void
     {
@@ -156,5 +153,22 @@ class AffordabilityTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals([], $response['entities']['offers']['items']);
+    }
+
+    public function testColorAndImageAreSentInOptionsField(): void
+    {
+        /** @var MerchantEntity $merchant */
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::BRAND_COLOR => '1234FF',
+            MerchantEntity::LOGO_URL => '/logos/merchant_logo.png',
+        ]);
+
+        $merchantId = $merchant->getId();
+
+        $testKey = $this->fixtures->on(Mode::TEST)->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId]);
+
+        $this->testData[__FUNCTION__]['request']['content']['key'] = $testKey->getPublicKey(Mode::TEST);
+
+        $this->startTest();
     }
 }
