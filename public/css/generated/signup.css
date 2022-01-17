@@ -57,9 +57,11 @@
     font-family: Lato,"Helvetica Neue",Helvetica,Arial,sans-serif;
     background: linear-gradient(314deg, #54a5ff -40%, #03299C);
     position: relative;
-    min-height: 660px;
+    width: 100vw;
     height: 100vh;
+    min-height: 660px;
     overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 .app-header-fixed {

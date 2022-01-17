@@ -24,6 +24,8 @@ angular
         errorBackground: 'rgba(234,33,45,0.1)',
         secondary: '#ea212d',
         tertiary: '#ffffff',
+        bgCover: true,
+        logoVisible: true,
       };
 
       organization.fetchCurrentOrg().then((data) => {
@@ -32,6 +34,7 @@ angular
             case 'hdfc':
               theme.apply(
                 angular.extend(baseTheme, {
+                  ...data.merchant_styles,
                   primary: '#084c8d',
                 }),
               );
@@ -60,11 +63,22 @@ angular
                 angular.extend(baseTheme, {
                   primary: '#97144d',
                   navBgUrl: data.background_image_url,
+                  bgCover: false,
+                  logoVisible: false,
                 }),
               );
               break;
 
+            case 'rzp':
+              break;
+
             default:
+              theme.apply(
+                angular.extend(baseTheme, {
+                  ...data.merchant_styles,
+                  navBgUrl: data.background_image_url,
+                }),
+              );
               break;
           }
         }

@@ -5,8 +5,10 @@
     if (it.navBgUrl)
       orgBg = `.auth-container { background: url("${
         it.navBgUrl
-      }") no-repeat !important; background-size: contain !important; } .rzp-logo .logo { visibility:${
-        it.navBgUrl ? 'hidden' : 'visible'
+      }") no-repeat !important; background-size:${
+        it.bgCover ? 'cover' : 'contain'
+      } !important; } .rzp-logo .logo { visibility:${
+        it.logoVisible ? 'visible' : 'hidden'
       } !important; }`;
     out =
       `#auth-container{ background: linear-gradient(314deg, ${it.navBg} -40%, ${it.navBg}); }` +
