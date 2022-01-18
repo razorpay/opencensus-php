@@ -643,7 +643,7 @@ class Service extends Base\Service
 
         try
         {
-            Mail::send($mailable);
+            Mail::queue($mailable);
         }
         catch (\Throwable $ex)
         {
