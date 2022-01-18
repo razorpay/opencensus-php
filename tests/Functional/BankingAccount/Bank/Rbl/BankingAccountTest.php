@@ -22,7 +22,7 @@ use RZP\Models\BankingAccount\Activation\MIS;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
-use RZP\Services\Segment\SegmentAnalyticsClient;
+use RZP\Services\Segment\XSegmentClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -2350,11 +2350,11 @@ class BankingAccountTest extends TestCase
     {
         $this->createAndFetchMocks();
 
-        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+        $segmentMock = $this->getMockBuilder(XSegmentClient::class)
             ->setMethods(['pushTrackEvent'])
             ->getMock();
 
-        $this->app->instance('segment-analytics', $segmentMock);
+        $this->app->instance('x-segment', $segmentMock);
 
         $segmentMock->expects($this->exactly(1))
             ->method('pushTrackEvent')
