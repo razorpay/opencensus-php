@@ -2967,6 +2967,7 @@ class Route
         'salesforce_event_website'                => ['post',    'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsite'              ],
         'salesforce_event_website_cors'           => ['options', 'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsiteCors'          ],
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
+        'salesforce_details_internal'             => ['get',     'internal/salesforce_details',                             'SalesForceController@getSalesforceDetailsForMerchantIDs'      ],
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
         'merchant_banking_accounts_webhook'       => ['post',    'merchant/{id}/banking_accounts/',                         'MerchantController@sendBankingAccountsViaWebhook'             ],
         'reward_create'                           => ['post',    'rewards',                                                 'RewardController@createReward'                                ],
@@ -3803,6 +3804,7 @@ class Route
         'payout_links_customer_hosted_page_demo_data',
         'payout_notification_to_slack_app',
         'internal_merchants_fetch_by_params',
+        'salesforce_details_internal',
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
         'internal_feature_get_all',
@@ -11698,6 +11700,7 @@ class Route
             'internal_send_merchant_email',
             'feature_get_merchants_internal',
             'internal_merchants_fetch_by_params',
+            'salesforce_details_internal'
         ],
         'spinnaker' => [
             'throttle_create_config_spinnaker',

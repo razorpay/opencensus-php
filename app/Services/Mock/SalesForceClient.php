@@ -39,4 +39,9 @@ class SalesForceClient extends BaseSalesForceClient
     {
         return;
     }
+
+    public function getSalesforceDetailsForMerchantIDs(array $merchantIds): array
+    {
+        return [];
+    }
 }

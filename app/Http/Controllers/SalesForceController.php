@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger;
 use Request;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Base\JitValidator;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Response\Header;
 use RZP\Models\SalesForce\SalesForceEventRequestDTO;
@@ -86,6 +87,17 @@ class SalesForceController extends Controller {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FIELDS_FOR_SALESFORCE_EVENT_REQUEST, null, null,
                 "Salesforce Event Request should contain event_type and event_properties");
         }
+    }
+
+    public function getSalesforceDetailsForMerchantIDs() {
+        $input = Request::all();
+        (new JitValidator)->rules(['merchant_ids' => 'required|array'])
+            ->input($input)
+            ->validate();
+
+        $merchantIds = $input['merchant_ids'];
+        $merchantDetails = $this->salesForceService->getSalesforceDetailsForMerchantIDs($merchantIds);
+        return ApiResponse::json($merchantDetails);
     }
 
 }

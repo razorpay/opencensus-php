@@ -40,6 +40,7 @@ class TerminalTest extends TestCase
     protected $razorxValue = RazorXClient::DEFAULT_CASE;
 
     protected $terminalsServiceMock;
+    protected $salesforceMock;
 
     protected function setUp(): void
     {
@@ -63,6 +64,8 @@ class TerminalTest extends TestCase
                     return $this->razorxValue;
 
                 }) );
+
+        $this->setUpSalesforceMock();
     }
 
     public function testProxyFetchMerchantTerminals()
@@ -3345,5 +3348,36 @@ class TerminalTest extends TestCase
         $this->ba->terminalsAuth();
 
         $this->startTest();
+    }
+
+    public function testGetSalesforceDetailsForMerchantIDs() {
+        $salesForceResponsePayload = [
+            'random-MID-123' => [
+                'owner_role' => 'KAM'
+            ],
+            'random-MID-124' => [
+                'owner_role' => 'Sales'
+            ]
+        ];
+
+
+        $this->salesforceMock->shouldReceive('getSalesforceDetailsForMerchantIDs')
+            ->times(1)
+            ->andReturnUsing(function() use ($salesForceResponsePayload){
+                return $salesForceResponsePayload;
+            });
+
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+    }
+
+    protected function setUpSalesforceMock(): void
+    {
+        $this->salesforceMock = Mockery::mock('RZP\Services\SalesForceClient', $this->app)->makePartial();
+
+        $this->salesforceMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['salesforce'] = $this->salesforceMock;
     }
 }

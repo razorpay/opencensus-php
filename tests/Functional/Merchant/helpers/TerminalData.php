@@ -4240,6 +4240,27 @@ return [
         ],
     ],
 
+    'testGetSalesforceDetailsForMerchantIDs' => [
+        'request' => [
+            'url'     => '/internal/salesforce_details',
+            'method'  => 'GET',
+            'content' => [
+                'merchant_ids' => ['random-MID-123', 'random-MID-124']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'random-MID-123' => [
+                        'owner_role' => 'KAM'
+                    ],
+                    'random-MID-124' => [
+                        'owner_role' => 'Sales'
+                    ]
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testCreateEmerchantpayTerminal' => [
         'request' => [
             'url' => '/merchants/10000000000000/terminals',

@@ -439,6 +439,40 @@ class SalesForceClient
         return $response['records'][0]['Owner']['Email'];
     }
 
+    public function getSalesforceDetailsForMerchantIDs(array $merchantIds) : array
+    {
+        $details = [];
+
+        foreach ($merchantIds as $merchantId )
+        {
+            $details[$merchantId] = null;
+        }
+
+        $merchantIdsInClause = implode("','", $merchantIds);
+
+        $merchantDetailQuery = "select Merchant_ID__c,
+                                Name,
+                                Owner_Role__c,
+                                Owner.name
+                                from Account
+                                where Merchant_ID__c != null
+                                and Owner_Role__c != null
+                                and Transacting__c = true
+                                and Merchant_ID__c in ('$merchantIdsInClause')";
+
+        $response = $this->fetchAccountDetails($merchantDetailQuery);
+
+        if (empty($response["records"]) === false)
+        {
+            foreach ($response["records"] as $entity)
+            {
+                $details[$entity["Merchant_ID__c"]] = ["owner_role" => $entity["Owner_Role__c"]];
+            }
+        }
+
+        return $details;
+    }
+
     protected function parseAccessToken($response)
     {
         if (isset($response[self::ACCESS_TOKEN]) === true)

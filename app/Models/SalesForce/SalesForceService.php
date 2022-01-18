@@ -100,4 +100,9 @@ class SalesForceService {
         }
         return $merchantOpportunityDetails;
     }
+
+    public function getSalesforceDetailsForMerchantIDs(array $merchantIds) : array
+    {
+        return app('salesforce')->getSalesforceDetailsForMerchantIDs($merchantIds);
+    }
 }
