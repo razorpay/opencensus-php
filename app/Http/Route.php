@@ -282,7 +282,6 @@ class Route
         'raw_address_create_batch_service'        => ['post',     'raw_address/batch_service',                     'RawAddressController@postCreateBatch'                             ],
         'raw_address_kafka_cron'                  => ['post',     'raw_address/kafka_upload',                      'RawAddressController@uploadAddressesToKafka'                      ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
-        'raw_address_failed_file'                 => ['get',      'raw_address/file/{batch_id}',                   'RawAddressController@getFailedAddressFile'                      ],
 
         // TODO: Add rate limiting on this route!
         'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
@@ -4520,7 +4519,6 @@ class Route
     public static $proxy = [
         'merchant_coupons_apply',
         'raw_address_create_batch_service',
-        'raw_address_failed_file',
         'shipping_provider_list',
         'shipping_provider_post',
         'shipping_provider_patch',
@@ -9075,8 +9073,6 @@ class Route
             'update_merchant_platform',
             'country_fetch',
             'state_fetch',
-
-            'raw_address_failed_file',
 
             'growth_get_public_asset_details',
         ],

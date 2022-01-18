@@ -24,10 +24,4 @@ class RawAddressController extends Controller
         return ApiResponse::json([$response]);
     }
 
-    public function getFailedAddressFile($batch_id)
-    {
-        $response = $this->service()->getFailedAddressFile($batch_id);
-        return ApiResponse::json($response);
-    }
-
 }

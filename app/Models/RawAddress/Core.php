@@ -51,25 +51,4 @@ class Core extends Base\Core
 
             return $raw_address;
     }
-
-    public function getFailedAddresses(string $batch_id)
-    {
-        $data =  $this->repo->raw_address->fetchInvalidAddressForBatch($batch_id)->toArray();
-        $updatedData = [];
-        if ($data !== null)
-        {
-            foreach ($data as $address)
-            {
-                unset($address['id']);
-                unset($address['merchant_id']);
-                unset($address['batch_id']);
-                unset($address['created_at']);
-                unset($address['updated_at']);
-                unset($address['deleted_at']);
-                unset($address['status']);
-                array_push($updatedData,$address);
-            }
-        }
-        return $updatedData;
-    }
 }

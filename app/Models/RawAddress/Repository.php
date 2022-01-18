@@ -50,16 +50,4 @@ class Repository  extends Base\Repository
                     ->first();
     }
 
-    public function fetchInvalidAddressForBatch(string $batchId)
-    {
-        $batchCol = $this->dbColumn(Entity::BATCH_ID);
-        $statusCol = $this->dbColumn(Entity::STATUS);
-
-        return $this->newQuery()
-            ->selectRaw(Table::RAW_ADDRESS . '.*')
-            ->where($batchCol,$batchId)
-            ->where($statusCol,BulkUploadClient::STATUS_INVALID)
-            ->get();
-    }
-
 }

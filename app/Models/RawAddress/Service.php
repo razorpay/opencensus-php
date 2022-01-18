@@ -84,49 +84,6 @@ class Service extends Base\Service
         return true;
     }
 
-    public function getFailedAddressFile(string $batch_id)
-    {
-        $data = $this->core->getFailedAddresses($batch_id);
-        if ($data === [] )
-        {
-            return ["message"=>self::NO_FAILED_ADDRESSES_FOUND];
-        }
-        return $this->generateFile($data,'FAILED_ADDRESSES');
-    }
-    /**
-     * Generates XLSX file base on file data and stores in file store as type bulk_failed_raw_address_file
-     *
-     * @param array $fileData
-     * @param string $fileName
-     * @return mixed
-     * @throws Exception\LogicException
-     */
-    public function generateFile(array $fileData, string $fileName)
-    {
-        $extension = FileStore\Format::XLSX;
-
-        $creator = new FileStore\Creator;
-
-        $newFileName = $this->getDynamicFileName($fileName);
-
-        $creator->extension($extension)
-                ->content($fileData)
-                ->name($newFileName)
-                ->store(FileStore\Store::S3)
-                ->type(FileStore\Type::BULK_RAW_ADDRESS_FILE)
-                ->save();
-
-        $signedFileUrl = $creator->getSignedUrl();
-
-        return ["url"=>$signedFileUrl['url']];
-    }
-
-    public function getDynamicFileName(string $file_name)
-    {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y_H:i:s');
-
-        return $file_name . '_' . $this->mode . '_' . $time;
-    }
 
     public function validateForAddressEntity(array $input)
     {
