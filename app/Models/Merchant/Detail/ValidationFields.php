@@ -206,6 +206,35 @@ class ValidationFields
         ],
     ];
 
+
+    const DEFAULT_REGISTERED_NO_DOC_FIELDS = [
+        Entity::PROMOTER_PAN_NAME,
+        Entity::BUSINESS_NAME,
+        Entity::CONTACT_MOBILE,
+        Entity::COMPANY_PAN,
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BUSINESS_REGISTERED_ADDRESS
+    ];
+
+    const UNREGISTERED_NO_DOC_FIELDS = [
+        Entity::PROMOTER_PAN_NAME,
+        Entity::BUSINESS_NAME,
+        Entity::CONTACT_MOBILE,
+        Entity::PROMOTER_PAN,
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BUSINESS_REGISTERED_ADDRESS
+    ];
+
+    const PROPRIETORSHIP_NO_DOC_FIELDS = [
+        Entity::PROMOTER_PAN_NAME,
+        Entity::BUSINESS_NAME,
+        Entity::CONTACT_MOBILE,
+        Entity::PROMOTER_PAN,
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BUSINESS_REGISTERED_ADDRESS,
+    ];
+
+
     protected static $BUSINESS_TYPE_FIELDS = [
         //registered business type
         BusinessType::LLP                    => self::DEFAULT_REGISTERED_GROUP,
@@ -303,6 +332,28 @@ class ValidationFields
         }
 
         return [$requiredFields, $selectiveRequiredFields, $optionalFields];
+    }
+
+    public static function getValidationFieldsForNoDocOnboarding(Entity $merchantDetails)
+    {
+            $requiredFields = self::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
+            $selectiveRequiredFields = [];
+            $optionalFields = [];
+
+            return [$requiredFields, $selectiveRequiredFields, $optionalFields];
+    }
+
+    protected static function getRequiredFieldsForNoDocOnboarding(string $businessType) : array
+    {
+        switch ($businessType)
+        {
+            case BusinessType::NOT_YET_REGISTERED:
+                return self::UNREGISTERED_NO_DOC_FIELDS;
+            case BusinessType::PROPRIETORSHIP:
+                return self::PROPRIETORSHIP_NO_DOC_FIELDS;
+            default:
+                return self::DEFAULT_REGISTERED_NO_DOC_FIELDS;
+        }
     }
 
     /**

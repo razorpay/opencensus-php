@@ -6,12 +6,14 @@ use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Service;
+use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccountV2\Metric;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Merchant;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -295,5 +297,56 @@ class AccountV2Test extends TestCase
         $this->assertTrue(in_array($tagName, $tags));
         $features = $this->getDbEntities('feature', ['entity_id' => $merchantId, 'name' => 'create_source_v2'], 'live');
         $this->assertTrue(count($features) === 1);
+    }
+
+    public function testGetValidationFieldsForNoDocOnboarding()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams,true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $response =  $this->runRequestResponseFlow($testData);
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $data = (new Detail\Core())->getValidationFields($merchant->merchantDetail);
+
+        $expectedRequiredFields = Detail\ValidationFields::DEFAULT_REGISTERED_NO_DOC_FIELDS;
+
+        $this->assertNotNull($data);
+        $this->assertEquals($expectedRequiredFields,$data[0]);
+        $this->assertEquals([],$data[1]);
+        $this->assertEquals([],$data[2]);
+
+        $testData = $this->testData['testGetValidationFieldsForNoDocOnboarding'];
+
+        $response =  $this->runRequestResponseFlow($testData);
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $data = (new Detail\Core())->getValidationFields($merchant->merchantDetail);
+
+        $expectedRequiredFields = Detail\ValidationFields::UNREGISTERED_NO_DOC_FIELDS;
+
+        $this->assertNotNull($data);
+        $this->assertEquals($expectedRequiredFields,$data[0]);
+        $this->assertEquals([],$data[1]);
+        $this->assertEquals([],$data[2]);
     }
 }

@@ -2730,6 +2730,14 @@ class Core extends Base\Core
     {
         // @todo: Activation flow will define its own validation fields
 
+       // If no doc onboarding feature is enabled will pick only required validation fields.
+       if ($merchantDetails->merchant->isFeatureEnabled(FeatureConstants::NO_DOC_ONBOARDING))
+       {
+            [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
+
+            return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
+        }
+
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
 
         if (self::shouldSkipBankAccountRegistration() === true)
