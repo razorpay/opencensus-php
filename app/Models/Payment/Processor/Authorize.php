@@ -6385,6 +6385,12 @@ trait Authorize
                 return;
             }
 
+            // migration to be done only when user has given consent to save the card
+            if ($token->hasBeenAcknowledged() === false)
+            {
+                return;
+            }
+
             if (($card->isVisa() === false) and
                 ($card->isMasterCard() === false) and
                 ($card->isRuPay() === false) and

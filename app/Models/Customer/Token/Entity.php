@@ -571,6 +571,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACKNOWLEDGED_AT);
     }
 
+    public function hasBeenAcknowledged(): bool
+    {
+        return (empty($this->getAcknowledgedAt()) === false);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

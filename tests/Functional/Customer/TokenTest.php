@@ -26,6 +26,10 @@ class TokenTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant->addFeatures(['network_tokenization', 'allow_network_tokens']);
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
     public function testCreateTokenWithoutEncryptedAndPlainTextCardNumber()
@@ -307,6 +311,8 @@ class TokenTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
+        $payment['_']['library'] = 'razorpayjs';
+
         $payment['save'] = 1;
 
         $payment['customer_id']='cust_100000customer';
@@ -326,6 +332,30 @@ class TokenTest extends TestCase
         $this->assertEquals($card['vault'], 'visa');
     }
 
+    public function testMigrateTokenWithoutConsent()
+    {
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'razorpayjs';
+
+        $payment['customer_id']='cust_100000customer';
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArrayNotHasKey('token', $payment);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($payment['card_id'], $card['id']);
+
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
 
     public function testFetchToken()
     {
@@ -350,6 +380,7 @@ class TokenTest extends TestCase
         $this->assertEquals('2023', $fetchResponse['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
         $this->assertEquals(true, $fetchResponse['compliant_with_tokenisation_guidelines']);
     }
+
 
     public function testFetchCryptogram()
     {
