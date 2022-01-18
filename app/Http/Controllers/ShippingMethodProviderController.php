@@ -10,7 +10,8 @@ class ShippingMethodProviderController extends Controller
 
     protected function list()
     {
-        $shippingProviderId = Request::query('shipping_provider_id');
+        $shippingProviderId = Request::all()['shipping_provider_id'] ?? '';
+
         $response = $this->app['shipping_method_provider_service']->list($shippingProviderId);
         return ApiResponse::json($response);
     }

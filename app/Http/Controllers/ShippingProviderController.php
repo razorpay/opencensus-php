@@ -10,7 +10,7 @@ class ShippingProviderController extends Controller
 
     protected function list()
     {
-        $providerType = Request::query('provider_type');
+        $providerType = Request::all()['provider_type'] ?? '';
         $merchantId = $this->ba->getMerchant()->getId();
         $response = $this->app['shipping_provider_service']->list($providerType, $merchantId);
         return ApiResponse::json($response);
