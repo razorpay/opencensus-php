@@ -582,7 +582,20 @@ class Gateway extends Base\Gateway
 
             $errorCode = $this->getInternalErrorCode($response[ResponseFields::ERROR_CODE], $defaultErrorCode);
 
-            throw new Exception\GatewayErrorException($errorCode, $response[ResponseFields::ERROR_CODE]);
+            $data = [
+                'order_id'   => $this->input['order_id'] ?? null,
+            ];
+
+            $exception = new Exception\GatewayErrorException(
+                $errorCode,
+                $response[ResponseFields::ERROR_CODE],
+                null,
+                $data
+            );
+
+            $exception->getError()->setMetadata($data);
+
+            throw $exception;
         }
     }
 
