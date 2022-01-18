@@ -71,6 +71,7 @@ class MainNavLink extends Component {
       objectName: 'sidebar',
       actionName: 'clicked',
       screen: 'home page',
+      toCleverTap: true,
       properties: {
         clickedElement: this.props.label,
         clickType: this.props.type,
