@@ -2601,6 +2601,7 @@ We look forward to transacting with you!
         $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
 
         $this->assertSame($app->getId(), $merchantAcessMap['entity_id']);
+        $this->assertNotContains('MerchantUser01', $referredSubMerchant->users->getIds());
     }
 
     public function testPutPreSignUpDetailsWithBankingReferralCodeInX()
@@ -2806,6 +2807,7 @@ We look forward to transacting with you!
         $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
 
         $this->assertSame($referredApp->getId(), $merchantAcessMap['entity_id']);
+        $this->assertContains('MerchantUser01', $referredSubMerchant->users->getIds());
     }
 
     public function testPutPreSignUpDetailsWithInvalidReferralCode()

@@ -1440,6 +1440,11 @@ class Service extends Base\Service
 
             $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant, MerchantApp::REFERRED);
 
+            if ($partner->isAggregatorPartner())
+            {
+                $merchantCore->attachSubMerchantOwner($partner->primaryOwner()->getId(), $subMerchant, $referralProduct);
+            }
+
             $linkedAccount = false;
 
             // update merchant pricing plan to the one specified by partner in partner config if applicable
