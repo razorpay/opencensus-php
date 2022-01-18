@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Constants\Country;
+use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -66,21 +67,24 @@ class LocationService
     /**
      * @throws ServerErrorException
      */
-    public function getAddressSuggestions(string $addressQuery)
+    public function getAddressSuggestions(array $parameters)
     {
-        $cacheKey = $this->getCacheKey(self::CACHE_PREFIX_AUTOSUGGEST, $addressQuery);
+        $addressQuery = $parameters['input'];
+        $zipcode = $parameters['zipcode'] ?? '';
+        $country = $parameters['country'] ?? '';
+        $cacheKey = $this->getCacheKey(self::CACHE_PREFIX_AUTOSUGGEST, $addressQuery . ':' . $zipcode . ':' . $country);
         $suggestions = $this->cache->get($cacheKey);
 
         if ($suggestions === null)
         {
             try
             {
-                $suggestions = (new GoogleMapsClient())->fetchAddressSuggestions($addressQuery);
+                $suggestions = (new GoogleMapsClient())->fetchAddressSuggestions($addressQuery, $zipcode, $country);
                 $this->cache->put($cacheKey, $suggestions);
             }
             catch (\Exception $e)
             {
-                throw new ServerErrorException();
+                throw new ServerErrorException("External Error", ErrorCode::SERVER_ERROR);
             }
         }
 

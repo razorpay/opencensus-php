@@ -36,8 +36,6 @@ class LocationController extends Controller
 
     public function getAddressSuggestions()
     {
-        $uri = \Request::fullUrl();
-        $query = explode( "?", $uri, 2)[1];
-        return (new LocationService($this->app))->getAddressSuggestions($query);
+        return (new LocationService($this->app))->getAddressSuggestions($this->app['request']->query->all());
     }
 }

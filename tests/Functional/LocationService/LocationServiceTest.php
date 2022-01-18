@@ -16,7 +16,7 @@ class LocationServiceTest extends TestCase
 
     public function testGetAddressSuggestions()
     {
-        $suggestions = (new LocationService($this->app))->getAddressSuggestions("input=Australia&types=geocode");
+        $suggestions = (new LocationService($this->app))->getAddressSuggestions(['input' => 'aus']);
         $this->assertNotEmpty($suggestions);
         $this->assertEquals(["predictions" => [], "status" => "OK"], $suggestions);
     }
