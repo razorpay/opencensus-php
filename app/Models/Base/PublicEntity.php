@@ -11,6 +11,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Transaction;
 use RZP\Http\BasicAuth\BasicAuth;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode as TraceCode;
 
 /**
  * @property Transaction\Entity $transaction
@@ -889,5 +891,31 @@ class PublicEntity extends UniqueIdEntity
         $amount = sprintf($amount === intval($amount) ? '%d' : '%.2f', $amount);
 
         return $currencySymbol . ' ' . $amount;
+    }
+
+    /**
+     * This method extracts orgID from entity and if any exceptions occur handle that gracefully.
+     * @return string
+     */
+    public function getMerchantOrgId()
+    {
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            return $this->getOrgId();
+        }
+        catch (\Exception $exception) {}
+
+        try
+        {
+            return $this->merchant->getOrgId();
+        }
+        catch (\Exception $exception)
+        {
+            $app['trace']->traceException($exception, Trace::INFO, TraceCode::FETCHING_ORG_ID_FAILED);
+
+            return '';
+        }
     }
 }

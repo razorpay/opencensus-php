@@ -122,6 +122,14 @@ class SmsNotificationService extends BaseNotificationService
             $payload['params']['failure_reason'] = $failureReason;
         }
 
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        $orgId = $merchant->getMerchantOrgId();
+
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
         return $payload;
     }
 

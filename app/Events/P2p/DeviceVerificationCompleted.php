@@ -42,7 +42,7 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
 
         $smsSignature = $client->getConfigValue(Config::SMS_SIGNATURE);
 
-        return [
+        $payload = [
             'receiver' => $entity->getFormattedContact(),
             'source'   => "api.{$this->context->getMode()}.p2p",
             'template' => 'sms.p2p.verification_completed',
@@ -52,6 +52,16 @@ class DeviceVerificationCompleted extends Event implements ShouldQueue
                 'sms_signature' => $smsSignature,
             ],
         ];
+
+        $orgId = $entity->getMerchantOrgId();
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
+        return $payload;
     }
 
     public function getReminderPayload()

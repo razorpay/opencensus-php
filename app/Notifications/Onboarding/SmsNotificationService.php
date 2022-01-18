@@ -57,6 +57,14 @@ class SmsNotificationService extends BaseNotificationService
 
         $payload[Constants::PARAMS] = array_merge($payload[Constants::PARAMS], $this->args[Constants::PARAMS] ?? []);
 
+        $orgId = $merchant->getMerchantOrgId();
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
         return $payload;
     }
 

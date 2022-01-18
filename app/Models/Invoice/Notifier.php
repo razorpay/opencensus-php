@@ -547,6 +547,14 @@ class Notifier extends Base\Core
             'params'   => $customParams ?? $defaultParams,
         ];
 
+        $orgId = $merchant->getMerchantOrgId();
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
         if ($customSender !== null)
         {
             $request['sender'] = $customSender;

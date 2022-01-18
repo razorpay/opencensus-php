@@ -198,7 +198,7 @@ class Notify
             $offer_name_1 = $offer_name;
         }
 
-        return [
+        $payload = [
             'receiver' => $this->template['customer']['phone'],
 
             'source'   => "api.reward.".$this->template['rewards'][0]['coupon_code'],
@@ -215,6 +215,13 @@ class Notify
 
             ],
         ];
+
+        if (empty($this->template['org']['id']) === false)
+        {
+            $payload['stork']['context']['org_id'] = $this->template['org']['id'];
+        }
+
+        return $payload;
     }
 
     public function notifyViaSms()

@@ -53,7 +53,7 @@ class TransactionCreated extends Event implements ShouldQueue
 
             $template = (empty($appCollectLink)) ? 'sms.p2p.collect' : 'sms.p2p.collect_with_link';
 
-            return [
+            $payload = [
                 'receiver' => $entity->device->getFormattedContact(),
                 'source'   => "api.{$this->context->getMode()}.p2p",
                 'template' => $template,
@@ -69,6 +69,16 @@ class TransactionCreated extends Event implements ShouldQueue
                     'app_collect_link'  => $appCollectLink ?? '',
                 ],
             ];
+
+            $orgId = $entity->getMerchantOrgId();
+
+            // appending orgId in stork context to be used on stork to select org specific sms gateway.
+            if (empty($orgId) === false)
+            {
+                $payload['stork']['context']['org_id'] = $orgId;
+            }
+
+            return $payload;
         }
     }
 

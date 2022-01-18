@@ -360,6 +360,14 @@ class Service extends Base\Service
                     ],
                 ];
 
+                $orgId = $bankingAccount->getMerchantOrgId();
+
+                // appending orgId in stork context to be used on stork to select org specific sms gateway.
+                if (empty($orgId) === false)
+                {
+                    $payload['stork']['context']['org_id'] = $orgId;
+                }
+
                 $this->trace->info(
                     TraceCode::BANKING_ACCOUNT_SMS_RM_ASSIGNED_FOR_CA,
                     [
@@ -386,7 +394,6 @@ class Service extends Base\Service
 
         }
     }
-
     private function initiatePanVerification(Entity $activationDetail, BankingAccount\Entity $bankingAccount, bool $isBusinessNameEdit, bool $isMerchantPocNameEdit, bool $isPanEdit)
     {
         $businessType = $activationDetail->getBusinessCategory();

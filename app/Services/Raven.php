@@ -373,6 +373,11 @@ class Raven
 
         $basicAuth = $app['basicauth'];
 
+        if (empty($input['stork']['context']['org_id']) === false)
+        {
+            return $input;
+        }
+
         $orgId = $basicAuth->getOrgId() ?? '';
 
         if (empty($orgId) === false)
@@ -383,10 +388,7 @@ class Raven
                 // By default app is appending org_ as prefix but stork service expecting without prefix so trimming
                 $trimmedOrgId = str_replace('org_', '', $orgId);
 
-                if (isset($input['stork']['context']['org_id']) === false)
-                {
-                    $input['stork']['context']['org_id'] = $trimmedOrgId;
-                }
+                $input['stork']['context']['org_id'] = $trimmedOrgId;
             }
 
             return $input;

@@ -4685,6 +4685,14 @@ class Core extends Base\Core
             ]
         ];
 
+        $orgId = $merchantDetail->getMerchantOrgId();
+
+        // appending orgId in stork context to be used on stork to select org specific sms gateway.
+        if (empty($orgId) === false)
+        {
+            $payload['stork']['context']['org_id'] = $orgId;
+        }
+
         $this->trace->info(TraceCode::MERCHANT_ONBOARDING_SMS_SENT,
                            ['mid'      => $merchantDetail->getMerchantId(),
                             'template' => $payload['template']]);
@@ -4703,7 +4711,6 @@ class Core extends Base\Core
             );
         }
     }
-
     /**
      * @param string|null $oldActivationStatus
      * @param Entity      $merchantDetail

@@ -25,7 +25,6 @@ abstract class Event extends Events\Event
     public $entity;
 
     public $original;
-
     abstract public function getWebhookPaylaod();
 
     abstract public function getNotificationPayload();
