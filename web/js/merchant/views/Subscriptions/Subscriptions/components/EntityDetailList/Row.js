@@ -42,7 +42,7 @@ export default function EntityDetailRow(props) {
         // Retrying info for pending state subscription
         let timeDiffVal = subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
         timeDiffVal = Math.ceil(timeDiffVal / 3600);
-        retryingInfo = `Retrying in ${timeDiffVal} hrs. `;
+        if (timeDiffVal > 0) retryingInfo = `Retrying in ${timeDiffVal} hrs. `;
       }
       if (item.subscription_status !== 'halted') {
         chargeAttemptsFailedText = (
