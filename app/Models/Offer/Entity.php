@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * Additional set of offer ids to check if the card for payment has also
-     * bee used against these offer ids.
+     * been used against these offer ids.
      * @todo check for better name
      */
     const LINKED_OFFER_IDS    = 'linked_offer_ids';
@@ -235,7 +235,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
-        self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
         self::INTERNATIONAL,
@@ -246,21 +245,12 @@ class Entity extends Base\PublicEntity
         self::EMI_SUBVENTION,
         self::EMI_DURATIONS,
         self::MIN_AMOUNT,
-        self::LINKED_OFFER_IDS,
-        self::PROCESSING_TIME,
         self::STARTS_AT,
         self::ENDS_AT,
         self::DISPLAY_TEXT,
-        self::ERROR_MESSAGE,
-        self::ACTIVE,
-        self::BLOCK,
         self::TERMS,
         self::DEFAULT_OFFER,
         self::MAX_ORDER_AMOUNT,
-        self::PRODUCT_TYPE,
-        SubscriptionOfferEntity::APPLICABLE_ON,
-        SubscriptionOfferEntity::NO_OF_CYCLES,
-        SubscriptionOfferEntity::REDEMPTION_TYPE,
     ];
 
     protected $defaults = [

@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Offer\Entity as OfferEntity;
+use RZP\Models\Order\ProductType;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
@@ -170,5 +171,40 @@ class AffordabilityTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['key'] = $testKey->getPublicKey(Mode::TEST);
 
         $this->startTest();
+    }
+
+    public function testFetchOffersDoesNotReturnSubscriptionBasedOffers(): void
+    {
+        $cardOffer = $this->fixtures->create(
+            'offer:card',
+            [
+                OfferEntity::ACTIVE       => true,
+                OfferEntity::PRODUCT_TYPE => ProductType::SUBSCRIPTION,
+            ]
+        );
+        $cardOffer->saveOrFail();
+
+        $subscriptionOffer = $this->fixtures->create('subscription_offers_master', [
+            'redemption_type' => 'cycle',
+            'applicable_on'   => 'both',
+            'no_of_cycles'    => 10,
+            'offer_id'        => $cardOffer->getId(),
+        ]);
+        $subscriptionOffer->saveOrFail();
+
+        $walletOffer = $this->fixtures->create('offer:wallet');
+        $walletOffer->saveOrFail();
+
+        $visible = OfferEntity::getVisibleForAffordability();
+        $offerItems = [
+            Arr::only($walletOffer->toArray(), $visible),
+        ];
+
+        $this->testData[__FUNCTION__]['response']['content']['entities']['offers']['items'] = $offerItems;
+
+        $response = $this->startTest();
+
+        $this->assertCount(1, $response['entities']['offers']['items']);
+        $this->assertNotEquals('card', $response['entities']['offers']['items'][0]['payment_method']);
     }
 }

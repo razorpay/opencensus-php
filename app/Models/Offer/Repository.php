@@ -10,6 +10,7 @@ use RZP\Constants\Entity as Constants;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
+use RZP\Models\Order\ProductType;
 use Throwable;
 
 class Repository extends Base\Repository
@@ -75,7 +76,7 @@ EOT;
      *
      * @return Builder[]|Base\PublicCollection
      */
-    public function fetchAllActiveOffersForMerchant(string $merchantId): Base\PublicCollection
+    public function fetchAllActiveNonSubscriptionOffers(string $merchantId): Base\PublicCollection
     {
         $now = Carbon::now()->getTimestamp();
 
@@ -84,6 +85,10 @@ EOT;
             ->where(Entity::ACTIVE, '=', true)
             ->where(Entity::STARTS_AT, '<=', $now)
             ->where(Entity::ENDS_AT, '>=', $now)
+            ->where(function (Builder $query) {
+                $query->where(Entity::PRODUCT_TYPE, '!=', ProductType::SUBSCRIPTION)
+                    ->orWhereNull(Entity::PRODUCT_TYPE);
+            })
             ->get();
     }
 

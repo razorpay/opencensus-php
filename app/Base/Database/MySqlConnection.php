@@ -143,7 +143,7 @@ class MySqlConnection extends BaseMySqlConnection
                     TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
                     [
                         'query' => true,
-                        'name'  => $config['name'] ?? '',
+                        'name'  => $dbConfig['name'] ?? '',
                     ]
                 );
 

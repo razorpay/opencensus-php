@@ -294,7 +294,7 @@ class Core extends Base\Core
      */
     public function fetchOffersForAffordability(string $merchantId): array
     {
-        $offers = $this->repo->offer->fetchAllActiveOffersForMerchant($merchantId)->toArray();
+        $offers = $this->repo->offer->fetchAllActiveNonSubscriptionOffers($merchantId)->toArray();
 
         $offerUsages = $this->repo->offer->getOffersUsage(array_column($offers, 'id'));
 
