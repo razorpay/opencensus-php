@@ -1,5 +1,5 @@
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, humanize } from 'common/utils/rzp-utils';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -129,7 +129,7 @@ function _track() {
     },
     pluginClick: (name) => {
       sendToLumberjack(`plugins.${name}`);
-      sendToSegment(`${name} documentation link`, 'click', {}, true);
+      sendToSegment(`${humanize(name)} documentation link`, 'click', {}, true);
     },
 
     init(_lumberjackTrack, _buttonId) {
