@@ -352,13 +352,7 @@ class Entity extends Base\PublicEntity
 
         if ($this->hasBankAccount2() === true)
         {
-            $ba2 = clone $this->bankAccount;
-
-            $ba2->setIfsc($this->bankAccount2->getIfscCode());
-
-            $ba2->setId($this->bankAccount2->getId());
-
-            $receivers[] = $ba2->toArrayPublic();
+            $receivers[] = $this->bankAccount2->toArrayPublic();
         }
 
         return $receivers;

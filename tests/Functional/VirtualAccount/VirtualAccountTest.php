@@ -2194,6 +2194,39 @@ class VirtualAccountTest extends TestCase
             ]
         ], $virtualAccount['receivers']);
     }
+
+    public function testFetchVirtualAccountsWithDifferentBankAccountId2()
+    {
+        $this->createVirtualAccount();
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
+
+        $bankAccount2 = $this->createBankAccount(['account_number' => random_integer(16)]);
+
+        $virtualAccount->bankAccount2()->associate($bankAccount2);
+
+        $this->app['repo']->virtual_account->saveOrFail($virtualAccount);
+
+        $virtualAccount->refresh();
+
+        $this->assertArraySubset([
+                                     [
+                                         'entity'         => 'bank_account',
+                                         'ifsc'           => 'RAZR0000001',
+                                         'account_number' => $bankAccount['account_number'],
+                                     ],
+                                     [
+                                         'entity'         => 'bank_account',
+                                         'ifsc'           => 'RAZOR000002',
+                                         'account_number' => $bankAccount2['account_number'],
+                                     ]
+                                 ], $virtualAccount['receivers']);
+    }
+
     public function testCreateVirtualAccountForBanking()
     {
         $this->setUpMerchantForBusinessBanking(true, 10000000);
