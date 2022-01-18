@@ -20,7 +20,7 @@ function WhatsappNotification({
 }) {
   const [whatsapp_optin, setWhatsappOptin] = useState(null);
   const whatsappEnableSection = useRef(null);
-  const [isWhatsAppOptPending, setIsWhatsAppOptPending] = useState(true);
+  const [isWhatsAppOptPending, setIsWhatsAppOptPending] = useState(false);
   const [isWhatsappOrg, setWhatsappOrg] = useState(false);
   const [isWhatsappMid, setWhatsappMid] = useState(false);
 
