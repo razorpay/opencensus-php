@@ -971,6 +971,7 @@ export const gatewayLogos = {
   cashfree: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/cashfree.svg',
   ccavenue: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/ccavenue.svg',
   upi_mindgate: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/hdfc.png',
+  pinelabs: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/pinelabs.png',
 };
 
 export const popularGateways = ['payu'];
@@ -1082,6 +1083,12 @@ export const gatewayDetailsMapping = {
       'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/upi_mindgate.png',
     dashboardUrl: 'https://www.mindgate.in/our-offerings/payment-gateway-corporate/',
     dashboardUrlLabel: 'mindgate.in',
+  },
+  pinelabs: {
+    dashboardImg:
+      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/pinelabs_dashboard.png',
+    dashboardUrl: 'https://www.pinelabs.com/online-payment-gateway',
+    dashboardUrlLabel: 'pinelabs.com',
   },
 };
 
