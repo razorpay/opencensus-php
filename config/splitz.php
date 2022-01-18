@@ -147,5 +147,8 @@ return [
 
         //2FA Mobile Signup 
         'ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ' => env('ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ', ''),
+
+        // Nitro ICICI Mid Marketing Experiment
+        'NITRO_ICICI_MID_MARKETING_EXPERIMENT' => env('NITRO_ICICI_MID_MARKETING_EXPERIMENT', ''),
     ]
 ];
