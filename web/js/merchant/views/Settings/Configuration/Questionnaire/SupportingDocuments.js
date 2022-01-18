@@ -166,7 +166,7 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification }) => {
         <>
           <MultiFileUpload
             name="bank_statement_inward_remittance"
-            label="Bank Statement for Inward Remitance"
+            label="Bank Statement for Inward Remittance"
             disabled={disabled}
             required={formikProps.values.accepts_intl_txns === 'true'}
             onFileChange={(file, progressTracker) =>

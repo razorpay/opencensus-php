@@ -123,7 +123,7 @@ export const modelFormDataBeforeSave = (formData) => {
 };
 
 export const defaultFileTypes = [
-  { label: 'Bank Statement for Inward Remitance', name: 'bank_statement_inward_remittance' },
+  { label: 'Bank Statement for Inward Remittance', name: 'bank_statement_inward_remittance' },
   {
     label: 'Settlement record from current payment partner',
     name: 'current_payment_partner_settlement_record',
