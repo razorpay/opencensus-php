@@ -562,12 +562,93 @@ return [
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
+                ],
+                'tnc'     => [
+                    'accepted'   => true
                 ]
             ],
         ],
     ],
 
     'acceptTncUsingPatchProductConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'requirements'         => [
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.cin',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ],
+                'tnc'     => [
+                    'accepted'   => true
+                ]
+            ],
+        ],
+    ],
+
+    'acceptedTncResponseUsingPatchProductConfig' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
             'method'  => 'PATCH',

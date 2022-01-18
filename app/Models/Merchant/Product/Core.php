@@ -185,11 +185,17 @@ class Core extends Base\Core
             $response[Util\Constants::PAYMENT_METHODS_UPDATE] = $paymentMethodsConfig;
         }
 
+        $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
         if (isset($input[Util\Constants::TNC_ACCEPTED]) === true)
         {
             unset($input[Util\Constants::TNC_ACCEPTED]);
 
             $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant);
+        }
+        else if($hasAcceptedTnc === true) {
+
+            $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
         }
 
         $response = array_merge($response, $this->paymentsGeneralConfig->updateConfig($merchant, $input));

@@ -672,6 +672,14 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
 
+        $productResponse = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $productResponse['id'];
+
+        $testData = $this->testData['acceptedTncResponseUsingPatchProductConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
         $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testAcceptedAccountTnc'];
