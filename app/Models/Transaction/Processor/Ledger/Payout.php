@@ -94,15 +94,6 @@ class Payout extends Base
 
                     break;
 
-                case self::INTER_ACCOUNT_PAYOUT_FAILED:
-                case self::PAYOUT_FAILED:
-                        $transactorDate = $payout->getCreatedAt();
-                        $transactorId = $payout->getPublicId();
-                        $transactionId = $payout->getTransactionId();
-                        $apiTransactionId = $payout->getTransactionId();
-
-                    break;
-
                 default:
                     throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
             }
@@ -197,9 +188,7 @@ class Payout extends Base
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
-        if ($status !== self::PAYOUT_FAILED) {
-            $identifiers = array_merge($identifiers, $ftsSourceAccountData);
-        }
+        $identifiers = array_merge($identifiers, $ftsSourceAccountData);
 
         $payload = [
             self::TENANT           => self::X,

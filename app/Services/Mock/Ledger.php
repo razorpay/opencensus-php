@@ -287,7 +287,8 @@ class Ledger extends BaseLedger
 
         if (strpos($input['transactor_event'], 'fav') !== false)
         {
-            if (strpos($input['transactor_event'], 'failed') !== false)
+            if ((strpos($input['transactor_event'], 'failed') !== false) or
+                (strpos($input['transactor_event'], 'reversed') !== false))
             {
                 $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
             }
@@ -298,7 +299,8 @@ class Ledger extends BaseLedger
         }
         else if (strpos($input['transactor_event'], 'payout') !== false)
         {
-            if (strpos($input['transactor_event'], 'reversed') !== false)
+            if ((strpos($input['transactor_event'], 'failed') !== false) or
+                (strpos($input['transactor_event'], 'reversed') !== false))
             {
                 $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
             }
@@ -327,8 +329,6 @@ class Ledger extends BaseLedger
             FundAccountValidation::FAV_PROCESSED,
             Payout::PAYOUT_REVERSED,
             Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
-            Payout::PAYOUT_FAILED,
-            Payout::INTER_ACCOUNT_PAYOUT_FAILED,
         ];
 
         $isCredit = false;
