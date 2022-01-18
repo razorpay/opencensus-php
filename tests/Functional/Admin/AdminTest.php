@@ -1868,6 +1868,54 @@ class AdminTest extends TestCase
         return $entities;
     }
 
+    public function testEnableInstantRefunds()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '20000000000000']);
+
+        $configs = $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'id' => 'HObznkBUFSpME2',
+            'merchant_id' => '20000000000000',
+            'name' => 'late_auth_HObzmYuKMsauzU',
+            'config'     => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": null,
+                    "automatic_expiry_period": 7200,
+                    "refund_speed": "optimum"
+                }
+            }']);
+
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testDisableInstantRefunds()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '20000000000000']);
+
+        $this->fixtures->merchant->addFeatures(['merchant_enable_refunds'],$merchant["id"]);
+
+        $configs = $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'id' => 'HObznkBUFSpME2',
+            'merchant_id' => '20000000000000',
+            'name' => 'late_auth_HObzmYuKMsauzU',
+            'config'     => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": null,
+                    "automatic_expiry_period": 7200,
+                    "refund_speed": "optimum"
+                }
+            }']);
+
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testToggleWhatsappNotificationOn()
     {
         $merchant = $this->fixtures->create('merchant',['id'=>'20000000000000']);

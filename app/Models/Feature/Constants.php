@@ -908,6 +908,10 @@ class Constants
      */
     const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
+    const ORG_ENABLE_REFUNDS = 'enable_refunds';
+
+    const MERCHANT_ENABLE_REFUND = 'merchant_enable_refunds';
+
     /**
      * Dispute with Deduct At Onset can not be created for EXCLUDE_DEDUCT_DISPUTE enabled
      */
@@ -1456,6 +1460,8 @@ class Constants
         self::ORG_CONTACT_VERIFY_DEFAULT      => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
         self::DISPUTE_PRESENTMENT             => true,
+        self::ORG_ENABLE_REFUNDS              => true,
+        self::MERCHANT_ENABLE_REFUND          => true,
         self::ORG_EMAIL_UPDATE_2FA_ENABLED    => true,
         self::ORG_TPV_DISABLE                 => true,
         self::AXIS_TPV_ENABLE                 => true,

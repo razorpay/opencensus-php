@@ -1487,6 +1487,54 @@ return [
         ],
     ],
 
+    'testEnableInstantRefunds'  =>[
+      'request'     => [
+          'url'     => '/admin/enable_instant_refunds/20000000000000',
+          'method'  => 'POST',
+          'server'  => [
+              'HTTP_X-Dashboard-User-Id'    => '20000000000000',
+              'HTTP_X-Dashboard'            => true,
+              'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+          ],
+          'content' => [
+              'features' => [
+                  'merchant_enable_refunds'
+              ],
+              'should_sync' =>  true,
+          ]
+      ],
+      'response'    => [
+          'content' =>[
+          ],
+          'status_code' => 200,
+          'success'     => true,
+      ],
+    ],
+
+    'testDisableInstantRefunds'  =>[
+        'request'  => [
+            'url'     => '/admin/disable_instant_refunds/20000000000000',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Dashboard'            => true,
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [
+                'features' => [
+                    'merchant_enable_refunds'
+                ],
+                'should_sync' =>  true,
+            ]
+        ],
+        'response' => [
+            'content' =>[
+            ],
+            'status_code' => 200,
+            'success'     => true,
+        ],
+    ],
+
     'testToggleWhatsappNotificationOn'   =>  [
         'request'  => [
             'url'     => '/admin/toggle_whatsapp_notification/20000000000000',

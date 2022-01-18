@@ -511,6 +511,23 @@ class AdminController extends Controller
         return ApiResponse::json($value);
     }
 
+    public function enableInstantRefunds($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->enableInstantRefunds($id,$input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function disableInstantRefunds($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->disableInstantRefunds($id,$input);
+
+        return ApiResponse::json($response);
+    }
     public function toggleWhatsappNotification(string $id)
     {
         $input = Request::all();

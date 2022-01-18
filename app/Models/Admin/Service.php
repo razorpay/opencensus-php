@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Base\Repository;
 use RZP\Constants\Mode;
 use RZP\Jobs;
+use RZP\Models;
 use RZP\Exception;
 use RZP\Base\Fetch;
 use RZP\Jobs\EsSync;
@@ -1334,6 +1335,97 @@ class Service extends Base\Service
 
         $validator->validateInput('external_admin_fetch_multiple_' . $entityType, $input);
 
+    }
+
+    private function getPayloadFromConfigs($configs,$refund_speed):array
+    {
+        $config = json_decode($configs["config"],true);
+
+        $manual_expiry_period_set = isset($config["capture_options"]["manual_expiry_period"]);
+
+        return [
+            "id"       =>  "config_" . $configs["id"],
+            "config" => [
+                "capture"  => $config["capture"],
+                "capture_options" => [
+                    "refund_speed" => $refund_speed,
+                    "automatic_expiry_period" =>  $config["capture_options"]["automatic_expiry_period"],
+                    "manual_expiry_period"    =>  $manual_expiry_period_set ? $config["capture_options"]["manual_expiry_period"] : null,
+                ]
+            ],
+            "type" => $configs->getType(),
+        ];
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function enableInstantRefunds($id, array $input): array
+    {
+        $featureParams = [
+            Models\Feature\Entity::ENTITY_ID   => $id,
+            Models\Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Models\Feature\Entity::NAMES       => $input["features"],
+            Models\Feature\Entity::SHOULD_SYNC => $input["should_sync"],
+        ];
+
+        $this->trace->info(TraceCode::FEATURE_PARAMS_INSTANT_REFUNDS,
+            [
+                'Feature Params'                 => $featureParams
+            ]
+        );
+
+        $res = (new Models\Feature\Service)->addFeatures($featureParams,"accounts",$id);
+
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $responseEntity = (new Merchant\Core)->editConfig($merchant,["default_refund_speed"=>"optimum"]);
+
+
+        $response = [];
+
+        $configs = (new Models\Payment\Config\Service)->repo->config->fetchConfigByMerchantIdAndType($id, 'late_auth');
+
+        $this->trace->info(TraceCode::CONFIG_FETCH_FOR_REFUNDS,
+            [
+                'Configs'                        => $configs
+            ]
+        );
+
+        $payload = $this->getPayloadFromConfigs($configs[0],"optimum");
+
+        array_push($response,(new Models\Payment\Config\Core)->withMerchant($merchant)->update($payload));
+
+
+        return $response;
+
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function disableInstantRefunds($id,array $input): array
+    {
+
+        $res = (new Models\Feature\Service)->deleteEntityFeature("accounts",$id,$input["features"][0],$input);
+
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $responseEntity =  (new Merchant\Core)->editConfig($merchant,["default_refund_speed"=>"normal"]);
+
+
+        $response = [];
+
+        $configs = (new Models\Payment\Config\Service)->repo->config->fetchConfigByMerchantIdAndType($id, 'late_auth');
+
+        $payload = $this->getPayloadFromConfigs($configs[0],"normal");
+
+        array_push($response,(new Models\Payment\Config\Core)->withMerchant($merchant)->update($payload));
+
+
+        return $response;
     }
 
     /**
