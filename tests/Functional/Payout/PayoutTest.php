@@ -5221,6 +5221,84 @@ class PayoutTest extends OAuthTestCase
         );
     }
 
+    public function testSearchPayrollPayoutByContactEmailWithExperimentOn()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+        $payout = $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(0, $response['count']);
+    }
+
+    public function testSearchPayoutWithMultipleSourceByContactEmailWithExperimentOn()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+        $payout = $this->testCreatePayoutWithMultipleSourceDetails();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(0, $response['count']);
+    }
+
+    public function testSearchPayoutByContactEmailWithExperimentOn()
+    {
+        $this->setMockRazorxTreatment(['rx_skip_payroll_payouts' => 'on', 'imps_mode_payout_filter' => 'control']);
+        $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
+
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'source_id' => '1000005contact',
+                'source_type' => 'contact',
+            ]);
+
+        $payout = $this->testCreatePayout();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts?contact_email=test@payout.com&account_number=2224440041626905';
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+    }
+
     public function testSearchPayoutByFundAccountId()
     {
         $contact = $this->fixtures->create('contact', ['id' => '1000005contact', 'email' => 'test@payout.com', 'contact' => '8888888888', 'name' => 'test user']);
@@ -10637,6 +10715,13 @@ class PayoutTest extends OAuthTestCase
     }
 
     public function testCreateXpayrollPayoutWithSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.xpayroll.secret']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithMultipleSourceDetails()
     {
         $this->ba->appAuthTest($this->config['applications.xpayroll.secret']);
 

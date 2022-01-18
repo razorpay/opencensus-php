@@ -1437,6 +1437,16 @@ class Repository extends Base\Repository
         $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
         $serialized[Entity::CONTACT_TYPE]  = $contact->getType();
 
+        if ($entity->payoutSources !== null && $entity->payoutSources->count() > 0)
+        {
+            $source_type = [];
+            foreach ($entity->payoutSources as $source) {
+                $source_type[] = $source['source_type'];
+            }
+            $serialized[Entity::SOURCE_TYPE]   = $source_type;
+        }
+
+
         return $serialized;
     }
 

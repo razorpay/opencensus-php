@@ -276,12 +276,12 @@ class Base extends BaseCore
 
                 $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
 
-                $this->repo->saveOrFail($payout);
-
                 if (empty($sourceDetails) === false)
                 {
                     $this->processSourceDetails($sourceDetails, $payout);
                 }
+
+                $this->repo->saveOrFail($payout);
 
                 return $payout;
             }
@@ -311,12 +311,12 @@ class Base extends BaseCore
                 $payout->setStatus(Status::CREATED);
             }
 
-            $this->repo->saveOrFail($payout);
-
             if (empty($sourceDetails) === false)
             {
                 $this->processSourceDetails($sourceDetails, $payout);
             }
+
+            $this->repo->saveOrFail($payout);
 
             $this->trace->info(
                 TraceCode::PAYOUT_CREATED,

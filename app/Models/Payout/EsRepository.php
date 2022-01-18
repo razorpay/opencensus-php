@@ -46,6 +46,7 @@ class EsRepository extends Base\EsRepository
         Entity::MODE,
         Entity::PURPOSE,
         Entity::STATUS,
+        Entity::SOURCE_TYPE,
         Entity::CREATED_AT,
     ];
 
@@ -85,5 +86,15 @@ class EsRepository extends Base\EsRepository
         }
 
         $this->addTermFilter($query, Entity::CONTACT_EMAIL_RAW, $value);
+    }
+
+    protected function buildQueryForSourceTypeExclude(array & $query, $value)
+    {
+        if (empty($value) === true)
+        {
+            return;
+        }
+        //source_type != 'xpayroll'
+        $this->addNegativeTermFilter($query, Entity::SOURCE_TYPE, $value);
     }
 }

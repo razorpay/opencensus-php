@@ -664,6 +664,9 @@ return [
                     ]
                 ]
             ],
+            'source_type' => [
+                'type' => 'keyword',
+            ],
             'type' => [
                 'type'  => 'keyword',
             ],

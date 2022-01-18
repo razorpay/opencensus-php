@@ -177,6 +177,7 @@ class Entity extends Base\PublicEntity
     const REVERSED_FROM = 'reversed_from';
     const REVERSED_TO   = 'reversed_to';
     const PRODUCT       = 'product';
+    const SOURCE_TYPE   = 'source_type';
 
     // Input/output for scheduled payouts
     const SCHEDULED_FROM = 'scheduled_from';

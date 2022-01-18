@@ -44,6 +44,7 @@ class Fetch extends BaseFetch
             Entity::SORTED_ON            => 'sometimes|string|custom',
             Entity::QUEUED_REASON        => 'sometimes|string|max:255',
             PayoutsStatusDetails::REASON => 'sometimes|string',
+            Entity::SOURCE_TYPE_EXCLUDE => 'sometimes|string|max:255',
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH                       => 'filled|string|in:user,reversal,fund_account,fund_account.contact,transaction',
@@ -175,6 +176,7 @@ class Fetch extends BaseFetch
         Entity::CONTACT_TYPE,
         Entity::SCHEDULED_TO,
         Entity::SCHEDULED_FROM,
+        Entity::SOURCE_TYPE_EXCLUDE,
     ];
 
     protected function validateMethod(string $attribute, string $value)

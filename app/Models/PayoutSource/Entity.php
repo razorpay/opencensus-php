@@ -76,6 +76,10 @@ class Entity extends Base\PublicEntity
         self::PRIORITY,
     ];
 
+    protected $ignoredRelations = [
+        self::PAYOUT,
+    ];
+
     protected $generateIdOnCreate = true;
 
     // ============================= RELATIONS =============================
