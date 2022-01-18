@@ -3,6 +3,10 @@
 namespace RZP\Models\Affordability;
 
 use RZP\Models\Base;
+use RZP\Models\Emi\Service as EmiService;
+use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Methods\Core as MethodsCore;
+use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Merchant\Checkout;
 use RZP\Models\Offer\Core as OfferCore;
 
@@ -26,7 +30,7 @@ class Service extends Base\Service
 
         $data = [];
 
-        if (!$this->isEnabled($data)) {
+        if ($this->isEnabled($data) === false) {
             return $data;
         }
 
@@ -52,20 +56,33 @@ class Service extends Base\Service
      */
     protected function isEnabled(array &$data): bool
     {
-        $data['enabled'] = true;
+        $data['enabled'] = $this->merchant->isFeatureEnabled(Features::AFFORDABILITY_WIDGET);
 
         return $data['enabled'];
     }
 
     protected function fetchCardlessEmiComponent(array &$data): void
     {
-        $data['entities']['cardless_emi']['items'] = [];
-        $data['entities']['cardless_emi']['providers'] = [];
+        $providers = [];
+
+        if ($this->merchant->methods->isCardlessEmiEnabled() === true)
+        {
+            $providers = (new MethodsCore())->getProviders($this->merchant, PaymentMethod::CARDLESS_EMI);
+        }
+
+        $data['entities']['cardless_emi']['providers'] = $providers;
     }
 
     protected function fetchEmiComponent(array &$data): void
     {
-        $data['entities']['emi']['items'] = [];
+        $items = [];
+
+        if ($this->merchant->methods->isEmiEnabled() === true)
+        {
+            $items = (new EmiService())->getEmiPlansAndOptions()['options'];
+        }
+
+        $data['entities']['emi']['items'] = $items;
     }
 
     protected function fetchOffersComponent(array &$data): void
@@ -75,7 +92,14 @@ class Service extends Base\Service
 
     protected function fetchPaylaterComponent(array &$data): void
     {
-        $data['entities']['paylater']['providers'] = [];
+        $providers = [];
+
+        if ($this->merchant->methods->isPayLaterEnabled() === true)
+        {
+            $providers = (new MethodsCore())->getProviders($this->merchant, PaymentMethod::PAYLATER);
+        }
+
+        $data['entities']['paylater']['providers'] = $providers;
     }
 
     protected function fetchOptionsComponent(array &$data): void
@@ -93,5 +117,8 @@ class Service extends Base\Service
         $key = $this->repo->key->findByPublicId($keyId);
 
         $this->merchant = $key->merchant;
+
+        // Base/Service fetches merchant from auth. Removing this gives us null value error on $this->merchant.
+        $this->auth->setMerchant($this->merchant);
     }
 }

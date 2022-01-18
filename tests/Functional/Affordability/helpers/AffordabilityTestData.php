@@ -1,6 +1,160 @@
 <?php
 
 return [
+    'testFeatureDisabledOnAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "offers",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => false,
+            ]
+        ]
+    ],
+
+    'testFeatureEnabledOnAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "offers",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => true,
+            ]
+        ]
+    ],
+
+    'testPaylaterOnAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "paylater",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => true,
+                "entities" => [
+                    "paylater" => [
+                        "providers" => [
+                            'epaylater' => true,
+                            'getsimpl' => true,
+                            'icic' => true,
+                            'hdfc' => true,
+                            'lazypay' => true,
+                        ]
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testEmiOnAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "emi",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => true,
+                "entities" => [
+                    "emi" => [
+                        "items" => [
+
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testCardlessEmiOnAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "cardless_emi",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => true,
+                "entities" => [
+                    "cardless_emi" => [
+                        "providers" => [
+
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testAffordabilityWidgetSuite' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "paylater",
+                    "emi",
+                    "cardless_emi",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => true,
+                "entities" => [
+                    "paylater" => [
+                        "providers" => [
+                            'epaylater' => true,
+                            'getsimpl' => true,
+                            'icic' => true,
+                            'hdfc' => true,
+                            'kkbk' => true,
+                            'lazypay' => true,
+                        ]
+                    ],
+                    "emi" => [
+
+                    ],
+                    "cardless_emi" => [
+                        "providers" => [
+
+                        ]
+                    ],
+                ]
+            ]
+        ]
+    ],
     'testFetchedOffersAreSortedByPopularity' => [
         'request' => [
             'content' => [

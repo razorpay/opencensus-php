@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Affordability;
 
+use RZP\Models\Feature\Constants;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Constants\Mode;
@@ -24,7 +25,153 @@ class AffordabilityTest extends TestCase
 
         $this->ba->affordabilityInternalAppAuth();
 
-//        $this->fixtures->merchant->enablePayLater('10000000000000');
+        $this->fixtures->merchant->addFeatures([Constants::AFFORDABILITY_WIDGET]);
+    }
+
+    public function testFeatureDisabledOnAffordabilityWidget()
+    {
+        $this->fixtures->merchant->removeFeatures([Constants::AFFORDABILITY_WIDGET]);
+        $response = $this->startTest();
+        $this->assertFalse($response['enabled']);
+    }
+
+    public function testFeatureEnabledOnAffordabilityWidget()
+    {
+        $response = $this->startTest();
+        $this->assertTrue($response['enabled']);
+    }
+
+    public function testPaylaterOnAffordabilityWidget()
+    {
+        $this->fixtures->merchant->enablePayLater('10000000000000');
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            'epaylater' => true,
+            'getsimpl' => true,
+            'icic' => true,
+            'hdfc' => true,
+            'kkbk' => true,
+            'lazypay' => true,
+        ];
+
+        $this->assertTrue($response['enabled']);
+        $this->assertEquals($response['entities']['paylater']['providers'], $expectedResponse);
+    }
+
+    public function testEmiOnAffordabilityWidget()
+    {
+        $this->fixtures->merchant->enableEMi('10000000000000');
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $expectedEmiResponse = [
+            'HDFC' => [
+                [
+                    'duration' => 3,
+                    'interest' => 12,
+                    'subvention' => "customer",
+                    'min_amount' => 300000,
+                    'merchant_payback' => "5.18"
+                ]
+            ]
+        ];
+
+        $response = $this->startTest();
+
+        $this->assertTrue($response['enabled']);
+        $this->assertEquals($response['entities']['emi']['items'], $expectedEmiResponse);
+    }
+
+    public function testCardlessEmiOnAffordabilityWidget()
+    {
+        $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+
+        $response = $this->startTest();
+
+        $expectedResponse = [
+            'earlysalary' => true,
+            'zestmoney' => true,
+            'barb' => true,
+            'hdfc' => true,
+            'kkbk' => true,
+            'fdrl' => true,
+            'idfb' => true,
+            'icic' => true,
+            'hcin' => true,
+            'walnut369' => true,
+            'sezzle' => true,
+        ];
+
+        $this->assertTrue($response['enabled']);
+        $this->assertEquals($response['entities']['cardless_emi']['providers'], $expectedResponse);
+    }
+
+    public function testAffordabilityWidgetSuite()
+    {
+        $this->fixtures->merchant->enablePaylater('10000000000000');
+        $this->fixtures->merchant->enableEmi('10000000000000');
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101312',
+                'merchant_id' => '10000000000000',
+                'bank'        => 'HDFC',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+        $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+
+        $response = $this->startTest();
+
+        $expectedPaylaterResponse = [
+            'epaylater' => true,
+            'getsimpl' => true,
+            'icic' => true,
+            'hdfc' => true,
+            'kkbk' => true,
+            'lazypay' => true,
+        ];
+
+        $expectedCardlessEmiResponse = [
+            'earlysalary' => true,
+            'zestmoney' => true,
+            'barb' => true,
+            'hdfc' => true,
+            'kkbk' => true,
+            'fdrl' => true,
+            'idfb' => true,
+            'icic' => true,
+            'hcin' => true,
+            'walnut369' => true,
+            'sezzle' => true,
+        ];
+
+        $expectedEmiResponse = [
+            'HDFC' => [
+                [
+                    'duration' => 3,
+                    'interest' => 12,
+                    'subvention' => "customer",
+                    'min_amount' => 300000,
+                    'merchant_payback' => "5.18"
+                ]
+            ]
+        ];
+
+        $this->assertTrue($response['enabled']);
+        $this->assertEquals($response['entities']['paylater']['providers'], $expectedPaylaterResponse);
+        $this->assertEquals($response['entities']['emi']['items'], $expectedEmiResponse);
+        $this->assertEquals($response['entities']['cardless_emi']['providers'], $expectedCardlessEmiResponse);
     }
 
     public function testFetchedOffersAreSortedByPopularity(): void
@@ -165,6 +312,8 @@ class AffordabilityTest extends TestCase
         ]);
 
         $merchantId = $merchant->getId();
+
+        $this->fixtures->merchant->addFeatures([Constants::AFFORDABILITY_WIDGET], $merchantId);
 
         $testKey = $this->fixtures->on(Mode::TEST)->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId]);
 

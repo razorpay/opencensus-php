@@ -1072,6 +1072,10 @@ class Constants
 
     const ENABLE_IFSC_VALIDATION       = 'enable_ifsc_validation';
 
+    /**
+     * Feature to control affordability widget on merchant dashboard
+     */
+    const AFFORDABILITY_WIDGET = 'affordability_widget';
     const EDIT_SINGLE_VA_EXPIRY = 'edit_single_va_expiry';
 
     const ACCEPT_LOWER_AMOUNT = 'accept_lower_amount';
@@ -1509,6 +1513,7 @@ class Constants
         self::DISABLE_COLLECT_CONSENT         => true,
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,
+        self::AFFORDABILITY_WIDGET            => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
         self::EDIT_SINGLE_VA_EXPIRY           => true,
         self::ADDRESS_NAME_REQUIRED           => true,
