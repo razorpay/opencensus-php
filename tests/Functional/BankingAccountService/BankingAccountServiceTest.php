@@ -423,6 +423,24 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals($merchant->getName(), $response['name']);
     }
 
+    public function testFetchMerchantDetailsInfo()
+    {
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/internal/merchants/10000000000000';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000', 'contact_email' => 'test@razorpay.com', 'contact_mobile' => '9876543210']);
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant',
+            [
+                'id'  => '10000000000000',
+            ]);
+
+        $this->assertEquals($merchant->getEmail(), $response['merchant_detail']['contact_email']);
+    }
+
     public function testPinCodeServiceabilityForIcici()
     {
         $this->ba->proxyAuth();

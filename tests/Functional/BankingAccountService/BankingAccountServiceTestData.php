@@ -386,6 +386,25 @@ return [
         ],
     ],
 
+    'testFetchMerchantDetailsInfo'    =>  [
+        'request'       =>  [
+            'method'    =>  'GET',
+            'url'       =>  '/internal/merchants/{id}'
+        ],
+        'response'      =>  [
+            'content'   => [
+                'merchant' => [
+                    'id'        => '10000000000000',
+                ],
+                'merchant_detail' => [
+                    'contact_email' => 'test@razorpay.com',
+                    'contact_mobile' => '9876543210'
+                ]
+            ],
+            'status_code'   =>  200
+        ]
+    ],
+
     'testPinCodeServiceabilityForIcici' => [
         'request'  => [
             'url'     => '/bas/banking_application/check_pin_code_serviceability',

@@ -11810,6 +11810,7 @@ class Route
             'bas_ca_lead_to_sales_force',
             'bas_banking_accounts_create',
             'merchant_fetch_internal',
+            'internal_merchant_fetch',
         ],
 
         'myoperator' => [
