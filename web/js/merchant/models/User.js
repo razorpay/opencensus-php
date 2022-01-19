@@ -33,6 +33,10 @@ const PRODUCT_KEY_MAPS = [
   'checkoutrewards',
 ];
 
+const ORG_CUSTOM_CODE_MAP = {
+  KOTAK_MAHINDRA_BANK: 'KKBK',
+};
+
 // TODO: Rename fn. name
 export function setFeatures(features) {
   const enabledFeatures = filterBy(features, 'value', true);
@@ -1216,6 +1220,12 @@ export default class User {
     const currentOrg = getOrg().custom_code;
 
     return currentOrg === 'axis';
+  }
+
+  get isOrgKotak() {
+    const currentOrg = getOrg()?.custom_code;
+
+    return currentOrg === ORG_CUSTOM_CODE_MAP.KOTAK_MAHINDRA_BANK;
   }
 
   get isSourceRX() {

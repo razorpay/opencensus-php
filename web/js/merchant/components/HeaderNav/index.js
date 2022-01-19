@@ -232,7 +232,7 @@ export default class HeaderNav extends Component {
                 )}
                 <ShowWhen
                   additionalCondition={(usr) =>
-                    usr.isAppSwitcherEnabled && usr.isAccepted && !usr.isOrgAxis
+                    usr.isAppSwitcherEnabled && usr.isAccepted && !usr.isOrgAxis && !usr.isOrgKotak
                   }
                 >
                   <li id="app-switcher">

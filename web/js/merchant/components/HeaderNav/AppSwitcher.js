@@ -160,7 +160,7 @@ class AppSwitcher extends Component {
             </div>
             <div className="column">
               <div className="block">
-                <div className="heading">Bussiness Banking</div>
+                <div className="heading">Business Banking</div>
                 {appListBusinessBanking.map((app) => this.getItem(app))}
               </div>
             </div>
