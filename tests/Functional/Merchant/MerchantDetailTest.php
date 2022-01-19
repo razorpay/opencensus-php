@@ -4221,18 +4221,19 @@ Team Razorpay',
 
         $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_add_gstin_auto_update_V1', '1234567890', $expectedStorkParametersForTemplate);
 
-//Commented this from UT because Whatsapp has been removed from the channel for this event for now.
-//        $this->expectStorkWhatsappRequest($storkMock,
-//            'Hi,
-//GSTIN has been added successfully to your Razorpay Account. The details are provided below.
-//GSTIN: 18AABCU9603R1ZM
-//Your registered address is updated as below, as per your GSTIN certificate
-//Registered address: 1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI, 400018, Mumbai City, MH
-//Cheers,
-//Team Razorpay
-//',
-//            '1234567890'
-//        );
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi,
+
+GSTIN has been added successfully to your Razorpay Account. The details are provided below.
+GSTIN: 18AABCU9603R1ZM
+
+Your registered address is updated as below, as per your GSTIN certificate
+Registered address: 1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI, 400018, Mumbai City, MH
+
+Cheers,
+Team Razorpay',
+            '1234567890'
+        );
     }
 
     public function testUpdateGstinSelfServeBvsValidationSuccess()

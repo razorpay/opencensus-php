@@ -144,7 +144,8 @@ class Events
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => 'whatsapp.merchant.dashboard.merchant_add_gstin_workflow_approve',
         self::GSTIN_ADD_REJECTION_REASON                                => 'whatsapp.merchant.dashboard.merchant_add_gstin_rejection',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'whatsapp.merchant.dashboard.merchant_add_gstin_needs_clarification',
-        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'whatsapp.merchant.dashboard.bank_account_rejection'
+        self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'whatsapp.merchant.dashboard.bank_account_rejection',
+        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => 'whatsapp.merchant.dashboard.merchant_add_gstin_auto_update4',
     ];
 
     /**
@@ -174,6 +175,7 @@ class Events
         self::GSTIN_ADD_REJECTION_REASON                                => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Constants::MERCHANT_NAME],
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Constants::MERCHANT_NAME],
+        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => [Constants::GSTIN, Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
     ];
 
     // Event vs email templates mapping
@@ -307,7 +309,7 @@ class Events
         self::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::GSTIN_UPDATE_REJECTION_REASON                             => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::GSTIN_ADD_REJECTION_REASON                                => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => [Channel::EMAIL, Channel::SMS],
+        self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::GSTIN_ADDED_ON_WORKFLOW_APPROVE                           => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW       => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
