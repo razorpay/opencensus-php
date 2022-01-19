@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundAccount;
 
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
@@ -333,6 +334,25 @@ class Service extends Base\Service
         $entity = $this->core->create($input, $this->merchant, $source, $createDuplicate);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
+
+        if($responseCode === Response::HTTP_CREATED){
+
+            $merchant = $this->app['basicauth']->getMerchant();
+            $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
+            if(empty($user) === false and empty($merchant) === false)
+            {
+                $customProperties = [
+                    'phone' => $user['contact_mobile'],
+                    'email' => $user['email'],
+                ];
+                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::FUND_ACCOUNT_ADDED);
+            } else{
+                $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
+                    [
+                        'merchant_id' => $merchant['id']?? null,
+                    ]);
+            }
+        }
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATION_RESPONSE,
             [

@@ -8,6 +8,8 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Feature;
 use RZP\Models\Contact\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Services\Segment\XSegmentClient;
 use RZP\Services\VendorPayments\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -296,6 +298,38 @@ class ContactsTest extends TestCase
     public function testCreateContactWithEnDash()
     {
         $this->startTest();
+    }
+
+    protected function createAndFetchMocks()
+    {
+        $mockMC = $this->getMockBuilder(MerchantCore::class)
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
+
+        $mockMC->expects($this->any())
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
+
+        return [
+            "merchantCoreMock"    => $mockMC
+        ];
+    }
+
+    public function testSegmentEventCreateContact(){
+
+        $this->createAndFetchMocks();
+
+        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
+            ->setMethods(['pushIdentifyandTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('x-segment', $xsegmentMock);
+
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyandTrackEvent')
+            ->willReturn(true);
+
+        $this->testCreateContact();
     }
 
     public function testCreateContactLiveModeNonKycActivatedNonCaActivated()

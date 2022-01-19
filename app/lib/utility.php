@@ -827,7 +827,7 @@ if (! function_exists('is_rzp_business_hour'))
 
 if (! function_exists('mask_except_last4'))
 {
-    function mask_except_last4(string $value = null, string $masker = 'X'): string
+    function mask_except_last4(string $value = null, string $masker = 'X'): ?string
     {
         if (empty($value) === true)
         {

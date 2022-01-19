@@ -157,9 +157,10 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
         foreach (Constants::COMMON_MERCHANT_DETAIL_PROPERTIES as $attribute)
         {
-            $property = $merchantDetail->getAttribute($attribute);
-
-            $properties[$attribute] = $property ?? 'NULL';
+            if($merchantDetail !== NULL) {
+                $property = $merchantDetail->getAttribute($attribute);
+                $properties[$attribute] = $property ?? 'NULL';
+            }
         }
 
         return $properties;

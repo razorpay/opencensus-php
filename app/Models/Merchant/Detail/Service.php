@@ -1344,6 +1344,21 @@ class Service extends Base\Service
                 try
                 {
                     (new Merchant\Activate)->activateBusinessBankingIfApplicable($this->merchant);
+
+                    $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
+                    if(empty($user) === false and empty($merchant) === false)
+                    {
+                        $customProperties = [
+                            'phone' => $user['contact_mobile'],
+                            'email' => $user['email'],
+                        ];
+                        $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
+                    } else{
+                        $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
+                            [
+                                'merchant_id' => $merchant['id']?? null,
+                            ]);
+                    }
                 }
                 catch (Throwable $e)
                 {

@@ -4463,6 +4463,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
     const MERCHANT_FETCH                                        = 'MERCHANT_FETCH';
+    const MERCHANT_FETCH_FAILED_FOR_LOGIN_EVENT                 = 'MERCHANT_FETCH_FAILED_FOR_LOGIN_EVENT';
+    const USER_FETCH_FAILED_FOR_SEGMENT_EVENT                   = 'USER_FETCH_FAILED_FOR_SEGMENT_EVENT';
 
     // Trace code for ES ON Demand
     const ES_ON_DEMAND_INITIATE_TIMESTAMP                       = 'ES_ON_DEMAND_INITIATE_TIMESTAMP';

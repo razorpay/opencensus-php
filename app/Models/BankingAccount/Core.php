@@ -694,6 +694,27 @@ class Core extends Base\Core
 
         $bankingAccount->load('bankingAccountActivationDetails');
 
+        $currentStatus = $bankingAccount->getStatus();
+
+        if($currentStatus !== $oldStatus AND $currentStatus === 'processed') {
+            $merchant = $bankingAccount->merchant;
+            $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
+            if(empty($user) === false and empty($merchant) === false) {
+                $segmentProperties = [
+                    'status' => $currentStatus,
+                    'phone' => $user['contact_mobile'],
+                    'email' => $user['email'],
+                ];
+
+                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $segmentProperties, SegmentEvent::CA_ACTIVATED);
+            } else{
+                $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
+                    [
+                        'merchant_id' => $merchant['id']?? null,
+                    ]);
+            }
+        }
+
         return $bankingAccount;
     }
 

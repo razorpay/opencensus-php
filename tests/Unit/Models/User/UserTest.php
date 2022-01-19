@@ -1670,6 +1670,10 @@ class UserTest extends TestCase
 
         $this->coreMock->shouldReceive('get')->andReturn(['id' => '100002Razorpay']);
 
+        $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn(((new Core())->create($content['userDetails'])));
+
+        $this->merchantRepoMock->shouldReceive('findOrFailPublic')->andReturn((new MerchantEntity())->build($content['merchantData']));
+
         $response = $this->userService->login($content['userData']);
 
         $this->assertEquals($expected, $response);

@@ -7,6 +7,7 @@ use Hash;
 use Cache;
 use Config;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -866,7 +867,44 @@ class Core extends Base\Core
             $this->sendLoginMailToUser($user, $browserDetails);
         }
 
+        $merchant = $this->findMerchant($user[Entity::ID]);
+
+        if(($merchant !== null) and (($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) or $this->mode === 'test')) {
+            if(empty($user) === false)
+            {
+                $customProperties = [
+                    'phone' => $user['contact_mobile'],
+                    'email' => $user['email'],
+                ];
+                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::USER_LOGIN);
+            } else{
+                $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
+                    [
+                        'merchant_id' => $merchant['id']?? null,
+                    ]);
+            }
+        }
+
         return $this->get($user, true);
+    }
+
+    public function findMerchant($userId){
+
+        try {
+            $user = $this->repo->user->findOrFailPublic($userId);
+            $merchant = $user->getMerchantEntity();
+
+            return $merchant;
+        }
+        catch (\Throwable $ex ){
+
+            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED_FOR_LOGIN_EVENT,
+                [
+                    'user_id' => $userId
+                ]);
+            return null;
+        }
+
     }
 
     private function sendLoginMailToUser(Entity $user, ?array $browserDetails)
