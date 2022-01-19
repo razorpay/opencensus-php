@@ -101,10 +101,6 @@ return [
         ],
         'response' => [
             'content' => [
-                "org_logo" => null,
-                "org_name" => "Razorpay",
-                "checkout_logo" => null,
-                "custom_branding" => false
             ],
         ],
     ],

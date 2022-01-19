@@ -94,7 +94,7 @@ class KeylessPublicAuthTest extends TestCase
         $this->assertEquals('order_100000000order', $response['razorpay_order_id']);
         $this->assertArrayHasKey('razorpay_payment_id', $response);
         $this->assertArrayHasKey('razorpay_signature', $response);
-        $this->assertCount(7, $response);
+        $this->assertCount(3, $response);
     }
 
     public function testPaymentCreateWithOrderIdInInput()
@@ -110,7 +110,7 @@ class KeylessPublicAuthTest extends TestCase
 
         $this->assertEquals('order_100000000order', $response['razorpay_order_id']);
         $this->assertArrayHasKey('razorpay_payment_id', $response);
-        $this->assertCount(6, $response);
+        $this->assertCount(2, $response);
     }
 
     /**
@@ -132,7 +132,7 @@ class KeylessPublicAuthTest extends TestCase
         $this->assertEquals('order_100000000order', $response['razorpay_order_id']);
         $this->assertArrayHasKey('razorpay_payment_id', $response);
         $this->assertArrayHasKey('razorpay_signature', $response);
-        $this->assertCount(7, $response);
+        $this->assertCount(3, $response);
     }
 
     public function testPaymentCreateWithInvoicesOrderIdInInput()
@@ -150,7 +150,7 @@ class KeylessPublicAuthTest extends TestCase
         $this->assertEquals('paid', $response['razorpay_invoice_status']);
         $this->assertEquals(null, $response['razorpay_invoice_receipt']);
         $this->assertArrayHasKey('razorpay_payment_id', $response);
-        $this->assertCount(8, $response);
+        $this->assertCount(4, $response);
     }
 
     /**
@@ -174,6 +174,6 @@ class KeylessPublicAuthTest extends TestCase
         $this->assertEquals(null, $response['razorpay_invoice_receipt']);
         $this->assertArrayHasKey('razorpay_payment_id', $response);
         $this->assertArrayHasKey('razorpay_signature', $response);
-        $this->assertCount(9, $response);
+        $this->assertCount(5, $response);
     }
 }

@@ -237,10 +237,6 @@ class HdfcGatewayAuthTest extends TestCase
             'amount',
             'image',
             'magic',
-            'org_logo',
-            'org_name',
-            'checkout_logo',
-            'custom_branding',
             'http_status_code',
             );
 

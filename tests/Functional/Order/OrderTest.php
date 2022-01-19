@@ -970,10 +970,6 @@ class OrderTest extends TestCase
         $actualSignature = $response['razorpay_signature'];
 
         unset($response['razorpay_signature']);
-        unset($response['custom_branding']);
-        unset($response['org_logo']);
-        unset($response['org_name']);
-        unset($response['checkout_logo']);
 
         ksort($response);
         $exceptedSignature = $this->getSignature($response, 'TheKeySecretForTests');

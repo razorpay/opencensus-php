@@ -52,19 +52,11 @@ class PaymentCancelTest extends TestCase
     public function testCancelPaymentAfterRecentlyProcessed()
     {
         $content = $this->doAuthPayment();
-        unset($content['org_logo']);
-        unset($content['org_name']);
-        unset($content['checkout_logo']);
-        unset($content['custom_branding']);
 
         $pid = $content['razorpay_payment_id'];
 
         $content2 = $this->cancelPayment($pid);
         unset($content2['http_status_code']);
-        unset($content2['org_logo']);
-        unset($content2['org_name']);
-        unset($content['checkout_logo']);
-        unset($content['custom_branding']);
 
         $this->assertEquals($content, $content2);
     }
@@ -113,19 +105,11 @@ class PaymentCancelTest extends TestCase
         $payment['order_id'] = $order['id'];
         $content = $this->doAuthPayment($payment);
 
-        unset($content['org_logo']);
-        unset($content['org_name']);
-        unset($content['checkout_logo']);
-        unset($content['custom_branding']);
 
         $pid = $content['razorpay_payment_id'];
 
         $content2 = $this->cancelPayment($pid);
         unset($content2['http_status_code']);
-        unset($content2['org_logo']);
-        unset($content2['org_name']);
-        unset($content['checkout_logo']);
-        unset($content['custom_branding']);
 
         $this->assertEquals($content, $content2);
     }
