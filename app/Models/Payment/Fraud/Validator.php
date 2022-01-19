@@ -26,4 +26,22 @@ class Validator extends Base\Validator
     protected static $createRules = self::CREATE_RULES;
 
     protected static $createOrUpdateEntityRules = self::CREATE_RULES;
+
+    protected static $getAttributesRules = [
+        Entity::PAYMENT_ID                  => 'required|string',
+    ];
+
+    protected static $createDashboardRules = [
+        Entity::PAYMENT_ID                  => 'required|string',
+        Entity::TYPE                        => 'required|string|in:' . Constants::FRAUD_TYPES_CSV,
+        Entity::SUB_TYPE                    => 'sometimes|custom',
+        Entity::REPORTED_TO_ISSUER_AT       => 'required|int',
+        Entity::REPORTED_TO_RAZORPAY_AT     => 'required|int',
+        Constants::HAS_CHARGEBACK           => 'required|string|in:0,1',
+        Entity::IS_ACCOUNT_CLOSED           => 'required|string|in:0,1',
+        Entity::AMOUNT                      => 'required|int',
+        Entity::CURRENCY                    => 'required|string|in:INR,USD',
+        Entity::REPORTED_BY                 => 'required|string|in:' . Constants::REPORTED_BY_CSV,
+        Constants::SKIP_MERCHANT_EMAIL      => 'required|string|in:0,1',
+    ];
 }

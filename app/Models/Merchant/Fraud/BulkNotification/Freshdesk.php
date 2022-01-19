@@ -62,7 +62,6 @@ class Freshdesk extends Base\Core
                 {
                     $merchantOutputRow[Constants::OUTPUT_KEY_ERROR] = $e->getMessage();
                 }
-
             }
         }
     }
@@ -128,7 +127,7 @@ class Freshdesk extends Base\Core
         }
     }
 
-    protected function notifySingle(array $merchantData, string $merchantId)
+    public function notifySingle(array $merchantData, string $merchantId)
     {
         $redisKey = sprintf(Constants::REDIS_KEY_FMT, Carbon::now(Timezone::IST)->format("d_m_Y"), $merchantId);
 

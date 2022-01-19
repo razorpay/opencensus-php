@@ -15,6 +15,7 @@ use RZP\Models\Card\IIN\Import\XLSFileHandler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Merchant\Fraud\BulkNotification\File;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 
@@ -24,6 +25,8 @@ class BulkFraudNotifyTest extends TestCase
     use SalesforceTrait;
 
     use FreshdeskTrait;
+
+    use WorkflowTrait;
 
     protected $druidMock;
 
@@ -78,6 +81,97 @@ class BulkFraudNotifyTest extends TestCase
                             return $response;
                         });
 
+    }
+
+    protected function assertGetAttributesVisa($response)
+    {
+        $this->assertEquals([
+            'code' => "B",
+            'reason' => "Account or credentials takeover",
+        ], last($response['types']));
+
+        $this->assertEquals(0, sizeof($response['sub_types']));
+    }
+
+    protected function assertGetAttributesMastercard($response)
+    {
+        $this->assertEquals([
+            'code' => "51",
+            'reason' => "Bust-out Collusive Merchant",
+        ],  last($response['types']));
+
+        $this->assertEquals([
+            'code' => "U",
+            'reason' => "Unknown",
+        ],  last($response['sub_types']));
+
+    }
+
+    public function testGetFraudAttributes()
+    {
+       $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('get_fraud_attributes');
+
+        $payment = $this->fixtures->create('payment');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment_id'] = $payment->getPublicId();
+
+        $this->assertGetAttributesVisa($this->startTest($testData));
+
+        $card = $this->fixtures->create('card', [
+            'network'   =>  'MasterCard',
+        ]);
+
+        $paymentMastercard = $this->fixtures->create('payment', [
+            'card_id'   =>  $card->getId(),
+        ]);
+
+        $testData['request']['content']['payment_id'] = $paymentMastercard->getId();
+
+        $this->assertGetAttributesMastercard($this->startTest($testData));
+    }
+
+    public function testSavePaymentFraud()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('save_payment_fraud');
+
+        $merchant = $this->fixtures->create('merchant', [
+            'email' =>  'testing101@gmail.com'
+        ]);
+
+        $payment = $this->fixtures->create('payment', [
+            'merchant_id'   =>  $merchant->getId(),
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment_id'] = $payment->getPublicId();
+
+        $this->mockFreshdesk(1);
+
+        $this->startTest($testData);
+
+        $this->assertFraudEntityExists($payment->getId());
+    }
+
+    public function testSavePaymentFraudValidationError()
+    {
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('save_payment_fraud');
+
+        $payment = $this->fixtures->create('payment');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment_id'] = $payment->getId();
+
+        $this->startTest($testData);
     }
 
     public function testNotifyWithChargebackPocEmail()

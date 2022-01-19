@@ -3139,6 +3139,8 @@ class Route
         'fraud_checker_milestone_cron'           => ['post',    'merchant/fraud/{category}/milestone/checker',                    'MerchantController@fraudCheckerMilestoneCron'                ],
         'create_fraud_batch'                     => ['post',    'fraud/batch',                                                    'MerchantController@createFraudBatch'                         ],
         'post_batch_bulk_fraud_notify'           => ['post',    'notify/fraud/bulk',                                              'MerchantController@bulkFraudNotifyPostBatch'                 ],
+        'get_fraud_attributes'                   => ['get',     'payments/fraud/attributes',                                      'PaymentFraudController@getFraudAttributes'                   ],
+        'save_payment_fraud'                     => ['post',    'payments/fraud',                                                 'PaymentFraudController@savePaymentFraud'                     ],
 
         // Merchant Risk Notes
         'merchant_risk_notes_get'              => ['get',       'merchants/{merchant_id}/risk_notes',                       'MerchantRiskNotesController@getAll'    ],
@@ -6218,6 +6220,10 @@ class Route
         'merchant_risk_alerts_create_rule',
         'merchant_risk_alerts_update_rule',
         'merchant_risk_alerts_delete_rule',
+
+        // Payment Fraud
+        'get_fraud_attributes',
+        'save_payment_fraud',
     ];
 
     public static $routePermission = [
@@ -7355,6 +7361,9 @@ class Route
         'firs_document_fetch'                 =>'*',
         'firs_document_download'              =>'*',
 
+        // Payment Fraud
+        'get_fraud_attributes'                              => Permission::GET_FRAUD_ATTRIBUTES,
+        'save_payment_fraud'                                => Permission::SAVE_PAYMENT_FRAUD,
     ];
 
     public static $bankingRoutePermissions = [
@@ -10967,6 +10976,10 @@ class Route
             'state_fetch',
 
             'raw_address_failed_file',
+
+            // Payment Fraud
+            'get_fraud_attributes',
+            'save_payment_fraud',
         ],
 
         //

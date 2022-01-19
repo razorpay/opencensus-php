@@ -789,6 +789,10 @@ class Name
     const CALLBACK_SLOT_CONFIG_VIEW                    = 'callback_slot_config_view';
     const CALLBACK_SLOT_CONFIG_EDIT                    = 'callback_slot_config_edit';
 
+    // Payment Fraud
+    const GET_FRAUD_ATTRIBUTES          = 'get_fraud_attributes';
+    const SAVE_PAYMENT_FRAUD            = 'save_payment_fraud';
+
     const NACH_BATCH_UPLOAD     = 'nach_batch_upload';
     const EMANDATE_BATCH_UPLOAD = 'emandate_batch_upload';
 

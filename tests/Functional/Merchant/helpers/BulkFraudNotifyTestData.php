@@ -1,5 +1,9 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
+
 return [
     'commonTestData' => [
         'request'  => [
@@ -32,6 +36,75 @@ return [
             'content' => [
                 'success'   => true,
             ],
+        ],
+    ],
+
+    'testGetFraudAttributes' =>  [
+        'request'  => [
+            'url'     => '/payments/fraud/attributes',
+            'method'  => 'get',
+            'content' => [
+                'payment_id'      => '100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' =>  [],
+        ]
+    ],
+
+    'testSavePaymentFraud' =>  [
+        'request'  => [
+            'url'     => '/payments/fraud',
+            'method'  => 'post',
+            'content' => [
+                'payment_id'                => '100000Razorpay',
+                'type'                      => '0',
+                'sub_type'                  => null,
+                'reported_to_issuer_at'     => 123456789,
+                'reported_to_razorpay_at'   => 123456789,
+                'has_chargeback'            => '1',
+                'is_account_closed'         => 1,
+                'amount'                    => 50,
+                'currency'                  => 'INR',
+                'reported_by'               => 'Visa',
+                'skip_merchant_email'       => '0',
+            ],
+        ],
+        'response' => [
+            'content' =>  [],
+        ]
+    ],
+
+    'testSavePaymentFraudValidationError' =>  [
+        'request'  => [
+            'url'     => '/payments/fraud',
+            'method'  => 'post',
+            'content' => [
+                'payment_id'                => '100000Razorpay',
+                'type'                      => '0',
+                'sub_type'                  => null,
+                'reported_to_issuer_at'     => 'ABC123456789',
+                'reported_to_razorpay_at'   => 123456789,
+                'has_chargeback'            => '1',
+                'is_account_closed'         => 1,
+                'amount'                    => 50,
+                'currency'                  => 'INR',
+                'reported_by'               => 'Visa',
+                'skip_merchant_email'       => '0',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The reported to issuer at must be an integer.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
