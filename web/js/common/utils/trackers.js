@@ -18,9 +18,11 @@ export const initSegment = (app, user, callback) => {
           id: user?.user?.id,
           userId: user?.user?.id,
           emailId: user?.email,
+          email: user?.email,
           activatedAt: moment.unix(activatedAt),
           mode,
           userRole: user?.role,
+          name: user?.name,
           kycStatus,
           merchantId: user?.current,
           businessCategory: user?.businessCategory,
@@ -39,11 +41,33 @@ export const initSegment = (app, user, callback) => {
             }
           }
           segmentIdentiyCall(dataFromAPI);
+          updateWhatAppOptinIdentity(user);
         })
         .catch(() => segmentIdentiyCall(dataFromAPI));
     }
   });
 };
+
+async function updateWhatAppOptinIdentity(user) {
+  const whatsappOptStatus = await fetchWhatsappOptin();
+  window.analytics.identify(user?.user?.id, {
+    'MSG-whatsapp': whatsappOptStatus,
+  });
+}
+async function fetchWhatsappOptin(data = { source: 'pg.onboarding.presignup' }) {
+  try {
+    const response = await merchantFetch({
+      url: `users/whatsapp/opt_in_status`,
+      method: 'get',
+      data,
+    });
+    if (response && response.data && response.data.consent_status)
+      return response.data.consent_status;
+    else return false;
+  } catch (error) {
+    return false;
+  }
+}
 
 export const initLumberjack = () => {
   analyticsService.init({
