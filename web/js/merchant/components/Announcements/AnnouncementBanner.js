@@ -20,6 +20,9 @@ class AnnouncementBannerComponent extends Component {
       this.setState({ hidden: true });
     }
     if (this.props.handleClose) this.props.handleClose();
+    if (!this.props.hidden && !this.props.handleClose) {
+      this.setState({ hidden: true });
+    }
   };
 
   render() {

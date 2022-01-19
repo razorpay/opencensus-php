@@ -3045,8 +3045,8 @@ p.small-txt{
     width: 50%;
     padding: 25px 0 0 40px;
     @media screen and (max-width: $screen-xs-max){
-      width 100%;
-      padding 16px
+      width: 100%;
+      padding: 16px;
     }
 
     .title {
@@ -3101,9 +3101,6 @@ p.small-txt{
       }
       > img {
         height: 50px;
-      }
-      &:hover {
-        background: linear-gradient(to bottom right, #E7F1FD 46%, #F0F6FF 45%);
       }
     }
   }
@@ -3294,8 +3291,98 @@ p.small-txt{
     }
   }
 }
+
 .hideShimer {
   height: 0;
   transition: height 0.3s linear;
   overflow: hidden;
+}
+
+.intl-payment-recommendation {
+  display: block;
+  background-image: url("https://cdn.razorpay.com/static/assets/product-recommendation/mask-group.svg");
+  background-position: left center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: #ffffff;
+  padding: 25px 40px;
+  margin: 0 22px 22px;
+  @media screen and (max-width: $screen-xs-max) {
+    padding: 16px;
+  }
+
+  .recommend-product {
+    width: 100%;
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .title {
+      color: #162f56bd;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .highlight {
+      color: #cd8214;
+    }
+
+    .close-btn {
+      font-size: 24px;
+      line-height: 18px;
+      border-color: transparent;
+      background-color: transparent;
+      box-shadow: none;
+      cursor: pointer;
+    }
+
+    .product-card {
+      width: 100%;
+      background-image: linear-gradient(135deg, #f3f8fe 35%, #fbfcff 15%);
+      display: flex;
+      margin-top: 15px;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px -8px;
+      padding: 25px 42px 30px 40px;
+      @media screen and (max-width: $screen-xs-max) {
+        display: block;
+        padding: 16px;
+      }
+
+      &__container {
+        margin-left: 18px;
+        @media screen and (max-width: $screen-xs-max) {
+          margin-left: 0;
+          margin-top: 16px;
+        }
+        .name {
+          color: #58666e;
+          font-size: 16px;
+          font-weight: 700;
+          padding-bottom: 5px;
+
+          span {
+            cursor: pointer;
+          }
+        }
+        .desc {
+          color: #6f7691;
+          padding-bottom: 10px;
+        }
+        .btn-link {
+          font-weight: 600;
+          text-decoration: none;
+          i {
+            margin-left: 5px;
+          }
+        }
+      }
+      > img {
+        height: 50px;
+      }
+    }
+  }
 }

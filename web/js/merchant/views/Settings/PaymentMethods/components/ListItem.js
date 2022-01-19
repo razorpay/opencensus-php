@@ -1,11 +1,12 @@
+import { useEffect } from 'react';
 import { connect } from 'react-redux';
+import qs from 'query-string';
 import { getIcon } from './paymentMethodIcons';
 import {
   setIntrument,
   clearIntermediateInstrument,
   clearLeafInstrument,
 } from 'merchant/reducers/instrumentRequests';
-import { useEffect } from 'react';
 
 const ListItem = ({
   index,
@@ -28,12 +29,19 @@ const ListItem = ({
     handleClickedInstument(instrument.name);
     setIntrument(instrument);
   };
+
   // for auto-selecting the first child node
   useEffect(() => {
-    if (index === 0) {
+    const query = qs.parse(window.location.search);
+    if (query && query.instrument && instrument.slug === query.instrument) {
+      handleSetInstrument(instrument, from);
+    }
+
+    if (!clickedName && index === 0) {
       handleSetInstrument(instrument, from);
     }
   }, []);
+
   const instrumentActions = instrument.actionItems && Object.keys(instrument.actionItems).length;
   return (
     <li

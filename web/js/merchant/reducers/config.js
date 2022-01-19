@@ -1,7 +1,9 @@
+import moment from 'moment';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
 import { deepClone } from 'common/utils/rzp-utils';
-import moment from 'moment';
+import { computeBannerState } from 'merchant/utils/intlPaymentsRecommendation';
+
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const LOCALE_FETCH = 'CONFIG_LOCALE_FETCH';
 const LOCALE_UPDATE = 'CONFIG_LOCALE_UPDATE';
@@ -27,6 +29,7 @@ const FETCH_CALL_SLOTS = 'FETCH_CALL_SLOTS';
 const CALLBACK_SERVICE = 'rzp.care.callback.v1.CallbackService';
 const REMOVE_LOGO = 'REMOVE_LOGO';
 const FETCH_FEATURE_STATUS = 'FETCH_FEATURE_STATUS';
+const FETCH_INTERNATIONAL_SETTING_STATUS = 'FETCH_INTERNATIONAL_SETTING_STATUS';
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 
 const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
@@ -410,6 +413,7 @@ export const fetchInternationalProductsStatus = () => {
 };
 
 // start updateEmailSettings
+
 export const updateEmailSettings = (data) => {
   return {
     type: CONFIG_SAVE_EMAIL,
@@ -422,6 +426,23 @@ export const updateEmailSettings = (data) => {
 };
 
 // end updateEmailSettings
+
+const fetchBannerState = async () => {
+  const { data } = await merchantFetch({
+    url: 'international_enablement/visibility',
+    method: 'GET',
+  });
+  const status = computeBannerState(data);
+  const res = { ...data, ...status };
+  return res;
+};
+
+export const fetchInternationalSettingStatus = () => {
+  return {
+    type: FETCH_INTERNATIONAL_SETTING_STATUS,
+    payload: fetchBannerState(),
+  };
+};
 
 const initialState = {
   loading: true,
@@ -466,6 +487,11 @@ const initialState = {
   isCallEnabled: false,
   scheduleCallConfig: DEFAULT_CALL_BACK_SCHEDULE_RESPONSE,
   scheduleCallConfigCategory: null,
+  internationalSettingStatus: {
+    loading: true,
+    data: {},
+    error: null,
+  },
 };
 
 const defaultLocale = {
@@ -684,6 +710,28 @@ const configReducer = (state = initialState, action) => {
 
     case `${FETCH_INTERNATIONAL_PRODUCTS_STATUS}::ERROR`:
       return set(state, 'internationalProductsStatus', {
+        loading: false,
+        data: {},
+        error: action.payload.errors,
+      });
+
+    case `${FETCH_INTERNATIONAL_SETTING_STATUS}::PENDING`:
+      return merge(state, {
+        internationalSettingStatus: {
+          loading: true,
+          ...state.internationalSettingStatus,
+        },
+      });
+
+    case `${FETCH_INTERNATIONAL_SETTING_STATUS}::SUCCESS`:
+      return set(state, 'internationalSettingStatus', {
+        loading: false,
+        data: action.payload,
+        error: null,
+      });
+
+    case `${FETCH_INTERNATIONAL_SETTING_STATUS}::ERROR`:
+      return set(state, 'internationalSettingStatus', {
         loading: false,
         data: {},
         error: action.payload.errors,

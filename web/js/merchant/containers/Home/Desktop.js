@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
-import { fetchInternationalProductsStatus as fnFetchInternationalProductsStatus } from 'merchant/reducers/config';
+import {
+  fetchInternationalProductsStatus as fnFetchInternationalProductsStatus,
+  fetchInternationalSettingStatus as fnFetchInternationalSettingStatus,
+} from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Header from 'common/ui/Header';
 import moment from 'moment';
@@ -76,6 +79,8 @@ import NitroMMRemarketingBanner from '../../components/Announcements/NitroMMRema
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
+import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
+import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
 import * as EventActions from 'merchant/reducers/trackEvents';
 
 class AnalyticsDesktop extends Component {
@@ -112,6 +117,7 @@ class AnalyticsDesktop extends Component {
       fetchInternationalProductsStatus,
       fetchSettlementConfig,
       fetchBankAccountChangeStatus,
+      fetchInternationalSettingStatus,
     } = this.props;
     fetchEscalations();
     analyticsTrack({
@@ -130,6 +136,7 @@ class AnalyticsDesktop extends Component {
       },
     });
     fetchInternationalProductsStatus();
+    fetchInternationalSettingStatus();
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
 
@@ -363,6 +370,7 @@ class AnalyticsDesktop extends Component {
       limitBreach,
       isOnDemandDisabled,
       settlementConfig,
+      internationalSettingStatus,
     } = this.props;
 
     const {
@@ -686,6 +694,24 @@ class AnalyticsDesktop extends Component {
           {/* Free Credits Repayments Banner */}
           {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
 
+          {/* Announcement - Enable International Cards */}
+          {internationalSettingStatus?.data?.enableIntlCards && (
+            <IntlPaymentsAnnouncement
+              bannerKey="international_cards"
+              userId={user?.current}
+              internationalSettingStatus={this.props.internationalSettingStatus}
+            />
+          )}
+
+          {/* Announcement - Link Paypal */}
+          {internationalSettingStatus?.data?.enableLinkPaypal && (
+            <IntlPaymentsAnnouncement
+              bannerKey="link_paypal"
+              userId={user?.current}
+              internationalSettingStatus={this.props.internationalSettingStatus}
+            />
+          )}
+
           {user.isNeostoneFlowEnabled('neostone-tracker') && (
             <div className="nss-tracker-wrapper">
               <ErrorBoundary
@@ -724,6 +750,11 @@ class AnalyticsDesktop extends Component {
               {user.isProductRecommendationEnabled && <ProductRecommendationnCard user={user} />}
             </>
           )}
+
+          <IntlPaymentsRecommendation
+            user={user}
+            internationalSettingStatus={this.props.internationalSettingStatus}
+          />
 
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
@@ -993,12 +1024,14 @@ const mapStateToProps = (state) => ({
   referee: state.merchantReferral.data.referee,
   transactionAmount: state.transactionAmount.amount,
   ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
+  internationalSettingStatus: state.config.internationalSettingStatus,
 });
 
 export default withRouter(
   connect(mapStateToProps, {
     openModal: fnOpenModal,
     fetchInternationalProductsStatus: fnFetchInternationalProductsStatus,
+    fetchInternationalSettingStatus: fnFetchInternationalSettingStatus,
     ...NotificationActions,
     fetchUser,
     showKYCStatusModal,
