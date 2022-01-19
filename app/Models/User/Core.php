@@ -873,9 +873,10 @@ class Core extends Base\Core
             if(empty($user) === false)
             {
                 $customProperties = [
-                    'phone' => $user['contact_mobile'],
+                    'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
                     'email' => $user['email'],
                 ];
+
                 $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::USER_LOGIN);
             } else{
                 $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,

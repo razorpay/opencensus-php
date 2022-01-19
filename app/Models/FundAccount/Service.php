@@ -342,9 +342,10 @@ class Service extends Base\Service
             if(empty($user) === false and empty($merchant) === false)
             {
                 $customProperties = [
-                    'phone' => $user['contact_mobile'],
+                    'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
                     'email' => $user['email'],
                 ];
+
                 $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::FUND_ACCOUNT_ADDED);
             } else{
                 $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
