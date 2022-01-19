@@ -14,9 +14,9 @@ export const PineLabsPoints = () => {
           Copy Razorpay email and we will provide supporting document from our side if required.
         </li>
         <li>
-          The aggregator model should be enabled, If it is not enabled then RRN and other attributes
-          won't come in the callback response of card payment initialization. Razorpay supports only
-          the aggregator model for Pine Labs Plural card integration.
+          The <b>Aggregator model should be enabled</b>, If it is not enabled then RRN and other
+          attributes won't come in the callback response of card payment initialization. Razorpay
+          supports only the aggregator model for Pine Labs Plural card integration.
         </li>
         <li>
           Pine Labs Plural supports only the static callback url (merchant_return_url). So you need
@@ -37,8 +37,7 @@ export const PineLabsPoints = () => {
         </li>
         <li>
           For an AXIS terminal configuration done by Pine Labs only Mastercard and Visa networks
-          will be supported. The card networks for Rupay and Discover will not be supported in such
-          a scenario.
+          will be supported by default.
         </li>
       </ol>
     </>
