@@ -7520,7 +7520,7 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function fetchProductUsedByMerchants(array $input)
+    public function fetchProductUsedByMerchants(array $input): array
     {
         $merchantIds = $input['merchant_ids'];
 
@@ -7531,7 +7531,7 @@ class Service extends Base\Service
         // validate the product name
         (new Validator())->validateMerchantProduct($product);
 
-        $merchantProducts = $this->core()->fetchProductUsedByMerchants($merchantIds, $product, $limit);
+        $merchantProducts = $this->core()->fetchProductForMerchants($merchantIds, $product, true, $limit);
 
         return $merchantProducts;
     }

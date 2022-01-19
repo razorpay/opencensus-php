@@ -63,6 +63,7 @@ final class Constants
     const FROM                                    = 'from';
     const SKIP                                    = 'skip';
     const COUNT                                   = 'count';
+    const IS_USED                                 = 'is_used';
 
     // Partner constants
     const BANK                                    = 'bank';

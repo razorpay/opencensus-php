@@ -2292,6 +2292,59 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchSubmsBasedOnProductUsageStatus()
+    {
+        $partnerAppId = $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        // create sub-merchant for banking product
+        $submerchantId = '10000000000012';
+
+        $this->allowAdminToAccessMerchant($submerchantId);
+
+        $this->fixtures->user->createBankingUserForMerchant($submerchantId);
+
+        $accessMap = $this->getAccessMapArray('application', $partnerAppId, $submerchantId, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchSubmsBasedOnProductNotUsed()
+    {
+        $partnerAppId = $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        // create sub-merchant for banking product
+        $submerchantId = '10000000000012';
+
+        $this->allowAdminToAccessMerchant($submerchantId);
+
+        $this->fixtures->user->createBankingUserForMerchant($submerchantId);
+
+        $accessMap = $this->getAccessMapArray('application', $partnerAppId, $submerchantId, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testIsUsedPassedWithoutProductInQueryParam()
+    {
+        $this->ba->adminProxyAuth();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,
@@ -2385,14 +2438,18 @@ class PartnerTest extends OAuthTestCase
 
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
 
+        $appId = $app->getId();
+
         // Link new submerchants to the partner account
-        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $accessMap = $this->getAccessMapArray('application', $appId, self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->create('merchant_access_map',$accessMap);
 
-        $accessMap = $this->getAccessMapArray('application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID);
+        $accessMap = $this->getAccessMapArray('application', $appId, $submerchantId, self::DEFAULT_MERCHANT_ID);
 
         $this->fixtures->create('merchant_access_map',$accessMap);
+
+        return $appId;
     }
 
     protected function createPartnerAndUser()

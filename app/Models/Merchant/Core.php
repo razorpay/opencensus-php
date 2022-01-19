@@ -2982,16 +2982,12 @@ class Core extends Base\Core
         }
         else
         {
-            $accessMaps = $this->repo
-                ->merchant_access_map
-                ->fetchAccessMapForMerchantIdAndOwnerId($submerchantId, $partner->getId());
+            $accessMaps = $this->repo->merchant_access_map->fetchAccessMapForMerchantIdAndOwnerId($submerchantId, $partner->getId());
 
             $appId = $accessMaps->first()->getEntityId();
         }
 
-        $merchant = $this->repo
-            ->merchant
-            ->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId);
+        $merchant = $this->repo->merchant->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId);
 
         $partnerUser = $partner->primaryOwner();
 
@@ -2999,9 +2995,10 @@ class Core extends Base\Core
 
         $merchant = $this->getPartnerSubmerchantData($merchant, $partner, $partnerUser, $product);
 
-        $products = $this->fetchProductUsedByMerchants([$merchant->getId()]);
+        $products = $this->fetchProductForMerchants([$merchant->getId()]);
 
-        if(count($products) > 0){
+        if(count($products) > 0)
+        {
             $merchant[Entity::PRODUCT] = $products;
         }
 
@@ -3174,22 +3171,28 @@ class Core extends Base\Core
 
         $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
 
-        if ($applyProductFilter === true){
+        if ($applyProductFilter === true)
+        {
             list($offset, $merchants) = $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
         }
         else
         {
-            $merchants = $this->repo
-                ->merchant
-                ->fetchSubmerchantsByAppIds($appIds, $params);
+            $merchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
         }
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner)
+        $checkingProductUsage = array_key_exists(Constants::IS_USED, $params);
+
+        // if fetching sub-merchants based on product usage status, no need to fetch additional
+        // details such as dashboard access, kyc access, banking account status etc.
+        if ($checkingProductUsage === false)
         {
-            return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product);
-        });
+            $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner)
+            {
+                return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product);
+            });
+        }
 
         return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
     }
@@ -5197,17 +5200,27 @@ class Core extends Base\Core
     }
 
     /**
-     * fetches the product used by a merchant for given merchant ids and product
+     * fetches the product whether used or not used by a merchant for given merchant ids and product
      *
      * @param array $merchantIds
      * @param string|null $product
+     * @param bool $isUsed
      * @param null $limit
      *
      * @return array
      */
-    public function fetchProductUsedByMerchants(array $merchantIds, $product = null, $limit = null)
+    public function fetchProductForMerchants(array $merchantIds, string $product = null, bool $isUsed = true, $limit = null): array
     {
         $merchantsAndProducts = $this->repo->merchant_user->fetchProductUsedForMerchantIds($merchantIds, $product, $limit);
+
+        if ($product !== null and $isUsed === false)
+        {
+            $merchantsUsingProduct = $merchantsAndProducts->pluck(Entity::MERCHANT_ID)->toArray();
+
+            $merchantsNotUsingProduct = array_diff($merchantIds, $merchantsUsingProduct);
+
+            return $merchantsNotUsingProduct;
+        }
 
         $productUsedByMerchants = array();
 
@@ -5258,7 +5271,11 @@ class Core extends Base\Core
 
         $product = $params[ENTITY::PRODUCT];
 
+        $isUsed = boolval($params[Constants::IS_USED] ?? 1);
+
         unset($params[ENTITY::PRODUCT]);
+
+        unset($params[Constants::IS_USED]);
 
         $recordsToTake = $count;
 
@@ -5268,19 +5285,19 @@ class Core extends Base\Core
         // Do this until the desired number of records are fetched or
         // no further records are available to fetch
         do {
-            $merchants = $this->repo
-                ->merchant
-                ->fetchSubmerchantsByAppIds($appIds, $params);
+            $merchants = $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
 
-            if (count($merchants) == 0 || $recordsToTake == 0) {
+            if (count($merchants) == 0 || $recordsToTake == 0)
+            {
                 break;
             }
 
             $merchantIds = $merchants->getIds();
 
-            $filteredMerchantIds = $this->fetchProductUsedByMerchants($merchantIds, $product);
+            $filteredMerchantIds = $this->fetchProductForMerchants($merchantIds, $product, $isUsed);
 
             $recordsRead = 0;
+
             foreach ($merchants as $merchant)
             {
                 if ($recordsToTake == 0)

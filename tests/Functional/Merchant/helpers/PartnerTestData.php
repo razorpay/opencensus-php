@@ -1850,6 +1850,86 @@ return [
             ],
         ],
     ],
+
+    'testFetchSubmsBasedOnProductUsageStatus' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'banking',
+                'is_used' => 1
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'        => 'acc_10000000000012',
+                        'entity'    => 'merchant',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchSubmsBasedOnProductNotUsed' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'banking',
+                'is_used' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'        => 'acc_10000000000009',
+                        'entity'    => 'merchant',
+                        'name'      => 'random_name_1',
+                        'email'     =>  'user@example.com',
+                    ],
+                    [
+                        'id'        => 'acc_10000000000011',
+                        'entity'    => 'merchant',
+                        'name'      => 'jitendra ojha',
+                        'email'     =>  'email.ojha@test.com',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testIsUsedPassedWithoutProductInQueryParam' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'is_used' => 1
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The product field is required when is used is present.',
+                    'reason'        => 'input_validation_failed',
+                    'field'         => 'product',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'executePartnerMigration' => [
         'request'  => [
             'url'     => '/partner/activation/migrate',
