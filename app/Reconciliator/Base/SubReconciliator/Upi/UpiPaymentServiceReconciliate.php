@@ -2,12 +2,14 @@
 
 namespace RZP\Reconciliator\Base\SubReconciliator\Upi;
 
+use Throwable;
 use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Metro\MetroHandler;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -252,7 +254,27 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             Constants::BATCH_ID     => $this->batchId,
         ];
 
-        $metroHandler->publish($topic, $data);
+        try {
+            $response = $metroHandler->publish($topic, $data);
+
+            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISHED,
+            [
+                'topic'    => $topic,
+                'response' => $response,
+            ]);
+
+        } catch (Throwable $e) {
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISH_ERROR,
+                [
+                    'topic'    => $topic,
+                ]);
+
+            throw $e;
+        }
     }
 
     /**
