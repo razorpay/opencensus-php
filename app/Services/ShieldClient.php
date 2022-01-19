@@ -41,6 +41,7 @@ class ShieldClient implements ExternalService
     const X_RAZORPAY_TASKID_HEADER          = 'X-Razorpay-TaskId';
     const X_REQUEST_ID                      = 'X-Request-ID';
     const X_RZP_TESTCASE_ID                 = 'X-RZP-TESTCASE-ID';
+    const SERVER_ERROR_SHIELD_REQUEST_FAILED = "SERVER_ERROR_SHIELD_REQUEST_FAILED";
 
     const TRACE_REQUEST_FEATURE    = 'shield_dns_trace';
 
@@ -548,6 +549,69 @@ class ShieldClient implements ExternalService
             );
 
             return $this->formatResponse($response);
+        }
+        catch (\Requests_Exception $e)
+        {
+            $data = [
+                'exception'     => $e->getMessage(),
+                'url'           => $url,
+                'method'        => $method,
+                'input'         => $data,
+            ];
+
+            $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $data);
+
+            throw $e;
+        }
+    }
+
+    public function sendRequestV2ForWorkflowApproval(string $path, string $method, array $data = []): array
+    {
+        $url = $this->baseUrl . $path;
+
+        $headers = $this->getShieldHeaders();
+
+        $options = [
+            'auth'    => $this->getAuthHeaders(),
+            'timeout' => self::REQUEST_TIMEOUT_ADMIN,
+        ];
+
+        try
+        {
+            $content = null;
+
+            if (in_array($method, [Requests::POST, Requests::PUT]) === true)
+            {
+                $content = '';
+                if (empty($data) === false)
+                {
+                    $content = json_encode($data, JSON_UNESCAPED_SLASHES);
+                }
+            }
+
+            $response = Requests::request(
+                $url,
+                $headers,
+                $content,
+                $method,
+                $options
+            );
+
+            $formattedResponse = $this->formatResponse($response);
+
+            if ($response->status_code !== 200)
+            {
+                $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR,
+                    [
+                        'response' => $formattedResponse,
+                        'request'  => $data,
+                        'status'   => $response->status_code,
+                    ]);
+
+                throw new IntegrationException(self::SERVER_ERROR_SHIELD_REQUEST_FAILED);
+            }
+
+            return $formattedResponse;
         }
         catch (\Requests_Exception $e)
         {

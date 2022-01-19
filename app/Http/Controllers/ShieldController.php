@@ -74,6 +74,13 @@ class ShieldController extends Controller
             $this->createWorkflowRequestIfApplicable($requestUri, $method, $payload);
         }
 
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+        {
+            $response = $this->app['shield']->sendRequestV2ForWorkflowApproval($requestUri, $method, $payload);
+
+            return ApiResponse::json($response);
+        }
+
         if ($method === 'GET')
         {
             if (empty($payload) === false)
