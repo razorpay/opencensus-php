@@ -792,4 +792,15 @@ class Validator extends Base\Validator
     {
         DonationGoalTrackerType::checkType($value);
     }
+
+    public function validatePaymentHandleAndHost(Entity $paymentLink, string $host)
+    {
+        if(($paymentLink->getViewType() === ViewType::PAYMENT_HANDLE)
+        and ($host !== config('app.payment_handle_domain')))
+        {
+            $data[Entity::VIEW_TYPE] = $paymentLink->getViewType();
+
+            throw new BadRequestValidationFailureException("Handle cannot be opened on this url", null, $data);
+        }
+    }
 }

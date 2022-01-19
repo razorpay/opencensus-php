@@ -221,8 +221,14 @@ class Service extends Base\Service
             return $this->repo->payment_link->findActiveByPublicId($id);
         });
 
-        Tracer::inSpan(['name' => 'payment_page.hosted.validate'], function() use ($paymentLink) {
-            (new Validator)->validatePageViewable($paymentLink);
+        $route = $this->app['api.route']->getHost();
+
+        $validator = new Validator;
+
+        $validator->validatePaymentHandleAndHost($paymentLink, $route);
+
+        Tracer::inSpan(['name' => 'payment_page.hosted.validate'], function() use ($paymentLink, $validator) {
+            $validator->validatePageViewable($paymentLink);
         });
 
         $viewPayload = Tracer::inSpan(['name' => 'payment_page.hosted.get.payload'], function() use
