@@ -23,6 +23,7 @@ import NitroSelfServe from './Neostone/index';
 import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampaignModal';
 import NitroICICIModal from '../../../merchant/components/Announcements/NitroICICIBanner/NitroICICIModal';
 import NitroMidmarketRemarketingModal from '../../../merchant/components/Announcements/NitroMMRemarketingBanner/NitroMidmarketRemarketingModal';
+import NitroICICINewSegmentModal from '../../../merchant/components/Announcements/NitroICICINewSegmentsBanner/NitroICICINewSegmentModal';
 
 const BENEFITS = {
   other: [
@@ -343,6 +344,9 @@ export const getCampaignID = () => {
   if (user.isNitroCCCampaignEnabled) return 'Nitro_CardOffer';
   if (user.isNitroNitromidmarketRemarketingCampaignEnabled)
     return 'Nitro_MidMarketRemarketingJan22';
+  if (user.isNewNitroICICIBrandedCampaignEnabled) return 'Nitro_ICICIBranded';
+  if (user.isNewNitroICICIPlusCardOfferCampaignEnabled) return 'Nitro_ICICIPlusCardOffer';
+  if (user.isNewNitroICICIBaseCampaignEnabled) return 'Nitro_Base';
   return nitroCampaignId(user).version;
 };
 
@@ -787,6 +791,18 @@ class DetailView extends React.Component {
     if (this?.props?.user?.isNitroCCCampaignEnabled)
       return (
         <NitroCCCampaignModal
+          user={this.props.user}
+          save={this.save}
+          tracking={this?.props?.tracking}
+        />
+      );
+    if (
+      this?.props?.user?.isNewNitroICICIBrandedCampaignEnabled ||
+      this?.props?.user?.isNewNitroICICIPlusCardOfferCampaignEnabled ||
+      this?.props?.user?.isNewNitroICICIBaseCampaignEnabled
+    )
+      return (
+        <NitroICICINewSegmentModal
           user={this.props.user}
           save={this.save}
           tracking={this?.props?.tracking}

@@ -532,6 +532,25 @@ export default class User {
     );
   }
 
+  get isNewNitroICICIBrandedCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('nitro_new_icici_branded_experiment')?.variables?.result === 'on'
+    );
+  }
+
+  get isNewNitroICICIPlusCardOfferCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('nitro_new_icici_plus_card_offer_experiment')?.variables
+        ?.result === 'on'
+    );
+  }
+
+  get isNewNitroICICIBaseCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('nitro_new_icici_base_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isCatalystCampaignEnabled() {
     return getSplitzExperimentVariant('catalyst_campaign_experiment')?.variables?.result === 'on';
   }

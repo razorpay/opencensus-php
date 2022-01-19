@@ -79,6 +79,7 @@ import NitroMMRemarketingBanner from '../../components/Announcements/NitroMMRema
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
+import NitroICICINewSegmentsBanner from '../../components/Announcements/NitroICICINewSegmentsBanner';
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
 import * as EventActions from 'merchant/reducers/trackEvents';
@@ -648,6 +649,15 @@ class AnalyticsDesktop extends Component {
             additionalCondition={(usr) => usr.isNitroNitromidmarketRemarketingCampaignEnabled}
           >
             <NitroMMRemarketingBanner productName="home" />
+          </ShowWhen>
+          <ShowWhen
+            additionalCondition={(usr) =>
+              usr.isNewNitroICICIBrandedCampaignEnabled ||
+              usr.isNewNitroICICIPlusCardOfferCampaignEnabled ||
+              usr.isNewNitroICICIBaseCampaignEnabled
+            }
+          >
+            <NitroICICINewSegmentsBanner productName="home" />
           </ShowWhen>
           <ShowWhen additionalCondition={(usr) => usr.isCatalystBannerFL}>
             <CatalystCampaignBannerPhase2

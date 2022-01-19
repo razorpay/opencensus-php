@@ -145,6 +145,18 @@ export default {
     'IiqMArt58Yaj5E', // Prod
     'IKbzEcTvvsVk8D', // Beta
   ],
+  nitro_new_icici_branded_experiment: [
+    'IlBbXepQRy1pzt', // Prod
+    'IKbzEcTvvsVk8D', // Beta
+  ],
+  nitro_new_icici_plus_card_offer_experiment: [
+    'IlBces1KY3Lbs1', // Prod
+    'IKbzEcTvvsVk8D', // Beta
+  ],
+  nitro_new_icici_base_experiment: [
+    'IlBc9Vesyux0ON', // Prod
+    'IKbzEcTvvsVk8D', // Beta
+  ],
 
   catalyst_campaign_experiment: [
     'HYimXrRKRI0V7y', // Prod
