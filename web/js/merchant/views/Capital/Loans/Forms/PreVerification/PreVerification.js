@@ -29,6 +29,7 @@ import {
   uploadBankStatement,
   uploadPreVerificationDocuments,
   changePseudoState,
+  changeActiveState,
 } from 'merchant/reducers/capital';
 import useQuery from 'merchant/views/Capital/customHooks/useQuery';
 import { reducer, initialState } from './StateHelpers';
@@ -46,21 +47,19 @@ import {
   trackNetbankingRetry,
 } from './ga';
 
-const PreVerification = ({
-  documentGroups,
-  application,
-  context,
-  navigation,
-  user,
-  product,
-  applicantId,
-  uploadPreVerificationDocuments,
-  showNotification,
-  fetchLoanApplicationMeta,
-  history,
-  _trackNavigationActions,
-  isUploadAllowed,
-}) => {
+const PreVerification = (props) => {
+  const {
+    documentGroups,
+    application,
+    context,
+    navigation,
+    user,
+    product,
+    applicantId,
+    history,
+    _trackNavigationActions,
+    isUploadAllowed,
+  } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
   const queryParams = useQuery();
   const isNetbankingOptionActive = state.option === PREVERIFICATION_OPTIONS.NETBANKING;
@@ -69,7 +68,7 @@ const PreVerification = ({
     isNetbankingOptionActive && state.view === PREVERIFICATION_VIEW_STATES.PROCESSED;
   const hasDocumentsData = useMemo(
     () => !!(documentGroups.data && Object.keys(documentGroups).length),
-    documentGroups.data,
+    [documentGroups],
   );
 
   // documentConfig contains combined FDS group data from document_groups (Documents API) & application.documents
@@ -118,7 +117,7 @@ const PreVerification = ({
   useEffect(() => {
     setMerchantId(user.current);
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOANS_DOCUMENT_UPLOAD);
-  }, []);
+  }, [user]);
 
   // To update BE about Perfios Submission on success
   useEffect(() => {
@@ -148,10 +147,11 @@ const PreVerification = ({
           store_id: storeId,
         });
       } catch (err) {
-        return showNotification({
+        props.showNotification({
           type: 'error',
           message: 'Bank Statement Processing failed',
         });
+        return;
       }
 
       // in case of failure
@@ -160,10 +160,11 @@ const PreVerification = ({
         dispatch({
           type: 'DISABLE_NETBANKING',
         });
-        return dispatch({
+        dispatch({
           type: 'UPDATE_OPTION',
           payload: PREVERIFICATION_OPTIONS.NATIVE_UPLOAD,
         });
+        return;
       }
 
       // in case of success
@@ -172,17 +173,18 @@ const PreVerification = ({
         type: 'UPDATE_VIEW',
         payload: PREVERIFICATION_VIEW_STATES.PROCESSED,
       });
-      fetchLoanApplicationMeta(application.id);
+      props.fetchLoanApplicationMeta(application.id);
       history.push('#');
     }
 
     processPerfios();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasDocumentsData, application, queryParams]);
 
   // handle native upload file change
   const handleFileChange = async (file, progressTracker) => {
     if (state.files.length >= PREVERIFICATION_FILE_UPLOAD_LIMIT) {
-      showNotification({
+      props.showNotification({
         type: 'error',
         message: `Max ${PREVERIFICATION_FILE_UPLOAD_LIMIT} files upload allowed. Please remove last file.`,
       });
@@ -221,9 +223,9 @@ const PreVerification = ({
           name: file.name,
         },
       });
-      trackStatementUploadSuccess();
+      return trackStatementUploadSuccess();
     } catch (err) {
-      showNotification({
+      props.showNotification({
         type: 'error',
         message: 'Occurred a problem while uploading the document.',
       });
@@ -295,9 +297,19 @@ const PreVerification = ({
     }
   };
 
+  const moveToNextStep = () => {
+    return props.fetchLoanApplicationMeta(application.id).then((res) => {
+      if (res?.data?.application?.status === APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS) {
+        props.changeActiveState(APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS);
+      } else {
+        navigation.next();
+      }
+    });
+  };
+
   const handleNativeUploadSubmission = async () => {
     if (!state.files.length) {
-      return showNotification({
+      return props.showNotification({
         type: 'error',
         message: 'Please upload bank statements to continue forward',
       });
@@ -306,7 +318,7 @@ const PreVerification = ({
     try {
       trackNativeSubmission();
       trackTotalFilesCount(state.files.length);
-      await uploadPreVerificationDocuments({
+      await props.uploadPreVerificationDocuments({
         application_id: application.id,
         documents: [
           {
@@ -319,9 +331,9 @@ const PreVerification = ({
           },
         ],
       });
-      navigation.next();
+      return moveToNextStep();
     } catch (err) {
-      showNotification({
+      return props.showNotification({
         type: 'error',
         message: 'Statements submission failed',
       });
@@ -333,7 +345,7 @@ const PreVerification = ({
 
     // if already submitted then move to next
     if (!isPreceedingState(application.status, context.activeState)) {
-      return navigation.next();
+      return moveToNextStep();
     }
 
     if (isNetbankingOptionActive) {
@@ -390,7 +402,7 @@ const PreVerification = ({
           <>
             Please share the last <strong>6 months</strong>
             {'  '}
-            bank statements (current month included) of your business's{' '}
+            bank statements (current month included) of your business&apos;s{' '}
             <strong>Primary Bank account</strong>.{' '}
             <strong>Savings account statements are not accepted</strong>.
           </>
@@ -492,6 +504,7 @@ const mapDispatchToProps = (dispatch) => {
     fetchLoanApplicationMeta: bindActionCreators(fetchLoanApplicationMeta, dispatch),
     changePseudoState: bindActionCreators(changePseudoState, dispatch),
     showNotification: bindActionCreators(showNotification, dispatch),
+    changeActiveState: bindActionCreators(changeActiveState, dispatch),
   };
 };
 
