@@ -2352,13 +2352,13 @@ class BankingAccountTest extends TestCase
         $this->createAndFetchMocks();
 
         $segmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushTrackEvent'])
+            ->setMethods(['pushIdentifyAndTrackEvent'])
             ->getMock();
 
         $this->app->instance('x-segment', $segmentMock);
 
         $segmentMock->expects($this->exactly(1))
-            ->method('pushTrackEvent')
+            ->method('pushIdentifyAndTrackEvent')
             ->willReturn(true);
 
         $this->fixtures->create('banking_account', [
