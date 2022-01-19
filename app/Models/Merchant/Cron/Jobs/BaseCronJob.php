@@ -106,7 +106,7 @@ class BaseCronJob
         {
             $this->initCron();
 
-            $this->updateLastCronTimeIfApplicable();
+            $this->updateLastCronTimeIfApplicable($this->cronStartTime);
 
             $this->data = $this->fetchDataFromCollectors();
 
@@ -172,7 +172,7 @@ class BaseCronJob
                 throw new CronConfigIntegrityException("invalid data collector defined");
             }
 
-            $collectorInstance = new $collector($this->lastCronTime, $this->args);
+            $collectorInstance = new $collector($this->lastCronTime, $this->cronStartTime, $this->args);
 
             $collectorData = $collectorInstance->collect();
 
@@ -209,9 +209,9 @@ class BaseCronJob
         return Constants::SUCCESS;
     }
 
-    public function updateLastCronTimeIfApplicable()
+    public function updateLastCronTimeIfApplicable($timeStamp)
     {
-        $this->app['cache']->put($this->lastCronTimestampCacheKey, Carbon::now()->getTimestamp());
+        $this->app['cache']->put($this->lastCronTimestampCacheKey, $timeStamp);
     }
 
     /**

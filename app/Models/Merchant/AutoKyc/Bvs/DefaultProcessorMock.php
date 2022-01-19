@@ -17,16 +17,29 @@ class DefaultProcessorMock extends DefaultProcessor
 
     const UNITTEST_VALIDATION_ARRAY_CACHE_TTL = 15 * 60; // 15 minutes
 
+    public function __construct(array $input, string $configName=null,string $mockStatus=null)
+    {
+       parent::__construct($input,$configName);
+        //
+        // This config is not defined in application config , this is used in test case only
+        //
+        $mockStatus = $mockStatus?? ($this->app['config']['services.bvs.response'] ?? Constant::SUCCESS);
+
+        $mockValidationDetail = $this->app['config']['services.bvs.validationDetail'] ?? [];
+
+        $this->setMockStatus($mockStatus);
+
+        $this->setMockValidationDetail($mockValidationDetail);
+
+    }
     public function Process(): Response
     {
         $validationResponse = new ValidationResponse();
 
-        $app = \App::getFacadeRoot();
-
-        if ($app->runningUnitTests() === true)
+        if ($this->app->runningUnitTests() === true)
         {
             // setting it to redis here so that we can assert in tests that the correct values were sent to BvsService
-            $app['cache']->put(self::UNITTEST_VALIDATION_ARRAY_CACHE_KEY,
+            $this->app['cache']->put(self::UNITTEST_VALIDATION_ARRAY_CACHE_KEY,
                 $this->getCreateValidationArray(),
             self::UNITTEST_VALIDATION_ARRAY_CACHE_TTL);
         }
@@ -65,9 +78,11 @@ class DefaultProcessorMock extends DefaultProcessor
 
     public function FetchDetails(string $validationId): Response
     {
+        $status = $this->mockStatus ?? 'success';
+
         $data = [
             'validation_id' => $validationId,
-            'status'        => 'success',
+            'status'        => $status,
             'enrichment_details' => get_Protobuf_Struct([
                 'online_provider' => [
                     'details' => [
@@ -88,7 +103,6 @@ class DefaultProcessorMock extends DefaultProcessor
                 ]
             ])
         ];
-
 
         $data = array_merge($data, $this->mockValidationDetail);
 

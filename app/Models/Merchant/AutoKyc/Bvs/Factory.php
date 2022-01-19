@@ -20,24 +20,11 @@ class Factory
 
         $mock = $app['config']['services.bvs.mock'];
 
-        $configName = $input[Constant::CONFIG_NAME];
+        $configName = $input[Constant::CONFIG_NAME]??null;
 
         if ($mock === true)
         {
-            $processorMock = new DefaultProcessorMock($input, $configName);
-
-            //
-            // This config is not defined in application config , this is used in test case only
-            //
-            $mockStatus = $app['config']['services.bvs.response'] ?? Constant::SUCCESS;
-
-            $mockValidationDetail = $app['config']['services.bvs.validationDetail'] ?? [];
-
-            $processorMock->setMockStatus($mockStatus);
-
-            $processorMock->setMockValidationDetail($mockValidationDetail);
-
-            return $processorMock;
+            return new DefaultProcessorMock($input, $configName);
         }
 
         return new DefaultProcessor($input, $configName);

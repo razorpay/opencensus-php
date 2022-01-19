@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\BvsValidation;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Models\Base\PublicEntity;
 
 class Repository extends Base\Repository
 {
@@ -79,5 +81,32 @@ class Repository extends Base\Repository
             ->where($validationUnitColumn, $validationUnit)
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->first();
+    }
+
+    public function getValidationsOfStatus(String $status,int $startTimeStamp,int $endTimeStamp)
+    {
+        $validationIdColumn     = $this->dbColumn(Entity::VALIDATION_ID);
+        $ownerIdColumn          = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
+        $platformColumn         = $this->repo->bvs_validation->dbColumn(Entity::PLATFORM);
+        $ownerTypeColumn        = $this->repo->bvs_validation->dbColumn(Entity::OWNER_TYPE);
+        $validationStatusColumn = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_STATUS);
+        $createdAtColumn        = $this->repo->bvs_validation->dbColumn(Entity::CREATED_AT);
+        $validationUnitColumn   = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_UNIT);
+        $artefactTypeColumn     = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+
+        return $this->newQuery()
+                    ->select($platformColumn,
+                             $ownerTypeColumn,
+                             $validationIdColumn,
+                             $ownerIdColumn,
+                             $validationStatusColumn,
+                             $validationUnitColumn,
+                             $artefactTypeColumn)
+                    ->whereBetween($createdAtColumn, [$startTimeStamp, $endTimeStamp])
+                    ->Where(Entity::VALIDATION_STATUS, "=", $status)
+                    ->Where(Entity::PLATFORM, "=", "pg")
+                    ->Where(Entity::OWNER_TYPE, "=", "merchant")
+                    ->orderBy($createdAtColumn, 'desc')
+                    ->get();
     }
 }

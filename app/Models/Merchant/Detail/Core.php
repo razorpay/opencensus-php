@@ -10,7 +10,10 @@ use Carbon\Carbon;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Models\Merchant\Store\ConfigKey;
+use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
@@ -152,6 +155,18 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact, $validationId = null)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $factory = new Merchant\AutoKyc\Bvs\requestDispatcher\Factory();
+
+        $requestDispatcher =  $factory->getBvsRequestDispatcherForArtefact(
+            $validationArtefact, $merchant, $merchant->merchantDetail);
+
+        return $requestDispatcher->fetchValidationDetails($validationId);
     }
 
     public function checkForCorrectAppUrls($appUrls)
@@ -6015,6 +6030,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($commentEntity);
     }
+
 
     public function getBankDetailsVerificationError(Entity $merchantDetails)
     {

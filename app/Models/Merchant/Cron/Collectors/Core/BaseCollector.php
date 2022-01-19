@@ -14,7 +14,9 @@ abstract class BaseCollector
 
     protected $name;
 
-    public function __construct(int $lastCronTime, array $args)
+    protected $cronStartTime;
+
+    public function __construct(int $lastCronTime, int $cronStartTime, array $args)
     {
         $this->app = App::getFacadeRoot();
 
@@ -23,6 +25,8 @@ abstract class BaseCollector
         $this->args = $args;
 
         $this->lastCronTime = $lastCronTime;
+
+        $this->cronStartTime = $cronStartTime;
     }
 
     abstract public function collect() : CollectorDto;

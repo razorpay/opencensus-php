@@ -2,6 +2,8 @@
 
 namespace Unit\Models\Merchant\Detail;
 
+use App;
+use Config;
 use Carbon\Carbon;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
@@ -31,9 +33,13 @@ use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\Onboarding\Cron\BvsValidationJobProcessor;
+use RZP\Models\Merchant\Cron as CronJobHandler;
 
 class CoreTest extends TestCase
 {
+    protected $repo;
+    protected $app;
     use DbEntityFetchTrait;
 
     protected function setUp(): void
@@ -41,6 +47,8 @@ class CoreTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/CoreTestData.php';
 
         parent::setUp();
+        $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
     }
 
     protected function createAndFetchMocks()
@@ -85,6 +93,539 @@ class CoreTest extends TestCase
             'merchant_id'   => $merchantId,
             'created_at'    => $createdAt
         ]);
+    }
+
+    protected function createAndFetchFixtures($customMerchantAttributes, $customVerificationDetailAttributes, $customBvsDetails)
+    {
+        $defaultMerchantAttributes = [
+            'promoter_pan'            => 'BRRPK8070K',
+            'promoter_pan_name'       => 'kakarla vasanthi',
+            'company_pan'             => 'ABCCD1234A',
+            'business_name'           => 'xyz',
+            'bank_account_number'     => '1234567890',
+            'bank_branch_ifsc'        => 'UTIB0002953',
+            'bank_account_name'       => 'XYZ',
+            'company_cin'             => 'U67190TN2014PTC096971',
+            'gstin'                   => '01AADCB1234M1ZX',
+        ];
+
+        $merchantDetail = $this->fixtures->create(
+            'merchant_detail:valid_fields',
+            array_merge($defaultMerchantAttributes, $customMerchantAttributes));
+
+        $mid = $merchantDetail->getId();
+
+        $defaultVerificationDetailAttributes = [
+            'merchant_id'          => $mid,
+            'artefact_type'        => 'gstin',
+            'artefact_identifier'  => 'doc',
+        ];
+
+        $verificationDetail = $this->fixtures->create(
+            'merchant_verification_detail',
+            array_merge($defaultVerificationDetailAttributes, $customVerificationDetailAttributes));
+
+        $defaultBvsDetails = [
+            'owner_type'        => 'merchant',
+            'owner_id'          => $mid,
+            'validation_status' => 'captured',
+            'platform'          => 'pg',
+            'created_at'        => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $bvsValidation = $this->fixtures->create(
+            'bvs_validation',
+            array_merge($defaultBvsDetails, $customBvsDetails));
+
+        return [
+            'merchant_detail'    => $merchantDetail,
+            'verificationDetail' => $verificationDetail,
+            'bvsValidation'      => $bvsValidation
+        ];
+    }
+
+    protected function mockBvsService(string $bvsResponse)
+    {
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', $bvsResponse);
+    }
+
+    public function testBvsValidationProcessForPersonalPanValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'poi_verification_status' => 'initiated',
+        ],[],[
+            'artefact_type'     => 'personal_pan',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::POI_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForPersonalPanValidationUnitProof()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'personal_pan_doc_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'personal_pan',
+            'validation_unit'   => 'proof',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForBusinessPanValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'company_pan_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'business_pan',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::COMPANY_PAN_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForBusinessPanValidationUnitProof()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'company_pan_doc_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'business_pan',
+            'validation_unit'   => 'proof',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'failed';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('failed', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('failed', $merchant->getAttribute(Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForBankAccountValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'bank_details_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'bank_account',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::BANK_DETAILS_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForBankAccountValidationUnitProof()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'bank_details_doc_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'bank_account',
+            'validation_unit'   => 'proof',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForCINValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'cin_verification_status'  => 'initiated'
+        ],[],[
+            'artefact_type'     => 'cin',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::CIN_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForLLPDeedValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'cin_verification_status'  => 'initiated'
+        ],[],[
+            'artefact_type'     => 'llp_deed',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'failed';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('failed', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('failed', $merchant->getAttribute(Entity::CIN_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForGSTINValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'gstin_verification_status'  => 'initiated'
+        ],[],[
+            'artefact_type'     => 'gstin',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::GSTIN_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForGSTINValidationUnitProof()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([],[
+            'artefact_type'        => 'gstin',
+            'artefact_identifier'  => 'doc',
+        ],[
+            'artefact_type'     => 'gstin',
+            'validation_unit'   => 'proof',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+        $verificationDetail = $fixtures['verificationDetail'];
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        $this->fixtures->connection('live')->create('merchant_verification_detail', $verificationDetail->toArray());
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+         $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+         $this->assertEquals('success', $bvs_validation->getValidationStatus());
+
+         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
+             $merchantId,
+             'gstin',
+             'doc'
+         );
+
+         $this->assertEquals('verified', $verificationDetail->getAttribute('status'));
+    }
+
+    public function testBvsValidationProcessForMSMEValidationUnitProof()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'msme_doc_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'msme',
+            'validation_unit'   => 'proof',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::MSME_DOC_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForShopEstablishmentValidationUnitIdentifier()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'shop_establishment_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'shop_establishment',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS));
+    }
+
+    public function testBvsValidationProcessForShopEstablishmentValidationUnitProof()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([], [
+            'artefact_type'        => 'shop_establishment',
+            'artefact_identifier'  => 'doc',
+        ], [
+            'artefact_type'     => 'shop_establishment',
+            'validation_unit'   => 'proof',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation = $fixtures['bvsValidation'];
+        $verificationDetail = $fixtures['verificationDetail'];
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        $this->fixtures->connection('live')->create('merchant_verification_detail', $verificationDetail->toArray());
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+
+        $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
+            $merchantId,
+            'shop_establishment',
+            'doc'
+        );
+
+        $this->assertEquals('verified', $verificationDetail->getAttribute('status'));
+    }
+
+    public function testBvsValidationProcessForOnlyLatestValidation()
+    {
+        $this->createAndFetchMocks();
+
+        $fixtures = $this->createAndFetchFixtures([
+            'shop_establishment_verification_status' => 'initiated'
+        ],[],[
+            'artefact_type'     => 'shop_establishment',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $merchantDetail = $fixtures['merchant_detail'];
+        $bvs_validation_latest = $fixtures['bvsValidation'];
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $bvsResponse = 'success';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation_latest->getValidationId());
+        $this->assertEquals('success', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS));
+
+        $bvs_validation_old = $this->fixtures->create(
+            'bvs_validation',[
+            'owner_type'        => 'merchant',
+            'owner_id'          => $merchantId,
+            'validation_status' => 'captured',
+            'platform'          => 'pg',
+            'created_at'        => Carbon::now()->subDays(3)->getTimestamp(),
+            'artefact_type'     => 'gstin',
+            'validation_unit'   => 'identifier',
+        ]);
+
+        $bvsResponse = 'failed';
+        $this->mockBvsService($bvsResponse);
+
+        (new CronJobHandler\Core())->handleCron([
+            "cron_name"  => "bvs_cron",
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $bvs_validation = $this->repo->bvs_validation->findOrFail($bvs_validation_old->getValidationId());
+        $this->assertEquals('failed', $bvs_validation->getValidationStatus());
+        $merchant = $this->repo->merchant_detail->findOrFail($merchantId);
+        $this->assertEquals('verified', $merchant->getAttribute(Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS));
     }
 
     public function testSegmentEventPushForFirstTransaction()

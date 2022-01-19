@@ -16,7 +16,8 @@ class Entity extends PublicEntity
     const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const RULE_EXECUTION_LIST   = 'rule_execution_list';
-
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
     protected $primaryKey = self::VALIDATION_ID;
 
     protected $entity = 'bvs_validation';
@@ -95,6 +96,11 @@ class Entity extends PublicEntity
     public function getValidationStatus(): string
     {
         return $this->getAttribute(self::VALIDATION_STATUS);
+    }
+
+    public function setValidationStatus(string $status): string
+    {
+        return $this->setAttribute(self::VALIDATION_STATUS,$status);
     }
 
     public function getErrorCode()

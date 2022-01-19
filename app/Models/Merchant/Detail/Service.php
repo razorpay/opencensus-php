@@ -2674,14 +2674,7 @@ class Service extends Base\Service
      */
     public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact, $validationId = null)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $factory = new Merchant\AutoKyc\Bvs\requestDispatcher\Factory();
-
-        $requestDispatcher =  $factory->getBvsRequestDispatcherForArtefact(
-            $validationArtefact, $merchant, $merchant->merchantDetail);
-
-        return $requestDispatcher->fetchValidationDetails($validationId);
+        return $this->core()->getBvsValidationArtefactDetails($merchantId,$validationArtefact,$validationId);
     }
 
     /**

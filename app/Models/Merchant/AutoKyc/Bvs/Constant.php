@@ -2,18 +2,21 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
+use RZP\Constants\Table;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
-
+use RZP\Models\Merchant\Stakeholder\Entity as StakeholderEntity;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\VerificationDetail\Constants as VerificationConstant;
 class Constant
 {
     //
     // Request fields
     //
     const BUSINESS_NAME     = 'business_name';
-    const NAME_OF_PARTNERS   = 'name_of_partners';
+    const NAME_OF_PARTNERS  = 'name_of_partners';
     const CONFIG_NAME       = 'config_name';
     const TYPE              = 'type';
     const DETAILS           = 'details';
@@ -61,9 +64,9 @@ class Constant
     const SHOP_OWNER_NAME          = 'owner_name';
 
     // CreateValidation Flows
-    const ONBOARDING_FLOW               = 'onboarding';
-    const NEEDS_CLARIFICATION           = 'needs clarification';
-    const POST_ONBOARDING_EDIT          = 'post onboarding edit';
+    const ONBOARDING_FLOW      = 'onboarding';
+    const NEEDS_CLARIFICATION  = 'needs clarification';
+    const POST_ONBOARDING_EDIT = 'post onboarding edit';
 
     //Manual Verification BVS
     const DATA                       = "data";
@@ -84,8 +87,8 @@ class Constant
     const MANUAL_VERIFICATION_FLOW   = 'manual_verification';
 
     // Razorx Experiment for BVS metadata
-    const LIVE_MODE  = 'live';
-    const ON         = 'on';
+    const LIVE_MODE = 'live';
+    const ON        = 'on';
 
     // Config names
     const PERSONAL_PAN_OCR                 = 'personal_pan_ocr';
@@ -161,8 +164,8 @@ class Constant
     const AADHAR_ESIGN_SESSION_KEY_PREFIX = "aadhar_esign_session";
     const CUSTOM_CALLBACK_HANDLER         = 'custom_callback_handler';
 
-    const FIELD_ARTEFACT_DETAILS_MAP      = [
-        self::PARTNERSHIP_DEED => [
+    const FIELD_ARTEFACT_DETAILS_MAP = [
+        self::PARTNERSHIP_DEED            => [
             self::ARTEFACT_TYPE   => self::PARTNERSHIP_DEED,
             self::PROOF_INDEX     => '1',
             self::VALIDATION_UNIT => Constants::PROOF,
@@ -257,5 +260,31 @@ class Constant
 
     const MASKED_KEYS_FOR_LOGGING = [
         self::DETAILS
+    ];
+
+    public const ARTEFACT_STATUS_ATTRIBUTE_MAPPING = [
+        Constant::PERSONAL_PAN . BvsValidationConstants::IDENTIFIER       => [Table::MERCHANT_DETAIL, Entity::POI_VERIFICATION_STATUS],
+        Constant::BUSINESS_PAN . BvsValidationConstants::IDENTIFIER       => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_VERIFICATION_STATUS],
+        Constant::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER       => [Table::MERCHANT_DETAIL, Entity::BANK_DETAILS_VERIFICATION_STATUS],
+        Constant::CIN . BvsValidationConstants::IDENTIFIER                => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::LLP_DEED . BvsValidationConstants::IDENTIFIER           => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::CIN . BvsValidationConstants::PROOF                     => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::LLP_DEED . BvsValidationConstants::PROOF                => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::GSTIN . BvsValidationConstants::IDENTIFIER              => [Table::MERCHANT_DETAIL, Entity::GSTIN_VERIFICATION_STATUS],
+        Constant::SHOP_ESTABLISHMENT . BvsValidationConstants::IDENTIFIER => [Table::MERCHANT_DETAIL, Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS],
+        Constant::BANK_ACCOUNT . BvsValidationConstants::PROOF            => [Table::MERCHANT_DETAIL, Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS],
+        Constant::PERSONAL_PAN . BvsValidationConstants::PROOF            => [Table::MERCHANT_DETAIL, Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS],
+        Constant::BUSINESS_PAN . BvsValidationConstants::PROOF            => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS],
+        Constant::MSME . BvsValidationConstants::PROOF                    => [Table::MERCHANT_DETAIL, Entity::MSME_DOC_VERIFICATION_STATUS],
+        Constant::MSME . BvsValidationConstants::IDENTIFIER               => [Table::MERCHANT_DETAIL, Entity::MSME_DOC_VERIFICATION_STATUS],
+        Constant::SHOP_ESTABLISHMENT . BvsValidationConstants::PROOF      => [Table::MERCHANT_VERIFICATION_DETAIL, VerificationConstant::SHOP_ESTABLISHMENT, "doc"],
+        Constant::GSTIN . BvsValidationConstants::PROOF                   => [Table::MERCHANT_VERIFICATION_DETAIL, VerificationConstant::GSTIN, "doc"],
+        Constant::PARTNERSHIP_DEED . BvsValidationConstants::PROOF        => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::PARTNERSHIP_DEED, "doc"],
+        Constant::PARTNERSHIP_DEED . BvsValidationConstants::IDENTIFIER   => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::PARTNERSHIP_DEED, "number"],
+        Constant::AADHAAR . BvsValidationConstants::IDENTIFIER            => [Table::STAKEHOLDER, StakeholderEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS],
+        Constant::VOTERS_ID . BvsValidationConstants::IDENTIFIER          => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::PASSPORT . BvsValidationConstants::IDENTIFIER           => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::VOTERS_ID . BvsValidationConstants::PROOF               => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::PASSPORT . BvsValidationConstants::PROOF                => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
     ];
 }

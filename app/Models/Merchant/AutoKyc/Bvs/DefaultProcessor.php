@@ -22,6 +22,8 @@ class DefaultProcessor implements Processor
      */
     protected $bvsRuleConfig;
 
+    protected $app;
+
     const BVS_CONFIG_NAME_SPACE = 'RZP\Models\Merchant\AutoKyc\Bvs\Config';
 
 
@@ -31,17 +33,20 @@ class DefaultProcessor implements Processor
      *
      * @throws LogicException
      */
-    public function __construct(array $input, string $configName)
+    public function __construct(array $input, string $configName=null)
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->trace = $app['trace'];
+        $this->trace = $this->app['trace'];
 
         $this->input = $input;
 
-        $configClass = $this->getConfigClass($configName);
+        if (empty($configName) === false)
+        {
+            $configClass = $this->getConfigClass($configName);
 
-        $this->bvsRuleConfig = new $configClass($this->input);
+            $this->bvsRuleConfig = new $configClass($this->input);
+        }
     }
 
     /**
@@ -75,9 +80,13 @@ class DefaultProcessor implements Processor
     public function FetchDetails(string $validationId): Response
     {
         $payload = [
-            Constant::VALIDATION_ID             => $validationId,
-            Constant::ENRICHMENT_DETAIL_FIELDS  => $this->bvsRuleConfig->getEnrichmentDetails()
+            Constant::VALIDATION_ID => $validationId
         ];
+
+        if (empty($this->bvsRuleConfig) === false)
+        {
+            $payload[Constant::ENRICHMENT_DETAIL_FIELDS] = $this->bvsRuleConfig->getEnrichmentDetails();
+        }
 
         $response = (new BvsClient\BvsValidationClient())->getValidation($payload);
 

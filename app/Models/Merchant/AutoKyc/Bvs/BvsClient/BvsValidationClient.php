@@ -7,6 +7,7 @@ use Request;
 
 use Twirp\Error;
 use ErrorException;
+use RZP\Error\ErrorCode;
 use Google\Protobuf\Struct;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\MapField;
@@ -47,14 +48,17 @@ class BvsValidationClient extends BaseClient
 
             $this->trace->info(
                 TraceCode::BVS_GET_VALIDATION_RESPONSE,
-                ['validationId' => $response->getValidationId()]
+                [
+                    'validationId' => $response->getValidationId(),
+                    'status'=>$response->getStatus()
+                ]
             );
 
             return $response;
         } catch (Error $e) {
             $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
 
-            throw new IntegrationException('Could not receive proper response from BVS service');
+            throw new IntegrationException('Could not receive proper response from BVS service',$e->getErrorCode()==='not_found'?ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND:null);
         }
     }
 
@@ -163,7 +167,11 @@ class BvsValidationClient extends BaseClient
         $requestPayload = new validationV1\GetValidationRequest();
 
         $requestPayload->setValidationId($payload[Constant::VALIDATION_ID]);
-        $requestPayload->setEnrichmentDetailsFields($payload[Constant::ENRICHMENT_DETAIL_FIELDS]);
+        if (empty($payload[Constant::ENRICHMENT_DETAIL_FIELDS]) === false)
+        {
+            $requestPayload->setEnrichmentDetailsFields($payload[Constant::ENRICHMENT_DETAIL_FIELDS]);
+        }
+
         return $requestPayload;
     }
 

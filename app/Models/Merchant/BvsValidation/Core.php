@@ -245,7 +245,7 @@ class Core extends Base\Core
      * @param string $validationId
      * @param array  $validationObj
      */
-    protected function processValidation(string $validationId, array $validationObj): void
+    public function processValidation(string $validationId, array $validationObj): void
     {
         $validation = $this->repo->bvs_validation->findOrFail($validationId);
 
