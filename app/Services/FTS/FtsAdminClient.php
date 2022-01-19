@@ -36,6 +36,8 @@ class FtsAdminClient extends Base
 
     const MERCHANT_CONFIGURATIONS = "merchant_configurations";
 
+    const FAIL_FAST_STATUS_LOGS = 'fail_fast_status_logs';
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -160,6 +162,14 @@ class FtsAdminClient extends Base
             parent::FTS_MERCHANT_CONFIGURATIONS_URL,
             Requests::GET,
             $input)['body'][self::MERCHANT_CONFIGURATIONS];
+    }
+
+    public function getFailFastStatusLogs(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::FTS_FAIL_FAST_STATUS_LOGS_GET_URL,
+            Requests::GET,
+            $input)['body'][self::FAIL_FAST_STATUS_LOGS];
     }
 
     public function fetch(string $entity, string $id, array $input)

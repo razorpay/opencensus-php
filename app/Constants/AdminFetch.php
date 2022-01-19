@@ -1494,6 +1494,21 @@ class AdminFetch
                     Fetch::TYPE     => Fetch::TYPE_STRING,
                 ],
             ],
+            Entity::FTS_FAIL_FAST_STATUS_LOGS => [
+                'channel' => [
+                    Fetch::LABEL  => 'Channel',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => Channel::getFtsSupportedChannels(),
+                ],
+                'mozart_identifier' => [
+                    Fetch::LABEL =>'Mozart Identifier',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'mode' => [
+                    Fetch::LABEL => 'Transfer Mode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
             Entity::PAYOUTS_PAYOUTS => [
             ],
             Entity::PAYOUTS_REVERSALS => [

@@ -445,6 +445,9 @@ class Entity
     const FTS_TRIGGER_STATUS_LOGS             = 'fts.trigger_status_logs';
     const FTS_CHANNEL_INFORMATION_STATUS_LOGS = 'fts.channel_information_status_logs';
 
+    // FTS Fail Fast Healths
+    const FTS_FAIL_FAST_STATUS_LOGS   = 'fts.fail_fast_status_logs';
+
     const UFH_FILES                      = 'ufh.files';
 
     // capital-collections
@@ -571,7 +574,7 @@ class Entity
 
     const MERCHANT_ONBOARDING_ESCALATIONS = 'merchant_onboarding_escalations';
     const ONBOARDING_ESCALATION_ACTIONS   = 'onboarding_escalation_actions';
-    
+
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
@@ -1264,6 +1267,7 @@ class Entity
         self::FTS_TRIGGER_STATUS_LOGS       => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_MERCHANT_CONFIGURATIONS   => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_CHANNEL_INFORMATION_STATUS_LOGS => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_FAIL_FAST_STATUS_LOGS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
         self::NBPLUS_EMANDATE_REGISTRATION  => \RZP\Services\NbPlus\Emandate::class,
