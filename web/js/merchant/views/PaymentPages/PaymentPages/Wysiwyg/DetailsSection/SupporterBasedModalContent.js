@@ -1,8 +1,8 @@
 import Form from 'common/new-ui/Form';
-import Input, { Label } from 'common/new-ui/Input';
+import Input, { Label, Description } from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { useState } from 'react';
-// import { getCustomURL } from 'merchant/components/DocsLink';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 const SupporterBasedModalContent = ({
   handleClose,
@@ -126,19 +126,23 @@ const SupporterBasedModalContent = ({
           />
         </div>
         {/* TODO: Add real docs link */}
-        {/* <div className="modal-section">
+        <div className="modal-section">
           <Description
             text={
               <>
                 Learn more about the benefits of adding a goal tracker and its different
                 configurations on our{' '}
-                <a href={getCustomURL(url)} target="_blank">
+                <a
+                  href={getCustomURL('https://razorpay.com/docs/payment-pages/goal-tracker/')}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   documentation page <i className="i i-external-link ml-5" />
                 </a>
               </>
             }
           />
-        </div> */}
+        </div>
       </Form>
       <footer>
         <Button.Transparent type="button" onClick={handleClose}>
