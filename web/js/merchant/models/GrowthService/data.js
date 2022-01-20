@@ -167,6 +167,12 @@ export const routeToChannelIDMap = {
       stage: 'IUaSEhwWpxdzIZ',
       production: 'IUaZC0Vjcujv3n',
     },
+    gs_login_card: {
+      dev: 'Il7nf6M5YIxTIo',
+      beta: 'Il7nf6M5YIxTIo',
+      stage: 'Il7nf6M5YIxTIo',
+      production: 'IlAgclzcAgy3Vf',
+    },
   },
   banking: {
     default: {
@@ -326,6 +332,12 @@ export const routeToChannelIDMap = {
       beta: 'IUbFrNg7pJxXMN',
       stage: 'IUbFrNg7pJxXMN',
       production: 'IUbcK1TFmKE1Dd',
+    },
+    gs_login_card: {
+      dev: 'Il7nf6M5YIxTIo',
+      beta: 'Il7nf6M5YIxTIo',
+      stage: 'Il7nf6M5YIxTIo',
+      production: 'IlAgclzcAgy3Vf',
     },
   },
 };

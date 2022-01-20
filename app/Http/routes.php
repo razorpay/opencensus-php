@@ -58,6 +58,9 @@ Route::group(['middleware' => ['web']], function () {
     // Org
     Route::get('/org', 'AdminController@getOrg')->name('get_org');
 
+    // Growth Public Assets
+    Route::post('/v1/growth/assets', 'GenericController@getPublicGrowthAssets')->name('growth_public_assets');
+
     Route::group(['prefix' => 'admin', 'middleware'  =>  ['set_x_frame']], function () {
         Route::post('/signin', 'AdminController@postSignin')->name('admin_signin');
         Route::get('/', 'AdminController@getIndex')->name('admin_getIndex');

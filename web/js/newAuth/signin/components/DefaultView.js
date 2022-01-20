@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
@@ -6,8 +6,25 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import { LinkButton } from '../styles';
 import { LoginCardArray } from '../data';
 import LoginCard from './LoginCard';
+import { fetchLoginCards, transformFetchLoginCardData } from '../../signin/apis';
+import Loader from '../../../../js/common/components/Loader';
 
 const DefaultView = () => {
+  const [loginCardArray, setLoginCardArray] = useState([]);
+  const [isFetchingLoginCardData, setFetchingLoginCardData] = useState(true);
+
+  useEffect(() => {
+    fetchLoginCards()
+      .then((res) => {
+        setLoginCardArray(transformFetchLoginCardData(res));
+      })
+      .catch(() => {
+        setLoginCardArray([...LoginCardArray]);
+      })
+      .finally(() => {
+        setFetchingLoginCardData(false);
+      });
+  }, []);
   const handleContactUsClick = () => {
     if (window.rzpQ.push) {
       window.rzpQ.push(
@@ -18,14 +35,14 @@ const DefaultView = () => {
     }
   };
 
-  const LoginCards = LoginCardArray.map((cardData, index) => (
+  const LoginCards = loginCardArray.map((cardData, index) => (
     <LoginCard cardData={cardData} key={cardData.id} cardOrder={index + 1} />
   ));
 
   return (
     <Flex flexDirection="column">
       <View>
-        {LoginCards}
+        {!isFetchingLoginCardData ? LoginCards : <Loader />}
         <Space margin={[7, 0]}>
           <Flex>
             <View>
@@ -49,4 +66,5 @@ const DefaultView = () => {
     </Flex>
   );
 };
+
 export default DefaultView;

@@ -227,4 +227,18 @@ class GenericController extends Controller
 
         return AppResponse::unauthorizedResponse('Unauthorized.', Request::route()->getName(), $path);
     }
+
+    /**
+     * This request is for handling public growth assets (from growthpod)
+     * This is served directly from edge <> growth-service in prod
+     * This implementation is only to support devstack env
+     * @return mixed
+     */
+    public function getPublicGrowthAssets()
+    {
+        $request = new App\Admin\ApiRequestAny();
+        $method = Request::method();
+        list($error, $data, $httpCode) = $request->send('growth/public/assets', $method);
+        return AppResponse::jsonResponse($error, $data, $httpCode);
+    }
 }
