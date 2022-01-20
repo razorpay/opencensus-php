@@ -277,6 +277,7 @@ class AnalyticsTest extends TestCase
     public function testLibrarySetDirectForPostPaymentRoute()
     {
         $payment = $this->getDefaultPaymentArray();
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         // Create a card that won't go through 3DS to make the test simpler
         $this->fixtures->merchant->enableInternational();

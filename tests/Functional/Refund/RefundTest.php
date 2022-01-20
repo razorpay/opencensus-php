@@ -5075,8 +5075,10 @@ class RefundTest extends TestCase
         $payment['card']['number'] = '4012010000000007';
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment');
 

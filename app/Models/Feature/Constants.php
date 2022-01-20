@@ -186,6 +186,8 @@ class Constants
 
     const DISABLE_NATIVE_CURRENCY         = 'disable_native_currency';
 
+    const DCC_ON_OTHER_LIBRARY            = 'dcc_on_other_library';
+
     const DIRECT_SETTLEMENT               = 'direct_settlement';
 
     const AVS                             = 'avs';
@@ -1523,6 +1525,7 @@ class Constants
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
+        self::DCC_ON_OTHER_LIBRARY            => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

@@ -1580,6 +1580,8 @@ class OrderTest extends TestCase
             'force_offer' => true,
         ]);
 
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $this->mockCardVault();
 
         $payment = $this->getDefaultPaymentArray();

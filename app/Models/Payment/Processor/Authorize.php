@@ -9088,7 +9088,8 @@ trait Authorize
         // For non S2S and non-custom checkout calls, this redirection should not happen
 
         if ((($this->app['api.route']->isS2SPaymentRoute() === false) or
-            ($this->app['basicauth']->isPrivateAuth() === false)) and $library !== Analytics\Metadata::RAZORPAYJS)
+            ($this->app['basicauth']->isPrivateAuth() === false)) and
+            $this->isLibrarySupportedForDCC($library) === false)
         {
             return false;
         }
@@ -9113,11 +9114,9 @@ trait Authorize
             return false;
         }
 
-        //@todo: Condition for A/B testing on DCC for custom checkout, remove for full rollout
-        $variantFlag = (new Merchant\Core())->isRazorxExperimentEnable(
-            $payment->merchant->getPublicId(), Merchant\RazorxTreatment::DCC_ON_INTERNATIONAL);
-
-        if($library === Analytics\Metadata::RAZORPAYJS && $variantFlag === false)
+        //TODO enable dcc on custom, embedded & direct based on temporary feature flag.
+        if($this->isDCCEnabledLibraryOnFeatureFlag($library) and
+            $payment->merchant->isDCCEnabledOnOtherLibraries() === false)
         {
             return false;
         }
@@ -9168,6 +9167,34 @@ trait Authorize
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * @param $library
+     * @return bool
+     */
+    public function isLibrarySupportedForDCC($library): bool
+    {
+        if ((isset($library) === true) and
+            (in_array($library, Analytics\Metadata::DCC_SUPPORTED_LIBRARIES) === true)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param $library
+     * @return bool
+     */
+    public function isDCCEnabledLibraryOnFeatureFlag($library): bool
+    {
+        if ((isset($library) === true) and
+            (in_array($library, Analytics\Metadata::DCC_SUPPORTED_LIBRARIES_ON_FEATURE_FLAG) === true)
+        ) {
+            return true;
+        }
         return false;
     }
 
@@ -9271,7 +9298,7 @@ trait Authorize
 
             // Passing http-method additionally for custom checkout redirect
             $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
-            if($library === Analytics\Metadata::RAZORPAYJS && empty($httpMethod) !== true)
+            if($this->isLibrarySupportedForDCC($library) && empty($httpMethod) !== true)
             {
                 $data['request']['http_method'] = $httpMethod;
             }

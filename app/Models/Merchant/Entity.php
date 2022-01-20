@@ -955,6 +955,15 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_NATIVE_CURRENCY) === false);
     }
 
+    /**
+     * @return bool
+     * This flag is used to enable dcc on custom, embedded & direct for specific merchants.
+     */
+    public function isDCCEnabledOnOtherLibraries(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::DCC_ON_OTHER_LIBRARY) === true);
+    }
+
     public function isAddressRequiredEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_REQUIRED) === true);

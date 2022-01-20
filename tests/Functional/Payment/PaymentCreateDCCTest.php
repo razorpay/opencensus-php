@@ -260,8 +260,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $this->assertFalse($this->redirectToDCCInfo);
         $this->assertFalse($this->redirectToUpdateAndAuthorize);
@@ -313,8 +315,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -355,8 +359,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -399,8 +405,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -526,8 +534,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment = $this->payment;
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -609,8 +619,11 @@ class PaymentCreateDCCTest extends TestCase
 
         $usdAmount = $responseContent['all_currencies'][$payment['dcc_currency']]['amount'];
         $inrAmount = $responseContent['all_currencies']['INR']['amount'];
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -669,8 +682,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment['currency_request_id'] = $currencyRequestId;
 
         $inrAmount = $responseContent['all_currencies']['INR']['amount'];
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -730,8 +745,10 @@ class PaymentCreateDCCTest extends TestCase
         $payment['currency'] = 'EUR';
         $payment['dcc_currency'] = 'EUR';
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
-        $this->doAuthAndCapturePayment($payment);
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
         $paymentMeta = $this->getLastEntity('payment_meta', true);
@@ -994,6 +1011,8 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment['order_id'] = $order->getPublicId();
         $payment['amount']   = $order->getAmount();
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
 
         $this->doAuthPayment($payment);
 
@@ -1033,6 +1052,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['offer_id'] = $offer->getPublicId();
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $this->doAuthPayment($payment);
 
@@ -1071,6 +1091,7 @@ class PaymentCreateDCCTest extends TestCase
         $payment['offer_id'] = $offer->getPublicId();
         $payment['dcc_currency'] = 'INR';
         $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $this->doAuthPayment($payment);
 
@@ -1114,6 +1135,116 @@ class PaymentCreateDCCTest extends TestCase
         $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
 
         $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDCCCustomLibrary()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CUSTOM;
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDCCEmbeddedLibrary()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
+        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDCCDirectLibrary()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
+        $payment = $this->payment;
+        //setMetadataForPublicAuthPayment will take care of setting library to direct
+        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithDCCCustomLibraryWithoutFeature()
+    {
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CUSTOM;
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentCreateWithDCCEmbeddedLibraryWithoutFeature()
+    {
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
+    public function testPaymentCreateWithDCCDirectLibraryWithoutFeature()
+    {
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
 
     public function testPaymentCustomCheckoutDCCDisabledMerchants()

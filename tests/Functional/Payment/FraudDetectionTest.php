@@ -52,6 +52,7 @@ class FraudDetectionTest extends TestCase
         $payment['card']['number'] = '5217294025032720';
 
         $data = $this->testData[__FUNCTION__];
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -210,6 +211,7 @@ class FraudDetectionTest extends TestCase
         $this->mockRazorx();
 
         $payment = $this->getDefaultPaymentArray();
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $payment['card']['number'] = '4012010000000007';
 
@@ -249,7 +251,7 @@ class FraudDetectionTest extends TestCase
             'merchant_id'    => $merchant_id,
             'contact_mobile' => $merchant_phone
         ]);
-
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
 
         $shieldClient->shouldReceive('evaluateRules')
@@ -430,7 +432,7 @@ class FraudDetectionTest extends TestCase
                 'country' => 'US',
                 'enabled' => '1'
             ]);
-
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
         $payment = $this->getDefaultPaymentArray();
 
         $payment['card']['number'] = '5149067611060906';
@@ -726,6 +728,7 @@ class FraudDetectionTest extends TestCase
         $this->app['shield'] = $shieldClient;
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->mockRazorx();
 

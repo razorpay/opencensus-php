@@ -997,6 +997,8 @@ class PaymentCreateTest extends TestCase
     {
         $this->fixtures->merchant->enableInternational();
         $this->payment['card']['number'] = '4012010000000007';
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $card = $this->getLastEntity('card', true);
@@ -1008,6 +1010,8 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->merchant->enableInternational();
         $this->fixtures->merchant->addFeatures('raas');
         $this->payment['card']['number'] = '4012010000000007';
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $this->doAuthAndCapturePayment($this->payment);
 
         $card = $this->getLastEntity('card', true);
@@ -3935,6 +3939,7 @@ class PaymentCreateTest extends TestCase
             'country' => 'US',
             'network' => 'MasterCard',
         ]);
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $response = $this->doAuthPayment($paymentArray);
 

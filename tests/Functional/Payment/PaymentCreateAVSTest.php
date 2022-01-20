@@ -160,6 +160,7 @@ class PaymentCreateAVSTest extends TestCase
         // Same customer 2nd time payment create different billing address
         $secondBillingAddressArray = $this->getDefaultBillingAddressArray();
         $payment = $this->getPaymentArray($secondBillingAddressArray, 1);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $response = $this->doAuthPayment($payment);
 
@@ -185,6 +186,7 @@ class PaymentCreateAVSTest extends TestCase
         $billingAddress['line1'] = 'Razorpay Software, 1st Floor, 11, SJR Cyber';
 
         $paymentArray = $this->getPaymentArray($billingAddress, 1);
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -197,6 +199,7 @@ class PaymentCreateAVSTest extends TestCase
     public function testCreatePaymentAVSWithoutBillingAddress()
     {
         $paymentArray = $this->getPaymentArray(null, 1);
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -212,6 +215,8 @@ class PaymentCreateAVSTest extends TestCase
         $payment = $this->getPaymentArray($billingAddressArray, 1);
         $payment['card']['number'] = '555555555555558';
         $payment['callback_url'] = $this->getLocalMerchantCallbackUrl();
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $this->fixtures->iin->create([
             'iin' => '555555',
             'country' => 'US',
@@ -477,6 +482,8 @@ class PaymentCreateAVSTest extends TestCase
         }
 
         $paymentArray = $this->getPaymentArray($billingAddressArray, $localSave);
+
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
 
         $response = $this->doAuthPayment($paymentArray);
 

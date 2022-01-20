@@ -308,6 +308,8 @@ class HitachiGatewayTest extends TestCase
             'network' => 'Visa',
         ]);
 
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $payment = $this->defaultAuthPayment([
             'card' => [
                 'number'       => CardNumber::INTERNATIONAL_VISA_ENROLLED,
@@ -357,6 +359,8 @@ class HitachiGatewayTest extends TestCase
         $this->mockShield();
 
         $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $payment['card'] = [
             'number'       => '4012010000000007',
@@ -409,6 +413,8 @@ class HitachiGatewayTest extends TestCase
             'name'         => 'Test Card'
         ];
 
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
@@ -438,6 +444,9 @@ class HitachiGatewayTest extends TestCase
             'country' => 'US',
             'network' => 'Visa',
         ]);
+
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
         $payment = $this->defaultAuthPayment([
             'card' => [
                 'number'       => CardNumber::INTERNATIONAL_VISA,

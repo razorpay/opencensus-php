@@ -111,6 +111,7 @@ class CardTest extends TestCase
         $this->ba->publicAuth();
 
         $data = $this->testData[__FUNCTION__];
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {

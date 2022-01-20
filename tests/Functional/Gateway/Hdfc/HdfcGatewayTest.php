@@ -206,6 +206,7 @@ class HdfcGatewayTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->mockShield();
 
@@ -276,6 +277,8 @@ class HdfcGatewayTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal', ['capability' => 2]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->mockShield();
 

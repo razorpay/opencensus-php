@@ -1276,6 +1276,7 @@ class CardPaymentServiceTest extends TestCase
         $this->enableCpsConfig();
 
         $this->fixtures->merchant->addFeatures(['avs']);
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [

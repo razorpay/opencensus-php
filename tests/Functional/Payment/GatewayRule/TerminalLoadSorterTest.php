@@ -109,6 +109,7 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
         $this->mockCardVault();
 
         $testData = $this->testData[__FUNCTION__];

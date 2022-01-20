@@ -107,6 +107,7 @@ class BladeGatewayTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures('skip_international_auth');
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $payment = $this->defaultAuthPayment([
             'card' => [
@@ -139,6 +140,8 @@ class BladeGatewayTest extends TestCase
             'type' => 'credit',
             'country' => 'US'
         ]);
+
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
 
         $payment = $this->defaultAuthPayment([
             'card' => [
