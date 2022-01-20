@@ -270,10 +270,14 @@ class Core extends Base\Core
                                               string $batchId = null,
                                               bool $isInternal = false): Entity
     {
+        $amountInfo = $this->getAmountInfoFromInput($input);
+
         $this->trace->info(
             TraceCode::PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST,
             [
-                'input' => $input
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+                'amount_info' => $amountInfo
             ]);
 
         $payout = $this->getProcessor('fund_account_payout')
@@ -285,6 +289,26 @@ class Core extends Base\Core
         $this->dispatchFtaInitiate($payout);
 
         return $payout;
+    }
+
+    protected function getAmountInfoFromInput(array $input)
+    {
+        $amountInfo = [];
+
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            $amount = $input[Entity::AMOUNT];
+
+            $amountInfo[Entity::AMOUNT] = $amount;
+
+            $amountInfo['type'] = gettype($amount);
+
+            $amountInfo['float_round_off'] = round($amount, 14);
+
+            $amountInfo['is_int'] = is_int($amount);
+        }
+
+        return $amountInfo;
     }
 
     /**

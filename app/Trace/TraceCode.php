@@ -3361,6 +3361,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Payout Link Codes
 
+    const PAYOUT_CREATE_REQUEST                                 = 'PAYOUT_CREATE_REQUEST';
+    const PAYOUT_CREATE_RESPONSE                                = 'PAYOUT_CREATE_RESPONSE';
     const PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST                 = 'PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST';
     const PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST            = 'PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST';
     const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST               = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';
