@@ -14402,8 +14402,41 @@ class ServiceablePincodes
         414301,
     ];
 
+    public static $unserviceableByRBL = [
+        173205,
+        174103,
+        711101,
+        382330,
+        121102,
+        752101,
+        755018,
+        534101,
+        394650,
+        201301,
+        132040,
+        122002,
+        743376,
+        743376,
+        620006,
+        360005,
+        394651,
+        410207,
+        394601,
+        841202,
+        793119,
+        394601,
+        388001,
+        560062,
+        410207
+    ];
+
     public function checkIfPincodeIsWhitelisted(string $pincode): bool
     {
         return array_key_exists((int)$pincode, array_flip(ServiceablePincodes::$pincodes));
+    }
+
+    public function checkIfPincodeIsUnserviceableByRBl(string $pincode): bool
+    {
+        return array_key_exists((int)$pincode, array_flip(ServiceablePincodes::$unserviceableByRBL));
     }
 }

@@ -339,6 +339,31 @@ return [
           ],
       ],
 
+    'testCreateBankingAccountWithUnserviceablePincodeFormDashboard' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'POST',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '174103',
+                'activation_detail' => [
+                    'business_category' => 'llp',
+                    'sales_team'        => 'self_serve'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'serviceability' => false,
+                'business_type_supported' => false,
+                'errorMessage' => null
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithUnserviceableBusinessCategoryFromAdminDashboard' => [
         'request'  => [
             'url'     => '/banking_accounts_admin_dashboard',

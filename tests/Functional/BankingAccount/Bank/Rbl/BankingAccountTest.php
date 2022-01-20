@@ -512,6 +512,27 @@ class BankingAccountTest extends TestCase
         $this->assertNull($bankingAccount);
     }
 
+    public function testCreateBankingAccountWithUnserviceablePincodeFormDashboard()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNull($bankingAccount);
+    }
+
     public function testCreateBankingAccountWithUnserviceableBusinessCategoryFromAdminDashboard()
     {
 
