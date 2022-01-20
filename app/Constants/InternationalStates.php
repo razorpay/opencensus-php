@@ -292,7 +292,13 @@ class InternationalStates
     const US48 = "US-WV";
     const US49 = "US-WI";
     const US50 = "US-WY";
-
+    const US51 = 'US-DC';
+    const US52 = 'US-AS';
+    const US53 = 'US-GU';
+    const US54 = 'US-MP';
+    const US55 = 'US-PR';
+    const US56 = 'US-UM';
+    const US57 = 'US-VI';
 
     const COUNTRYNAME = "countryName";
     const COUNTRYALPHA2CODE = "countryAlpha2Code";
@@ -588,6 +594,13 @@ class InternationalStates
         self::US48 => 'West Virginia',
         self::US49 => 'Wisconsin',
         self::US50 => 'Wyoming',
+        self::US51 => 'District of Columbia',
+        self::US52 => 'American Samoa',
+        self::US53 => 'Guam',
+        self::US54 => 'Northern Mariana Islands',
+        self::US55 => 'Puerto Rico',
+        self::US56 => 'United States Minor Outlying Islands',
+        self::US57 => 'Virgin Islands, U.S',
     ];
 
     const AUSTRIA = [
@@ -934,6 +947,13 @@ class InternationalStates
         self::US48,
         self::US49,
         self::US50,
+        self::US51,
+        self::US52,
+        self::US53,
+        self::US54,
+        self::US55,
+        self::US56,
+        self::US57,
     ];
 
     protected static $countryStateMap = [
