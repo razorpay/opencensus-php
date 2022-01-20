@@ -11,6 +11,7 @@ use Mockery;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -941,7 +942,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnAxisOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = 'CLTnQqDj9Si8bx';
+        $orgId      = OrgEntity::AXIS_ORG_ID;
 
         // create org
 
@@ -966,9 +967,9 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
-        $this->fixtures->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
 
-        $methods = $this->fixtures->edit('methods', '1cXSLlUU8V9sXl', ['bank_transfer' => 0]);
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
@@ -1027,7 +1028,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnIciciOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = 'EKUZMBUtgInwi0'; // ICICI org id
+        $orgId      = OrgEntity::ICICI_ORG_ID;
 
         // create org
 
@@ -1052,9 +1053,9 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
-        $this->fixtures->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
 
-        $methods = $this->fixtures->edit('methods', '1cXSLlUU8V9sXl', ['bank_transfer' => 0]);
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
@@ -1100,6 +1101,338 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'cardless_emi'  => true,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+    }
+
+    public function testActivationDefaultMethodsBasedOnHdfcOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = OrgEntity::HDFC_ORG_ID;
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYt';
+
+        // create pricing plan for org
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId
+        ]);
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emandate'      => false,
+            'emi'           => [],
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => false,
+            'freecharge'    => false,
+            'jiomoney'      => false,
+            'mobikwik'      => false,
+            'mpesa'         => false,
+            'olamoney'      => false,
+            'payumoney'     => false,
+            'payzapp'       => false,
+            'sbibuddy'      => false,
+            'phonepe'       => false,
+            'phonepeswitch' => false,
+            'bank_transfer' => false,
+            'cardless_emi'  => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+    }
+
+    public function testActivationDefaultMethodsBasedOnSibOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = OrgEntity::SIB_ORG_ID;
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYt';
+
+        // create pricing plan for org
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId
+        ]);
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [],
+            'amex'          => false,
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => false,
+            'freecharge'    => false,
+            'jiomoney'      => false,
+            'mobikwik'      => false,
+            'mpesa'         => false,
+            'olamoney'      => false,
+            'payumoney'     => false,
+            'payzapp'       => false,
+            'sbibuddy'      => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+    }
+
+    public function testActivationDefaultMethodsBasedOnAxisEasypayOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = OrgEntity::AXIS_EASYPAY_ORG_ID;
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYt';
+
+        // create pricing plan for org
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId
+        ]);
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [],
+            'amex'          => false,
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => false,
+            'freecharge'    => false,
+            'jiomoney'      => false,
+            'mobikwik'      => false,
+            'mpesa'         => false,
+            'olamoney'      => false,
+            'payumoney'     => false,
+            'payzapp'       => false,
+            'sbibuddy'      => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+    }
+
+    public function testActivationDefaultMethodsBasedOnKotakOrg()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+        $orgId      = OrgEntity::KOTAK_ORG_ID;
+
+        // create org
+
+        $org = $this->fixtures->create('org', ['id' => $orgId]);
+
+        $planId = '1hDYlICobzOCYt';
+
+        // create pricing plan for org
+
+        $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        // assign org standard pricing plan to merchant
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id' => $orgId,
+            'pricing_plan_id' => $planId
+        ]);
+
+        $data = $this->getKycSubmittedMerchantDetailData($merchantId);
+
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+
+        $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $data = $this->getKycSubmittedMerchantData();
+        $data['category'] = '6051';
+        $data['category2'] = 'cryptocurrency';
+        $data['activated'] = 0;
+
+        $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, $data);
+
+        $testData = $this->testData['changeActivationStatus'];
+
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            'activated');
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
+
+        $this->startTest($testData);
+
+        $methodsArray =  ((new MethodRepo)->find($merchantId))->toArray();
+
+        $expectedMethods = [
+            'credit_card'   => true,
+            'debit_card'    => true,
+            'netbanking'    => true,
+            'upi'           => true,
+            'emi'           => [],
+            'amex'          => false,
+            'prepaid_card'  => false,
+            'paylater'      => false,
+            'airtelmoney'   => false,
+            'freecharge'    => false,
+            'jiomoney'      => false,
+            'mobikwik'      => false,
+            'mpesa'         => false,
+            'olamoney'      => false,
+            'payumoney'     => false,
+            'payzapp'       => false,
+            'sbibuddy'      => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

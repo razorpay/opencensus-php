@@ -58,6 +58,7 @@ class DefaultMethodsForCategory
         // for the merchant belonging to that category, however can be enabled by admins
         // key is currently merchant category concatanated by category2, (in future business type etc can also come)
         // data is from this sheet - https://docs.google.com/spreadsheets/d/1eZMlh007Utp8JWGYGJ7Hk6zADSVlBWspHEzcGoKOydI/edit?usp=sharing
+        // As of 19 Jan 2022 - https://docs.google.com/spreadsheets/d/1ZSJagVypcxKG_s1FLuY-D_tqyEb2U3hJ
         const CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP = [
             'default' => [
                 // Financial Services
@@ -103,8 +104,6 @@ class DefaultMethodsForCategory
                 '6300' => [
                     Category::INSURANCE => [
                         self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::PHONEPE],
-                        self::GREYLISTED_METHODS =>[],
-                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX, Entity::PHONEPE],
                         self::GREYLISTED_METHODS =>[],
                         self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                     ]
@@ -819,6 +818,78 @@ class DefaultMethodsForCategory
                     ]
                 ],
             ],
+
+            OrgEntity::SIB_ORG_ID => [
+                Category::OTHERS  =>  [
+                    Category::OTHERS    =>  [
+                        self::BLACKLISTED_METHODS => [
+                            Entity::AMEX,
+                            Entity::EMI,
+                            Entity::PREPAID_CARD,
+                            Entity::PAYLATER,
+                            Entity::AIRTELMONEY,
+                            Entity::FREECHARGE,
+                            Entity::JIOMONEY,
+                            Entity::MOBIKWIK,
+                            Entity::MPESA,
+                            Entity::OLAMONEY,
+                            Entity::PAYUMONEY,
+                            Entity::PAYZAPP,
+                            Entity::SBIBUDDY,
+                        ],
+                        self::GREYLISTED_METHODS =>[],
+                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    ]
+                ],
+            ],
+
+            OrgEntity::AXIS_EASYPAY_ORG_ID => [
+                Category::OTHERS  =>  [
+                    Category::OTHERS    =>  [
+                        self::BLACKLISTED_METHODS => [
+                            Entity::AMEX,
+                            Entity::EMI,
+                            Entity::PREPAID_CARD,
+                            Entity::PAYLATER,
+                            Entity::AIRTELMONEY,
+                            Entity::FREECHARGE,
+                            Entity::JIOMONEY,
+                            Entity::MOBIKWIK,
+                            Entity::MPESA,
+                            Entity::OLAMONEY,
+                            Entity::PAYUMONEY,
+                            Entity::PAYZAPP,
+                            Entity::SBIBUDDY,
+                        ],
+                        self::GREYLISTED_METHODS =>[],
+                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    ]
+                ],
+            ],
+
+            OrgEntity::KOTAK_ORG_ID => [
+                Category::OTHERS  =>  [
+                    Category::OTHERS    =>  [
+                        self::BLACKLISTED_METHODS => [
+                            Entity::AMEX,
+                            Entity::EMI,
+                            Entity::PREPAID_CARD,
+                            Entity::PAYLATER,
+                            Entity::AIRTELMONEY,
+                            Entity::FREECHARGE,
+                            Entity::JIOMONEY,
+                            Entity::MOBIKWIK,
+                            Entity::MPESA,
+                            Entity::OLAMONEY,
+                            Entity::PAYUMONEY,
+                            Entity::PAYZAPP,
+                            Entity::SBIBUDDY,
+                        ],
+                        self::GREYLISTED_METHODS =>[],
+                        self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    ]
+                ],
+            ],
         ];
 
     // These are all the methods provided in the sheet https://docs.google.com/spreadsheets/d/1eZMlh007Utp8JWGYGJ7Hk6zADSVlBWspHEzcGoKOydI
@@ -854,6 +925,7 @@ class DefaultMethodsForCategory
     ];
 
     // Refer: https://docs.google.com/spreadsheets/d/1SbG4Zi29QFBjwN8QjKS47V13DW6LFbDk0U-OXQ1FLQo
+    // As of 19 Jan 2022 - https://docs.google.com/spreadsheets/d/1ZSJagVypcxKG_s1FLuY-D_tqyEb2U3hJ
     const ORG_WISE_METHODS_ENABLEMENT = [
         'default' => self::CATEGORY_DEPENDENT_METHODS,
         OrgEntity::AXIS_ORG_ID => [
@@ -887,15 +959,40 @@ class DefaultMethodsForCategory
             Entity::NETBANKING,
             Entity::UPI,
         ],
+        OrgEntity::SIB_ORG_ID => [
+            Entity::CREDIT_CARD,
+            Entity::DEBIT_CARD,
+            Entity::NETBANKING,
+            Entity::UPI,
+        ],
+        OrgEntity::AXIS_EASYPAY_ORG_ID => [
+            Entity::CREDIT_CARD,
+            Entity::DEBIT_CARD,
+            Entity::NETBANKING,
+            Entity::UPI,
+        ],
+        OrgEntity::KOTAK_ORG_ID => [
+            Entity::CREDIT_CARD,
+            Entity::DEBIT_CARD,
+            Entity::NETBANKING,
+            Entity::UPI,
+        ],
     ];
 
-    public static function getDefaultMethodsFromMerchantCategories($category, $category2, string $orgId = 'default')
+    public static function getDefaultMethodsFromMerchantCategories($category, $category2, string $orgId = 'default', $variantFlag = 'control')
     {
         $orgLevelMethodsMap = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$orgId] ?? self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP['default'];
+
+        if ($variantFlag == 'on') {
+            $orgLevelMethodsMap = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP['default'];
+        }
 
         $prohibitedMethods = $orgLevelMethodsMap[$category][$category2][self::BLACKLISTED_METHODS] ?? ($orgLevelMethodsMap[$category][Category::OTHERS][self::BLACKLISTED_METHODS] ?? $orgLevelMethodsMap[Category::OTHERS][Category::OTHERS][self::BLACKLISTED_METHODS]);
 
         $orgWiseMethodsForEnablement = self::ORG_WISE_METHODS_ENABLEMENT[$orgId] ?? self::ORG_WISE_METHODS_ENABLEMENT['default'];
+        if ($variantFlag == 'on') {
+            $orgWiseMethodsForEnablement = self::ORG_WISE_METHODS_ENABLEMENT['default'];
+        }
 
         $methodData = [];
 

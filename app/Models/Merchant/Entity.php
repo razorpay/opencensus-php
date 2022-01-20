@@ -880,13 +880,7 @@ class Entity extends Base\PublicEntity
 
     public function isEducationCategory()
     {
-        $eduCategories = array(
-            '8211',
-            '8220',
-            '8241',
-            '8244',
-            '8249',
-            '8299');
+        $eduCategories = Constants::EDUCATION_CATEGORIES;
 
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
