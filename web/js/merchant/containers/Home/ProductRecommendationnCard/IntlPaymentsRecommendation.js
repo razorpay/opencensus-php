@@ -4,7 +4,7 @@ import ShimmerWidget from './shimmer';
 import { analyticsFn } from 'merchant/utils/intlPaymentsRecommendation';
 
 function sendAnalyticsEvent() {
-  analyticsFn({ eventName: 'International_method_card_cta', event: 'clicked' });
+  analyticsFn({ eventName: 'International payments recommendation cta', event: 'clicked' });
 }
 
 const IntlPaymentsRecommendation = ({ internationalSettingStatus }) => {

@@ -11,7 +11,7 @@ const content = {
     bannerId: 'enable-international-payments',
     ctaText: 'View international methods',
     ctaLink: '/payment-methods?instrument=international',
-    eventName: 'International_method_snackbar_cta',
+    eventName: 'Enable international cards snackbar cta',
     event: 'clicked',
   },
   link_paypal: {
@@ -21,7 +21,7 @@ const content = {
     bannerId: 'link-paypal-account',
     ctaText: 'Link your PayPal account',
     ctaLink: '/payment-methods?instrument=international',
-    eventName: 'paypal_method_snackbar_cta',
+    eventName: 'Link paypal snackbar cta',
     event: 'clicked',
   },
 };

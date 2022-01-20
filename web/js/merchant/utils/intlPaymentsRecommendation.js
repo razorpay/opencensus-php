@@ -123,7 +123,7 @@ export const computeBannerState = (data = {}) => {
   // if Recommendation Card is expired then don't trigger analytics event
   if (intlRecommendationState.isEnabled) {
     enableRecommendationCard = true;
-    analyticsFn({ eventName: 'International_method_card', event: 'displayed' });
+    analyticsFn({ eventName: 'International payments recommendation', event: 'displayed' });
   }
   // IntlPaymentsRecommendation - End
 
@@ -141,7 +141,7 @@ export const computeBannerState = (data = {}) => {
     const intlCardState = getLocalState('rzp_banner_EnableInternationalPayments');
     if (intlCardState.isEnabled) {
       enableIntlCards = true;
-      analyticsFn({ eventName: 'International_method_snackbar', event: 'displayed' });
+      analyticsFn({ eventName: 'Enable international cards snackbar', event: 'displayed' });
     }
   }
   // EnableInternationalPayments - End
@@ -158,7 +158,7 @@ export const computeBannerState = (data = {}) => {
     const linkPaypalState = getLocalState('rzp_banner_LinkPayPalAccount');
     if (linkPaypalState.isEnabled) {
       enableLinkPaypal = true;
-      analyticsFn({ eventName: 'paypal_method_snackbar', event: 'displayed' });
+      analyticsFn({ eventName: 'Link paypal snackbar', event: 'displayed' });
     }
   }
   // LinkPayPalAccount - End
