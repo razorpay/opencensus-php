@@ -201,7 +201,7 @@ export default class Conversations extends React.Component {
 
   openGrievanceFlow(ticket) {
     if (window.rzpTicketSystem) {
-      window.rzpTicketSystem.openModal('#grievance-new', {
+      window.rzpTicketSystem.openModal('#raise-grievance', {
         ticketID: ticket.id,
       });
     }

@@ -15,6 +15,7 @@ import SupportBody from 'merchant/components/Support/components/SupportBody';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import { COMDEL_URL } from './constants';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 @withRouter
 @connect(
@@ -174,17 +175,19 @@ export default class Support extends Component {
           isOnBoardingRevampScreen={isOnBoardingRevampScreen}
           showComdelPopover={user.isComdelApiEnabled}
         />
-        <SupportBody
-          onToggle={this.handleToggle}
-          isOpened={isOpened}
-          botIsLoaded={this.state.botIsLoaded}
-          onChat={this.handleChat}
-          notifyCount={notifyCount}
-          isCallEnabled={isCallEnabled}
-          scheduleCallConfig={this.props.scheduleCallConfig}
-          supportFlags={this.state.supportFlags}
-          user={this.props.user}
-        />
+        <SuspenseWithLoader>
+          <SupportBody
+            onToggle={this.handleToggle}
+            isOpened={isOpened}
+            botIsLoaded={this.state.botIsLoaded}
+            onChat={this.handleChat}
+            notifyCount={notifyCount}
+            isCallEnabled={isCallEnabled}
+            scheduleCallConfig={this.props.scheduleCallConfig}
+            supportFlags={this.state.supportFlags}
+            user={this.props.user}
+          />
+        </SuspenseWithLoader>
       </div>
     );
   }

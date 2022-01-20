@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { Component, lazy } from 'react';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
@@ -9,6 +9,12 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import WriteToUsPopup from './WriteToUsPopup';
 import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
+import { initCare, TicketSystemEmitter } from '../../../care/init';
+
+const SupportSection = lazy(
+  () => import('@razorpay/frontend-care'),
+  // This will be replaced by @razorpay/care in prod
+);
 
 const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
@@ -30,6 +36,7 @@ const isWorkingDay = () => {
 class SupportBody extends Component {
   state = {
     timings: [],
+    careSupportSection: null,
   };
   openDashboardGuide = (_) => {
     analyticsTrack({
@@ -68,7 +75,6 @@ class SupportBody extends Component {
               businessName={user.name}
               id={id}
               supportFlags={this.props.supportFlags}
-              rzpTicketSystem={rzpTicketSystem}
               closeModal={this.props.closeModal}
             />
           ),
@@ -81,12 +87,32 @@ class SupportBody extends Component {
   };
 
   componentDidMount() {
+    window.rzpTicketSystem = {
+      openModal: (id, data) => {
+        initCare(this.props.user, { id, data });
+      },
+      options: {},
+    };
+
     if (this.props.user.isMobileSignupCareActive) {
       this.props.fetchTicketsRaisedByAgents();
     }
 
     CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
       this.createTicket(id, pcb, lcb);
+    });
+    TicketSystemEmitter.on('openModal', (module, initialData) => {
+      this.setState({
+        careSupportSection: {
+          module,
+          initialData,
+        },
+      });
+    });
+    TicketSystemEmitter.on('closeModal', () => {
+      this.setState({
+        careSupportSection: null,
+      });
     });
     const params = {
       url: 'merchants/chat/timings_config',
@@ -178,7 +204,6 @@ class SupportBody extends Component {
     window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
     trackSupportOptions('faqs');
   };
-
   render() {
     const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig } = this.props;
     const { handleClick, openDashboardGuide } = this;
@@ -220,7 +245,21 @@ class SupportBody extends Component {
     }
 
     return (
-      <div className={classList('support-body', isOpened && 'active')}>
+      <div class={classList('support-body', isOpened && 'active')}>
+        {this.state.careSupportSection ? (
+          <SupportSection
+            user={this.props.user}
+            analyticsInstance={analyticsTrack}
+            module={this.state.careSupportSection.module}
+            initialData={this.state.careSupportSection.initialData}
+            onClose={() => {
+              this.setState({
+                careSupportSection: null,
+              });
+            }}
+          />
+        ) : null}
+
         <header>
           <i className="i i-headset m-r" /> Help and Support{' '}
           <i className="i i-close pull-right mob-close" onClick={onToggle} />

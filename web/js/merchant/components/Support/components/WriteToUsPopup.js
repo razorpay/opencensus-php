@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSystem, id, history }) {
+function WriteToUsPopup({ businessName, supportFlags, closeModal, id, history }) {
   const data = {
     cta_list: supportFlags.cta_list,
     message_body: supportFlags.message_body,
@@ -20,7 +20,7 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
       },
     });
     closeModal();
-    rzpTicketSystem.openModal(`#${id}`);
+    window.rzpTicketSystem.openModal(`#${id}`);
   };
   const handleFaqs = () => {
     analyticsTrack({

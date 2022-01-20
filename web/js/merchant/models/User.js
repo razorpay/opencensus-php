@@ -640,6 +640,10 @@ export default class User {
     return this.getExpStatus('instrument_requests_smart_dashboard');
   }
 
+  get isFrontendCareActive() {
+    return this.getExpStatus('frontend_care_active');
+  }
+
   get isRazorxAnnouncementEnabled() {
     return this.findTag('announcement_razorpayx');
   }

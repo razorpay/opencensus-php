@@ -1,14 +1,12 @@
-/* global document:true */
-
-export default src => {
+export default (src, options = { async: true }) => {
   return new Promise((resolve, reject) => {
     try {
-      let script = document.createElement('script');
-      script.async = true;
+      const script = document.createElement('script');
       script.src = src;
-      script.onload = function onLoad() {
-        resolve();
-      };
+      Object.keys(options).forEach((key) => {
+        script[key] = options[key];
+      });
+      script.onload = resolve;
       document.head.appendChild(script);
     } catch (e) {
       reject(e);
