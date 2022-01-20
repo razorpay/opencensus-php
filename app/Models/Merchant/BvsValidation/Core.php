@@ -267,13 +267,22 @@ class Core extends Base\Core
         $validation->edit($validationObj);
 
         $this->mutex->acquireAndRelease(
+            $validationId,
+            function() use ($validation, $merchantId) {
+                $this->repo->bvs_validation->saveOrFail($validation);
+
+            },
+            Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
+
+        $this->mutex->acquireAndRelease(
             $merchantId,
             function() use ($validation, $merchantId) {
 
                 $this->repo->transactionOnLiveAndTest(
                     function() use ($validation, $merchantId) {
 
-                        $this->repo->bvs_validation->saveOrFail($validation);
 
                         $callbackHandlerFn = $this->getCallbackHandlerFunction($validation);
 
@@ -307,9 +316,9 @@ class Core extends Base\Core
         catch (\Exception $e)
         {
             $errorContext = [
-                'merchant_id'              => $merchantId,
-                'validation_id'            => $validationId,
-                'message'                  => $e->getMessage(),
+                'merchant_id'   => $merchantId,
+                'validation_id' => $validationId,
+                'message'       => $e->getMessage(),
             ];
 
             $this->trace->error(TraceCode::MERCHANT_STATUS_UPDATER_FAIL, $errorContext);

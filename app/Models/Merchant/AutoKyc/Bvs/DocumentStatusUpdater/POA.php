@@ -30,18 +30,25 @@ class POA extends BaseStatusUpdater
      */
     public function updateValidationStatus(): void
     {
-        $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
-            $this->merchantId,
-            $this->artefactType,
-            $this->validationUnit,
-            Constant::MERCHANT
-        );
+        $validation = $this->fetchValidOcrDocumentValidation($this->merchant);
 
         $documentValidationStatus = $this->getFailedStatus();
 
         if (empty($validation) === false)
         {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
+        }
+
+        if(empty($documentValidationStatus) === true){
+
+            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS_SKIPPED, [
+                'merchant_id'                  => $this->merchantDetails->getId(),
+                'artefact_type'                => $this->artefactType,
+                'document_verification_status' => $documentValidationStatus,
+                'bvs_validation_id'            => $this->consumedValidationId
+            ]);
+
+            return;
         }
 
         $this->merchantDetails->setPoaVerificationStatus($documentValidationStatus);

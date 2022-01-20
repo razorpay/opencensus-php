@@ -465,7 +465,7 @@ class Core extends Base\Core
 
         foreach ($documents as $document)
         {
-            if (Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
+            if (Type::isPoaDocument($document->getDocumentType()) === false)
             {
                 continue;
             }
