@@ -598,27 +598,6 @@ return [
         ],
     ],
 
-    'testCaptchaBypassForDemoUserInPg' => [
-        'request' => [
-            'url'     => '/users/login',
-            'method'  => 'POST',
-            'content' => []
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
-        ],
-    ],
-
     'testMobileOtpLogin' => [
         'request' => [
             'url'     => '/users/login/otp',

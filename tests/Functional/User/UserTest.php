@@ -919,27 +919,6 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testCaptchaBypassForDemoUserInPg()
-    {
-        $user = $this->fixtures->create('user', ['email' => UserConstants::BANKING_DEMO_USER_EMAILS[0], 'password' => 'hello123']);
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $content = [
-            'email'                 => $user['email'],
-            'password'              => 'hello123',
-            'captcha'               => 'foo',
-        ];
-
-        $testData['request']['content'] = $content;
-
-        $testData['request']['headers']['X-Request-Origin'] = config('applications.dashboard.url');
-
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->startTest();
-    }
-
     public function testMobileOtpLogin()
     {
         $smsPayload = [

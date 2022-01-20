@@ -822,14 +822,6 @@ class Core extends Base\Core
             return $user;
         }
 
-        // temporary solution for restricting banking demo user for demo v0.5
-        if ((in_array($input[Entity::EMAIL], Constants::BANKING_DEMO_USER_EMAILS, true) === true) and
-            $this->app['basicauth']->getRequestOriginProduct() !== ProductType::BANKING)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
-        }
-
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
 
         $this->traceLoginRoute($input);
