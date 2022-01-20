@@ -168,6 +168,10 @@ class Constants
     const PAYPAL_CC                       = 'paypal_cc';
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
     const WALLET                          = 'wallet';
+    const SR_SENSITIVE_BUCKET_1           = 'sr_sensitive_bucket_1';
+    const SR_SENSITIVE_BUCKET_2           = 'sr_sensitive_bucket_2';
+    const SR_SENSITIVE_BUCKET_3           = 'sr_sensitive_bucket_3';
+    const SR_SENSITIVE_BUCKET_4           = 'sr_sensitive_bucket_4';
 
     const FEATURE                         = 'feature';
     const DISPLAY_NAME                    = 'display_name';
@@ -1531,6 +1535,10 @@ class Constants
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
+        self::SR_SENSITIVE_BUCKET_1           => true,
+        self::SR_SENSITIVE_BUCKET_2           => true,
+        self::SR_SENSITIVE_BUCKET_3           => true,
+        self::SR_SENSITIVE_BUCKET_4           => true,
         self::DCC_ON_OTHER_LIBRARY            => true,
     ];
     // Entity type constants
