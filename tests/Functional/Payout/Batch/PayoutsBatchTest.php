@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Http\RequestHeader;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\User\BankingRole;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -311,7 +312,9 @@ class PayoutsBatchTest extends TestCase
         $customTestCase = $this->testData[__FUNCTION__];
 
         $headers = [
-            'HTTP_' . RequestHeader::X_Batch_Id => 'C3fzDCb4hA4F6b',
+            'HTTP_' . RequestHeader::X_Batch_Id     => 'C3fzDCb4hA4F6b',
+            'HTTP_' . RequestHeader::X_Creator_Type => null,
+            'HTTP_' . RequestHeader::X_Creator_Id   => null,
         ];
 
         // Add idempotency header to test data
@@ -419,8 +422,21 @@ class PayoutsBatchTest extends TestCase
     {
         $customTestCase = $this->testData[__FUNCTION__];
 
+        $user = $this->fixtures->create('user',['id'  => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::FINANCE_L1,
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
         $headers = [
-            'HTTP_' . RequestHeader::X_Batch_Id => 'C3fzDCb4hA4F6b',
+            'HTTP_' . RequestHeader::X_Batch_Id     => 'C3fzDCb4hA4F6b',
+            'HTTP_' . RequestHeader::X_Creator_Type => 'user',
+            'HTTP_' . RequestHeader::X_Creator_Id   => $user['id'],
         ];
 
         // Add idempotency header to test data

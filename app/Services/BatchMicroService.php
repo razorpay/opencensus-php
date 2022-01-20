@@ -173,11 +173,20 @@ class BatchMicroService
         {
             $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID, null);
 
+            $creatorType = 'user';
+
+            // making creator_type as null for requests coming to 'payouts_batch_create'
+            // as these requests are not coming from dashboard, user has no context for these requests.
+            if ($this->app['api.route']->getCurrentRouteName() === 'payouts_batch_create')
+            {
+                $creatorType = null;
+            }
+
             $headers = [
                 'X-Entity-Id'    => $merchant->getId(),
                 'mode'           => $this->mode,
                 'X-Creator-Id'   => $userId,
-                'X-Creator-Type' => 'user',
+                'X-Creator-Type' => $creatorType,
             ];
 
             $admin = $this->app['basicauth']->getAdmin();
