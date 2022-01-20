@@ -2701,6 +2701,37 @@ class UserTest extends TestCase
         $this->assertFalse($user->isSecondFactorAuth());
     }
 
+    public function testFailedUserChange2faBankingDemoAcc()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
+            [
+                UserEntity::CONTACT_MOBILE_VERIFIED => 0,
+                UserEntity::CONTACT_MOBILE          => null,
+                UserEntity::SECOND_FACTOR_AUTH      => 0,
+                UserEntity::PASSWORD                => 'hello123',
+                UserEntity::EMAIL                   => Constants::BANKING_DEMO_USER_EMAILS[1]
+            ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [MerchantEntity::SECOND_FACTOR_AUTH => 0]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content =  [
+            UserEntity::SECOND_FACTOR_AUTH => true,
+            UserEntity::PASSWORD           => 'hello123',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $user = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertFalse($user->isSecondFactorAuth());
+    }
+
     /**
      * Otp is not sent while logging in for a user
      * who has 2fa enabled.
