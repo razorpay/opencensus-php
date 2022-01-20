@@ -141,7 +141,7 @@ class AnalyticsDesktop extends Component {
     });
     fetchInternationalProductsStatus();
     fetchCarouselBanner({ fromWhere: 'HomeCarouselBanner' });
-    fetchInternationalSettingStatus();
+
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
 
@@ -161,6 +161,8 @@ class AnalyticsDesktop extends Component {
       });
     }
     this.canShowBannerForAxis(activationState, user.isOrgAxis, user.merchant_tnc);
+
+    if (Boolean(user.activated)) fetchInternationalSettingStatus();
   }
 
   canShowBannerForAxis = (activationState, isOrgAxis, isTncGenerated) => {
@@ -442,7 +444,6 @@ class AnalyticsDesktop extends Component {
               shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             />
           )}
-
           {checkHTML5APIvalidity() && (
             <AnnouncementBanner title="Outdated Browser" theme="warning">
               Please update your web browser. We recommend you to download the latest version of
@@ -697,7 +698,6 @@ class AnalyticsDesktop extends Component {
               type="G"
             />
           </ShowWhen>
-
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
@@ -705,22 +705,30 @@ class AnalyticsDesktop extends Component {
           {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
 
           {/* Announcement - Enable International Cards */}
-          {internationalSettingStatus?.data?.enableIntlCards && (
+          <ShowWhen
+            additionalCondition={(usr) =>
+              Boolean(usr.activated) && internationalSettingStatus?.data?.enableIntlCards
+            }
+          >
             <IntlPaymentsAnnouncement
               bannerKey="international_cards"
               userId={user?.current}
               internationalSettingStatus={this.props.internationalSettingStatus}
             />
-          )}
+          </ShowWhen>
 
           {/* Announcement - Link Paypal */}
-          {internationalSettingStatus?.data?.enableLinkPaypal && (
+          <ShowWhen
+            additionalCondition={(usr) =>
+              Boolean(usr.activated) && internationalSettingStatus?.data?.enableLinkPaypal
+            }
+          >
             <IntlPaymentsAnnouncement
               bannerKey="link_paypal"
               userId={user?.current}
               internationalSettingStatus={this.props.internationalSettingStatus}
             />
-          )}
+          </ShowWhen>
 
           {user.isNeostoneFlowEnabled('neostone-tracker') && (
             <div className="nss-tracker-wrapper">
@@ -765,10 +773,12 @@ class AnalyticsDesktop extends Component {
             </>
           )}
 
-          <IntlPaymentsRecommendation
-            user={user}
-            internationalSettingStatus={this.props.internationalSettingStatus}
-          />
+          <ShowWhen additionalCondition={(usr) => Boolean(usr.activated)}>
+            <IntlPaymentsRecommendation
+              user={user}
+              internationalSettingStatus={this.props.internationalSettingStatus}
+            />
+          </ShowWhen>
 
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">

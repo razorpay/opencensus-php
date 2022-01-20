@@ -102,7 +102,7 @@ export const computeBannerState = (data = {}) => {
   const { international_cards_enabled, paypal } = data;
 
   const user = getUser();
-  const isBusinessNotRegistered = [2, 11, 12].includes(user?.business_type); // check if MID is not registered
+  const isBusinessNotRegistered = ['2', '11', '12'].includes(user?.business_type); // check if MID is not registered
   let enableRecommendationCard = false;
   let enableIntlCards = false;
   let enableLinkPaypal = false;
@@ -120,10 +120,12 @@ export const computeBannerState = (data = {}) => {
 
   const intlRecommendationState = getLocalState('rzp_banner_IntlPaymentsRecommendation');
 
-  // if Recommendation Card is expired then don't trigger analytics event
   if (intlRecommendationState.isEnabled) {
     enableRecommendationCard = true;
-    analyticsFn({ eventName: 'International payments recommendation', event: 'displayed' });
+    analyticsFn({
+      eventName: 'International payments recommendation',
+      event: 'displayed',
+    });
   }
   // IntlPaymentsRecommendation - End
 
@@ -132,8 +134,7 @@ export const computeBannerState = (data = {}) => {
     enableIntlCardsExpired = bannerExpired('rzp_banner_EnableInternationalPayments');
 
     if (enableIntlCardsExpired || international_cards_enabled || isBusinessNotRegistered) {
-      // Show only for Registered Business
-      setExpiry('rzp_banner_EnableInternationalPayments');
+      setExpiry('rzp_banner_EnableInternationalPayments'); // Show only for Registered Business
       enableIntlCardsExpired = true;
       enableIntlCards = false;
     }
