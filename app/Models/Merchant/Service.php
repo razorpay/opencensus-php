@@ -8413,9 +8413,21 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_FETCH_COUPONS_REQUEST, $input);
 
-        (new Validator)->validateInput('couponCodeUrlUpdateRequest', $input);
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
 
-        (new Merchant\Core)->associateMerchant1ccConfig(Merchant1ccConfig\Type::FETCH_COUPONS_URL, $input['url']);
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+        else
+        {
+            (new Validator)->validateInput('couponCodeUrlUpdateRequest', $input);
+        }
+
+        (new Merchant\Core)->associateMerchant1ccConfig(
+            Merchant1ccConfig\Type::FETCH_COUPONS_URL,
+            $input['url']
+        );
     }
 
     /**
@@ -8427,9 +8439,21 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_CHECK_COUPON_VALIDITY_REQUEST, $input);
 
-        (new Validator)->validateInput('couponCodeUrlUpdateRequest', $input);
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
 
-        (new Merchant\Core)->associateMerchant1ccConfig(Merchant1ccConfig\Type::APPLY_COUPON_URL, $input['url']);
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+        else
+        {
+            (new Validator)->validateInput('couponCodeUrlUpdateRequest', $input);
+        }
+
+        (new Merchant\Core)->associateMerchant1ccConfig(
+            Merchant1ccConfig\Type::APPLY_COUPON_URL,
+            $input['url']
+        );
     }
 
      /**
@@ -8442,7 +8466,16 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_ADDRESS_SERVICEABILITY_REQUEST, $input);
 
-        (new Validator)->validateInput('serviceabilityUrlUpdateRequest', $input);
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+        else
+        {
+            (new Validator)->validateInput('serviceabilityUrlUpdateRequest', $input);
+        }
 
         (new Merchant\Core)->associateMerchant1ccConfig(
             Merchant1ccConfig\Type::SHIPPING_INFO_URL,
@@ -8474,7 +8507,16 @@ class Service extends Base\Service
     */
    public function updateMerchantPlatform(array $input)
    {
-       (new Validator)->validateInput('merchantPlatformUpdateRequest', $input);
+       if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+       {
+           $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+           $this->app['basicauth']->setMerchant($this->merchant);
+       }
+       else
+       {
+         (new Validator)->validateInput('merchantPlatformUpdateRequest', $input);
+       }
 
        (new Merchant\Core)->associateMerchant1ccConfig(
            Merchant1ccConfig\Type::PLATFORM,
@@ -8492,6 +8534,13 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::MERCHANT_COD_SLABS_UPDATE_REQUEST, $input);
 
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+
         if(!isset($input['slabs'])) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
@@ -8508,6 +8557,13 @@ class Service extends Base\Service
     public function updateShippingSlabs(array $input)
     {
         $this->trace->info(TraceCode::MERCHANT_SHIPPING_SLABS_UPDATE_REQUEST, $input);
+
+        if ($this->merchant === null and $this->app['basicauth']->isPrivilegeAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
 
         if(!isset($input['slabs'])) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);

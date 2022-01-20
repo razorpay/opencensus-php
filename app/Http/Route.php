@@ -3248,12 +3248,18 @@ class Route
         'merchant_coupon_validity'                => ['post',         'merchant/coupon/apply',                                   'MerchantController@applyCoupon'                              ],
         'merchant_coupon_remove'                  => ['post',         'merchant/coupon/remove',                                  'MerchantController@removeCoupon'                              ],
         'update_fetch_coupons_url'                => ['post',         'merchant/coupons/url',                                     'MerchantController@updateFetchCouponsUrl'                    ],
+        'update_fetch_coupons_url_dark'           => ['post',         'merchant/coupons/url_dark',                                     'MerchantController@updateFetchCouponsUrl'                    ],
         'update_coupon_validity_url'              => ['post',         'merchant/coupon/apply/url',                               'MerchantController@updateApplyCouponUrl'                  ],
+        'update_coupon_validity_url_dark'         => ['post',         'merchant/coupon/apply/url_dark',                               'MerchantController@updateApplyCouponUrl'                  ],
         'shipping_info'                             => ['post',       'merchant/shipping_info',                                'MerchantController@getShippingInfo'                          ],
         'update_serviceability_url'                 => ['post',       'merchant/shipping_info/url',                            'MerchantController@updateShippingInfoUrl'                   ],
+        'update_serviceability_url_dark'           => ['post',       'merchant/shipping_info/url_dark',                            'MerchantController@updateShippingInfoUrl'                   ],
         'update_merchant_platform'                 => ['post',        'merchant/1cc_platform',                                     'MerchantController@updateMerchantPlatform'                  ],
+        'update_merchant_platform_dark'             => ['post',       'merchant/1cc_platform_dark',                             'MerchantController@updateMerchantPlatform'                  ],
         'update_cod_slabs'                          => ['post',       'merchant/slabs/cod',                                    'MerchantController@updateCodSlabs'                           ],
+        'update_cod_slabs_dark'                     => ['post',       'merchant/slabs/cod_dark',                                    'MerchantController@updateCodSlabs'                           ],
         'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
+        'update_shipping_slabs_dark'                => ['post',       'merchant/slabs/shipping_dark',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
 
@@ -4370,6 +4376,15 @@ class Route
         'setl_optimizer_settlement_cron',
 
         'third_watch_address_cod_score',
+
+        // 1cc config from dark env
+        'update_fetch_coupons_url_dark',
+        'update_coupon_validity_url_dark',
+        'update_serviceability_url_dark',
+        'update_merchant_platform_dark',
+        'update_shipping_slabs_dark',
+        'update_cod_slabs_dark',
+
         'banking_axis_invitations_send',
 
         'buy_pricing_terminal_cost',
@@ -11506,6 +11521,12 @@ class Route
         'thirdwatch_cod_score' => [
             'third_watch_address_cod_score',
             'update_shopify_1cc_config',
+            'update_fetch_coupons_url_dark',
+            'update_coupon_validity_url_dark',
+            'update_cod_slabs_dark',
+            'update_serviceability_url_dark',
+            'update_merchant_platform_dark',
+            'update_shipping_slabs_dark',
         ],
 
         'xpayroll' => [
