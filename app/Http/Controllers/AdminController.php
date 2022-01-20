@@ -74,7 +74,12 @@ class AdminController extends Controller
 
             $path = "v1/admin/terminals/" . $id;
 
-            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+            //Increasing the timeout value to 40 Seconds as terminals api default timeout is 30 seconds.
+            $options = [];
+            $options['timeout'] = 30;
+            $options['connect_timeout'] = 10;
+
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path,$options);
 
             if ((new Terminal\Service())->compareTerminalArray($data, $response) === false)
             {
