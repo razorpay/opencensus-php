@@ -512,16 +512,24 @@ class Core extends Base\Core
 
     protected function splitName(string $name)
     {
+      $name = preg_replace('/\s+/', ' ', trim($name));
+
       $words = explode(' ', $name);
+
       if (count($words) === 1)
       {
           $lastName = '.';
+
           $firstName = $name;
-      } else
+
+      }
+      else
       {
           $lastName = array_pop($words);
+
           $firstName = implode(' ', $words);
       }
+
       return [$firstName, $lastName];
     }
 
