@@ -70,7 +70,7 @@ export default class Conversations extends React.Component {
     this.setState({ conversations: c });
 
     merchantFetch({
-      url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations`,
+      url: `${TICKET_BASE_URL}/${TICKET_ID}/conversations?per_page=40`,
       mode: 'live',
     })
       .then((e) => {

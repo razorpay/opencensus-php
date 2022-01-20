@@ -212,7 +212,6 @@ export default class Reply extends React.Component {
                       <p className="to-account">To: Razorpay Account</p>
                       <i className="i i-close close-icon" onClick={onClose} role="button" />
                     </div>
-                    <div className="col-xs-7 text-right" />
                   </div>
                 </h5>
                 <div className="reply-quill">
