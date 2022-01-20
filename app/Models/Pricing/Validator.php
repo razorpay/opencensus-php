@@ -198,18 +198,17 @@ class Validator extends Base\Validator
 
     protected function validateAddPlanRuleGateway($input)
     {
+        if (isset($input[Entity::GATEWAY]) === false)
+        {
+            return;
+        }
+
         if ($input[Entity::TYPE] === Type::BUY_PRICING)
         {
             if (in_array($input[Entity::PAYMENT_METHOD], Payment\Method::getAllPaymentMethods()) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'invalid method sent for buy pricing: '. $input[Entity::PAYMENT_METHOD]);
-            }
-
-            if (isset($input[Entity::GATEWAY]) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'gateway field is required for buy_pricing');
             }
 
             if (BuyPricing::isValidBuyPricingGateway($input[Entity::PAYMENT_METHOD], $input[Entity::GATEWAY]) === false)
