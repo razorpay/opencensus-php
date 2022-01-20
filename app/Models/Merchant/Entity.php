@@ -764,6 +764,16 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::ROUTE_KEY_MERCHANTS_QUEUE);
     }
 
+    public function isCapitalFloatRouteMerchant() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CAPITAL_FLOAT_ROUTE_MERCHANT);
+    }
+
+    public function isSliceRouteMerchant() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SLICE_ROUTE_MERCHANT);
+    }
+
     public function isDisplayParentPaymentId(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::DISPLAY_LA_PARENT_PAYMENT_ID);

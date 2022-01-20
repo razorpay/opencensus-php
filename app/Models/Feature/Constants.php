@@ -938,6 +938,10 @@ class Constants
 
     const ROUTE_KEY_MERCHANTS_QUEUE = 'route_key_merchants_queue';
 
+    // Experiment to move transfer processing for these 2 merchants to dedicated queues.
+    const CAPITAL_FLOAT_ROUTE_MERCHANT  = 'cf_route_merchant'; // Cannot be longer than 25 characters.
+    const SLICE_ROUTE_MERCHANT          = 'sl_route_merchant';
+
     const FEATURE_BBPS = 'feature_bbps';
 
     /**
@@ -1472,6 +1476,8 @@ class Constants
         self::ORG_TPV_DISABLE                 => true,
         self::AXIS_TPV_ENABLE                 => true,
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
+        self::CAPITAL_FLOAT_ROUTE_MERCHANT    => true,
+        self::SLICE_ROUTE_MERCHANT            => true,
         self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
         self::ADDRESS_REQUIRED                => true,
@@ -2088,6 +2094,16 @@ class Constants
         self::ROUTE_KEY_MERCHANTS_QUEUE => [
             'feature'       => self::ROUTE_KEY_MERCHANTS_QUEUE,
             'display_name'  => 'To use new transfer processing queue',
+            'documentation' => '',
+        ],
+        self::CAPITAL_FLOAT_ROUTE_MERCHANT => [
+            'feature'       => self::CAPITAL_FLOAT_ROUTE_MERCHANT,
+            'display_name'  => 'To use dedicated transfer processing queue',
+            'documentation' => '',
+        ],
+        self::SLICE_ROUTE_MERCHANT => [
+            'feature'       => self::SLICE_ROUTE_MERCHANT,
+            'display_name'  => 'To use dedicated transfer processing queue',
             'documentation' => '',
         ],
         self::FEATURE_BBPS => [

@@ -190,6 +190,14 @@ return [
         'test'       => env('AWS_TRANSFER_PROCESS_TEST_QUEUE'),
         'live'       => env('AWS_TRANSFER_PROCESS_LIVE_QUEUE'),
     ],
+    // Dedicated transfer processing queue for Capital Float (9ARetirTY8olre).
+    'transfer_process_capital_float' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_CF_LIVE_QUEUE'),
+    ],
+    // Dedicated transfer processing queue for Slice (5BX85IgTyYI20C).
+    'transfer_process_slice' => [
+        'live'       => env('AWS_TRANSFER_PROCESS_SL_LIVE_QUEUE'),
+    ],
     // settlement related QUEUES
     'settlement_create' => [
         'test'       => env('AWS_SETTLEMENT_CREATE_TEST_QUEUE'),
