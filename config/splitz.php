@@ -144,8 +144,9 @@ return [
         'CATALYST_FL_BANNER' => env('CATALYST_FL_BANNER', ''),
         'CATALYST_EF_BANNER' => env('CATALYST_EF_BANNER', ''),
         'CATALYST_G_BANNER' => env('CATALYST_G_BANNER', ''),
+        'AB_BANNER_CAROUSEL' => env('AB_BANNER_CAROUSEL', ''),
 
-        //2FA Mobile Signup 
+        //2FA Mobile Signup
         'ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ' => env('ENABLE_2FA_MOBILE_SIGNUP_EXP_SPLITZ', ''),
 
         // New Nitro ICICI Experiment

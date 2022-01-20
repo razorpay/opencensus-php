@@ -17,6 +17,12 @@ export const routeToChannelIDMap = {
       stage: 'HTdu8cC7FJEIHC',
       production: 'HpP3cspZ3AcuV2',
     },
+    HomeCarouselBanner: {
+      dev: 'Ifyxxu4bAk99Ev',
+      beta: 'Ifyxxu4bAk99Ev',
+      stage: 'Ifyxxu4bAk99Ev',
+      production: 'IfyyNE821PHDlt',
+    },
     home: {
       dev: 'HTdu8cC7FJEIHC',
       beta: 'HTdu8cC7FJEIHC',
@@ -169,6 +175,12 @@ export const routeToChannelIDMap = {
       stage: 'ILpOiPdxsl62QN',
       axis: 'ILpOiPdxsl62QN',
       production: 'IMN6odavPeZlSu',
+    },
+    HomeCarouselBanner: {
+      dev: 'Ifyxxu4bAk99Ev',
+      beta: 'Ifyxxu4bAk99Ev',
+      stage: 'Ifyxxu4bAk99Ev',
+      production: 'IfyyNE821PHDlt',
     },
     home: {
       dev: 'ILpOiPdxsl62QN',
@@ -347,6 +359,7 @@ export const routeToRouteNameMap = {
 export const assetNames = {
   ANNOUNCEMENT: 'ANNOUNCEMENT',
   BANNER: 'BANNER',
+  BANNER_CAROUSEL_ITEM: 'BANNER_CAROUSEL_ITEM',
 };
 
 const trackingDataSchema = yup

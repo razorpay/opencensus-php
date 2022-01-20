@@ -5,6 +5,7 @@ import { assetNames } from 'merchant/models/GrowthService/data';
 
 const FETCH_ANNOUNCEMENTS = 'FETCH_ANNOUNCEMENTS';
 const FETCH_BANNERS = 'FETCH_BANNERS';
+const FETCH_BANNERS_CAROUSEL = 'FETCH_BANNERS_CAROUSEL';
 
 const updateAssets = (status, assetName) => (state, action) => {
   const key = `${assetName.toLowerCase()}s`;
@@ -36,6 +37,7 @@ const updateAssets = (status, assetName) => (state, action) => {
 
 const updateAnnouncements = (status) => updateAssets(status, assetNames.ANNOUNCEMENT);
 const updateBanners = (status) => updateAssets(status, assetNames.BANNER);
+const updateCarouselBanners = (status) => updateAssets(status, assetNames.BANNER_CAROUSEL_ITEM);
 
 export const fetchAnnouncements = ({ fromWhere = 'home' }) => {
   const growthService = new GrowthService();
@@ -52,6 +54,13 @@ export const fetchBanners = ({ fromWhere = 'home' }) => {
     payload: growthService.getBanners(fromWhere),
   };
 };
+export const fetchCarouselBanner = ({ fromWhere = 'home' }) => {
+  const growthService = new GrowthService();
+  return {
+    type: FETCH_BANNERS_CAROUSEL,
+    payload: growthService.getCarouselBanners(fromWhere),
+  };
+};
 
 const initialState = {
   announcements: {
@@ -61,6 +70,10 @@ const initialState = {
   banners: {
     loading: false,
     banners: [],
+  },
+  banner_carousel_items: {
+    loading: false,
+    banner_carousel_items: [],
   },
 };
 
@@ -73,6 +86,9 @@ export default makeEntityReducer(
     [`${FETCH_BANNERS}::PENDING`]: updateBanners('PENDING'),
     [`${FETCH_BANNERS}::SUCCESS`]: updateBanners('SUCCESS'),
     [`${FETCH_BANNERS}::ERROR`]: updateBanners('ERROR'),
+    [`${FETCH_BANNERS_CAROUSEL}::PENDING`]: updateCarouselBanners('PENDING'),
+    [`${FETCH_BANNERS_CAROUSEL}::SUCCESS`]: updateCarouselBanners('SUCCESS'),
+    [`${FETCH_BANNERS_CAROUSEL}::ERROR`]: updateCarouselBanners('ERROR'),
   },
   initialState,
 );

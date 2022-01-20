@@ -305,4 +305,11 @@ export default {
     // prod experiment ids
     'IZcVhevcxJxejr',
   ],
+  ab_bannerCarousel_experiment: [
+    // beta experiment ids
+    'IgmrwyclL61hVU',
+
+    // prod experiment ids,
+    'IlBv2LyCzsyZqI',
+  ],
 };

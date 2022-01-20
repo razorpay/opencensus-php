@@ -34,6 +34,7 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import CreditPullModal from 'merchant/containers/CreditPullModal';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
 import {
   trackPresetChange,
   trackSettlementsClick,
@@ -79,6 +80,7 @@ import NitroMMRemarketingBanner from '../../components/Announcements/NitroMMRema
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
+import Carousel from 'common/components/Carousel';
 import NitroICICINewSegmentsBanner from '../../components/Announcements/NitroICICINewSegmentsBanner';
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
@@ -118,6 +120,7 @@ class AnalyticsDesktop extends Component {
       fetchInternationalProductsStatus,
       fetchSettlementConfig,
       fetchBankAccountChangeStatus,
+      fetchCarouselBanner,
       fetchInternationalSettingStatus,
     } = this.props;
     fetchEscalations();
@@ -137,6 +140,7 @@ class AnalyticsDesktop extends Component {
       },
     });
     fetchInternationalProductsStatus();
+    fetchCarouselBanner({ fromWhere: 'HomeCarouselBanner' });
     fetchInternationalSettingStatus();
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
@@ -371,6 +375,7 @@ class AnalyticsDesktop extends Component {
       limitBreach,
       isOnDemandDisabled,
       settlementConfig,
+      bannerCarouselData: { banner_carousel_items = [] } = {},
       internationalSettingStatus,
     } = this.props;
 
@@ -409,6 +414,8 @@ class AnalyticsDesktop extends Component {
     const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
       new Date(ticket.created_at).getSeconds(),
     );
+    let carouselItem = [];
+    if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
 
     return (
       <div className="home-analytics-desktop">
@@ -422,7 +429,6 @@ class AnalyticsDesktop extends Component {
           {ticketsRaisedByAgents.length && user.isMobileSignupCareActive ? (
             <SupportRequest tickets={ticketsRaisedByAgents} />
           ) : null}
-
           <CongratulatoryBanner user={user} />
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
@@ -466,7 +472,6 @@ class AnalyticsDesktop extends Component {
                 internationalProductsStatus={this.props.internationalProductsStatus}
               />
             )}
-
           {/* needs clarification modal */}
           {this.state.showNcPopup &&
             user.needsClarification &&
@@ -476,12 +481,10 @@ class AnalyticsDesktop extends Component {
                 onClose={this.onNcModalClose}
               />
             )}
-
           {!this.props.user.isInstantActivationEnabled &&
             !!this.props.user.locked &&
             this.props.user.activation_status === 'under_review' &&
             this.props.user.isDedupe && <DedupeModal />}
-
           {!user.isFeatureEnabled('covid_19_relief') &&
             user.isCovidReliefFlowEnabled &&
             user.business_type !== 7 &&
@@ -580,7 +583,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-
           {handleNegativeBalanceLimit(merchantBalanceConfigs, current_balance.data.balance) && (
             <AnnouncementBanner
               title="On Hold!"
@@ -698,9 +700,7 @@ class AnalyticsDesktop extends Component {
 
           {/* capital banner*/}
           {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
-
           {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
-
           {/* Free Credits Repayments Banner */}
           {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
 
@@ -733,12 +733,16 @@ class AnalyticsDesktop extends Component {
               </ErrorBoundary>
             </div>
           )}
-
           {this.props.can_refer ? <M2MBanner /> : null}
-
           {/* Announcement Banners End */}
           {/* TODO: Move announcement section to different file */}
-
+          <ErrorBoundary
+            FallbackComponent={() => {
+              return null;
+            }}
+          >
+            {carouselItem.length ? <Carousel carouselItem={carouselItem} /> : null}
+          </ErrorBoundary>
           {user.canSwitchOnboardingCard ? (
             this.renderOnboardingAndRecommendationWidget()
           ) : (
@@ -772,7 +776,6 @@ class AnalyticsDesktop extends Component {
             </div>
           )}
         </div>
-
         {/* <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}> */}
         <Header className="clearfix" title="" showMode={false}>
           <div id="analytics-daterange-picker" className="pull-left date-range-container">
@@ -924,7 +927,6 @@ class AnalyticsDesktop extends Component {
           </div>
         </Header>
         {/* </Sticky> */}
-
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
@@ -1034,6 +1036,7 @@ const mapStateToProps = (state) => ({
   referee: state.merchantReferral.data.referee,
   transactionAmount: state.transactionAmount.amount,
   ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
+  bannerCarouselData: state?.growthService?.banner_carousel_items,
   internationalSettingStatus: state.config.internationalSettingStatus,
 });
 
@@ -1048,6 +1051,7 @@ export default withRouter(
     fetchEscalations: fnFetchEscalations,
     fetchSettlementConfig: fnFetchSettlementConfig,
     fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
+    fetchCarouselBanner: fetchCarouselBannerProp,
     showProductsModal,
     ...EventActions,
   })(AnalyticsDesktop),

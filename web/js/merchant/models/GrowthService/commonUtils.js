@@ -29,6 +29,12 @@ const sortBanners = (banners = []) => {
   banners.sort((first, second) => second.override_priority - first.override_priority);
 };
 
+export const sortCarouselBanner = (carouselBanner = []) => {
+  return carouselBanner.sort((first, second) => {
+    return second.sort_key - first.sort_key;
+  });
+};
+
 export const sortAssetData = (data = [], type = '') => {
   switch (type) {
     case assetNames.ANNOUNCEMENT:
@@ -58,11 +64,9 @@ export const getAssetTrackingProperties = (id = '', tracking_data = {}, oldTrack
     sub_campaign_description,
     campaign_id,
     sub_campaign_id,
-    meta,
+    tags = {},
   } = tracking_data;
   const { version, version_description, target_metric, target_product_feature } = oldTrackingData;
-  let product_feature;
-  if (meta) product_feature = meta.product_feature;
 
   return {
     id,
@@ -73,6 +77,7 @@ export const getAssetTrackingProperties = (id = '', tracking_data = {}, oldTrack
     campaign_id,
     sub_campaign_id,
     target_metric,
-    product_feature: product_feature || target_product_feature,
+    product_feature: target_product_feature,
+    ...tags,
   };
 };

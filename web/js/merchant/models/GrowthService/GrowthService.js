@@ -1,7 +1,7 @@
 import GenericEntity from '../GenericEntity';
 import { getMode, getUser } from 'merchant/store';
 import { assetNames } from './data';
-import { getChannelID, sortAssetData, isValidAssetData } from './commonUtils';
+import { getChannelID, sortAssetData, isValidAssetData, sortCarouselBanner } from './commonUtils';
 
 export default class GrowthService extends GenericEntity {
   resourceUrl = 'growth/assets';
@@ -115,5 +115,17 @@ export default class GrowthService extends GenericEntity {
     if (banners.length) banners = banners.slice(0, totalBannersLimit);
 
     return banners;
+  };
+
+  getCarouselBanners = async (fromWhere) => {
+    let carouselBanner =
+      (await this.fetchAssetData(
+        getChannelID(fromWhere, this.user.isOrgRZP),
+        assetNames.BANNER_CAROUSEL_ITEM,
+      )) || [];
+    if (carouselBanner.length > 5) {
+      carouselBanner = [...carouselBanner.slice(0, 5)];
+    }
+    return sortCarouselBanner(carouselBanner);
   };
 }

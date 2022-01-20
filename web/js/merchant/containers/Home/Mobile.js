@@ -37,6 +37,9 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
 
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
+import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
+import Carousel from 'common/components/Carousel';
+
 @connect(
   (state) => ({
     windowWidth: state.app.windowWidth,
@@ -46,8 +49,9 @@ import SupportRequest from 'merchant/components/Announcements/SupportRequest';
     referee: state.merchantReferral.data.referee,
     transactionAmount: state.transactionAmount.amount,
     ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
+    bannerCarouselData: state?.growthService?.banner_carousel_items,
   }),
-  { openModal },
+  { openModal, fetchCarouselBanner: fetchCarouselBannerProp },
 )
 class AnalyticsMobile extends Component {
   state = {
@@ -61,6 +65,8 @@ class AnalyticsMobile extends Component {
 
   componentDidMount() {
     this.checkIfFirstEverSettlement();
+    const holdFeature = false; // TODO: remove it once feature is live for prod
+    if (holdFeature) this?.props?.fetchCarouselBanner({ fromWhere: window.location.pathname });
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
@@ -140,6 +146,7 @@ class AnalyticsMobile extends Component {
       windowWidth,
       settleNowRestrictionMsg,
       isOnDemandDisabled,
+      bannerCarouselData: { banner_carousel_items = [] } = {},
     } = this.props;
 
     const hasSecondaryBanner =
@@ -159,6 +166,8 @@ class AnalyticsMobile extends Component {
     const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
       new Date(ticket.created_at).getSeconds(),
     );
+    let carouselItem = [];
+    if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
 
     return (
       <div className="home-analytics-mobile">
@@ -197,6 +206,7 @@ class AnalyticsMobile extends Component {
               100% FREE*
             </AnnouncementBanner>
           ) : null}
+          {carouselItem.length ? <Carousel carouselItem={carouselItem} /> : null}
           {!user.isOnboardingV2Enabled ? (
             <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
               {showOnboardingBanner && (
