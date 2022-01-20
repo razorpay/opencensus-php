@@ -12,7 +12,7 @@ use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Models\Merchant\Cron\Traits\ConnectionFallbackMechanism;
 use RZP\Trace\TraceCode;
 
-class FirstTouchProductDataLakeCollector extends TimeBoundDbDataCollector
+class FirstTouchProductDataLakeCollector extends MtuDatalakeCollector
 {
     protected $name = "first_touch_product";
 
@@ -20,12 +20,7 @@ class FirstTouchProductDataLakeCollector extends TimeBoundDbDataCollector
 
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
-        $args = [
-            'start_time'    => $startTime,
-            'end_time'      => $endTime
-        ];
-
-        $mtuTransactedCollector = (new MtuDatalakeCollector($this->lastCronTime, $args))->collect();
+        $mtuTransactedCollector = parent::collectDataWithinInterval($startTime, $endTime);
 
         $merchantIds = $mtuTransactedCollector->getData();
 

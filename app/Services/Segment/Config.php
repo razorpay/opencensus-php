@@ -11,14 +11,12 @@ class Config
         EventCode::SIGNUP_SUCCESS       => [
             Merchant\Entity::MERCHANT_ID,
             Merchant\Entity::ORG_ID,
-            Constants::SOURCE
         ],
 
         EventCode::L1_SUBMISSION        => [
             Merchant\Entity::MERCHANT_ID,
             Merchant\Entity::ORG_ID,
-            Constants::SOURCE,
-            Merchant\Entity::CATEGORY,
+            "mcc",
 
             Merchant\Detail\Entity::BUSINESS_TYPE,
             Merchant\Detail\Entity::BUSINESS_CATEGORY,
@@ -32,8 +30,7 @@ class Config
         EventCode::PAYMENTS_ENABLED     => [
             Merchant\Entity::MERCHANT_ID,
             Merchant\Entity::ORG_ID,
-            Constants::SOURCE,
-            Merchant\Entity::CATEGORY,
+            "mcc",
 
             Merchant\Detail\Entity::BUSINESS_TYPE,
             Merchant\Detail\Entity::BUSINESS_CATEGORY,
@@ -49,8 +46,7 @@ class Config
         EventCode::L2_SUBMISSION        => [
             Merchant\Entity::MERCHANT_ID,
             Merchant\Entity::ORG_ID,
-            Constants::SOURCE,
-            Merchant\Entity::CATEGORY,
+            "mcc",
 
             Merchant\Detail\Entity::BUSINESS_TYPE,
             Merchant\Detail\Entity::BUSINESS_CATEGORY,
@@ -64,8 +60,7 @@ class Config
         EventCode::DEDUPE               => [
             Merchant\Entity::MERCHANT_ID,
             Merchant\Entity::ORG_ID,
-            Constants::SOURCE,
-            Merchant\Entity::CATEGORY,
+            "mcc",
 
             Merchant\Detail\Entity::BUSINESS_TYPE,
             Merchant\Detail\Entity::BUSINESS_CATEGORY,
@@ -82,8 +77,7 @@ class Config
         EventCode::MTU_TRANSACTED       => [
             Merchant\Entity::MERCHANT_ID,
             Merchant\Entity::ORG_ID,
-            Constants::SOURCE,
-            Merchant\Entity::CATEGORY,
+            "mcc",
 
             Merchant\Detail\Entity::BUSINESS_TYPE,
             Merchant\Detail\Entity::BUSINESS_CATEGORY,

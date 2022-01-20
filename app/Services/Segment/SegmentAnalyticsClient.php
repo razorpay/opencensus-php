@@ -152,6 +152,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
             Merchant\Entity::PARTNER_TYPE   => $merchant->getPartnerType(),
             Merchant\Entity::ORG_ID         => $merchant->getOrgId(),
             Merchant\Entity::BUSINESS_BANKING => $merchant->isBusinessBankingEnabled(),
+            "mcc"                           => $merchant->getCategory(),
             Constants::REGULAR_MERCHANT     => $this->isRegularMerchant($merchant)
         ];
 

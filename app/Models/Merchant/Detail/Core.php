@@ -2473,7 +2473,8 @@ class Core extends Base\Core
 
         $properties = [
             'previousActivationStatus'    => $oldMerchantDetails->getActivationStatus(),
-            'currentActivationStatus'     => $newMerchantDetails->getActivationStatus()
+            'currentActivationStatus'     => $newMerchantDetails->getActivationStatus(),
+            'activated_at'                => $merchant->getActivatedAt(),
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(

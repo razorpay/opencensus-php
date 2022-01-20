@@ -23,6 +23,7 @@ class Constants
         Merchant\Detail\Entity::ACTIVATION_FORM_MILESTONE,
         Merchant\Detail\Entity::BUSINESS_TYPE,
         Merchant\Detail\Entity::BUSINESS_DBA,
+        Merchant\Detail\Entity::ACTIVATION_STATUS,
     ];
 
     //common event properties
