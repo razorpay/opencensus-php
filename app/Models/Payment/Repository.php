@@ -2773,7 +2773,7 @@ class Repository extends Base\Repository
 
         // check number of successful payments in last 12 months by contact.
         $userPastPayments = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(1500) */ `id`"))
+                    ->select(DB::raw("/*+ MAX_EXECUTION_TIME(200) */ `id`"))
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::CONTACT, $contact)
                     ->where(Entity::CREATED_AT, '>=', $minCreatedAt)
