@@ -1675,5 +1675,35 @@ return [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_TOO_SHORT,
         ],
-    ]
+    ],
+
+    'testAdminFetchPaymentFraudByPaymentId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/payment_fraud?payment_id=100000Razorpay'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "count"=> 1,
+                "admin"=> true,
+                "items"=> []
+            ]
+        ]
+    ],
+
+    'testAdminFetchPaymentFraudByArn' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/payment_fraud?arn=100000Razorpay0000'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "count"=> 1,
+                "admin"=> true,
+                "items"=> []
+            ]
+        ]
+    ],
 ];

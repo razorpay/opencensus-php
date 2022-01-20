@@ -12,6 +12,7 @@ class Fetch extends BaseFetch
             Entity::PAYMENT_ID      => 'sometimes|string|size:14',
             Entity::REPORTED_BY     => 'sometimes|string',
             Entity::BATCH_ID        => 'sometimes|string|size:14',
+            Entity::ARN             => 'sometimes|string',
         ],
     ];
 
@@ -19,6 +20,7 @@ class Fetch extends BaseFetch
         AuthType::ADMIN_AUTH => [
             self::COUNT,
             self::SKIP,
+            Entity::ARN,
             Entity::PAYMENT_ID,
             Entity::REPORTED_BY
         ],

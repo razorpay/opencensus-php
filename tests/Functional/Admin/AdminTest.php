@@ -1645,6 +1645,32 @@ class AdminTest extends TestCase
 
     }
 
+    public function testAdminFetchPaymentFraudByPaymentId()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $paymentFraud = $this->fixtures->create('payment_fraud', ['payment_id'    => '100000Razorpay']);
+
+        $testData['response']['content']['items'][0] = $paymentFraud->toArrayPublic();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testAdminFetchPaymentFraudByArn()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $paymentFraud = $this->fixtures->create('payment_fraud', ['arn'    => '100000Razorpay0000']);
+
+        $testData['response']['content']['items'][0] = $paymentFraud->toArrayPublic();
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+    }
+
     public function testExternalAdminFetchEntityMultipleLimitedCount()
     {
         for ($i = 0; $i < 6; $i++)
