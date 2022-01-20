@@ -147,6 +147,25 @@ class GovernorController extends Controller
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
 
+    public function proxyGetOptimizerEvents()
+    {
+        $input = Request::all();
+
+        $paymentId = $input['payment_id'];
+
+        $paymentDate = $input['payment_date'];
+
+        $merchantId = $input['merchant_id'];
+
+        $path = Request::path() . '?payment_id=' . $paymentId . '&payment_date=' . $paymentDate . '&merchant_id=' . $merchantId;
+
+        $method = Request::method();
+
+        $response = $this->app['governor']->sendRequestV1($method, $path, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function proxy()
     {
         $input = Request::all();
