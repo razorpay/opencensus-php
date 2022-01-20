@@ -3,7 +3,6 @@ import { batchDownload } from 'merchant/reducers/batches';
 import {
   createAddressBatch,
   fetchAllAddressBatches,
-  downloadFailedAddress,
 } from 'merchant/reducers/magicCheckout/bulk_address_upload';
 import { bindActionCreators } from 'redux';
 import { batchId } from 'common/ui/item/pair';
@@ -23,29 +22,17 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again later.';
 
 const BatchListContainer = (props) => {
-  useEffect(() => {
-    props.fetchAll();
-  }, []);
+  const { fetchAll } = props;
 
-  const onFileNameClick = (id) => () => {
+  useEffect(() => {
+    if (fetchAll) {
+      fetchAll();
+    }
+  }, [fetchAll]);
+
+  const downloadFile = (id) => () => {
     props
       .batchDownload(id)
-      .then((response) => {
-        if (response?.data?.url) {
-          window.location = response.data.url;
-        }
-      })
-      .catch(({ errors }) => {
-        props.showNotification({
-          type: 'error',
-          message: errors || DEFAULT_ERROR_MESSAGE,
-        });
-      });
-  };
-
-  const onFailedDownloadClick = (id) => () => {
-    props
-      .downloadFailedAddress(id)
       .then((response) => {
         if (response?.data?.url) {
           window.location = response.data.url;
@@ -64,12 +51,12 @@ const BatchListContainer = (props) => {
       title="Batch Uploads"
       columns={[
         batchId,
-        fileName({ onClick: onFileNameClick }),
+        fileName({ onClick: downloadFile }),
         totalCount,
         processedCount,
         uploadedOn,
         status,
-        actions({ downloadFailedAddress: onFailedDownloadClick }),
+        actions({ downloadFailedAddress: downloadFile }),
       ]}
       EmptyComponent={emptyComponent(null, null, 'No address files uploaded yet.')}
       {...props}
@@ -87,7 +74,6 @@ const mapDispatchToProps = (dispatch) =>
       fetchAll: fetchAllAddressBatches,
       createAddressBatch,
       batchDownload,
-      downloadFailedAddress,
       ...NotificationsActions,
     },
     dispatch,
