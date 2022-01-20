@@ -9102,6 +9102,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'setl_merchant_dashboard_config_get',
             'workflow_needs_merchant_clarification',
             'splitz_evaluate_bulk_proxy',
             'merchant_update_fraud_type',
