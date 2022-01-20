@@ -1322,6 +1322,11 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCardWithMaxAmountLessThanZero()
+    {
+        $this->startTest();
+    }
+
     public function testCreateCardWithNoMaxAmount()
     {
         $this->startTest();

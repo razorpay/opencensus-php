@@ -117,6 +117,7 @@ class Entity extends Base\PublicEntity
     const CARD_MAX_AMOUNT_LIMIT             = 500000;
     const EMANDATE_MAX_AMOUNT_LIMIT         = 100000000;
     const DEFAULT_MAX_AMOUNT                = 9999900;
+    const LEAST_MAX_AMOUNT_LIMIT            = 0;
 
     /**
      * We use this to set the number of years after which the
