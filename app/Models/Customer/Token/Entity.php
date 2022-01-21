@@ -25,6 +25,10 @@ use RZP\Models\SubscriptionRegistration\SubscriptionRegistrationConstants;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\PaperMandate\FileUploader;
+use RZP\Models\PaperMandate\PaperMandateUpload\Entity as PaperMandateUploadEntity;
+use RZP\Models\SubscriptionRegistration\Entity as SubscriptionRegistrationEntity;
+
 
 /**
  * @property Vpa\Entity  $vpa
@@ -117,6 +121,7 @@ class Entity extends Base\PublicEntity
     const CARD_MAX_AMOUNT_LIMIT             = 500000;
     const EMANDATE_MAX_AMOUNT_LIMIT         = 100000000;
     const DEFAULT_MAX_AMOUNT                = 9999900;
+    const LEAST_MAX_AMOUNT_LIMIT            = 0;
 
     /**
      * We use this to set the number of years after which the
@@ -1007,7 +1012,43 @@ class Entity extends Base\PublicEntity
             }
         }
 
+        if ($this->isNachToken() === true and (new Merchant\Core)->isRazorxExperimentEnable(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK
+            ))
+        {
+            $app = App::getFacadeRoot();
+
+            $subscriptionRegistration = $app['repo']->subscription_registration
+                ->findByTokenIdAndMerchant($this->getId(), $this->merchant->getId());
+
+            if ($subscriptionRegistration !== null) {
+                $invoice = $app['repo']->invoice
+                    ->findByMerchantAndTokenRegistration($this->merchant, $subscriptionRegistration);
+
+                $publicArray = $subscriptionRegistration
+                    ->toArrayTokenFieldsNach($invoice, $publicArray);
+
+                $paperMandateUpload =
+                    $app['repo']->paper_mandate_upload
+                        ->findLatestByMandateId($subscriptionRegistration->paperMandate->getId())->first();
+
+                if ($paperMandateUpload !== null) {
+                    $singedFormUrl = (new FileUploader($subscriptionRegistration->paperMandate))
+                        ->getSignedShortUrl($paperMandateUpload[PaperMandateUploadEntity::ENHANCED_FILE_ID]);
+
+                    $publicArray[SubscriptionRegistrationEntity::NACH]
+                    [SubscriptionRegistrationEntity::SIGNED_FORM] = $singedFormUrl;
+                }
+            }
+        }
+
         return $publicArray;
+    }
+
+    public function isNachToken()
+    {
+        return ($this->getMethod() === Payment\Method::NACH);
     }
 
     public function toArrayPublicTokenizedCard($serviceProviderTokens)

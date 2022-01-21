@@ -5646,6 +5646,7 @@ class Core extends Base\Core
             'slab' => $slabs,
             'type' => $type,
         ];
+
         $this->repo->transaction(
             function () use($input)
             {
@@ -5659,13 +5660,14 @@ class Core extends Base\Core
         );
     }
 
-    public function associateMerchant1ccConfig(string $type, string $value, array $value_json=[])
+    public function associateMerchant1ccConfig(string $type, string $value, array $value_json = [])
     {
         $input = [
-            'config' => $type,
-            'value'  => $value,
+            'config'     => $type,
+            'value'      => $value,
             'value_json' => $value_json,
         ];
+
         return $this->transaction(
             function () use ($input)
             {

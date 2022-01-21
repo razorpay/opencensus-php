@@ -334,6 +334,7 @@ return array(
         env('PAYMENT_LINK_HOSTED_BASE_URL'),
         env('PL_DEMO_RAZORPAY_WEBSITE_URL'),
         env('PAYMENT_PAGE_AXIS_HOSTED_BASE_URL'),
+        env('PAYMENT_HANDLE_HOSTED_BASE_URL'),
     ],
 
     'payment_store_allowed_cors_url' => [

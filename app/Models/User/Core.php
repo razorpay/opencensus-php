@@ -2838,6 +2838,12 @@ class Core extends Base\Core
      */
     public function change2faSetting(Entity $user, array $input): array
     {
+
+        if ($this->isBankingDemoAccount($user))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_DISABLED_FOR_DEMO_ACC);
+        }
+
         if ($user->isOrgEnforcedSecondFactorAuth() === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORG_2FA_ENFORCED);
@@ -4843,5 +4849,15 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    /**
+     * @param Entity $user
+     * @return bool
+     */
+    protected function isBankingDemoAccount(Entity $user): bool
+    {
+        // Email is used instead of ID as email can be same across ENVs
+        return in_array($user->getEmail(),Constants::BANKING_DEMO_USER_EMAILS,true);
     }
 }

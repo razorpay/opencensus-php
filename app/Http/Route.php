@@ -2603,6 +2603,7 @@ class Route
         'governor_update_merchant_rule_group_mode'  => ['put',      'merchant/mid/rule_groups/{rule_group_id}/mode/{mode}',                                                   'GovernorController@proxy'              ],
         'governor_create_merchant_rule_group'       => ['post',     'merchant/mid/rule_groups',                                                                               'GovernorController@proxy'              ],
         'governor_delete_merchant_rule_group'       => ['delete',   'merchant/mid/rule_groups/{rule_group_id}',                                                               'GovernorController@proxy'              ],
+        'governor_optimizer_events'                 => ['get',      'optimizer/events/payment',                                                                               'GovernorController@proxyGetOptimizerEvents'              ],
 
         'gateway_downtime_for_payment'            => ['POST',     'router/gateway/downtimes',                                  'GatewayController@getGatewayDowntimeForRouter'             ],
 
@@ -3248,12 +3249,18 @@ class Route
         'merchant_coupon_validity'                => ['post',         'merchant/coupon/apply',                                   'MerchantController@applyCoupon'                              ],
         'merchant_coupon_remove'                  => ['post',         'merchant/coupon/remove',                                  'MerchantController@removeCoupon'                              ],
         'update_fetch_coupons_url'                => ['post',         'merchant/coupons/url',                                     'MerchantController@updateFetchCouponsUrl'                    ],
+        'update_fetch_coupons_url_dark'           => ['post',         'merchant/coupons/url_dark',                                     'MerchantController@updateFetchCouponsUrl'                    ],
         'update_coupon_validity_url'              => ['post',         'merchant/coupon/apply/url',                               'MerchantController@updateApplyCouponUrl'                  ],
+        'update_coupon_validity_url_dark'         => ['post',         'merchant/coupon/apply/url_dark',                               'MerchantController@updateApplyCouponUrl'                  ],
         'shipping_info'                             => ['post',       'merchant/shipping_info',                                'MerchantController@getShippingInfo'                          ],
         'update_serviceability_url'                 => ['post',       'merchant/shipping_info/url',                            'MerchantController@updateShippingInfoUrl'                   ],
+        'update_serviceability_url_dark'           => ['post',       'merchant/shipping_info/url_dark',                            'MerchantController@updateShippingInfoUrl'                   ],
         'update_merchant_platform'                 => ['post',        'merchant/1cc_platform',                                     'MerchantController@updateMerchantPlatform'                  ],
+        'update_merchant_platform_dark'             => ['post',       'merchant/1cc_platform_dark',                             'MerchantController@updateMerchantPlatform'                  ],
         'update_cod_slabs'                          => ['post',       'merchant/slabs/cod',                                    'MerchantController@updateCodSlabs'                           ],
+        'update_cod_slabs_dark'                     => ['post',       'merchant/slabs/cod_dark',                                    'MerchantController@updateCodSlabs'                           ],
         'update_shipping_slabs'                     => ['post',       'merchant/slabs/shipping',                               'MerchantController@updateShippingSlabs'                      ],
+        'update_shipping_slabs_dark'                => ['post',       'merchant/slabs/shipping_dark',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
 
@@ -4370,6 +4377,15 @@ class Route
         'setl_optimizer_settlement_cron',
 
         'third_watch_address_cod_score',
+
+        // 1cc config from dark env
+        'update_fetch_coupons_url_dark',
+        'update_coupon_validity_url_dark',
+        'update_serviceability_url_dark',
+        'update_merchant_platform_dark',
+        'update_shipping_slabs_dark',
+        'update_cod_slabs_dark',
+
         'banking_axis_invitations_send',
 
         'buy_pricing_terminal_cost',
@@ -5804,6 +5820,7 @@ class Route
         'governor_update_rule_v1',
         'governor_update_rule_index_v1',
         'governor_search_rules',
+        'governor_optimizer_events',
 
         // governor optimizer on-boarding
         'governor_optimizer_create_merchant',
@@ -6949,6 +6966,7 @@ class Route
         'governor_list_merchant_rule_groups'       => Permission::VIEW_GATEWAY_RULE,
         'governor_reorder_merchant_rule_groups'    => Permission::EDIT_GATEWAY_RULE,
         'governor_search_rules'                    => Permission::VIEW_GATEWAY_RULE,
+        'governor_optimizer_events'                => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_merchant_rule_group'      => Permission::DELETE_GATEWAY_RULE,
         'governor_update_merchant_rule_group_mode' => Permission::EDIT_GATEWAY_RULE,
         'governor_optimizer_create_merchant'       => Permission::CREATE_GATEWAY_RULE,
@@ -9087,6 +9105,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'setl_merchant_dashboard_config_get',
             'workflow_needs_merchant_clarification',
             'splitz_evaluate_bulk_proxy',
             'merchant_update_fraud_type',
@@ -9682,6 +9701,7 @@ class Route
             'governor_rule_chain_list',
             'governor_rule_list',
             'governor_search_rules',
+            'governor_optimizer_events',
             'governor_update_chain_group_sequence_v1',
             'governor_update_config_v1',
             'governor_update_merchant_rule_group',
@@ -11506,6 +11526,12 @@ class Route
         'thirdwatch_cod_score' => [
             'third_watch_address_cod_score',
             'update_shopify_1cc_config',
+            'update_fetch_coupons_url_dark',
+            'update_coupon_validity_url_dark',
+            'update_cod_slabs_dark',
+            'update_serviceability_url_dark',
+            'update_merchant_platform_dark',
+            'update_shipping_slabs_dark',
         ],
 
         'xpayroll' => [

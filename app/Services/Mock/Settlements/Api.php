@@ -33,10 +33,6 @@ class Api extends BaseSettlementsApi
                         'reason' => '',
                         'status' => false,
                     ],
-                    'disable' => [
-                        'reason' => '',
-                        'status' => false,
-                    ],
                     'hold' => [
                         'reason' => '',
                         'status' => false,

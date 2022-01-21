@@ -1905,6 +1905,26 @@ return [
         ],
     ],
 
+    'testFailedUserChange2faBankingDemoAcc' => [
+        'request' => [
+            'url'     => '/users/2fa',
+            'method'  => 'PATCH',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_2FA_DISABLED_FOR_DEMO_ACC,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_2FA_DISABLED_FOR_DEMO_ACC,
+        ],
+    ],
+
     'testFailedLogin2faNoOtp' => [
         'request' => [
             'url'     => '/users/login',

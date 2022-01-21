@@ -307,8 +307,8 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayPublic();
 
-        if ((self::STATUS === Status::STARTED)
-            && (self::CREATED_AT !== self::UPDATED_AT))
+        if (($data[self::STATUS] === Status::STARTED) && (isset($data[self::CREATED_AT]))
+            && (isset($data[self::UPDATED_AT])) && ($data[self::CREATED_AT] !== $data[self::UPDATED_AT]))
         {
             $data[self::STATUS] = Status::UPDATED;
         }

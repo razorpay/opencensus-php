@@ -771,15 +771,23 @@ class Service extends Base\Service
 
         $isAdmin = $this->app['basicauth']->isAdminAuth();
 
+        $serviceablePincode = new ServiceablePincodes();
+
         if ($includeIcici === true and $isAdmin === false)
         {
-            $isWhiteListed = (new ServiceablePincodes())->checkIfPincodeIsWhitelisted($pinCode);
+            $isWhiteListed = $serviceablePincode->checkIfPincodeIsWhitelisted($pinCode);
 
             if ($isWhiteListed === true)
             {
                 return ['serviceability' => true,
                         'errorMessage'   => null];
             }
+        }
+
+        if ($serviceablePincode->checkIfPincodeIsUnserviceableByRBl($pinCode) === true)
+        {
+            return ['serviceability' => false,
+                'errorMessage'   => null];
         }
 
         try

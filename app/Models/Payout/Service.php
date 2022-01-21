@@ -182,6 +182,15 @@ class Service extends Base\Service
     {
         $payoutInput = $input;
 
+        $requestTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_CREATE_REQUEST,
+            [
+                'input' => $input,
+                'time'  => $requestTime
+            ]);
+
         // Only allow access over strictly private auth, for proxy auth: OTP auth flow is mandated.
         if ($this->auth->isStrictPrivateAuth() === false and
             ($this->isAllowedInternalApp() === false))
@@ -289,6 +298,18 @@ class Service extends Base\Service
         {
             $payout = $this->postCreationProcessingForCompositePayout($payout);
         }
+
+        $responseTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_CREATE_RESPONSE,
+            [
+                'input'         => $input,
+                'payout_id'     => $payout->getId(),
+                'is_composite'  => $isCompositePayout,
+                'time'          => $responseTime,
+                'response_time' => $responseTime - $requestTime
+            ]);
 
         return $payout->toArrayPublic();
     }
@@ -2451,7 +2472,7 @@ class Service extends Base\Service
             null,
             $eventAttribute);
     }
-  
+
     public function getPayoutStatusReasonMap(): array
     {
         return StatusReasonMap::$payoutStatusToReasonMap;

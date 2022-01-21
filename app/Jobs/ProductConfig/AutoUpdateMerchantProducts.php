@@ -33,12 +33,13 @@ class AutoUpdateMerchantProducts extends Job
         $this->source          = $source;
         $this->merchant        = $merchant;
         $this->merchantDetails = $merchantDetails;
-        $this->resetWorkflowSingleton();
     }
 
     public function handle()
     {
         parent::handle();
+
+        $this->resetWorkflowSingleton();
 
         $this->trace->info(
             TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE_ATTEMPT,

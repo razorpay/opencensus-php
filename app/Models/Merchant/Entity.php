@@ -126,6 +126,7 @@ class Entity extends Base\PublicEntity
     const FEE_CREDITS_THRESHOLD          = 'fee_credits_threshold';
     const AMOUNT_CREDITS_THRESHOLD       = 'amount_credits_threshold';
     const REFUND_CREDITS_THRESHOLD       = 'refund_credits_threshold';
+    const BALANCE_THRESHOLD              = 'balance_threshold';
     const PRODUCT                        = 'product';
     const DEFAULT_REFUND_SPEED           = 'default_refund_speed';
     const SECOND_FACTOR_AUTH             = 'second_factor_auth';
@@ -355,6 +356,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS_THRESHOLD,
         self::AMOUNT_CREDITS_THRESHOLD,
         self::REFUND_CREDITS_THRESHOLD,
+        self::BALANCE_THRESHOLD,
         self::DISPLAY_NAME,
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
         self::DASHBOARD_WHITELISTED_IPS_TEST,
@@ -379,6 +381,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS_THRESHOLD,
         self::AMOUNT_CREDITS_THRESHOLD,
         self::REFUND_CREDITS_THRESHOLD,
+        self::BALANCE_THRESHOLD,
         self::DISPLAY_NAME,
         self::DEFAULT_REFUND_SPEED,
         self::FEE_BEARER,
@@ -447,6 +450,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS_THRESHOLD,
         self::AMOUNT_CREDITS_THRESHOLD,
         self::REFUND_CREDITS_THRESHOLD,
+        self::BALANCE_THRESHOLD,
         self::DISPLAY_NAME,
         self::ACTIVATION_SOURCE,
         self::BUSINESS_BANKING,
@@ -496,6 +500,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS_THRESHOLD          => null,
         self::AMOUNT_CREDITS_THRESHOLD       => null,
         self::REFUND_CREDITS_THRESHOLD       => null,
+        self::BALANCE_THRESHOLD              => null,
         self::CATEGORY                       => 0,
         self::WEBSITE                        => null,
         self::INTERNATIONAL                  => 0,
@@ -531,6 +536,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS_THRESHOLD          => 'int',
         self::AMOUNT_CREDITS_THRESHOLD       => 'int',
         self::REFUND_CREDITS_THRESHOLD       => 'int',
+        self::BALANCE_THRESHOLD              => 'int',
         self::BUSINESS_BANKING               => 'bool',
         self::SECOND_FACTOR_AUTH             => 'bool',
         self::RESTRICTED                     => 'bool',
@@ -762,6 +768,16 @@ class Entity extends Base\PublicEntity
     public function isRouteKeyMerchant() : bool
     {
         return $this->isFeatureEnabled(Feature\Constants::ROUTE_KEY_MERCHANTS_QUEUE);
+    }
+
+    public function isCapitalFloatRouteMerchant() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CAPITAL_FLOAT_ROUTE_MERCHANT);
+    }
+
+    public function isSliceRouteMerchant() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::SLICE_ROUTE_MERCHANT);
     }
 
     public function isDisplayParentPaymentId(): bool
@@ -1986,6 +2002,11 @@ class Entity extends Base\PublicEntity
     public function getRefundCreditsThreshold()
     {
         return $this->getAttribute(self::REFUND_CREDITS_THRESHOLD);
+    }
+
+    public function getBalanceThreshold()
+    {
+        return $this->getAttribute(self::BALANCE_THRESHOLD);
     }
 
     public function getRefundSource()

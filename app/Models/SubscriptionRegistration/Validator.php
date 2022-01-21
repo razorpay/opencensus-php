@@ -148,6 +148,14 @@ class Validator extends Base\Validator
                     Entity::MAX_AMOUNT
                 );
             }
+
+            if ($maxAmount <= Token\Entity::LEAST_MAX_AMOUNT_LIMIT)
+            {
+                throw new BadRequestValidationFailureException(
+                    'The max amount should be greater than zero.',
+                    Entity::MAX_AMOUNT
+                );
+            }
         }
     }
 

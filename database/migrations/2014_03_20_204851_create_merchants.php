@@ -226,6 +226,9 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::SIGNUP_VIA_EMAIL)->default(1);
 
+            $table->bigInteger(Merchant::BALANCE_THRESHOLD)
+                ->nullable();
+
             $table->index(Merchant::ACTIVATED_AT);
             $table->index(Merchant::ACTIVATED);
             $table->index(Merchant::LIVE);

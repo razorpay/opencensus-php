@@ -2020,7 +2020,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_DOWNTIME_CREATE_JOB                           = 'PAYMENT_DOWNTIME_CREATE_JOB';
     const PAYMENT_DOWNTIMES_TO_ACTIVATE                         = 'PAYMENT_DOWNTIMES_TO_ACTIVATE';
     const PAYMENT_DOWNTIMES_TO_RESOLVE                          = 'PAYMENT_DOWNTIMES_TO_RESOLVE';
-    const ENABLE_GRANULAR_DOWNTIMES                             = 'ENABLE_GRANULAR_DOWNTIMES';
+    const MERCHANT_DOWNTIME_COMMUNICATION_RAZORX                = 'MERCHANT_DOWNTIME_COMMUNICATION_RAZORX';
+    const MERCHANT_DOWNTIME_COMMUNICATION_FEATURE               = 'MERCHANT_DOWNTIME_COMMUNICATION_FEATURE';
     const DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE                  = 'DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE';
 
     const PAYMENT_DOWNTIME_CREATE_EMAIL                         = 'PAYMENT_DOWNTIME_CREATE_EMAIL';
@@ -3140,6 +3141,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
     const AMOUNT_CREDITS_THRESHOLD_ALERT                        = 'AMOUNT_CREDITS_THRESHOLD_ALERT';
     const REFUND_CREDITS_THRESHOLD_ALERT                        = 'REFUND_CREDITS_THRESHOLD_ALERT';
+    const BALANCE_THRESHOLD_ALERT                               = 'BALANCE_THRESHOLD_ALERT';
 
     // Excel reader debug trace codes
     const EXCEL_READER_IMPORT_CONFIG                            = 'EXCEL_READER_IMPORT_CONFIG';
@@ -3360,6 +3362,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Payout Link Codes
 
+    const PAYOUT_CREATE_REQUEST                                 = 'PAYOUT_CREATE_REQUEST';
+    const PAYOUT_CREATE_RESPONSE                                = 'PAYOUT_CREATE_RESPONSE';
     const PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST                 = 'PAYOUT_TO_FUND_ACCOUNT_CREATE_REQUEST';
     const PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST            = 'PAYOUT_FROM_CUSTOMER_WALLET_CREATE_REQUEST';
     const PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST               = 'PAYOUT_INTERNAL_MERCHANT_CREATE_REQUEST';

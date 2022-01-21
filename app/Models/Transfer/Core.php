@@ -20,6 +20,8 @@ use RZP\Models\Transaction;
 use RZP\Jobs\TransferProcess;
 use RZP\Models\Settlement\Bucket;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Jobs\TransferProcessSlice;
+use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
 
 class Core extends Base\Core
@@ -1046,7 +1048,21 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        if ($merchant->isRouteKeyMerchant() === true)
+        if (($merchant->isCapitalFloatRouteMerchant() === true) and
+            ($this->isLiveMode() === true))
+        {
+            TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType);
+
+            return;
+        }
+        else if (($merchant->isSliceRouteMerchant() === true) and
+            ($this->isLiveMode() === true))
+        {
+            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType);
+
+            return;
+        }
+        else if ($merchant->isRouteKeyMerchant() === true)
         {
             TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType);
 

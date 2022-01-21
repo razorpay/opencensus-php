@@ -35,6 +35,7 @@ class RemindersController extends Controller
             '^batch\/service\/control$',
             '^circuit_config$',
             '^reminders_experiment\/[[:alnum:]]{100}$',
+            '^callback_url\/[[:alnum]]{50}$',
         ],
         self::POST => [
             '^batch$',
@@ -45,6 +46,7 @@ class RemindersController extends Controller
             '^service\/[[:alnum:]|_]{1,100}\/configure$',
             '^circuit_config$',
             '^reminders_experiment$',
+            '^callback_url$',
         ],
         self::PUT => [
             '^merchant_config$',
@@ -55,6 +57,7 @@ class RemindersController extends Controller
         self::PATCH => [
             '^merchant_settings\/[[:alnum:]]{14}$',
             '^configs\/namespace\/[[:alnum:]|_]{1,100}$',
+            '^callback_url$',
         ],
         self::DELETE => [
             '^configs\/[[:alnum:]]{14}$',
@@ -71,6 +74,7 @@ class RemindersController extends Controller
             '^batch\/service\/control$',
             '^circuit_config$',
             '^reminders_experiment\/[[:alnum:]]{100}$',
+            '^callback_url\/[[:alnum]]{50}$',
         ],
         self::POST => [
             '^batch$',
@@ -82,6 +86,7 @@ class RemindersController extends Controller
             '^service\/[[:alnum:]|_]{1,100}\/configure$',
             '^circuit_config$',
             '^reminders_experiment$',
+            '^callback_url$',
         ],
         self::PUT => [
             '^configs\/[[:alnum:]]{14}$',
@@ -93,6 +98,7 @@ class RemindersController extends Controller
             '^merchant_settings\/[[:alnum:]]{14}$',
             '^reminders\/next_run_at\/[[:alnum:]]{14}$',
             '^configs\/namespace\/[[:alnum:]|_]{1,100}$',
+            '^callback_url$',
         ],
         self::DELETE => [
             '^configs\/[[:alnum:]]{14}$',

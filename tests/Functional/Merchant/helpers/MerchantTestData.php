@@ -843,6 +843,41 @@ return [
         ]
     ],
 
+    'testEditMerchantWithNullBalanceThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'linked_account_kyc' => '1',
+                'website' => 'https://www.example.com',
+                'category' => 1111,
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'balance_threshold'     => null
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'linked_account_kyc' => true,
+                'category' => '1111',
+                'website' => 'https://www.example.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'balance_threshold'    => null
+            ]
+        ]
+    ],
+
     'testEditMerchantEnableInternationalFail' => [
         'request' => [
             'content' => [
@@ -1717,6 +1752,24 @@ return [
         'response' => [
             'content' => [
                 'refund_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+    'testEditMerchantBalanceThresholdWithProxyAuth' => [
+        'request' => [
+            'raw' => json_encode([
+                'balance_threshold'     => 1000
+            ]),
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'balance_threshold'    => 1000
             ]
         ]
     ],

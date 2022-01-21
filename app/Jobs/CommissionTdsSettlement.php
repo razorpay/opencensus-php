@@ -61,12 +61,13 @@ class CommissionTdsSettlement extends Job
         $this->updateInvoiceStatus = $input[Invoice\Constants::UPDATE_INVOICE_STATUS] ?? true;
         $this->createTds = $input[Invoice\Constants::CREATE_TDS] ?? true;
         $this->skipProcessed = $input[Invoice\Constants::SKIP_PROCESSED] ?? false;
-        $this->resetWorkflowSingleton();
     }
 
     public function handle()
     {
         parent::handle();
+
+        $this->resetWorkflowSingleton();
 
         $this->mutex = App::getFacadeRoot()['api.mutex'];
 

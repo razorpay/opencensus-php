@@ -435,4 +435,7 @@ final class RazorxTreatment
 
     // experiment to no longer require old password for password reset flow
     const DISABLE_OLD_PASSWORD_REQUIRED_FOR_PASSWORD_RESET = 'disable_old_password_required_for_password_reset';
+
+    // experiment to send uploaded signed form nach payment in fetch token api
+    const SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK = 'send_nach_signed_form_to_merchant_in_response_authlink';
 }

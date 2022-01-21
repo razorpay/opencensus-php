@@ -27,6 +27,7 @@ use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\AmountCreditsAlert;
 use RZP\Mail\Merchant\RefundCreditsAlert;
+use RZP\Mail\Merchant\BalanceThresholdAlert;
 use RZP\Models\Base\Entity as BaseEntity;
 use RZP\Models\Payment\Processor\Capture;
 use RZP\Models\Merchant\Balance\BalanceConfig;
@@ -886,8 +887,54 @@ abstract class Base extends BaseCore
 
         $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 
+        $balanceThreshold = $this->merchantBalance->merchant->getBalanceThreshold();
+        if($balanceThreshold !== null and
+           $merchantBalance->getType() === Balance\Type::PRIMARY)
+        {
+            $this->sendBalanceThresholdAlertIfNeeded(
+                $oldBalance, $newBalance, $balanceThreshold, $this->merchantBalance->merchant, $this->merchantBalance->getRefundCredits()
+            );
+        }
+
         (new Balance\Core)->postProcessingForNegativeBalance($oldBalance, Balance\Entity::BALANCE,
                                                             $this->txn->getType(), $merchantBalance);
+    }
+
+    private function sendBalanceThresholdAlertIfNeeded(
+        $oldBalance,
+        $newBalance,
+        $balanceThreshold,
+        $merchant,
+        $refundCredits
+    )
+    {
+        // $alertRatios should be sorted array always
+        $alertRatios = [0.25, 0.5, 1];
+
+        foreach ($alertRatios as $alertRatio)
+        {
+            if (($oldBalance >= ($alertRatio * $balanceThreshold)) and
+                ($newBalance < ($alertRatio * $balanceThreshold)))
+            {
+                $data = [
+                    'email'             => $merchant->getTransactionReportEmail(),
+                    'merchant_id'       => $merchant->getId(),
+                    'merchant_dba'      => $merchant->getBillingLabel(),
+                    'balance'           => '₹ '.(($newBalance) / 100),
+                    'org_hostname'      => $merchant->org->getPrimaryHostName(),
+                    'timestamp'         => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+                    'refund_credit'     => '₹ '.(($refundCredits) / 100)
+                ];
+
+                $this->trace->info(TraceCode::BALANCE_THRESHOLD_ALERT, $data);
+
+                $createAlertMail = new BalanceThresholdAlert($data);
+
+                Mail::queue($createAlertMail);
+
+                break;
+            }
+        }
     }
 
     public function updatePostedDate(int $postedDate = null)

@@ -9,7 +9,7 @@ class Validator extends Base\Validator
 
     protected static $shippingProviderRules = [
         Constants::SHIPPING_PROVIDER_ID     => 'required|string|size:14',
-        Constants::ENABLE_COD               => 'required|boolean',
+        Constants::ENABLE_COD               => 'sometimes|boolean',
         Constants::COD_FEE_RULE             => 'required_if:enable_cod,true',
         Constants::SHIPPING_FEE_RULE        => 'required',
         Constants::WAREHOUSE_PINCODE        => 'required|string|size:6',

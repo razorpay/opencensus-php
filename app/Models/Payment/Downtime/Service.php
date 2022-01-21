@@ -55,23 +55,19 @@ class Service extends Base\Service
     {
         $sendMerchantDowntimesInFetchApi = $this->shouldSendMerchantDowntimes(Constants::FETCH_API);
 
-        $this->trace->info(
-            TraceCode::ENABLE_GRANULAR_DOWNTIMES,
-            [
-                'merchantId' => $this->merchant->getMerchantId(),
-                'sendMerchantDowntimesInFetchApi' => $sendMerchantDowntimesInFetchApi
-            ]
-        );
-
         if ($sendMerchantDowntimesInFetchApi &&
             ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
         {
+            $this->traceMerchantDowntimeCommunicationFeature($this->merchant->getMerchantId(), Constants::FETCH_API, true);
+
             $downtimes = $this->getRepository()->fetchOngoingPlatformAndMerchantDowntimes($this->merchant->getMerchantId());
 
             return $downtimes->toArrayPublic();
         }
         else
         {
+            $this->traceMerchantDowntimeCommunicationFeature($this->merchant->getMerchantId(), Constants::FETCH_API, false);
+
             $downtimes = $this->getRepository()->fetchOngoingDowntimes();
 
             $downtimesArrayPublic = $downtimes->toArrayPublic();
@@ -115,10 +111,14 @@ class Service extends Base\Service
         if ($sendMerchantDowntimesInFetchApi &&
             ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GRANULAR_DOWNTIMES) === true))
         {
+            $this->traceMerchantDowntimeCommunicationFeature($this->merchant->getMerchantId(), Constants::FETCH_API, true);
+
             return $downtimes->toArrayPublic();
         }
         else
         {
+            $this->traceMerchantDowntimeCommunicationFeature($this->merchant->getMerchantId(), Constants::FETCH_API, false);
+
             $downtimeArrayPublic = $downtimes->toArrayPublic();
 
             $this->removeGranularDowntimeKeysFromEntity($downtimeArrayPublic);
@@ -262,11 +262,11 @@ class Service extends Base\Service
 
             if($downtime->getMerchantId() === null)
             {
-                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
+                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_UPDATED);
             }
             else
             {
-                $merchantIds = $this->getMerchantsSubscribingToWebhookEventForMerchant(Event::PAYMENT_DOWNTIME_STARTED, $downtime->getMerchantId());
+                $merchantIds = $this->getMerchantsSubscribingToWebhookEventForMerchant(Event::PAYMENT_DOWNTIME_UPDATED, $downtime->getMerchantId());
             }
 
             $sendMerchantDowntimesInWebhooks = true;
@@ -440,6 +440,8 @@ class Service extends Base\Service
 
                 return;
             }
+
+            $this->traceMerchantDowntimeCommunicationFeature($downtime->getMerchantId(), Constants::EMAILS, $merchantDowntimesEnabled);
         }
 
         $downtimeArray = $downtime->toArray();
@@ -458,11 +460,9 @@ class Service extends Base\Service
             }
             else
             {
-                $recipientEmail = [
-                    'product.onlinepayments@razorpay.com',
-                    'tech.onlinepayments.core@razorpay.com',
-                    'srm@razorpay.com'
-                ];
+                $this->trace->info(TraceCode::SKIP_MERCHANT_DOWNTIME_COMMUNICATION, ['merchantId' => $downtime->getMerchantId()]);
+
+                return;
             }
 
             $cc = $this->getValueFromRedis(Constants::DOWNTIMES_EMAIL_CC . $downtime->getMerchantId());
@@ -545,12 +545,22 @@ class Service extends Base\Service
 
     public function shouldSendMerchantDowntimes(string $communicationChannel):bool
     {
-        return strtolower(
+        $isExperimentActivated = strtolower(
                 $this->app->razorx->getTreatment(
                     $communicationChannel,
                     Merchant\RazorxTreatment::SEND_MERCHANT_DOWNTIMES,
                     $this->mode
                 )) === 'on';
+
+        $this->trace->info(
+            TraceCode::MERCHANT_DOWNTIME_COMMUNICATION_RAZORX,
+            [
+                'channel' => $communicationChannel,
+                'value' => $isExperimentActivated
+            ]
+        );
+
+        return $isExperimentActivated;
     }
 
     public function removeGranularDowntimeKeysFromCollection(array & $downtimesArrayPublic)
@@ -591,4 +601,16 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::DOWNTIME_FETCH_CC_FROM_REDIS_FAILURE, ['Key' => $key,]);
         }
     }
+
+    private function traceMerchantDowntimeCommunicationFeature(string $merchantId, string $communicationChannel, bool $featureEnabled){
+        $this->trace->info(
+            TraceCode::MERCHANT_DOWNTIME_COMMUNICATION_FEATURE,
+            [
+                'merchant_id' => $merchantId,
+                'communication_channel' => $communicationChannel,
+                'feature_enabled' => $featureEnabled
+            ]
+        );
+    }
+
 }

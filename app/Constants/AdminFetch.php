@@ -2261,6 +2261,14 @@ class AdminFetch
 
             ],
 
+            Entity::PAYMENT_FRAUD => [
+                Payment\Fraud\Entity::PAYMENT_ID      => Fetch::FIELD_PAYMENT_ID,
+                Payment\Fraud\Entity::ARN             => [
+                    Fetch::LABEL        => 'ARN',
+                    Fetch::TYPE         => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::DISPUTE_EVIDENCE => [
                 Dispute\Evidence\Entity::DISPUTE_ID =>  [
                         Fetch::LABEL        => 'Dispute ID',

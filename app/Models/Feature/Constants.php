@@ -168,6 +168,10 @@ class Constants
     const PAYPAL_CC                       = 'paypal_cc';
     const SOURCED_BY_WALNUT369            = 'sourced_by_walnut369';
     const WALLET                          = 'wallet';
+    const SR_SENSITIVE_BUCKET_1           = 'sr_sensitive_bucket_1';
+    const SR_SENSITIVE_BUCKET_2           = 'sr_sensitive_bucket_2';
+    const SR_SENSITIVE_BUCKET_3           = 'sr_sensitive_bucket_3';
+    const SR_SENSITIVE_BUCKET_4           = 'sr_sensitive_bucket_4';
 
     const FEATURE                         = 'feature';
     const DISPLAY_NAME                    = 'display_name';
@@ -938,6 +942,10 @@ class Constants
 
     const ROUTE_KEY_MERCHANTS_QUEUE = 'route_key_merchants_queue';
 
+    // Experiment to move transfer processing for these 2 merchants to dedicated queues.
+    const CAPITAL_FLOAT_ROUTE_MERCHANT  = 'cf_route_merchant'; // Cannot be longer than 25 characters.
+    const SLICE_ROUTE_MERCHANT          = 'sl_route_merchant';
+
     const FEATURE_BBPS = 'feature_bbps';
 
     /**
@@ -1472,6 +1480,8 @@ class Constants
         self::ORG_TPV_DISABLE                 => true,
         self::AXIS_TPV_ENABLE                 => true,
         self::ROUTE_KEY_MERCHANTS_QUEUE       => true,
+        self::CAPITAL_FLOAT_ROUTE_MERCHANT    => true,
+        self::SLICE_ROUTE_MERCHANT            => true,
         self::SHOW_MOR_TNC                    => true,
         self::FEATURE_BBPS                    => true,
         self::ADDRESS_REQUIRED                => true,
@@ -1525,6 +1535,10 @@ class Constants
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
+        self::SR_SENSITIVE_BUCKET_1           => true,
+        self::SR_SENSITIVE_BUCKET_2           => true,
+        self::SR_SENSITIVE_BUCKET_3           => true,
+        self::SR_SENSITIVE_BUCKET_4           => true,
         self::DCC_ON_OTHER_LIBRARY            => true,
     ];
     // Entity type constants
@@ -2088,6 +2102,16 @@ class Constants
         self::ROUTE_KEY_MERCHANTS_QUEUE => [
             'feature'       => self::ROUTE_KEY_MERCHANTS_QUEUE,
             'display_name'  => 'To use new transfer processing queue',
+            'documentation' => '',
+        ],
+        self::CAPITAL_FLOAT_ROUTE_MERCHANT => [
+            'feature'       => self::CAPITAL_FLOAT_ROUTE_MERCHANT,
+            'display_name'  => 'To use dedicated transfer processing queue',
+            'documentation' => '',
+        ],
+        self::SLICE_ROUTE_MERCHANT => [
+            'feature'       => self::SLICE_ROUTE_MERCHANT,
+            'display_name'  => 'To use dedicated transfer processing queue',
             'documentation' => '',
         ],
         self::FEATURE_BBPS => [
