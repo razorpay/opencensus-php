@@ -1011,7 +1011,19 @@ class Core extends Base\Core
 
         $this->updateStatusAfterFtaRecon($fav, $mapping);
 
+        $startTime = microtime(true);
+
         $this->updateTransactionEntity($fav);
+
+        $endTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::TIME_TAKEN_TO_UPDATE_TXN_IN_FAV_UPDATE_FTS_WEBHOOK,
+            [
+                'fav_id' => $fav->getId(),
+                'time_taken' => $endTime - $startTime,
+            ]
+        );
     }
 
     public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)

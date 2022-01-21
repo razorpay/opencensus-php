@@ -54,9 +54,6 @@ class RequestLogHandler
         // Pass the request further (to next Middleware) and get the response
         $response = $next($request);
 
-        // stop watch start (to measure performance of this middleware)
-        $startTime = microtime(true);
-
         // For Razorx handling and saving in the entity
         $merchantId = $this->basicauth->getMerchantId() ?? null;
 
@@ -134,17 +131,6 @@ class RequestLogHandler
                     'log_ID'      => $logEntry->getId(),
                     'request_url' => $request->getRequestUri(),
                     'route_name'  => $this->route->getCurrentRouteName(),
-                ]
-            );
-
-            $endTime = microtime(true);
-
-            // Extra trace to calculate time taken by middleware
-            $this->trace->info(
-                TraceCode::REQUEST_LOG_HANDLER_PROCESSING_TIME,
-                [
-                    'route_name' => $this->route->getCurrentRouteName(),
-                    'time'       => $endTime - $startTime,
                 ]
             );
 
