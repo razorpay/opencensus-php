@@ -962,24 +962,6 @@ class Validator extends Base\Validator
         $oldPassword1 = $this->entity->getAttribute(Entity::OLD_PASSWORD_1);
         $oldPassword2 = $this->entity->getAttribute(Entity::OLD_PASSWORD_2);
 
-        $user   = $this->entity;
-
-        $disableOldPasswordRequiredExperimentIsOn = (new Merchant\Core)->isRazorxExperimentEnable(
-            $user->getAttribute(Entity::ID),
-            Merchant\RazorxTreatment::DISABLE_OLD_PASSWORD_REQUIRED_FOR_PASSWORD_RESET
-        );
-
-        if ($disableOldPasswordRequiredExperimentIsOn !== true)
-        {
-            $oauthProvider = $user->getAttribute(Entity::OAUTH_PROVIDER);
-            if((empty($oldPassword) === true) and (empty($oauthProvider) === true))
-            {
-                throw new BadRequestValidationFailureException(
-                    'The password cannot be reset since it has not yet been set. Please login with other method to set a password.'
-                );
-            }
-        }
-
         foreach (array_filter([$oldPassword, $oldPassword1, $oldPassword2]) as $old)
         {
             if (Hash::check($newPassword, $old) === true)
