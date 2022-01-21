@@ -298,3 +298,9 @@ export const REPAYMENT_FREQUENCY_TYPES = {
   BIMONTHLY: 'BIMONTHLY',
   MONTHLY: 'MONTHLY',
 };
+
+export const ONHOLD_REASONS = {
+  NOT_MIGRATED_TO_GROMOR: 'not_migrated_to_gromor',
+  CLD_RISK_POLICY: 'cld_risk_policy',
+  END_OF_CREDIT_LINE_TENURE: 'end_of_credit_line_tenure',
+};

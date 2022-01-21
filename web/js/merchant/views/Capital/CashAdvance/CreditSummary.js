@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
-import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, ONHOLD_REASONS } from './constants';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const Loader = () => (
@@ -24,39 +24,47 @@ export default function CreditSummary({
   if (loading) return <Loader />;
 
   const { configuration: { internal_credit_limit = 0 } = {} } = withdrawalConfiguration;
-  const isReasonCldRiskPolicy = reason === 'cld_risk_policy';
-  const isReasonEndOfCreditLine = reason === 'end_of_credit_line_tenure';
+  const isReasonCldRiskPolicy = reason === ONHOLD_REASONS.CLD_RISK_POLICY;
+  const isReasonEndOfCreditLine = reason === ONHOLD_REASONS.END_OF_CREDIT_LINE_TENURE;
+  const isReasonKudosNotMigrated = reason === ONHOLD_REASONS.NOT_MIGRATED_TO_GROMOR;
 
-  const renderCldRiskSection = () => {
+  const renderOnHoldSection = () => {
     return (
       <>
         <div className="flex withdrawals__status__wrapper-parent">
           <p className="title">Credit Limit</p>
           <div className="withdrawals__status__wrapper">
-            <div className="help-content small" style={{ position: 'relative' }}>
+            <div
+              className={`small ${isReasonCldRiskPolicy ? 'help-content' : ''}`}
+              style={{ position: 'relative' }}
+            >
               <p className="withdrawals__status">on hold</p>
-              <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
-                <PopoverBody>
-                  <div className="text-left">
-                    Your Cash Advance has been disabled due to perceived risk of decrease in
-                    payments volume. Your line will be enabled once your payments volume increase.
-                  </div>
-                </PopoverBody>
-              </Popover>
+              {isReasonCldRiskPolicy && (
+                <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
+                  <PopoverBody>
+                    <div className="text-left">
+                      Your Cash Advance has been disabled due to perceived risk of decrease in
+                      payments volume. Your line will be enabled once your payments volume increase.
+                    </div>
+                  </PopoverBody>
+                </Popover>
+              )}
             </div>
           </div>
         </div>
-        <p className="summary">
-          Your credit limit will be activated once your payments volumes are regular.
-        </p>
+        {isReasonCldRiskPolicy && (
+          <p className="summary">
+            Your credit limit will be activated once your payments volumes are regular.
+          </p>
+        )}
       </>
     );
   };
 
   return (
     <div className="withdrawals__credit-meta">
-      {isWithdrawalOnhold && isReasonCldRiskPolicy ? (
-        renderCldRiskSection()
+      {isWithdrawalOnhold && (isReasonCldRiskPolicy || isReasonKudosNotMigrated) ? (
+        renderOnHoldSection()
       ) : (
         <>
           <div className="withdrawals__credit-meta__header">

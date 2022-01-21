@@ -28,6 +28,7 @@ import {
   COLLECTIONS_BALANCE_TYPE,
   CASH_ADVANCE_FIRST_LOGIN_KEY,
   REPAYMENT_FREQUENCY_TYPES,
+  ONHOLD_REASONS,
 } from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
@@ -203,7 +204,9 @@ export default class AmountWithdraw extends React.Component {
     // fetchSeedData();
     this.prefillData();
     const isApplicationAtHold =
-      status === 'ONHOLD' && reason !== 'cld_risk_policy' && reason !== 'end_of_credit_line_tenure';
+      status === 'ONHOLD' &&
+      reason !== ONHOLD_REASONS.CLD_RISK_POLICY &&
+      reason !== ONHOLD_REASONS.END_OF_CREDIT_LINE_TENURE;
 
     if (isApplicationAtHold) {
       const currentDate = new Date();
@@ -842,7 +845,8 @@ export default class AmountWithdraw extends React.Component {
 
     const { comments: { reason = '' } = {}, status } = withdrawalConfigurationDetails;
 
-    const isWithdrawalDisabled = status === 'ONHOLD' && reason === 'end_of_credit_line_tenure';
+    const isWithdrawalDisabled =
+      status === 'ONHOLD' && reason === ONHOLD_REASONS.END_OF_CREDIT_LINE_TENURE;
     const canWithdraw = this.canWithdraw() && !isWithdrawalDisabled;
     const { withdrawalErrorConfig = {} } = this.state;
     const showReasonCTA =
@@ -1026,7 +1030,8 @@ export default class AmountWithdraw extends React.Component {
   };
 
   withdrawOnholdReasonSection = (reason) => {
-    const isReasonCldRiskPolicy = reason === 'cld_risk_policy';
+    const isReasonCldRiskPolicy = reason === ONHOLD_REASONS.CLD_RISK_POLICY;
+    const isReasonKudosNotMigrated = reason === ONHOLD_REASONS.NOT_MIGRATED_TO_GROMOR;
 
     const resonLabels = {
       cld_risk_policy: (
@@ -1042,12 +1047,19 @@ export default class AmountWithdraw extends React.Component {
           continue <br /> using your credit line.
         </>
       ),
+      not_migrated_to_gromor: (
+        <>
+          The account is put on hold as we have changed our lending partner. Please reach out to us
+          at <a href="mailto:harshit.jain@razorpay.com">harshit.jain@razorpay.com</a>, so we can
+          help you activate cash advance account
+        </>
+      ),
     };
 
     const renderBottomSection = () => {
       return (
         <div className="flex outstanding__wrapper">
-          {isReasonCldRiskPolicy ? (
+          {isReasonCldRiskPolicy || isReasonKudosNotMigrated ? (
             <div>
               <i className="i i-info-outline withdrawals__onhold-icon bottom-section-icon" />
               Keep using the payments gateway for your business needs to keep the payments volume
@@ -1112,7 +1124,10 @@ export default class AmountWithdraw extends React.Component {
       merchantGromorEsignDetails: { loading, data: { due_at = '' } = {} } = {},
     } = this.props;
 
-    const isApplicationAtHold = status === 'ONHOLD' && reason !== 'end_of_credit_line_tenure';
+    const isApplicationAtHold =
+      status === 'ONHOLD' && reason !== ONHOLD_REASONS.END_OF_CREDIT_LINE_TENURE;
+    const isApplicationKudosHold =
+      status === 'ONHOLD' && reason === ONHOLD_REASONS.NOT_MIGRATED_TO_GROMOR;
 
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
@@ -1172,6 +1187,8 @@ export default class AmountWithdraw extends React.Component {
               <div class="page-spinner-container" style={{ height: '100%' }}>
                 <Spinner />
               </div>
+            ) : isApplicationKudosHold ? (
+              this.withdrawOnholdReasonSection(reason)
             ) : latestRepaymentDone ? (
               this.repaymentSuccessfull(isRepaymentLoading)
             ) : (
