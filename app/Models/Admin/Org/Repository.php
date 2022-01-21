@@ -120,7 +120,7 @@ class Repository extends Base\Repository
     {
         if (empty($orgIds) === true)
         {
-            return true;
+            return false;
         }
 
         return $this->newQuery()
