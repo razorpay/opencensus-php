@@ -805,7 +805,7 @@ class Repository extends Base\Repository
         return $terminal;
     }
 
-    public function getByParams(array $params)
+    public function getByParams(array $params, bool $fetchWhereSubmerchant = false)
     {
         $query = $this->buildFetchByParamsQuery($params);
 
@@ -833,6 +833,11 @@ class Repository extends Base\Repository
                 if (($content["gateway"] === Payment\Gateway::WALLET_PAYPAL) and (isset($content["status"]) === false))
                 {
                     $content["status"] = Status::ACTIVATED;
+                }
+
+                if ($fetchWhereSubmerchant === true)
+                {
+                    $content["fetch_where_submerchant"] = true;
                 }
 
                 $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);

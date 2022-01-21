@@ -34,7 +34,7 @@ trait AppTrait
             Terminal\Entity::ENABLED     => 1,
         ];
 
-        $terminals = $this->repo->terminal->getByParams($params);
+        $terminals = $this->repo->terminal->getByParams($params, true);
 
         if (count($terminals) < 1)
         {
