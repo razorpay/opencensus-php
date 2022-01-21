@@ -681,6 +681,19 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testEditMerchantWithNullBalanceThreshold()
+    {
+        $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_' . $this->org->id);
+
+        $result = $this->startTest();
+
+        $this->assertArrayNotHasKey('groups', $result);
+    }
+
     public function testEditMerchantWithHighRiskThreshold()
     {
         $this->createMerchant();
@@ -2311,6 +2324,15 @@ class MerchantTest extends TestCase
     }
 
     public function testEditMerchantRefundCreditsThresholdWithProxyAuth()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantBalanceThresholdWithProxyAuth()
     {
         $this->createMerchant();
 

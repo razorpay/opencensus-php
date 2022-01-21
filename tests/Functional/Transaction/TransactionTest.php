@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
+use Mail;
+use RZP\Mail\Merchant\BalanceThresholdAlert;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Balance\Type;
@@ -1241,5 +1243,77 @@ class TransactionTest extends TestCase
         $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
 
         $roleOfAdmin->permissions()->attach($perm->getId());
+    }
+
+    public function testBalanceThresholdAlerts()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->editBalance('50000', '10000000000000');
+
+        $this->fixtures->merchant->editBalanceThreshold('100000', '10000000000000');
+
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment1 = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment1 = $this->doAuthAndCapturePayment($payment1);
+
+        $payment2 = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment2 = $this->doAuthAndCapturePayment($payment2);
+
+        $this->refundPayment($payment1['id']);
+
+        //Ist Alert
+        Mail::assertQueued(BalanceThresholdAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals('dashboard.razorpay.in', $viewData['org_hostname']);
+
+            $this->assertEquals('emails.merchant.balance_threshold_alert', $mail->view);
+
+            return true;
+        });
+
+        $this->refundPayment($payment2['id']);
+
+        //IInd Alert
+        Mail::assertQueued(BalanceThresholdAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+            s($viewData);
+            $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals('emails.merchant.balance_threshold_alert', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testBalanceThresholdAlertNotFiredCases()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->editBalance('50000', '10000000000000');
+
+        $this->fixtures->merchant->editBalanceThreshold('40000', '10000000000000');
+
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment1 = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment1 = $this->doAuthAndCapturePayment($payment1);
+
+        $this->refundPayment($payment1['id']);
+
+        Mail::assertNotQueued(BalanceThresholdAlert::class);
     }
 }

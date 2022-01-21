@@ -6615,6 +6615,9 @@ ALTER TABLE tnc_map
     ADD COLUMN business_unit varchar(20) COLLATE utf8mb4_bin,
     ADD CONSTRAINT tnc_map_business_unit_unique UNIQUE (business_unit);
 
+ALTER TABLE merchants
+ADD COLUMN balance_threshold BIGINT DEFAULT NULL;
+
 ALTER TABLE merchant_notification_configs
     DROP INDEX `merchant_notification_configs_merchant_id_mode_index`,
     DROP COLUMN `upper_threshold`,

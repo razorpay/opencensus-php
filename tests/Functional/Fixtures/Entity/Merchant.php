@@ -781,6 +781,11 @@ class Merchant extends Base
         return $this->edit($id, ['refund_credits_threshold' => $credits]);
     }
 
+    public function editBalanceThreshold($balance, $id = '10000000000000')
+    {
+        return $this->edit($id, ['balance_threshold' => $balance]);
+    }
+
     public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)
     {
         if ($type === Credits\Type::AMOUNT)
