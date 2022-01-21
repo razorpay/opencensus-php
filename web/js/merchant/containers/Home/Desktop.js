@@ -162,7 +162,7 @@ class AnalyticsDesktop extends Component {
     }
     this.canShowBannerForAxis(activationState, user.isOrgAxis, user.merchant_tnc);
 
-    if (Boolean(user.activated)) fetchInternationalSettingStatus();
+    if (user.isOrgRZP && Boolean(user.activated)) fetchInternationalSettingStatus();
   }
 
   canShowBannerForAxis = (activationState, isOrgAxis, isTncGenerated) => {
@@ -707,7 +707,9 @@ class AnalyticsDesktop extends Component {
           {/* Announcement - Enable International Cards */}
           <ShowWhen
             additionalCondition={(usr) =>
-              Boolean(usr.activated) && internationalSettingStatus?.data?.enableIntlCards
+              usr.isOrgRZP &&
+              Boolean(usr.activated) &&
+              internationalSettingStatus?.data?.enableIntlCards
             }
           >
             <IntlPaymentsAnnouncement
@@ -720,7 +722,9 @@ class AnalyticsDesktop extends Component {
           {/* Announcement - Link Paypal */}
           <ShowWhen
             additionalCondition={(usr) =>
-              Boolean(usr.activated) && internationalSettingStatus?.data?.enableLinkPaypal
+              usr.isOrgRZP &&
+              Boolean(usr.activated) &&
+              internationalSettingStatus?.data?.enableLinkPaypal
             }
           >
             <IntlPaymentsAnnouncement
@@ -773,7 +777,7 @@ class AnalyticsDesktop extends Component {
             </>
           )}
 
-          <ShowWhen additionalCondition={(usr) => Boolean(usr.activated)}>
+          <ShowWhen additionalCondition={(usr) => usr.isOrgRZP && Boolean(usr.activated)}>
             <IntlPaymentsRecommendation
               user={user}
               internationalSettingStatus={this.props.internationalSettingStatus}
