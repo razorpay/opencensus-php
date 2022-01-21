@@ -237,6 +237,14 @@ class UserController extends Controller
         )
         {
             $error = [$error];
+
+            $signup_medium  = isset($input['email']) ? MetricConstants::EMAIL : MetricConstants::CONTACT_MOBILE;
+
+            $this->metrics->count(MetricConstants::SIGNUP_OTP_FAILED,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::SIGNUP_MEDIUM => $signup_medium,
+                ]);
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -269,6 +277,11 @@ class UserController extends Controller
 
         $res = [];
 
+        $dimensions = [
+            MetricConstants::SIGNUP_METHOD => MetricConstants::OTP,
+            MetricConstants::SIGNUP_MEDIUM => $signupMedium,
+        ];
+
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
@@ -277,10 +290,8 @@ class UserController extends Controller
 
             $this->metrics->count(MetricConstants::USER_SIGNUP_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::SIGNUP_METHOD => MetricConstants::OTP,
-                    MetricConstants::SIGNUP_MEDIUM => $signupMedium,
-                ]);
+                $dimensions
+            );
 
             $user = Auth::user();
 
@@ -292,6 +303,12 @@ class UserController extends Controller
                 "user_id"           => $user->id,
                 "logged_in_via"     => (isset($input[UserConstants::EMAIL]) === true) ? UserConstants::EMAIL : UserConstants::CONTACT_MOBILE
             ];
+        }
+        else {
+            $this->metrics->count(MetricConstants::USER_SIGNUP_VERIFY_OTP_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         $timeEnd = microtime(true);
@@ -377,6 +394,15 @@ class UserController extends Controller
             $error = [$e->getMessage()];
         }
 
+        if(empty($error) === false) {
+            $this->metrics->count(MetricConstants::USER_SIGNUP_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::SIGNUP_MEDIUM => $data["logged_in_via"],
+                    MetricConstants::SIGNUP_METHOD => MetricConstants::PASSWORD,
+                ]);
+        }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -392,6 +418,15 @@ class UserController extends Controller
         {
             $error = [$e->getMessage()];
             $data  = null;
+        }
+
+        if(empty($error) === false) {
+            $this->metrics->count(MetricConstants::USER_SIGNUP_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::SIGNUP_MEDIUM => MetricConstants::EMAIL,
+                    MetricConstants::SIGNUP_METHOD => MetricConstants::OAUTH,
+                ]);
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -427,15 +462,23 @@ class UserController extends Controller
 
         list($error, $data) = $userService->login($input);
 
+        $dimensions = [
+            MetricConstants::LOGIN_METHOD => MetricConstants::PASSWORD,
+            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
+            MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
+        ];
+
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD => MetricConstants::PASSWORD,
-                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-                    MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
-                ]);
+                $dimensions
+            );
+        } else {
+            $this->metrics->count(MetricConstants::USER_LOGIN_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         $result = AppResponse::jsonResponse($error, $data);
@@ -489,6 +532,15 @@ class UserController extends Controller
         if((isset($error[UserConstants::INTERNAL_ERROR_CODE]) === true) and
             (in_array($error[UserConstants::INTERNAL_ERROR_CODE], Admin\ApiRequestAny::INTERNAL_ERROR_CODES) === true))
         {
+            $login_medium  = isset($input['email']) ? MetricConstants::EMAIL : MetricConstants::CONTACT_MOBILE;
+
+            $this->metrics->count(MetricConstants::LOGIN_OTP_FAILED,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::LOGIN_MEDIUM => $login_medium,
+                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                ]);
+
             $error = [$error];
         }
 
@@ -524,6 +576,15 @@ class UserController extends Controller
             (in_array($error[UserConstants::INTERNAL_ERROR_CODE], Admin\ApiRequestAny::INTERNAL_ERROR_CODES) === true))
         {
             $error = [$error];
+
+            $login_medium  = isset($input['email']) ? MetricConstants::EMAIL : MetricConstants::CONTACT_MOBILE;
+
+            $this->metrics->count(MetricConstants::LOGIN_OTP_FAILED,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::LOGIN_MEDIUM => $login_medium,
+                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+                ]);
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -548,15 +609,23 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->verifyOtpLogin($input);
 
+        $dimensions = [
+            MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
+            MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
+        ];
+
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
-                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-                    MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
-                ]);
+                $dimensions
+            );
+        } else {
+            $this->metrics->count(MetricConstants::USER_LOGIN_VERIFY_OTP_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         $timeEnd = microtime(true);
@@ -579,14 +648,22 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->verify2FAMode($input, UserConstants::LOGIN_2FA_WITH_PASSWORD);
 
+        $dimensions = [
+            MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+            MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_PASSWORD_VERIFICATION,
+        ];
+
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
-                    MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_PASSWORD_VERIFICATION,
-                ]);
+                $dimensions
+            );
+        } else {
+            $this->metrics->count(MetricConstants::TWO_FA_PASSWORD_VERIFICATION_FAILED_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -611,15 +688,23 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->verifyVerificationOtp($input);
 
+        $dimensions = [
+            MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
+            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
+            MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
+        ];
+
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_VERIFY_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
-                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-                    MetricConstants::LOGIN_ACTION => MetricConstants::OTP_LOGIN,
-                ]);
+                $dimensions
+            );
+        } else {
+            $this->metrics->count(MetricConstants::USER_LOGIN_VERIFY_OTP_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         $timeEnd = microtime(true);
@@ -645,15 +730,23 @@ class UserController extends Controller
             $data  = null;
         }
 
+        $dimensions = [
+            MetricConstants::LOGIN_METHOD => MetricConstants::OAUTH,
+            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
+            MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
+        ];
+
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD => MetricConstants::OAUTH,
-                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-                    MetricConstants::LOGIN_ACTION => MetricConstants::NORMAL_LOGIN,
-                ]);
+                $dimensions
+            );
+        } else {
+            $this->metrics->count(MetricConstants::USER_LOGIN_FAIL_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -670,15 +763,23 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->verify2FAMode($input, UserConstants::LOGIN_2FA_WITH_OTP);
 
+        $dimensions = [
+            MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
+            MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
+            MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_OTP_VERIFICATION,
+        ];
+
         if (empty($error) === true)
         {
             $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
                 EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD => $this->getLoginMethodFromSession(),
-                    MetricConstants::LOGIN_MEDIUM => MetricConstants::EMAIL,
-                    MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_OTP_VERIFICATION,
-                ]);
+                $dimensions
+            );
+        } else {
+            $this->metrics->count(MetricConstants::TWO_FA_PASSWORD_VERIFICATION_FAILED_COUNT,
+                EVENT_TRIGGER_COUNT,
+                $dimensions
+            );
         }
 
         return AppResponse::jsonResponse($error, $data);
@@ -852,6 +953,7 @@ class UserController extends Controller
             ]);
         }
     }
+
 
     public function getUserDetailsForMobile()
     {

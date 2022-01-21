@@ -26,6 +26,12 @@ class TraceCode
 
     // Request made to API has failed
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
+    const API_CONNECTION_EXCEPTION                  = 'API_CONNECTION_EXCEPTION';
+    const API_GUZZLE_EXCEPTION                      = 'API_GUZZLE_EXCEPTION';
+    const API_CLIENT_EXCEPTION                      = 'API_CLIENT_EXCEPTION';
+    const API_SERVER_EXCEPTION                      = 'API_SERVER_EXCEPTION';
+    const API_RZP_EXCEPTION                         = 'API_RZP_EXCEPTION';
+
 
     const API_SLOW_RESPONSE_CALL                    = 'API_SLOW_RESPONSE_CALL';
     const API_RESPONSE_METRIC                       = 'API_RESPONSE_METRIC';

@@ -507,6 +507,14 @@ class ApiRequestAny
         {
             $exception = $e;
             $errors = ["Error in connecting to API"];
+
+            Trace::error(
+                TraceCode::API_CONNECTION_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
         }
         catch(\GuzzleHttp\Exception\GuzzleException $e)
         {
@@ -514,6 +522,15 @@ class ApiRequestAny
             $json = $e->getResponse()->json();
             $httpCode = $e->getResponse()->getStatusCode();
             $errors = [$json['error']['description'], "Status Code: {$httpCode}"];
+
+            Trace::error(
+                TraceCode::API_GUZZLE_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'api_status_code'   => $httpCode,
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
         }
         catch(\GuzzleHttp\Exception\ClientException $e)
         {
@@ -537,17 +554,44 @@ class ApiRequestAny
                     '_internal'               => $json['error']['_internal'] ?? [],
                 ];
             }
+
+            Trace::error(
+                TraceCode::API_CLIENT_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'api_status_code'   => $httpCode,
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
         }
         catch(\GuzzleHttp\Exception\ServerException $e)
         {
             $exception = $e;
             $httpCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : null;
             $errors = [$e->getMessage()];
+
+            Trace::error(
+                TraceCode::API_SERVER_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'api_status_code'   => $httpCode,
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
         }
         catch(RZPErrors\Error $e)
         {
             $exception = $e;
             $errors = [$e->getMessage()];
+
+            Trace::error(
+                TraceCode::API_RZP_EXCEPTION,
+                [
+                    'message'           => $e->getMessage(),
+                    'api_status_code'   => $httpCode,
+                    'path'              => $path,
+                    '$method'           => $method,
+                ]);
         }
 
         // Logs non-client side exceptions.

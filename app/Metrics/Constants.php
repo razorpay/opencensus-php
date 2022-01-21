@@ -18,6 +18,13 @@ class Constants
   const USER_VERIFY_COUNT           = 'user_verify_count';
   const USER_LOGOUT_COUNT           = 'user_logout_count';
   const USER_SIGNUP_COUNT           = 'user_signup_count';
+  const USER_LOGIN_FAIL_COUNT       = 'user_login_fail_count';
+  const USER_LOGIN_VERIFY_OTP_FAIL_COUNT  = 'user_login_verify_otp_fail_count';
+  const TWO_FA_PASSWORD_VERIFICATION_FAILED_COUNT = 'two_fa_password_verification_failed_count';
+  const USER_SIGNUP_FAIL_COUNT      = 'user_signup_fail_count';
+  const USER_SIGNUP_VERIFY_OTP_FAIL_COUNT = 'user_signup_verify_otp_fail_count';
+  const LOGIN_OTP_FAILED            = 'login_otp_failed';
+  const SIGNUP_OTP_FAILED           = 'signup_otp_failed';
 
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';

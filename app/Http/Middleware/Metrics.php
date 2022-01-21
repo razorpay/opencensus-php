@@ -55,7 +55,7 @@ class Metrics
 
     protected function getMetricDimensions($request, $response)
     {
-        $routeName = $request->route() !== null ? $request->route()->getName() : 'unknown_route';
+        $routeName = $request->route() !== null ? $request->route()->getName() : $request->path();
 
         return [
             Constants::LABEL_HTTP_REQUESTS_PRODUCT     => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,

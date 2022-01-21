@@ -71,44 +71,44 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/signin', 'UserController@postSignin')->name('user_signin'); // ePOS
         Route::post('/demo-signin', 'UserController@postDemoSignin');
         // allow users with verified email/mobile to login with otp
-        Route::post('/signin/otp', 'UserController@postSendLoginOtp');
-        Route::post('/signin/otp/verify', 'UserController@postVerifyLoginOtp');
+        Route::post('/signin/otp', 'UserController@postSendLoginOtp')->name('user_signin_otp');
+        Route::post('/signin/otp/verify', 'UserController@postVerifyLoginOtp')->name('user_signin_otp_verify');
         // users need to enter their password after otp login if 2fa is enabled/enforced
-        Route::post('/signin/otp/2fa', 'UserController@postOtpLogin2faPassword');
+        Route::post('/signin/otp/2fa', 'UserController@postOtpLogin2faPassword')->name('user_signin_otp_2fa');
         // allow users with unverified email/mobile to login with password and then verify email/mobile
-        Route::post('/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp');
-        Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp');
+        Route::post('/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp')->name('user_verify_user_otp');
+        Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('user_verify_user_otp_verify');
 
-        Route::post('/register', 'UserController@postRegister'); // ePOS
-        Route::post('/register/otp', 'UserController@postRegisterSendOtp'); // ePOS
-        Route::post('/register/otp/verify', 'UserController@postRegisterVerifyOtp'); // ePOS
-        Route::post('/oauth-signin', 'UserController@postOauthSignIn');
-        Route::post('/oauth-register', 'UserController@postOauthRegister');
-        Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile');
-        Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp');
-        Route::post('/2fa', 'userController@post2faOtp');
-        Route::patch('/2fa/contact', 'UserController@postUpdate2faContact');
-        Route::post('/2fa/otp-resend', 'UserController@postResendOtp');
-        Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user']);
+        Route::post('/register', 'UserController@postRegister')->name('user_register'); // ePOS
+        Route::post('/register/otp', 'UserController@postRegisterSendOtp')->name('user_register_otp'); // ePOS
+        Route::post('/register/otp/verify', 'UserController@postRegisterVerifyOtp')->name('user_register_otp_verify'); // ePOS
+        Route::post('/oauth-signin', 'UserController@postOauthSignIn')->name('user_oauth_signin');
+        Route::post('/oauth-register', 'UserController@postOauthRegister')->name('user_oauth_register');
+        Route::post('/2fa_setup/verify-mobile', 'UserController@postSetup2faVerifyMobile')->name('user_2fa_setup_verify_mobile');
+        Route::post('/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('user_2fa_otp_verify');
+        Route::post('/2fa', 'userController@post2faOtp')->name('user_2fa');
+        Route::patch('/2fa/contact', 'UserController@postUpdate2faContact')->name('user_2fa_contact');
+        Route::post('/2fa/otp-resend', 'UserController@postResendOtp')->name('user_2fa_otp_resned');
+        Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user'])->name('user_session');
         Route::get('/identifier/{client_id}', 'UserController@getIdentityToken')->middleware(['auth:user'])->name('user_identity');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup')->name('user_pre_signup');
-        Route::post('/verify_email', 'UserController@verifyEmailOtp');
-        Route::post('/resend_email_otp', 'UserController@resendEmailOtp');
-        Route::post('/resend', 'MerchantController@postResendConfirmation');
+        Route::post('/verify_email', 'UserController@verifyEmailOtp')->name('user_verify_email');
+        Route::post('/resend_email_otp', 'UserController@resendEmailOtp')->name('user_resend_email_otp');
+        Route::post('/resend', 'MerchantController@postResendConfirmation')->name('user_resend_confirmation');
         Route::get('/keepalive', 'UserController@getKeepAlive')->name('user_keep_alive');
         Route::post('/logout', 'UserController@getLogout')->name('user_logout');
 
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2')->name('user_details'); //ePOS
-        Route::get('/mobile', 'UserController@getUserDetailsForMobile');
+        Route::get('/mobile', 'UserController@getUserDetailsForMobile')->name('user_mobile_details');
         Route::get('/details', 'UserController@getUserDetailsV2')->name('get_user_details');
 
-        Route::post('/coupons/validate', 'MerchantController@validateCoupon');
-        Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn');
+        Route::post('/coupons/validate', 'MerchantController@validateCoupon')->name('user_coupons_validate');
+        Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn')->name('user_whatsapp/opt_in');
     });
 
     Route::group(['middleware' => 'auth:user'] , function()
