@@ -449,7 +449,6 @@ class Gateway
     const OPTIMIZER_CARD_GATEWAYS = [
         self::CASHFREE,
         self::PAYU,
-        self::PAYTM,
         self::CCAVENUE,
         self::ZAAKPAY,
         self::PINELABS
