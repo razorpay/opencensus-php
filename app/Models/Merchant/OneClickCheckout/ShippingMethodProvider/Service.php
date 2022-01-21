@@ -102,11 +102,13 @@ class Service extends Base\Service
         $shippingFeeRule->validate();
 
         $codFeeRule = null;
-        if ($input[Constants::ENABLE_COD] === true)
+        if (isset($input[Constants::ENABLE_COD]) and $input[Constants::ENABLE_COD] === true)
         {
             $codFeeRule = $input[Constants::COD_FEE_RULE];
             $codFeeRule = new FeeRule($codFeeRule);
             $codFeeRule->validate();
+        } else {
+            $input[Constants::ENABLE_COD] = false;
         }
 
         $shippingMethodProviderEntity =
@@ -188,7 +190,7 @@ class Service extends Base\Service
             $result['shipping_fee'] = $shippingFeeRule->getFee();
         }
 
-        if ($shippingMethodProvider[Constants::ENABLE_COD] === true && $result['cod'] === true) {
+        if (isset($shippingMethodProvider[Constants::ENABLE_COD]) and $shippingMethodProvider[Constants::ENABLE_COD] === true && $result['cod'] === true) {
             $codFee = $shippingMethodProvider[Constants::COD_FEE_RULE];
             $codFeeRule = new FeeRule($codFee);
             if ($codFeeRule->isSlabRuleType() === false) {
