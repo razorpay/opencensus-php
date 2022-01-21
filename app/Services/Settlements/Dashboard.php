@@ -53,7 +53,6 @@ class Dashboard extends Base
     const DEFAULT = 'default';
     const FEATURES = 'features';
     const BLOCK = 'block';
-    const DISABLE = 'disable';
     const HOLD = 'hold';
     const STATUS = 'status';
 
@@ -228,10 +227,6 @@ class Dashboard extends Base
         if (isset($input[self::ENTITIES][self::FEATURES][self::BLOCK][self::STATUS]) === true)
         {
             $input[self::ENTITIES][self::FEATURES][self::BLOCK][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::BLOCK][self::STATUS] == true);
-        }
-        if (isset($input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS]) === true)
-        {
-            $input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS]  = ($input[self::ENTITIES][self::FEATURES][self::DISABLE][self::STATUS] == true);
         }
         if (isset($input[self::ENTITIES][self::FEATURES][self::HOLD][self::STATUS]) === true)
         {
