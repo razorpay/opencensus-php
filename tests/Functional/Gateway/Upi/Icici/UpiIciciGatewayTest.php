@@ -5,15 +5,14 @@ namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 use Mail;
 use Cache;
 use Carbon\Carbon;
-use phpDocumentor\Reflection\Types\Boolean;
-use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\RuntimeException;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1913,5 +1912,19 @@ EOT;
     protected function tearDownUpiCustomAmountTest()
     {
         // Nothing Specific
+    }
+
+    /**
+     * This test is for all vpa handles declared in ProviderCode.php.
+     * Essentially, all the whitelisted vpa handles must be mapped to a bank code for UPI regular for the test to pass.
+     * Note - This would not fail if a new vpa handle is added and not whitelisted.
+     */
+    public function testValidateVpaRegular()
+    {
+        $vpaHandles = $this->getWhitelistedVpaHandlesUpiRegular();
+        foreach ($vpaHandles as $vpaHandle)
+        {
+            $this->assertTrue(ProviderCode::validate($vpaHandle), 'Failed to get bank code for vpa handle: ' . $vpaHandle);
+        }
     }
 }
