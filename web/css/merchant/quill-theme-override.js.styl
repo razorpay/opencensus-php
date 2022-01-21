@@ -80,6 +80,20 @@
           border: none
           transform: scale(1.1)
 
+  // mweb changes
+  @media (max-width: $screen-xs-max)
+    .ql-toolbar
+      .ql-formats 
+        margin: 5px
+        margin-right: 15px
+
+        i
+          font-size: 20px
+
+        .ql-picker-label
+          svg
+            width: 20px
+
   .ql-picker-options
     box-shadow: 6px 3px 24px 0 rgba(23,31,37,0.12)
     top: unset
@@ -174,6 +188,10 @@
   #description-quill
     display: block
     border: none
+    @media (max-width: $screen-xs-max) 
+      min-height: 64px // increased height to give more space for user to click in mweb
+      max-height: 200px // so that ql-toolbar is always visible if lot of content
+      overflow: auto
 
     .ql-editor
       padding: 12px 8px

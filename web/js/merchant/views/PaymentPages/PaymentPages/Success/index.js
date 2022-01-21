@@ -331,7 +331,7 @@ class Success extends React.Component {
                   {/* CTAs container for mobile view */}
                   <div class="mobile-cta-container">
                     <Button.Transparent class="button--highlight" onClick={this.handleViewPage}>
-                      View Page
+                      Go To Page <i class="i i-external-link" />
                     </Button.Transparent>
                     <Button.Primary onClick={this.openShareView}>
                       <i className="i i-share-outline mr-5" />

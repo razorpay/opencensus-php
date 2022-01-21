@@ -20,6 +20,7 @@ interface ButtomSheetPropsT {
   onTriggerClick: () => void;
   onDismiss: () => void;
   isBlocking?: boolean;
+  snapPoints?: () => number | number[];
   className?: string;
 }
 const _BottomSheet: React.FC<ButtomSheetPropsT> = (props) => {
@@ -31,6 +32,7 @@ const _BottomSheet: React.FC<ButtomSheetPropsT> = (props) => {
     onTriggerClick,
     isControlled = false,
     isBlocking = true,
+    snapPoints,
     className,
   } = props;
 
@@ -65,6 +67,7 @@ const _BottomSheet: React.FC<ButtomSheetPropsT> = (props) => {
         open={isControlled ? props.isOpen! : isOpen!}
         onDismiss={handleDismiss}
         blocking={isBlocking}
+        snapPoints={snapPoints}
         className={className}
       >
         {props.children}

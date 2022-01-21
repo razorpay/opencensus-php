@@ -1,23 +1,19 @@
+import React from 'react';
+
 import { connect } from 'react-redux';
 import Croppie from 'croppie';
 import RTracking from 'react-tracking';
-import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalMask, Modal } from 'common/new-ui/Modal';
 import ModalHeader from 'common/ui/ModalHeader';
-import Banner from 'common/ui/Banner';
 import Input, { Label, Description } from 'common/new-ui/Input';
 import FileUpload from 'merchant/components/File/Upload';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
-import Spinner from 'common/ui/Spinner';
 import track from '../../Wysiwyg/track';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import {
-  get80gMerchantDetails,
-  upload80gSignatoryImage,
-  set80gMerchantDetails,
-} from 'merchant/reducers/profile';
+import { upload80gSignatoryImage, set80gMerchantDetails } from 'merchant/reducers/profile';
 import UploadImage from '../../../../../../../css/assets/payment_pages/upload.svg';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
@@ -105,7 +101,7 @@ export default class Merchant80gDetails extends React.Component {
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = function (e) {
+      reader.onload = function onload(e) {
         self.setState({
           signatoryImageFile: {
             name: file.name,
@@ -151,8 +147,6 @@ export default class Merchant80gDetails extends React.Component {
   };
 
   render() {
-    const props = this.props;
-
     return (
       <div className="details-modal-80g">
         <ModalHeader title="80G Details" />
@@ -164,7 +158,11 @@ export default class Merchant80gDetails extends React.Component {
               label={
                 <div className="details-modal-80g--label">
                   80G Description
-                  <a href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers">
+                  <a
+                    href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Sample 80G Receipt
                     <i class="i i-external-link" />
                   </a>
@@ -295,7 +293,7 @@ class ImageCropperModal extends React.Component {
             this.props.onUpload(url);
             this.props.closeModal();
           } else {
-            throw { errors: ['Some network error occurred'] };
+            throw new Error({ errors: ['Some network error occurred'] });
           }
         })
         .catch(({ errors }) => {
@@ -309,27 +307,23 @@ class ImageCropperModal extends React.Component {
         type: 'error',
         message: 'Select a valid Image',
       });
-
-      return;
     }
   }
 
   onSaveImage = () => {
     const self = this;
 
-    this.vanilla.result('blob').then(function (blob) {
-      self.handleImageUpload.call(self, blob);
+    this.vanilla.result('blob').then(function cb(blob) {
+      self.handleImageUpload(blob);
     });
   };
 
   setRef = (el) => (this.cropperAreaEl = el);
 
   render() {
-    const { closeModal } = this.props;
-
     return (
       <ModalMask maskClosable={false} class="merchant-80g-details">
-        <Modal onClose={closeModal} class="animate-appear ImageCropper" showCloseBtn>
+        <Modal onClose={this.props.closeModal} class="animate-appear ImageCropper" showCloseBtn>
           <div class="modal-title">Adjust Image</div>
           <div class="modal-description">You can resize, resposition or crop your image here</div>
 
@@ -337,7 +331,7 @@ class ImageCropperModal extends React.Component {
             <div class="Cropper-area Cropper-area--enabled" ref={this.setRef} />
 
             <div class="btn-group pull-right">
-              <Button.Transparent onClick={closeModal}>Cancel</Button.Transparent>
+              <Button.Transparent onClick={this.props.closeModal}>Cancel</Button.Transparent>
 
               <Button.Primary onClick={this.onSaveImage}>Save</Button.Primary>
             </div>
@@ -352,4 +346,5 @@ function validate80gDescription(val) {
   if (val && val.length > 128) {
     return 'Field description cannot be more than 128 characters';
   }
+  return '';
 }

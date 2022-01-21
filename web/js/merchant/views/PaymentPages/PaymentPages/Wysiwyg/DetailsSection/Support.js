@@ -1,10 +1,8 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import Button from 'common/new-ui/Button';
-import RemoveBtn from 'merchant/views/PaymentPages/PaymentPages/components/RemoveBtn';
-import { isEmail } from 'common/utils/validators';
+import { isEmail, isPhone } from 'common/utils/validators';
 
 import { prefillContactDetails } from 'merchant/reducers/wysiwyg';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
@@ -55,61 +53,60 @@ export default class extends React.PureComponent {
   }
 
   render() {
-    let { support_email, support_contact, supportPhoneRef, supportEmailRef } = this.props;
+    const { support_email, support_contact, supportPhoneRef, supportEmailRef } = this.props;
 
     return (
       <div id="support-details">
-        <React.Fragment>
-          <label>Contact Us:</label>
-          <SupportSubField
-            name="support_email"
-            ref={supportEmailRef}
-            placeholder="Enter support email"
-            icon={emailIcon}
-            defaultValue={support_email}
-            onBlur={this.props.updateData}
-            addButtonLabel="Add Support Email"
-            validator={(val) => {
-              if (!val) {
-                return;
-              } else if (!isEmail(val)) {
-                return 'Invalid Email';
-              }
-            }}
-            autoRender
-            info="Please add your support email"
-          />
+        <label>Contact Us:</label>
+        <SupportSubField
+          name="support_email"
+          ref={supportEmailRef}
+          placeholder="Enter support email"
+          icon={emailIcon}
+          defaultValue={support_email}
+          onBlur={this.props.updateData}
+          addButtonLabel="Add Support Email"
+          validator={(val) => {
+            if (val && !isEmail(val)) {
+              return 'Invalid Email';
+            }
+            return '';
+          }}
+          autoRender
+          info="Please add your support email"
+        />
 
-          <SupportSubField
-            name="support_contact"
-            ref={supportPhoneRef}
-            placeholder="Enter support phone"
-            icon={phoneIcon}
-            defaultValue={support_contact}
-            onBlur={this.props.updateData}
-            addButtonLabel="Add Support Phone"
-            autoRender
-            info="Please add your support contact number"
-          />
-        </React.Fragment>
+        <SupportSubField
+          name="support_contact"
+          type="tel"
+          ref={supportPhoneRef}
+          placeholder="Enter support phone"
+          icon={phoneIcon}
+          defaultValue={support_contact}
+          onBlur={this.props.updateData}
+          addButtonLabel="Add Support Phone"
+          validator={(val) => {
+            if (val && !isPhone(val)) {
+              return 'Invalid Number';
+            }
+            return '';
+          }}
+          autoRender
+          info="Please add your support contact number"
+        />
       </div>
     );
   }
 }
 
-
 const SupportSubFieldForwardRef = React.forwardRef((props, ref) => {
+  const { icon, addButtonLabel, reference, ...rest } = props;
 
-    const { icon, addButtonLabel, reference, ...rest } = props;
-    
-    return (
-      <div class="sub-detail">
-        <React.Fragment>
-          {icon}
-          <Input name={name} ref={ref} {...rest} />
-        </React.Fragment>
-      </div>
-    );
+  return (
+    <div class="sub-detail">
+      {icon}
+      <Input name={name} ref={ref} {...rest} />
+    </div>
+  );
 });
 const SupportSubField = React.memo(SupportSubFieldForwardRef);
-

@@ -26,6 +26,8 @@
     line-height: 14px
     margin-top: 10px
     cursor pointer
+    @media (max-width: $screen-xs-max)
+      margin-top: -7px
 
     .rzp-tooltip
       width: 400px
@@ -392,7 +394,7 @@
       background-size: 100% 21px, 100% 21px, 100% 7px, 100% 7px;
       @media (max-width: $screen-xs-max)
         height: inherit
-        padding-bottom: 160px
+        padding-bottom: 240px
 
   footer
     padding: 16px 24px
@@ -420,7 +422,11 @@
       border: 3px solid #0B70E7
 
 .PluginsAndAddOns
-  margin: 120px auto
+  margin: 15px auto
+  @media (max-width: $screen-xs-max)
+    margin: 0
+    height: 100%
+    overflow: hidden
 
   .main-title
     padding: 20px 20px 0
@@ -430,6 +436,16 @@
       font-size: 16px
       font-weight: bold
       margin-bottom: 4px
+
+  form
+    @media (max-width: $screen-xs-max)
+      height: 100vh
+
+  .section-wrapper
+    @media (max-width: $screen-xs-max)
+      height: inherit
+      overflow-y: auto
+      padding-bottom: 240px 
 
   .section
     padding: 20px
@@ -466,7 +482,19 @@
     display: inline-block
     margin: 10px 0 0 !important
 
+  footer
+    padding: 16px 24px
+    background: #f6f6f6;
+    border-top: 1px solid #e0e0e0
+    text-align: right
+    @media (max-width: $screen-xs-max)
+      position: fixed
+      bottom: 0
+      width: 100%
+      text-align: center
     
+    .Button--transparent
+      padding: 8px 20px
 
 #wysiwyg-root
   padding-top: 106px
@@ -546,6 +574,9 @@
 
           i
             margin-right: 4px
+            @media (max-width: $screen-xs-max)
+              margin-right: 0
+              font-size: 20px
 
         .Button--transparent
           padding: 10px 0
@@ -562,6 +593,9 @@
           box-shadow: 0 2px 24px 0 rgba(0,0,0,0.24)
           @media (max-width: $screen-xs-max)
             display: flex
+
+          .Button
+            width: 48%
 
 
     .close-btn
@@ -629,6 +663,10 @@
             background: #fff
             border-color: $primary-color
             resize: vertical
+
+          @media (max-width: $screen-xs-max) // in mweb, show border as looks uneditable otherwise
+            border-color: #e2e2e2
+            background: #fff
 
     .Input
       .Input-error
@@ -761,14 +799,14 @@
       padding: 2px 8px
       cursor: pointer
       visibility: hidden
-      color: #bfbfbf
+      color: #528ff0
       @media (max-width: $screen-xs-max) // to show edit button always in mobile
         visibility: visible
         top: 43px
         right: 30px 
 
       &:hover
-        color: #7b8199
+        color: #2371ec
 
     &:not(.disable-hover):hover
       background-color: #fff
@@ -807,10 +845,16 @@
 
     @media (max-width: 1024px)
       left: 0
+      top: -55px
+      line-height: 1.2
 
       &::before
         border-right-color: transparent
-        border-bottom-color: #2c3243
+        border-bottom-color: transparent
+        border-top-color: #2c3243
+        bottom: -15px
+        top: auto
+        left: 46%
 
   .Button--header
     background: rgba(11, 112, 231, 0.05)
@@ -830,10 +874,12 @@
         transform: none
         margin-bottom: 0
 
-    &.Field--disabled .Field-el
-      pointer-events: none
+    .Field-wrapper
       @media (max-width: $screen-xs-max)
         width: calc(100% - 20px); // to show edit button always in mobile
+
+    &.Field--disabled .Field-el
+      pointer-events: none
 
 
   .Input-info
@@ -1010,7 +1056,11 @@
   .btn-goal-tracker
     margin-top: 24px
     text-decoration: none
-  
+
+    @media (max-width: $screen-xs-max) 
+      .i-info-outline // hiding info icon as on mobile no hover
+        display: none
+
   .bg-success
     background: #1F890E
     border-radius: 2px
@@ -1051,26 +1101,33 @@
     position: relative;
     padding: 1px 0px;
 
+    .goal--tracker-action-buttons
+      display: none
+      justify-content: flex-end
+      align-items: center
+      position: absolute
+      bottom: 5px
+      right: 10px
+
     &:hover
       box-shadow: 2px 4px 12px rgba(23, 31, 37, 0.25);
       border-radius: 4px;
       padding: 1px 0px 18px;
 
-      .goal-tracker--main
-        margin: 12px;
+      .goal--tracker-action-buttons
+        display: flex
+
+    @media (max-width: $screen-xs-max) // in mweb, always show as no hover
+      padding: 1px 0px 18px
 
       .goal--tracker-action-buttons
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        position: absolute;
-        bottom: 5px;
-        right: 10px;
+        display: flex
 
   // Goal Tracker Preview
   .Modal-container--goal-tracker-preview
     width: 416px;
     transform: none
+    display: none // initially hidden, once position decided, made visible: avoids jerky behaviour
 
   // Goal tracker create/edit modal
   .Modal-container--goal-tracker

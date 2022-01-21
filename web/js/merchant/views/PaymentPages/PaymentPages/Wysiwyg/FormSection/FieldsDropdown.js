@@ -107,7 +107,7 @@ export class FieldsDropdownMobile extends React.PureComponent {
   };
 
   render() {
-    const { trigger, options, beforeOptionsTxt } = this.props;
+    const { trigger, options, beforeOptionsTxt, type } = this.props;
 
     const { isOpen } = this.state;
 
@@ -116,11 +116,21 @@ export class FieldsDropdownMobile extends React.PureComponent {
         isOpen={isOpen}
         isControlled
         trigger={trigger}
-        className="payment-pages-v3"
+        className="payment-pages-v3 paymentpage-container-goal-tracker"
         onDismiss={this.onDismiss}
         onTriggerClick={() => this.setState({ isOpen: true })}
+        snapPoints={({ minHeight, maxHeight }) => {
+          /* 
+            if content is smaller than half the screen,show as is otherwise open in half screen and
+            if the user wants, they can extend it to full size 
+          */
+          if (minHeight < maxHeight / 2) {
+            return minHeight;
+          }
+          return [maxHeight / 2, minHeight];
+        }}
       >
-        <div class="Bottom-sheet__options">
+        <div class={classList('Bottom-sheet__options', type && `FieldsDropdown--${type}`)}>
           <div class="OptionsDropdown-title">{beforeOptionsTxt}</div>
           {options.map((option, ix) => {
             return (
@@ -168,6 +178,7 @@ export default class FieldsDropdownWrapper extends React.PureComponent {
           trigger={trigger}
           onSelect={onSelect}
           beforeOptionsTxt={beforeOptionsTxt}
+          type={type}
         />
       );
     } else {

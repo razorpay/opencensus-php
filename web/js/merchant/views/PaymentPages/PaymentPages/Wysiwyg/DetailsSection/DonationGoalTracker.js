@@ -107,6 +107,9 @@ export default class DonationGoalTracker extends React.PureComponent {
         if (isMobileDevice()) {
           modalPreviewNode.style.top = '100px';
         }
+
+        // displaying the modal only after setting the position, helps avoid the jerky movement
+        modalPreviewNode.style.display = 'block';
       }
 
       const modalEditorNode = document.querySelector('.Modal-container--goal-tracker');

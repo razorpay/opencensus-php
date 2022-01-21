@@ -19,6 +19,8 @@
       margin-left: 12px
 
 .payment-pages-v3
+  $mweb-footer-margin = 140px // for changes associated to content getting covered by mobile cta-container
+
   .btn-gradient
     border: none
     background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.1) 100%) // Same as static. Have to write styles here since dashboard is overriding styles
@@ -33,6 +35,8 @@
       right: 0
       @media (max-width: $screen-xs-max)
         right: 40px
+        top: 18px 
+        color white
 
   .btn-dotted
     display: inline-block
@@ -137,6 +141,8 @@
     bottom: 0
     box-shadow: 0 2px 8px 0 rgba(43,47,60,0.36)
     animation: 0.55s fadeIn cubic-bezier(0.08, 0.98, 1, 1)
+    @media (max-width: $screen-xs-max)
+      height: 'calc(100% + %s)' % $mweb-footer-margin
 
   .CreatorModal-BaseForm + .Modal-container
     &::before
@@ -148,6 +154,8 @@
       right: 0
       background: rgba(43,47,60,0.36)
       pointer-events: all
+      @media (max-width: $screen-xs-max)
+        height: 'calc(100% + %s)' % $mweb-footer-margin
 
   .Input input:not([type=radio]):not([type=checkbox]),
   .Input--Currency .value
@@ -194,10 +202,11 @@
       @media (max-width: $screen-xs-max)
         width: 95vw
         left: -18px
+        padding: 28px 28px
 
   #form-footer
     @media (max-width: $screen-xs-max)
-      margin-bottom: 150px !important // so that content doesn't get covered by mobile cta-container
+      margin-bottom: $mweb-footer-margin !important
 
     .Modal-container--CreatorModal-BaseForm
       margin-bottom: 120px // To add a significant margin for scrolling
@@ -235,10 +244,18 @@
     .form-footer-payment
       width: 100%
 
-    .btn-gradient
-      @media (max-width: $screen-xs-max)
+    // changes around form footer in mweb with fin-logo hidden
+    @media (max-width: $screen-xs-max)
+      .btn-gradient
         width: 100%
         padding: 10px 16px
+        margin-top: 0 !important
+
+      #fin-logo
+        display: none
+
+      .form-footer-payment
+        background: white
 
   .Modal-container--CreatorModal-BaseForm
     position: absolute
@@ -291,6 +308,10 @@
       font-size: 13px
       border: none
       color: #8a6d6b
+      @media (max-width: $screen-xs-max)
+        margin-right: -28px
+        margin-left: -28px
+        bottom: -40px
 
     form
       padding-right: 12px
@@ -445,6 +466,9 @@
       .Input-content
         max-height: 232px
         overflow-y: scroll
+        @media (max-width: $screen-xs-max)
+          max-height: 55px
+
     .Input-enum-option
       .Input-el
         height: 32px
@@ -453,9 +477,6 @@
       position: absolute
       top: 20px
       right: 12px
-      @media (max-width: $screen-xs-max)
-        bottom: 20px
-        top: unset
 
     .OptionsDropdown-list
       left: 50%
@@ -720,6 +741,10 @@
   .Bottom-sheet__options // options shown in bottom-sheet in mobile view
     list-style: none
     padding: 0 15px 15px
+
+    i
+      color: #2b83ea
+      min-width: 20px
 
     // duplicate from payment-pages-v2, written again because bottom-sheet rendered in portal
     .i-fix-sort

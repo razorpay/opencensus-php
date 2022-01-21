@@ -761,7 +761,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     };
 
     if (paymentPageEntity) {
-      isAllowedToSubmit = paymentPageEntity && paymentPageEntity.title;
+      isAllowedToSubmit = paymentPageEntity.title;
 
       actionBtns = (
         <React.Fragment>
@@ -799,7 +799,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             {payment_page_id ? 'Save and Update Page' : 'Create and Publish Page'}
           </AsyncBtn.Primary>
           {/* floating container for actions in mobile view */}
-          <MobileActionButtons handlePublishPage={() => this.handleSavePublish('Publish Page')} />
+          <MobileActionButtons
+            handlePublishPage={() => this.handleSavePublish('Publish Page')}
+            title={paymentPageEntity.title}
+            supportEmail={paymentPageEntity.support_email}
+            supportContact={paymentPageEntity.support_contact}
+          />
         </React.Fragment>
       );
 

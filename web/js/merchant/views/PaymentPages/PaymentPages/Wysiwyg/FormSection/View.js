@@ -20,6 +20,7 @@ import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import track from '../track';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 const SortableUDFDisplayField = sortableElement(UDFDisplayField);
 const SortableAmountDisplayField = sortableElement(AmountDisplayField);
@@ -40,6 +41,9 @@ class SortableFormItemsList extends React.Component {
       onSubmitAmountField,
     } = this.props;
 
+    // disable sorting in mobile view
+    const isSortingDisabled = isMobileDevice();
+
     return (
       <div class="FormItems">
         {FORM_ITEMS.map((fi, idx) => {
@@ -57,6 +61,7 @@ class SortableFormItemsList extends React.Component {
                 onSubmitAmountField={onSubmitAmountField}
                 validateSameTitleExists={validateSameTitleExists}
                 isPaymentPageEditMode={isPaymentPageEditMode}
+                disabled={isSortingDisabled}
               />
             );
           } else {
@@ -71,6 +76,7 @@ class SortableFormItemsList extends React.Component {
                 onDeleteFormItem={onDeleteUDFItem}
                 onSubmitUDFField={onSubmitUDFField}
                 validateSameTitleExists={validateSameTitleExists}
+                disabled={isSortingDisabled}
               />
             );
           }
