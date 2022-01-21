@@ -983,14 +983,16 @@ class DefaultMethodsForCategory
     {
         $orgLevelMethodsMap = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP[$orgId] ?? self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP['default'];
 
-        if ($variantFlag == 'on') {
+        if ($variantFlag === 'on')
+        {
             $orgLevelMethodsMap = self::CATEGORY_DEFAULT_PROHIBITED_METHODS_MAP['default'];
         }
 
         $prohibitedMethods = $orgLevelMethodsMap[$category][$category2][self::BLACKLISTED_METHODS] ?? ($orgLevelMethodsMap[$category][Category::OTHERS][self::BLACKLISTED_METHODS] ?? $orgLevelMethodsMap[Category::OTHERS][Category::OTHERS][self::BLACKLISTED_METHODS]);
 
         $orgWiseMethodsForEnablement = self::ORG_WISE_METHODS_ENABLEMENT[$orgId] ?? self::ORG_WISE_METHODS_ENABLEMENT['default'];
-        if ($variantFlag == 'on') {
+        if ($variantFlag === 'on')
+        {
             $orgWiseMethodsForEnablement = self::ORG_WISE_METHODS_ENABLEMENT['default'];
         }
 

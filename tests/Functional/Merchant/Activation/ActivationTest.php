@@ -11,7 +11,6 @@ use Mockery;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
-use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -74,6 +73,12 @@ class ActivationTest extends OAuthTestCase
     const RZP_ORG                   = '100000razorpay';
     const MERCHANT_ACTIVATED_WORKFLOW_DATA = 'MERCHANT_ACTIVATED_WORKFLOW_DATA';
     const MERCHANT_ACTIVATED_ES_DATA = 'MERCHANT_ACTIVATED_ES_DATA';
+
+    const AXIS_ORG_ID           = 'CLTnQqDj9Si8bx';
+    const ICICI_ORG_ID          = 'EKUZMBUtgInwi0';
+    const SIB_ORG_ID            = 'HrgeWjbnzZefSN';
+    const AXIS_EASYPAY_ORG_ID   = 'ISCkwbk39MdTk5';
+    const KOTAK_ORG_ID          = 'IUXvshap3HbzOs';
 
     protected $esClient;
 
@@ -942,7 +947,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnAxisOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = OrgEntity::AXIS_ORG_ID;
+        $orgId      = self::AXIS_ORG_ID;
 
         // create org
 
@@ -1028,7 +1033,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnIciciOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = OrgEntity::ICICI_ORG_ID;
+        $orgId      = self::ICICI_ORG_ID;
 
         // create org
 
@@ -1109,7 +1114,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnSibOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = OrgEntity::SIB_ORG_ID;
+        $orgId      = self::SIB_ORG_ID;
 
         // create org
 
@@ -1191,7 +1196,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnAxisEasypayOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = OrgEntity::AXIS_EASYPAY_ORG_ID;
+        $orgId      = self::AXIS_EASYPAY_ORG_ID;
 
         // create org
 
@@ -1273,7 +1278,7 @@ class ActivationTest extends OAuthTestCase
     public function testActivationDefaultMethodsBasedOnKotakOrg()
     {
         $merchantId = '1cXSLlUU8V9sXl';
-        $orgId      = OrgEntity::KOTAK_ORG_ID;
+        $orgId      = self::KOTAK_ORG_ID;
 
         // create org
 
