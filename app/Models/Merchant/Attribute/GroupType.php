@@ -47,9 +47,10 @@ class GroupType
         ],
 
         Group::X_TRANSACTION_VIEW => [
-            Type::OWNER,
             Type::ADMIN,
             Type::FINANCE_L1,
+            Type::FINANCE_L2,
+            Type::FINANCE_L3,
             Type::OPERATIONS,
             Type::VIEW_ONLY,
         ]

@@ -38,8 +38,11 @@ class Type
     const PG                            = 'pg';
     const WEBSITE                       = 'website';
 
-    const FINANCE_L1                    = 'finance_l1';
+    // Role Types
     const OWNER                         = 'owner';
+    const FINANCE_L1                    = 'finance_l1';
+    const FINANCE_L2                    = 'finance_l2';
+    const FINANCE_L3                    = 'finance_l3';
     const ADMIN                         = 'admin';
     const OPERATIONS                    = 'operations';
     const VIEW_ONLY                     = 'view_only';
