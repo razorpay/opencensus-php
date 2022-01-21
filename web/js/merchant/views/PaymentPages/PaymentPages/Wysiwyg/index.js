@@ -259,8 +259,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   componentWillUnmount() {
     // unmount nodes added during initSubApps
-    ReactDOM.unmountComponentAtNode(document.getElementById('details-section'));
-    ReactDOM.unmountComponentAtNode(document.getElementById('form-section'));
+    const detailsSection = document.getElementById('details-section');
+    const formSection = document.getElementById('form-section');
+    // if component unmounts before these sections are loaded, we check before unmounting
+    if (detailsSection) {
+      ReactDOM.unmountComponentAtNode(detailsSection);
+    }
+    if (formSection) {
+      ReactDOM.unmountComponentAtNode(formSection);
+    }
 
     document.title = 'Razorpay Dashboard'; // Revert title of dashboard
     this.props.closeModal();
