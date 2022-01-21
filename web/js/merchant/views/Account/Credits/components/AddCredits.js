@@ -36,7 +36,7 @@ function AddCredits({
 
   const handleAddCredits = (fieldProps, destroy) => {
     closeModal();
-    openCheckout(fieldProps, creditsType(type), user, addHandler, analyticsHandler, statusHandler);
+    openCheckout(fieldProps, type, user, addHandler, analyticsHandler, statusHandler);
 
     // reset form fields on submit
     destroy();

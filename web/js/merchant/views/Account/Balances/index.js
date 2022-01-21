@@ -10,7 +10,6 @@ import {
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { bindActionCreators } from 'redux';
-import AddFundsForm from 'common/ui/AddFundsForm';
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
@@ -24,8 +23,20 @@ import {
   RESERVE_BALANCE_FAILURE,
   OPEN_DOCUMENTATION,
 } from './ga';
-import { CreateTicketEmitter } from '../../TicketSupport/utils';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const AddFundsForm = lazy(() =>
+  import(/* webpackChunkName: 'AddFundsForm' */ 'common/ui/AddFundsForm'),
+);
+
+const AddCredits = lazy(() =>
+  import(
+    /* webpackChunkName: 'AddCredits' */ 'merchant/views/Account/Credits/components/AddCredits'
+  ),
+);
 
 class AddFundsContainer extends Component {
   constructor(props) {
@@ -116,14 +127,26 @@ class AddFundsContainer extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <AddFundsForm
-          type={type}
-          addHandler={this.addFunds}
-          statusHandler={this.statusHandler}
-          currentBalance={this.props.account_balance.data?.balance || 0}
-          analyticsHandler={this.analyticsHandler}
-          user={this.props.user}
-        />
+        <SuspenseWithLoader>
+          {type === 'current' ? (
+            <AddFundsForm
+              type={type}
+              addHandler={this.addFunds}
+              statusHandler={this.statusHandler}
+              currentBalance={this.props.account_balance.data?.balance || 0}
+              analyticsHandler={this.analyticsHandler}
+              user={this.props.user}
+            />
+          ) : (
+            <AddCredits
+              type={type}
+              addHandler={this.addFunds}
+              statusHandler={this.statusHandler}
+              analyticsHandler={this.analyticsHandler}
+              user={this.props.user}
+            />
+          )}
+        </SuspenseWithLoader>
       ),
     });
 

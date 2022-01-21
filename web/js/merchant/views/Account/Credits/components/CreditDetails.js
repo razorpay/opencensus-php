@@ -16,7 +16,14 @@ import { showNotification as showNotificationReducer } from 'merchant_common/red
 import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchantLA/reducers/credits';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
-import AddCredits from './AddCredits';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import lazy from 'merchant/routes/LazyLoader';
+
+const AddCredits = lazy(() =>
+  import(
+    /* webpackChunkName: 'AddCredits' */ 'merchant/views/Account/Credits/components/AddCredits'
+  ),
+);
 
 function CreditDetails({
   title,
@@ -79,7 +86,14 @@ function CreditDetails({
     openModal({
       size: 'small',
       component: (
-        <AddCredits type={type} addHandler={addCredits} user={user} statusHandler={statusHandler} />
+        <SuspenseWithLoader>
+          <AddCredits
+            type={type}
+            addHandler={addCredits}
+            user={user}
+            statusHandler={statusHandler}
+          />
+        </SuspenseWithLoader>
       ),
     });
   };

@@ -1,6 +1,19 @@
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 
+const creditsType = (type) => {
+  switch (type) {
+    case 'fee':
+      return 'fee_credit';
+    case 'refund':
+      return 'refund_credit';
+    case 'reserve':
+      return 'reserve_balance';
+    default:
+      return '';
+  }
+};
+
 const fetchOrderId = (type, data) => {
   if (type === 'current') {
     return merchantFetch({
@@ -37,7 +50,7 @@ const openCheckout = async (
     };
   } else {
     payload = {
-      type,
+      type: creditsType(type),
       method: fieldProps.paymentMethod,
       amount: amountInPaise,
     };

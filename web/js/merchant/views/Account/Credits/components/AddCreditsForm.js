@@ -15,6 +15,8 @@ const formTitle = (type) => {
       return 'Add Fee Credits';
     case 'refund':
       return 'Add Refund Credits';
+    case 'reserve':
+      return 'Add Reserve Funds';
     default:
       return '';
   }
