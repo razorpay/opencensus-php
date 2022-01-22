@@ -94,6 +94,17 @@ class Payout extends Base
 
                     break;
 
+                case self::INTER_ACCOUNT_PAYOUT_FAILED:
+                case self::PAYOUT_FAILED:
+                    if ($reversal !== null) {
+                        $transactorDate = $reversal->getCreatedAt();
+                        $transactorId = $reversal->getPublicId();
+                        $transactionId = $reversal->getTransactionId();
+                        $apiTransactionId = $reversal->getTransactionId();
+                    }
+
+                    break;
+
                 default:
                     throw new LogicException(self::TRANSACTOR_EVENT . ' not implemented at ledger : ' . $transactorEvent);
             }
@@ -188,7 +199,9 @@ class Payout extends Base
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
-        $identifiers = array_merge($identifiers, $ftsSourceAccountData);
+        if ($status !== self::PAYOUT_FAILED) {
+            $identifiers = array_merge($identifiers, $ftsSourceAccountData);
+        }
 
         $payload = [
             self::TENANT           => self::X,
@@ -206,7 +219,7 @@ class Payout extends Base
             self::IDENTIFIERS      => $identifiers,
         ];
 
-        if ($status === self::PAYOUT_REVERSED)
+        if (($status === self::PAYOUT_REVERSED) || ($status === self::PAYOUT_FAILED))
         {
             if ($reversal !== null)
             {

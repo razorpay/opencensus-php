@@ -329,6 +329,8 @@ class Ledger extends BaseLedger
             FundAccountValidation::FAV_PROCESSED,
             Payout::PAYOUT_REVERSED,
             Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
+            Payout::PAYOUT_FAILED,
+            Payout::INTER_ACCOUNT_PAYOUT_FAILED,
         ];
 
         $isCredit = false;
