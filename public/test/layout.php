@@ -187,7 +187,7 @@ $('#keys').onclick = t.onkeydown = e => {
     var source = 'checkout.razorpay.com';
 
     if (getSearchParams().branch) {
-      source = `betacdn.razorpay.com/_checkout/${getSearchParams().branch}`
+      source = `https://betacdn.np.razorpay.in/checkout/builds/branch-builds/${getSearchParams().branch}`
     } else if (isStage) {
       source = 'checkout.stage.razorpay.in';
     } else if (isFunc) {
