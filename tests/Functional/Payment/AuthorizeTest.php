@@ -1955,4 +1955,9 @@ class AuthorizeTest extends TestCase
         });
 
     }
+
+    public function testLBPCurrency()
+    {
+        $this->startTest();
+    }
 }

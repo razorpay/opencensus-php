@@ -385,14 +385,6 @@ $responseContent = [
         'symbol'         => '₭',
         'name'           => 'Lao Kip',
     ],
-    'LBP' => [
-        'code'           => '422',
-        'min_value'      => 1000,
-        'min_auth_value' => 1000,
-        'denomination'   => 100,
-        'symbol'         => 'ل.ل.‎',
-        'name'           => 'Lebanese Pound',
-    ],
     'LKR' => [
         'code'           => '144',
         'min_value'      => 358,
