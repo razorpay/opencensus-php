@@ -794,7 +794,7 @@ class Repository extends Base\Repository
         $payoutsInitiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
         $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax,
                          SUM(' . Entity::FEES . ') AS fee')
@@ -840,7 +840,7 @@ class Repository extends Base\Repository
         $payoutsStatusColumn      = $this->dbColumn(Entity::STATUS);
         $payoutsFeeTypeColumn     = $this->dbColumn(Entity::FEE_TYPE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax,
                          SUM(' . Entity::FEES . ') AS fee')

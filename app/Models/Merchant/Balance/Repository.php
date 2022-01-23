@@ -438,7 +438,7 @@ class Repository extends Base\Repository
     {
         $startTime = microtime(true);
 
-        $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $result =  $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->select(Entity::MERCHANT_ID)
             ->where(Entity::TYPE, '=', Type::PRIMARY)
             ->where(Entity::UPDATED_AT, '>', $from)

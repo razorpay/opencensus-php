@@ -2212,7 +2212,7 @@ class Repository extends Base\Repository
         //
         // will consider all the payments
         //
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                       ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                       ->whereBetween(Entity::CAPTURED_AT, [$start, $end])
                       ->whereNotNull(Entity::TRANSACTION_ID);

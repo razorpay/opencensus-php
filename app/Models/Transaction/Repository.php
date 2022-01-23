@@ -220,7 +220,7 @@ class Repository extends Base\Repository
                    AND `transactions`.`merchant_id` = ?
             LIMIT  1
          */
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->selectRaw('SUM(' . $this->dbColumn(Entity::TAX) . ') AS tax, SUM(' . $this->dbColumn(Entity::FEE) . ') AS fee')
             ->where($this->dbColumn(Entity::TYPE), '=', 'refund')
             ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end]);
@@ -1131,7 +1131,7 @@ class Repository extends Base\Repository
         $transactionsTypeColumn             = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn                  = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->selectRaw('SUM(' . Entity::TAX .') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
@@ -1151,7 +1151,7 @@ class Repository extends Base\Repository
         $transactionsTypeColumn      = $this->repo->transaction->dbColumn(Entity::TYPE);
         $balanceTypeColumn           = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->selectRaw('SUM(' . Entity::TAX . ') AS tax, SUM(' . Entity::FEE . ') AS fee')
                     ->join(Entity::BALANCE, $transactionsBalanceIDColumn, $balanceIDColumn)
                     ->whereBetween($transactionsCreatedATColumn, [$start, $end])
@@ -2277,7 +2277,7 @@ class Repository extends Base\Repository
 
         $startTime = microtime(true);
 
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount, COUNT($transactionId) as count"))
             ->where($transactionMerchantId, $merchantId)
             ->where($transactionOnHold, 0)

@@ -172,7 +172,7 @@ class LedgerRecon extends Job
     {
         $balanceRepo = $this->repoManager->balance;
 
-        $reportingReplicaConnection = $balanceRepo->getReportingReplicaConnection();
+        $reportingReplicaConnection = $balanceRepo->getPaymentFetchReplicaConnection();
 
         $balance = $balanceRepo->getMerchantBalanceByType($merchantId, Type::PRIMARY, $reportingReplicaConnection);
 

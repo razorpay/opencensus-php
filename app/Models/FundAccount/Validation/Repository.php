@@ -49,7 +49,7 @@ class Repository extends Base\Repository
         $favsBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $favsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
-        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                     ->selectRaw(
                         'SUM(' . Entity::TAX .') AS tax,
                          SUM(' . Entity::FEES . ') AS fee')
