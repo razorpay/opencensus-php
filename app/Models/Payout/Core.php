@@ -1952,15 +1952,18 @@ class Core extends Base\Core
             try
             {
                 // Filter out the balance ids for which the merchants have payout_service_enabled feature
-                $balanceIdList = $this->repo->balance
+                $balancesList = $this->repo->balance
                     ->getBalanceIdsWithAMerchantsHavingPayoutServiceEnabled($balanceIdList);
 
-                if (empty($balanceIdList) === true)
+                if (empty($balancesList) === true)
                 {
                     return;
                 }
 
-                $payoutServiceInput = [Entity::BALANCE_IDS => $balanceIdList];
+                $payoutServiceInput = [
+                                        Entity::BALANCE_IDS => array_keys($balancesList),
+                                        Entity::BALANCES => array_values($balancesList)
+                    ];
 
                 $this->trace->info(
                     TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE,

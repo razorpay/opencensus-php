@@ -466,20 +466,21 @@ class Repository extends Base\Repository
     {
         $idColumn         = $this->dbColumn(Entity::ID);
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $balanceColumn    = $this->dbColumn(Entity::BALANCE);
 
         $featureEntityIdColumn   = $this->repo->feature->dbColumn(Feature\Entity::ENTITY_ID);
         $featureEntityTypeColumn = $this->repo->feature->dbColumn(Feature\Entity::ENTITY_TYPE);
         $featureNameColumn       = $this->repo->feature->dbColumn(Feature\Entity::NAME);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->select($idColumn)
+                    ->select($idColumn, $balanceColumn)
                     ->join(Table::FEATURE, $merchantIdColumn, '=', $featureEntityIdColumn)
                     ->where($featureEntityTypeColumn, Feature\Constants::MERCHANT)
                     ->whereIn($idColumn, $balanceIdList)
                     ->where($featureNameColumn, Feature\Constants::PAYOUT_SERVICE_ENABLED)
                     ->distinct()
                     ->get()
-                    ->pluck(Entity::ID)
+                    ->pluck(Entity::BALANCE, Entity::ID)
                     ->toArray();
     }
 

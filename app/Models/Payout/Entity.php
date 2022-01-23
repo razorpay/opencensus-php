@@ -223,6 +223,7 @@ class Entity extends Base\PublicEntity
     // Used for Queued and Scheduled Payout Processing
     const BALANCE_IDS     = 'balance_ids';
     const BALANCE_IDS_NOT = 'balance_ids_not';
+    const BALANCES        = 'balances';
 
     // Relations
     const USER            = 'user';
