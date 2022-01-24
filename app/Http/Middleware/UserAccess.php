@@ -19,11 +19,13 @@ use Illuminate\Http\Request;
 use RZP\Http\RequestContext;
 use Illuminate\Routing\Router;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\AccessAuthorizationService;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\User\Metric as UserMetricCode;
 use RZP\Models\Merchant\Attribute;
@@ -343,6 +345,16 @@ class UserAccess
                     {
                         $isRoleAllowedAccess = false;
                         break;
+                    }
+
+                    $accessAuthViaAuthZEnabled = $this->ba->getMerchant()->isFeatureEnabled(Features::AUTHORIZE_VIA_AUTHZ);
+
+                    if($hasMerchantAllowedAccess == self::MERCHANT_NO_RULES
+                        && $accessAuthViaAuthZEnabled == true
+                        && AccessAuthorizationService::isAuthorizationEnabled($route))
+                    {
+                            $isRoleAllowedAccess = AccessAuthorizationService::hasAccessAllowed($route, [$userRole]);
+                            break;
                     }
                     if ($hasMerchantAllowedAccess == self::MERCHANT_NO_RULES
                         && UserRolePermissionsMap::isInvalidRolePermission($userRole, $routePermission))

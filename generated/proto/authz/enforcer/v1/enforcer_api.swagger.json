@@ -146,7 +146,7 @@
     "v1EnforceResponse": {
       "type": "object",
       "properties": {
-        "isAllowed": {
+        "is_allowed": {
           "type": "boolean"
         }
       }

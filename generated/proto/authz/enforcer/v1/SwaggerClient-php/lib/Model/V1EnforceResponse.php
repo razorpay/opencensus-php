@@ -96,7 +96,7 @@ class V1EnforceResponse implements ModelInterface, ArrayAccess
      * @var string[]
      */
     protected static $attributeMap = [
-        'is_allowed' => 'isAllowed'
+        'is_allowed' => 'is_allowed'
     ];
 
     /**

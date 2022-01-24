@@ -1108,6 +1108,9 @@ class Constants
     // Feature to take mutex lock on linked account ID before transfer processing.
     const TRANSFER_PROCESS_LA_MUTEX = 'transfer_process_la_mutex';
 
+    // This feature will be used to control the rollout of authorization via authz enforcer
+    const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1541,6 +1544,7 @@ class Constants
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
+        self::AUTHORIZE_VIA_AUTHZ             => true,
         self::SR_SENSITIVE_BUCKET_1           => true,
         self::SR_SENSITIVE_BUCKET_2           => true,
         self::SR_SENSITIVE_BUCKET_3           => true,
@@ -2220,6 +2224,11 @@ class Constants
             'display_name'  => 'Enable FB analytics for One Click checkout',
             'documentation' => '',
         ],
+        self::AUTHORIZE_VIA_AUTHZ => [
+            'feature'       => self::AUTHORIZE_VIA_AUTHZ,
+            'display_name'  => 'Enable authorization via authz enforcer',
+            'documentation' => 'This feature will be used to control the rollout of authorization via authz enforcer',
+        ]
     ];
 
     /**

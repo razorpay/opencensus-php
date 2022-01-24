@@ -7,6 +7,7 @@ use Illuminate\Cache\CacheManager;
 use RZP;
 use Cache;
 use Swagger\Client\Api\AdminAPIApi;
+use Swagger\Client\Api\EnforcerAPIApi;
 use Swagger\Client\Configuration;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
@@ -91,6 +92,8 @@ use RZP\Modules\Acs;
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
     protected $env;
+
+    const AUTHZ_CLIENT_TIMEOUT_SEC = 10;
 
     /**
      * Registering observers for eloquent events here.
@@ -617,6 +620,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerPspx();
 
         $this->registerAuthzClient();
+
+        $this->registerAuthzEnforcerClient();
     }
 
     protected function registerCacheManager()
@@ -1205,6 +1210,32 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $configuration->setHost($config['url']);
 
             return new AdminAPIApi($client, $configuration);
+        });
+    }
+
+    protected function registerAuthzEnforcerClient()
+    {
+        $this->app->singleton('authzEnforcer', function($app)
+        {
+            $config = $app['config']->get('applications.authzEnforcer');
+            $mock = $config['mock'];
+            if ($mock === true) {
+                return new Mock\AuthzEnforcerClient();
+            }
+            $client = new Client([
+                'base_uri' => $config['url'],
+                'timeout'  => self::AUTHZ_CLIENT_TIMEOUT_SEC,
+                'auth'     => [
+                    $config['auth']['username'],
+                    $config['auth']['password'],
+                ],
+            ]);
+            $configuration = new Configuration;
+            $configuration->setUsername($config['auth']['username']);
+            $configuration->setPassword($config['auth']['password']);
+            $configuration->setHost($config['url']);
+
+            return new EnforcerAPIApi($client, $configuration);
         });
     }
 

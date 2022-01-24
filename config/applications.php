@@ -1192,13 +1192,24 @@ return [
     'tokenization' => [
         'secret' => env('TOKENIZATION_SECRET'),
     ],
+
     'authz' => [
         'auth' => [
             'username' => env('AUTHZ_USER'),
             'password' => env('AUTHZ_SECRET'),
         ],
-        'mock'     => env('AUTHZ_MOCK', false),
+        'mock'     => env('AUTHZ_MOCK', true),
         'url'      => env('AUTHZ_BASE_URL'),
         'mock_url' => env('AUTHZ_BASE_MOCK_URL')
+    ],
+
+    'authzEnforcer' => [
+        'auth' => [
+            'username' => env('AUTHZ_ENFORCER_USER'),
+            'password' => env('AUTHZ_ENFORCER_SECRET'),
+        ],
+        'mock'     => env('AUTHZ_ENFORCER_MOCK', true),
+        'url'      => env('AUTHZ_ENFORCER_BASE_URL'),
+        'mock_url' => env('AUTHZ_ENFORCER_BASE_MOCK_URL')
     ]
 ];
