@@ -319,6 +319,13 @@ color:${it.sideBarIconActive} !important;
   background-color: ${it.primary};
 }
 
+.${org} .settlement-cycle-btn-container .button-wrapper .btn-default,
+.${org} .settlement-cycle-btn-container .button-wrapper .btn-default:hover {
+  background-color: transparent;
+  color: ${it.primary};
+  border-color: ${it.primary};
+}
+
 `;
 
 export const applyTheme = (org) => {
