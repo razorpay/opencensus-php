@@ -1573,6 +1573,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
 
+        $this->userEntityMock->shouldReceive('getId')->andReturn('20000000000002');
+
         $this->userValidator->shouldReceive('validatePasswordIsNotSameAsLastThree')->andReturn([]);
 
         $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');

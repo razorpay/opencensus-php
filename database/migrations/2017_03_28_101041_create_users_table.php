@@ -59,6 +59,8 @@ class CreateUsersTable extends Migration
             $table->json(User::OAUTH_PROVIDER)
                   ->nullable();
 
+            $table->json(User::OLD_PASSWORDS)->nullable();
+
             $table->tinyInteger(User::SIGNUP_VIA_EMAIL)->default(1);
 
             $table->index(User::CONFIRM_TOKEN);

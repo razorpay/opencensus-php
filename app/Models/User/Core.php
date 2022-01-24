@@ -417,19 +417,96 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function changePassword(Entity $user, array $input)
+    /**
+     * @param Entity $user
+     * @param array $input
+     * @return Entity
+     * @throws BadRequestException
+     */
+    protected function setOldPasswords(Entity $user, array $input): Entity
     {
-        // TODO: Following validation does not seem be invoked in other flows
-        // e.g. reset by internal admin etc. Need to check in detail and plug
-        // this validation at right place. Also need to modify test assertions
-        // and add new if required.
-        $user->getValidator()->validatePasswordIsNotSameAsLastThree($input[Entity::PASSWORD]);
+        $oldPasswords   = $user->getAttribute(Entity::OLD_PASSWORDS);
+        $newPassword    = $input[Entity::PASSWORD];
 
-        // Once validated updates the old password attributes.
-        $user->setAttribute(Entity::OLD_PASSWORD_2, $user->getAttribute(Entity::OLD_PASSWORD_1));
-        $user->setAttribute(Entity::OLD_PASSWORD_1, $user->getAttribute(Entity::PASSWORD));
+        /**
+         * this bit is for active data-migration from
+         * separate old_password# columns to old_passwords column.
+         */
+        if(is_null($oldPasswords) === true)
+        {
+            $oldPasswords = array_filter(
+                [
+                    $user->getAttribute(Entity::PASSWORD),
+                    $user->getAttribute(Entity::OLD_PASSWORD_1),
+                    $user->getAttribute(Entity::OLD_PASSWORD_2)
+                ]
+            );
+        }
+
+        $this->validateNewPasswordIsNotSameAsLastNPasswords($newPassword, $oldPasswords);
+
+        if (count($oldPasswords) >= Constants::MAX_PASSWORD_TO_RETAIN)
+        {
+            array_shift($oldPasswords);
+        }
 
         $user->fill($input);
+
+        $oldPasswords[] = $user->getPassword();
+        $user->setAttribute(Entity::OLD_PASSWORDS, $oldPasswords);
+
+        return $user;
+    }
+
+    /**
+     * TODO: Following validation does not seem be invoked in other flows
+     * e.g. reset by internal admin etc. Need to check in detail and plug
+     * this validation at right place. Also need to modify test assertions
+     * and add new if required.
+     * @param $newPassword string password that user has entered
+     * @param array|null $oldPasswords array list of hashes of old passwords
+     * @throws BadRequestException BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD
+     */
+    protected function validateNewPasswordIsNotSameAsLastNPasswords(string $newPassword, ?array $oldPasswords)
+    {
+        foreach ($oldPasswords as $oldPassword)
+        {
+            if (Hash::check($newPassword, $oldPassword) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
+            }
+        }
+    }
+
+    /**
+     * @param Entity $user
+     * @param array $input
+     * @return Entity
+     * @throws BadRequestException
+     */
+    public function changePassword(Entity $user, array $input): Entity
+    {
+        $retainLastFivePasswordsExperiment = $this->app->razorx->getTreatment(
+            $user->getId(),
+            Merchant\RazorxTreatment::RETAIN_LAST_FIVE_PASSWORDS,
+            $this->mode
+        );
+
+        if(strtolower($retainLastFivePasswordsExperiment) === Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $user = $this->setOldPasswords($user, $input);
+        }
+        else
+        {
+            $user->getValidator()->validatePasswordIsNotSameAsLastThree($input[Entity::PASSWORD]);
+
+            // Once validated updates the old password attributes.
+            $user->setAttribute(Entity::OLD_PASSWORD_2, $user->getAttribute(Entity::OLD_PASSWORD_1));
+            $user->setAttribute(Entity::OLD_PASSWORD_1, $user->getAttribute(Entity::PASSWORD));
+
+            $user->fill($input);
+
+        }
 
         $user->setPasswordResetToken();
 

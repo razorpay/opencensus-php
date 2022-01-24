@@ -4,6 +4,10 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+
+    // the ON variant
+    const RAZORX_VARIANT_ON     = 'on';
+
     //Razorx treatment constant, allows system to show friend buy widget to merchant
     const SHOW_FRIENDBUY_WIDGET = "show_friendbuy_widget";
 
@@ -438,5 +442,8 @@ final class RazorxTreatment
 
     // experiment to send uploaded signed form nach payment in fetch token api
     const SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK = 'send_nach_signed_form_to_merchant_in_response_authlink';
+
+    //Experiment flag to retain last 5 passwords instead of last 3
+    const RETAIN_LAST_FIVE_PASSWORDS = 'retain_last_five_passwords';
 
 }

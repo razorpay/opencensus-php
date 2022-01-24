@@ -22,11 +22,16 @@ class Entity extends Base\PublicEntity
     const EMAIL                         = 'email';
     const PASSWORD                      = 'password';
     const OLD_PASSWORD                  = 'old_password';
+
+    // !! DEPRECATED; replaced with old_passwords attribute below.
     // The attribute OLD_PASSWORD_1 and OLD_PASSWORD_2 are stored in table which
     // gets used during password reset to assert new password doest not match
     // last three passwords. Ref User/Validator.php file.
     const OLD_PASSWORD_1                = 'old_password1';
     const OLD_PASSWORD_2                = 'old_password2';
+
+    const OLD_PASSWORDS                 = 'old_passwords';
+
     const PASSWORD_CONFIRMATION         = 'password_confirmation';
     const CONTACT_MOBILE                = 'contact_mobile';
     const REMEMBER_TOKEN                = 'remember_token';
@@ -143,6 +148,7 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_RESET_TOKEN,
         self::OLD_PASSWORD_1,
         self::OLD_PASSWORD_2,
+        self::OLD_PASSWORDS,
         self::OAUTH_PROVIDER,
     ];
 
@@ -163,6 +169,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT_MOBILE_VERIFIED       => 'bool',
         self::SECOND_FACTOR_AUTH            => 'bool',
         self::ACCOUNT_LOCKED                => 'bool',
+        self::OLD_PASSWORDS                 => 'array'
     ];
 
     protected $generateIdOnCreate = true;

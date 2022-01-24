@@ -6620,6 +6620,8 @@ ALTER TABLE tnc_map
 ALTER TABLE merchants
 ADD COLUMN balance_threshold BIGINT DEFAULT NULL;
 
+ALTER TABLE users ADD COLUMN old_passwords JSON DEFAULT NULL;
+
 ALTER TABLE merchant_notification_configs
     DROP INDEX `merchant_notification_configs_merchant_id_mode_index`,
     DROP COLUMN `upper_threshold`,

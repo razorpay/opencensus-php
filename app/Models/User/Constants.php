@@ -153,6 +153,8 @@ class Constants
 
     const SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME =  7776000; //3 months
 
+    const MAX_PASSWORD_TO_RETAIN                                = 5;
+
     const USER_EMAIL_NOT_FOUND  = 'USER_EMAIL_NOT_FOUND';
 
     const LOCK   = 'lock';

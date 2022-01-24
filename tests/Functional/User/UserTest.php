@@ -3271,6 +3271,59 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testChangePasswordMatchesLastNPasswords()
+    {
+        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
+
+        $user = $this->fixtures->create('user', ['password' => 'P@ssw0rd']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testChangePasswordAfterNChanges()
+    {
+        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
+
+        $origPassword   = 'P@ssw0rd';
+        $user           = $this->fixtures->create('user', ['password' => $origPassword]);
+
+        $testData = & $this->testData['testChangePassword'];
+        $testData['request']['url'] = '/users/password';
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id']  = $user['id'];
+
+        $oldPassword = $origPassword;
+
+        for ($i = 1; $i <= Constants::MAX_PASSWORD_TO_RETAIN; $i++) {
+            $newPassword                                            = $oldPassword.$i;
+            $testData['request']['content']['password']             = $newPassword;
+            $testData['request']['content']['password_confirmation']= $newPassword;
+            $testData['request']['content']['old_password']         = $oldPassword;
+            $oldPassword                                            = $newPassword;
+
+            $this->ba->dashboardGuestAppAuth();
+
+            $this->startTest($testData);
+        }
+
+        // After N attempts, the original password should again be reusable
+        $testData['request']['content']['password']             = $origPassword;
+        $testData['request']['content']['password_confirmation']= $origPassword;
+        $testData['request']['content']['old_password']         = $oldPassword;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+
+    }
+
     /*checks for user who signs up via google auth*/
     public function testcheckUserHasSetPassword()
     {
@@ -3710,35 +3763,64 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    private function enableRazorXTreatmentForRazorXRetainLastFivePasswords()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'retain_last_five_passwords')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+    }
+
     public function testPasswordResetByToken()
     {
+        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
+
         $resetAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),
             'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
         ];
 
+        // create user with password reset token; reset password
+        // and check if old_passwords are getting updated
         $user = $this->fixtures->create('user', $resetAttributes);
-
+        $oldPassword2 = $user->getPassword();
         $this->doTestPasswordResetByToken($user);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $this->assertNotNull($user->getAttribute(Entity::OLD_PASSWORDS));
+        $this->assertEquals(
+            [$oldPassword2, $user->getPassword()],
+            $user->getAttribute(Entity::OLD_PASSWORDS)
+        );
 
-        // Repeats same request against to assert attribute OLD_PASSWORD_2 is captured.
+        // Repeats same request against to assert attribute OLD_PASSWORDS is captured.
         $this->fixtures->edit('user', $user->getId(), $resetAttributes);
         $user = $this->getDbEntityById('user', $user->getId());
-
+        $oldPassword1 = $user->getPassword();
         $this->doTestPasswordResetByToken($user);
-
         $user = $this->getDbEntityById('user', $user->getId());
-
-        $this->assertNotNull($user[Entity::OLD_PASSWORD_2]);
+        $this->assertEquals(
+            [$oldPassword2, $oldPassword1, $user->getPassword()],
+            $user->getAttribute(Entity::OLD_PASSWORDS)
+        );
     }
 
     public function doTestPasswordResetByToken(Entity $user)
     {
         $testData = & $this->testData['testPasswordResetByToken'];
-
-        $oldPassword = $user->getPassword();
-        $oldPassword1 = $user[Entity::OLD_PASSWORD_1];
 
         $password = str_random(10) . '1';
 
@@ -3751,15 +3833,12 @@ class UserTest extends TestCase
 
         $this->startTest($testData);
 
-        $user = $this->getDbEntityById('user', $user->getId());
-
-        $this->assertNotNull($user[Entity::OLD_PASSWORD_1]);
-        $this->assertEquals($oldPassword, $user[Entity::OLD_PASSWORD_1]);
-        $this->assertEquals($oldPassword1, $user[Entity::OLD_PASSWORD_2]);
     }
 
     public function testPasswordResetByTokenWithSamePassword()
     {
+        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
+
         $resetAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),
@@ -3785,28 +3864,7 @@ class UserTest extends TestCase
                 $this->runRequestResponseFlow($testData);
             },
             \RZP\Exception\BadRequestException::class,
-            'Your new password cannot match any of your last three passwords');
-    }
-
-    public function doTestPasswordResetByTokenWithSamePassword(Entity $user)
-    {
-        $testData = & $this->testData['testPasswordResetByToken'];
-
-        $oldPassword = $user->getPassword();
-        $oldPassword1 = $user[Entity::OLD_PASSWORD_1];
-
-        $testData['request']['content']['email']      = $user->getEmail();
-        $testData['request']['content']['token']      = $user->getPasswordResetToken();
-
-        $this->ba->dashboardGuestAppAuth();
-
-        $this->startTest($testData);
-
-        $user = $this->getDbEntityById('user', $user->getId());
-
-        $this->assertNotNull($user[Entity::OLD_PASSWORD_1]);
-        $this->assertEquals($oldPassword, $user[Entity::OLD_PASSWORD_1]);
-        $this->assertEquals($oldPassword1, $user[Entity::OLD_PASSWORD_2]);
+            PublicErrorDescription::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD);
     }
 
     public function testPasswordResetByExpiredToken()

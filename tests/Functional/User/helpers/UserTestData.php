@@ -2332,6 +2332,31 @@ return [
         ],
     ],
 
+    'testChangePasswordMatchesLastNPasswords' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PUT',
+            'content' => [
+                'password'              => 'P@ssw0rd',
+                'password_confirmation' => 'P@ssw0rd',
+                'old_password'          => 'P@ssw0rd',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD,
+        ],
+    ],
+
     'testAttachMerchant' => [
         'request' => [
             'url'    => '/users/id/attach',
