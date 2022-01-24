@@ -75,7 +75,8 @@ export default class GrowthService extends GenericEntity {
   getAnnouncements = async (fromWhere) => {
     let announcements = [];
 
-    if (Array.isArray(window.old_notifications)) announcements.push(...window.old_notifications);
+    if (Array.isArray(window.old_notifications) && this.user.isOrgRZP)
+      announcements.push(...window.old_notifications);
     if (this.user.isGSAnnouncementsEnabled) {
       const new_announcements = await this.fetchAssetData(
         getChannelID(fromWhere, this.user.isOrgRZP),

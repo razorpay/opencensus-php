@@ -63,7 +63,7 @@ export const getNotificationsReadData = (merchant_id) => {
 
 const BUTTON_CLASSES = {
   button: 'btn-primary',
-  'primary-inverted': 'btn-primary--invert',
+  'primary-inverted': 'btn-outline',
 };
 
 export const getButtonClass = (type) => {

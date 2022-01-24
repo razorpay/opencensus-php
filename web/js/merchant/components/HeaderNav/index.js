@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import RTracking from 'react-tracking';
-
+import rTracking from 'react-tracking';
 import WhatsNew from 'common/ui/WhatsNew/Old';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
@@ -11,18 +10,19 @@ import { toggleMobileMenu } from 'merchant/reducers/app';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import ShowWhen from 'merchant/components/ShowWhen';
-import * as LocalStorageService from 'common/utils/localStorage';
+import { getItem, setItem } from 'common/utils/localStorage';
 import NavFragment from './NavFragment';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import StatusDetails from './StatusDetails/index';
+import { compose } from 'redux';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
 import {
   fetchModalConfigDetails,
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
-import StatusDetails from './StatusDetails/index';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 
 // number of times to show MTU offer
@@ -38,18 +38,7 @@ const analyticsAction = (action) => {
 function toggleDropdown() {
   document.querySelector('#profile-dropdown .dropdown-toggle').click();
 }
-
-@RTracking(() => window.rzpQ.component('HeaderNav'))
-@withRouter
-@connect(
-  (state) => ({
-    activePageName: state.app.activePageName,
-    user: state.session.user,
-    referee: state.merchantReferral.data.referee,
-  }),
-  { toggleMobileMenu, openModals: openModal, closeModals: closeModal },
-)
-export default class HeaderNav extends Component {
+class HeaderNav extends Component {
   constructor(props) {
     super(props);
 
@@ -123,7 +112,7 @@ export default class HeaderNav extends Component {
   componentDidUpdate(_prevProp, prevState) {
     if (prevState.mtuOfferCount !== this.state.mtuOfferCount) {
       const { user, referee } = this.props;
-      const prevSessionID = LocalStorageService.getItem(`prev_session`);
+      const prevSessionID = getItem(`prev_session`);
       const isReferredMerchant = referee?.status === 'signup';
       const canShowOnboardingOffers =
         user.isOnboardingCouponEnabled && !isReferredMerchant && user.showMtuPopup;
@@ -136,7 +125,7 @@ export default class HeaderNav extends Component {
         user.autoOpenOnboardingCoupon
       ) {
         this.showMTUOffer();
-        LocalStorageService.setItem('prev_session', window.session_id);
+        setItem('prev_session', window.session_id);
       }
     }
   }
@@ -152,6 +141,7 @@ export default class HeaderNav extends Component {
       showMobileNav,
       analytics,
       activePageName,
+      org,
       referee,
     } = this.props;
     const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
@@ -203,9 +193,7 @@ export default class HeaderNav extends Component {
                   </li>
                 )}
                 <ShowWhen
-                  additionalCondition={(usr) =>
-                    usr.isOrgAllowedFunctionality('external_links') && !usr.isOrgAxis
-                  }
+                  additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
                 >
                   <li id="whats-new-section">
                     <ErrorBoundary FallbackComponent={ErrorFallbackComponent} resetOnProps>
@@ -216,11 +204,17 @@ export default class HeaderNav extends Component {
                           {...commonProps}
                         />
                       ) : (
-                        <WhatsNew
-                          analytics={analytics}
-                          showMobileNav={showMobileNav}
-                          {...commonProps}
-                        />
+                        <ShowWhen
+                          additionalCondition={
+                            () => !org.features.includes('disable_announcements') // If the org features array include "disable_announcements" then we hide "Announcement Tab".
+                          }
+                        >
+                          <WhatsNew
+                            analytics={analytics}
+                            showMobileNav={showMobileNav}
+                            {...commonProps}
+                          />
+                        </ShowWhen>
                       )}
                     </ErrorBoundary>
                   </li>
@@ -265,3 +259,18 @@ export default class HeaderNav extends Component {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  activePageName: state.app.activePageName,
+  user: state.session.user,
+  org: state.session.org,
+  referee: state.merchantReferral.data.referee,
+});
+
+const enhancedComponent = compose(
+  withRouter,
+  rTracking(() => window.rzpQ.component('HeaderNav')),
+  connect(mapStateToProps, { toggleMobileMenu, openModals: openModal, closeModals: closeModal }),
+);
+
+export default enhancedComponent(HeaderNav);
