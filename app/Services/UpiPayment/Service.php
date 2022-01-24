@@ -266,7 +266,9 @@ class Service
 
         $content = $this->buildRequestBody($input);
 
-        $uri = $this->action;
+        $version = 'v1';
+
+        $uri = sprintf('%s/%s', $version, $this->action);
 
         if ($uri === Payment\Action::AUTHORIZE_FAILED)
         {
