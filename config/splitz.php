@@ -65,6 +65,7 @@ return [
 
         // partnership for RazorpayX
         'PARTNERSHIP_FOR_RAZOARPAYX' => env('PARTNERSHIP_FOR_RAZOARPAYX', ''),
+        'PARTNERSHIP_FOR_RAZOARPAYX_RAMP' => env('PARTNERSHIP_FOR_RAZOARPAYX_RAMP', ''),
 
         'SUBMERCHANT_KYC_RESELLER' => env('SUBMERCHANT_KYC_RESELLER', ''),
 

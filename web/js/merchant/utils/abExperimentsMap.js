@@ -58,9 +58,11 @@ export default {
   partnership_for_razorpayx: [
     // beta experiment ids
     'HNHi7nieMQCDeh',
+    'InVJYbqVV9YmDt', // ramp
 
     // prod experiment ids
     'HbwBfwuYGuM2Xx',
+    'InWTItYNx0bVUa', // ramp
   ],
   submerchant_kyc_reseller: [
     // beta experiment ids
