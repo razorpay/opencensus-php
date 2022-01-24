@@ -192,5 +192,8 @@ class ThirdWatchService
     private function enrichAddressForTW(string $orderId, array &$address)
     {
         $address['order_id'] = $orderId;
+        if (isset($address[Entity::LINE2]) === false) {
+            $address[Entity::LINE2] = "";
+        }
     }
 }
