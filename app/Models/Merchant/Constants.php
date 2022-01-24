@@ -409,6 +409,15 @@ final class Constants
         '6211',
     ];
 
+    const EDUCATION_CATEGORIES = [
+        '8211',
+        '8220',
+        '8241',
+        '8244',
+        '8249',
+        '8299'
+    ];
+
     const MERCHANT_WORKFLOWS = [
         self::ADDITIONAL_WEBSITE   => [
             self::PERMISSION => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,

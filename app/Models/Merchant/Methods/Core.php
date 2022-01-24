@@ -574,7 +574,12 @@ class Core extends Base\Core
 
         $methods = $merchant->methods;
 
-        $defaultMethods = DefaultMethodsForCategory::getDefaultMethodsFromMerchantCategories($category, $category2, $orgId);
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        //Org Id(s) to be added as blacklisted RazorX experiment till when it will use default methods, if removed uses org specific methods
+        $variantFlag = $this->app->razorx->getTreatment($orgId, 'ORG_DEFAULT_PAYMENT_METHODS', $mode);
+
+        $defaultMethods = DefaultMethodsForCategory::getDefaultMethodsFromMerchantCategories($category, $category2, $orgId, $variantFlag);
 
         $merchantDetails = (new Merchant\Detail\Core())->getMerchantDetails($merchant);
         // disable phone for business type unregistered and others.
@@ -582,8 +587,6 @@ class Core extends Base\Core
         {
             $defaultMethods[Entity::PHONEPE] = false;
         }
-
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $variantFlag = $this->app->razorx->getTreatment($merchant->getId(), 'PRICING_PLAN_DEFAULT_METHODS', $mode);
 

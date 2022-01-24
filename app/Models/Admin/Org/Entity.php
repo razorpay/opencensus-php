@@ -60,11 +60,14 @@ class Entity extends Base\Entity
      */
     const PERMISSIONS       = 'permissions';
 
-    const RAZORPAY_ORG_ID = '100000razorpay';
-    const HDFC_ORG_ID     = '6dLbNSpv5XbCOG';
-    const BOB_ORG_ID      = '7ia1ttoyqIL8sw';
-    const AXIS_ORG_ID     = 'CLTnQqDj9Si8bx';
-    const ICICI_ORG_ID    = 'EKUZMBUtgInwi0';
+    const RAZORPAY_ORG_ID       = '100000razorpay';
+    const HDFC_ORG_ID           = '6dLbNSpv5XbCOG';
+    const BOB_ORG_ID            = '7ia1ttoyqIL8sw';
+    const AXIS_ORG_ID           = 'CLTnQqDj9Si8bx';
+    const ICICI_ORG_ID          = 'EKUZMBUtgInwi0';
+    const SIB_ORG_ID            = 'HrgeWjbnzZefSN';
+    const AXIS_EASYPAY_ORG_ID   = 'ISCkwbk39MdTk5';
+    const KOTAK_ORG_ID          = 'IUXvshap3HbzOs';
 
     /**
      * Org Id list on which Merchant on boarding escalation has to be triggered.
