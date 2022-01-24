@@ -130,9 +130,20 @@ class GatewayController extends Controller
         {
             if ($this->shouldPreProcessThroughUpiPaymentService($gatewayDriver) === true)
             {
-                return $this->app['upi.payments']->preProcessServerCallback($input, $gatewayDriver);
+                try
+                {
+                    return $this->app['upi.payments']->preProcessServerCallback($input, $gatewayDriver);
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e, 
+                        Logger::WARNING, 
+                        TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_FAILURE);
+                }
             }
 
+            // pre-process callback if ups pre-processing fails
             return $gateway->preProcessServerCallback($input, $gatewayDriver);
         }
         catch (Exception\GatewayErrorException $exception)
