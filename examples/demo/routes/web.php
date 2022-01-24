@@ -150,6 +150,7 @@ function incrementRedisCount($scope)
     $scope = Tracer::withSpan($span);
     try {
         $client -> incr('visits');
+        $client -> decr('visits');
         Tracer::inSpan(['name' => 'Async:GETHelper'], function () {
 
             $client = new \GuzzleHttp\Client();
