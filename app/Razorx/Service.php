@@ -227,7 +227,8 @@ class Service extends Base\Service
             'free_credit_recovery_banner',
             'rx_mask_payroll_payouts',
             'show_activation_form_full_view',
-            'magic_bulk_address_live'
+            'magic_bulk_address_live',
+            'rx_ca_programmatic_engagement'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
