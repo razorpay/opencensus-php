@@ -62,3 +62,39 @@ export const OPEN_DOCUMENTATION = {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
 };
+
+export const CLICK_ON_MANAGE_ALERTS = {
+  screen: 'Dashboard - My Account (Balance)',
+  actionName: 'Click - Manage Alerts',
+  objectName: `Manage Alerts`,
+  properties: {
+    ...getCommonAnalyticsProperties(window.rzp_user),
+  },
+};
+
+export const CLICK_CANCEL_MANAGE_ALERTS = {
+  screen: 'Dashboard - My Account (Balance)',
+  objectName: `Manage Alerts`,
+  actionName: 'Cancel',
+  properties: {
+    ...getCommonAnalyticsProperties(window.rzp_user),
+  },
+};
+
+export const CLICK_KNOW_MORE_MANAGE_ALERTS = {
+  screen: 'Dashboard - My Account (Balance)',
+  actionName: 'Know more',
+  objectName: `Know more - Manage Alerts`,
+  properties: {
+    ...getCommonAnalyticsProperties(window.rzp_user),
+  },
+};
+
+export const CLICK_SAVE_MANAGE_ALERTS = {
+  screen: 'Dashboard - My Account (Balance)',
+  actionName: 'Save',
+  objectName: `Balance Limit`,
+  properties: {
+    ...getCommonAnalyticsProperties(window.rzp_user),
+  },
+};

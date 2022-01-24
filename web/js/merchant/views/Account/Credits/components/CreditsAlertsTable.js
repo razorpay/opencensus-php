@@ -3,9 +3,10 @@ import TableBody from 'common/ui/TableBody';
 import { titleCase, paiseToRupees, rupeesToPaise } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 import { getCurrency } from 'common/ui/Amount';
+import { isInteger } from 'common/utils/validators';
 
-const AlertRow = ({ creditType, alertValue, onChangeHandler }) => {
-  const setThresholdValues = (value, threshold) => `${value / threshold}`;
+const AlertRow = ({ creditType, alertValue, onChangeHandler, index }) => {
+  const setThresholdValues = (value, threshold) => (!isInteger(value) ? 0 : `${value / threshold}`);
   const currencySymbol = getCurrency('INR').symbol;
 
   return (
@@ -17,12 +18,13 @@ const AlertRow = ({ creditType, alertValue, onChangeHandler }) => {
           onChange={(e) => {
             onChangeHandler(e, creditType);
           }}
-          autoFocus
+          autoFocus={index === 0}
+          mature
           validator={(val) => {
-            if (isNaN(val)) return 'Only numeric value allowed';
+            if (val !== '' && !isInteger(val)) return 'Only numeric value allowed';
+            return null;
           }}
           addonBefore={currencySymbol}
-          required
         />
       </td>
       <td>
@@ -35,7 +37,7 @@ const AlertRow = ({ creditType, alertValue, onChangeHandler }) => {
   );
 };
 
-const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave, user }, ref) => {
+const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave }, ref) => {
   const [alertValues, setalertValues] = useState(() => {
     return items.map((item) => {
       return {
@@ -60,13 +62,11 @@ const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave, us
 
   const isSaveDisabled = () => {
     const count = alertValues.reduce((acc, thresoldItem) => {
-      if (thresoldItem.alertValue) return acc + 1;
+      if (thresoldItem.alertValue !== '' && !isInteger(thresoldItem.alertValue)) return acc + 1;
       else return acc;
     }, 0);
 
-    if (!user.isSelfServeCreditsEnabled) return count === 1;
-
-    return count === 3;
+    return count > 0;
   };
 
   const getAlertValues = () =>
@@ -99,6 +99,7 @@ const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave, us
               return (
                 <AlertRow
                   key={`alert_${index}`}
+                  index={index}
                   creditType={row.credit_type}
                   alertValue={
                     alertValues.filter((alert) => alert.type === row.credit_type)[0].alertValue
@@ -114,7 +115,7 @@ const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave, us
         <button class="btn btn-default" onClick={onClickCancel}>
           Cancel
         </button>
-        <button class="btn btn-primary" disabled={!isSaveDisabled()} onClick={onClickSave}>
+        <button class="btn btn-primary" disabled={isSaveDisabled()} onClick={onClickSave}>
           Save
         </button>
       </div>

@@ -10,8 +10,6 @@ import {
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { bindActionCreators } from 'redux';
-import Amount from 'common/ui/Amount';
-import Spinner from 'common/ui/Spinner';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { analyticsTrack } from 'common/utils/analytics';
 import {
@@ -22,11 +20,21 @@ import {
   RESERVE_BALANCE_SUCCESS,
   RESERVE_BALANCE_FAILURE,
   OPEN_DOCUMENTATION,
+  CLICK_ON_MANAGE_ALERTS,
 } from './ga';
-import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
-import { getCustomURL } from 'merchant/components/DocsLink';
+import DocsLink from 'merchant/components/DocsLink';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import HeaderAction from 'common/ui/HeaderAction';
+import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
+import ReserveBalance from './ReserveBalance';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+
+const ManageBalanceAlert = lazy(() =>
+  import(
+    /* webpackChunkName: 'ManageBalanceAlert' */ 'merchant/views/Account/Balances/ManageBalanceAlert'
+  ),
+);
 
 const AddFundsForm = lazy(() =>
   import(/* webpackChunkName: 'AddFundsForm' */ 'common/ui/AddFundsForm'),
@@ -163,14 +171,15 @@ class AddFundsContainer extends Component {
     }
   };
 
-  getReserveBalanceAmount = (items) => {
-    if (!items) return 0;
-
-    if (items.length === 0 || this.props.reserve_balance.error === true) {
-      return 0;
-    } else {
-      return items[0].balance;
-    }
+  handleTicketCreation = (response) => {
+    const payload = {
+      ticketNo: response?.data?.ticket_id,
+      description: 'Please activate reserve balance and share VA details',
+    };
+    this.props.storeTicketDetails(payload);
+    this.setState({
+      ticketGenerated: true,
+    });
   };
 
   handleActivate = () => {
@@ -185,17 +194,6 @@ class AddFundsContainer extends Component {
         }, 1000);
       }
     }
-  };
-
-  handleTicketCreation = (response) => {
-    const payload = {
-      ticketNo: response?.data?.ticket_id,
-      description: 'Please activate reserve balance and share VA details',
-    };
-    this.props.storeTicketDetails(payload);
-    this.setState({
-      ticketGenerated: true,
-    });
   };
 
   handleContactUs = () => {
@@ -214,124 +212,49 @@ class AddFundsContainer extends Component {
     }
   };
 
+  handleManageAlert = () => {
+    this.props.openModal({
+      size: 'large',
+      component: (
+        <SuspenseWithLoader>
+          <ManageBalanceAlert />
+        </SuspenseWithLoader>
+      ),
+    });
+
+    analyticsTrack(CLICK_ON_MANAGE_ALERTS);
+  };
+
   render() {
-    const current_balance = this.props.account_balance.data?.balance || 0;
-    const items = this.props.reserve_balance.data?.items;
-    const reserveBalance = this.getReserveBalanceAmount(items);
     const { user } = this.props;
-    const { data: ticketStatusData, loading: ticketStatusLoading } = this.props.ticket_status;
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
+        <HeaderAction responsive>
+          <div className="btn-toolbar pull-right">
+            <DocsLink
+              url="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
+              onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
+            />
+          </div>
+        </HeaderAction>
         <div class="balances-note-row">
           <span>Note: Standard TDR charges applies on adding funds</span>
-          <span class="text-primary">
-            <a
-              href={getCustomURL(
-                'https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/',
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => {
-                analyticsTrack(OPEN_DOCUMENTATION);
-              }}
-            >
-              Learn more about Balances
-            </a>
-          </span>
-        </div>
-        <div class="balances-container">
-          <div class="bal-cont-header">
-            <div class="balances-lhs-container">
-              <div class="balance-type-container">
-                <p>Current Balance</p>
-              </div>
-              <div class="balance-amount-container">
-                {current_balance < 0 && <p class="negative-marker">-</p>}
-                <Amount
-                  value={Math.abs(current_balance)}
-                  currency="INR"
-                  className={current_balance < 0 ? 'negative-balance' : ''}
-                />
-              </div>
-            </div>
-            <div class="balances-add-funds">
-              {!user.isOrgAxis && (
-                <button class="btn btn-outline" onClick={() => this.handlAddFunds('current')}>
-                  Add Funds
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div class="bal-cont-footer">
-            <p>
-              Add funds to your account to process refunds/transfers when the account balance goes
-              low. Adding large funds to your account?
-              {/**/}
-              <a onClick={this.handleContactUs}> Contact Us</a>
-            </p>
-          </div>
+          {user.isAllowedEdit('credits') && (
+            <span style={{ color: '#528ff0' }} onClick={this.handleManageAlert}>
+              Manage Alerts <i className="i i-bell-outline" />
+            </span>
+          )}
         </div>
 
-        {ticketStatusLoading ? (
-          <div class="page-spinner-container">
-            <Spinner />
-          </div>
-        ) : (
-          <div class="balances-container">
-            <div class="bal-cont-header">
-              <div class="balances-lhs-container">
-                <div class="balance-type-container">
-                  <p>Reserve Balance</p>
-                </div>
-                <div class="balance-amount-container">
-                  <Amount
-                    value={Math.abs(this.getReserveBalanceAmount(items))}
-                    // value={Math.abs(reserve_balance)}
-                    currency="INR"
-                  />
-                </div>
-              </div>
-              {!user.isOrgAxis && !user.isSelfServeCreditsEnabled && (
-                <div class="balances-add-funds">
-                  {this.state.ticketGenerated || ticketStatusData.ticket_status === 'Processing' ? (
-                    <button class="btn btn-primary">Processing...</button>
-                  ) : ticketStatusData.ticket_status === 'Resolved' ||
-                    ticketStatusData.ticket_status === 'Closed' ||
-                    reserveBalance > 0 ? null : (
-                    <button class="btn btn-outline" onClick={this.handleActivate}>
-                      Activate
-                    </button>
-                  )}
-                </div>
-              )}
-              {!user.isOrgAxis && user.isSelfServeCreditsEnabled && (
-                <div class="balances-add-funds">
-                  <button class="btn btn-outline" onClick={() => this.handlAddFunds('reserve')}>
-                    Add Funds
-                  </button>
-                </div>
-              )}
-            </div>
-            <div class="bal-cont-footer">
-              <p>
-                Add funds to your reserve balance to increase the negative balance limit. Thinking
-                of withdrawing your reserve balance?{' '}
-                <a onClick={this.handleContactUs}>Contact Us</a>
-              </p>
-            </div>
-          </div>
-        )}
+        <CurrentBalance
+          handleContactUs={this.handleContactUs}
+          handlAddFunds={this.handlAddFunds}
+          handleActivate={this.handleActivate}
+          ticketGenerated={this.state.ticketGenerated}
+        />
 
-        {this.state.ticketGenerated ||
-        (ticketStatusData.ticket_status === 'Processing' && !user.isSelfServeCreditsEnabled) ? (
-          <div class="processing-note">
-            <p>
-              Your request is being processed. Please check your registered email for an update.
-            </p>
-          </div>
-        ) : null}
+        <ReserveBalance handleContactUs={this.handleContactUs} handlAddFunds={this.handlAddFunds} />
       </div>
     );
   }
@@ -341,8 +264,6 @@ const mapStateToProps = (state) => {
   return {
     ...state.session,
     account_balance: state.home.current_balance,
-    reserve_balance: state.profile.reserve_balance,
-    ticket_status: state.profile.ticket_status,
   };
 };
 

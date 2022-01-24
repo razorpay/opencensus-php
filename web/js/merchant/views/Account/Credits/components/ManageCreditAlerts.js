@@ -33,14 +33,11 @@ function ManageCreditAlerts(props) {
     const payload = {
       fee_credits_threshold:
         feeCreditsAlert.length > 0 ? feeCreditsAlert[0].credit_alert_threshold : 0,
+      amount_credits_threshold:
+        amountCreditsAlert.length > 0 ? amountCreditsAlert[0].credit_alert_threshold : 0,
+      refund_credits_threshold:
+        refundCreditsAlert.length > 0 ? refundCreditsAlert[0].credit_alert_threshold : 0,
     };
-
-    if (props.user.isSelfServeCreditsEnabled) {
-      payload.amount_credits_threshold =
-        amountCreditsAlert.length > 0 ? amountCreditsAlert[0].credit_alert_threshold : 0;
-      payload.refund_credits_threshold =
-        refundCreditsAlert.length > 0 ? refundCreditsAlert[0].credit_alert_threshold : 0;
-    }
 
     return props
       .updateConfig(payload)
@@ -67,13 +64,14 @@ function ManageCreditAlerts(props) {
   const getAlertTableItems = () => {
     const creditTableRows = [{ ...items[1], credit_alert_threshold: props.feeCreditsThreshold }];
 
-    if (props.user.isSelfServeCreditsEnabled) {
-      creditTableRows.unshift({
-        ...items[0],
-        credit_alert_threshold: props.amountCreditsThreshold,
-      });
-      creditTableRows.push({ ...items[2], credit_alert_threshold: props.refundCreditsThreshold });
-    }
+    creditTableRows.unshift({
+      ...items[0],
+      credit_alert_threshold: props.amountCreditsThreshold,
+    });
+    creditTableRows.push({
+      ...items[2],
+      credit_alert_threshold: props.refundCreditsThreshold,
+    });
 
     return creditTableRows;
   };
