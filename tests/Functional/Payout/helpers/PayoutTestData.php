@@ -15669,7 +15669,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after some time'
                     ],
                 ],
             ],
@@ -15689,7 +15689,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after some time'
                     ],
                 ],
             ],
@@ -15709,7 +15709,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after some time'
                     ],
                 ],
             ],
@@ -15729,7 +15729,7 @@ return [
                     'status'         => 'processing',
                     'status_details'  => [
                         'reason' => 'beneficiary_bank_confirmation_pending',
-                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021'
+                        'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after some time'
                     ],
                 ],
             ],
@@ -15750,7 +15750,7 @@ return [
                     'status_details'  => [
                         'reason' => 'bank_window_closed',
                         'description' => "The NEFT window for the day is closed. Payout will be "
-                                         ."processed by our partner bank at 09th November 2021, 09:13 PM",
+                                         ."processed by our partner bank after some time",
                     ],
                 ],
             ],
@@ -15771,7 +15771,7 @@ return [
                     'status_details'  => [
                         'reason' => 'bank_window_closed',
                         'description' => "The RTGS window for the day is closed. Payout will be "
-                                          ."processed by our partner bank at 10th November 2021, 12:33 AM",
+                                          ."processed by our partner bank after some time",
                     ],
                 ],
             ],
@@ -15790,7 +15790,7 @@ return [
                     'entity'         => 'payout',
                     'status'         => 'processing',
                     'status_details'  => [
-                        'reason' => 'payout_processing',
+                        'reason' => 'payout_bank_processing',
                         'description' => 'Payout is being processed by our partner bank. Please check '
                                             ."the final status after some time"
                     ],

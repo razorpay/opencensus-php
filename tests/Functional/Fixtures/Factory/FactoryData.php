@@ -2012,7 +2012,7 @@ final class FactoryData
            'id'           => $faker->uniqueid,
            'payout_id'    => 'factory:\RZP\Models\Payout\Entity',
             'status'      => 'processing',
-            'reason'      => 'payout_processing',
+            'reason'      => 'payout_bank_processing',
             'description' => 'Payout is being processed by our partner bank. Please check '
                               .'the final status after some time',
         ]);

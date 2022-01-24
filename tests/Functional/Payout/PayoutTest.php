@@ -254,7 +254,7 @@ class PayoutTest extends OAuthTestCase
         $payout2 = $this->startTest();
         $this->assertArrayHasKey(Payout\Entity::STATUS_SUMMARY, $payout2);
         $this->assertEquals('beneficiary_bank_confirmation_pending',$payout2['status_summary']['processing'][0]['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021',$payout2['status_summary']['processing'][0]['description']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after some time',$payout2['status_summary']['processing'][0]['description']);
     }
 
     public function testPayoutStatusReasonMapping()
@@ -4887,14 +4887,14 @@ class PayoutTest extends OAuthTestCase
             'remarks' => '',
             'bank_status_code' => 'SUCCESS',
             'status_details' => [
-                'reason' => 'payout_processing',
+                'reason' => 'payout_bank_processing',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
             ],
         ]);
 
-        $request['url'] = '/payouts?status=processing&reason=payout_processing&account_number=2224440041626905';
+        $request['url'] = '/payouts?status=processing&reason=payout_bank_processing&account_number=2224440041626905';
         $this->ba->privateAuth();
         $response10 = $this->startTest();
         $this->assertEquals(1, $response10['count']);
@@ -4916,14 +4916,14 @@ class PayoutTest extends OAuthTestCase
             'remarks' => '',
             'bank_status_code' => 'SUCCESS',
             'status_details' => [
-                'reason' => 'payout_processing',
+                'reason' => 'payout_bank_processing',
                 'parameters' => [
                     'processed_by_time' => '1636472623',
                 ],
             ],
         ]);
 
-        $request['url'] = '/payouts?status=processing&reason=payout_processing&account_number=2224440041626905';
+        $request['url'] = '/payouts?status=processing&reason=payout_bank_processing&account_number=2224440041626905';
         $this->ba->privateAuth();
         $response3 = $this->startTest();
         $this->assertEquals(2, $response3['count']);
@@ -4946,7 +4946,7 @@ class PayoutTest extends OAuthTestCase
             'bank_status_code' => null
         ]);
 
-        $request['url'] = '/payouts?reason=payout_processing&account_number=2224440041626905';
+        $request['url'] = '/payouts?reason=payout_bank_processing&account_number=2224440041626905';
         $this->ba->privateAuth();
         $response6 = $this->startTest();
         $this->assertEquals(1, $response6['count']);
@@ -16552,7 +16552,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021, 11:45 PM',$statusDetails['description']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16613,7 +16613,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after 09th November 2021, 11:45 PM',$statusDetails['description']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from HDFC Bank. Please check the status after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16669,7 +16669,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after 09th November 2021',$statusDetails['description']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from ICICI Bank. Please check the status after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16724,7 +16724,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('beneficiary_bank_confirmation_pending',$statusDetails['reason']);
-        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021',$statusDetails['description']);
+        $this->assertEquals('Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16778,7 +16778,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('bank_window_closed', $statusDetails['reason']);
-        $this->assertEquals('The NEFT window for the day is closed. Payout will be processed by our partner bank at 09th November 2021, 09:13 PM',$statusDetails['description']);
+        $this->assertEquals('The NEFT window for the day is closed. Payout will be processed by our partner bank after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16833,7 +16833,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($statusDetails);
         $this->assertEquals('bank_window_closed', $statusDetails['reason']);
-        $this->assertEquals('The RTGS window for the day is closed. Payout will be processed by our partner bank at 10th November 2021, 12:33 AM',$statusDetails['description']);
+        $this->assertEquals('The RTGS window for the day is closed. Payout will be processed by our partner bank after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];
 
@@ -16873,7 +16873,7 @@ class PayoutTest extends OAuthTestCase
             'remarks' => '',
             'bank_status_code' => 'SUCCESS',
             'status_details' => [
-                'reason' => 'payout_processing',
+                'reason' => 'payout_bank_processing',
                 'parameters' => [
                     'processed_by_time' => '',
                 ],
@@ -16883,7 +16883,7 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertNotNull($statusDetails);
-        $this->assertEquals('payout_processing',$statusDetails['reason']);
+        $this->assertEquals('payout_bank_processing',$statusDetails['reason']);
         $this->assertEquals('Payout is being processed by our partner bank. Please check the final status after some time',$statusDetails['description']);
 
         $payoutUpdatedEventData = $this->testData[__FUNCTION__];

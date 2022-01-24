@@ -12,7 +12,7 @@ class StatusReasonMap
 
     const BANK_WINDOW_CLOSED                    = 'bank_window_closed';
 
-    const PAYOUT_PROCESSING                     = 'payout_processing';
+    const PAYOUT_BANK_PROCESSING                = 'payout_bank_processing';
 
     const PAYOUT_PROCESSED                      = 'payout_processed';
 
@@ -62,7 +62,7 @@ class StatusReasonMap
 
     public static $payoutStatusToReasonMap = [
         PayoutStatus::PROCESSING => [
-            self::PAYOUT_PROCESSING,
+            self::PAYOUT_BANK_PROCESSING,
             self::BENEFICIARY_BANK_CONFIRMATION_PENDING,
             self::BANK_WINDOW_CLOSED,
         ],
