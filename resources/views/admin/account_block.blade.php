@@ -1,7 +1,8 @@
 @include('partials/header')
+    <link rel="stylesheet" href="/css/admin-auth.css">
 </head>
 <body>
-<div class="container">
+<div class="admin-auth container">
     <div class="auth-heading">Account Blocked</div>
     <img alt="Logo" src="{{$org['login_logo_url']}}">
     <div class="auth-text mb-5 px-10">

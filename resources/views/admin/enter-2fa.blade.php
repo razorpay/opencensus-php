@@ -1,8 +1,9 @@
 @include('partials/header')
+    <link rel="stylesheet" href="/css/admin-auth.css">
 </head>
 
 <body>
-<form class="container" method="post" action="/admin/2fa/otp-verify" onsubmit="return false">
+<form class="admin-auth container" method="post" action="/admin/2fa/otp-verify" onsubmit="return false">
     <div class="auth-heading">2-Step Verification</div>
     <img alt="Logo" src="{{$org['login_logo_url']}}">
     <div class="auth-text mb-5">

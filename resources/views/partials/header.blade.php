@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="author" content="Razorpay">
   <link rel="shortcut icon" href="/img/favicon.png">
-  <link rel="stylesheet" href="/css/admin-auth.css">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   @include('partials/environment')
   <script type="text/javascript">

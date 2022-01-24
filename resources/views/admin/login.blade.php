@@ -1,8 +1,9 @@
 @include('partials/header')
+  <link rel="stylesheet" href="/css/admin-auth.css">
 </head>
 
 <body>
-  <form class="container" method="post" action="/admin/signin" onsubmit="return false">
+  <form class="admin-auth container" method="post" action="/admin/signin" onsubmit="return false">
     <div class="auth-heading">Admin Login</div>
     <img alt="Logo" src="{{$org['login_logo_url']}}">
     <input type="text" name="username" placeholder="Username" required autofocus>
