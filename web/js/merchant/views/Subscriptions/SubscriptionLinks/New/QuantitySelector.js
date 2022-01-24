@@ -22,6 +22,7 @@ export default function QuantitySelector(props) {
         value={props.quantity}
         min={1}
         onBlur={props.onBlur}
+        autoRender
       />
       <span>(Quantity)</span>
       <div class="m-t">{props.informativeMessage(props.rate * props.quantity, props.currency)}</div>
