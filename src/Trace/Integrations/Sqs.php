@@ -9,35 +9,44 @@ class Sqs implements IntegrationInterface
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load Sqs integrations.', E_USER_WARNING);
+            return;
         }
 
-        opencensus_trace_method('Aws\AwsClient', 'execute', function ($command, $args) {
-            if (get_class($command) === 'Aws\Sqs\SqsClient') {
-                $internalFields = Sqs::formatArguments($command, $args);
-                return [
-                    'attributes' => $internalFields,
-                    'kind' => 'client',
-                    'name' => 'Sqs ' . $args->getName(),
-                    'sameProcessAsParentSpan' => false
-                ];
-            }
-        });
+        opencensus_trace_method('Aws\AwsClient', 'execute', [static::class, 'handleExecute']);
 
-        opencensus_trace_method('Aws\Sqs\SqsClient', '__construct', function ($command, $args) {
-            if (get_class($command) === 'Aws\Sqs\SqsClient') {
-                return [
-                    'attributes' => [
-                        'sqs.region' => $command->getRegion(),
-                        'sqs.apiVersion' => ($command->getApi())->getApiVersion(),
-                        'sqs.host' => ($command->getEndpoint())->getHost(),
-                        'service.name' => ($command->getApi())->getServiceName(),
-                    ],
-                    'kind' => 'client',
-                    'name' => 'Sqs:Constructor',
-                    'sameProcessAsParentSpan' => false
-                ];
-            }
-        });
+        opencensus_trace_method('Aws\Sqs\SqsClient', '__construct', [static::class, 'handleConstruct']);
+
+    }
+
+    public static function handleConstruct($command, $args)
+    {
+        if (get_class($command) === 'Aws\Sqs\SqsClient') {
+            return [
+                'attributes' => [
+                    'sqs.region' => $command->getRegion(),
+                    'sqs.apiVersion' => ($command->getApi())->getApiVersion(),
+                    'sqs.host' => ($command->getEndpoint())->getHost(),
+                    'service.name' => ($command->getApi())->getServiceName(),
+                ],
+                'kind' => 'client',
+                'name' => 'Sqs:Constructor',
+                'sameProcessAsParentSpan' => false
+            ];
+        }
+
+    }
+
+    public static function handleExecute($command, $args)
+    {
+        if (get_class($command) === 'Aws\Sqs\SqsClient') {
+            $internalFields = Sqs::formatArguments($command, $args);
+            return [
+                'attributes' => $internalFields,
+                'kind' => 'client',
+                'name' => 'Sqs ' . $args->getName(),
+                'sameProcessAsParentSpan' => false
+            ];
+        }
 
     }
 
