@@ -3,6 +3,8 @@
 namespace RZP\Models\Admin\Admin;
 
 use App;
+use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 use Str;
 use Cache;
 use Hash;
@@ -77,6 +79,11 @@ class Service extends Base\Service
 
         if (Hash::check($input['password'], $admin->getPassword()))
         {
+            if($this->featureEnabledForOrg($orgId) && $this->isRazorxExperimentEnable($admin->getId(),
+                    RazorxTreatment::ORG_SECOND_FACTOR_AUTH)) {
+                $this->core()->checkSecondFactorAuthAndSendOtp($admin);
+            }
+
             $data = $this->generateLoginToken($admin);
 
             $authPolicy->validateAfterLogin($admin);
@@ -87,6 +94,78 @@ class Service extends Base\Service
         }
 
         $this->handleAuthFailure($admin);
+    }
+
+    public function featureEnabledForOrg($orgId){
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        return $org->isFeatureEnabled(Constants::ORG_SECOND_FACTOR_AUTH);
+    }
+
+    public function isRazorxExperimentEnable(string $adminId, string $experimentName): bool
+    {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        $variant = $this->app->razorx->getTreatment($adminId,
+            $experimentName,
+            $mode);
+
+        return ($variant === Constant::RAZORX_EXPERIMENT_ON);
+    }
+
+    public function verifyAdminSecondFactorAuth(array $input): array
+    {
+        $validator = new Validator();
+
+        $validator->validateInput('verify_admin_second_factor', $input);
+
+        $email = $input['username'];
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+
+        return $this->verifyAdmin2FA($admin, $input);
+    }
+
+    public function verifyAdmin2FA($admin, $input){
+        $admin = $this->core()->verifyAdminSecondFactorAuth($admin, $input);
+        try
+        {
+            $authPolicy = new AuthPolicy\Service;
+
+            $authPolicy->validateBeforeLogin($admin);
+        }
+        catch (Exception\RecoverableException $ex)
+        {
+            $this->handleAuthFailure($admin, Action::LOGIN_FAIL, $ex);
+        }
+        if (Hash::check($input['password'], $admin->getPassword()) === false)
+        {
+            $this->handleAuthFailure($admin);
+        }
+        $data = $this->generateLoginToken($admin);
+
+        $authPolicy->validateAfterLogin($admin);
+
+        $this->fireAdminAction($admin, Action::LOGIN);
+
+        return $data;
+    }
+
+    public function change2faSetting(array $input)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $admin->getValidator()->validateInput('change2faSetting', $input);
+
+        return $this->core()->change2faSetting($admin, $input);
     }
 
     protected function handleAuthFailure($admin, $action = Action::LOGIN_FAIL, $exception = null)
@@ -696,5 +775,33 @@ class Service extends Base\Service
         $this->repo->admin->saveOrFail($admin);
 
         return ['success' => true];
+    }
+
+    public function accountLockUnlock(string $adminId, string $action): array
+    {
+        $accountLockData = [
+            Constant::ADMIN_ID => $adminId,
+            Constant::ACTION  => $action,
+        ];
+
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
+
+        return $this->core()->accountLockUnlock($admin, $action);
+    }
+
+    public function resendOtp($input)
+    {
+        $email = $input['username'];
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+
+        return $this->core()->resendOtp($admin);
     }
 }

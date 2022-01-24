@@ -222,6 +222,9 @@ class MailTags
     const USER_ACCOUNT_LOCKED                           = 'user_account_locked';
     const USER_CONTACT_MOBILE_UPDATED                   = 'user_contact_mobile_updated';
 
+    // Admin Emails
+    const ADMIN_ACCOUNT_LOCKED                           = 'admin_account_locked';
+
     //Downtime Emails
     const DOWNTIME_NOTIFICATION                         = 'downtime_notification';
 

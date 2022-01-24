@@ -707,7 +707,11 @@ class Constants
     const LOGOUT_ADMIN_INACTIVITY = 'logout_admin_inactivity';
 
     /*
-     * Org level features for featured route access
+     * Enables second factor auth for axis logout at org level
+     */
+    const ORG_SECOND_FACTOR_AUTH = 'second_factor_auth';
+
+     /* Org level features for featured route access
      */
     const ORG_BANK_ACCOUNT_UPDATE_SS         = 'bank_account_update_ss';
     const ORG_FRESHDESK_CREATE_TICKET        = 'freshdesk_create_ticket';
@@ -727,6 +731,7 @@ class Constants
      * Org level feature to hide activation form by deafult
      */
     const ORG_HIDE_ACTIVATION_FORM  = 'hide_activation_form';
+
 
     /**
      * Control enablement of Admin Dashboard Reports for Orgs
@@ -1411,6 +1416,7 @@ class Constants
         self::DISABLE_FREE_CREDIT_UNREG       => true,
         self::DISABLE_FREE_CREDIT_REG         => true,
         self::LOGOUT_ADMIN_INACTIVITY         => true,
+        self::ORG_SECOND_FACTOR_AUTH         => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::TRANSFER_FAILED_WEBHOOK         => true,
         self::P2P_UPI                         => true,

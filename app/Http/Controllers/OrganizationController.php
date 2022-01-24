@@ -501,4 +501,38 @@ class OrganizationController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function verifyAdminSecondFactorAuth()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMIN)->verifyAdminSecondFactorAuth($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function resendOtp()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMIN)->resendOtp($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function change2faSetting()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::ADMIN)->change2faSetting($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function accountLockUnlock(string $id, string $action)
+    {
+        $data = $this->service(E::ADMIN)->accountLockUnlock($id, $action);
+
+        return ApiResponse::json($data);
+    }
 }

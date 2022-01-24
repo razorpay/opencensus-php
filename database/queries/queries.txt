@@ -6279,8 +6279,6 @@ ALTER TABLE card_mandates
 ALTER TABLE banking_account_tpvs
     DROP INDEX banking_account_tpvs_merchant_id_account_number_uq_index;
 
-DROP TABLE terminal_analytics;
-
 ALTER TABLE `partner_configs` CHANGE COLUMN `tds_percentage` `tds_percentage` INT(11) NOT NULL DEFAULT 500;
 
 ALTER TABLE payouts
@@ -6297,6 +6295,10 @@ ALTER TABLE workflow_actions
 
 ALTER TABLE merchant_details
     ADD COLUMN msme_doc_verification_status varchar(30) DEFAULT NULL;
+
+ALTER TABLE admins
+    ADD COLUMN wrong_2fa_attempts INTEGER DEFAULT 0 NOT NULL;
+
 
 ALTER TABLE merchants
     ADD COLUMN amount_credits_threshold BIGINT UNSIGNED DEFAULT NULL;

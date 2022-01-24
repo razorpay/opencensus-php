@@ -62,6 +62,9 @@ class CreateAdmins extends Migration
             $table->string(Admin::LOCATION_CODE)
                   ->nullable();
 
+            $table->integer(Admin::WRONG_2FA_ATTEMPTS)
+                ->default(0);
+
             // account disabled by supervisor
             $table->boolean(Admin::DISABLED)
                   ->default(0);

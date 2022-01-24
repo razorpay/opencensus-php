@@ -129,4 +129,13 @@ class Repository extends Base\Repository
                     ->limit(1)
                     ->count() > 0;
     }
+
+    public function hasAnyOrgEnforced2FaForAdmin($orgId): bool
+    {
+        return $this->newQuery()
+                ->where(Entity::ID, '=',$orgId)
+                ->where(Entity::ADMIN_SECOND_FACTOR_AUTH, '=', true)
+                ->limit(1)
+                ->count() > 0;
+    }
 }

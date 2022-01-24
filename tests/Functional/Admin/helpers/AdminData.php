@@ -296,6 +296,138 @@ return [
         ],
     ],
 
+    'testAdminVerify2faFlagOtp' => [
+        'request'  => [
+            'url'     => '/admins/2fa/verify',
+            'method'  => 'post',
+            'content' => [
+                'username' => 'testadmin@rzp.com',
+                'password' => 'Heimdall!234',
+                'otp' => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'testadmin@rzp.com',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAdminVerify2faFlagOtpFailure' => [
+        'request'  => [
+            'url'     => '/admins/2fa/verify',
+            'method'  => 'post',
+            'content' => [
+                'username' => 'testadmin@rzp.com',
+                'password' => 'Heimdall!234',
+                'otp' => '0007',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        ],
+    ],
+
+    'testAdmin2faLogin' => [
+        'request'  => [
+            'url'     => '/admin/authenticate',
+            'method'  => 'post',
+            'content' => [
+                'username' => 'testadmin@rzp.com',
+                'password' => 'Heimdall!234',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'testadmin@rzp.com',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAdmin2faLoginFailure' => [
+        'request'  => [
+            'url'     => '/admin/authenticate',
+            'method'  => 'post',
+            'content' => [
+                'username' => 'testadmin@rzp.com',
+                'password' => 'Heimdall!234',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHENTICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
+        ],
+    ],
+
+    'testAdminResend2faFlagOtp' => [
+        'request'  => [
+            'url'     => '/admins/2fa/otp_resend',
+            'method'  => 'post',
+            'content' => [
+                'username' => 'testadmin@rzp.com',
+                'password' => 'Heimdall!234',
+                "otp" => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'otp_send' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAdminEdit2faFlagOrg' => [
+        'request'  => [
+            'url'     => '/admins/2fa',
+            'method'  => 'post',
+            'content' => [
+                "second_factor_auth" => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'admin_second_factor_auth' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAdminUnlockAccount' => [
+        'request'  => [
+            'url'     => '/admins/account/%s',
+            'method'  => 'put',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'locked' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAllRolesAdmin' => [
         'request' => [
             'url' => '/admin/%s',

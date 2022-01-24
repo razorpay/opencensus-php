@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Admin\Admin;
 
+use Mail;
+
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -9,6 +12,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Action;
+use RZP\Models\User\Core as UserCore;
+use RZP\Mail\Admin\Account\Otp as OtpMail;
+use RZP\Mail\Admin\Account\AccountLockedWrongAttemptMail as AccountLockedWrongAttemptMail;
+
 
 class Core extends Base\Core
 {
@@ -213,4 +220,374 @@ class Core extends Base\Core
 
         return $group->toArrayPublic();
     }
+
+    public function checkSecondFactorAuthAndSendOtp($admin){
+
+        $this->checkAdminAccountNotLockedOrThrowException($admin);
+
+        if ($admin->isOrgEnforcedSecondFactorAuth() === false)
+        {
+            return;
+        }
+        $this->trace->info(TraceCode::ADMIN_LOGIN_2FA_ENABLED, ['admin_id' => $admin->getId()]);
+
+        $this->sendOtpForSecondFactorAuthOnLogin($admin);
+
+    }
+
+    public function verifyAdminSecondFactorAuth(Entity $admin, array $input)
+    {
+        $validator = new Validator($admin);
+
+        $validator->validateInput('verify_admin_second_factor', $input);
+
+        $this->checkAdminAccountNotLockedOrThrowException($admin);
+
+        return $this->verifyOtpForSecondFactorAuthOnLogin($admin, $input);
+
+    }
+
+    private function verifyOtpForSecondFactorAuthOnLogin(Entity $admin, array $input)
+    {
+        if ($this->isCorrectOtpForSecondFactorAuthOnLogin($admin, $input) === true)
+        {
+            $this->trace->info(TraceCode::LOGIN_2FA_CORRECT_OTP);
+
+            $this->resetAdminWrong2faAttempts($admin);
+
+            return $admin;
+        }
+        else
+        {
+            //if the otp is incorrect, increment the number of wrong 2fa attempts.
+            $this->incrementWrong2faAttempts($admin);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ADMIN_2FA_LOGIN_INCORRECT_OTP,
+                null,
+                [
+                    'internal_error_code'    => ErrorCode::BAD_REQUEST_ADMIN_2FA_LOGIN_INCORRECT_OTP,
+                    'admin_details'           => [
+                        'admin_id' => $admin->getId(),
+                        'account_locked' => $admin->isLocked()
+                    ],
+                ]);
+        }
+    }
+
+    private function isCorrectOtpForSecondFactorAuthOnLogin($admin, $input)
+    {
+        $data = [
+            Constant::MEDIUM => Entity::EMAIL,
+            Constant::ACTION => 'verify_2fa',
+            Constant::OTP    => $input['otp'],
+            Constant::TOKEN   => $admin->getId()
+        ];
+
+        try
+        {
+            $response = $this->verifyOtp($data, $admin);
+
+            $this->trace->info(TraceCode::RESPONSE, ['response'=> $response]);
+
+            if((isset($response['success']) === false) or
+                ($response['success'] !== true))
+            {
+                $success = false;
+            }
+            else
+            {
+                $success = true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED, [
+                'exception' => $e->getMessage(),
+                'action'    => 'verify_2fa',
+            ]);
+            $success = false;
+        }
+
+        return $success;
+    }
+
+    public function verifyOtp(array $input, Entity $admin, bool $mock = false)
+    {
+        $otp = $input['otp'];
+
+        unset($input['otp']);
+
+        $this->trace->info(TraceCode::OTP,['otp'=>$otp]);
+        //Unset OTP for logging
+        $this->trace->info(TraceCode::ADMINS_VERIFY_OTP_FOR_ACTION, compact('input'));
+
+        $input['otp'] = $otp;
+
+        $payload = $this->getTokenAndRavenOtpReqParams($input, $admin);
+
+        $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
+
+        $this->trace->info(TraceCode::PAYLOAD,['payload'=> $payload]);
+
+        return $this->app->raven->verifyOtp($payload, $mock);
+    }
+
+    private function resetAdminWrong2faAttempts(Entity $admin)
+    {
+        if (($admin->getWrong2faAttempts() !== 0))
+        {
+            $admin->setWrong2faAttempts(0);
+
+            $this->repo->saveOrFail($admin);
+        }
+    }
+
+    private function incrementWrong2faAttempts(Entity $admin)
+    {
+        $wrongTries = $admin->getWrong2faAttempts() + 1;
+
+        $admin->setWrong2faAttempts($wrongTries);
+
+        $this->trace->info(TraceCode::ADMIN_LOGIN_2FA_WRONG_OTP, ['admin_id' => $admin->getId()]);
+
+        $this->lockAcountCheck($wrongTries,$admin);
+
+    }
+
+    private function lockAcountCheck($wrongTries,Entity $admin)
+    {
+        $maxWrongTries = $this->config->get('applications.admin_2fa.max_incorrect_tries');
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $maxWrongTries = min($maxWrongTries, $org->getAdminMaxWrong2FaAttempts());
+
+        if ($wrongTries >= $maxWrongTries)
+        {
+            $admin->lock(true);
+
+            $this->trace->info(TraceCode::ADMIN_LOGIN_2FA_ACCOUNT_LOCKED, ['user_id' => $admin->getId()]);
+        }
+
+        $this->repo->saveOrFail($admin);
+
+        if ($admin->isLocked() === true) {
+            $this->notifyUserAboutAccountLocked($admin);
+        }
+    }
+
+    private function notifyUserAboutAccountLocked(Entity $admin)
+    {
+        $data = [
+            'admin'  => [
+                Entity::ID              => $admin->getId(),
+                Entity::EMAIL           => $admin->getEmail(),
+                Entity::NAME            => $admin->getName(),
+            ],
+        ];
+
+        $email = new AccountLockedWrongAttemptMail($data);
+
+        Mail::queue($email);
+
+    }
+
+    private function checkAdminAccountNotLockedOrThrowException(Entity $admin)
+    {
+        if ($admin->isLocked() === false) {
+            return;
+        }
+        $this->trace->info(TraceCode::ADMIN_2FA_LOCKED, ['admin_id' => $admin->getId()]);
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCKED_ADMIN_LOGIN,
+            null,
+            [
+                'internal_error_code' => ErrorCode::BAD_REQUEST_LOCKED_ADMIN_LOGIN,
+                'admin_details' => [
+                    'account_locked' => true,
+                    'admin_id' => $admin->getId()
+                ],
+            ]);
+    }
+
+    private function sendOtpForSecondFactorAuthOnLogin(Entity $admin)
+    {
+
+        $this->send2faOtp($admin);
+
+        $this->trace->info(TraceCode::ADMIN_LOGIN_2FA_OTP_SENT, ['admin_id' => $admin->getId()]);
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ADMIN_2FA_LOGIN_OTP_REQUIRED,
+            null,
+            [
+                'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_2FA_LOGIN_OTP_REQUIRED,
+                'admin_details'        => [
+                    'admin_id'        => $admin->getId(),
+                    'account_locked' => $admin->isLocked(),
+                ],
+            ]);
+    }
+    public function send2faOtp(Entity $admin)
+    {
+        $input = [
+            Constant::MEDIUM => Entity::EMAIL,
+            Constant::ACTION => 'verify_2fa',
+            Constant::TOKEN   => $admin->getId()
+        ];
+
+        $this->sendOtp($input, $admin);
+
+        $this->trace->info(TraceCode::ADMIN_2FA_OTP_SENT, ['admin_id' => $admin->getId()]);
+
+    }
+
+    public function sendOtp(array $input,Entity $admin): array
+    {
+        $this->trace->info(TraceCode::ADMIN_SEND_OTP_FOR_ACTION, compact('input'));
+
+        $func = 'sendOtpVia' . studly_case($input[Constant::MEDIUM] ?? 'email');
+
+        return $this->$func($input, $admin);
+    }
+
+    public function sendOtpViaEmail(array $input, Entity $admin): array
+    {
+        $org = $this->getOrg();
+        $orgBusinessName = $org->getBusinessName();
+
+        $otp = $this->generateOtpFromRaven($input, $admin);
+
+        $mailable = new OtpMail($input, $admin, $orgBusinessName, $otp, $org);
+        Mail::queue($mailable);
+
+        return array_only($otp, 'token');
+    }
+
+
+    private function getOrg()
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        return $org;
+    }
+
+    protected function generateOtpFromRaven(array $input, Entity $admin): array
+    {
+        $payload = $this->getTokenAndRavenOtpReqParams($input, $admin);
+
+        $token = array_pull($payload, 'token');
+
+        $this->trace->info(TraceCode::PAYLOAD, ['payload' => $payload]);
+        $otp = $this->app->raven->generateOtp($payload);
+
+        $this->trace->info(TraceCode::OTP, ['OTP' => $otp]);
+
+        return $otp + compact('token');
+    }
+
+    protected function getTokenAndRavenOtpReqParams(array $input,Entity $admin): array
+    {
+        $token = $input['token'] ?? Entity::generateUniqueId();
+
+        $context = sprintf('%s:%s:%s', $admin->getId(), $input[Constant::ACTION], $token);  // use constant 1
+
+        $source = 'api.2fa.otp.auth';
+
+        if (((isset($input['medium']) === true) and ($input['medium'] === 'email')))
+        {
+            $expires_at = 20;
+            $receiver = $admin->getEmail();
+
+            $response = compact(
+                'token',
+                'receiver',
+                'context',
+                'source',
+                'expires_at');
+        }
+
+
+        return $response;
+    }
+    /*
+     * Exception is thrown if 2FA settings are enforced by org so if 2FA is
+     * enforced on admin's org , admin cannot change the settings
+     */
+
+    public function change2faSetting(Entity $admin, array $input): array
+    {
+        if ($admin->isOrgEnforcedSecondFactorAuth() === true) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORG_2FA_ENFORCED);
+        }
+
+        $org = $this->getOrg();
+
+        $action = $input[Constant::SECOND_FACTOR_AUTH];
+
+        $org->setAdmin2FaEnabled($action);
+
+        $this->repo->org->saveOrFail($org);
+
+        return [
+            Org\Entity::ADMIN_SECOND_FACTOR_AUTH => $org->isAdmin2FaEnabled(),
+        ];
+    }
+
+
+    public function accountLockUnlock(Entity $admin, string $action): array
+    {
+        $traceInfo = [
+            Constant::ADMIN_ID => $admin->getId(),
+            Constant::ACTION  => $action,
+        ];
+
+        $this->trace->info(TraceCode::ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION, $traceInfo);
+
+        switch ($action)
+        {
+            case Constant::LOCK:
+
+                $admin->lock(true);
+
+                break;
+
+            case Constant::UNLOCK:
+                $admin->setWrong2faAttempts(0);
+
+                $admin->unlock();
+
+                break;
+
+        }
+        $this->repo->saveOrFail($admin);
+
+        return [
+            Entity::LOCKED => $admin->isLocked(),
+            Constant::ID => 'admin_'.$admin->getPublicId(),
+        ];
+    }
+
+    public function resendOtp(Entity $admin)
+    {
+        $input = [
+            Constant::MEDIUM => Entity::EMAIL,
+            Constant::ACTION => 'verify_2fa',
+            Constant::TOKEN   => $admin->getId()
+
+        ];
+
+        $this->sendOtp($input, $admin);
+
+        $this->trace->info(TraceCode::ADMIN_2FA_OTP_RESENT, ['admin_id' => $admin->getId()]);
+
+        return [
+            'otp_send' => true,
+        ];
+    }
+
+
 }

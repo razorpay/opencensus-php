@@ -55,6 +55,9 @@ class Entity extends Base\Entity
     const MERCHANTS             = 'merchants';
     const GROUPS                = 'groups';
     const ALLOW_ALL_MERCHANTS   = 'allow_all_merchants';
+    const WRONG_2FA_ATTEMPTS            = 'wrong_2fa_attempts';
+    //added for org level enforcing of 2fa
+    const ORG_ENFORCED_SECOND_FACTOR_AUTH = 'org_enforced_second_factor_auth';
 
     protected $dontKeepRevisionOf = [
         self::PASSWORD,
@@ -99,6 +102,8 @@ class Entity extends Base\Entity
         self::LOCKED,
         self::LAST_LOGIN_AT,
         self::ALLOW_ALL_MERCHANTS,
+        self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
+        self::WRONG_2FA_ATTEMPTS,
     ];
 
     protected $visible = [
@@ -150,6 +155,7 @@ class Entity extends Base\Entity
         self::ROLES,
         self::GROUPS,
         self::MERCHANTS,
+        self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
     ];
 
     protected $hidden = [
@@ -414,6 +420,10 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::ALLOW_ALL_MERCHANTS, true);
     }
+    public function setWrong2faAttempts(int $wrongAttempts)
+    {
+        $this->setAttribute(self::WRONG_2FA_ATTEMPTS, $wrongAttempts);
+    }
 
     /*
      * Getters
@@ -437,6 +447,10 @@ class Entity extends Base\Entity
     public function canSeeAllMerchants()
     {
         return $this->getAttribute(self::ALLOW_ALL_MERCHANTS);
+    }
+    public function getWrong2faAttempts(): int
+    {
+        return ($this->getAttribute(self::WRONG_2FA_ATTEMPTS));
     }
 
     /*
@@ -526,6 +540,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::DISABLED);
     }
 
+    public function isOrgEnforcedSecondFactorAuth(): bool
+    {
+        return ($this->getAttribute(self::ORG_ENFORCED_SECOND_FACTOR_AUTH) === true);
+    }
+
     public function matchPassword(string $password)
     {
         $expectedPassword = $this->getPassword(self::PASSWORD);
@@ -538,6 +557,13 @@ class Entity extends Base\Entity
         $orgId = $this->getAttribute(self::ORG_ID);
 
         return Org\Entity::getSignedId($orgId);
+    }
+    protected function getOrgEnforcedSecondFactorAuthAttribute(): bool
+    {
+        $orgId = $this->getOrgId();
+
+        return (new Org\Repository)
+            ->hasAnyOrgEnforced2FaForAdmin($orgId);
     }
 
     public function getInputFields() : array
@@ -607,4 +633,5 @@ class Entity extends Base\Entity
 
         return $this->hasPermissionOrFail($routePermission);
     }
+
 }

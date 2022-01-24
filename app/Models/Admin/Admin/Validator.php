@@ -80,6 +80,21 @@ class Validator extends Base\Validator
         Entity::PASSWORD_CONFIRMATION => 'required',
     ];
 
+    protected static $verifyAdminSecondFactorRules = [
+        Constant::OTP                 => 'required|string|between:4,6',
+        Entity::USERNAME              => 'required|email|max:255',
+        Entity::PASSWORD              => 'required',
+    ];
+
+    protected static $change2faSettingRules = [
+        Constant::SECOND_FACTOR_AUTH    => 'required|boolean',
+    ];
+
+    protected static $adminAccountLockUnlockRules = [
+        Constant::ADMIN_ID => 'required|alpha_num|size:14',
+        Constant::ACTION  =>  'required|string|filled|in:lock,unlock',
+    ];
+
     protected static $resetRules = [
         Entity::EMAIL                 => 'required|email|max:255',
         Entity::PASSWORD              => 'required|string|confirmed|numbers|letters',

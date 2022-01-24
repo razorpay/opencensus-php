@@ -1348,6 +1348,10 @@ class Route
         'group_edit'                               => ['put',      'groups/{id}',                                    'OrganizationController@putGroup'                                   ],
         'group_delete'                             => ['delete',   'groups/{id}',                                    'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                  => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
+        'admin_resend_otp_2fa'                     => ['post',     'admins/2fa/otp_resend',                          'OrganizationController@resendOtp'                                  ],
+        'admin_verify_second_factor_auth'          => ['post',     'admins/2fa/verify',                              'OrganizationController@verifyAdminSecondFactorAuth'                ],
+        'admin_trigger_2fa_otp'                    => ['post',    'admins/2fa',                                     'OrganizationController@change2faSetting'                           ],
+        'admin_account_lock_unlock'                     => ['put',      'admins/account/{id}/{action}',                   'OrganizationController@accountLockUnlock'                          ],
         'terminal_bank_bulk'                       => ['put',      'terminals/banks/bulk',                           'TerminalController@updateTerminalsBank'                            ],
         'merchant_poc_update'                      => ['post',     'admin/poc_update',                               'AdminController@updateMerchantPoc'                                 ],
         'merchant_poc_update_with_time'            => ['post',     'admin/poc_update_with_time',                     'AdminController@updateMerchantPocWithTimeStamp'                    ],
@@ -3886,6 +3890,11 @@ class Route
         'merchant_fetch_internal',
         'admin_lead_verify',
         'admin_authentication',
+        // route to support 2fa for admin dashboard
+        'admin_verify_second_factor_auth',
+        'admin_resend_otp_2fa',
+        'admin_trigger_2fa_otp',
+        'admin_account_lock_unlock',
         'admin_forgot_password',
         'admin_lock_old_accounts',
         'admin_oauth_authenticate',
@@ -5222,6 +5231,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_trigger_2fa_otp',
+        'admin_account_lock_unlock',
         'workflow_needs_merchant_clarification',
         'merchant_update_fraud_type',
         'admin_merchant_post_preferences',
@@ -6247,6 +6258,8 @@ class Route
 
     public static $routePermission = [
         'friendbuy_purchase_events'                 => Permission::EDIT_MERCHANT,
+        'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,
+        'admin_account_lock_unlock'                => Permission::AUTH_LOCAL_ADMIN,
         'm2m_referral_link_get'                     => Permission::VIEW_MERCHANT,
         'm2m_referral_link_get_public'              => Permission::VIEW_MERCHANT,
         'admin_merchant_post_preferences'           => Permission::UPDATE_MERCHANT_PREFERENCE,
@@ -9107,6 +9120,8 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'admin_trigger_2fa_otp',
+            'admin_account_lock_unlock',
             'setl_merchant_dashboard_config_get',
             'workflow_needs_merchant_clarification',
             'splitz_evaluate_bulk_proxy',
@@ -11059,6 +11074,8 @@ class Route
             'merchant_edit_email_create_user',
             // Called during signup flow
             'admin_authentication',
+            'admin_verify_second_factor_auth',
+            'admin_resend_otp_2fa',
             'admin_lead_verify',
             'admin_forgot_password',
             'admin_reset_password',

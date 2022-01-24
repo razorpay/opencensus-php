@@ -501,6 +501,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::SECOND_FACTOR_AUTH_MODE);
     }
 
+    public function setAdmin2FaEnabled($admin2faFlag)
+    {
+        $this->setAttribute(self::ADMIN_SECOND_FACTOR_AUTH,$admin2faFlag);
+    }
+
     public function setPublicMerchantSecondFactorAuthAttribute($array)
     {
         if (isset($array[self::MERCHANT_SECOND_FACTOR_AUTH]) === true)

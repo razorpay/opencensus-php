@@ -2544,6 +2544,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE';
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS';
     const GOOGLE_OAUTH_INVALID_ID_TOKEN                         = 'GOOGLE_OAUTH_INVALID_ID_TOKEN';
+
+    const LOGIN_2FA_CORRECT_OTP                                 = 'LOGIN_2FA_CORRECT_OTP';
+
     const USER_CONTEXT_NOT_PRESENT_FOR_OAUTH_REQUEST            = 'USER_CONTEXT_NOT_PRESENT_FOR_OAUTH_REQUEST';
     const ADMIN_REMOVE_INCORRECT_PASSWORD_COUNT_SUMMARY         = 'ADMIN_REMOVE_INCORRECT_PASSWORD_COUNT_SUMMARY';
     const USER_LOGIN_CAPTCHA_DISABLED                           = 'USER_LOGIN_CAPTCHA_DISABLED';
@@ -2555,6 +2558,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SEND_USER_LOGIN_EMAIL_ATTEMPT                         = 'SEND_USER_LOGIN_EMAIL_ATTEMPT';
     const EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED             = 'EMAIL_SIGNUP_OTP_SEND_THRESHOLD_EXHAUSTED';
     const EMAIL_SIGNUP_OTP_REDIS_ERROR                          = 'EMAIL_SIGNUP_OTP_REDIS_ERROR';
+
 
     //Trace codes for users 2fa factory
     const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';
@@ -2594,6 +2598,21 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_INVALIDATE_DEBUG                                 = 'USER_INVALIDATE_DEBUG';
     const USER_INVALIDATE_SKIPPED                               = 'USER_INVALIDATE_SKIPPED';
     const USER_CONFIRM_INVALIDATE_INFO                          = 'USER_CONFIRM_INVALIDATE_INFO';
+    const ADMIN_2FA_LOCKED                                       = 'ADMIN_2FA_LOCKED';
+    const ADMIN_LOGIN_2FA_ENABLED                                = 'ADMIN_LOGIN_2FA_ENABLED';
+    const ADMIN_LOGIN_2FA_OTP_SENT                               = 'ADMIN_LOGIN_2FA_OTP_SENT';
+    const ADMIN_2FA_OTP_SENT                                     = 'ADMIN_2FA_OTP_SENT';
+    const ADMIN_2FA_OTP_RESENT                                   = 'ADMIN_2FA_OTP_RESENT';
+    const ADMIN_2FA_CORRECT_OTP                                  = 'ADMIN_2FA_CORRECT_OTP';
+    const ADMIN_LOGIN_2FA_WRONG_OTP                              = 'ADMIN_LOGIN_2FA_WRONG_OTP';
+    const ADMIN_LOGIN_2FA_ACCOUNT_LOCKED                         = 'ADMIN_LOGIN_2FA_ACCOUNT_LOCKED';
+    const VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED                 = 'VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED';
+    const ADMINS_VERIFY_OTP_FOR_ACTION                           = 'ADMINS_VERIFY_OTP_FOR_ACTION';
+    const RESPONSE                                                 = 'RESPONSE';
+    const PAYLOAD                                                 = 'PAYLOAD';
+    const OTP                                                 = 'OTP';
+    const ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION';
+    const ADMIN_SEND_OTP_FOR_ACTION                              = 'ADMIN_SEND_OTP_FOR_ACTION';
 
     // Trace code for Invitation
     const INVITATION_CREATE                                     = 'INVITATION_CREATE';

@@ -13,6 +13,8 @@ use RZP\Models\Admin\Role;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Crypt;
@@ -309,6 +311,122 @@ class AdminTest extends TestCase
         $this->assertEquals($result['roles'][0]['id'], $managerRole);
 
         $this->assertEquals($result['groups'][0]['id'], $group);
+    }
+
+    public function testAdmin2faLogin()
+    {
+        $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            'org_id' => $this->org->getId(),
+            'password' => 'Heimdall!234',
+        ]);
+        $this->enableRazorXTreatmentForFeature(
+            RazorxTreatment::ORG_SECOND_FACTOR_AUTH, 'on');
+        $result = $this->startTest();
+        $this->assertArrayHasKey('email', $result);
+    }
+
+    public function testAdmin2faLoginFailure()
+    {
+        $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            'org_id' => $this->org->getId(),
+            'password' => 'Heimdall!23',
+        ]);
+        $this->enableRazorXTreatmentForFeature(
+            RazorxTreatment::ORG_SECOND_FACTOR_AUTH, 'on');
+        $this->startTest();
+    }
+
+    protected function enableRazorXTreatmentForFeature($featureUnderTest, $value = 'on')
+    {
+        $mock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $mock->method('getTreatment')
+            ->will(
+                $this->returnCallback(
+                    function (string $mid, string $feature, string $mode) use ($featureUnderTest, $value)
+                    {
+                        return $feature === $featureUnderTest ? $value : 'control';
+                    }));
+
+        $this->app->instance('razorx', $mock);
+
+    }
+
+    public function testAdminVerify2faFlagOtp()
+    {
+
+        $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            'org_id' => $this->org->getId(),
+            'password' => 'Heimdall!234',
+           'wrong_2fa_attempts' => 4,
+        ]);
+        $result = $this->startTest();
+        $this->assertArrayHasKey('email', $result);
+    }
+
+    public function testAdminVerify2faFlagOtpFailure()
+    {
+
+        $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            'org_id' => $this->org->getId(),
+            'password' => 'Heimdall!23',
+            'wrong_2fa_attempts' => 4,
+        ]);
+         $this->startTest();
+    }
+
+    public function testAdminResend2faFlagOtp()
+    {
+        $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'testadmin@rzp.com',
+            'org_id' => $this->org->getId(),
+            'password' => 'Heimdall!234',
+        ]);
+        $result = $this->startTest();
+        $this->assertArrayHasKey('otp_send', $result);
+    }
+
+    public function testAdminEdit2faFlagOrg()
+    {
+        $result = $this->startTest();
+        $this->assertArrayHasKey('admin_second_factor_auth', $result);
+        $this->assertEquals(true, $result['admin_second_factor_auth']);
+    }
+
+    public function testAdminUnlockAccount()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, 'admin_'.$admin->getId()."/unlock");
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertArrayHasKey('locked', $result);
+        $this->assertEquals(false, $result['locked']);
+
     }
 
     public function testDeleteAllRolesAdmin()
