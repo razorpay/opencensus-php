@@ -147,7 +147,8 @@ function WhatsappNotification({
         {isWhatsAppOptPending ? (
           <div className="optin-pending-label">PENDING</div>
         ) : (
-          (!isWhatsappOrg || (isWhatsappOrg && isWhatsappMid)) && (
+          (!isWhatsappOrg || (isWhatsappOrg && isWhatsappMid)) &&
+          currentUser.user.contact_mobile && (
             <span className="toggler-btn">
               <SwitchField
                 checked={!!whatsapp_optin}
@@ -172,14 +173,18 @@ function WhatsappNotification({
               is processed.
             </div>
           )}
-          <div className="description">
-            Receive notifications from Razorpay via WhatsApp{' '}
-            {currentUser.user && currentUser.user.contact_mobile && (
+          {currentUser?.user?.contact_mobile ? (
+            <div className="description">
+              Receive notifications from Razorpay via WhatsApp{' '}
               <span>
                 on your number <strong>+91 - {currentUser.user.contact_mobile}</strong>
               </span>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="description">
+              Add your contact number to enable toggling this option.
+            </div>
+          )}
         </form>
       </div>
     </div>
