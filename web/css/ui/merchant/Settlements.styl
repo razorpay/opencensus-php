@@ -1424,7 +1424,7 @@ i.settle-now {
   box-shadow 0 2px 6px #3e475421
   background-color $white-color
   max-height 456px
-  overflow scroll
+  overflow auto
 
   ul
     padding 14px 32px 4px
@@ -1438,6 +1438,9 @@ i.settle-now {
     padding-left 12px
     font-size 12px
     line-height 18px
+    .text-danger
+      font-weight 700
+      padding 1px
 
   .entity-schedule-container
     padding 12px
@@ -1471,14 +1474,18 @@ i.settle-now {
     background #162f560d
     padding 12px
     margin-top 12px
+    font-size 12px
     .other-methods-heading
       color #7b819994
+    .other-methods-row
+      .section
+        font-size 12px
 
   .schedule-row
     display flex
     .section
       flex 0.5
-      font-size 12px
+      font-size 13px
       line-height 18px
 
   .settlement-example

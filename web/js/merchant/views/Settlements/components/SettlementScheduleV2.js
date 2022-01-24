@@ -12,6 +12,7 @@ import PaymentSchedule from './PaymentSchedule';
 import EntitySchedule from './EntitySchedule';
 
 const paymentTypes = ['domestic', 'international'];
+const specialScheduleNames = ['instant']; // these schedules names doesn't have T in their name so we don't want to communicate the info on T
 
 const SettlementScheduleV2 = (props) => {
   const { closeModal, openModal, holidayList, config: settlementConfig } = props;
@@ -28,6 +29,14 @@ const SettlementScheduleV2 = (props) => {
       size: 'small',
       component: <HolidayModal data={holidayList} />,
     });
+  };
+
+  const showScheduleInfoCommunication = () => {
+    // If atleast one schedule name has T we should communicate the info about T
+    if (!specialScheduleNames.includes(schedules?.refund?.default.toLowerCase())) return true;
+    if (!specialScheduleNames.includes(schedules?.reversal?.default.toLowerCase())) return true;
+    if (!specialScheduleNames.includes(schedules?.transfer?.default.toLowerCase())) return true;
+    return false;
   };
 
   return (
@@ -48,7 +57,9 @@ const SettlementScheduleV2 = (props) => {
                     />
                   );
                 })}
-                <div className="schedule-info">T is the date of payment capture</div>
+                <div className="schedule-info">
+                  <span class="text-danger">*</span>T is the date of payment capture
+                </div>
               </li>
             )}
             {(schedules?.refund?.default ||
@@ -65,7 +76,11 @@ const SettlementScheduleV2 = (props) => {
                 {schedules?.transfer?.default && (
                   <EntitySchedule entityType="transfers" schedule={schedules.transfer.default} />
                 )}
-                <div className="schedule-info">T is the date of initiation</div>
+                {showScheduleInfoCommunication() && (
+                  <div className="schedule-info">
+                    <span class="text-danger">*</span>T is the date of initiation
+                  </div>
+                )}
               </li>
             )}
           </ul>

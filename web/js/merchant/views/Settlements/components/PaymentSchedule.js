@@ -24,7 +24,9 @@ const PaymentSchedule = (props) => {
       <div className="payment-schedule-container">
         <div className="default-cycle schedule-row">
           <div className="section capitalize">{paymentType} Payments</div>
-          <div className="section text-right">{schedules[`${paymentType}:default`]}</div>
+          <div className="section capitalize text-right">
+            <strong>{schedules[`${paymentType}:default`]}</strong>
+          </div>
         </div>
         {otherMethods?.length > 0 && (
           <div className="other-methods-container">
@@ -49,9 +51,9 @@ const PaymentSchedule = (props) => {
                       }schedule-row other-methods-row`}
                       key={`${paymentType}:${method}`}
                     >
-                      <div className="section">{method.toUpperCase()}</div>
-                      <div className="section text-right">
-                        {schedules[`${paymentType}:${method}`]}
+                      <div className="section capitalize">{method}</div>
+                      <div className="section capitalize text-right">
+                        <strong>{schedules[`${paymentType}:${method}`]}</strong>
                       </div>
                     </div>
                   );

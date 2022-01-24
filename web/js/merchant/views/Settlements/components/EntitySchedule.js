@@ -5,7 +5,9 @@ const EntitySchedule = ({ entityType, schedule }) => {
     <div className="entity-schedule-container">
       <div className="default-cycle schedule-row">
         <div className="section capitalize">{entityType}</div>
-        <div className="section text-right">{schedule}</div>
+        <div className="section capitalize text-right">
+          <strong>{schedule}</strong>
+        </div>
       </div>
     </div>
   );

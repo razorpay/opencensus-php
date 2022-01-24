@@ -85,7 +85,7 @@ class SettlementDetails extends Component {
           <TextHighlighter hashedWith={SETTELEMENT_CYCLE}>Settlement Details</TextHighlighter>
           <span className="pull-right">
             <span className="nav-link" onClick={this.viewSettlementSchedule}>
-              View Settlement Schedule
+              View Settlement Cycle
             </span>
           </span>
         </div>
