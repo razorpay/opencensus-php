@@ -5,10 +5,11 @@ namespace RZP\Base;
 use App;
 use Lib\PhoneBook;
 use libphonenumber\NumberParseException;
-use Razorpay\Trace\Logger;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\Contact\Entity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\BatchHelper;
@@ -113,6 +114,52 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         {
             throw new BadRequestValidationFailureException(Entity::CREATOR_TYPE . ' not present');
         }
+    }
+
+    /**
+     * This is a custom Validate that an attribute is an active URL,
+     * first it will check for ipv4 and return true if found. if not, it will then check for ipv6.
+     *
+     * @param  string  $attribute
+     * @param  mixed  $value
+     *
+     * @return bool|\Exception|Exception
+     */
+    public function validateActiveUrl($attribute, $value)
+    {
+        if (is_string($value) === false)
+        {
+            return false;
+        }
+
+        $url = parse_url($value, PHP_URL_HOST);
+
+        if (empty($url) === false)
+        {
+            try
+            {
+                $checkForIPV4 = count(dns_get_record($url, DNS_A));
+
+                if ($checkForIPV4 > 0)
+                {
+                    return true;
+                }
+
+                $checkForIPV6 = count(dns_get_record($url, DNS_AAAA));
+
+                if ($checkForIPV6 > 0)
+                {
+                    return true;
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->getTrace()->traceException($e, Logger::ERROR, TraceCode::ACTIVE_URL_VALIDATION_FAILURE_EXCEPTION);
+            }
+        }
+        throw new BadRequestValidationFailureException(
+            'The ' . $attribute . ' is not a valid URL.'
+        );
     }
 
     /**

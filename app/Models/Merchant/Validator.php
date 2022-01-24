@@ -196,7 +196,7 @@ class Validator extends Base\Validator
 
     protected static $editPreSignupRules = [
         Entity::NAME                        => 'required|min:4|string|max:200',
-        Entity::WEBSITE                     => 'sometimes|active_url|max:255|nullable',
+        Entity::WEBSITE                     => 'sometimes|custom:active_url|max:255|nullable',
         Entity::EMAIL                       => 'sometimes|email|unique:merchants',
     ];
 
@@ -570,7 +570,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $couponCodeUrlUpdateRequestRules = [
-        'url'                           => 'required|active_url'
+        'url'                           => 'required|custom:active_url'
     ];
 
     protected static $shippingInfoRequestRules = [

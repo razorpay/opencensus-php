@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::EMAIL  => 'sometimes|string|custom',
         Entity::PHONE  => 'sometimes|numeric|digits_between:8,11',
         Entity::POLICY => 'sometimes|string|nullable',
-        Entity::URL    => 'sometimes|active_url|max:255|nullable',
+        Entity::URL    => 'sometimes|custom:active_url|max:255|nullable',
     ];
 
     protected static $editRules = [
@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::EMAIL  => 'sometimes|string|custom',
         Entity::PHONE  => 'sometimes|numeric|digits_between:8,11',
         Entity::POLICY => 'sometimes|string|nullable',
-        Entity::URL    => 'sometimes|active_url|max:255|nullable',
+        Entity::URL    => 'sometimes|custom:active_url|max:255|nullable',
     ];
 
     protected static $emailRules = [
