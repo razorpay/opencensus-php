@@ -4575,18 +4575,6 @@ class Core extends Base\Core
         return $input;
     }
 
-    public function dispatchPendingPayoutApprovalEmail($pendingPayout)
-    {
-        if(empty($pendingPayout)) {
-            return;
-        }
-
-        $mailable = new PendingApprovals($pendingPayout);
-
-        Mail::queue($mailable);
-        $this->trace->info(TraceCode::EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS, [$pendingPayout]);
-    }
-
     public function dispatchPendingPayoutApprovalPushNotification($pendingPayout)
     {
         if(empty($pendingPayout)) {
@@ -4654,7 +4642,7 @@ class Core extends Base\Core
                 $startAt = millitime();
 
                 //Fetching top 10 pending payouts in chronological order for selected merchant-user combination
-                $payouts = $this->repo->payout->fetchTenPendingPayoutsToDisplay($merchantId, $input['role']);
+                $payouts = $this->repo->payout->fetchNPendingPayoutsToDisplay($merchantId, $input['role']);
 
                 $this->trace->info(TraceCode::PENDING_APPROVAL_REMINDER_PAYOUTS_QUERY_DURATION, [
                     'query_execution_time' => millitime() - $startAt,
@@ -4664,10 +4652,9 @@ class Core extends Base\Core
 
                 $eventData = self::preparePendingPayoutDataForEvents($payouts);
 
-                $input['data'] = $eventData['emailData'];
                 $input['payoutIds'] = $eventData['payoutIds'];
 
-                self::dispatchPendingPayoutEvents($input);
+                self::dispatchPendingPayoutApprovalPushNotification($input);
 
                 $pendingPayoutsCount++;
             }
@@ -4679,46 +4666,17 @@ class Core extends Base\Core
     private function preparePendingPayoutDataForEvents($payouts)
     {
         $payouts = $payouts->sortByDesc(Entity::CREATED_AT, 1);
-        $payoutsGroupedByPurpose = $payouts->groupBy(Entity::PURPOSE);
-
-        $data = $payoutsGroupedByPurpose->toArray();
-        $emailData = array();
+        $payouts = $payouts->toArray();
         $payoutIds = array();
-        $count = 0;
-        foreach ($payoutsGroupedByPurpose as $purpose => $payout) {
-            foreach ($payoutsGroupedByPurpose[$purpose] as $index => $p) {
-                $data[$purpose][$index]['contact_name'] = $p['contact_name'];
-                $data[$purpose][$index]['created_at'] = Carbon::createFromTimestamp($data[$purpose][$index]['created_at'], Timezone::IST)->format('d M\'y . g:i A');
-                $data[$purpose][$index]['amount'] = $data[$purpose][$index]['amount'];
 
-                //picking top 5 pendingPayouts for emails
-                if ($count < self::EMAIL_COUNT_FOR_PENDING_PAYOUT_APPROVAL) {
-                    if (empty($emailData[$purpose]))
-                        $emailData[$purpose] = array();
-                    array_push($emailData[$purpose], $data[$purpose][$index]);
-                }
-                $count++;
-
-                array_push($payoutIds, $data[$purpose][$index]['id']);
-
-            }
+        foreach ($payouts as $payout)
+        {
+            array_push($payoutIds, $payout['id']);
         }
 
         return [
-            'emailData' => $emailData,
             'payoutIds' => $payoutIds
         ];
-    }
-
-    private function dispatchPendingPayoutEvents($pendingPayout)
-    {
-        if(empty($pendingPayout))
-        {
-            return;
-        }
-
-        self::dispatchPendingPayoutApprovalEmail($pendingPayout);
-        self::dispatchPendingPayoutApprovalPushNotification($pendingPayout);
     }
 
     public function prepareTemplateAndDispatchEmail($approverList)
@@ -4754,7 +4712,7 @@ class Core extends Base\Core
                     $startAt = millitime();
 
                     //Fetching top 5 pending payouts in chronological order for selected merchant-user combination
-                    $payouts = $this->repo->payout->fetchPendingPayoutsToDisplay($merchantId, $input['role']);
+                    $payouts = $this->repo->payout->fetchNPendingPayoutsToDisplay($merchantId, $input['role'], 5);
 
                     $this->trace->info(TraceCode::PENDING_APPROVAL_EMAILS_PAYOUTS_QUERY_DURATION, [
                                                         'query_execution_time' => millitime() - $startAt,

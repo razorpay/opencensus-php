@@ -1345,6 +1345,51 @@ class Repository extends Base\Repository
             });
     }
 
+    protected function joinQueryWorkflowEntityMap(BuilderEx $query)
+    {
+        $entityMapTable = $this->repo->workflow_entity_map->getTableName();
+
+        if ($query->hasJoin($entityMapTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $entityMapTable,
+            function(JoinClause $join)
+            {
+                $entityIdColumn   = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::ENTITY_ID);
+                $entityNameColumn = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::ENTITY_TYPE);
+
+                $idColumn = $this->dbColumn(Entity::ID);
+
+                $join->on($idColumn, $entityIdColumn)
+                    ->where($entityNameColumn, '=',E::PAYOUT);
+            });
+    }
+
+    protected function joinOnUniqueWorkflows(BuilderEx $query, $status = 'created')
+    {
+        $workflowIdColumn       = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::WORKFLOW_ID);
+        $statusColumn           = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::STATUS);
+        $roleColumn             = $this->repo->workflow_state_map->dbColumn(Workflow\Service\StateMap\Entity::ACTOR_TYPE_VALUE);
+
+        $nestedSelectAttr = [
+            $workflowIdColumn,
+            $roleColumn
+        ];
+
+        $nestedQuery = $this->repo->workflow_state_map->newQuery()
+            ->distinct()
+            ->select($nestedSelectAttr)
+            ->where($statusColumn, '=', $status);
+
+        $query->joinSub($nestedQuery, 'unique_workflows', function ($join) {
+            $entityWorkflowId = $this->repo->workflow_entity_map->dbColumn(Workflow\Service\EntityMap\Entity::WORKFLOW_ID);
+            $join->on($entityWorkflowId, '=', 'unique_workflows.workflow_id');
+        });
+    }
+
     protected function joinQueryBalance(BuilderEx $query)
     {
         $balanceTable = $this->repo->balance->getTableName();
@@ -1943,20 +1988,18 @@ class Repository extends Base\Repository
     public function fetchMerchantUserDataHavingPendingPayouts()
     {
         /*
-         select distinct `merchant_users`.`user_id`, `users`.`name`, `users`.`email`, `merchants`.`name` as `business_name`,
-            `payouts`.`merchant_id`, `merchant_users`.`role`, COUNT( payouts.id) AS payout_count, SUM( payouts.amount) AS payout_total
-        from `payouts`
-        inner join `workflow_entity_map` on `payouts`.`id` = `workflow_entity_map`.`entity_id`
-               and `workflow_entity_map`.`entity_type` = ?
-        inner join `workflow_state_map` on `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
-            and `workflow_state_map`.`status` = ?
-        inner join `merchant_users` on `workflow_state_map`.`merchant_id` = `merchant_users`.`merchant_id`
-        inner join `merchants` on `merchant_users`.`merchant_id` = `merchants`.`id`
+        select `merchant_users`.`user_id`, `users`.`name`, `users`.`email`, `merchants`.`name` as `business_name`, `payouts`.`merchant_id`, `merchant_users`.`role`,
+            COUNT( payouts.id) AS payout_count, SUM( payouts.amount) AS payout_total from `payouts`
+        inner join `workflow_entity_map` on `payouts`.`id` = `workflow_entity_map`.`entity_id` and `workflow_entity_map`.`entity_type` = ?
+        inner join
+            (select distinct `workflow_state_map`.`workflow_id`, `workflow_state_map`.`actor_type_value` from `workflow_state_map`
+            where `workflow_state_map`.`status` = ?)
+            as `unique_workflows` on `workflow_entity_map`.`workflow_id` = `unique_workflows`.`workflow_id`
+        inner join `merchant_users` on `payouts`.`merchant_id` = `merchant_users`.`merchant_id`
+        inner join `merchants` on `payouts`.`merchant_id` = `merchants`.`id`
         inner join `users` on `merchant_users`.`user_id` = `users`.`id`
-        where `merchant_users`.`role` = `workflow_state_map`.`actor_type_value`
-            and `merchant_users`.`product` = ?
-            and `payouts`.`status` = ?
-        group by `merchant_id`, `name`, `user_id`, `name`, `email`, `role`, `business_name`
+            where `merchant_users`.`role` = `unique_workflows`.`actor_type_value` and `merchant_users`.`product` = ? and `payouts`.`status` = ?
+            group by `merchant_id`, `name`, `user_id`, `name`, `email`, `role`, `business_name`
         */
 
 
@@ -1987,7 +2030,7 @@ class Repository extends Base\Repository
             $merchantUserRoleColumn
         ];
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
             ->select($this->getTableName() . '.*')
             ->select($userAttrs)
             ->selectRaw('COUNT( payouts.' . Entity::ID . ') AS payout_count,
@@ -1995,12 +2038,13 @@ class Repository extends Base\Repository
             ->with(['merchant']);
 
         //Workflow state map has only two status processed/created
-        $this->joinQueryWorkflowServiceEntities($query, [],Status::CREATED);
+        $this->joinQueryWorkflowEntityMap($query);
+        $this->joinOnUniqueWorkflows($query, Status::CREATED);
 
-        $query->whereColumn($merchantUserRoleColumn, '=', $workflowStateMapActorTypeValue);
+        $query->whereColumn($merchantUserRoleColumn, '=', 'unique_workflows.actor_type_value');
 
-        $query->join(Table::MERCHANT_USER, $workflowStateMapMerchantId, '=', $merchantUserMerchantIdColumn)
-            ->join(Table::MERCHANT, $merchantUserMerchantIdColumn, '=', $merchantIdColumn)
+        $query->join(Table::MERCHANT_USER, $payoutMerchantId, '=', $merchantUserMerchantIdColumn)
+            ->join(Table::MERCHANT, $payoutMerchantId, '=', $merchantIdColumn)
             ->join(Table::USER, $merchantUserUserIdColumn, '=', $userIdColumn)
             ->where($merchantUserProductColumn, Merchant\Balance\Type::BANKING)
             ->where($payoutStatus, Status::PENDING)
@@ -2011,8 +2055,7 @@ class Repository extends Base\Repository
                 User\Entity::NAME, User\Entity::EMAIL,
                 Merchant\MerchantUser\Entity::ROLE,
                 'business_name'
-            )
-            ->distinct();
+            );
 
         return $query->get();
     }
@@ -2078,11 +2121,11 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchTenPendingPayoutsToDisplay($merchantId, $userRole)
+    public function fetchNPendingPayoutsToDisplay($merchantId, $userRole, $count = self::PENDING_PAYOUT_COUNT)
     {
         /*
-            select `payouts`.`id`, `contacts`.`name` as `contact_name`, `payouts`.`amount`, `payouts`.`purpose`, `payouts`.`created_at`
-            from `payouts`
+            select distinct `payouts`.`id`, `contacts`.`name` as `contact_name`, `payouts`.`amount`, `payouts`.`purpose`, `payouts`.`created_at`
+            from `payouts` USE INDEX (payouts_merchant_id_created_at_index)
             inner join `workflow_entity_map` on `payouts`.`id` = `workflow_entity_map`.`entity_id`
                 and `workflow_entity_map`.`entity_type` = ?
             inner join `workflow_state_map` on `workflow_entity_map`.`workflow_id` = `workflow_state_map`.`workflow_id`
@@ -2094,7 +2137,7 @@ class Repository extends Base\Repository
                 and `fund_accounts`.`source_type` = ?
                 and `payouts`.`status` = ?
             order by `payouts`.`created_at` desc
-            limit 10
+            limit ?
         */
 
         $payoutId               =       $this->dbColumn(Entity::ID);
@@ -2120,7 +2163,8 @@ class Repository extends Base\Repository
             $payoutCreatedAt
         ];
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->distinct()
             ->select($this->getTableName() . '.*')
             ->select($selectAttr)
             ->from(\DB::raw(Table::PAYOUT.' USE INDEX (payouts_merchant_id_created_at_index)'))
@@ -2134,7 +2178,7 @@ class Repository extends Base\Repository
             ->where($fundAccountSourceType,'=','contact')
             ->where($payoutStatus, Status::PENDING)
             ->orderBy($payoutCreatedAt,'desc')
-            ->limit(self::PENDING_PAYOUT_COUNT);
+            ->limit($count);
 
         return $query->get();
     }

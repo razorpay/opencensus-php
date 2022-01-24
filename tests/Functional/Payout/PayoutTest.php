@@ -1499,8 +1499,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testReminderNotificationForPayoutPendingOnApproval()
     {
-        Mail::fake();
-
         $this->liveSetUp();
 
         $bankingAccountAttributes = [
@@ -1523,30 +1521,6 @@ class PayoutTest extends OAuthTestCase
         $this->ba->cronAuth('live');
 
         $this->startTest();
-
-        Mail::assertQueued(PendingApprovals::class, function ($mail)
-        {
-            $this->assertArrayHasKey('user_id', $mail->viewData);
-
-            $this->assertArrayHasKey('merchant_id', $mail->viewData);
-
-            $this->assertArrayHasKey('email', $mail->viewData);
-
-            $this->assertArrayHasKey('data', $mail->viewData);
-
-            $mail->hasTo('merchantuser01@razorpay.com');
-
-            $this->assertArrayHasKey('refund', $mail->viewData['data']);
-            $this->assertArrayHasKey('cashback', $mail->viewData['data']);
-            $this->assertArrayHasKey('salary', $mail->viewData['data']);
-
-            $this->assertEquals(count($mail->viewData['data']['refund']), 1);
-            $this->assertEquals(count($mail->viewData['data']['cashback']), 2);
-            $this->assertEquals(count($mail->viewData['data']['salary']), 2);
-
-            return true;
-        });
-
     }
 
     public function createPayoutWithWorkflowEntities($amount, $account, $purpose, $workflowId)
