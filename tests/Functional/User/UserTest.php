@@ -5815,6 +5815,21 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+    }
+
+    public function testVerifyContactMobile()
+    {
+        $merchant1 = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant1['id'], ['contact_mobile' =>'1234567890','email'=>'bbsuhas-axis-2@test.com']);
+
+        $merchant2 = $this->fixtures->create('merchant');
+
+        $this->fixtures->user->createUserForMerchant($merchant2['id'], ['contact_mobile' =>'1234567890','email'=>'ajay.icici@icici.com']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
 
     }
 

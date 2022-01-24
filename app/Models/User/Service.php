@@ -1877,6 +1877,49 @@ class Service extends Base\Service
         return $this->core()->sendXMobileAppDownloadLinkSms($input, $merchant);
     }
 
+    /**
+     * @param $input
+     * @return array
+     * @throws Exception\BadRequestException
+     * Sample csv file looks like
+     * login_email,update_contact,
+     * ppabc.test@gmail.com,7353424525
+     */
+    public function verifyContactMobile($input): array
+    {
+
+        $rows = $input;
+
+        $this->validator->validateInput('verify_contact_mobile_list', ['input'=>$input]);
+
+        if(count($input)>500)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT);
+        }
+
+        $response = [];
+
+        foreach ($rows as $row)
+        {
+            $inputParams = [
+                ENTITY::EMAIL          => $row['merchant_login_email'],
+                ENTITY::CONTACT_MOBILE => $row['update_contact'],
+            ];
+
+            $this->validator->validateInput('verify_contact_mobile', $inputParams);
+
+            $user = $this->core->getUserFromEmail([ENTITY::EMAIL => $inputParams[ENTITY::EMAIL]]);
+
+
+            $resUser = $this->core->updateContactMobile([ENTITY::CONTACT_MOBILE=>$inputParams[ENTITY::CONTACT_MOBILE]],$user);
+
+
+            array_push($response,$resUser->getEmail());
+        }
+
+        return $response;
+    }
+
     public function saveDeviceDetails(array $input)
     {
         return (new DeviceDetail\Core)->createUserDeviceDetail($input);

@@ -534,6 +534,15 @@ class UserController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function verifyContactMobile()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyContactMobile($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function sendOtpForAddEmail()
     {
         $input = Request::all();

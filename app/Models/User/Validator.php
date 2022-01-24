@@ -287,6 +287,15 @@ class Validator extends Base\Validator
         Entity::ACTION                => 'required|custom',
     ];
 
+    protected static $verifyContactMobileRules = [
+        ENTITY::EMAIL               => 'required|email',
+        ENTITY::CONTACT_MOBILE      => 'required|max:15|contact_syntax',
+    ];
+
+    protected static $verifyContactMobileListRules = [
+        'input'             => 'required|array'
+    ];
+
     protected static $addEmailRules = [
         Entity::OTP_AUTH_TOKEN => 'required|filled',
         Entity::EMAIL          => 'required|email',
@@ -295,6 +304,7 @@ class Validator extends Base\Validator
     protected static $addEmailVerifyRules = [
         Entity::OTP             => 'required|filled|min:4',
         Entity::EMAIL           => 'required|email',
+
     ];
 
     protected static $actionValidators = [

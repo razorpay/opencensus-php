@@ -1786,6 +1786,7 @@ class Route
         'user_update_contact_admin'                => ['patch',    'users-admin/contact',                            'UserController@updateContactMobile'                                ],
         'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
         'user_account_lock_unlock_admin'           => ['put',      'users-admin/account/{id}/{action}',              'UserController@accountLockUnlock'                                  ],
+        'user_verify_contact_batch'                => ['post',     'users-admin/contact/verify',                     'UserController@verifyContactMobile'                                ],
         'otp_create'                               => ['post',     'otp/send',                                       'UserController@sendOtpWithContact'                                 ],
         'user_otp_verify'                          => ['post',     'users/verify_otp',                               'UserController@verifyOtpWithToken'                                 ],
 
@@ -5225,6 +5226,7 @@ class Route
         'merchant_update_fraud_type',
         'admin_merchant_post_preferences',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
+        'user_verify_contact_batch',
         'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
         'merchant_business_detail_save',
@@ -7362,8 +7364,8 @@ class Route
 
         'decrypt_merchant_website_comment'                => Permission::DECRYPT_MERCHANT_WEBSITE_COMMENT,
 
+        'user_verify_contact_batch'                       => Permission::UPDATE_USER_CONTACT_MOBILE,
         'bulk_regenerate_api_keys'                        => Permission::BULK_REGENERATE_API_KEYS,
-
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
@@ -9112,6 +9114,7 @@ class Route
             'admin_merchant_post_preferences',
             'merchant_activation_gst_details',
             'merchant_upload',
+            'user_verify_contact_batch',
             'banking_account_service_routes',
             'banking_account_service_pincode_serviceability_check',
             'rbl_current_account_serviceability_get_admin',

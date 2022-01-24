@@ -3778,6 +3778,29 @@ return [
         ],
     ],
 
+    'testVerifyContactMobile' => [
+        'request' => [
+            'url'     => '/users-admin/contact/verify',
+            'method'  => 'post',
+            'content' => [
+                    [
+                        "merchant_login_email"=>"bbsuhas-axis-2@test.com",
+                        "update_contact"=>"9736605649"
+                    ],
+                    [
+                        "merchant_login_email"=>"ajay.icici@icici.com",
+                        "update_contact"=>"1234578960"
+                    ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'bbsuhas-axis-2@test.com',
+                    'ajay.icici@icici.com'
+            ],
+        ],
+    ],
+
     'testOtpLoginVerifyWith2FA' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
