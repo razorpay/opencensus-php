@@ -378,7 +378,7 @@ class MerchantTest extends TestCase
         $this->assertArrayHasKey('card', $methods);
         $this->assertArrayHasKey('disabled_banks', $methods);
         $this->assertArrayHasKey('debit_card', $methods);
-        $this->assertCount(43, $methods['disabled_banks']);
+        $this->assertCount(44, $methods['disabled_banks']);
     }
 
     public function testGetMerchantDefaultDccMarkup()

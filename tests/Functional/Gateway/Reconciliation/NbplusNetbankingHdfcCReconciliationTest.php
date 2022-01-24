@@ -7,15 +7,17 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Entity;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Transaction\Entity as Txn;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Reconciliator\RequestProcessor\Base;
-use RZP\Reconciliator\NetbankingHdfc\Constants;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
+use RZP\Reconciliator\NetbankingHdfcC\Constants as HDFC_Constants;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGatewayTest
+class NbplusNetbankingHdfcCReconciliationTest extends StaticCallbackNbplusGatewayTest
 {
     use ReconTrait;
 
@@ -25,14 +27,21 @@ class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGateway
 
         NbPlusPaymentServiceNetbankingTest::setUp();
 
-        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+        $this->bank = Netbanking::HDFC_C;
 
-        $this->bank = 'HDFC';
+        $this->fixtures->merchant->addFeatures([Constants::CORPORATE_BANKS]);
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $terminalAttrs = [
+            \RZP\Models\Terminal\Entity::CORPORATE => 1,
+        ];
+
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal', $terminalAttrs);
+
     }
 
-    public function testHdfcSuccessRecon()
+    public function testHdfcCSuccessRecon()
     {
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -43,15 +52,15 @@ class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGateway
 
         $data = $this->testData[__FUNCTION__];
 
-        $data[Constants::COLUMN_PAYMENT_ID] = $payment['id'];
+        $data[HDFC_Constants::COLUMN_PAYMENT_ID] = $payment['id'];
 
         $reconFile = $this->generateReconFile($data);
 
-        $fileName = 'RECONCILIATION_REPORT_ENTITYCODE_' . Carbon::today()->format("dmY") . '.csv';
+        $fileName = 'HDFC_Recon_' . Carbon::today()->format("dmY") . '.txt';
 
         $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, "text/plain");
 
-        $this->reconcile($uploadedFile, Base::NETBANKING_HDFC);
+        $this->reconcile($uploadedFile, Base::NETBANKING_HDFC_C);
 
         $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
 
@@ -60,11 +69,12 @@ class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGateway
         $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals($batch['status'], 'processed');
+
     }
 
     protected function generateReconFile($data)
     {
-        $fileData = 'merchant_code,customer_email,currency,transaction_amount,fee,payment_id,error_code,bank_payment_id,transaction_date,error_description'. "\n" .implode('~', $data);
+        $fileData = 'Merchant Code~Client Code~Currency Code~Transaction Amount~Service Charge Amount~Merchant reference no~Status~Bank Reference No ~Transaction Date & Time~Error message'. "\n" .implode('~', $data);
 
         return $this->createFile($fileData);
     }

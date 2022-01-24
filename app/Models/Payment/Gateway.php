@@ -507,6 +507,7 @@ class Gateway
         self::NETBANKING_CSB,
         self::NETBANKING_BDBL,
         self::NETBANKING_UCO,
+        self::NETBANKING_HDFC,
     ];
 
     /**
@@ -2603,6 +2604,7 @@ class Gateway
         Gateway::CRED,
         Gateway::ATOM,
         Gateway::NETBANKING_RBL,
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -2621,6 +2623,7 @@ class Gateway
         Gateway::NETBANKING_IBK,
         Gateway::NETBANKING_UCO,
         Gateway::NETBANKING_RBL,
+        Gateway::NETBANKING_HDFC,
     ];
 
     /**
@@ -2730,6 +2733,7 @@ class Gateway
         Netbanking::ANDB_C => Gateway::NETBANKING_UBI,
         Netbanking::IDIB_C => Gateway::NETBANKING_IBK,
         Netbanking::RATN_C => Gateway::NETBANKING_RBL,
+        Netbanking::HDFC_C => Gateway::NETBANKING_HDFC,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,
@@ -4002,6 +4006,7 @@ class Gateway
 
         $gatewayWithBankCodes = [
             self::NETBANKING_KOTAK => [Payment\Processor\Netbanking::KKBK_C],
+            self::NETBANKING_HDFC  => [Payment\Processor\Netbanking::HDFC_C],
         ];
 
         $isRouted = ((in_array($gateway, array_keys($gatewayWithBankCodes), true)) and (in_array($bankCode, $gatewayWithBankCodes[$gateway], true)));
@@ -4037,6 +4042,7 @@ class Gateway
     {
         $gatewayPartiallyMigrated = [
             self::NETBANKING_BOB,
+            self::NETBANKING_HDFC,
         ];
 
         return (in_array($gateway, $gatewayPartiallyMigrated, true));
@@ -4099,6 +4105,7 @@ class Gateway
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::WALLET_FREECHARGE,
+            self::NETBANKING_HDFC,
         ];
 
         $acquirerGateways = [

@@ -29,6 +29,7 @@ class Netbanking
     const DLXB_C = 'DLXB_C';
     const KKBK_C = 'KKBK_C';
     const IDIB_C = 'IDIB_C';
+    const HDFC_C = 'HDFC_C';
 
     // These are the IFSC's that are to be used for these
     // banks even if we integrate them directly.
@@ -87,6 +88,7 @@ class Netbanking
         IFSC::VIJB   => 'Bank of Baroda - Retail Banking (Erstwhile Vijaya Bank)',
         IFSC::HSBC   => 'HSBC',
         IFSC::SVCB   => 'SVC Co-Operative Bank Ltd.',
+        self::HDFC_C => 'HDFC Bank - Corporate Banking',
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
@@ -153,6 +155,7 @@ class Netbanking
         self::ANDB_C,
         self::IDIB_C,
         self::RATN_C,
+        self::HDFC_C,
     ];
 
     protected static $selfTPV = [
@@ -835,6 +838,9 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::HDFC
+            ],
+            'corp' => [
+                self::HDFC_C,
             ]
         ],
         Gateway::NETBANKING_CANARA => [
@@ -1105,6 +1111,7 @@ class Netbanking
         self::PUNB_C,
         self::ICIC_C,
         self::KKBK_C,
+        self::HDFC_C,
     ];
 
     public static function isSupportedBank($bank)

@@ -86,6 +86,7 @@ class Base extends Core
     const NETBANKING_VIJAYA        = 'NetbankingVijaya';
     const NETBANKING_EQUITAS       = 'NetbankingEquitas';
     const NETBANKING_HDFC          = 'NetbankingHdfc';
+    const NETBANKING_HDFC_C        = 'NetbankingHdfcC';
     const NETBANKING_ALLAHABAD     = 'NetbankingAllahabad';
     const NETBANKING_JKB           = 'NetbankingJkb';
     const NETBANKING_SBI           = 'NetbankingSbi';
@@ -249,6 +250,7 @@ class Base extends Core
         self::NETBANKING_UCO           => ['hoe_banking.calcutta@ucobank.co.in'],
         self::CARDLESS_EMI_EARLYSALARY => [],
         self::EMERCHANTPAY             => ['finance@emerchantpay.com'],
+        self::NETBANKING_HDFC_C        => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

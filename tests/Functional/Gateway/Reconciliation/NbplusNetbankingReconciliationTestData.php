@@ -206,4 +206,17 @@ return [
         'Transaction Date(DD-MM-YYYY)'  => Carbon::today()->format("d-m-Y"),
 
     ],
+
+    'testHdfcCSuccessRecon' => [
+        'merchant_code'         => 'RAZORPAY',
+        'client_code'           => 'RAZORPAY',
+        'currency_code'         => 'INR',
+        'transaction_amount'    => '500.00',
+        'service_change_amount' => '0',
+        'merchant_reference_no' => '',
+        'status'                => '102',
+        'bank_reference_no'     => '12345',
+        'transaction_date'      => '06/08/2021' ,
+        'error_message'         => '',
+    ]
 ];

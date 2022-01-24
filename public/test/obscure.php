@@ -97,6 +97,7 @@ function disableEmptyInputs(form) {
                 <option value="BARB_C">Bank of Baroda - Corporate</option>
                 <option value="BARB_R">Bank of Baroda - Retail</option>
                 <option value="HDFC">HDFC Bank</option>
+                <option value="HDFC_C">HDFC Bank - Corporate</option>
                 <option value="CORP">Corporation Bank</option>
                 <option value="ALLA">Allahabad Bank</option>
                 <option value="SBIN">SBI Bank</option>

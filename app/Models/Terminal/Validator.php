@@ -374,6 +374,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::ORG_ID => 'sometimes',
     ];
@@ -652,6 +653,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::CAPABILITY                 => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 

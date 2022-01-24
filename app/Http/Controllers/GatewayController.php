@@ -1496,6 +1496,15 @@ class GatewayController extends Controller
 
             if (Payment\Gateway::gatewaysPartiallyMigratedToNbPlusWithBankCode($gatewayName))
             {
+                // temporary code.. remove once hdfc completely migrated to nbplus
+                // retail HDFC Nb have dynamic callback while corp has static callback route
+                if($gatewayName === Gateway::NETBANKING_HDFC)
+                {
+                    $input['method_type'] = 'corporate';
+
+                    $input['bank'] = Payment\Processor\Netbanking::HDFC_C;
+                }
+
                 $featureFlag .= '_' . strtolower($input['bank']);
             }
 
