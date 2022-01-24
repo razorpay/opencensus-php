@@ -129,7 +129,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
             [
                 'subject'   => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
                 'cc_emails' => ['chargeback.poc1@gmail.com', 'chargeback.poc2@gmail.com'],
-                'email_config_id' => 82000098428,    //FOH
+                'email_config_id' => 82000099038,    //FOH
                 'group_id' => 82000655429,           //FOH
                 'custom_fields'   => [
                     'cf_ticket_queue'           => 'Merchant',
@@ -169,7 +169,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
                                                     [
                                                         'subject'   => 'Razorpay Account Review: test merchant | 10000000000000 | Funds under Review',
                                                         'cc_emails' => ['chargeback.poc1@gmail.com', 'chargeback.poc2@gmail.com', 'sales.poc@gmail.com'],
-                                                        'email_config_id' => 82000098428,         //FOH
+                                                        'email_config_id' => 82000099038,         //FOH
                                                         'group_id' => 82000655429,                //FOH
                                                         'custom_fields'   => [
                                                             'cf_ticket_queue'           => 'Merchant',
@@ -295,7 +295,7 @@ class MerchantRiskAlertsServiceTest extends TestCase
                 'tags'            => ['RAS_FOH', 'RAS_NC_FLOW_FOH'],
                 'priority'        => 1,
                 'email'           => 'merchant.email@gmail.com',
-                'email_config_id' => 82000098428,
+                'email_config_id' => 82000099038,
                 'custom_fields'   => [
                     'cf_ticket_queue' => 'Merchant',
                     'cf_category'     => 'Risk Report_Merchant',
