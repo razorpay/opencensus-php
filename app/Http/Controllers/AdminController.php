@@ -200,7 +200,6 @@ class AdminController extends Controller
 
         // This is password based login
         list($error, $user) = (new Admin\Service)->passwordLogin($domain, $input);
-
         if (! empty($error))
         {
             return AppResponse::jsonResponse($error, []);
@@ -225,6 +224,106 @@ class AdminController extends Controller
         }
 
         return AppResponse::jsonResponse(['Invalid Credentials'], []);
+    }
+
+    public function show2FALayout(){
+        $org = $this->getOrg()->getData(true);
+
+        if ($org['success'])
+        {
+            $org = $org['data'];
+        }
+        else
+        {
+            return AppResponse::jsonResponse(['Organization not found'], null);
+        }
+
+        // If already logged in
+        if (Auth::guard('api')->check())
+        {
+            $admin = $this->getAdmin()->getData(true);
+
+            if (empty($admin['data']) === false)
+            {
+                $view = 'admin.index';
+
+                return view($view, [
+                    'cdn' => \Config::get('app.cdn_dashboard_url'),
+                    'org'   => $org,
+                    'user'  => $admin['data'],
+                ]);
+            }
+        }
+
+        return view('admin.enter-2fa', [
+            'org' => $org
+        ]);
+    }
+
+    public function showAccountBlocked(){
+        $org = $this->getOrg()->getData(true);
+
+        if ($org['success'])
+        {
+            $org = $org['data'];
+        }
+        else
+        {
+            return AppResponse::jsonResponse(['Organization not found'], null);
+        }
+
+        // If already logged in
+        if (Auth::guard('api')->check())
+        {
+            $admin = $this->getAdmin()->getData(true);
+
+            if (empty($admin['data']) === false)
+            {
+                $view = 'admin.index';
+
+                return view($view, [
+                    'cdn' => \Config::get('app.cdn_dashboard_url'),
+                    'org'   => $org,
+                    'user'  => $admin['data'],
+                ]);
+            }
+        }
+
+        return view('admin.account_block', [
+            'org' => $org
+        ]);
+    }
+
+    public function postResendOtp()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->postResendOtp($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+
+    public function postVerify2faAuthOtp()
+    {
+
+        $input = Input::all();
+
+        $input = $this->putSessionValue($input);
+
+        list($error, $data) = (new Admin\Service)->twoFactorAuthVerifyOtp($input);
+
+        if (! empty($error))
+        {
+            return AppResponse::jsonResponse($error, []);
+        }
+
+        if (Auth::guard('api')->check())
+        {
+            return AppResponse::jsonResponse(null);
+        }
+
+        return AppResponse::jsonResponse(['Incorrect OTP'], []);
     }
 
     public function getOrg()
@@ -527,5 +626,11 @@ class AdminController extends Controller
         list($error, $response) = (new Admin\Service)->getEmailLogs($input);
 
         return AppResponse::jsonResponse($error, $response);
+    }
+
+
+    private function putSessionValue($input)
+    {
+        return (new Admin\Service)->putSessionValues($input);
     }
 }

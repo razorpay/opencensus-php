@@ -88,6 +88,16 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
+    protected function getEncryptionSecret()
+    {
+        return config('key');
+    }
+
+    protected function getIv()
+    {
+        return openssl_random_pseudo_bytes(12);
+    }
+
     public function passwordLogin($domain, array $input)
     {
         $error = $data = null;
@@ -100,6 +110,36 @@ class Service extends Base\Service
 
             list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
+            if(isset($error)){
+                $tag1  = '';
+                $tag2  = '';
+                $iv1 = $this->getIv();
+                $iv2 = $this->getIv();
+
+                $encryptedUsername = openssl_encrypt(
+                    $input[Admin\Constants::USERNAME],
+                    'aes-256-gcm',
+                    $this->getEncryptionSecret(),
+                    OPENSSL_ZERO_PADDING,
+                    $iv1,
+                    $tag1
+                );
+
+                $encryptedPassword = openssl_encrypt(
+                    $input[Admin\Constants::PASSWORD],
+                    'aes-256-gcm',
+                    $this->getEncryptionSecret(),
+                    OPENSSL_ZERO_PADDING,
+                    $iv2,
+                    $tag2
+                );
+
+                $encryptedUsername = base64_encode($iv1 . $encryptedUsername . $tag1);
+                $encryptedPassword = base64_encode($iv2 . $encryptedPassword . $tag2);
+
+                Session::put(Admin\Constants::USERNAME, $encryptedUsername);
+                Session::put(Admin\Constants::PASSWORD, $encryptedPassword);
+            }
             Session::put(config('auth.guards.api.session_key'), $data);
 
             if((new Util)->debugLogsEnable()=== true)
@@ -114,8 +154,18 @@ class Service extends Base\Service
         {
             $error[] = $e->getMessage();
         }
+        return  $this->handleLoginResponse($error,$data);
 
-        return [$error, $data];
+    }
+
+    function handleLoginResponse($error,$data){
+        if (empty($error) === false) {
+            if ((array_key_exists('internal_error_code', $error) === true) and
+                (empty($error['internal_error_code']) === false)) {
+                return [[$error], $data];
+            }
+        }
+            return [$error, $data];
     }
 
     /**
@@ -887,6 +937,89 @@ class Service extends Base\Service
 
         return [];
     }
+
+    /**
+     * @param array $input [description]
+     *
+     * @return array
+     */
+
+    public function twoFactorAuthVerifyOtp(array $input)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $request = new ApiRequestAny();
+
+            list($error, $data) = $request->processInput($input)->send('admins/2fa/verify', 'POST');
+
+            Session::put(config('auth.guards.api.session_key'), $data);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return $this->handleLoginResponse($error,$data);
+    }
+
+    public function putSessionValues(array $input)
+    {
+        $encryptedUsername = base64_decode(Session::get(Admin\Constants::USERNAME));
+        $encryptedPassword = base64_decode(Session::get(Admin\Constants::PASSWORD));
+        $tag1 = substr($encryptedUsername,-16);
+        $tag2 = substr($encryptedPassword, -16);
+        $iv1 = substr($encryptedUsername,0,12);
+        $iv2 = substr($encryptedPassword,0,12);
+        $encryptedUsername = substr($encryptedUsername,12,-16);
+        $encryptedPassword = substr($encryptedPassword,12,-16);
+
+
+        $input[Admin\Constants::USERNAME]=openssl_decrypt(
+            $encryptedUsername,
+            'aes-256-gcm',
+            $this->getEncryptionSecret(),
+            OPENSSL_ZERO_PADDING,
+            $iv1,
+            $tag1
+        );
+
+        $input[Admin\Constants::PASSWORD]=openssl_decrypt(
+            $encryptedPassword,
+            'aes-256-gcm',
+            $this->getEncryptionSecret(),
+            OPENSSL_ZERO_PADDING,
+            $iv2,
+            $tag2
+        );
+
+        return $input;
+    }
+
+    public function postResendOtp(array $input)
+    {
+       $input = $this->putSessionValues($input);
+
+        $error = $data = null;
+
+        try
+        {
+            $request = new ApiRequestAny();
+
+            list($error, $data) = $request->processInput($input)->send('admins/2fa/otp_resend', 'POST');
+
+            Session::put(config('auth.guards.api.session_key'), $data);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return $this->handleLoginResponse($error,$data);
+    }
+
+
 
     /**
      * Uploads a screenshot to S3

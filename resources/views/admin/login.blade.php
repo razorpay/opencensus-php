@@ -1,102 +1,78 @@
 @include('partials/header')
-<style>
-  body {
-    background: #F0F3F4;
-    font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;
-    font-size: 14px;
-    color: #414141;
-    margin: 0;
-  }
-  .container {
-    max-width: 300px;
-    margin: 30px auto;
-    text-align: center;
-  }
-  img {
-    margin: 15px auto;
-    max-width: 240px;
-    height: 80px;
-    display: block;
-  }
-  input {
-    width: 100%;
-    padding: 16px 20px;
-    border: 1px solid #eee;
-    margin-top: -1px;
-    background: #fff;
-    box-sizing: border-box;
-    outline: none;
-    font-size: 14px;
-  }
-  input[type=submit] {
-    border-radius: 2px;
-    cursor: pointer;
-    margin-top: 20px;
-    border: none;
-    background: #3498db;
-    color: #fff;
-  }
-  [disabled] {
-    opacity: .75;
-  }
-  #error {
-    color: #ea212d;
-    font-size: 12px;
-    font-weight: bold;
-    margin-top: 20px;
-    white-space: pre;
-  }
-</style>
 </head>
+
 <body>
-<form class="container" action="/admin/signin" method="post" onsubmit="return false">
-  <b>Admin Login</b>
-  <img alt="Logo" src="{{$org['login_logo_url']}}">
-  <input required autofocus name="username" placeholder="Username">
-  <input required type="password" name="password" placeholder="Password">
-  <input type="submit" value="Login">
-  <div id="error"></div>
-</form>
+  <form class="container" method="post" action="/admin/signin" onsubmit="return false">
+    <div class="auth-heading">Admin Login</div>
+    <img alt="Logo" src="{{$org['login_logo_url']}}">
+    <input type="text" name="username" placeholder="Username" required autofocus>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="submit" value="Login">
+    <div id="errorText"></div>
+  </form>
+</body>
+
 <script>
-function readCookie(name) {
-  var nameEQ = name + "=";
-  var ca = document.cookie.split(';');
-  for(var i=0;i < ca.length;i++) {
-    var c = ca[i];
-    while (c.charAt(0)==' ') c = c.substring(1,c.length);
-    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-  }
-}
-var xhr;
-var error = document.querySelector('#error');
-document.forms[0].onsubmit = function(e) {
-  e.preventDefault();
-  if (xhr) {
-    return;
-  }
-  xhr = new XMLHttpRequest()
-  var data = 'username=' + encodeURIComponent(document.querySelector('input').value) +
-    '&password=' + encodeURIComponent(document.querySelector('input[type=password]').value)
-
-  var submitBtn = document.querySelector('input[type=submit]');
-  submitBtn.disabled = true
-
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) {
-      var text = xhr.responseText;
-      xhr = null;
-      submitBtn.disabled = false
-      text = JSON.parse(text);
-      if (text.success) {
-        return location.reload();
-      }
-      error.innerHTML = text.errors.join('\n');
-      error.style.display = 'block';
+  function readCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+      var c = ca[i];
+      while (c.charAt(0)==' ') c = c.substring(1,c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
     }
   }
-  xhr.open(this.method, this.action)
-  xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
-  xhr.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(readCookie('XSRF-TOKEN')))
-  xhr.send(data)
-}
+
+  var xhr;
+  let errorText = document.querySelector('#errorText');
+
+  document.forms[0].onsubmit = function(e) {
+    e.preventDefault();
+    if (xhr) {
+      return;
+    }
+    xhr = new XMLHttpRequest()
+    var formData = 'username=' + encodeURIComponent(document.querySelector('input').value) +
+      '&password=' + encodeURIComponent(document.querySelector('input[type=password]').value)
+    var submitBtn = document.querySelector('input[type=submit]');
+    submitBtn.disabled = true
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === 4) {
+        let data = xhr.responseText;
+        xhr = null;
+        submitBtn.disabled = false
+        data = JSON.parse(data);
+
+        if (data.success) {
+          return location.reload();
+        }
+        if(data.errors && data.errors.length) {
+          let firstError = data.errors[0]
+          if (firstError.hasOwnProperty("internal_error_code")) {
+            handleErrorsWithInternalCode(firstError);
+            return;
+          }
+          errorText.innerHTML = data.errors.join('\n');
+          errorText.style.display = 'block';
+        }
+      }
+    }
+
+    xhr.open(this.method, this.action)
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')
+    xhr.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(readCookie('XSRF-TOKEN')))
+    xhr.send(formData)
+  }
+
+  function handleErrorsWithInternalCode(error) {
+    switch(error.internal_error_code) {
+      case "BAD_REQUEST_ADMIN_2FA_LOGIN_OTP_REQUIRED":
+        window.history.pushState({}, '', '/admin/enter-2fa')
+        return location.reload();
+      case "BAD_REQUEST_LOCKED_ADMIN_LOGIN":
+        window.history.pushState({}, '', '/admin/account_block')
+        return location.reload();
+    }
+  };
 </script>

@@ -63,7 +63,17 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['prefix' => 'admin', 'middleware'  =>  ['set_x_frame']], function () {
         Route::post('/signin', 'AdminController@postSignin')->name('admin_signin');
+        Route::post('/2fa/otp-verify', 'AdminController@postVerify2faAuthOtp')->name('admin_2FA_verify');
+        Route::post('/2fa/otp-resend', 'AdminController@postResendOtp')->name('admin_2FA_resend');
         Route::get('/', 'AdminController@getIndex')->name('admin_getIndex');
+        //admin verify 2fa page
+        Route::get('/enter-2fa','AdminController@show2FALayout')
+            ->name('enter-2fa')
+            ->middleware('set_x_frame');
+        //admin account block page
+        Route::get('/account_block','AdminController@showAccountBlocked')
+            ->name('account_block')
+            ->middleware('set_x_frame');
     });
 
     Route::group(['prefix' => 'user'], function()
