@@ -173,9 +173,7 @@ class Metadata
     ];
 
     const DCC_SUPPORTED_LIBRARIES_ON_FEATURE_FLAG = [
-        self::CUSTOM,
         self::DIRECT,
-        self::EMBEDDED,
     ];
 
     public static function getStringForValue($value, array $map)
