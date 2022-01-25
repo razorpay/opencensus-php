@@ -206,8 +206,14 @@ class HubspotClient
         $this->trackHubspotEvent($email, $payloadData);
     }
 
-    public function trackSubmerchantSignUp(string $partnerEmail)
+    public function trackSubmerchantSignUp($partnerEmail)
     {
+        //Incase of mobile signup, partner email can be empty, so adding a null check here
+        if (empty($partnerEmail) === true)
+        {
+            return;
+        }
+
         $partnerEventPayload = [];
 
         $partnerEventPayload['new_submerchant_added'] = true;
