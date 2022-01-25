@@ -6147,6 +6147,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TIME_TAKEN_TO_UPDATE_TXN_IN_FTA_UPDATE_FTS_WEBHOOK = 'TIME_TAKEN_TO_UPDATE_TXN_IN_FTA_UPDATE_FTS_WEBHOOK';
     const TIME_TAKEN_TO_UPDATE_TXN_IN_FAV_UPDATE_FTS_WEBHOOK = 'TIME_TAKEN_TO_UPDATE_TXN_IN_FAV_UPDATE_FTS_WEBHOOK';
 
+    const FORCE_SET_SALESFORCE_REQUEST_JOB_MODE             = 'FORCE_SET_SALESFORCE_REQUEST_JOB_MODE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

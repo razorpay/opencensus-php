@@ -35,6 +35,11 @@ class SalesForceClient extends BaseSalesForceClient
         return;
     }
 
+    public function sendLeadUpsertEventsToSalesforce(array $payload)
+    {
+        return;
+    }
+
     public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
     {
         return;

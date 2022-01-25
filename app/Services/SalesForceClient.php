@@ -147,6 +147,16 @@ class SalesForceClient
         );
     }
 
+    public function sendLeadUpsertEventsToSalesforce(array $data)
+    {
+        $url = $this->generateUrlForWebsiteLeadUpsert();
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_EVENT_REQUEST,
+            TraceCode::SALESFORCE_EVENT_RESPONSE,
+            TraceCode::SALESFORCE_EVENT_ERROR
+        );
+    }
+
     public function sendPartnerInfo(Merchant\Entity $partner)
     {
         if ($partner->isPartner() === false)
@@ -490,6 +500,11 @@ class SalesForceClient
 
     protected function generateUrlForOpportunityUpsert(){
         return $this->baseUrl . '/services/apexrest/DashboardOpportunityUpsert';
+    }
+
+    protected function generateUrlForWebsiteLeadUpsert()
+    {
+        return $this->baseUrl . '/services/apexrest/leadupsertprd';
     }
 
     protected function generateUrlForAccountFetch(string $nextUrl)

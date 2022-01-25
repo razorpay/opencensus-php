@@ -114,8 +114,9 @@ class SalesForceServiceTest extends OAuthTestCase {
 
         $actualData = null;
 
-        $this->salesForceClient->expects($this->any())
-                               ->method('sendEventToSalesForce')
+        // NOTE - Checking for method indirectly also checks for URL
+        $this->salesForceClient->expects($this->once())
+                               ->method('sendLeadUpsertEventsToSalesforce')
                                ->will($this->returnCallback(function (array $payload) use (&$actualData) {
                                    $actualData = $payload;
                                    return;

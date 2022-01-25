@@ -1720,7 +1720,7 @@ class Route
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_otp_register'                        => ['post',     'users/register/otp',                             'UserController@registerUserWithOtp'                                ],
-        'verify_user_otp_register'                 => ['post',     'users/register/otp/verify',                      'UserController@verifySignupOtpAndRegisterUser'                              ],
+        'verify_user_otp_register'                 => ['post',     'users/register/otp/verify',                      'UserController@verifySignupOtpAndRegisterUser'                     ],
 
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                 => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],

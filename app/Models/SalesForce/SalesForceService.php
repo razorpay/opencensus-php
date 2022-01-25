@@ -20,6 +20,14 @@ class SalesForceService {
 
     public function raiseEvent(Entity $merchant, SalesForceEventRequestDTO $salesForceEventRequestDTO) {
         $eventPayload = $this->buildSalesforceEventPayloadForEventType($salesForceEventRequestDTO->getEventType(), $salesForceEventRequestDTO, $merchant);
+
+        if( $salesForceEventRequestDTO->getEventType()->getValue() === Constants::RX_WEBSITE_SF_EVENTS)
+        {
+            $this->salesForceClient->sendLeadUpsertEventsToSalesforce($eventPayload);
+
+            return;
+        }
+
         $this->salesForceClient->sendEventToSalesForce($eventPayload);
     }
 
