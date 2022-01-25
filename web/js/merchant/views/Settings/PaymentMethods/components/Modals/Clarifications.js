@@ -49,6 +49,7 @@ const ClarificationInput = (props) => {
             placeholder="Sample text or whatever the merchant wants to add here ."
             onChange={onTextChange}
             value={discrepancyAnswer}
+            maxLength="500"
           />
 
           {fileUpload && <i className="i i-file-attach" />}
@@ -63,6 +64,7 @@ const ClarificationInput = (props) => {
               name="clarification-file-upload"
               id="clarification-file-upload"
               accept={['pdf', 'jpg', 'jpeg']}
+              maxSize={1048576} // 1MB
             />
           </div>
         )}
