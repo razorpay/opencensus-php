@@ -697,7 +697,7 @@ class Gateway extends Base\Gateway
         {
             $version = $input['gateway']['data']['version'] ?? '';
 
-            if ($version === 'v2') 
+            if ($version === 'v2')
             {
                 return $this->upiCallback($input);
             }
@@ -885,10 +885,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getTerminalOnboardingMozartRequestArray($input);
 
+        $traceContent = $this->getTraceContent($request['content']);
+
         $traceReq = [
             'method'    => $request['method'],
             'url'       => $request['url'],
-            'content'   => $request['content'],
+            'content'   => $traceContent,
         ];
 
         $this->traceGatewayTerminalOnboarding($traceReq, 'request', $input, TraceCode::GATEWAY_CREATE_TERMINAL_REQUEST);
@@ -1541,7 +1543,7 @@ class Gateway extends Base\Gateway
 
         $prefix = 'payments';
 
-        if ((isset($input['gateway']['cps_route']) === true) and 
+        if ((isset($input['gateway']['cps_route']) === true) and
             ($input['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE))
         {
             $prefix = 'upiPayments';
@@ -3218,7 +3220,7 @@ class Gateway extends Base\Gateway
      * Pre Process server callback for UPI Airtel
      * @param string $input
      * @return array
-     * 
+     *
      * Splits the traffic between common gateway trait and existing API execution for pre-processing.
      */
     public function preProcessServerCallbackForUpiAirtel(string $input,$mode = null)
@@ -3300,5 +3302,43 @@ class Gateway extends Base\Gateway
         {
             $content['entities']['payment']['vpa'] = $input['upi']['vpa'] ?? null;
         }
+    }
+
+    private function getTraceContent($content)
+    {
+        try
+        {
+            if (is_string($content) === true) {
+                $content = json_decode($content, true);
+            }
+
+            if (is_array($content) === false) {
+                return $content;
+            }
+
+            if ((is_array($content['entities']) === true) and (is_array($content['entities']['terminal']) === true)) {
+
+                $terminalData = $content['entities']['terminal'];
+
+                $keys = ['mc_mpan', 'visa_mpan', 'rupay_mpan'];
+
+                foreach ($keys as $key) {
+                    unset($terminalData[$key]);
+                }
+
+                $content['entities']['terminal'] = $terminalData;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_GET_TRACE_CONTENT_ERROR,
+                [
+                    'message'             => 'exception',
+                    'error'               => $e->getMessage(),
+                ]);
+        }
+
+        return $content;
     }
 }

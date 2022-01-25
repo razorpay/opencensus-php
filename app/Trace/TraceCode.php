@@ -1186,6 +1186,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_MANDATE_UPDATE_REQUEST                        = 'GATEWAY_MANDATE_UPDATE_REQUEST';
     const GATEWAY_MANDATE_UPDATE_RESPONSE                       = 'GATEWAY_MANDATE_UPDATE_RESPONSE';
     const GATEWAY_MANDATE_UPDATE_ERROR                          = 'GATEWAY_MANDATE_UPDATE_ERROR';
+    const GATEWAY_GET_TRACE_CONTENT_ERROR                       = 'GATEWAY_GET_TRACE_CONTENT_ERROR';
     const GATEWAY_MANDATE_REVOKE_REQUEST                        = 'GATEWAY_MANDATE_REVOKE_REQUEST';
     const GATEWAY_MANDATE_REVOKE_RESPONSE                       = 'GATEWAY_MANDATE_REVOKE_RESPONSE';
     const GATEWAY_PRE_AUTH_RESPONSE                             = 'GATEWAY_PRE_AUTH_RESPONSE';

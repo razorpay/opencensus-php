@@ -134,14 +134,18 @@ class Service extends Base\Service
                 // We are catching gateway errors so that end-user see custom msg instead of "Payment processing failed due to error at bank or wallet gateway"
                 catch (Exception\GatewayErrorException $e)
                 {
-                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $gatewayInput);
+                    $traceData = $this->getTraceData($gatewayInput);
+
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $traceData);
 
                     throw new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_TERMINAL_ONBOARDING_FAILED);
                 }
                 catch (\Throwable $e)
                 {
-                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $gatewayInput);
+                    $traceData = $this->getTraceData($gatewayInput);
+
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MERCHANT_ONBOARD_REQUEST_FAILED, $traceData);
 
                     throw $e;
                 }
@@ -249,5 +253,22 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    private function getTraceData($gatewayInput)
+    {
+        if (is_array($gatewayInput) === false)
+        {
+            return $gatewayInput;
+        }
+
+        $keys = ['mpan'];
+
+        foreach ($keys as $key)
+        {
+            unset($gatewayInput[$key]);
+        }
+
+        return $gatewayInput;
     }
 }
