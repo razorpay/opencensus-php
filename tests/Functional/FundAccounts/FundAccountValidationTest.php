@@ -1973,4 +1973,156 @@ class FundAccountValidationTest extends TestCase
 
         Queue::assertPushed(Transactions::class);
     }
+
+    public function testFundAccountValidationFailedInZeroPricingInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->mockRazorxTreatment();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $pricingPlan = [
+            'plan_name'           => 'FAV Plan',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'product'             => 'banking',
+            'feature'             => 'fund_account_validation',
+            'payment_method'      => 'bank_account',
+            'account_type'        => 'shared'
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking'];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        //$this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        Queue::fake();
+
+        $this->triggerFlowToUpdateFavWithNewState($fav['id']);
+
+        // We don't create a transaction for 0 pricing reversals in FAV
+        Queue::assertPushed(Transactions::class, 0);
+    }
+
+    public function testFundAccountValidationFailedOnLiveModeInLedgerShadowModeWithZeroPricing()
+    {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $this->mockRazorxTreatment();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        //Zero pricing
+        $pricingPlan = [
+            'plan_name'           => 'FAV Plan',
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'org_id'              => '100000razorpay',
+            'type'                => 'pricing',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'product'             => 'banking',
+            'feature'             => 'fund_account_validation',
+            'payment_method'      => 'bank_account',
+            'account_type'        => 'shared'
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking'];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        //$this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+
+        $this->startTest();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $payoutId = $fav->getId();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->triggerFlowToUpdateFavWithNewState($payoutId);
+
+        $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('failed', $fta->getStatus());
+
+        $this->assertEquals('failed', $payout->getStatus());
+
+        $fundAccountValidationCreated = $this->getDbLastEntity('fund_account_validation');
+
+        // Since there are multiple events within the flow,
+        // following is a list of events in the order in which they occur in the test flow
+        $transactorTypeArray = [
+            'fav_initiated',
+            'fav_failed',
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($fundAccountValidationCreated->getPublicId(), $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('0', $ledgerRequestPayload['commission']);
+            $this->assertEquals('0', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        //
+        // Assertions for fts_fund_account_id and fts_account_type
+        //
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        // Not passed in fund account validation initiated payload
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
+
+        // Passed in fund account validation failed payload
+        $this->assertEquals('100000000', $ledgerSnsPayloadArray[1]['identifiers']['fts_fund_account_id']);
+        $this->assertEquals('nodal', $ledgerSnsPayloadArray[1]['identifiers']['fts_account_type']);
+    }
 }

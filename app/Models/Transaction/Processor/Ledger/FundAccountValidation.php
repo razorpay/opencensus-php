@@ -85,11 +85,21 @@ class FundAccountValidation extends Base
                     break;
 
                 case self::FAV_FAILED:
+                    $reversal = $fundAccountValidation->reversal;
+
                     $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
-                    $apiTransactionId = $fundAccountValidation->reversal->getTransactionId();
-                    $transactorId = $fundAccountValidation->reversal->getPublicId();
-                    $transactorDate = $fundAccountValidation->reversal->getCreatedAt();
-                    $transactionId = $fundAccountValidation->reversal->getTransactionId();
+
+                    if ($reversal !== null)
+                    {
+                        $apiTransactionId = $reversal->getTransactionId();
+                        $transactorId = $reversal->getPublicId();
+                        $transactorDate = $reversal->getCreatedAt();
+                        $transactionId = $reversal->getTransactionId();
+                    }
+                    else
+                    {
+                        $transactorId = $fundAccountValidation->getPublicId();
+                    }
 
                     break;
 
@@ -213,7 +223,8 @@ class FundAccountValidation extends Base
             self::IDENTIFIERS      => $identifiers,
         ];
 
-        if ($status === self::FAV_FAILED)
+        if ($status === self::FAV_FAILED and
+            $validation->reversal !== null)
         {
             $payload[self::TRANSACTOR_ID]    = $validation->reversal->getPublicId();
             $payload[self::TRANSACTION_DATE] = $validation->reversal->getCreatedAt();

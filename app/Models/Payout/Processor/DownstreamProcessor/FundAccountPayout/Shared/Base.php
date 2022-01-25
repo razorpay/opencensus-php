@@ -336,12 +336,15 @@ class Base extends FundAccountPayout\Base
 
         $this->repo->saveOrFail($txn);
 
+        // if fee split is null, it may mean that a txn is already created.
+        // thus a dispatch may have already happened
+        // which means a dispatch is not needed if fee split is null
         if ($feeSplit !== null)
         {
             (new TxnCore)->saveFeeDetails($txn, $feeSplit);
-        }
 
-        (new TxnCore())->dispatchEventForTransactionCreated($txn);
+            (new TxnCore())->dispatchEventForTransactionCreated($txn);
+        }
 
         $this->trace->info(
             TraceCode::TRANSACTION_FOR_LEDGER_REVERSE_SHADOW_CREATED,

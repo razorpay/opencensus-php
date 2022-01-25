@@ -308,6 +308,48 @@ class Core extends Base\Core
     {
         if ($fav->getFees() === 0)
         {
+            // we still want to send a request to ledger even though a reversal was not created
+            // This is to make sure that other chart of accounts get balanced
+            if (FundAccountValidation\Core::shouldFavGoThroughLedgerReverseShadowFlow($fav) === true)
+            {
+                try
+                {
+                    $response = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($fav);
+                }
+                catch (Exception\GatewayTimeoutException $e)
+                {
+                    // Timeout case
+                    // This is an ambiguous situation, need to manually check if the ledger entry was created.
+                    // TODO: An alert here is absolutely essential
+                    $this->trace->traceException(
+                        $e,
+                        Trace::CRITICAL,
+                        null,
+                        [
+                            'fav_id' => $fav->getId(),
+                        ]
+                    );
+
+                    // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
+                    // entry is eventually created
+                }
+                catch (\Throwable $e)
+                {
+                    // If an exception is caught here, we ignore it.
+                    // TODO: set an alert for exceptions caught in ledger calls
+                    // If that exception is found to be a part of this reversal flow, we will make sure that we
+                    // create an entry in ledger asynchronously/manually later.
+                    $this->trace->traceException(
+                        $e,
+                        Logger::ALERT,
+                        TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                    );
+                }
+
+                // No transaction created in API here, we don't do it for FAVs with 0 fees getting marked as failed
+                // As no reversal entity was created.
+            }
+
             return;
         }
 
@@ -332,6 +374,23 @@ class Core extends Base\Core
             try
             {
                 $response = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($fav);
+
+                // dispatch to queue for transactions creation.
+                try
+                {
+                    Transactions::dispatch($this->mode, $reversal->getId(), E::REVERSAL, $response);
+                }
+                catch (\Throwable $ex)
+                {
+                    // Todo: check how to handle this failure
+                    $this->trace->info(
+                        TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+                        [
+                            'reversal_id'    => $reversal->getId(),
+                            'entity_name'    => \RZP\Constants\Entity::REVERSAL,
+                            'ledgerResponse' => $response,
+                        ]);
+                }
             }
             catch (Exception\GatewayTimeoutException $e)
             {
@@ -361,22 +420,6 @@ class Core extends Base\Core
                     Logger::ALERT,
                     TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
                 );
-            }
-            // dispatch to queue for transactions creation.
-            try
-            {
-                Transactions::dispatch($this->mode, $reversal->getId(), E::REVERSAL, $response);
-            }
-            catch (\Throwable $ex)
-            {
-                // Todo: check how to handle this failure
-                $this->trace->info(
-                    TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
-                    [
-                        'reversal_id'    => $reversal->getId(),
-                        'entity_name'    => \RZP\Constants\Entity::REVERSAL,
-                        'ledgerResponse' => $response,
-                    ]);
             }
 
             $this->trace->info(
@@ -951,7 +994,10 @@ class Core extends Base\Core
 
                     // TODO: This dispatch has to be moved to some other location once ledger becomes primary
                     // As we will stop the dual write to the transactions table
-                    if ($reversal->getEntityType() === E::PAYOUT)
+                    // If fee split is null, it means that duplicate txn was found
+                    // so no dispatch necessary again.
+                    if ($reversal->getEntityType() === E::PAYOUT and
+                        $feeSplit !== null)
                     {
                         (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
                     }

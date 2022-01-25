@@ -4798,6 +4798,8 @@ class Core extends Base\Core
                     $payout->transaction()->associate($txn);
 
                     $this->repo->saveOrFail($payout);
+
+                    return $txn;
                 });
             },
             60,

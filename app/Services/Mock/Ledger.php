@@ -287,8 +287,8 @@ class Ledger extends BaseLedger
 
         if (strpos($input['transactor_event'], 'fav') !== false)
         {
-            if ((strpos($input['transactor_event'], 'failed') !== false) or
-                (strpos($input['transactor_event'], 'reversed') !== false))
+            if (strpos($input['transactor_event'], 'failed') !== false and
+                $input['commission'] !== '0')
             {
                 $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
             }
@@ -322,20 +322,28 @@ class Ledger extends BaseLedger
             $balance = $merchant->sharedBankingBalance->getBalance();
         }
 
-        $creditEvents = [
+        // Cases when merchant balance will increase
+        $merchantBalanceCreditEvents = [
             Adjustment::POSITIVE_ADJUSTMENT_PROCESSED,
             FundLoading::FUND_LOADING_PROCESSED,
             FundAccountValidation::FAV_FAILED,
-            FundAccountValidation::FAV_PROCESSED,
             Payout::PAYOUT_REVERSED,
             Payout::INTER_ACCOUNT_PAYOUT_REVERSED,
             Payout::PAYOUT_FAILED,
             Payout::INTER_ACCOUNT_PAYOUT_FAILED,
         ];
 
+        // Cases where there will be no change in merchant balance
+        $merchantBalanceNoChangeEvents = [
+            FundAccountValidation::FAV_REVERSED,
+            FundAccountValidation::FAV_PROCESSED,
+            Payout::PAYOUT_PROCESSED,
+            Payout::INTER_ACCOUNT_PAYOUT_PROCESSED,
+        ];
+
         $isCredit = false;
 
-        if (in_array($input['transactor_event'], $creditEvents) === true)
+        if (in_array($input['transactor_event'], $merchantBalanceCreditEvents, true) === true)
         {
             $isCredit = true;
         }
@@ -345,6 +353,11 @@ class Ledger extends BaseLedger
         if (strpos($input['transactor_event'], 'fav') !== false)
         {
             $balanceDelta = $input['commission'];
+        }
+
+        if (in_array($input['transactor_event'], $merchantBalanceNoChangeEvents, true) === true)
+        {
+            $balanceDelta = 0;
         }
 
         $journalId = \RZP\Models\Base\UniqueIdEntity::generateUniqueId();
@@ -375,7 +388,7 @@ class Ledger extends BaseLedger
                     'balance'          => '',
                     'account_entities' => [
                         'account_type'      => ['cash'],
-                        'fund_account_type' => ['adjustment'],
+                        'fund_account_type' => ['adjustment'], //TODO: Determine how to correct this
                         'transactor'        => [$input['tenant'] ?? 'X'],
                     ],
                 ],
