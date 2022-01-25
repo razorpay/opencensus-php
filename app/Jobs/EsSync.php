@@ -24,6 +24,7 @@ class EsSync extends Job
 
     private $repo;
     private $esRepo;
+    private $rearch;
 
     public $timeout = 4000;
 
@@ -31,13 +32,17 @@ class EsSync extends Job
         string $mode,
         string $action,
         string $entity,
-        $id)
+        $id,
+        bool $rearch = false)
     {
         parent::__construct($mode);
 
         $this->action = $action;
         $this->entity = $entity;
         $this->ids    = array_wrap($id);
+        // incase of rearch payments we have to call findOrFail instead of 
+        // findManyForIndexingByIds
+        $this->rearch = $rearch;
     }
 
     public function handle()
@@ -114,17 +119,13 @@ class EsSync extends Job
         {
             case Base\EsRepository::CREATE:
             case Base\EsRepository::UPDATE:
-
-                $batches = array_chunk($this->ids, self::MAX_BATCH_SIZE, true);
-
-                foreach ($batches as $batch)
+            
+                if ($this->rearch === true)
                 {
-                    $documents = $this->repo->findManyForIndexingByIds($batch);
-
-                    $response = $this->esRepo->bulkUpdate($documents);
-                    
-                    $this->traceErrorResponse($response);
+                    return $this->syncRearchEntities();
                 }
+
+                $this->syncApiEntities();
 
                 break;
 
@@ -140,6 +141,35 @@ class EsSync extends Job
             default:
 
                 throw new LogicException('EsSync: Invalid action.');
+        }
+    }
+
+
+    private function syncApiEntities()
+    {
+        $batches = array_chunk($this->ids, self::MAX_BATCH_SIZE, true);
+
+        foreach ($batches as $batch)
+        {
+            $documents = $this->repo->findManyForIndexingByIds($batch);
+
+            $response = $this->esRepo->bulkUpdate($documents);
+            
+            $this->traceErrorResponse($response);
+        }
+    }
+
+    private function syncRearchEntities()
+    {
+        foreach ($this->ids as $id)
+        {
+            $entity = $this->repo->findOrFail($id);
+
+            $documents = $this->repo->serializeForIndexingForExternal($entity);
+
+            $response = $this->esRepo->bulkUpdate([$documents]);
+            
+            $this->traceErrorResponse($response);
         }
     }
 

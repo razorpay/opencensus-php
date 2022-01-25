@@ -227,4 +227,9 @@ trait ExternalRepo
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
+
+    public function serializeForIndexingForExternal(PublicEntity $entity): array 
+    {
+        return $this->serializeForIndexing($entity);
+    }
 }
