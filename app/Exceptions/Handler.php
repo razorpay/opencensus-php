@@ -8,6 +8,7 @@ use App\Trace\Trace;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use UnexpectedValueException;
+use Razorpay\Api\Errors\Error;
 use Razorpay\Api\Errors\BadRequestError;
 use App\Exceptions\EntityNotFoundException;
 use Illuminate\Session\TokenMismatchException;
@@ -186,10 +187,13 @@ class Handler extends ExceptionHandler
 
     protected function getStatusCodeForUnhandledException(Exception $e)
     {
-        if (($e instanceof Exception) and
-            ($e->getMessage() === 'Unauthorized Access'))
+        if ($e->getMessage() === 'Unauthorized Access')
         {
             return 401;
+        }
+        else if ($e instanceof Error)
+        {
+            return $e->getHttpStatusCode();
         }
 
         return 500;
