@@ -119,12 +119,16 @@ class CredcaseSigner
      */
     protected function shouldSignByCredcase(string $publicKey = null): bool
     {
+        $merchantId = $this->ba->getMerchantId();
+
         // Credcase signer for now only public key as argument. But it will
-        // support partner auth key, and oauth public token in future.
-        if (($publicKey !== null) and (preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1))
+        // support partner auth key, oauth public token, and {rzp_mode_mid} in the future.
+        if (($publicKey !== null)
+            and preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
+            and str_ends_with($publicKey, $merchantId) === false)
         {
             $treatment = $this->razorx->getTreatment(
-                $this->ba->getMerchantId(),
+                $merchantId,
                 self::RAZORX_FEATURE,
                 $this->ba->getMode()
             );
@@ -173,7 +177,7 @@ class CredcaseSigner
                     if ($encryptedSecret === null)
                     {
                         $this->trace->count(self::METRIC_SIGN_REDIS_KEY_NOT_FOUND_TOTAL);
-                        $this->trace->info(TraceCode::CREDCASE_SIGNER_REDIS_NOT_FOUND, ['key' => $publicKey]);
+                        throw new RuntimeException('Encrypted secret not found in redis');
                     }
 
                     break;
