@@ -493,6 +493,7 @@ class BankCodes
         '8279' => 'YESB0BSCB01',
         '8247' => 'GSCB0BKD001',
         '8343' => 'SBIN0RRMLGB',
+        '9775' => 'PYTM0123456',
         // Below NBINs have multiple IFSCs. We have taken first for all these from the list.
         '8357' => 'HDFC0CPCB01',
         '8314' => 'YESB0YLNS01',
