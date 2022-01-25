@@ -10,9 +10,9 @@ export default class TicketStatus extends React.Component {
     return (
       <span
         style={{ marginLeft: '10px' }}
-        className={`label ticket-status-label label-${status.class}`}
+        className={`label ticket-status-label label-${status && status.class}`}
       >
-        {status.name}
+        {status?.name}
       </span>
     );
   }
