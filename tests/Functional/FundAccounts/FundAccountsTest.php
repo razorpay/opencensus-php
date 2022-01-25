@@ -121,7 +121,7 @@ class FundAccountsTest extends TestCase
 
         $this->app->instance('x-segment', $xsegmentMock);
 
-        $xsegmentMock->expects($this->exactly(1))
+        $xsegmentMock->expects($this->exactly(0))
             ->method('pushIdentifyandTrackEvent')
             ->willReturn(true);
 

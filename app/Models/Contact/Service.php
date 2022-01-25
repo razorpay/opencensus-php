@@ -77,7 +77,7 @@ class Service extends Base\Service
                     'email' => $user['email'],
                 ];
 
-                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::CONTACT_CREATED);
+                //$this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::CONTACT_CREATED);
             } else{
                 $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
                     [

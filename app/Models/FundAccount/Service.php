@@ -346,7 +346,7 @@ class Service extends Base\Service
                     'email' => $user['email'],
                 ];
 
-                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::FUND_ACCOUNT_ADDED);
+                //$this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::FUND_ACCOUNT_ADDED);
             } else{
                 $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
                     [

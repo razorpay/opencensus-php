@@ -2247,7 +2247,7 @@ class Core extends Base\Core
                         'email' => $user['email'],
                     ];
 
-                    $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::CA_PAYOUT_PROCESSED);
+                    // $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::CA_PAYOUT_PROCESSED);
                 } else{
                     $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
                         [
