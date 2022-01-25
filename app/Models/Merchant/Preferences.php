@@ -145,6 +145,7 @@ class Preferences
     const MID_STASHFIN              = 'Ao42qLIgNsuREt';
     const MID_VOCATIONAL_EDU        = 'F5NF8QNN7XAJ2w';
     const MID_BSE                   = 'FlaHVYQCGKbK2t';
+    const MID_INDIABONDS            = 'IanlMZTWfq1Y7v';
     const MID_EDELWEISS_ECL         = 'FfaKyVTNaPTBXf';
     const MID_EDELWEISS_EHFL        = 'Fg1qjtRFHMvHSy';
     const MID_EDELWEISS_ERFL        = 'Fg2AWmybDBvRBM';
@@ -372,7 +373,7 @@ class Preferences
     ];
 
     const TRANSFER_SETTLED_WEBHOOK_MIDS = [
-        self::MID_BSE,
+        self::MID_BSE, self::MID_INDIABONDS,
     ];
 
     const NO_MERCHANT_INVOICE_PARENT_MIDS =  [
