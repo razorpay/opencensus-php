@@ -84,6 +84,12 @@ class FirstDataGatewayTest extends TestCase
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertNotNull($paymentEntity['token_id']);
@@ -115,6 +121,11 @@ class FirstDataGatewayTest extends TestCase
         // Another payment to test auto-refund
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $this->refundAuthorizedPayment($paymentId);
 
@@ -171,12 +182,14 @@ class FirstDataGatewayTest extends TestCase
 
         // Switch to private auth for second recurring payment
 
-        $data = $this->testData[__FUNCTION__];
+        $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $this->runRequestResponseFlow($data, function () use ($payment)
-        {
-            $this->doS2sRecurringPayment($payment);
-        });
+        $content = $this->doS2sRecurringPayment($payment);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $lastPayment = $this->getLastEntity('Payment', true);
         $this->assertEquals($lastPayment['status'], 'failed');

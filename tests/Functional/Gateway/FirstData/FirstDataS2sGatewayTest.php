@@ -372,6 +372,12 @@ class FirstDataS2sGatewayTest extends TestCase
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         $gatewayEntity = $this->getLastEntity('first_data', true);
@@ -447,6 +453,12 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 

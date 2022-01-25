@@ -5,6 +5,17 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testRecurringOtpFix' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testSaveGatewayPriority' => [
         'request' => [
             'content' => [
@@ -206,19 +217,53 @@ return [
     ],
 
     'testRecurringPaymentsWithMultipleGatewayTokensForOneToken' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => ErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
-                ],
-            ],
-            'status_code' => 500,
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
         ],
-        'exception' => [
-            'class'               => \RZP\Exception\RuntimeException::class,
-            'message'             => 'Terminal should not be null',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testRecurringSecondPaymentUnassignedTerminal' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testRecurringSecondPaymentCreatePrivateAuthHitachi' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testRecurringSecondPaymentCreatePrivateAuth' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testRecurringPaymentWithNewCustomer' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 

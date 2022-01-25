@@ -1,6 +1,16 @@
 <?php
 
 return [
+    'getNewPaymentEntity' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     'facades' => [
         'virtual_yes_bank' => [
             'cust_code'          => '111222',

@@ -489,6 +489,12 @@ class HdfcGatewayTest extends TestCase
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         // $this->assertTestResponse($paymentEntity);
@@ -562,6 +568,12 @@ class HdfcGatewayTest extends TestCase
 
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
@@ -665,12 +677,12 @@ class HdfcGatewayTest extends TestCase
 
         $this->hdfcPaymentMockResultCode('NOT APPROVED', 'authorize');
 
-        $this->makeRequestAndCatchException(
-            function() use ($payment)
-            {
-                $this->doS2SRecurringPayment($payment);
-            },
-            Exception\GatewayErrorException::class);
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($response['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+        $this->startTest();
 
         $payment = $this->getDbLastPayment();
 

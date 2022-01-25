@@ -239,7 +239,7 @@ trait Authorize
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment, $gatewayInput, $data);
+        return $this->processPaymentFinal($payment, $gatewayInput, $data, $ret);
     }
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
@@ -1024,7 +1024,7 @@ trait Authorize
         return $data;
     }
 
-    protected function processCardRecurringMandateInitialPaymentCreated(Payment\Entity $payment)
+    protected function processCardRecurringMandateInitialPaymentCreated(Payment\Entity $payment, $ret)
     {
         try
         {
@@ -1043,6 +1043,11 @@ trait Authorize
         $token->cardMandate()->associate($cardMandate->getId());
 
         $token->saveOrFail();
+
+        if ($this->app->mandateHQ->shouldSkipSummaryPage())
+        {
+            return $ret;
+        }
 
         $mandateUrl = $cardMandate->getMandateSummaryUrl();
 
@@ -1093,7 +1098,7 @@ trait Authorize
         throw new Exception\LogicException('Should not be called for any payment other than Card Auto Recurring');
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data, $ret): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
@@ -1123,7 +1128,12 @@ trait Authorize
 
         if ($payment->isCardMandateCreateApplicable() === true)
         {
-            return $this->processCardRecurringMandateInitialPaymentCreated($payment);
+            $resp = $this->processCardRecurringMandateInitialPaymentCreated($payment, $ret);
+
+            if ($resp !== null)
+            {
+                return $resp;
+            }
         }
 
         if ($payment->isCardMandateNotificationCreateApplicable() === true)

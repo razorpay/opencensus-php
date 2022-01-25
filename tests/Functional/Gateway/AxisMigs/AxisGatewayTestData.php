@@ -167,7 +167,7 @@ return [
         'admin' => true,
     ],
 
-    'testRecurringPaymentAuthenticateCard' => [
+    'testRecurringPaymentAuthenticateCardData' => [
         'amount'              => 50000,
         'method'              => 'card',
         'status'              => 'authorized',
@@ -193,6 +193,16 @@ return [
         'captured'            => false,
         'entity'              => 'payment',
         'admin'               => true
+    ],
+    'testRecurringPaymentAuthenticateCard' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
     ],
 
     'recurringEntity' => [

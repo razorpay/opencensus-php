@@ -6,9 +6,21 @@ use Carbon\Carbon;
 
 class MandateHQ
 {
+    public function shouldSkipSummaryPage(): bool
+    {
+        return true;
+    }
+
     public function isBinSupported($bin): bool
     {
-        return false;
+        return true;
+    }
+
+    public function validatePayment($mandateId, $input)
+    {
+        return [
+            'validation_id' => 'validateid123',
+        ];
     }
 
     public function registerMandate($input)
@@ -26,6 +38,16 @@ class MandateHQ
             'id'           => 'C146gmBVNe',
             'status'       => 'delivered',
             'delivered_at' => Carbon::now()->timestamp,
+            'afa_status'   => 'pending',
+            'afa_required' => false,
+        ];
+    }
+
+    public function cancelMandate($mandateId)
+    {
+        return [
+            'id'           => 'C146gmBVNe',
+            'status'       => 'cancelled',
         ];
     }
 

@@ -121,84 +121,6 @@ class RecurringPaymentTest extends TestCase
         $this->assertEquals('initial', $payment['recurring_type']);
     }
 
-    public function testRecurringInitialPaymentAxisInternationalBlocked()
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
-
-        $this->fixtures->iin->create([
-            'iin'       => '514906',
-            'country'   => 'US',
-            'network'   => 'American Express',
-            'type'      => 'credit',
-            'recurring' => 1,
-        ]);
-
-        $payment = $this->getDefaultRecurringPaymentArray();
-
-        $payment['card']['number'] = '5149066434045615';
-        $payment['card']['cvv']    = '1234';
-
-        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
-
-        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
-
-        $this->doAuthAndCapturePayment($payment);
-    }
-
-    public function testRecurringPreferredInitialPaymentAllowed()
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
-
-        $payment = $this->getDefaultRecurringPaymentArray();
-
-        $payment['recurring'] = "preferred";
-
-        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
-
-        $this->doAuthAndCapturePayment($payment);
-
-        $payment = $this->getLastPayment(true);
-
-        $this->assertEquals(true, $payment['recurring']);
-        $this->assertEquals('captured', $payment['status']);
-    }
-
-    public function testRecurringAutoPaymentAllowed()
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
-
-        $payment = $this->getDefaultRecurringPaymentArray();
-
-        $this->doAuthAndCapturePayment($payment);
-
-        $payment = $this->getLastPayment(true);
-
-        $this->assertEquals('initial', $payment['recurring_type']);
-
-        // Set payment for second recurring payment
-        $autoPayment = $this->getDefaultRecurringPaymentArray();
-
-        unset($autoPayment['card']);
-
-        $autoPayment['token'] = $payment['token_id'];
-
-        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
-
-        $response = $this->doS2sRecurringPayment($autoPayment);
-
-        $paymentId = $response['razorpay_payment_id'];
-
-        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
-
-        $this->assertEquals('auto', $paymentEntity['recurring_type']);
-    }
-
     public function testRecurringDomesticCardPaymentSubscriptionRegistration()
     {
         $this->ba->privateAuth();
@@ -545,6 +467,12 @@ class RecurringPaymentTest extends TestCase
 
         $content = $this->doS2SRecurringPayment($payment);
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
@@ -636,6 +564,12 @@ class RecurringPaymentTest extends TestCase
 
         $content = $this->doS2SRecurringPayment($payment);
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $this->assertEquals($paymentEntity[Payment::TERMINAL_ID], '2RecurringTerm');
@@ -694,6 +628,12 @@ class RecurringPaymentTest extends TestCase
         $this->ba->privateAuth();
 
         $content = $this->doS2SRecurringPayment($payment);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -759,6 +699,12 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->terminal->edit($terminal->getId(), ['type' => ['recurring_non_3ds' => 1]]);
 
         $content = $this->doS2SRecurringPayment($payment);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getLastEntity('payment', true);
         $this->assertNull($paymentEntity[Payment::AUTH_TYPE]);
@@ -884,6 +830,12 @@ class RecurringPaymentTest extends TestCase
         $this->ba->privateAuth();
 
         $content = $this->doS2SRecurringPayment($payment);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -1091,6 +1043,12 @@ class RecurringPaymentTest extends TestCase
 
         $paymentId = $response['razorpay_payment_id'];
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($paymentId, 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('auto', $paymentEntity['recurring_type']);
@@ -1125,6 +1083,11 @@ class RecurringPaymentTest extends TestCase
         $response = $this->doS2sRecurringPayment($payment);
 
         $paymentId = $response['razorpay_payment_id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($paymentId, 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
@@ -1164,6 +1127,11 @@ class RecurringPaymentTest extends TestCase
 
         $paymentId = $response['razorpay_payment_id'];
 
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($paymentId, 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertNotNull($paymentEntity['token_id']);
@@ -1197,11 +1165,18 @@ class RecurringPaymentTest extends TestCase
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $ex = false;
+        try
+        {
             $this->doS2SRecurringPayment($payment);
-        });
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals('Terminal should not be null', $e->getMessage());
+
+            $ex = true;
+        }
+        $this->assertTrue($ex);
 
         $this->fixtures->terminal->enableTerminal($firstDataTerminal2['id']);
         $this->fixtures->terminal->enableTerminal('MiGSRcg3DSN3DS');
@@ -1216,6 +1191,11 @@ class RecurringPaymentTest extends TestCase
         $response = $this->doS2sRecurringPayment($payment);
 
         $paymentId = $response['razorpay_payment_id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($paymentId, 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
@@ -1255,11 +1235,18 @@ class RecurringPaymentTest extends TestCase
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $ex = false;
+        try
+        {
             $this->doS2SRecurringPayment($payment);
-        });
+        }
+        catch (\Exception $e)
+        {
+            $this->assertEquals('Terminal should not be null', $e->getMessage());
+
+            $ex = true;
+        }
+        $this->assertTrue($ex);
 
         $this->ba->publicAuth();
     }
@@ -1483,6 +1470,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->mockRegisterMandate();
         $this->mockCheckBin();
+        $this->mockShouldSkipSummaryPage(false);
 
         $this->mockReportPayment();
 

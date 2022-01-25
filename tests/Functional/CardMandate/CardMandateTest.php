@@ -73,6 +73,8 @@ class CardMandateTest extends TestCase
         $this->app->instance('mandateHQ', $this->mandateHQ);
 
         $this->mandateConfirm = 'true';
+
+        $this->mockShouldSkipSummaryPage(false);
     }
 
     public function testCreateCardMandatePayment()

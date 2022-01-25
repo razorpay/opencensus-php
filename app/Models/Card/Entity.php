@@ -940,17 +940,11 @@ class Entity extends Base\PublicEntity
         // allow international IIN
         // allow domestic card if razorX is disabled
         // for fail safety, razorX retry count is 3
-
-        if (((($iin->isInternational() === false) and ($app['rzp.mode'] !== Mode::TEST)) or ($iin->isAmex() === true))
-            and ($isInitial === true)) {
-            if ($merchant->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE) === true)
-            {
-                return $app->mandateHQ->isBinSupported($iin->getIin());
-            }
-            else
-            {
-                return false;
-            }
+        if (((($iin->isInternational() === false) and ($app['rzp.mode'] !== Mode::TEST))
+                or ($iin->isAmex() === true))
+            and ($isInitial === true))
+        {
+            return $app->mandateHQ->isBinSupported($iin->getIin());
         }
 
         return true;

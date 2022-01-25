@@ -506,24 +506,6 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetCardPaymentDomesticIinNA()
-    {
-        $this->ba->publicLiveAuth();
-
-        $this->fixtures->merchant->activate('10000000000000');
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                            ->setCOnstructorArgs([$this->app])
-                            ->setMethods(['getTreatment'])
-                            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')->willReturn('on');
-
-        $this->startTest();
-    }
-
     public function testGetCardPaymentDomesticIinTestMode()
     {
         $this->ba->publicAuth();

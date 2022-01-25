@@ -664,7 +664,7 @@ class AxisGatewayTest extends TestCase
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertTestResponse($paymentEntity);
+        $this->assertTestResponse($paymentEntity, __FUNCTION__ . 'Data');
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('MiGSRcgTmnl3DS', $paymentEntity['terminal_id']);
 
@@ -681,9 +681,15 @@ class AxisGatewayTest extends TestCase
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($paymentId, 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertTestResponse($paymentEntity);
+        $this->assertTestResponse($paymentEntity, __FUNCTION__ . 'Data');
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals('MiGSRcgTmlN3DS', $paymentEntity['terminal_id']);
 

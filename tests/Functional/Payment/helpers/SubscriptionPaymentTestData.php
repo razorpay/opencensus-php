@@ -1,6 +1,26 @@
 <?php
 
 return [
+    'testAutoPaymentWithoutCustomer' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testAutoPaymentCard' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     'sample_subscription_data' => [
         'id' => 'FW8kR7QWp6AyB0',
         'merchant_id' => '10000000000000',

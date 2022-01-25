@@ -2043,7 +2043,16 @@ class ReconciliationFileTest extends TestCase
             unset($payment['card']);
             $payment['token'] = $paymentArray['token_id'];
 
-            $this->doS2SRecurringPayment($payment);
+            $response = $this->doS2SRecurringPayment($payment);
+
+            $paymentId = $response['razorpay_payment_id'];
+
+            $this->testData[__FUNCTION__]['request']['url'] = sprintf('/reminders/send/test/payment/card_auto_recurring/%s',
+                substr($paymentId, 4));
+
+            $this->ba->reminderAppAuth();
+
+            $this->startTest();
 
             $paymentEntity = $this->getDbLastPayment();
         }

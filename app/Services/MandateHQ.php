@@ -86,6 +86,11 @@ class MandateHQ
         $this->testModeSecret  = $this->config['test_mode_password'];
     }
 
+    public function shouldSkipSummaryPage(): bool
+    {
+        return false;
+    }
+
     public function isBinSupported($bin): bool
     {
         $header = [];

@@ -18,6 +18,7 @@ class Status
         self::CREATED => [
             self::MANDATE_APPROVED,
             self::MANDATE_CANCELLED,
+            self::ACTIVE,
         ],
         self::MANDATE_APPROVED => [
             self::ACTIVE,

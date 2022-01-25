@@ -228,6 +228,11 @@ return [
     ],
 
     'testFailedSecondRecurringPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
         'response'  => [
             'content'     => [
                 'error' => [
@@ -240,6 +245,17 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ],
+
+    'testRecurringPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 ];

@@ -3174,6 +3174,16 @@ trait PaymentTrait
         return $this->mockMandateHQ($callable);
     }
 
+    protected function mockShouldSkipSummaryPage($skip)
+    {
+        $callable = function () use ($skip)
+        {
+            return $skip;
+        };
+
+        return $this->mockMandateHQ($callable, 'shouldSkipSummaryPage');
+    }
+
     protected function mockCheckBin()
     {
 

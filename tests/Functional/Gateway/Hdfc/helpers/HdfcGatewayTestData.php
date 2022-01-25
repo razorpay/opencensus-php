@@ -6,6 +6,46 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\TwoFactorAuth;
 
 return [
+    'testDebitRecurringPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testFailureInRecurringPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY,
+        ],
+    ],
+    'testRecurringPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testPayment' => [
         'merchant_id' => '10000000000000',
         'amount' => 50000,

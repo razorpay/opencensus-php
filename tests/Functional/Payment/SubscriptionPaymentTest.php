@@ -2,6 +2,7 @@
 
 namespace Functional\Payment;
 
+use Mockery;
 use RZP\Models\Address\Repository;
 use RZP\Models\Address\Type;
 use RZP\Modules;
@@ -144,6 +145,16 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCardInternational()
     {
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+            ->andReturnUsing(function ()
+            {
+                return false;
+            });
+
         $this->fixtures->iin->create([
             'iin'       => '555555',
             'country'   => 'US',
@@ -211,6 +222,16 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCardWithAVSFeature()
     {
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+            ->andReturnUsing(function ()
+            {
+                return false;
+            });
+
         $this->fixtures->iin->create([
             'iin'       => '555555',
             'country'   => 'US',
@@ -331,7 +352,13 @@ class SubscriptionPaymentTest extends TestCase
             'content' => $paymentArray,
         ];
 
-        $this->makeRequestAndGetContent($request);
+        $content = $this->makeRequestAndGetContent($request);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $payment = $this->getDbLastEntity(Entity::PAYMENT);
 
@@ -539,7 +566,13 @@ class SubscriptionPaymentTest extends TestCase
             'content' => $paymentArray,
         ];
 
-        $this->makeRequestAndGetContent($request);
+        $content = $this->makeRequestAndGetContent($request);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
 
         $payment = $this->getDbLastEntity(Entity::PAYMENT);
 
@@ -606,6 +639,16 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentLocalCustomerWithGlobalCustomerLink()
     {
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+            ->andReturnUsing(function ()
+            {
+                return false;
+            });
+
         $this->fixtures->create('customer', [
             'id' => '100002customer',
             'global_customer_id' => '10000gcustomer',

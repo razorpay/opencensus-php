@@ -21,6 +21,28 @@ return [
         ],
     ],
 
+    'testFirstAndSecondRecurringPaymentWithSingleDigitMonth' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFirstAndSecondRecurringPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testEmptyApprovalCode' => [
         'response'  => [
             'content'     => [
