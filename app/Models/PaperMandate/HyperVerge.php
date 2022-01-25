@@ -138,7 +138,7 @@ class HyperVerge extends Base\Core
 
         if (empty($bankAccount->getBeneficiaryEmail()) === false)
         {
-            $input[self::EMAIL_ID] = substr($bankAccount->getBeneficiaryEmail(), 0, 30);
+            $input[self::EMAIL_ID] = substr($bankAccount->getBeneficiaryEmail(), 0, 40);
         }
 
         $input[self::COMPANY_NAME] = substr($this->getCompanyName($paperMandate), 0, 50);
