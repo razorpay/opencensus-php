@@ -468,8 +468,8 @@ class TokenTest extends TestCase
                     'provider_data'  => [
                         'token_reference_number' => $token,
                         'card_reference_number'  => strrev($token),
-                        'token_expiry_month'     => $input['card']['expiry_month'],
-                        'token_expiry_year'      => $expiry_year,
+                        'token_expiry_month'     => '11',
+                        'token_expiry_year'      => '2022',
                         'token_iin'              => $token_iin,
                         'token_number'           => $input['card']['number'],
                         'cryptogram_value'       => '',
@@ -507,13 +507,21 @@ class TokenTest extends TestCase
 
         $this->assertNotNull($response['service_provider_tokens']);
 
-        $this->assertEquals('12', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+        $this->assertEquals('11', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
 
-        $this->assertEquals('2023', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+        $this->assertEquals('2022', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
 
         $this->assertArrayNotHasKey('customer_id', $response);
 
         $this->assertArrayHasKey('notes', $response);
+
+        //assert card
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('8', $card['expiry_month']);
+        $this->assertEquals('2023', $card['expiry_year']);
+        $this->assertEquals('11', $card['token_expiry_month']);
+        $this->assertEquals('2022', $card['token_expiry_year']);
     }
 
     public function testCreateTokenAndTokenizeCardNotAllowed()
@@ -1614,6 +1622,14 @@ class TokenTest extends TestCase
         $this->assertEquals($statusPayload['request']['content']['status'], $statusResponse['status']);
 
         $this->assertNotNull($statusResponse['vault_token']);
+
+        //assert card
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('2023', $card['expiry_year']);
+        $this->assertEquals('12', $card['token_expiry_month']);
+        $this->assertEquals('2021', $card['token_expiry_year']);
     }
 
     public function testTokenStatusLiveFailure()

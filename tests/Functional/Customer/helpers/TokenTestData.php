@@ -156,7 +156,7 @@ return [
                 'card' => [
                     'number' => '4143667057540458',
                     'cvv' => '123',
-                    'expiry_month' => '12',
+                    'expiry_month' => '08',
                     'expiry_year' => '23',
                 ],
                 'notes' => [

@@ -68,14 +68,18 @@ class Core extends Base\Core
             Card\Entity::LAST4              => $this->getLast4($input, $response),
             Card\Entity::LENGTH             => 0,
             Card\Entity::IIN                => '000000',
-            Card\Entity::EXPIRY_MONTH       => '0',
-            Card\Entity::EXPIRY_YEAR        => '9999',
+            Card\Entity::TOKEN_EXPIRY_MONTH => '0',
+            Card\Entity::TOKEN_EXPIRY_YEAR  => '9999',
         ];
 
         if ($this->isPresent($input, Card\Entity::NAME))
         {
             $createInput[Card\Entity::NAME] = $input[Card\Entity::NAME];
         }
+
+        $createInput[Card\Entity::EXPIRY_MONTH] = $input[Card\Entity::EXPIRY_MONTH];
+
+        $createInput[Card\Entity::EXPIRY_YEAR] = $input[Card\Entity::EXPIRY_YEAR];
 
         if (empty($response['service_provider_tokens']) === false)
         {
@@ -98,7 +102,7 @@ class Core extends Base\Core
             if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_month') &&
                 $this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_year'))
             {
-                $createInput[Card\Entity::EXPIRY_MONTH] = $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'];
+                $createInput[Card\Entity::TOKEN_EXPIRY_MONTH] = $response['service_provider_tokens'][0]['provider_data']['token_expiry_month'];
 
                 $expiry_year = $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'];
 
@@ -107,7 +111,7 @@ class Core extends Base\Core
                     $expiry_year = '20' . $expiry_year;
                 }
 
-                $createInput[Card\Entity::EXPIRY_YEAR] = $expiry_year;
+                $createInput[Card\Entity::TOKEN_EXPIRY_YEAR] = $expiry_year;
             }
             else
             {
@@ -793,9 +797,16 @@ class Core extends Base\Core
         if(array_key_exists('expiry_year', $tokenData) && $tokenData['expiry_year'] !== null &&
             array_key_exists('expiry_month', $tokenData) && $tokenData['expiry_month'] !== null)
         {
-            $updateData[Card\Entity::EXPIRY_MONTH] = $tokenData['expiry_month'];
+            $updateData[Card\Entity::TOKEN_EXPIRY_MONTH] = $tokenData['expiry_month'];
 
-            $updateData[Card\Entity::EXPIRY_YEAR] = $tokenData['expiry_year'];
+            $expiryYear = $tokenData['expiry_year'];
+
+            $updateData[Card\Entity::TOKEN_EXPIRY_YEAR]  = $expiryYear;
+
+            if (strlen($expiryYear) === 2)
+            {
+                $updateData[Card\Entity::TOKEN_EXPIRY_YEAR] = '20' . $expiryYear;
+            }
         }
 
         if(empty($updateData) === false)

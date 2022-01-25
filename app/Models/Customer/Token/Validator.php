@@ -89,9 +89,9 @@ class Validator extends Base\Validator
 
     protected static $createNetworkCardRules = [
         'number'       => 'required',
-        'expiry_month' => 'required',
-        'expiry_year'  => 'required',
-        'cvv'          => 'sometimes',
+        'expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
+        'expiry_year'  => 'required|numeric|digits_between:2,4',
+        'cvv'          => 'sometimes|numeric|digits_between:3,4|nullable',
     ];
 
     protected static $createNetworkTokenAuthenticationDataRules = [

@@ -52,6 +52,8 @@ class Entity extends Base\PublicEntity
     const REFERENCE3          = 'reference3';
     const REFERENCE4          = 'reference4';
     const TOKEN_IIN           = 'token_iin';
+    const TOKEN_EXPIRY_MONTH  = 'token_expiry_month';
+    const TOKEN_EXPIRY_YEAR   = 'token_expiry_year';
 
     /**
      * Number and cvv are never saved in the database
@@ -106,6 +108,8 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::IIN,
         self::TOKEN_IIN,
+        self::TOKEN_EXPIRY_MONTH,
+        self::TOKEN_EXPIRY_YEAR,
     ];
 
     protected $guarded = [self::ID];
@@ -155,6 +159,8 @@ class Entity extends Base\PublicEntity
         self::TOKEN_IIN,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::TOKEN_EXPIRY_MONTH,
+        self::TOKEN_EXPIRY_YEAR,
     ];
 
     protected $public = [
@@ -196,18 +202,20 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::INTERNATIONAL  => null,
-        self::EMI            => false,
-        self::GLOBAL_CARD_ID => null,
-        self::VAULT          => null,
-        self::VAULT_TOKEN    => null,
-        self::ISSUER         => null,
-        self::COUNTRY        => null,
-        self::TRIVIA         => null,
-        self::TOKEN_IIN      => null,
-        self::CATEGORY       => null,
-        self::NAME           => '',
-        self::LENGTH         => 0,
+        self::INTERNATIONAL      => null,
+        self::EMI                => false,
+        self::GLOBAL_CARD_ID     => null,
+        self::VAULT              => null,
+        self::VAULT_TOKEN        => null,
+        self::ISSUER             => null,
+        self::COUNTRY            => null,
+        self::TRIVIA             => null,
+        self::TOKEN_IIN          => null,
+        self::CATEGORY           => null,
+        self::NAME               => '',
+        self::LENGTH             => 0,
+        self::TOKEN_EXPIRY_MONTH => null,
+        self::TOKEN_EXPIRY_YEAR  => null,
     ];
 
     protected $casts = [
@@ -545,6 +553,16 @@ class Entity extends Base\PublicEntity
     public function getExpiryYear()
     {
         return $this->getAttribute(self::EXPIRY_YEAR);
+    }
+
+    public function getTokenExpiryMonth()
+    {
+        return $this->getAttribute(self::TOKEN_EXPIRY_MONTH);
+    }
+
+    public function getTokenExpiryYear()
+    {
+        return $this->getAttribute(self::TOKEN_EXPIRY_YEAR);
     }
 
     public function getExpiryTimestamp()

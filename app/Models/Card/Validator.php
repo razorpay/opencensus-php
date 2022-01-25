@@ -53,6 +53,8 @@ class Validator extends Base\Validator
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::LAST4              => 'required|numeric|digits:4',
         Entity::LENGTH             => 'required|integer',
+        Entity::TOKEN_EXPIRY_MONTH => 'sometimes|integer|digits_between:1,2|max:12|min:0',
+        Entity::TOKEN_EXPIRY_YEAR  => 'required|integer|digits:4|non_past_year',
     ];
 
     protected static $recurringRules = [

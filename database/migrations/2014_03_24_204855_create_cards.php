@@ -91,6 +91,14 @@ class CreateCards extends Migration
             $table->string(Card::GLOBAL_CARD_ID, Card::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Card::TOKEN_EXPIRY_MONTH, 2)
+                  ->nullable()
+                  ->default(null);
+
+            $table->char(Card::TOKEN_EXPIRY_YEAR, 4)
+                 ->nullable()
+                 ->default(null);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Card::CREATED_AT);
             $table->integer(Card::UPDATED_AT);

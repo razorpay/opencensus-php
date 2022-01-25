@@ -6631,3 +6631,8 @@ ALTER TABLE merchant_notification_configs
     DROP COLUMN `mode`,
     DROP COLUMN `last_enabled_at`,
     DROP COLUMN `last_disabled_at`;
+
+ALTER TABLE cards ADD COLUMN token_expiry_month CHAR(2) default NULL;
+
+ALTER TABLE cards ADD COLUMN token_expiry_year CHAR(4) default NULL;
+
