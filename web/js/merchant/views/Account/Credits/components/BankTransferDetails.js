@@ -4,8 +4,9 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import { closeModal as closeModalReducer } from 'merchant_common/reducers/modals';
 import Questions from './Questions';
+import Button from 'common/new-ui/Button';
 
-function BankTransferDetails({ closeModal, bankDetails }) {
+function BankTransferDetails({ closeModal, bankDetails, onBack }) {
   const [isVerifiedDetailsOpen, setIsVerifiedDetailsOpen] = useState(false);
   const [isFaqsOpen, setIsFaqsOpen] = useState(false);
 
@@ -154,6 +155,18 @@ function BankTransferDetails({ closeModal, bankDetails }) {
                     </button>
                   </div>
                 </div>
+
+                {onBack && typeof onBack === 'function' && (
+                  <div className="Modal__actions">
+                    <Button.Primary
+                      type="button"
+                      className="btn btn-primary btn-block"
+                      onClick={onBack}
+                    >
+                      Go Back
+                    </Button.Primary>
+                  </div>
+                )}
               </form>
             </div>
           </>

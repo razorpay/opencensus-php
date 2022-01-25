@@ -82,7 +82,7 @@ function AddCredits({
         />
       )}
       {paymentMethodSeleted === 'account_transfer' && (
-        <BankTransferDetails bankDetails={bankDetails} />
+        <BankTransferDetails bankDetails={bankDetails} onBack={() => setPaymentMethodSeleted('')} />
       )}
     </>
   );

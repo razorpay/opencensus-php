@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
 import Button from 'common/new-ui/Button';
 import InputField from 'common/ui/Forms/InputField';
-import { required } from 'common/utils/validators';
+import { required, amount } from 'common/utils/validators';
 import AsyncButton from 'react-async-button';
 
 const formTitle = (type) => {
@@ -59,7 +59,7 @@ function AddCreditsForm({
             placeholder="Enter Amount(INR)"
             name="amountInINR"
             className="form-control"
-            validate={required()}
+            validate={[required(), amount()]}
           />
         </div>
         <div>

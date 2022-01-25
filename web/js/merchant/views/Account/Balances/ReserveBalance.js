@@ -2,6 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 const getReserveBalanceAmount = (items, reserveBalanceError) => {
   if (!items) return 0;
@@ -21,6 +23,7 @@ function ReserveBalance({
   handlAddFunds,
   ticketGenerated,
   handleActivate,
+  mode,
 }) {
   const items = reserveBalance.data?.items;
   const balance = getReserveBalanceAmount(items, reserveBalance.error);
@@ -59,13 +62,28 @@ function ReserveBalance({
               )}
             </div>
           )}
-          {!user.isOrgAxis && user.isSelfServeCreditsEnabled && (
-            <div class="balances-add-funds">
-              <button class="btn btn-outline" onClick={() => handlAddFunds('reserve')}>
-                Add Funds
-              </button>
-            </div>
-          )}
+          {!user.isOrgAxis &&
+            user.isSelfServeCreditsEnabled &&
+            [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
+              <div class="balances-add-funds">
+                <div>
+                  <button
+                    class="btn btn-outline"
+                    disabled={mode !== 'live'}
+                    onClick={() => handlAddFunds('reserve')}
+                  >
+                    Add Funds
+                  </button>
+                  {mode !== 'live' ? (
+                    <Popover align="bottom" theme="dark">
+                      <PopoverBody>
+                        You cannot add funds in test mode. Switch to live mode to add funds.
+                      </PopoverBody>
+                    </Popover>
+                  ) : null}
+                </div>
+              </div>
+            )}
         </div>
         <div class="bal-cont-footer">
           <p>

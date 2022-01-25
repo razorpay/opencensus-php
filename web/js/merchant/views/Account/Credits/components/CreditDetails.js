@@ -18,6 +18,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import rolesList from 'merchant/helpers/permissions/roles-list';
 
 const AddCredits = lazy(() =>
   import(
@@ -36,6 +38,7 @@ function CreditDetails({
   totalCredits,
   fetchCreditBalance,
   creditItems,
+  mode,
 }) {
   const addCredits = (transaction) => {
     return new Promise((resolve, reject) => {
@@ -110,11 +113,26 @@ function CreditDetails({
           </div>
         </div>
         <div class="balances-add-funds">
-          {user.isSelfServeCreditsEnabled && (
-            <button class="btn btn-outline" onClick={() => addCreditsHandler(type)}>
-              Add {title}
-            </button>
-          )}
+          {user.isSelfServeCreditsEnabled &&
+            [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
+              <div>
+                <button
+                  class="btn btn-outline"
+                  disabled={mode !== 'live'}
+                  onClick={() => addCreditsHandler(type)}
+                >
+                  Add {title}
+                </button>
+                {mode !== 'live' ? (
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      You cannot add {type} credits in test mode. Switch to live mode to add
+                      credits.
+                    </PopoverBody>
+                  </Popover>
+                ) : null}
+              </div>
+            )}
         </div>
       </div>
 
