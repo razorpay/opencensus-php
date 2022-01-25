@@ -15,7 +15,7 @@
 
         $amountPaid = ($invoice['amount_paid']);
 
-        if (isset($payment))
+        if ((isset($payment)) && $payment['adjusted_amount']>0)
         {
             $amountPaid = $payment['adjusted_amount'];
         }
