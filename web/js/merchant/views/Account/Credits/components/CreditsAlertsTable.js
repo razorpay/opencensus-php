@@ -73,7 +73,8 @@ const CreditsAlertsTable = ({ items, columnNames, onClickCancel, onClickSave }, 
     alertValues.map((item) => {
       return {
         credit_type: item.type,
-        credit_alert_threshold: rupeesToPaise(parseInt(item.alertValue, 10)),
+        credit_alert_threshold:
+          item.alertValue !== '' ? rupeesToPaise(parseInt(item.alertValue, 10)) : 0,
       };
     });
 

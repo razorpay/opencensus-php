@@ -26,17 +26,14 @@ function ManageCreditAlerts(props) {
     analyticsTrack(CLICK_SAVE_MANAGE_ALERTS);
     const alertValues = ref.current.getAlertValues();
 
-    const amountCreditsAlert = alertValues.filter((item) => item.credit_type === 'Amount Credit');
-    const feeCreditsAlert = alertValues.filter((item) => item.credit_type === 'Fee Credit');
-    const refundCreditsAlert = alertValues.filter((item) => item.credit_type === 'Refund Credit');
+    const amountCreditsAlert = alertValues.find((item) => item.credit_type === 'Amount Credit');
+    const feeCreditsAlert = alertValues.find((item) => item.credit_type === 'Fee Credit');
+    const refundCreditsAlert = alertValues.find((item) => item.credit_type === 'Refund Credit');
 
     const payload = {
-      fee_credits_threshold:
-        feeCreditsAlert.length > 0 ? feeCreditsAlert[0].credit_alert_threshold : 0,
-      amount_credits_threshold:
-        amountCreditsAlert.length > 0 ? amountCreditsAlert[0].credit_alert_threshold : 0,
-      refund_credits_threshold:
-        refundCreditsAlert.length > 0 ? refundCreditsAlert[0].credit_alert_threshold : 0,
+      amount_credits_threshold: amountCreditsAlert ? amountCreditsAlert.credit_alert_threshold : 0,
+      fee_credits_threshold: feeCreditsAlert ? feeCreditsAlert.credit_alert_threshold : 0,
+      refund_credits_threshold: refundCreditsAlert ? refundCreditsAlert.credit_alert_threshold : 0,
     };
 
     return props
