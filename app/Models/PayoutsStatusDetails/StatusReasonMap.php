@@ -80,8 +80,8 @@ class StatusReasonMap
         PayoutStatus::PENDING => [
             self::PENDING_APPROVAl,
         ],
-
-        PayoutStatus::REVERSED => [
+ // to do - to add these reasons when filter for reversed and failed status would be supported
+/*        PayoutStatus::REVERSED => [
             self::GATEWAY_TECHNICAL_ERROR,
             self::BENEFICIARY_BANK_OFFLINE,
             self::BENEFICIARY_PSP_OFFLINE,
@@ -124,6 +124,7 @@ class StatusReasonMap
             self::AMOUNT_LIMIT_EXHAUSTED,
             self::GATEWAY_DOWN,
         ],
+*/
     ];
 }
 
