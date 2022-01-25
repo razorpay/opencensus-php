@@ -6,6 +6,7 @@ use Razorpay\OAuth;
 
 use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Type;
@@ -134,7 +135,13 @@ class SubMerchantBatchUtility extends Base\Core
             return $subMerchant;
         });
 
-        $this->invalidateAffectedOwnersCache($subMerchant->getId());
+        Tracer::inSpan(
+            ['name' => 'submerchant_onboarding_batch.process_sub_merchant.invalidate_cache'],
+            function () use ($subMerchant)
+            {
+                $this->invalidateAffectedOwnersCache($subMerchant->getId());
+            }
+        );
 
         $subMerchantDetails = (new MerchantDetailCore)->getMerchantDetails($subMerchant);
 
@@ -282,39 +289,64 @@ class SubMerchantBatchUtility extends Base\Core
 
         if ($this->instantlyActivate === true)
         {
-            $instantActivationInput = Helper::getInstantActivationInput($entry);
+            $subMerchant = Tracer::inSpan(
+                ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.instantly_activate'],
+                function () use ($entry, $subMerchant)
+                {
+                    $instantActivationInput = Helper::getInstantActivationInput($entry);
 
-            $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
+                    $this->merchantDetailCore->saveInstantActivationDetails($instantActivationInput, $subMerchant);
 
-            //
-            //
-            // We are updating merchant object in instant activation flow , so reloading object so that we have updated merchant object
-            //
-            $subMerchant->reload();
+                    //
+                    // We are updating merchant object in instant activation flow , so reloading object so that we have updated merchant object
+                    //
+                    $subMerchant->reload();
+
+                    return $subMerchant;
+                }
+            );
         }
 
         if ($this->autofillDetails === true)
         {
-            // Fill in merchant details (activation form)
-            $detailInput = Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
+            $detailInput = Tracer::inSpan(
+                ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.autofill.activation_form'],
+                function () use ($entry)
+                {
+                    // Fill in merchant details (activation form)
+                    return Helper::getSubMerchantDetailInput($entry, $this->partner, $this->useMerchantEmailAsDummy);
+                }
+            );
 
             if ($subMerchant->isActivated() === true)
             {
-                //
-                // If merchant is coming from instant activation flow , we don't allow change in business category
-                // and subcategory field so removing these two fields from input
-                //
-                $detailInput = Helper::sanitizeMerchantDetailInput($detailInput, Constants::CATEGORY_DETAILS);
+                $detailInput = Tracer::inSpan(
+                    ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.autofill.activated'],
+                    function () use ($detailInput)
+                    {
+                        //
+                        // If merchant is coming from instant activation flow , we don't allow change in business category
+                        // and subcategory field so removing these two fields from input
+                        //
+                        return Helper::sanitizeMerchantDetailInput($detailInput, Constants::CATEGORY_DETAILS);
+                    }
+                );
             }
 
             if ($this->merchantDetailCore->shouldSkipBankAccountRegistration() == true)
             {
-                //
-                // SubMerchant batch upload flow allows skipping bank account registration as the partner
-                // is there liable for the risk and the sub-merchants must be activated directly.
-                //  so removing bank account details from input
-                //
-                $detailInput = Helper::sanitizeMerchantDetailInput($detailInput, Constants::BANK_DETAILS);
+                $detailInput = Tracer::inSpan(
+                    ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.autofill.skip_bank_register'],
+                    function () use ($detailInput)
+                    {
+                        //
+                        // SubMerchant batch upload flow allows skipping bank account registration as the partner
+                        // is there liable for the risk and the sub-merchants must be activated directly.
+                        //  so removing bank account details from input
+                        //
+                        return Helper::sanitizeMerchantDetailInput($detailInput, Constants::BANK_DETAILS);
+                    }
+                );
             }
 
             if (empty($entry[Header::MERCHANT_ID]) === false)
@@ -334,8 +366,14 @@ class SubMerchantBatchUtility extends Base\Core
 
         if ($this->autoSubmit === true)
         {
-            // Save files
-            $this->merchantDetailCore->saveDummyActivationFiles($subMerchant);
+            Tracer::inSpan(
+                ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.autosubmit.save_files'],
+                function () use ($subMerchant)
+                {
+                    // Save files
+                    $this->merchantDetailCore->saveDummyActivationFiles($subMerchant);
+                }
+            );
 
             // Submit activation form
             $submitData = [MerchantDetail::SUBMIT => '1'];
@@ -357,10 +395,17 @@ class SubMerchantBatchUtility extends Base\Core
             if (($response[MerchantDetail::SUBMITTED] === true) and ($this->autoActivate === true))
             {
                 $status = Status::SUCCESS;
-                $this->merchantCore->autoUpdateCategoryDetails(
-                    $subMerchant,
-                    $entry[Header::BUSINESS_CATEGORY],
-                    $entry[Header::BUSINESS_SUB_CATEGORY]);
+
+                Tracer::inSpan(
+                    ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.autosubmit.auto_update_category_details'],
+                    function () use ($entry, $subMerchant)
+                    {
+                        $this->merchantCore->autoUpdateCategoryDetails(
+                            $subMerchant,
+                            $entry[Header::BUSINESS_CATEGORY],
+                            $entry[Header::BUSINESS_SUB_CATEGORY]);
+                    }
+                );
 
                 $websiteUpdateData = [ME::WEBSITE => $entry[Header::WEBSITE_URL]];
 
@@ -384,13 +429,25 @@ class SubMerchantBatchUtility extends Base\Core
                 Email\Entity::TYPE  => Email\Type::PARTNER_DUMMY,
             ];
 
-            (new Email\Core)->upsert($subMerchant, $emailInput);
+            Tracer::inSpan(
+                ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.upsert_email'],
+                function () use ($subMerchant, $emailInput)
+                {
+                    (new Email\Core)->upsert($subMerchant, $emailInput);
+                }
+            );
         }
 
         $entry[Header::STATUS]      = $status;
         $entry[Header::MERCHANT_ID] = Account::getSignedId($subMerchant->getId());
 
-        $this->addMSwipeConfigurations($subMerchant, $entry);
+        Tracer::inSpan(
+            ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.add_mswipe_config'],
+            function () use ($subMerchant, $entry)
+            {
+                $this->addMSwipeConfigurations($subMerchant, $entry);
+            }
+        );
 
         return $subMerchant;
     }
@@ -426,7 +483,11 @@ class SubMerchantBatchUtility extends Base\Core
 
         $activationStatusData = $this->getApplicableActivationStatusForPartner($subMerchant);
 
-        $response = $this->merchantDetailCore->updateActivationStatus($subMerchant, $activationStatusData, $subMerchant);
+        $response = Tracer::inSpan(['name' => 'submerchant_onboarding_batch.updateActivationStatus'],
+            function () use ($subMerchant, $activationStatusData)
+            {
+                return $this->merchantDetailCore->updateActivationStatus($subMerchant, $activationStatusData, $subMerchant);
+            });
 
         return $response;
     }
@@ -491,24 +552,48 @@ class SubMerchantBatchUtility extends Base\Core
             return;
         }
 
-        (new Merchant\Service)->assignSettlementSchedule($subMerchant->getId(), [
-            'schedule_id' => Preferences::MSWIPE_SETTLEMENT_SCHEDULE_ID,
-        ]);
+        Tracer::inSpan(
+            ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.add_mswipe_config.assign_settlement_schedule'],
+            function () use ($subMerchant)
+            {
+                (new Merchant\Service)->assignSettlementSchedule($subMerchant->getId(), [
+                    'schedule_id' => Preferences::MSWIPE_SETTLEMENT_SCHEDULE_ID,
+                ]);
+            }
+        );
 
-        (new Merchant\Service)->assignPricingPlan($subMerchant->getId(), [
-            Merchant\Entity::PRICING_PLAN_ID => Preferences::MSWIPE_PRICING_PLAN_ID,
-        ]);
+        Tracer::inSpan(
+            ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.add_mswipe_config.assign_pricing_plan'],
+            function () use ($subMerchant)
+            {
+                (new Merchant\Service)->assignPricingPlan($subMerchant->getId(), [
+                    Merchant\Entity::PRICING_PLAN_ID => Preferences::MSWIPE_PRICING_PLAN_ID,
+                ]);
+            }
+        );
 
-        foreach (Preferences::MSWIPE_FEATURE_LIST as $featureName)
-        {
-            (new Feature\Core)->create([
-                Feature\Entity::ENTITY_TYPE => CE::MERCHANT,
-                Feature\Entity::ENTITY_ID   => $subMerchant->getId(),
-                Feature\Entity::NAME        => $featureName,
-            ], true);
-        }
+        Tracer::inSpan(
+            ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.add_mswipe_config.feature.create'],
+            function () use ($subMerchant)
+            {
+                foreach (Preferences::MSWIPE_FEATURE_LIST as $featureName)
+                {
+                    (new Feature\Core)->create([
+                        Feature\Entity::ENTITY_TYPE => CE::MERCHANT,
+                        Feature\Entity::ENTITY_ID   => $subMerchant->getId(),
+                        Feature\Entity::NAME        => $featureName,
+                    ], true);
+                }
+            }
+        );
 
-        (new Merchant\Service)->updatePaymentMethods($subMerchant->getId(), Preferences::MSWIPE_METHOD_LIST);
+        Tracer::inSpan(
+            ['name' => 'submerchant_onboarding_batch.process_sub_merchant.create.add_mswipe_config.update_payment_method'],
+            function () use ($subMerchant)
+            {
+                (new Merchant\Service)->updatePaymentMethods($subMerchant->getId(), Preferences::MSWIPE_METHOD_LIST);
+            }
+        );
     }
 
     protected function isMswipeSubmerchant()

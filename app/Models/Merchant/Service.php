@@ -13,7 +13,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\User;
-use RZP\Trace\Tracer;
 use RZP\Models\Offer;
 use RZP\Models\Payout;
 use RZP\Models\Coupon;
@@ -28,6 +27,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Admin\Org;
@@ -282,7 +282,10 @@ class Service extends Base\Service
         {
             $configs = SubMerchantBatchHelper::getConfigParamsFromEntry($input);
 
-            $data = (new SubMerchantBatchUtil())->processSubMerchantEntry($input, $configs);
+            $data = Tracer::inSpan(['name' => 'submerchant_onboarding_batch.process_sub_merchant'], function() use ($input, $configs)
+            {
+               return (new SubMerchantBatchUtil())->processSubMerchantEntry($input, $configs);
+            });
 
             $this->trace->count(Metric::BATCH_UPLOAD_BY_ADMIN_TOTAL);
         }

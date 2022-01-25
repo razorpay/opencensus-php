@@ -2457,7 +2457,11 @@ class Core extends Base\Core
             'activationStatus' => $currentActivationStatus,
             'merchant'         => $merchant
         ];
-        (new OnboardingNotificationHandler($args))->send();
+
+        Tracer::inSpan(['name' => 'onboarding_notification_handler_send'], function () use ($args)
+        {
+            (new OnboardingNotificationHandler($args))->send();
+        });
 
         (new MerchantProduct\Core())->syncMerchantStatusToMerchantProducts($merchantDetails);
 

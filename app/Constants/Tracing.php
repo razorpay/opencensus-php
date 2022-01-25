@@ -241,8 +241,10 @@ class Tracing
 
             // batch service routes
             'nach_batch_process',
-            'emandate_batch_process'
+            'emandate_batch_process',
 
+            // Partner routes
+            'merchant_bulk_onboarding_admin'
         ]);
     }
 

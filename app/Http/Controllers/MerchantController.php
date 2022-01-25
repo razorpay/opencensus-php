@@ -10,6 +10,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Models\Gateway;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -88,7 +89,10 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->bulkOnboardSubMerchantViaBatch($input);
+        $data = Tracer::inspan(['name' => 'submerchant_onboarding_batch'], function () use ($input)
+        {
+            return $this->service()->bulkOnboardSubMerchantViaBatch($input);
+        });
 
         return ApiResponse::json($data);
     }
