@@ -471,7 +471,7 @@ class LeafListItem extends React.Component {
               width="15px"
             />
             <p>
-              {user.isSmartDashboardActive ? (
+              {user.isSmartDashboardActive && instrument.status === ACTION_REQUIRED ? (
                 <>
                   <span>We need more information to proceed further with the application,</span>{' '}
                   <a
@@ -480,7 +480,7 @@ class LeafListItem extends React.Component {
                     update Request Form.
                   </a>
                 </>
-              ) : !user.isSmartDashboardActive ? (
+              ) : !user.isSmartDashboardActive || instrument.status === REJECTED ? (
                 instrument.comment
               ) : (
                 <span>No comments available</span>
