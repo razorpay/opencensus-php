@@ -297,7 +297,7 @@ class Name
     const ES_WRITE_OPERATION                  = 'es_write_operation';
     const OAUTH_SYNC_MERCHANT_MAP             = 'oauth_sync_merchant_map';
     const ADMIN_BATCH_CREATE                  = 'admin_batch_create';
-    const ADMIN_FILE_UPLOAD                   = 'admin_bank_file_upload';
+    const ADMIN_FILE_UPLOAD                   = 'admin_file_upload';
     const EDIT_PARTNERS                       = 'edit_partners';
     const VIEW_PARTNERS                       = 'view_partners';
     const ADMIN_MANAGE_PARTNERS               = 'admin_manage_partners';

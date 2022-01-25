@@ -1035,7 +1035,7 @@ return [
                 'description' => 'Perform write operations on Elasticsearch',
             ],
             Permission::ADMIN_FILE_UPLOAD            => [
-                'description' => 'Upload a bank file',
+                'description' => 'Upload a file',
             ],
             Permission::EDIT_THROTTLE_SETTINGS       => [
                 'description'  => 'Edit throttle settings',
