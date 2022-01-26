@@ -203,6 +203,11 @@ trait WorkflowTrait
     {
         $admin = $this->ba->getAdmin();
 
+        if ($admin->hasPermission($permissionName) === true)
+        {
+            return;
+        }
+
         $roleOfAdmin = $admin->roles()->get()[0];
 
         $perm = $this->fixtures->create('permission', ['name' => $permissionName]);

@@ -565,7 +565,8 @@ class ShieldClient implements ExternalService
         }
     }
 
-    public function sendRequestV2ForWorkflowApproval(string $path, string $method, array $data = []): array
+    //this function is exact copy of sendRequestV2 but it throws error if shield response status-code is not 200
+    public function sendRequestV2ForWorkflow(string $path, string $method, array $data = []): array
     {
         $url = $this->baseUrl . $path;
 

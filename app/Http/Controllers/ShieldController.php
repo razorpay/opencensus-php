@@ -76,7 +76,14 @@ class ShieldController extends Controller
 
         if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
         {
-            $response = $this->app['shield']->sendRequestV2ForWorkflowApproval($requestUri, $method, $payload);
+            $response = $this->app['shield']->sendRequestV2ForWorkflow($requestUri, $method, $payload);
+
+            $this->app['trace']->info(TraceCode::SHIELD_WORKFLOW_REQUEST_EXECUTED, [
+                'url'             => $requestUri,
+                'method'          => $method,
+                'payload'         => $payload,
+                'shield_response' => $response,
+            ]);
 
             return ApiResponse::json($response);
         }
@@ -113,7 +120,7 @@ class ShieldController extends Controller
 
         if (in_array($routeName, self::EXISTING_ENTITY_RETRIEVAL_ROUTES) === true)
         {
-            $existingPayload = $this->app['shield']->sendRequestV2($requestUri, 'GET', []);
+            $existingPayload = $this->app['shield']->sendRequestV2ForWorkflow($requestUri, 'GET', []);
         }
 
         if (empty($payload) === true)
@@ -192,7 +199,7 @@ class ShieldController extends Controller
                 unset($payload['_expression']);
             }
 
-            $this->app['trace']->info(TraceCode::SHIELD_WORKFLOW_REQUEST_EXECUTED, [
+            $this->app['trace']->info(TraceCode::EXECUTING_SHIELD_WORKFLOW_REQUEST, [
                 'url'     => $requestUri,
                 'method'  => $method,
                 'payload' => $payload,
