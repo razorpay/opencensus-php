@@ -160,7 +160,7 @@ class OrderTransferTest extends TestCase
         $this->capturePaymentProcessOrderTransfers($order);
 
         $transfer = $this->getDbEntityById('transfer', $transfer['id']);
-        $this->assertEquals($transfer['status'], 'failed');
+        $this->assertEquals($transfer['status'], 'processed');
     }
 
     public function testCreateOrderTransfersForInvalidAccount()

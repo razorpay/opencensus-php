@@ -1284,4 +1284,13 @@ class Service extends Base\Service
 
         return $input;
     }
+
+    public function closeVirtualAccountByPublicIdAndMerchant(string $id, $merchant)
+    {
+        $virtualAccount = $this->repo
+            ->virtual_account
+            ->findByPublicIdAndMerchant($id, $merchant);
+
+        return $this->closeVirtualAccountEntity($virtualAccount);
+    }
 }

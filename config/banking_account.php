@@ -25,5 +25,16 @@ return [
         'aggr_id'             => env('ICICI_AGGR_ID'),
         'aggr_name'           => env('ICICI_AGGR_NAME'),
         'beneficiary_api_key' => env('ICICI_BENEFICIARY_API_KEY'),
+    ],
+    'razorpay_fund_addition_accounts' => [
+        'fee_credit' => [
+            'merchant_id' => env('RZP_FEE_CREDIT_MERCHANT_ID'),
+        ],
+        'refund_credit' => [
+            'merchant_id' => env('RZP_REFUND_CREDIT_MERCHANT_ID'),
+        ],
+        'reserve_balance' => [
+            'merchant_id' => env('RZP_RESERVE_BALANCE_MERCHANT_ID'),
+        ]
     ]
 ];

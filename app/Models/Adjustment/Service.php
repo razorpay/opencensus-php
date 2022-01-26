@@ -227,4 +227,9 @@ class Service extends Base\Service
 
         return $this->core()->subBalanceAdjustment($input, $merchant);
     }
+
+    public function fetchAdjustmentByDescription($description, $merchantId)
+    {
+         return $this->repo->adjustment->findAdjustmentByDescription($description, $merchantId);
+    }
 }

@@ -393,6 +393,14 @@ class Repository extends Base\Repository
         }
     }
 
+    public function findByCampaignId($campaign, $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::CAMPAIGN, '=', $campaign)
+            ->merchantId($merchantId)
+            ->exists();
+    }
+    
     public function getUnexpiredCreditIdsForMerchantOfType(string $merchantId, string $type)
     {
         return $this->newQuery()

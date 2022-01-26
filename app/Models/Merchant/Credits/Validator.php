@@ -94,7 +94,9 @@ class Validator extends Base\Validator
         // removing refund credit upper limit because
         // of the Covid-19 situation which increased refunds.
         // and merchants are issuing huge amounts of refunds
-        if (($type !== Credits\Type::REFUND) and
+        //To make flow self serve, removing max value restrictions
+        if ((($type !== Credits\Type::REFUND) and
+            ($type !== Credits\Type::FEE)) and
              ($creditsValue > $maxCreditsValue))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -149,12 +151,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot assign amount credits as fee credits are already present');
         }
-        else if(($type === Type::FEE) and
-                ($balance->getAmountCredits() > 0))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot assign fee credits as amount credits are already present');
-        }
     }
 
     public function validateCreditsValue($input)
@@ -162,8 +158,10 @@ class Validator extends Base\Validator
         // removing laravel validator for field value of type refund
         // because of the Covid-19 situation which increased refunds.
         // and merchants are issuing huge amounts of refunds
+        //To make flow self serve, removing max value restrictions
         if ((isset($input['type'])) and
-             ($input['type'] === 'refund') and
+            (($input['type'] === 'refund') or
+             ($input['type'] === 'fee')) and
               (($input['value'] >= -100000000)))
         {
             return;

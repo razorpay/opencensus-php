@@ -370,30 +370,6 @@ return [
             ],
         ],
     ],
-    'testAddFeeCreditsWithValueMoreThanUpperLimit' => [
-        'request' => [
-            'url' => '/merchants/10000000000000/credits_log',
-            'method' => 'post',
-            'content' => [
-                'type'     => 'fee',
-                'value'    => 1000000000,
-                'campaign' => 'silent-ads',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
-            'description' => 'The value must be between -100000000 and 500000000.',
-        ],
-    ],
 
     'testBulkCreditRoute' => [
         'request' => [

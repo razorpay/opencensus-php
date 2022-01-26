@@ -460,6 +460,24 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fundAdditionTPV()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fundAdditionTPV($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function addFundsViaWebhook($type)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addFundsViaWebhook($type, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function putBankAccountUpdate()
     {
         $input = Request::all();

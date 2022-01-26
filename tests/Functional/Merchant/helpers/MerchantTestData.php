@@ -11436,4 +11436,57 @@ return [
             ],
         ],
     ],
+    'testVAClosedOnBankAccountUpdate' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020000304030434',
+                'beneficiary_name'      => 'Test R4zorpay:',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+            ],
+            'url' => '/merchants/bank_account',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000001',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay:',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_city' => 'Kolkata',
+                'beneficiary_state' => 'WB',
+                'beneficiary_country' => 'IN',
+                'beneficiary_pin' => '123456',
+                'beneficiary_email' => 'random@email.com',
+                'beneficiary_mobile' => '9988776655',
+            ]
+        ]
+    ],
+    'VACreation' => [
+        'request' => [
+            'content' => [
+                "type" =>  "refund_credit",
+                "method"=> "account_transfer"
+            ],
+            'method'    => 'POST',
+            'url'       => '/fund_addition/initialize',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
 ];

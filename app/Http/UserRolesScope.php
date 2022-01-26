@@ -1008,6 +1008,7 @@ class UserRolesScope
             'update_coupon_validity_url'                          => [Role::OWNER, Role::ADMIN],
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
+            'fund_addition_tpv'                                   => [Role::OWNER, Role::ADMIN],
             'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN],
             'shipping_provider_post'                              => [Role::OWNER, Role::ADMIN],
             'shipping_provider_patch'                             => [Role::OWNER, Role::ADMIN],

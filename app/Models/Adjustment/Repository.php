@@ -14,4 +14,12 @@ class Repository extends Base\Repository
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash'
     );
+
+    public function findAdjustmentByDescription($description, $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::DESCRIPTION, '=', $description)
+            ->merchantId($merchantId)
+            ->exists();
+    }
 }

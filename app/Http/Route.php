@@ -443,6 +443,8 @@ class Route
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
         'credits_create_bulk_batch'                => ['post',     'merchants/credits/bulk/batch',                   'MerchantController@bulkCreateMerchantCreditsBatch'                 ],
+        'fund_addition_tpv'                        => ['post',     'fund_addition/initialize',                       'MerchantController@fundAdditionTPV'                                 ],
+        'fund_addition_webhook'                    => ['post',     'fund_addition/{type}/webhook',                   'MerchantController@addFundsViaWebhook'                             ],
         'merchant_balance_bulk_backfill_ids'       => ['post',     'merchants/balances/backfill',                    'MerchantController@bulkRegenerateBalanceIds'                       ],
         'credits_edit'                             => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_fetch_by_id'                      => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
@@ -4546,6 +4548,7 @@ class Route
     ];
 
     public static $proxy = [
+        'fund_addition_tpv',
         'merchant_coupons_apply',
         'raw_address_create_batch_service',
         'shipping_provider_list',
@@ -7742,6 +7745,7 @@ class Route
     ];
 
     public static $direct = [
+        'fund_addition_webhook',
         'friend_buy_reward_validation',
         'qr_code_demo',
         'qr_code_demo_cors',
@@ -8024,6 +8028,7 @@ class Route
             'qr_configs_fetch',
             'qr_configs_delete',
             'qr_configs_update',
+            'fund_addition_tpv',
             'corporate_card_get',
             'corporate_card_update',
             'corporate_card_list',

@@ -14588,4 +14588,103 @@ The same has been enabled for the account.
 
         $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
     }
+
+    public function initializeMerchantAndBankAccount($merchantId)
+    {
+        $this->app['config']->set('banking_account.razorpay_fund_addition_accounts.refund_credit.merchant_id', '10000000000000');
+
+        $this->app['config']->set('banking_account.razorpay_fund_addition_accounts.fee_credit.merchant_id', '10000000000000');
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id' =>  '10000000000001',
+            'business_type' => 1
+        ]);
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $id = $this->getDbLastEntity('bank_account')->toArray()['id'];
+
+        $this->fixtures->edit('bank_account',$id ,['merchant_id' =>  '10000000000001','ifsc_code'  => 'UTIB0CCH274', "entity_id" => $merchantId, "type" => 'merchant']);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000001');
+
+        return $user;
+    }
+
+    public function VACreation($creditType, $merchantId, $user)
+    {
+        $this->testData[__FUNCTION__]['request']['content']['type'] = $creditType;
+
+        $this->ba->proxyAuth('rzp_test_'. $merchantId, $user->getId());
+
+        $response = $this->startTest();
+
+        return $response;
+    }
+
+    public function VAIdsCreationOfDifferentTypes($merchantId)
+    {
+        $user = $this->initializeMerchantAndBankAccount($merchantId);
+
+        $vaCreationRefund = $this->VACreation('refund_credit', $merchantId, $user);
+
+        $vaCreationFee = $this->VACreation('fee_credit', $merchantId, $user);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        return [
+            "user" => $user,
+            "refundVAId" => $vaCreationRefund['id'],
+            "feeVAId"   => $vaCreationFee['id']
+        ];
+    }
+
+    public function testVAClosedOnBankAccountUpdate()
+    {
+        Mail::fake();
+
+        $VADetails = $this->VAIdsCreationOfDifferentTypes('10000000000001');
+
+        $this->ba->proxyAuth('rzp_test_10000000000001', $VADetails["user"]->getId());
+
+        $this->startTest();
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', "10000000000001");
+
+        $this->assertEquals(NULL, $merchantDetails->getFundAdditionVAIds());
+
+        $virtualAccountRefund = $this->getDbEntityById('virtual_account',$VADetails['refundVAId']);
+
+        $virtualAccountFee = $this->getDbEntityById('virtual_account',$VADetails['feeVAId']);
+
+        $this->assertEquals("closed", $virtualAccountRefund->getStatus());
+
+        $this->assertEquals("closed", $virtualAccountFee->getStatus());
+
+        return $VADetails;
+    }
+
+    public function testVACreationAfterVAClosed()
+    {
+        $vaClosedInformation = $this->testVAClosedOnBankAccountUpdate();
+
+        $vaCreationResponse['refundVAId'] = $this->VACreation('refund_credit', '10000000000001',$vaClosedInformation['user'] );
+
+        $vaCreationResponse['feeVAId'] = $this->VACreation('fee_credit', '10000000000001',$vaClosedInformation['user'] );
+
+        $this->assertNotEquals($vaClosedInformation['refundVAId'], $vaCreationResponse['refundVAId']['id']);
+
+        $this->assertNotEquals($vaClosedInformation['feeVAId'], $vaCreationResponse['feeVAId']['id']);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', '10000000000001');
+
+        $this->assertEquals($vaCreationResponse['refundVAId']['id'], $merchantDetails->getFundAdditionVAIds()['refund_credit']);
+
+        $this->assertEquals($vaCreationResponse['feeVAId']['id'], $merchantDetails->getFundAdditionVAIds()['fee_credit']);
+
+    }
 }

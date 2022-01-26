@@ -202,6 +202,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     const SEND_ACTIVATION_EMAIL = 'send_activation_email';
 
+    //Config to store virtual account ids for fund addition
+    const FUND_ADDITION_VA_IDS = 'fund_addition_va_ids';
+
     protected $entity     = 'merchant_detail';
 
     protected $primaryKey = self::MERCHANT_ID;
@@ -432,6 +435,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::GSTIN               => null,
         self::P_GSTIN             => null,
         self::ADDITIONAL_WEBSITES => [],
+        self::FUND_ADDITION_VA_IDS => null,
     ];
 
     protected $casts      = [
@@ -1457,5 +1461,22 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getQrCodesActivationStatus()
     {
         return $this->merchant->isFeatureEnabled(Feature\Constants::QR_CODES) === true ? self::APPROVED : null;
+    }
+
+    public function getFundAdditionVAIds()
+    {
+        $config = $this->getAttribute(self::FUND_ADDITION_VA_IDS);
+
+        if($config !== null)
+        {
+            return json_decode($config, true);
+        }
+
+        return null;
+    }
+
+    public function setFundAdditionVAIds($fundAdditionVAIds)
+    {
+        $this->setAttribute(self::FUND_ADDITION_VA_IDS, $fundAdditionVAIds);
     }
 }

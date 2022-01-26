@@ -114,6 +114,11 @@ class Core extends Base\Core
             }
         }
 
+        if($ba->getType() === BankAccount\Type::MERCHANT)
+        {
+            (new Merchant\Core)->updateVirtualAccountForFundAddition($merchant);
+        }
+
         $this->sendBankAccountChangeNotification($ba, $merchant);
 
         return $ba;

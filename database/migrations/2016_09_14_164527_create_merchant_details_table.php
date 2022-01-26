@@ -381,6 +381,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::ACTIVATION_FORM_MILESTONE, 30)
                 ->nullable();
 
+            $table->json(MerchantDetail::FUND_ADDITION_VA_IDS)
+                ->nullable();
+
             $table->foreign(MerchantDetail::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

@@ -209,11 +209,6 @@ class CreditLogsTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddFeeCreditsWithValueMoreThanUpperLimit()
-    {
-        $this->startTest();
-    }
-
     public function testUploadBulkCreditFileWithPermission()
     {
         $entries = [

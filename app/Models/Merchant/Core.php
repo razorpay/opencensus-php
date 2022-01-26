@@ -8,6 +8,7 @@ use Config;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Models\VirtualAccount;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Mail\User as UserMail;
 use \RZP\Models\BankingAccount;
@@ -56,6 +57,8 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Mail\Merchant as MerchantMail;
+use RZP\Models\Order;
+use RZP\Models\Adjustment;
 
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
@@ -88,6 +91,10 @@ use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\Credits;
+use RZP\Models\BankAccount\Entity as BankAccountEntity;
+use RZP\Mail\Merchant\CreditsAdditionSuccess;
+use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
 
 class Core extends Base\Core
 {
@@ -95,6 +102,7 @@ class Core extends Base\Core
 
     const LAST_MONTH_GMV = 'last_month_gmv';
     const CUSTOMER_COUNT = 'customer_count';
+
 
     // This is used in case for
     // IRCTC for sending payout
@@ -107,6 +115,8 @@ class Core extends Base\Core
     const DEFAULT_MERCHANT_ES_SYNC_INTERVAL = 15;
 
     const MAX_ES_MERCHANT_SYNC_LIMIT = 1000;
+
+    const FUND_ADDITION_DESCRIPTION_MUTEX_TIMEOUT = 10;
 
     public function create($input, $merchantDetailInputData = [])
     {
@@ -373,6 +383,580 @@ class Core extends Base\Core
         $this->addToDefaultUnclaimedGroup($subMerchant);
 
         return $subMerchant;
+    }
+
+    private function getRzpMerchantDetailsBasedOnFundAdditionType($type)
+    {
+        $fundAdditionAccount = 'banking_account.razorpay_fund_addition_accounts.'. $type;
+
+        return [
+            "merchant_id" => Config::get($fundAdditionAccount.'.merchant_id')
+        ];
+    }
+
+    public function getRazorpayMerchantBasedOnType(String $fundAdditionType) : array
+    {
+        switch($fundAdditionType) {
+            case Type::REFUND_CREDIT :
+                return $this->getRzpMerchantDetailsBasedOnFundAdditionType(Type::REFUND_CREDIT);
+            case Type::FEE_CREDIT :
+                return $this->getRzpMerchantDetailsBasedOnFundAdditionType(Type::FEE_CREDIT);
+            case Type::RESERVE_BALANCE :
+                return $this->getRzpMerchantDetailsBasedOnFundAdditionType(Type::RESERVE_BALANCE);
+        }
+
+        $this->trace->info(Tracecode::BAD_REQUEST_INVALID_FUND_ADDITION_TYPE,[
+            "merchant_id" => $this->merchant->getPublicId(),
+            "type" => $fundAdditionType
+        ]);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_FUND_ADDITION_TYPE_IS_INVALID,
+            null,
+            [
+                "merchant_id" => $this->merchant->getPublicId(),
+                "type" => $fundAdditionType
+            ]
+        );
+
+    }
+
+    public function setRazorpayMerchantForFundAddition($razorpayMerchant)
+    {
+        $this->app['basicauth']->setMerchant($this->repo->merchant->findOrFail($razorpayMerchant['merchant_id']));
+    }
+
+    public function createOrderForFundAddition(array $input)
+    {
+        $transactingMerchant = $this->merchant;
+
+        $razorpayMerchant = $this->getRazorpayMerchantBasedOnType($input['type']);
+
+        $bankAccount = (new Merchant\Service)->getBankAccount($transactingMerchant->getId());
+
+        $this->trace->info(Tracecode::MERCHANT_DETAILS_FOR_ORDER_CREATION,[
+            "transacting_merchant" => $transactingMerchant->getId(),
+            "rzp_merchant" => $razorpayMerchant['merchant_id']
+        ]);
+
+
+        $orderInput = [
+            "amount" => $input['amount'],
+            "currency" => "INR",
+            "payment_capture" => true,
+            "bank_account" => [
+                "account_number" => $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER],
+                "name" => $bankAccount[BankAccount\Entity::BENEFICIARY_NAME],
+                "ifsc" => $bankAccount[BankAccount\Entity::IFSC_CODE]
+            ],
+            "notes" => [
+                "merchant_id" => $transactingMerchant->getId(),
+                "type" => $input["type"]
+            ]
+        ];
+
+        $this->setRazorpayMerchantForFundAddition($razorpayMerchant);
+
+        $order = (new Order\Service)->createOrder($orderInput);
+
+        $this->trace->info(Tracecode::ORDER_CREATED_FOR_FUND_ADDITION, [
+            "order_id" => $order->getPublicId(),
+            "merchant_id" => $transactingMerchant->getId(),
+            "type" => $input['type']
+        ]);
+
+        return [
+            "order_id" => $order->getPublicId()
+        ];
+    }
+
+    private function getCreditType($inputType)
+    {
+        switch($inputType)
+        {
+            case Type::REFUND_CREDIT :
+                return Credits\Type::REFUND;
+            case Type::FEE_CREDIT :
+                return Credits\Type::FEE;
+        }
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_FUND_ADDITION_TYPE_IS_INVALID,
+            null,
+            [
+                "merchant_id" => $this->merchant->getPublicId(),
+                "type" => $inputType
+            ]
+        );
+    }
+
+    private function addFundsToCreditBalance($campaignId, $creditType, $paymentInput, $merchantId)
+    {
+        $mutex =  App::getFacadeRoot()['api.mutex'];
+
+        $mutexAcquired = $mutex->acquire($merchantId."-".$campaignId, self::FUND_ADDITION_DESCRIPTION_MUTEX_TIMEOUT);
+
+        if ($mutexAcquired === false)
+        {
+            $this->trace->info(Tracecode::ANOTHER_OPERATION_IN_PROGRESS_FOR_GIVEN_CAMPAIGN,[
+                "merchant_id" => $merchantId,
+                "campaign_id" => $campaignId
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAMPAIGN_ANOTHER_OPERATION_IN_PROGRESS,
+                null,
+                ['resource' => $merchantId."-".$campaignId]
+            );
+        }
+
+        (new Merchant\Validator())->validateIfFundAlreadyAddedForGivenCampaign($campaignId, $merchantId);
+
+        $creditType = $this->getCreditType($creditType);
+
+        $amountAfterFee = $paymentInput['amount'] - $paymentInput['fee'];
+
+        $creditInput = [
+            'type'     => $creditType,
+            'value'    => $amountAfterFee,
+            'campaign' => $campaignId,
+        ];
+
+        (new Merchant\Validator())->validateIfAmountForFundAdditionIsValid($creditInput['value'], $creditInput, $merchantId );
+
+        $this->trace->info(TraceCode::CREDIT_FUND_ADDITION_INITIATED, $creditInput);
+
+        try
+        {
+            $response =  ((new Credits\Service)->grantCreditsForMerchant($merchantId, $creditInput));
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CREDITS_ADDITION_FAILED,
+                [
+                    'merchant_id'    => $merchantId,
+                    "input"          => $creditInput
+                ]);
+
+            throw $e;
+        }
+
+        $this->trace->info(Tracecode::CREDIT_FUND_ADDITION_RESPONSE, [
+            "merchant_id" => $merchantId,
+            "response" => $response
+        ]);
+
+        $this->sendAlertIfCreditFundAdditionIsSuccessful($merchantId, $amountAfterFee, $creditType.'_credit');
+
+        return $response;
+    }
+
+    public function setModeForFundAdditionViaOrders($orderInput)
+    {
+        try
+        {
+            $this->app['basicauth']->setModeAndDbConnection('live');
+
+            $this->repo->order->findByPublicId($orderInput['id']);
+        }
+
+        catch (\Exception $e)
+        {
+            $this->app['basicauth']->setModeAndDbConnection('test');
+
+            $this->repo->order->findByPublicId($orderInput['id']);
+        }
+    }
+
+    public function fundAdditionViaOrders($input)
+    {
+        if(isset($input['payload']['order']) === false or
+            isset($input['payload']['payment']) === false or
+            isset($input['payload']['order']['entity']['id']) === false or
+            isset($input['payload']['payment']['entity']['id']) === false
+        )
+        {
+            $this->trace->info(TraceCode::INVALID_INPUT_FOR_FUND_ADDITION,
+            [
+                "type" => "online_payment",
+                "input" => $input
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_INPUT_FOR_FUND_ADDITION);
+        }
+
+        $orderInput = $input['payload']['order']['entity'];
+
+        $paymentInput = $input['payload']['payment']['entity'];
+
+        $this->trace->info(TraceCode::FUND_ADDITION_WEBHOOK_REQUEST, [
+            "order_id" => $orderInput['id'],
+            "payment_id" => $paymentInput['id']
+        ]);
+
+        $this->setModeForFundAdditionViaOrders($orderInput);
+
+        (new Merchant\Validator())->validateInputDetailsForFundAdditionViaOrder($orderInput, $paymentInput);
+
+        $merchantId = $orderInput['notes']['merchant_id'];
+
+        switch($orderInput['notes']['type'])
+        {
+            case Type::FEE_CREDIT :
+            case Type::REFUND_CREDIT :
+                return $this->addFundsToCreditBalance($orderInput['id'], $orderInput['notes']['type'], $paymentInput, $merchantId);
+            case Type::RESERVE_BALANCE :
+                return $this->addFundsToReserveBalance($orderInput['id'], $paymentInput, $merchantId);
+        }
+    }
+
+    public function getVirtualAccountDetailsForMerchantIfPresentAlready($merchant, $creditType)
+    {
+        $merchantVAIds = $merchant->merchantDetail->getFundAdditionVAIds();
+
+        if(isset($merchantVAIds[$creditType]) === true)
+        {
+            $razorpayMerchant = $this->getRazorpayMerchantBasedOnType($creditType);
+
+            $this->setRazorpayMerchantForFundAddition($razorpayMerchant);
+
+            return (new VirtualAccount\Service)->fetch($merchantVAIds[$creditType]);
+        }
+
+        return null;
+    }
+
+    public function saveVirtualAccountIdForMerchantForFundAddition($id, $merchant, $type)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $virtualAccountConfig = $merchantDetails->getFundAdditionVAIds();
+
+        if(isset($virtualAccountConfig) === false)
+        {
+            $virtualAccountConfig = [];
+        }
+
+        $virtualAccountConfig[$type] = $id;
+
+        $merchantDetails->setFundAdditionVAIds(json_encode($virtualAccountConfig));
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+    }
+
+    public function createVirtualAccountForMerchant( $merchant, $input)
+    {
+        $bankAccount = (new Merchant\Service)->getBankAccount($merchant->getId());
+
+        $razorpayMerchant = $this->getRazorpayMerchantBasedOnType($input['type']);
+
+
+        $virtualAccountInput = [
+            "receivers"=> [
+                "types" => [
+                    "bank_account"
+                ]
+            ],
+            "allowed_payers" => [
+                [
+                    "type" => "bank_account",
+                    "bank_account"=> [
+                        "account_number"=>  $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER],
+                        "ifsc" =>  $bankAccount[BankAccount\Entity::IFSC_CODE],
+                    ]
+                ]
+            ],
+            "notes" => [
+                "merchant_id" => $merchant->getId(),
+                "type" => $input['type']
+            ]
+        ];
+
+        $this->setRazorpayMerchantForFundAddition($razorpayMerchant);
+
+        $response = (new VirtualAccount\Service)->create($virtualAccountInput);
+
+        $this->saveVirtualAccountIdForMerchantForFundAddition($response['id'], $merchant, $input['type']);
+
+        return $response;
+    }
+
+    public function addPayerBankAccountDetails($virtualAccount)
+    {
+        $payerBankAccount = $this->repo->bank_account->findOrFail(BankAccountEntity::verifyIdAndStripSign($virtualAccount['allowed_payers'][0]['id']));
+
+        $virtualAccount['allowed_payers'][0]['bank_account']['name'] = $payerBankAccount->getBeneficiaryName();
+
+        $virtualAccount['allowed_payers'][0]['bank_account']['bank_name'] = $payerBankAccount->getBankName();
+
+        return $virtualAccount;
+    }
+
+    public function getVirtualAccountForFundAddition($input)
+    {
+        $transactingMerchant = $this->merchant;
+
+        $virtualAccount = $this->getVirtualAccountDetailsForMerchantIfPresentAlready($transactingMerchant, $input['type']);
+
+        if(isset($virtualAccount) === false)
+        {
+            $virtualAccount = $this->createVirtualAccountForMerchant($transactingMerchant, $input);
+        }
+
+        $virtualAccount = $this->addPayerBankAccountDetails($virtualAccount);
+
+        return $virtualAccount;
+    }
+
+    private function setModeForFundAdditionViaBankTransfer($bankTransferInput)
+    {
+        try
+        {
+            $this->app['basicauth']->setModeAndDbConnection('live');
+
+            $this->repo->bank_transfer->findByPublicId($bankTransferInput['id']);
+        }
+
+        catch (\Exception $e)
+        {
+            $this->app['basicauth']->setModeAndDbConnection('test');
+
+            $this->repo->bank_transfer->findByPublicId($bankTransferInput['id']);
+        }
+    }
+
+    public function fundAdditionViaBankTransfer($input)
+    {
+        if(isset($input['payload']['virtual_account']) === false or
+            isset($input['payload']['payment']) === false or
+            isset($input['payload']['bank_transfer']) === false or
+            isset($input['payload']['virtual_account']['entity']['id']) === false or
+            isset($input['payload']['payment']['entity']['id']) === false or
+            isset($input['payload']['bank_transfer']['entity']['id']) === false
+        )
+        {
+            $this->trace->info(TraceCode::INVALID_INPUT_FOR_FUND_ADDITION,[
+                "type" => "account_transfer",
+                "input" => $input
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_INPUT_FOR_FUND_ADDITION);
+        }
+
+        $virtualAccountInput = $input['payload']['virtual_account']['entity'];
+
+        $paymentInput = $input['payload']['payment']['entity'];
+
+        $bankTransferInput = $input['payload']['bank_transfer']['entity'];
+
+        $this->trace->info(TraceCode::FUND_ADDITION_WEBHOOK_REQUEST, [
+            "va_id" => $virtualAccountInput['id'],
+            "payment_id" => $paymentInput['id'],
+            "bank_transfer_id" => $bankTransferInput['id']
+        ]);
+
+        $this->setModeForFundAdditionViaBankTransfer($bankTransferInput);
+
+        (new Merchant\Validator())->validateInputDetailsForFundAdditionViaBankTransfer($bankTransferInput, $virtualAccountInput, $paymentInput);
+
+        $merchantId = $virtualAccountInput['notes']['merchant_id'];
+
+        switch($virtualAccountInput['notes']['type'])
+        {
+            case Type::FEE_CREDIT :
+            case Type::REFUND_CREDIT :
+                return $this->addFundsToCreditBalance($paymentInput['id'], $virtualAccountInput['notes']['type'],$paymentInput, $merchantId);
+            case Type::RESERVE_BALANCE :
+                return $this->addFundsToReserveBalance($paymentInput['id'],$paymentInput, $merchantId);
+        }
+    }
+
+    private function addFundsToReserveBalance($description, $paymentInput, $merchantId)
+    {
+        $description = 'Reserve Balance|'.$description;
+
+        $mutex =  App::getFacadeRoot()['api.mutex'];
+
+        $mutexAcquired = $mutex->acquire($merchantId."-".$description, self::FUND_ADDITION_DESCRIPTION_MUTEX_TIMEOUT);
+
+        if ($mutexAcquired === false)
+        {
+            $this->trace->info(Tracecode::ANOTHER_OPERATION_IN_PROGRESS_FOR_GIVEN_DESC,[
+                "merchant_id" => $merchantId,
+                "description" => $description
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_DESCRIPTION_ANOTHER_OPERATION_IN_PROGRESS,
+                null,
+                ['resource' => $merchantId."-".$description]
+            );
+        }
+
+        (new Merchant\Validator())->validateIfReserveBalanceAlreadyAdded($description, $merchantId);
+
+        $amountAfterFee = $paymentInput['amount'] - $paymentInput['fee'];
+
+        $input = [
+            "amount" => $amountAfterFee,
+            "type" => "reserve_primary",
+            "currency" => "INR",
+            "description" => $description
+        ];
+
+        (new Merchant\Validator())->validateIfAmountForFundAdditionIsValid($input['amount'], $input, $merchantId);
+
+        $this->trace->info(Tracecode::RESERVE_BALANCE_FUND_ADDITION_REQUEST, [
+            "merchant_id" => $merchantId,
+            "input" => $input
+        ]);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        try
+        {
+            $response =  (new Adjustment\Core)->createAdjustment($input, $merchant);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::RESERVE_BALANCE_FUND_ADDITION_FAILED,
+                [
+                    'merchant_id'    => $merchantId,
+                    "input"          => $input
+                ]);
+
+            throw $e;
+        }
+
+        $this->trace->info(Tracecode::RESERVE_BALANCE_ADJUSTMENT_RESPONSE, [
+            "merchant_id" => $merchant->getId(),
+            "response" => $response
+        ]);
+
+        $this->sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amountAfterFee, Type::RESERVE_BALANCE );
+
+        return $response;
+    }
+
+    private function sendAlertIfCreditFundAdditionIsSuccessful($merchantId, $amount, $accountType)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $accountDetails =  $this->getAccountTypeLabelAndBalance($merchant, $accountType);
+
+        $data = $this->getDataForFundAdditionMail($merchant, $accountDetails, $amount);
+
+        $this->trace->info(TraceCode::CREDITS_ADDITION_MAIL, $data);
+
+        $createAlertMail = new CreditsAdditionSuccess($data);
+
+        Mail::queue($createAlertMail);
+    }
+
+    private function sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amount, $accountType)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $accountDetails =  $this->getAccountTypeLabelAndBalance($merchant, $accountType);
+
+        $data = $this->getDataForFundAdditionMail($merchant, $accountDetails, $amount);
+
+        $this->trace->info(TraceCode::RESERVE_BALANCE_ADDITION_MAIL, $data);
+
+        $reserveBalanceAdditionMail = new ReserveBalanceAdditionSuccess($data);
+
+        Mail::queue($reserveBalanceAdditionMail);
+    }
+
+    private function getDataForFundAdditionMail($merchant, $accountDetails, $amount)
+    {
+        return  [
+            'email'             => $merchant->getTransactionReportEmail(),
+            'merchant_id'       => $merchant->getId(),
+            'merchant_dba'      => $merchant->getBillingLabel(),
+            'account_type'      => $accountDetails['label'],
+            'org_hostname'      => $merchant->org->getPrimaryHostName(),
+            'timestamp'         => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+            'fund_balance'      => $accountDetails['amount']/100,
+            'amount'            => $amount/100
+        ];
+    }
+
+    private function getAccountTypeLabelAndBalance($merchant, $accountType)
+    {
+        $balanceType = $accountType === Type::RESERVE_BALANCE ? Type::RESERVE_PRIMARY : Type::PRIMARY;
+
+        $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $balanceType);
+
+        switch($accountType)
+        {
+            case 'fee_credit' :
+                return [
+                    "label" => "Fee Credit",
+                    "amount" => $merchantBalance->getFeeCredits()
+                ];
+
+            case 'refund_credit' :
+                return [
+                    "label" => "Refund Credit",
+                    "amount" => $merchantBalance->getRefundCredits()
+                ];
+
+            case 'reserve_balance' :
+                return [
+                    "label" => "Reserve Balance",
+                    "amount" => $merchantBalance->getBalance()
+                ];
+        }
+
+    }
+
+    public function updateVirtualAccountForFundAddition($merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantVAIds = $merchantDetails->getFundAdditionVAIds();
+
+        if($merchantVAIds === null)
+        {
+            return;
+        }
+
+        $merchantDetails->setFundAdditionVAIds(null);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+        $this->closeVirtualAccountForFundAddition($merchantVAIds, $merchant);
+    }
+
+    private function closeVirtualAccountForFundAddition($merchantVAIds, $merchant)
+    {
+        $this->trace->info(Tracecode::VIRTUAL_ACCOUNT_CLOSE_REQUEST_FOR_FUND_ADDITION, [
+            'input' => $merchantVAIds
+        ]);
+
+        foreach($merchantVAIds as $type => $VAId)
+        {
+
+            $rzpMerchant = $this->repo->merchant->findOrFail($this->getRazorpayMerchantBasedOnType($type)['merchant_id']);
+
+            $response = (new VirtualAccount\Service)->closeVirtualAccountByPublicIdAndMerchant($VAId, $rzpMerchant);
+
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CLOSED_FOR_FUND_ADDITION, [
+                'type' => $type,
+                'response' => $response
+            ]);
+        }
+
+        $this->trace->info(Tracecode::VIRTUAL_ACCOUNT_CLOSED_ON_BANK_UPDATION, [
+            'input' => $merchantVAIds
+        ]);
     }
 
     /**

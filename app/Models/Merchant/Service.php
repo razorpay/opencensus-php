@@ -2181,6 +2181,50 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function fundAdditionTPV(array $input)
+    {
+        $merchantCore = new Merchant\Core;
+
+        $this->trace->info(Tracecode::FUND_ADDITION_REQUEST, $input);
+
+        switch($input['method'])
+        {
+            case 'online_payment' :
+                return $merchantCore->createOrderForFundAddition($input);
+
+            case 'account_transfer' :
+                return $merchantCore->getVirtualAccountForFundAddition($input);
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_FUND_ADDITION_METHOD_IS_INVALID,
+            null,
+            $input);
+    }
+
+    public function addFundsViaWebhook($type, $input)
+    {
+        $merchantCore = new Merchant\Core;
+
+        switch($type)
+        {
+            case 'online_payment' :
+                return $merchantCore->fundAdditionViaOrders($input);
+
+            case 'account_transfer' :
+                return $merchantCore->fundAdditionViaBankTransfer($input);
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_FUND_ADDITION_METHOD_IS_INVALID,
+            null,
+            [
+                "type" => $type,
+                "input" =>$input
+            ]
+        );
+    }
+
     /**
      * This function returns if there any open workflow actions associated with the current bank account entity of a
      * merchant. @todo: Replace this with a more generic approach based on primary entity

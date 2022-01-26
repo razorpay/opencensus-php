@@ -102,7 +102,7 @@ class Service extends Base\Service
         }
 
         $timeTaken = millitime() - $startTime;
-        
+
         $this->trace->info(
             TraceCode::BULK_ACTION_RESPONSE_TIME,
             [
@@ -248,5 +248,10 @@ class Service extends Base\Service
                 null,
                 ['input' => $input]);
         }
+    }
+
+    public function fetchCreditsByCampaignId($campaignId, $merchantId)
+    {
+        return $this->repo->credits->findByCampaignId($campaignId, $merchantId);
     }
 }

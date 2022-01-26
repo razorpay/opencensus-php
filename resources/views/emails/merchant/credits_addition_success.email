@@ -31,7 +31,7 @@
             <tr>
               <td class="center">
                 <h1><center>
-                  <span style="color:#222">Low Credit Balance</span>
+                  <span style="color:#222">Funds added successfully</span>
                 </center></h1>
               </td>
               <td class="expander"></td>
@@ -53,20 +53,14 @@
                   <tr>
                     <td class="center welcome">
                       <p>
-                         Dear Customer,
+                        Dear Customer,
                       </p>
                       <p>
-                        This is a gentle reminder to recharge your Razorpay Fee Credit balance. Your Fee Credit balance at {{ $timestamp }} stands at {{ $fee_credits }}.
+                        The payment of INR {{ $amount }} is successfully credited to your Razorpay {{ $account_type }}.
                       </p>
-
                       <p>
-                        Don't find this reminder useful? Click <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/" >here</a> to know more
+                        Your {{  $account_type }} balance at {{ $timestamp }} stands at INR {{ $fund_balance }}.
                       </p>
-
-                      <p>
-                        Or Update your Fee Credits Alert limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank">here</a>
-                      </p>
-
                       <p>
                         Regards,
                         <br>

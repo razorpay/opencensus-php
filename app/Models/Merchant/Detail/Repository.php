@@ -13,12 +13,14 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive
     {
         saveOrFail as saveOrFailTestAndLive;
+        validateEntitiesMatch as parentValidateEntitiesMatch;
     }
 
     protected $entity = 'merchant_detail';
@@ -63,6 +65,17 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->first();
+    }
+
+    protected function validateEntitiesMatch($liveEntity, $testEntity)
+    {
+        $liveEntityClone = clone $liveEntity;
+        $testEntityClone = clone $testEntity;
+
+        $liveEntityClone->setFundAdditionVAIds(NULL);
+        $testEntityClone->setFundAdditionVAIds(NULL);
+
+        $this->parentValidateEntitiesMatch($liveEntityClone, $testEntityClone);
     }
 
     public function fetchForMerchant(Merchant\Entity $merchant)

@@ -8,6 +8,8 @@ use Hash;
 use RZP\Base;
 use RZP\Constants\Country;
 use RZP\Exception;
+use RZP\Models\Order\Status;
+use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Models\User;
 use FuzzyWuzzy\Fuzz;
 use RZP\Models\Feature;
@@ -19,6 +21,7 @@ use RZP\Models\User\Role;
 use RZP\Models\Settlement;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Merchant\Credits as FundCredits;
 use RZP\Models\Address;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
@@ -34,6 +37,10 @@ use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
+use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\VirtualAccount\Entity as VAEntity;
+use RZP\Models\Adjustment;
+use RZP\Models\Payment;
 
 /**
  * Class Validator
@@ -2473,6 +2480,222 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_COUNTRY, null, [$value]);
+        }
+    }
+
+    private function validateOrderIdForPayment($payment, $order, $paymentInput)
+    {
+        $app = App::getFacadeRoot();
+
+        if($payment->order->getPublicId() !== $order->getPublicId())
+        {
+            $app['trace']->info(TraceCode::BAD_REQUEST_INVALID_ORDER_ID_IN_PAYMENT, [
+                "payment_order_id" => $paymentInput['order_id'],
+                "order_id" => $order->getId()
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ORDER_ID_IN_PAYMENT,
+                null,
+                [
+                    "payment_order_id" => $paymentInput['order_id'],
+                    "order_id" => $order->getId()
+                ]
+            );
+        }
+    }
+
+    private function validatePaymentDetailsForFundAdditionInput($paymentInput, $payment)
+    {
+        $app = App::getFacadeRoot();
+
+        if($paymentInput['amount'] !== $payment->getAmount() or
+            $paymentInput['fee'] !== $payment->getFee() or
+            $payment->getStatus() !== Payment\Status::CAPTURED
+        )
+        {
+            $app['trace']->info(TraceCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED, [
+                "input_fee" => $paymentInput['fee'],
+                "input_amount" => $paymentInput['amount'],
+                "payment_id" => $payment->getPublicId()
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED
+            );
+        }
+    }
+
+    private function validatePaymentDetailsForFundAdditionOrder($order, $paymentInput, $merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->findByPublicIdAndMerchant($paymentInput['id'], $merchant);
+
+        $this->validateOrderIdForPayment($payment, $order, $paymentInput);
+
+        $this->validatePaymentDetailsForFundAdditionInput($paymentInput, $payment);
+    }
+
+    private function validateIfOrderStatusIsPaid($order)
+    {
+        $app = App::getFacadeRoot();
+
+        if($order->getStatus() !== Status::PAID)
+        {
+            $app['trace']->info(TraceCode::ORDER_STATUS_INVALID_FOR_FUND_ADDITION, [
+                "order_id" => $order->getPublicId()
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_STATUS_INVALID_FOR_FUND_ADDITION,null,
+                [
+                    "order_id" => $order->getPublicId()
+                ]
+            );
+        }
+    }
+
+    private function validateOrderAndPaymentDetails($orderInput, $paymentInput, $merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        $order = $app['repo']->order->findByPublicIdAndMerchant($orderInput['id'], $merchant);
+
+        $this->validateIfOrderStatusIsPaid($order);
+
+        $this->validatePaymentDetailsForFundAdditionOrder($order, $paymentInput, $merchant);
+    }
+
+    public function validateIfFundAlreadyAddedForGivenCampaign($campaignId, $merchantId)
+    {
+        $app = App::getFacadeRoot();
+
+        $creditExists = (new FundCredits\Service)->fetchCreditsByCampaignId($campaignId, $merchantId);
+
+        if($creditExists === true)
+        {
+            $app['trace']->info(TraceCode::CREDITS_ALREADY_ADDED_FOR_THE_GIVEN_CAMPAIGN, [
+                "campaign" => $campaignId
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CREDITS_ALREADY_ADDED_FOR_THE_GIVEN_CAMPAIGN,
+                null,
+                ["campaign" => $campaignId]
+            );
+        }
+    }
+
+    public function validateIfAmountForFundAdditionIsValid($amount, $input, $merchantId)
+    {
+        $app = App::getFacadeRoot();
+
+        if($amount <= 0)
+        {
+            $app['trace']->info(TraceCode::INVALID_AMOUNT_FOR_FUND_ADDITION, [
+                "input" => $input,
+                "merchant_id" => $merchantId
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION,
+                null,
+                [
+                    "input" => $input,
+                    "merchant_id" => $merchantId
+                ]
+            );
+        }
+    }
+
+    public function validateInputDetailsForFundAdditionViaOrder($orderInput, $paymentInput)
+    {
+        $app = App::getFacadeRoot();
+
+        if(isset($orderInput['notes']['merchant_id']) === false or
+            isset($orderInput['notes']['type']) === false)
+        {
+            $app['trace']->info(TraceCode::MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION);
+        }
+
+        $creditType = $orderInput['notes']['type'];
+
+        $razorpayMerchant = (new core())->getRazorpayMerchantBasedOnType($creditType);
+
+        $merchant =  $app['repo']->merchant->findOrFail($razorpayMerchant['merchant_id']);
+
+        $this->validateOrderAndPaymentDetails($orderInput, $paymentInput, $merchant);
+
+    }
+
+    public function validatePaymentDetailsForBankTransfer($virtualAccountInput, $paymentInput, $merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->findByPublicIdAndMerchant($paymentInput['id'], $merchant);
+
+        $this->validatePaymentDetailsForFundAdditionInput($paymentInput, $payment);
+
+    }
+
+    public function validateBankTransferEntityDetails($bankTransferInput, $virtualAccountInput, $paymentInput, $merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        $bankTransfer = $app['repo']->bank_transfer->findByPublicIdAndMerchant($bankTransferInput['id'], $merchant);
+
+        if($bankTransfer->getPaymentId() !== PaymentEntity::stripDefaultSign($paymentInput['id']) or
+            $bankTransfer->getVirtualAccountId() !==  VAEntity::stripDefaultSign($virtualAccountInput['id']))
+        {
+            $app['trace']->info(TraceCode::BANK_TRANSFER_DATA_TAMPERED_FOR_FUND_ADDITION, [
+               "bank_transfer_id" => $bankTransfer->getId(),
+               "input_payment_id" => $paymentInput['id'],
+                "input_va_id"     => $virtualAccountInput['id']
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BANK_TRANSFER_INPUT_DATA_TAMPERED);
+
+        }
+    }
+
+    public function validateInputDetailsForFundAdditionViaBankTransfer($bankTransferInput, $virtualAccountInput, $paymentInput)
+    {
+        $app = App::getFacadeRoot();
+
+        if(isset($virtualAccountInput['notes']['merchant_id']) === false or
+            isset($virtualAccountInput['notes']['type']) === false)
+        {
+            $app['trace']->info(TraceCode::MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION);
+        }
+
+        $creditType = $virtualAccountInput['notes']['type'];
+
+        $razorpayMerchant = (new core())->getRazorpayMerchantBasedOnType($creditType);
+
+        $merchant =  $app['repo']->merchant->findOrFail($razorpayMerchant['merchant_id']);
+
+        $this->validateBankTransferEntityDetails($bankTransferInput, $virtualAccountInput, $paymentInput, $merchant);
+
+        $this->validatePaymentDetailsForBankTransfer($virtualAccountInput, $paymentInput, $merchant);
+    }
+
+    public function validateIfReserveBalanceAlreadyAdded($description, $merchantId)
+    {
+        $app = App::getFacadeRoot();
+
+        $adjustmentExists = (new Adjustment\Service)->fetchAdjustmentByDescription($description, $merchantId);
+
+        if($adjustmentExists === true)
+        {
+            $app['trace']->info(TraceCode::RESERVE_BALANCE_ALREADY_ADDED_FOR_GIVEN_DESC, [
+                "merchant_id" => $merchantId,
+                "description" => $description
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESERVE_BALANCE_ALREADY_ADDED_FOR_GIVEN_DESC,
+                null,["description" => $description]);
         }
     }
 

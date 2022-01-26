@@ -1505,5 +1505,4 @@ class Repository extends Base\Repository
 
         return $query->pluck($merchantId);
     }
-
 }

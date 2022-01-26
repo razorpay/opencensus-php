@@ -130,6 +130,8 @@ class MailTags
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';
     const AMOUNT_CREDITS_ALERT             = 'amount_credits_alert';
     const REFUND_CREDITS_ALERT             = 'refund_credits_alert';
+    const CREDITS_ADDITION_MAIL            = 'credits_addition_mail';
+    const RESERVE_BALANCE_ADDITION_MAIL    = 'reserve_balance_addition_mail';
     const BALANCE_THRESHOLD_ALERT          = 'balance_threshold_alert';
     const RX_LOW_BALANCE_ALERT             = 'rx_low_balance_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
