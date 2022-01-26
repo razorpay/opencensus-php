@@ -8,6 +8,7 @@ class SubType
 {
     const CONSUMER    = 'consumer';
     const BUSINESS    = 'business';
+    const PREMIUM     = 'premium';
 
     /**
      * CONSUMER is enabled for all merchant by default
@@ -20,6 +21,7 @@ class SubType
     protected static $subTypeBitPosition = [
         self::CONSUMER                    => 1,
         self::BUSINESS                    => 2,
+        self::PREMIUM                     => 4,
     ];
 
     public static function checkSubType($subtype)
