@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Constants;
 use RZP\Notifications\BaseNotificationService;
+use RZP\Notifications\Onboarding\Constants as OnboardingConstants;
 
 class SmsNotificationService extends BaseNotificationService
 {
@@ -19,24 +20,27 @@ class SmsNotificationService extends BaseNotificationService
 
         try
         {
-            $this->app->raven->sendSms($payload);
+            $this->app['stork_service']->sendSms(
+                $this->mode,
+                $payload
+            );
 
             $this->trace->info(
                 TraceCode::MERCHANT_ONBOARDING_SMS_SENT,
                 [
                     'mid'      => $merchant->getMerchantId(),
-                    'template' => $payload['template']
+                    'template' => $payload[OnboardingConstants::SMS_TEMPLATE_NAME]
                 ]);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e,
-                                         Trace::CRITICAL,
-                                         TraceCode::MERCHANT_ONBOARDING_SMS_FAILED,
-                                         [
-                                             'mid'      => $merchant->getMerchantId(),
-                                             'template' => $this->getTemplateMessage()
-                                         ]
+                Trace::CRITICAL,
+                TraceCode::MERCHANT_ONBOARDING_SMS_FAILED,
+                [
+                    'mid'      => $merchant->getMerchantId(),
+                    'template' => $this->getTemplateMessage()
+                ]
             );
         }
     }
@@ -45,25 +49,29 @@ class SmsNotificationService extends BaseNotificationService
     {
         $merchant = $this->args[Constants::MERCHANT];
 
+        $merchantId = $merchant->getMerchantId();
+
+        $orgId = $merchant->getOrgId();
+
+        $templateName = $this->getTemplateMessage();
+
         $payload = [
-            Constants::RECEIVER => $this->getPhone(),
-            Constants::TEMPLATE => $this->getTemplateMessage(),
-            Constants::SOURCE   => self::ONBOARDING_SOURCE,
-            Constants::PARAMS   => [
-                Constants::MERCHANT_NAME => $merchant->getName(),
-                Constants::DASHBOARD_URL => $this->app[Constants::CONFIG]->get(Constants::APPLICATIONS_DASHBOARD_URL)
-            ]
+            OnboardingConstants::OWNER_ID                    => $merchantId,
+            OnboardingConstants::OWNER_TYPE                  => OnboardingConstants::MERCHANT,
+            OnboardingConstants::ORG_ID                      => $orgId,
+            OnboardingConstants::SENDER                      => OnboardingConstants::RZRPAY,
+            OnboardingConstants::DESTINATION                 => $this->getPhone(),
+            OnboardingConstants::SMS_TEMPLATE_NAME           => $templateName,
+            OnboardingConstants::TEMPLATE_NAMESPACE          => OnboardingConstants::PAYMENTS_ONBOARDING,
+            OnboardingConstants::LANGUAGE                    => OnboardingConstants::ENGLISH,
+            OnboardingConstants::CONTENT_PARAMS              => [
+                Constants::MERCHANT_NAME   => $merchant->getName(),
+                Constants::DASHBOARD_URL   => $this->app[Constants::CONFIG]->get(Constants::APPLICATIONS_DASHBOARD_URL)
+            ],
+            OnboardingConstants::DELIVERY_CALLBACK_REQUESTED => true
         ];
 
-        $payload[Constants::PARAMS] = array_merge($payload[Constants::PARAMS], $this->args[Constants::PARAMS] ?? []);
-
-        $orgId = $merchant->getMerchantOrgId();
-
-        // appending orgId in stork context to be used on stork to select org specific sms gateway.
-        if (empty($orgId) === false)
-        {
-            $payload['stork']['context']['org_id'] = $orgId;
-        }
+        $payload[Constants::PARAMS] = array_merge($payload[OnboardingConstants::CONTENT_PARAMS], $this->args[Constants::PARAMS] ?? []);
 
         return $payload;
     }

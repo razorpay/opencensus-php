@@ -471,7 +471,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -545,7 +548,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -618,7 +624,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -683,7 +692,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -747,7 +759,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -811,7 +826,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -876,7 +894,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = '1cXSLlUU8V9sXl';
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
-        $this->mockRaven();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
@@ -2437,7 +2458,9 @@ class ActivationTest extends OAuthTestCase
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
 
-        $this->mockRaven();
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
 
