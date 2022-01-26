@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
     const QR_STRING       = 'qr_string';
     const SHORT_URL       = 'short_url';
     const MPANS_TOKENIZED = 'mpans_tokenized';
+    const MIME_TYPE       = 'image/jpeg';
 
     protected static $sign = 'qr';
 

@@ -22,9 +22,9 @@ class Service extends Base\Service
         // Can't use merchant here because this is a direct route
         $qrCode = $this->repo->qr_code->findByPublicId($id);
 
-        $qrCodeFilePath = $this->core()->fetchQrCodePath($qrCode, $qrCode->merchant);
+        $qrCodeFile = $this->core()->fetchQrCodePathFromUfh($qrCode);
 
-        return $qrCodeFilePath;
+        return $qrCodeFile;
     }
 
     public function tokenizeExistingQrStringMpans($input)

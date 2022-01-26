@@ -8,6 +8,7 @@ class Constants
 {
     const QR_CODE_FILE_NAME = 'QrCode.jpeg';
     const QR_CODE           = 'qr_code';
+    const QR_CODE_TEMP_IMAGE_URL = 'https://rzp.io/i/xwlv5oK';
 
     // TODO: Find out what should
     // be the best size

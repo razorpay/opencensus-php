@@ -81,7 +81,7 @@ class QrCodeController extends Controller
     {
         $response = $this->service()->fetchQrCodePath($id);
 
-        return Response::download($response, Constants::QR_CODE_FILE_NAME);
+        return $response;
     }
 
     public function qrDemo()

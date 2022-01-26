@@ -1017,7 +1017,7 @@ class VirtualAccountTest extends TestCase
 
         $response = $this->sendRequest($request);
 
-        $this->assertContentTypeForResponse('image/jpeg', $response);
+        $this->assertContentTypeForResponse('image/png', $response);
     }
 
     public function testDownloadQrInLiveMode()

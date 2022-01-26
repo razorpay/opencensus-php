@@ -2,12 +2,20 @@
 
 namespace RZP\Models\QrCode;
 
+use Response;
+use Mockery\Mock;
 use RZP\Exception;
+use RZP\Mail\System\Trace;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Services\UfhService;
+use Illuminate\Http\UploadedFile;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Mock\UfhService as MockUfhService;
+
 
 class Core extends Base\Core
 {
@@ -51,7 +59,7 @@ class Core extends Base\Core
         $this->elfin = $this->app['elfin'];
     }
 
-    public function fetchQrCodePath(Entity $qrCode, Merchant\Entity $merchant)
+    public function fetchQrCodePathFromFileStore(Entity $qrCode, Merchant\Entity $merchant)
     {
         $qrCodeImage = $qrCode->qrCodeFile();
 
@@ -59,6 +67,92 @@ class Core extends Base\Core
             ->id($qrCodeImage->getId())
             ->merchantId($merchant->getId())
             ->getFile();
+    }
+
+    protected function getUfhService()
+    {
+        $ufhServiceMock = $this->app['config']->get('applications.ufh.mock');
+
+        if($ufhServiceMock === false)
+        {
+            $this->ufhService = new UfhService($this->app, $this->app['basicauth']->getMerchantId(), "qr_code");
+        }
+        else
+        {
+            $this->ufhService = new MockUfhService($this->app);
+        }
+
+        if(is_null($this->ufhService) == true)
+        {
+            $this->trace->info(
+                TraceCode::QR_CODE_UFH_SERVICE_NULL
+            );
+
+            return $this->app['ufh.service'];
+        }
+
+        $this->trace->info(
+            TraceCode::QR_CODE_UFH_SERVICE_FETCHED
+        );
+
+        return $this->ufhService;
+    }
+
+    public function fetchQrCodePathFromUfh(Entity $qrCode)
+    {
+        $this->app['basicauth']->setMerchantById($qrCode->merchant->getId());
+
+        $ufhQueryParams = [
+            'entity_id'   => $qrCode->getId(),
+            'entity_type' => $qrCode->getEntityName(),
+        ];
+
+        $ufhService = $this->getUfhService();
+
+        $response = $ufhService->fetchFiles($ufhQueryParams, $qrCode->merchant->getId());
+
+        $this->trace->info(
+            TraceCode::QR_CODE_IMAGE_UFH_FETCH_FILE_RESPONSE,
+            $response
+        );
+
+        $ufhServiceMock = $this->app['config']->get('applications.ufh.mock');
+
+        if ($response['count'] === 0)
+        {
+            //The qr code image files which are created without using UFH service do not have a ufh file id associated
+            //with them, so we need to use FileStore for old files.
+            $response = $this->fetchQrCodePathFromFileStore($qrCode, $qrCode->merchant);
+
+            $this->trace->info(
+                TraceCode::QR_CODE_IMAGE_FILE_FETCH_FROM_LOCAL
+            );
+
+            return Response::download($response, Constants::QR_CODE_FILE_NAME);
+        }
+
+        $fileId = $response['items'][0]['id'];
+
+        $response = $ufhService->getSignedUrl($fileId);
+
+        $this->trace->info(
+            TraceCode::QR_CODE_IMAGE_SIGNED_URL_FETCH_RESPONSE,
+            $response
+        );
+
+        $filename    = Constants::QR_CODE_FILE_NAME;
+        $tempImage   = tempnam(sys_get_temp_dir(), $filename);
+
+        if($ufhServiceMock === false)
+        {
+            $copySuccess = copy($response['signed_url'], $tempImage);
+        }
+        else
+        {
+            $copySuccess = copy(Constants::QR_CODE_TEMP_IMAGE_URL, $tempImage);
+        }
+
+        return Response::download($tempImage, $filename);
     }
 
     public function edit(Entity $qrCode, array $input)
@@ -126,6 +220,18 @@ class Core extends Base\Core
         return $qrCode;
     }
 
+    private function isUfhExperimentEnabled($qrCode)
+    {
+        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), RazorxTreatment::QR_CODE_CLOUDFRONT_ONBOARDING, $this->mode);
+
+        if ($variant !== 'on')
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function generateQrCodeFile($qrCode)
     {
         $this->trace->info(TraceCode::QR_CODE_IMAGE_FILE_GENERATE, $qrCode->toArrayPublic());
@@ -148,6 +254,12 @@ class Core extends Base\Core
             $localFilePath = $this->generator->generateBharatQrCodeImage($qrCode);
         }
 
+        if($this->isUfhExperimentEnabled($qrCode) === true)
+        {
+            $this->saveQrCodeImageUsingUfh($localFilePath, $qrCode);
+            return;
+        }
+
         $ext = Constants::QR_CODE_EXTENSION;
 
         (new FileStore\Creator)
@@ -158,6 +270,50 @@ class Core extends Base\Core
             ->entity($qrCode)
             ->type(FileStore\Type::QR_CODE_IMAGE)
             ->save();
+    }
+
+    private function saveQrCodeImageUsingUfh($localFilePath, $qrCode)
+    {
+        $uploadedFile = new UploadedFile(
+            $localFilePath,
+            $qrCode->getId() . '.jpeg',
+            Entity::MIME_TYPE,
+            filesize($localFilePath),
+            null,
+            true
+        );
+
+        //the ufh service takes the merchant id from ba, so setting the ba merchant as the qr code merchant
+        $this->app['basicauth']->setMerchantById($this->merchant->getId());
+
+        try
+        {
+            $filenameWithoutExt = str_before($uploadedFile->getClientOriginalName(), '.' . $uploadedFile->getClientOriginalExtension());
+
+            $uploadFilename = 'qrcodes/' . $filenameWithoutExt;
+
+            $ufhService  = $this->getUfhService();
+            $ufhResponse = $ufhService->uploadFileAndGetUrl(
+                $uploadedFile,
+                $uploadFilename,
+                FileStore\Type::QR_CODE_IMAGE,
+                $qrCode
+            );
+
+            $this->trace->info(
+                TraceCode::QR_CODE_IMAGE_UFH_FILE_UPLOAD_RESPONSE,
+                $ufhResponse
+            );
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::QR_CODE_IMAGE_UFH_FILE_UPLOAD_FAILED,
+                [
+                    'Error message' => $ex->getMessage(),
+                ]
+            );
+        }
     }
 
     public function setShortUrl($qrCode)

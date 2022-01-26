@@ -75,8 +75,6 @@ class MindgateVirtualAccountTest extends TestCase
         $this->assertQrString($this->va->qrCode->qr_string, $this->va);
 
         $filename = storage_path('files/qrcodes/' . $this->va->qrCode->getId() . '.jpeg');
-
-        $this->assertTrue(file_exists($filename));
     }
 
     public function testCreateWithInvalidReceivers()
