@@ -1501,7 +1501,19 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'going to fetch queued payouts',
+            ]);
+
         $queuedPayouts = $this->repo->payout->fetchQueuedAndOnHoldPayouts($merchantId);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'completed fetching queued payouts',
+            ]);
 
         $allQueuedReasons = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION;
 
@@ -1521,6 +1533,13 @@ class Service extends Base\Service
                 }
             }
         }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'queued summary response formed',
+            ]);
+
         return $queuedPayoutsSummary;
     }
 
@@ -1562,7 +1581,19 @@ class Service extends Base\Service
 
         $allTimePeriods = Entity::SCHEDULED_PAYOUTS_SUMMARY;
 
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'going to fetch scheduled payouts from db',
+            ]);
+
         $allScheduledPayouts = $this->repo->payout->fetchScheduledPayouts($merchantId);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'fetch complete for scheduled payouts from db',
+            ]);
 
         $groupedScheduledPayouts = $allScheduledPayouts->groupBy(Entity::BALANCE_ID);
 
@@ -1577,6 +1608,12 @@ class Service extends Base\Service
                 $scheduledPayoutsSummary[$bankingAccountId][Status::SCHEDULED][$timePeriod] = $summaryForTimePeriod;
             }
         }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'response ready for scheduled payouts',
+            ]);
 
         return $scheduledPayoutsSummary;
     }
@@ -1645,7 +1682,20 @@ class Service extends Base\Service
     {
         $user = $this->auth->getUser();
 
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'going to fetch pending payouts',
+            ]);
+
+
         $pending = $this->repo->payout->fetchPayoutsPendingOnUserRole($user, $this->merchant, $this->auth->getUserRole());
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'fetch complete for pending payouts from db',
+            ]);
 
         $groupedPendingPayouts = $pending->groupBy(Entity::BALANCE_ID);
 
@@ -1668,6 +1718,13 @@ class Service extends Base\Service
             ];
         }
 
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'response ready for pending payouts',
+            ]);
+
+
         return $pendingPayoutsSummary;
     }
 
@@ -1679,6 +1736,12 @@ class Service extends Base\Service
      */
     protected function getCompleteSummary(array $pending, array $queued, array $scheduled): array
     {
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'building complete summary response',
+            ]);
+
         $bankingAccountList = $this->merchant->activeBankingAccounts();
 
         $completeSummary = [];
@@ -1752,6 +1815,12 @@ class Service extends Base\Service
         {
             $completeSummary[$bankingAccountId] = array_merge($completeSummary[$bankingAccountId], $scheduledSummary);
         }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'complete summary response ready',
+            ]);
 
         return $completeSummary;
     }
