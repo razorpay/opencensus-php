@@ -48,7 +48,7 @@ class Constants
     const BATCH_KEY_RRN                     = 'rrn';
     const BATCH_KEY_TYPE                    = 'type';
     const BATCH_KEY_SUB_TYPE                = 'sub_type';
-    const BATCH_KEY_AMOUNT                  = 'amount';
+    const BATCH_KEY_AMOUNT                  = 'amount_in_cents';
     const BATCH_KEY_CURRENCY                = 'currency';
     const BATCH_KEY_BASE_AMOUNT             = 'base_amount';
     const BATCH_KEY_REPORTED_TO_ISSUER_AT   = 'reported_to_issuer_at';
@@ -107,4 +107,7 @@ class Constants
     const FRAUD_ERROR_REASON_ARN_TO_PAYMENT_ID = 'Failed to fetch payment_id from ARN or RRN';
     const FRAUD_ERROR_REASON_ARN_NOT_FOUND     = 'ARN not found for the following row';
     const FRAUD_ERROR_REASON_ARN_TO_RRN        = 'Failed to map RRN from ARN';
+
+    const IDEMPOTENCY_KEY   = 'idempotency_key';
+    const SUCCESS           = 'success';
 }

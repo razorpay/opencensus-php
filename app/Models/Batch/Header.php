@@ -1254,7 +1254,7 @@ class Header
     const FRAUD_HEADER_TYPE       = 'type';
     const SUB_TYPE                = 'sub_type';
     const FRAUD_HEADER_CURRENCY   = 'currency';
-    const FRAUD_HEADER_AMOUNT     = 'amount';
+    const FRAUD_HEADER_AMOUNT     = 'amount_in_cents';
     const BASE_AMOUNT             = 'base_amount';
     const REPORTED_TO_ISSUER_AT   = 'reported_to_issuer_at';
     const CHARGEBACK_CODE         = 'chargeback_code';

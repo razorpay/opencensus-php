@@ -103,6 +103,8 @@ class Core extends Base\Core
     {
         $row[Fraud\Entity::BATCH_ID] = $batchId;
 
+        $row[Fraud\Entity::AMOUNT] = $row[Constants::BATCH_KEY_AMOUNT];
+
         if (isset($row[Fraud\Entity::AMOUNT]) === false or strlen($row[Fraud\Entity::AMOUNT]) === 0)
         {
             $payment = $this->repo->payment->findOrFail($row[Fraud\Entity::PAYMENT_ID]);
@@ -117,6 +119,8 @@ class Core extends Base\Core
         unset($row[Constants::BATCH_KEY_ERROR_REASON]);
 
         unset($row[Constants::BATCH_KEY_RRN]);
+
+        unset($row[Constants::BATCH_KEY_AMOUNT]);
 
         // Mastercard Fraud data contains both code and a short description. This is for separating out the code from the description.
         if ($row[Constants::BATCH_KEY_REPORTED_BY] === Constants::REPORTED_BY_MASTERCARD)
@@ -152,7 +156,7 @@ class Core extends Base\Core
             ? Constants::BATCH_STATUS_CREATED : Constants::BATCH_STATUS_UPDATED;
     }
 
-    protected function getDefaultValuesForBatchOutputRow($row, $fetchFromDataLakeSuccessful): array
+    protected function getDefaultValuesForBatchOutputRow($row, $fetchFromDataLakeSuccessful, $idempotencyKey): array
     {
         $rowOutput = [
             Header::FRAUD_OUTPUT_HEADER_ARN           =>  $row[Constants::BATCH_KEY_ARN],
@@ -160,6 +164,8 @@ class Core extends Base\Core
             Header::FRAUD_OUTPUT_HEADER_FRAUD_ID      =>  '',
             Header::FRAUD_OUTPUT_HEADER_STATUS        =>  Constants::BATCH_STATUS_FAILED,
             Header::FRAUD_OUTPUT_HEADER_ERROR_REASON  =>  $row[Constants::BATCH_KEY_ERROR_REASON],
+            Constants::IDEMPOTENCY_KEY                =>  $idempotencyKey,
+            Constants::SUCCESS                        =>  'true',
         ];
 
         if ($fetchFromDataLakeSuccessful === false)
@@ -192,17 +198,19 @@ class Core extends Base\Core
                 TraceCode::FRAUD_AUTOMATION_DATA_LAKE_QUERY_FAILED);
         }
 
-        $output = [];
+        $output = new Base\PublicCollection;
 
         foreach ($input as $row)
         {
-            $rowOutput = $this->getDefaultValuesForBatchOutputRow($row, $fetchFromDataLakeSuccessful);
+            $rowOutput = $this->getDefaultValuesForBatchOutputRow($row, $fetchFromDataLakeSuccessful, $row[Batch\Constants::IDEMPOTENCY_KEY]);
+
+            unset($row[Batch\Constants::IDEMPOTENCY_KEY]);
 
             $arn = $row[Constants::BATCH_KEY_ARN];
 
             if (strlen($rowOutput[Header::FRAUD_OUTPUT_HEADER_ERROR_REASON]) > 0)
             {
-                $output []= $rowOutput;
+                $output->push($rowOutput);
 
                 continue;
             }
@@ -212,7 +220,7 @@ class Core extends Base\Core
             {
                 $rowOutput[Header::FRAUD_OUTPUT_HEADER_ERROR_REASON] = Constants::FRAUD_ERROR_REASON_ARN_TO_PAYMENT_ID;
 
-                $output []= $rowOutput;
+                $output->push($rowOutput);
 
                 continue;
             }
@@ -234,9 +242,13 @@ class Core extends Base\Core
                 $rowOutput[Header::FRAUD_OUTPUT_HEADER_ERROR_REASON] = $e->getMessage();
             }
 
-            $output []= $rowOutput;
+            $output->push($rowOutput);
         }
 
-        return $output;
+        $outputArray = $output->toArrayWithItems();
+
+        $this->trace->info(TraceCode::PAYMENT_FRAUD_BATCH_OUTPUT,  $outputArray);
+
+        return $outputArray;
     }
 }

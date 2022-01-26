@@ -5238,6 +5238,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Fraud Entity
     const FRAUD_AUTOMATION_DATA_LAKE_QUERY_FAILED        = 'FRAUD_AUTOMATION_DATA_LAKE_QUERY_FAILED';
     const BATCH_REQUEST_NOTIFY_PAYMENT_FRAUD             = 'BATCH_REQUEST_NOTIFY_PAYMENT_FRAUD';
+    const PAYMENT_FRAUD_BATCH_OUTPUT                     = 'PAYMENT_FRAUD_BATCH_OUTPUT';
 
     // Ops fraud notification traces
     const FRAUD_NOTIFICATION_TO_OPS_FAILED    = 'FRAUD_NOTIFICATION_TO_OPS_FAILED';

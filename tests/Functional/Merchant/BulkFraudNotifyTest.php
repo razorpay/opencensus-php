@@ -475,9 +475,9 @@ class BulkFraudNotifyTest extends TestCase
 
         $response = $this->startTest();
 
-        $fraudId = $this->assertFraudEntityExists($response[0]['Payment ID'], 'MasterCard');
+        $fraudId = $this->assertFraudEntityExists($response['items'][0]['Payment ID'], 'MasterCard');
 
-        $this->assertEquals($response[0]['Fraud ID'], $fraudId);
+        $this->assertEquals($response['items'][0]['Fraud ID'], $fraudId);
     }
 
     public function testCreateFraudBatchVisa()
@@ -500,11 +500,11 @@ class BulkFraudNotifyTest extends TestCase
 
         $response = $this->startTest();
 
-        $fraudId = $this->assertFraudEntityExists($response[0]['Payment ID']);
+        $fraudId = $this->assertFraudEntityExists($response['items'][0]['Payment ID']);
 
-        $this->assertEquals($response[0]['Fraud ID'], $fraudId);
+        $this->assertEquals($response['items'][0]['Fraud ID'], $fraudId);
 
-        $this->assertEquals($response[1]['Fraud ID'], $fraudId);
+        $this->assertEquals($response['items'][1]['Fraud ID'], $fraudId);
     }
 
     public function testCreateFraudBatchVisaDruidQueryFails()
