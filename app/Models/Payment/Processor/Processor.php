@@ -486,6 +486,8 @@ class Processor
             $supportedFlows = [
                 Card\IIN\Flow::_3DS,
                 Card\IIN\Flow::HEADLESS_OTP,
+                // magic is mainly used for checkout flows and has no impact on payment flows
+                Card\IIN\Flow::MAGIC,
             ];
 
             $enabledFlows = Card\IIN\Flow::getEnabledFlows($iin->getFlows());
