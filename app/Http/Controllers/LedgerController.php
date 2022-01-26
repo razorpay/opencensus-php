@@ -71,6 +71,13 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function fetchByTransactor()
+    {
+        $response = $this->app['ledger']->fetchByTransactor($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function createLedgerConfig()
     {
         $response = $this->app['ledger']->createLedgerConfig($this->input);

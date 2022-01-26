@@ -71,6 +71,7 @@ class Ledger
         'fetchMerchantLedgerEntryByID'      => 'FetchMerchantLedgerEntryByID',
         'deleteMerchants'                   => 'DeleteMerchants',
         'fetchMerchantAccounts'             => 'FetchMerchantAccounts',
+        'fetchByTransactor'                 => 'FetchByTransactor',
     ];
 
     // Headers
@@ -239,6 +240,20 @@ class Ledger
     public function createJournal($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['create'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function fetchByTransactor($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['fetchByTransactor'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

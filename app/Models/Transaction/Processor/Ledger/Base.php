@@ -77,6 +77,9 @@ class Base extends Core
     const MERCHANT_VA       = 'merchant_va';
     const BALANCE           = 'balance';
 
+    // Ledger retry
+    const DEFAULT_MAX_RETRY_COUNT = 3;
+
     public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse)
     {
         foreach($ledgerResponse[self::LEDGER_ENTRY] as $ledgerEntry)
@@ -141,23 +144,35 @@ class Base extends Core
      * @throws \RZP\Exception\GatewayTimeoutException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0)
     {
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST, $payload);
-
         try
         {
             $ledgerService = $this->app['ledger'];
-            $ledgerService->setIdempotencyKey(Uuid::uuid1());
+            // use same idempotency key for retry
+            if ($retryCount === 0)
+            {
+                $ledgerService->setIdempotencyKey(Uuid::uuid1());
+            }
             $response = $ledgerService->createJournal($payload, true);
         }
         catch (\Requests_Exception $re)
         {
-            // This is an ambiguous situation, need to manually check if the ledger entry was created.
+            // This is an ambiguous situation, retry the request
             // TODO: An alert here is absolutely essential
-            $this->trace->traceException($re, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_TIMEOUT);
+            $this->trace->traceException($re, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_TIMEOUT,
+            [
+                'retries' => $retryCount
+            ]);
 
-            throw new GatewayTimeoutException($re->getMessage(), $re);
+            if ($retryCount < $maxRetryCount)
+            {
+                $retryCount++;
+                return $this->createJournalEntry($payload, $maxRetryCount, $retryCount);
+            } else {
+                throw new GatewayTimeoutException($re->getMessage(), $re);
+            }
         }
         catch (\RZP\Exception\RuntimeException $e)
         {
@@ -187,9 +202,18 @@ class Base extends Core
             }
             else
             {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
-
-                throw $e;
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR,
+                [
+                    'retries' => $retryCount
+                ]);
+                // retry in sync for 5xx errors
+                if (($exceptionData['status_code'] >= 500) && ($retryCount < $maxRetryCount))
+                {
+                    $retryCount++;
+                    return $this->createJournalEntry($payload, $maxRetryCount, $retryCount);
+                } else {
+                    throw $e;
+                }
             }
         }
 

@@ -104,11 +104,11 @@ class Adjustment extends Base
      * @throws BadRequestException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0)
     {
         try
         {
-            $response = parent::createJournalEntry($payload);
+            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount);
         }
         catch (BadRequestException $e)
         {

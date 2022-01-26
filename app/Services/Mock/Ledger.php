@@ -421,6 +421,61 @@ class Ledger extends BaseLedger
     }
 
     /**
+    * @param      $input
+    * @param bool $throwExceptionOnFailure
+    *
+    * @return array
+    */
+    public function fetchByTransactor($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "id"                => "HNjsypA96SgJKJ",
+            "created_at"        => "1623848289",
+            "updated_at"        => "1632368730",
+            "amount"            => "130.000000",
+            "base_amount"       => "130.000000",
+            "currency"          => "INR",
+            "tenant"            => "X",
+            "transactor_id"     => $input['transactor_id'],
+            "transactor_event"  => $input['transactor_event'],
+            "transaction_date"  => "1611132045",
+            "ledger_entry" => [
+                [
+                    "id"          => "HNjsypHNXdSiei",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "GoRNyEuu9Hl0OZ",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "debit",
+                    "currency"    => "INR",
+                    "balance"     => ""
+                ],
+                [
+                    "id"          => "HNjsypHPOUlxDR",
+                    "created_at"  => "1623848289",
+                    "updated_at"  => "1623848289",
+                    "merchant_id" => "HN59oOIDACOXt3",
+                    "journal_id"  => "HNjsypA96SgJKJ",
+                    "account_id"  => "HN5AGgmKu0ki13",
+                    "amount"      => "130.000000",
+                    "base_amount" => "130.000000",
+                    "type"        => "credit",
+                    "currency"    => "INR",
+                    "balance"     => ""
+                ]
+            ]
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
+    /**
      * @param      $input
      * @param bool $throwExceptionOnFailure
      *
