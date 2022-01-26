@@ -71,7 +71,7 @@ class Gateway extends Base\Gateway
 
         $merchantId = $this->getMerchantId($variant, $input['merchant']->isTPVRequired());
 
-        if ($merchantId === 'OSRAZORPAY' || $merchantId === 'OTRAZORPAY')
+        if ($merchantId === 'OSRAZORPAY' || $merchantId === 'OTRAZORPAY' || $merchantId === 'OTNRRAZORP')
         {
             $variant = self::newIntegration;
         }
@@ -96,11 +96,15 @@ class Gateway extends Base\Gateway
 
         $traceContent = $content;
 
-        if ($variant !== self::newIntegration)
+        if ($this->isPaymentTpvEnabled($gatewayPayment, $input['merchant']) === true)
         {
-            if ($this->isPaymentTpvEnabled($gatewayPayment, $input['merchant']) === true)
+            if ($variant !== self::newIntegration)
             {
                 unset($traceContent['TransactionDescription']);
+            }
+            else
+            {
+                unset($traceContent['FUP-2']);
             }
         }
 
@@ -322,7 +326,7 @@ class Gateway extends Base\Gateway
 
         $merchantId = $this->getMerchantId($variant, $input['merchant']->isTPVRequired());
 
-        if ($merchantId === 'OSRAZORPAY' || $merchantId === 'OTRAZORPAY')
+        if ($merchantId === 'OSRAZORPAY' || $merchantId === 'OTRAZORPAY' || $merchantId === 'OTNRRAZORP')
         {
             $variant = self::newIntegration;
         }
