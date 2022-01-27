@@ -337,6 +337,15 @@ class Stork
 
         $eventTrace = $processEventReq;
         unset($eventTrace['event']['payload']);
+
+        if ((isset($event->payload) === true) and
+            (isset($event->payload['payment']) === true) and
+            (isset($event->payload['payment']['entity']) === true) and
+            (isset($event->payload['payment']['entity']['id']) === true))
+        {
+            $eventTrace['event']['payment_id'] = $event->payload['payment']['entity']['id'];
+        }
+
         $this->trace->info(TraceCode::STORK_DISPATCH_EVENT_REQUEST, $eventTrace);
 
         $this->service->request(
