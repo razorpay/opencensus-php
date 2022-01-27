@@ -1090,12 +1090,12 @@ class Core extends Base\Core
                 {
                    $txn = $processor->createTransactionForLedger($ledgerResponse);
 
+                    $this->repo->saveOrFail($txn);
+
                     if ($feeSplit !== null)
                     {
                         (new \RZP\Models\Transaction\Core)->saveFeeDetails($txn, $feeSplit);
                     }
-
-                    $this->repo->saveOrFail($txn);
 
                     return $txn;
                 });

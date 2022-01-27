@@ -987,19 +987,18 @@ class Core extends Base\Core
 
                     if ($feeSplit !== null)
                     {
+                        $this->repo->saveOrFail($txn);
+
                         (new Transaction\Core)->saveFeeDetails($txn, $feeSplit);
-                    }
 
-                    $this->repo->saveOrFail($txn);
-
-                    // TODO: This dispatch has to be moved to some other location once ledger becomes primary
-                    // As we will stop the dual write to the transactions table
-                    // If fee split is null, it means that duplicate txn was found
-                    // so no dispatch necessary again.
-                    if ($reversal->getEntityType() === E::PAYOUT and
-                        $feeSplit !== null)
-                    {
-                        (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+                        // TODO: This dispatch has to be moved to some other location once ledger becomes primary
+                        // As we will stop the dual write to the transactions table
+                        // If fee split is null, it means that duplicate txn was found
+                        // so no dispatch necessary again.
+                        if ($reversal->getEntityType() === E::PAYOUT)
+                        {
+                            (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+                        }
                     }
 
                     return $txn;

@@ -334,15 +334,15 @@ class Base extends FundAccountPayout\Base
 
         list($txn, $feeSplit) = (new PayoutTxnProcessor($payout))->createTransactionForLedger($txnId, $newBalance);
 
-        $this->repo->saveOrFail($txn);
-
         // if fee split is null, it may mean that a txn is already created.
-        // thus a dispatch may have already happened
-        // which means a dispatch is not needed if fee split is null
         if ($feeSplit !== null)
         {
+            $this->repo->saveOrFail($txn);
+
             (new TxnCore)->saveFeeDetails($txn, $feeSplit);
 
+            // A dispatch may have already happened
+            // which means a dispatch is not needed if fee split is null
             (new TxnCore())->dispatchEventForTransactionCreated($txn);
         }
 
