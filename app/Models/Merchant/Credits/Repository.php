@@ -227,7 +227,7 @@ class Repository extends Base\Repository
      *
      * @return array
      */
-    public function getTypeAggregatedMerchantCredits(Merchant\Entity $merchant): array
+    public function getTypeAggregatedNonRefundMerchantCredits(Merchant\Entity $merchant): array
     {
         assertTrue($this->isTransactionActive());
 
@@ -235,8 +235,12 @@ class Repository extends Base\Repository
             ->merchantId($merchant->getId())
             ->get();
 
+        // filtering out refund credits as it is not required here
+        // helps avoid possible deadlock because of opposite lock orders on credits in refunds flow
+        // slack ref thread: https://razorpay.slack.com/archives/CNXC0JHQF/p1641983505105000
         $creditsFiltered = $merchantsCredits->filter(function ($item) {
-            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or ($item->getExpiredAt() > time()));
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or
+                    ($item->getExpiredAt() > time())) and ($item->getType() !== Type::REFUND);
         });
 
         $creditIds = $creditsFiltered->getStringAttributesByKey('id');
@@ -400,7 +404,7 @@ class Repository extends Base\Repository
             ->merchantId($merchantId)
             ->exists();
     }
-    
+
     public function getUnexpiredCreditIdsForMerchantOfType(string $merchantId, string $type)
     {
         return $this->newQuery()

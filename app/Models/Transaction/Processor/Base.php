@@ -390,7 +390,7 @@ abstract class Base extends BaseCore
         }
         else
         {
-            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($this->merchantBalance->merchant);
+            $credits = $this->repo->credits->getTypeAggregatedNonRefundMerchantCredits($this->merchantBalance->merchant);
 
             $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
 

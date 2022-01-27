@@ -1527,7 +1527,7 @@ class Core extends Base\Core
         }
         else
         {
-            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($merchant);
+            $credits = $this->repo->credits->getTypeAggregatedNonRefundMerchantCredits($merchant);
 
             $amountCredits =  $credits[Credits\Type::AMOUNT] ?? 0;
 
@@ -1803,7 +1803,7 @@ class Core extends Base\Core
         }
         else
         {
-            $credits = $this->repo->credits->getTypeAggregatedMerchantCredits($txn->merchant);
+            $credits = $this->repo->credits->getTypeAggregatedNonRefundMerchantCredits($txn->merchant);
         }
 
         $negativeLimit = (new Balance\Core)->getNegativeLimit($txn);
