@@ -493,6 +493,10 @@ class Processor
                 Card\IIN\Flow::HEADLESS_OTP,
                 // magic is mainly used for checkout flows and has no impact on payment flows
                 Card\IIN\Flow::MAGIC,
+                // Pin is depricated
+                Card\IIN\Flow::PIN,
+                // Ifram is mainly used for checkout flows and has no impact on payment flows
+                Card\IIN\Flow::IFRAME,
             ];
 
             $enabledFlows = Card\IIN\Flow::getEnabledFlows($iin->getFlows());
