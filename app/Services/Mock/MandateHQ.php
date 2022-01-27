@@ -13,6 +13,8 @@ class MandateHQ
 
     public function isBinSupported($bin): bool
     {
+        if (app()->isEnvironmentQA() === true)
+            return false;
         return true;
     }
 
