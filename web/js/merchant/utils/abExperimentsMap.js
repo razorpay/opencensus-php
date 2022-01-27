@@ -279,7 +279,7 @@ export default {
     'IikYcTmmlnrKxi',
 
     // prod experiment ids,
-    'IcsVleJBcj5mMD',
+    'IikVfIRle60YdX',
   ],
 
   catalyst_banner_fl_experiment: [
