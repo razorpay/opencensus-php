@@ -363,6 +363,18 @@ class Core extends Base\Core
             $subMerchant->legalEntity()->associate($legalEntity);
         }
 
+        if ($linkedAccount === true)
+        {
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_SAVE_ENTITY,
+                [
+                    'name'              => $subMerchant->getName(),
+                    'linked_account_id' => $subMerchant->getId(),
+                    'merchant_id'       => $subMerchant->getParentId(),
+                ]
+            );
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         $subMerchantDetailInput = !empty($contactMobile) ? [Detail\Entity::CONTACT_MOBILE => $contactMobile] : [];
