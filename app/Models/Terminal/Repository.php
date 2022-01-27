@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use DB;
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -365,57 +366,40 @@ class Repository extends Base\Repository
 
     public function fetch(array $params, string $merchantId = null, string $connectionType = null, $fromTerminalsService = true): PublicCollection
     {
-        $terminals = parent::fetch($params, $merchantId, $connectionType);
+        //In production all the terminals are fetched from the terminals service, a prod check included for unit testing cases
+        if( in_array($this->app['env'], [Environment::PRODUCTION, Environment::AUTOMATION, Environment::BVT, Environment::BETA], true) === true ) {
+            if ($merchantId != null)
+            {
+                $params["merchant_id"] = $merchantId;
+            }
 
-        $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-        if ($merchantId != null)
-        {
-            $params["merchant_id"] = $merchantId;
-        }
-
-        $variantFlag = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), "ROUTE_PROXY_TS_ADMIN_MULTIPLE_TERMINAL_FETCH", $mode);
-
-        if ($variantFlag === 'proxy' and $fromTerminalsService === true)
-        {
             $data = ["function" => "fetch", "params" => $params];
 
-            try
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $path = "v1/admin/terminals/?";
+
+            foreach ($params as $queryParam => $value)
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
-
-                $path = "v1/admin/terminals/?";
-
-                foreach ($params as $queryParam => $value)
-                {
-                    $path .= $queryParam. '=' .$value. '&';
-                }
-
-                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
-
-                foreach ($response as $index => $value)
-                {
-                    $response[$index]["id"] = str_replace("term_", "", $response[$index]["id"]);
-                }
-
-                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
-
-                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
-
-                return $tsTerminals;
+                $path .= $queryParam. '=' .$value. '&';
             }
-            catch (\Throwable $ex)
+
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+            foreach ($response as $index => $value)
             {
-                $data['message'] = $ex->getMessage();
-
-                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+                $response[$index]["id"] = str_replace("term_", "", $response[$index]["id"]);
             }
+
+            $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+            return $tsTerminals;
         }
+        else {
 
-        return $terminals;
+            $terminals = parent::fetch($params, $merchantId, $connectionType);
+            return $terminals;
+        }
     }
 
     public function getTerminalIdsByPlanIds($ids)

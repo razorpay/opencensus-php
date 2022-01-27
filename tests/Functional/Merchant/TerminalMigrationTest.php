@@ -180,36 +180,36 @@ class TerminalMigrationTest extends TestCase
     {
         $terminal = $this->fixtures->create('terminal');
 
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-
-            $this->assertEquals("", $content);
-
-            $this->assertEquals(Requests::GET, $method);
-
-            $this->assertStringEndsWith('/admin/terminals/'.$terminal->getId(), $path);
-
-            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
-
-            $data['id'] = 'term_'.$data['id'];
-
-            return $this->getDefaultTerminalServiceResponse($data);
-
-        }, 1);
-
-        $this->razorxValue = 'proxy';
-
-        $mock = $this->createMetricsMock();
-
-        $expected = [
-            'route'         => 'razorflow_admin_fetch_terminal_by_id',
-            'message'       => null,
-            'terminal_id'   => 'term_'.$terminal['id'],
-
-        ];
-
-        $mock->expects($this->at(4))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+//        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+//
+//            $this->assertEquals("", $content);
+//
+//            $this->assertEquals(Requests::GET, $method);
+//
+//            $this->assertStringEndsWith('/admin/terminals/'.$terminal->getId(), $path);
+//
+//            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+//
+//            $data['id'] = 'term_'.$data['id'];
+//
+//            return $this->getDefaultTerminalServiceResponse($data);
+//
+//        }, 1);
+//
+//        $this->razorxValue = 'proxy';
+//
+//        $mock = $this->createMetricsMock();
+//
+//        $expected = [
+//            'route'         => 'razorflow_admin_fetch_terminal_by_id',
+//            'message'       => null,
+//            'terminal_id'   => 'term_'.$terminal['id'],
+//
+//        ];
+//
+//        $mock->expects($this->at(4))
+//            ->method('count')
+//            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
         $url = '/rf/admin/terminal/'. $terminal->getId();
 
@@ -227,33 +227,33 @@ class TerminalMigrationTest extends TestCase
             'enabled' => 1,
         ];
 
-        $terminal = $this->fixtures->create('terminal', $input);
+//        $terminal = $this->fixtures->create('terminal', $input);
 
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+//        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+//
+//            $this->assertEquals("", $content);
+//
+//            $this->assertEquals(Requests::GET, $method);
+//
+//            $this->assertStringEndsWith('/admin/terminals/?gateway_merchant_id=testGatewayMerchantId&enabled=1&', $path);
+//
+//            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+//
+//            $data['id'] = 'term_'.$data['id'];
+//
+//            $data['entity'] = 'terminal';
+//
+//            $body = json_encode(['data' => [$data]]);
+//
+//            $response = new \Requests_Response;
+//
+//            $response->body = $body;
+//
+//            return $response;
+//
+//        }, 1);
 
-            $this->assertEquals("", $content);
-
-            $this->assertEquals(Requests::GET, $method);
-
-            $this->assertStringEndsWith('/admin/terminals/?gateway_merchant_id=testGatewayMerchantId&enabled=1&', $path);
-
-            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
-
-            $data['id'] = 'term_'.$data['id'];
-
-            $data['entity'] = 'terminal';
-
-            $body = json_encode(['data' => [$data]]);
-
-            $response = new \Requests_Response;
-
-            $response->body = $body;
-
-            return $response;
-
-        }, 1);
-
-        $this->razorxValue = 'proxy';
+//        $this->razorxValue = 'proxy';
 
         $url = '/rf/admin/terminal';
 
@@ -1826,28 +1826,28 @@ class TerminalMigrationTest extends TestCase
             'gateway_merchant_id'        => 'testGatewayMerchantId',
             'enabled' => '1'
         ]);
+//
+//        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+//
+//            $this->assertEquals("", $content);
+//
+//            $this->assertEquals(Requests::GET, $method);
+//
+//            $this->assertStringEndsWith('gateway_merchant_id=testGatewayMerchantId&enabled=1&', $path);
+//
+//            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+//
+//            $body = json_encode(['data' => [$data]]);
+//
+//            $response = new \Requests_Response;
+//
+//            $response->body = $body;
+//
+//            return $response;
+//
+//        }, 1);
 
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
-
-            $this->assertEquals("", $content);
-
-            $this->assertEquals(Requests::GET, $method);
-
-            $this->assertStringEndsWith('gateway_merchant_id=testGatewayMerchantId&enabled=1&', $path);
-
-            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
-
-            $body = json_encode(['data' => [$data]]);
-
-            $response = new \Requests_Response;
-
-            $response->body = $body;
-
-            return $response;
-
-        }, 1);
-
-        $this->razorxValue = 'proxy';
+//        $this->razorxValue = 'proxy';
 
         $url = '/admin/terminal/';
 
@@ -1871,38 +1871,38 @@ class TerminalMigrationTest extends TestCase
             'sync_status' => 'sync_success',
         ]);
 
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+//        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+//
+//            $this->assertEquals("", $content);
+//
+//            $this->assertEquals(Requests::GET, $method);
+//
+//            $this->assertStringEndsWith($terminal['id'], $path);
+//
+//            $response = new \Requests_Response;
+//
+//            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
+//
+//            $data['id'] = 'term_'.$data['id'];
+//
+//            return $this->getDefaultTerminalServiceResponse($data);
+//
+//        }, 1);
 
-            $this->assertEquals("", $content);
+//        $this->razorxValue = 'proxy';
 
-            $this->assertEquals(Requests::GET, $method);
-
-            $this->assertStringEndsWith($terminal['id'], $path);
-
-            $response = new \Requests_Response;
-
-            $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
-
-            $data['id'] = 'term_'.$data['id'];
-
-            return $this->getDefaultTerminalServiceResponse($data);
-
-        }, 1);
-
-        $this->razorxValue = 'proxy';
-
-        $mock = $this->createMetricsMock();
-
-        $expected = [
-            'route'         => 'admin_fetch_terminal_by_id',
-            'message'       => null,
-            'terminal_id'   => 'term_'.$terminal['id'],
-
-        ];
-
-        $mock->expects($this->at(4))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
+//        $mock = $this->createMetricsMock();
+//
+//        $expected = [
+//            'route'         => 'admin_fetch_terminal_by_id',
+//            'message'       => null,
+//            'terminal_id'   => 'term_'.$terminal['id'],
+//
+//        ];
+//
+//        $mock->expects($this->at(4))
+//            ->method('count')
+//            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
         $url = '/admin/terminal/' . $terminal['id'] . '/';
 

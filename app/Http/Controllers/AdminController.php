@@ -8,6 +8,7 @@ use Redirect;
 use ApiResponse;
 use Illuminate\Support\Facades\File;
 
+use RZP\Constants\Environment;
 use RZP\Models\Admin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Report;
@@ -57,20 +58,8 @@ class AdminController extends Controller
 
     public function getTerminalById($id)
     {
-        // For Single Terminal fetch we want to display sub merchants
-        // Setting sub_merchant will give sub_merchant associated with terminal
-        $subMerchantFlag = true;
-
-        $type = 'terminal';
-
-        $data = $this->service()->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
-
-        $mode  = $this->ba->getMode();
-
-        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_ADMIN_FETCH", $mode);
-
-        if ($variantFlag === 'proxy')
-        {
+        //In production all the terminals are fetched from the terminals service, a prod check included for unit testing cases
+        if( in_array($this->app['env'], [Environment::PRODUCTION, Environment::AUTOMATION, Environment::BVT, Environment::BETA], true) === true ) {
 
             $path = "v1/admin/terminals/" . $id;
 
@@ -81,17 +70,19 @@ class AdminController extends Controller
 
             $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path,$options);
 
-            if ((new Terminal\Service())->compareTerminalArray($data, $response) === false)
-            {
-                $traceData = ["api" => $data["id"], "terminals" => $response["id"]];
-
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_ADMIN_FETCH_TERMINAL_BY_ID_COMPARISON_FAILED, $traceData);
-            }
-
-             return ApiResponse::json($response);
-
+            return ApiResponse::json($response);
         }
-        return ApiResponse::json($data);
+        else {
+            // For Single Terminal fetch we want to display sub merchants
+            // Setting sub_merchant will give sub_merchant associated with terminal
+            $subMerchantFlag = true;
+
+            $type = 'terminal';
+
+            $data = $this->service()->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
+
+            return ApiResponse::json($data);
+        }
     }
 
     public function getTerminalMultiple()

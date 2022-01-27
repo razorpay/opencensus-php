@@ -418,7 +418,7 @@ return [
         ],
         'response'   => [
             'content'   => [
-                'count' => 1
+                'count' => 0
             ],
         ],
     ],
