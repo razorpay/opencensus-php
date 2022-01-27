@@ -35,7 +35,8 @@
     "js/common/services",
     "js/common/components",
     "js/common/new-ui",
-    "js/common/ui/DashboardBanner"
+    "js/common/ui/DashboardBanner",
+    "js/common/ui/NotificationsDropdown/Neostone"
   ],
-  "exclude": ["node_modules", "js/common/utils", "js/common/ui/NotificationsDropdown/Neostone"]
+  "exclude": ["node_modules", "js/common/utils"]
 }

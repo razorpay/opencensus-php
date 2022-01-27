@@ -1,3 +1,10 @@
+import { withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import {
+  setActivePageName as fnSetActivePageName,
+  setBaseLocation as fnSetBaseLocation,
+} from 'merchant/reducers/app';
 import { bankNamesMap, derivedCaApplicationStatus } from '../TrackerConstant';
 import {
   ICICIKYCStatus,
@@ -6,6 +13,7 @@ import {
 } from '../ICICITrackerStatus';
 import { getXBaseURL } from '../../common/utils';
 import React from 'react';
+import { XCACTATypes } from '../../TypeDeclare/XCATypeDeclare';
 
 const getCTADetails = (proceededBank, bankStatusForCTA, iciciPan) => {
   let label = '',
@@ -56,14 +64,42 @@ const getCTADetails = (proceededBank, bankStatusForCTA, iciciPan) => {
   return { label, url, type };
 };
 
-const XcaCTA = ({ bankStatusForCTA, proceededBank, iciciPan }): React.ReactElement | null => {
-  const { label, type, url } = getCTADetails(proceededBank, bankStatusForCTA, iciciPan);
+const XcaCTA = ({
+  bankStatusForCTA,
+  proceededBank,
+  iciciPan,
+  currentStatusMsg,
+  setActivePageName,
+  setBaseLocation,
+  history,
+}: XCACTATypes): React.ReactElement | null => {
+  const { label, type, url, component } =
+    currentStatusMsg?.[0].cta || getCTADetails(proceededBank, bankStatusForCTA, iciciPan) || {};
 
   const className = type === 'primary' ? 'btn btn-primary submit-btn' : 'btn btn-grayed';
 
+  const handleConnectedBankingFlow = () => {
+    history.push({
+      pathname: '/connected-banking/icici-linked-ca',
+      state: { showState: 'iframe', url },
+    });
+    setBaseLocation?.('/connected-banking/icici-linked-ca');
+    setActivePageName?.('Connected Banking');
+  };
+
+  const handleCTAClick = () => {
+    if (component === 'iframe') handleConnectedBankingFlow();
+  };
+
   if (type) {
     return (
-      <a type="button" className={className} target="__blank" href={url}>
+      <a
+        type="button"
+        className={className}
+        target="__blank"
+        href={component ? undefined : url}
+        onClick={component ? handleCTAClick : undefined}
+      >
         {label}
       </a>
     );
@@ -72,4 +108,11 @@ const XcaCTA = ({ bankStatusForCTA, proceededBank, iciciPan }): React.ReactEleme
   return null;
 };
 
-export default XcaCTA;
+export default withRouter<XCACTATypes, React.FC<XCACTATypes>>(
+  compose(
+    connect(null, {
+      setActivePageName: fnSetActivePageName,
+      setBaseLocation: fnSetBaseLocation,
+    }),
+  )(XcaCTA),
+);

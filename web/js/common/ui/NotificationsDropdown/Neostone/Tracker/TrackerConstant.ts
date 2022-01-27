@@ -2,6 +2,7 @@
 // blue: 300
 // green: 200
 // grey: 500
+// dark-green: 600
 
 export const RBL_STATUS = [
   {

@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-
+import { RouteComponentProps } from 'react-router-dom';
 interface XCAStatus {
   showState: APIResponseType;
   proceededBank: APIResponseType;
@@ -69,6 +69,15 @@ interface XStyleDropdownProps {
   changeFunction: Dispatch<SetStateAction<string>>;
 }
 
+interface XCACTATypes extends RouteComponentProps {
+  bankStatusForCTA: string;
+  proceededBank: string;
+  iciciPan: string;
+  currentStatusMsg: Array<Record<string, any>>;
+  setActivePageName?: (name: string) => void;
+  setBaseLocation?: (name: string) => void;
+}
+
 type APIResponseType = any;
 
 export {
@@ -83,4 +92,5 @@ export {
   XCAStatus,
   XStyleDropdownProps,
   APIResponseType,
+  XCACTATypes,
 };

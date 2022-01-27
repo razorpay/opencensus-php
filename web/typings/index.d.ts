@@ -12,4 +12,5 @@ interface Window {
   APP_ENV: string;
   SENTRY_DSN: string;
   cdnBaseUrl: string;
+  bankingServiceUrl: string;
 }

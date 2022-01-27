@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import isObject from 'is-object';
 import TrackerLeftIllustration from './components/TrackerLeftIllus';
 import TrackerStatus from './components/TrackerStatus';
 import {
@@ -24,13 +25,60 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import {
   getDerivedStatus,
   getErrorMessage,
-  getICICIApplicationStatus,
+  getICICIApplicationData,
   getICICIPanStatus,
 } from '../common/utils';
 import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { APIResponseType } from '../TypeDeclare/XCATypeDeclare';
+import {
+  ACTIVE_STATUS_MSGS,
+  BLOCKED_STATUSES,
+  getICICILAStatusData,
+  ICICI_LA_STATUSES,
+  OVERALL_STATUS_MSGS,
+  VERTICAL_STEP_MARKERS,
+} from './ConnectedBankingData';
+
+const getVerticalStep = ({ ...activeState }, statusList, verticalStepMarkers) => {
+  let verticalStep = 0;
+  if (activeState?.verticalStep) return activeState.verticalStep;
+  else if (Array.isArray(verticalStepMarkers)) {
+    const currentStatus = activeState?.bankStatus;
+    const currentStatusIndex = Array.isArray(currentStatus)
+      ? statusList?.findIndex((status) => currentStatus.includes(status))
+      : statusList.indexOf(currentStatus);
+    const verticalStepMarkersIndexes = verticalStepMarkers?.map((marker) =>
+      statusList?.indexOf(marker),
+    );
+    verticalStep = verticalStepMarkersIndexes?.findIndex(
+      (stepMarkerIndex) => currentStatusIndex <= stepMarkerIndex,
+    );
+    verticalStep = verticalStep === -1 ? 0 : verticalStep;
+  }
+  return verticalStep;
+};
+
+const setIconStatus = (statusMsg, currentIndex, verticalStep) => {
+  if (isObject(statusMsg)) {
+    if (currentIndex < verticalStep) statusMsg.code = 200;
+    else if (currentIndex > verticalStep) statusMsg.code = 500;
+  }
+};
+
+const formatStatusMsgs = (
+  { ...activeState },
+  statusList,
+  verticalStepMarkers,
+  [...statusMsgList],
+) => {
+  const verticalStep = getVerticalStep(activeState, statusList, verticalStepMarkers);
+
+  statusMsgList?.forEach((statusMsg, index) => setIconStatus(statusMsg, index, verticalStep));
+  statusMsgList[verticalStep] = activeState;
+  return statusMsgList;
+};
 
 const getICICIStatusRenderData = (active, state) => {
   let isFlag = false;
@@ -75,9 +123,10 @@ const getStatusRenderData = (active, state) => {
     return item;
   });
 };
-const getActiveStatusOnly = (active, state, status = 300) => {
+export const getActiveStatusOnly = (active, [...state], status = 300) => {
   return state
     .filter((item) => {
+      if (Array.isArray(item?.bankStatus)) return item?.bankStatus.includes(active);
       return item?.bankStatus === active;
     })
     .map((item) => {
@@ -98,9 +147,19 @@ const NeoStoneTracker = ({ proceededBank, user, showNotification }) => {
   const [iciciPanStatus, setICICIPanStatus] = useState<APIResponseType>(null);
   const [rblActiveStatus, setRblActiveStatus] = useState<Array<Record<string, unknown>>>([]);
   const [showState, setShowState] = useState<'loading' | 'error' | 'tracker'>('loading');
+  const [campaignType, setCampaignType] = useState<'neostone' | 'linked-account'>('neostone');
   const ICICIStatus: { applicationStatus: APIResponseType; panStatus: APIResponseType } = {
     applicationStatus: null,
     panStatus: null,
+  };
+
+  const handleApiError = (error) => {
+    showNotification({
+      type: 'error',
+      message: getErrorMessage(error),
+      hidePrevious: true,
+    });
+    setShowState('error');
   };
 
   useEffect(() => {
@@ -173,112 +232,127 @@ const NeoStoneTracker = ({ proceededBank, user, showNotification }) => {
             });
           }
         })
-        .catch((error) => {
-          showNotification({
-            type: 'error',
-            message: getErrorMessage(error),
-            hidePrevious: true,
-          });
-          setShowState('error');
-        });
+        .catch(handleApiError);
     } else if (proceededBank === bankNamesMap.ICICI) {
-      const basBusinessID = user?.bas_business_id;
+      const basBusinessID = user?.bas_business_id || '';
 
-      const bankingApplicationFetchs = [
-        merchantFetch({
-          url: `merchant/banking_application/business/${basBusinessID}/applications`,
-        }),
-        merchantFetch({
-          url: `merchant/banking_application/business/${basBusinessID}?expand_people=true&expand_documents=true`,
-        }),
-      ];
-
-      Promise.all(bankingApplicationFetchs)
-        .then((response) => {
-          ICICIStatus.applicationStatus = getICICIApplicationStatus(
-            response[0]?.data?.data,
+      merchantFetch({
+        url: `merchant/banking_application/business/${basBusinessID}/applications`,
+      })
+        .then((applicationDataResponse) => {
+          const iciciApplicationData = getICICIApplicationData(
+            applicationDataResponse?.data?.data,
             basBusinessID,
           );
-          ICICIStatus.panStatus = getICICIPanStatus(response[1]?.data?.data?.associated_documents);
-          setICICIPanStatus(ICICIStatus.panStatus);
-          // use applicationStatus and panStatus
-          // handle Error Status for RBL
-          if (caApplicationBlockedICICIStatus.includes(ICICIStatus.applicationStatus)) {
-            const activeStatusOnly =
-              getActiveStatusOnly(ICICIStatus.applicationStatus, TRACKER_ERROR, 400) || [];
-            setRblActiveStatus([...activeStatusOnly]);
-            setRblState([]);
+
+          if (iciciApplicationData?.application_type === 'ICICI_ACCOUNT_LINK_APPLICATION') {
+            const combinedStatus = iciciApplicationData?.combined_application_status;
+            const caLinkingUserStatus =
+              user?.user?.settings?.caLinkingUserStatus ||
+              iciciApplicationData?.caLinkingUserStatus;
+            // const caLinkingUserStatus = 'SELF_APPROVAL_DONE';
+            let activeStatus = [{}];
+            if (BLOCKED_STATUSES.includes(combinedStatus))
+              activeStatus = getActiveStatusOnly(combinedStatus, ACTIVE_STATUS_MSGS, 400);
+            else activeStatus = [getICICILAStatusData(combinedStatus, caLinkingUserStatus)];
+
+            const statusList = Object.entries(ICICI_LA_STATUSES).map(([key]) => key);
+            const currentStatusList = formatStatusMsgs(
+              activeStatus?.[0],
+              statusList,
+              VERTICAL_STEP_MARKERS,
+              OVERALL_STATUS_MSGS,
+            );
+            if (combinedStatus === ICICI_LA_STATUSES.account_activated) setRblState([]);
+            else setRblState([...currentStatusList]);
+            setRblActiveStatus([...activeStatus]);
+            setBankStatus(combinedStatus);
+            setShowState('tracker');
+            setCampaignType('linked-account');
           } else {
-            if (
-              (ICICIStatus.applicationStatus === ICICIKYCStatus.created ||
-                ICICIStatus.applicationStatus === ICICIKYCStatus.user_submitted) &&
-              ICICIStatus.panStatus !== PAN_VERIFICATION_STATUSES.verified
-            ) {
-              let firstTrackerStatus = [];
-              // PAN in-progress
-              if (ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.initiated) {
-                firstTrackerStatus = getFirstStatus('panInitiated', ICICI_PAN_OR_APP) || [];
-              }
-              // PAN failed
-              else if (
-                ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.failed ||
-                ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.incorrect_details ||
-                ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.not_matched
-              ) {
-                firstTrackerStatus = getFirstStatus('panFailed', ICICI_PAN_OR_APP) || [];
-              } else {
-                firstTrackerStatus = getFirstStatus('pending', ICICI_PAN_OR_APP) || [];
-              }
-              setRblState([...firstTrackerStatus, ...ICICI_STATUS]);
-              setRblActiveStatus([...firstTrackerStatus]);
-            }
-            if (ICICIStatus.applicationStatus === ICICIKYCStatus.user_submitted) {
-              if (ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.verified) {
-                const trackerArr = [
-                  { ...ICICI_PAN_OR_APP[0], code: 200, highlight: false },
-                  ...ICICI_STATUS,
-                ];
-                const activeStatusOnly = getActiveStatusOnly('recieved', trackerArr) || [];
-                setRblState(trackerArr);
-                setRblActiveStatus([...activeStatusOnly]);
-              }
-            } // Explore Current Account CTA
-            else if (
-              ICICIStatus.applicationStatus === ICICIKYCStatus.account_activated ||
-              ICICIStatus.applicationStatus === ICICIKYCStatus.registration_request_sent ||
-              ICICIStatus.applicationStatus === ICICIKYCStatus.account_opened
-            ) {
-              const activeStatusOnly =
-                getActiveStatusOnly(ICICIStatus.applicationStatus, ICICI_ACTIVATE) || [];
-              setRblActiveStatus([...activeStatusOnly]);
-              setRblState([]);
-            } else if (
-              ICICIStatus.applicationStatus !== ICICIKYCStatus.created &&
-              ICICIStatus.applicationStatus !== ICICIKYCStatus.user_submitted
-            ) {
-              const trackerArr = [
-                { ...ICICI_PAN_OR_APP[0], code: 200, highlight: false },
-                ...ICICI_STATUS,
-              ];
-              const viewMoreTrackerList =
-                getICICIStatusRenderData(ICICIStatus.applicationStatus, trackerArr) || [];
-              const activeStatusOnly =
-                getActiveStatusOnly(ICICIStatus.applicationStatus, viewMoreTrackerList) || [];
-              setRblState(viewMoreTrackerList);
-              setRblActiveStatus([...activeStatusOnly]);
-            }
+            ICICIStatus.applicationStatus = iciciApplicationData?.application_status;
+            merchantFetch({
+              url: `merchant/banking_application/business/${basBusinessID}?expand_people=true&expand_documents=true`,
+            })
+              .then((response) => {
+                ICICIStatus.panStatus = getICICIPanStatus(
+                  response?.data?.data?.associated_documents,
+                );
+                setICICIPanStatus(ICICIStatus.panStatus);
+                // use applicationStatus and panStatus
+                // handle Error Status for RBL
+                if (caApplicationBlockedICICIStatus.includes(ICICIStatus.applicationStatus)) {
+                  const activeStatusOnly =
+                    getActiveStatusOnly(ICICIStatus.applicationStatus, TRACKER_ERROR, 400) || [];
+                  setRblActiveStatus([...activeStatusOnly]);
+                  setRblState([]);
+                } else {
+                  if (
+                    (ICICIStatus.applicationStatus === ICICIKYCStatus.created ||
+                      ICICIStatus.applicationStatus === ICICIKYCStatus.user_submitted) &&
+                    ICICIStatus.panStatus !== PAN_VERIFICATION_STATUSES.verified
+                  ) {
+                    let firstTrackerStatus = [];
+                    // PAN in-progress
+                    if (ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.initiated) {
+                      firstTrackerStatus = getFirstStatus('panInitiated', ICICI_PAN_OR_APP) || [];
+                    }
+                    // PAN failed
+                    else if (
+                      ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.failed ||
+                      ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.incorrect_details ||
+                      ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.not_matched
+                    ) {
+                      firstTrackerStatus = getFirstStatus('panFailed', ICICI_PAN_OR_APP) || [];
+                    } else {
+                      firstTrackerStatus = getFirstStatus('pending', ICICI_PAN_OR_APP) || [];
+                    }
+                    setRblState([...firstTrackerStatus, ...ICICI_STATUS]);
+                    setRblActiveStatus([...firstTrackerStatus]);
+                  }
+                  if (ICICIStatus.applicationStatus === ICICIKYCStatus.user_submitted) {
+                    if (ICICIStatus.panStatus === PAN_VERIFICATION_STATUSES.verified) {
+                      const trackerArr = [
+                        { ...ICICI_PAN_OR_APP[0], code: 200, highlight: false },
+                        ...ICICI_STATUS,
+                      ];
+                      const activeStatusOnly = getActiveStatusOnly('recieved', trackerArr) || [];
+                      setRblState(trackerArr);
+                      setRblActiveStatus([...activeStatusOnly]);
+                    }
+                  } // Explore Current Account CTA
+                  else if (
+                    ICICIStatus.applicationStatus === ICICIKYCStatus.account_activated ||
+                    ICICIStatus.applicationStatus === ICICIKYCStatus.registration_request_sent ||
+                    ICICIStatus.applicationStatus === ICICIKYCStatus.account_opened
+                  ) {
+                    const activeStatusOnly =
+                      getActiveStatusOnly(ICICIStatus.applicationStatus, ICICI_ACTIVATE) || [];
+                    setRblActiveStatus([...activeStatusOnly]);
+                    setRblState([]);
+                  } else if (
+                    ICICIStatus.applicationStatus !== ICICIKYCStatus.created &&
+                    ICICIStatus.applicationStatus !== ICICIKYCStatus.user_submitted
+                  ) {
+                    const trackerArr = [
+                      { ...ICICI_PAN_OR_APP[0], code: 200, highlight: false },
+                      ...ICICI_STATUS,
+                    ];
+                    const viewMoreTrackerList =
+                      getICICIStatusRenderData(ICICIStatus.applicationStatus, trackerArr) || [];
+                    const activeStatusOnly =
+                      getActiveStatusOnly(ICICIStatus.applicationStatus, viewMoreTrackerList) || [];
+                    setRblState(viewMoreTrackerList);
+                    setRblActiveStatus([...activeStatusOnly]);
+                  }
+                }
+                setBankStatus(ICICIStatus.applicationStatus);
+                setShowState('tracker');
+              })
+              .catch(handleApiError);
           }
-          setBankStatus(ICICIStatus.applicationStatus);
-          setShowState('tracker');
         })
-        .catch((error) => {
-          showNotification({
-            type: 'error',
-            message: getErrorMessage(error),
-            hidePrevious: true,
-          });
-          setShowState('error');
-        });
+        .catch(handleApiError);
     }
   }, []);
 
@@ -295,6 +369,7 @@ const NeoStoneTracker = ({ proceededBank, user, showNotification }) => {
             viewLessStatus={rblActiveStatus}
             viewMoreStatus={rblState}
             iciciPan={iciciPanStatus}
+            campaignType={campaignType}
           />
         </div>
       );

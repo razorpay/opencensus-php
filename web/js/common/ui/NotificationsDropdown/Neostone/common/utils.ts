@@ -91,15 +91,16 @@ const getXBaseURL = (): string => {
   }
 };
 
-const getICICIApplicationStatus = (
+const getICICIApplicationData = (
   data: Array<any> = [],
   basBusinessID: string | null,
-): string | null =>
+): Record<string, any> =>
   (Array.isArray(data) &&
     data.find(
-      ({ business_id, application_status }) => business_id === basBusinessID && application_status,
-    )?.application_status) ||
-  null;
+      ({ business_id, application_status, combined_application_status }) =>
+        business_id === basBusinessID && (application_status || combined_application_status),
+    )) ||
+  {};
 
 const getICICIPanStatus = (documents: Array<any> = []): string | null => {
   const panDocumentTypes = ['BUSINESS_PAN', 'PERSONAL_PAN'];
@@ -128,4 +129,4 @@ const getErrorMessage = ({ code, errors }: { code: any; errors: Array<any> }): s
   return errorMessageArray.join(' - ');
 };
 
-export { getXCAStatus, getXBaseURL, getICICIApplicationStatus, getICICIPanStatus, getErrorMessage };
+export { getXCAStatus, getXBaseURL, getICICIApplicationData, getICICIPanStatus, getErrorMessage };
