@@ -29,7 +29,7 @@ export default function RepaymentFilters({ onSubmit, repayments, ...props }) {
           name="count"
           component="input"
           min={10}
-          max={100}
+          max={1000}
           type="number"
           class="form-control input-sm"
         />

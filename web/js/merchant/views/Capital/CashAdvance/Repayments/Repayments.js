@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import moment from 'moment';
 
-import { CASH_ADVANCE_SECTIONS, DEFAULT_COUNT } from '../constants';
+import { CASH_ADVANCE_SECTIONS, DEFAULT_COUNT, COLLECTIONS_PRODUCT_TYPES } from '../constants';
 import RepaymentListFilter from '../CommonListFilter';
 import RepaymentList from './RepaymentsList';
 import { fetchRepayments as fetchRepaymentsList } from 'merchant/reducers/capital/repayments';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { COLLECTIONS_PRODUCT_TYPES } from 'merchant/views/Capital/CashAdvance/constants';
 import { arrayObjToCsv } from 'common/utils/rzp-utils';
 import fileDownload from 'common/utils/file-download';
 import OverviewFooter from '../OverviewFooter/index';
@@ -75,7 +75,7 @@ class Repayments extends React.Component {
   search = (filters) => {
     const payload = {
       ...this.commonRequestParams,
-      count: filters.count ? parseInt(filters.count) : DEFAULT_COUNT,
+      count: filters.count ? parseInt(filters.count, 10) : DEFAULT_COUNT,
     };
 
     if (filters.reference_id) {
@@ -110,6 +110,7 @@ class Repayments extends React.Component {
             <RepaymentListFilter
               form="withdrawalListFilter"
               count={DEFAULT_COUNT}
+              maxCountLimit={1000}
               onSubmit={this.search}
               view={CASH_ADVANCE_SECTIONS.REPAYMENTS}
               showPeriodSelect

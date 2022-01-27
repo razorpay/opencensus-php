@@ -16,6 +16,7 @@ export default ({
   repayments,
   showPeriodSelect = false,
   onSubmit,
+  maxCountLimit = 25,
   ...props
 }) => {
   const [dateRangeError, setDateRangeError] = useState('');
@@ -79,7 +80,7 @@ export default ({
           name="count"
           component="input"
           min={10}
-          max={25}
+          max={maxCountLimit}
           type="number"
           class="form-control input-sm"
         />

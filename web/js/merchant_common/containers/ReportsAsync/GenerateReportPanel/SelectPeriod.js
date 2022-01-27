@@ -117,7 +117,7 @@ export default class SelectPeriod extends React.Component {
       }
 
       default:
-        return {};
+        return []; // maintain same signature as other return values
     }
   };
 
