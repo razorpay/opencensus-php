@@ -4,6 +4,7 @@
 namespace RZP\Services\Segment;
 
 
+use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant;
 use RZP\Jobs\SegmentRequestJob;
@@ -104,6 +105,10 @@ class SegmentAnalyticsClient extends AbstractEventClient
             if($eventTimestamp != null)
             {
                 $eventData['timestamp'] = $eventTimestamp;
+            }
+            else
+            {
+                $eventData['timestamp'] = Carbon::now()->getTimestamp();
             }
 
             $this->pushEvent($merchant, $eventData);
