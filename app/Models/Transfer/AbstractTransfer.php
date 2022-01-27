@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -483,6 +484,17 @@ abstract class AbstractTransfer
                 ]
             );
         }
+
+        $this->trace->info(
+            TraceCode::MUTEX_LOCK_ON_LINKED_ACCOUNT_ID_ACQUIRED,
+            [
+                'transfer_id'   => $transfer->getId(),
+                'merchant_id'   => $transfer->getMerchantId(),
+                'to_id'         => $transfer->getToId(),
+                'acquired'      => $acquired,
+                'current_time'  => Carbon::now()->getTimestampMs(),
+            ]
+        );
 
         return [true, $mutexKey];
     }
