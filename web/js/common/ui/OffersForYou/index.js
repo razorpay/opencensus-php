@@ -12,6 +12,11 @@ import rTracking from 'react-tracking';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { withRouter } from 'react-router-dom';
+import {
+  setActivePageName as fnSetActivePageName,
+  setBaseLocation as fnSetBaseLocation,
+} from 'merchant/reducers/app';
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -23,6 +28,9 @@ const OffersForYou = ({
   canShowOnboardingOffers,
   user,
   mtuOfferCount,
+  history,
+  setActivePageName,
+  setBaseLocation,
 }) => {
   const offersForYouState = LocalStorageService.getItem('offers_for_you_state');
   let showAnimation = true;
@@ -72,10 +80,17 @@ const OffersForYou = ({
     }
   }, [mtuOfferCount]);
 
+  const handleConnectedBankingFlow = () => {
+    history.push('/connected-banking/icici-linked-ca');
+    setBaseLocation('/connected-banking/icici-linked-ca');
+    setActivePageName('Connected Banking');
+  };
+
   const handleClick = () => {
     /* onboarding offer will be the priority over the other offers.
     if two offer enable at the same time */
-    if (canShowOnboardingOffers) {
+    if (user.isICICILinkedCAEnabled) handleConnectedBankingFlow();
+    else if (canShowOnboardingOffers) {
       showMTUOffer(true);
       analyticsTrack({
         objectName: 'Exclusive Offer',
@@ -130,17 +145,21 @@ const OffersForYou = ({
   );
 };
 
-export default compose(
-  rTracking(() => window.rzpQ.component('OffersForYou')),
-  connect(
-    (state) => {
-      return {
-        user: state.session.user,
-      };
-    },
-    {
-      openModals: openModal,
-      closeModals: closeModal,
-    },
-  ),
-)(OffersForYou);
+export default withRouter(
+  compose(
+    rTracking(() => window.rzpQ.component('OffersForYou')),
+    connect(
+      (state) => {
+        return {
+          user: state.session.user,
+        };
+      },
+      {
+        openModals: openModal,
+        closeModals: closeModal,
+        setActivePageName: fnSetActivePageName,
+        setBaseLocation: fnSetBaseLocation,
+      },
+    ),
+  )(OffersForYou),
+);

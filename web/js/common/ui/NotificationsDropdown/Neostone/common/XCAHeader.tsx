@@ -9,7 +9,12 @@ const XCAHeader = ({
   <div className="xcaHeader">
     <div className="xcaHeader__image">
       {imageArr.map((item) => (
-        <img src={item?.imagePath} alt={item?.imageAlt} key={item?.imagePath} />
+        <img
+          src={item?.imagePath}
+          alt={item?.imageAlt}
+          key={item?.imagePath}
+          style={item?.imageStyle}
+        />
       ))}
     </div>
     <div className="xcaHeader__text">{XCAHeaderText}</div>

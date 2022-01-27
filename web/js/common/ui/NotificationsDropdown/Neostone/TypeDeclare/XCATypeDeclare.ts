@@ -1,5 +1,6 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, CSSProperties } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
+
 interface XCAStatus {
   showState: APIResponseType;
   proceededBank: APIResponseType;
@@ -24,6 +25,7 @@ interface XCAHeaderProps {
   handleClose(): any;
 }
 interface ArrayOfImage {
+  imageStyle?: CSSProperties;
   imagePath: string;
   imageAlt: string;
   stepDetails?: string;

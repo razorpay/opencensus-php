@@ -478,6 +478,10 @@ export default class User {
     return getSplitzExperimentVariant('gs_banners_experiment')?.variables?.result === 'on';
   }
 
+  get isICICILinkedCAEnabled() {
+    return getSplitzExperimentVariant('connected_banking_icici_exp')?.variables?.result === 'on';
+  }
+
   get isProjectMoonshineEnabled() {
     return getSplitzExperimentVariant('project_moonshine')?.variables?.result === 'on';
   }
@@ -504,6 +508,10 @@ export default class User {
       this.isOwner &&
       !this.isRazorxRXCASelfServeFlowEnabled
     );
+  };
+
+  isICICILinkedCAFlowEnabled = (showState = '') => {
+    return this.isICICILinkedCAEnabled && getXCAStatus(this).showState === showState;
   };
 
   get isStartupCongratulationBannerEnabled() {

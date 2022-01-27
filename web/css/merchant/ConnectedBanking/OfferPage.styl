@@ -1,0 +1,218 @@
+@import '../Neostone/mixin/NeoStoneMixin';
+
+$banking-header-bg = linear-gradient(180deg, #F16D22 0%, #D1502B 50%, #B12A31 100%);
+$banking-content-bg = #323A5F;
+$banking-content-title-highlight-bg = -webkit-linear-gradient(104.4deg, #FFC13E 6.64%, #FF650F 105.11%);
+$description-color = rgba(255, 255, 255, 0.74);
+$features-title-color = #FF7417;
+$banking-cta-bg = linear-gradient(90deg, #F16E21 0%, #BA3530 100%);
+$footer-cta-link-col = #5A99E8;
+$banking-footer-bg = linear-gradient(120.65deg, #252C4B 0%, #171B2F 100%);
+
+.offer-page
+  flexProp(column, center, flex-start);
+
+  .xcaHeader
+    xcaHeader(82px, $banking-header-bg);
+
+    .xcaHeader__image
+      flexProp(row, flex-start, center);
+
+      @media screen and (max-width: 425px)
+        flexProp(row, center, center);
+
+        & > img:first-of-type
+          margin-right: 8px;
+          margin-left: 10px;
+
+        & > img:last-of-type
+          margin-right: 0;
+    
+    .xcaHeader__text
+      @media screen and (max-width: 425px)
+        display: none;
+  
+  .headerBottomBorder
+    headerBottomBorder(2px, #6732FF, #1E9CDA, 0);
+  
+  span.highlight
+    background: $banking-content-title-highlight-bg;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    @media screen and (max-width: 425px)
+        display: block;
+
+  .title-mob
+    display: none;
+
+    @media screen and (max-width: 425px)
+      display: block;
+      width: 100%;
+      textFormat(24px, bold, white, 36px);
+      padding: 20px 22px;
+      // Change to prod
+      background-image: url("https://cdn.razorpay.com/static/assets/razorpayx/razorpayx-connected-banking-bg.svg");
+      background-repeat: no-repeat;
+      background-size: 110% 100%;
+
+  &--content
+    padding: 44px 60px 70px;
+    width: 100%;
+    // Change to prod
+    background-image: url("https://cdn.razorpay.com/static/assets/razorpayx/razorpayx-connected-banking-bg.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    .title
+      textFormat(38px, bold, white, 55px);
+      width: 76%;
+      
+      @media screen and (max-width: 425px)
+        display: none;
+
+    .help-text
+      flexProp(row, flex-start)
+      margin-top: 21px;
+
+      span
+        color: $description-color;
+        font-size: 14px;
+        line-height: 150%;
+        margin: 0 5px;
+      
+      .icici-logo
+        height: 25px;
+        margin-bottom: 10px;
+      
+      @media screen and (max-width: 425px)
+        margin-top: 0;
+    
+    .description
+      textFormat(24px, bold, white, 55px);
+      margin-top: 14px;
+
+      @media screen and (max-width: 425px)
+        display: none;
+
+    .features-list
+      margin-top: 37px;
+      flexProp(row, flex-start, flex-start)
+
+      .feature
+        max-width: 340px;
+
+        &:not(:first-of-type)
+          margin-left: 55px;
+
+        .description
+          textFormat(16px, normal, $description-color, 24px);
+
+          @media screen and (max-width: 425px)
+            display: block;
+            margin-top: 0;
+
+          span.highlight
+            textFormat(16px, bold, $features-title-color, 24px);
+            background: none;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: unset;
+
+            @media screen and (max-width: 425px)
+              display: inline;
+      
+      @media screen and (max-width: 425px)
+        flex-direction: column;
+
+        .feature
+          flexProp(row, space-between, center);
+          
+          &:not(:first-of-type)
+            margin-left: 0;
+            margin-top: 43px;
+
+          & > img
+            height: 78px;
+            width: 78px;
+            margin-right: 20px;
+
+          .feature--content
+            .title
+              textFormat(18px, bold, $features-title-color, 27px);
+              margin-top: 0;
+
+    .cta-container
+      .Button--primary.Button
+        margin-top: 50px;
+        textFormat(14px, bold, white, 20px);
+        
+        @media screen and (max-width: 425px)
+          margin: 0;
+          width: 90%;
+      
+      @media screen and (max-width: 425px)
+        z-index: 1;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(0.31deg, #171B2F 70.99%, rgba(23, 27, 47, 0) 99.72%);
+        display: flex;
+        justify-content: center;
+        height: 84px;
+        align-items: center;
+
+    .terms-and-conditions
+      textFormat(14px, normal, $description-color, 20px);
+      margin-top: 16px;
+
+      @media screen and (max-width: 425px)
+        display: none;
+    
+    @media screen and (max-width: 425px)
+      padding: 20px 22px 48px;
+      background: linear-gradient(120.65deg, #252C4B 0%, #171B2F 100%);
+  
+  .content-divider
+    height: 2px;
+    width: 100%;
+    overflow: hidden;
+    flexProp(row, center, center);
+    background-color: #323a5f;
+
+    img
+      transform: rotate(90deg);
+      width: 2px;
+      height: 100vw;
+
+  &--footer
+    width: 100%;
+    padding: 35px 60px;
+    // Change to prod
+    background: no-repeat url('https://cdn.razorpay.com/static/assets/modal-asset/footer-left-bg.svg'), $banking-footer-bg;
+    background-size: contain;
+
+    .title
+      textFormat(14px, normal, $description-color, 20px, 'Mulish');
+    
+    .cta
+      display: block;
+      margin-top: 10px;
+      textFormat(14px, bold, $footer-cta-link-col, 20px);
+      width: fit-content;
+
+      &:hover
+        color: #22527b;
+    
+    @media screen and (max-width: 425px)
+      padding: 37px 22px 20px;
+      background-size: cover;
+
+.rx-iframe-container
+  .page-spinner-container
+    height: 100vh;
+
+  .razorpayx-iframe
+    border: none;
+    width: 100%;
+    height: 90vh;

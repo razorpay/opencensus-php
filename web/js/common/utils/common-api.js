@@ -30,6 +30,10 @@ export const sendDataToSalesForce = (data, user = {}, mode = 'live') => {
       Campaign_ID: 'Ultra-LOC',
       product_name: 'LOC',
     },
+    'connected-banking-icici': {
+      Campaign_ID: 'icici_account_linking',
+      product_name: 'CA',
+    },
   };
 
   if (typeof data === 'string')

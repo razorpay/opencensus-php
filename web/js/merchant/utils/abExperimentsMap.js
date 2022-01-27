@@ -273,6 +273,15 @@ export default {
     // prod experiment ids,
     'IJsF9QOizHHLXC',
   ],
+
+  connected_banking_icici_exp: [
+    // beta experiment ids
+    'IikYcTmmlnrKxi',
+
+    // prod experiment ids,
+    'IcsVleJBcj5mMD',
+  ],
+
   catalyst_banner_fl_experiment: [
     // beta experiment ids
     'IScORMIXWZ7mKa',

@@ -416,6 +416,8 @@ class AnalyticsDesktop extends Component {
     const ticketsRaisedByAgents = this.props.ticketsRaisedByAgents.filter((ticket) =>
       new Date(ticket.created_at).getSeconds(),
     );
+    const { showState, proceededBank } = getXCAStatus(user);
+    const showNitroStatusTracker = showState === 'neostone-tracker';
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
 
@@ -734,14 +736,14 @@ class AnalyticsDesktop extends Component {
             />
           </ShowWhen>
 
-          {user.isNeostoneFlowEnabled('neostone-tracker') && (
+          {showNitroStatusTracker && (
             <div className="nss-tracker-wrapper">
               <ErrorBoundary
                 FallbackComponent={() => {
                   return null;
                 }}
               >
-                <NeoStoneTracker proceededBank={getXCAStatus(user).proceededBank} user={user} />
+                <NeoStoneTracker proceededBank={proceededBank} user={user} />
               </ErrorBoundary>
             </div>
           )}

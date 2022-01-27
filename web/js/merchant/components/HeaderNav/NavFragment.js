@@ -68,7 +68,8 @@ class NavFragment extends Component {
             user.isProjectNitroCorporateCard ||
             user.isProjectMoonshineEnabled ||
             user.isProjectKeystoneCorporateCardsEnabled ||
-            user.isProjectKeystoneCashAdvanceEnabled
+            user.isProjectKeystoneCashAdvanceEnabled ||
+            user.isICICILinkedCAFlowEnabled('offers-for-you')
           }
         >
           <OffersForYou

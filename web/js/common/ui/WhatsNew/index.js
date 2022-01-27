@@ -15,6 +15,10 @@ import {
   openModal as openModalx,
 } from 'merchant_common/reducers/modals';
 import {
+  setActivePageName as fnSetActivePageName,
+  setBaseLocation as fnSetBaseLocation,
+} from 'merchant/reducers/app';
+import {
   pushSlider as pushSliderx,
   emptySliderStack as emptySliderStackx,
 } from 'merchant_common/reducers/multiSlider';
@@ -68,6 +72,8 @@ function _isUnreadNotification(startTS, endTS, lastReadTS) {
     pushSlider: pushSliderx,
     emptySliderStack: emptySliderStackx,
     fetchAnnouncements,
+    setActivePageName: fnSetActivePageName,
+    setBaseLocation: fnSetBaseLocation,
   },
 )
 @RTracking(() => window.rzpQ.component('WhatsNew'))
@@ -191,6 +197,12 @@ class WhatsNew extends Component {
     form.open();
   };
 
+  handleConnectedBankingFlow = () => {
+    this.props.history.push('/connected-banking/icici-linked-ca');
+    this.props.setBaseLocation('/connected-banking/icici-linked-ca');
+    this.props.setActivePageName('Connected Banking');
+  };
+
   handleCTA = ({ id, url }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -217,6 +229,9 @@ class WhatsNew extends Component {
         break;
       case 'Aug25-AppStore-Intent-Zapier-cta':
         this.openZapierIntentForm();
+        break;
+      case 'JAN22-ICICI-CONNECTEDBANKING-ANN':
+        this.handleConnectedBankingFlow();
         break;
       default:
         break;

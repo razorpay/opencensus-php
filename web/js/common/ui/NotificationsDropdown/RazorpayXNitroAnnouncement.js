@@ -336,6 +336,7 @@ export const nitroCampaignId = () => {
 export const getCampaignID = () => {
   const user = getUser();
 
+  if (user.isICICILinkedCAEnabled) return 'Nitro_ICICIConnected';
   if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
   if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
   if (user.isProjectNitroCorporateCard) return 'Nitro_CardOfferNewYear';

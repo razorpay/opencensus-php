@@ -130,6 +130,7 @@ return [
         //Cross Border Payments Announcement
         'CROSS_BORDER_PAYMENTS_ANNOUNCEMENT' => env('CROSS_BORDER_PAYMENTS_ANNOUNCEMENT', ''),
         'NEOSTONE_EXPERIMENT' => env('NEOSTONE_EXPERIMENT', ''),
+        'CONNECTED_BANKING_ICICI_EXP' => env('CONNECTED_BANKING_ICICI_EXP', ''),
 
         //QR Code Announcement
         'QR_CODE_ANNOUNCEMENT' => env('QR_CODE_ANNOUNCEMENT', ''),

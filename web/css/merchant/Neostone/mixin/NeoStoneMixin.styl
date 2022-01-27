@@ -7,6 +7,7 @@ xcaHeaderText()
     letter-spacing: 0px;
     text-align: left;
     color: $text;
+    width: 100%;
 
 
 flexProp(direction = column, justify = center, alignitem = center)
@@ -35,4 +36,41 @@ loader-shimmer(shimmerWidth = 100px, shimmerHeight = 30px)
         }
     }
 
+xcaHeader(headerHeight = 92px, backgroundColor = #171b2f)
+    height: headerHeight;
+    background: backgroundColor;
+    xcaHeaderText();
+    flexProp(row,space-between);
 
+    &__image {
+        margin-right: 8px;
+
+        img:first-of-type {
+            margin-right: 20px;
+            margin-left: 26px;
+        }
+        img:last-of-type {
+            margin-right: 8px;
+        }
+    }
+    &__text {
+        flex-grow:.9;
+    }
+    &__close {
+        background: transparent;
+        border: none;
+        margin-right: 26px;
+    }
+
+headerBottomBorder(borderHeight = 2px, backgroundStart = #6732FF, backgroundStop = #1E9CDA, marginBottom = 30px)
+    height: borderHeight;
+    background: linear-gradient(98.56deg, backgroundStart 10.42%, backgroundStop 134.37%);
+    margin-bottom: marginBottom;
+    width: 100%;
+
+textFormat(fontSize = 14px, fontWeight = normal, fontColor = white, lineHeight = 1, fontFamily = 'Lato')
+    font-size: fontSize;
+    font-weight: fontWeight;
+    color: fontColor;
+    line-height: lineHeight;
+    font-family: fontFamily;

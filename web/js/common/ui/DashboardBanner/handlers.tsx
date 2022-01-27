@@ -4,6 +4,10 @@ import {
   openModal as openModalProp,
   closeModal as closeModalProp,
 } from '../../../merchant_common/reducers/modals';
+import {
+  setActivePageName as fnSetActivePageName,
+  setBaseLocation as fnSetBaseLocation,
+} from '../../../merchant/reducers/app';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import PLFeaturesModal from '../../../merchant/components/Announcements/CatalystCampaignBanner/PLFeaturesModal';
 import { sendDataToSalesForce } from '../../utils/common-api';
@@ -12,6 +16,8 @@ const getClickHandler = (id = '') => {
   const user = getUser();
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const closeModal = (payload) => store.dispatch(closeModalProp(payload));
+  const setActivePageName = (payload) => store.dispatch(fnSetActivePageName(payload));
+  const setBaseLocation = (payload) => store.dispatch(fnSetBaseLocation(payload));
 
   const openRazorpayXNitroModal = () => {
     openModal({
@@ -31,6 +37,11 @@ const getClickHandler = (id = '') => {
     sendDataToSalesForce(data, userObj);
   };
 
+  const handleConnectedBankingFlow = () => {
+    setBaseLocation('/connected-banking/icici-linked-ca');
+    setActivePageName('Connected Banking');
+  };
+
   switch (id) {
     case 'OCT-NITRO-CARDOFFER':
     case 'OCT-NITRO-ICICIBranded':
@@ -41,6 +52,8 @@ const getClickHandler = (id = '') => {
       return sendPayloadToSalesforce('ultra-campaign', user);
     case 'SEP21-ULTRALOC-BANNER':
       return sendPayloadToSalesforce('ultra-campaign-p2-cash-advance', user);
+    case 'JAN22-ICICI-CONNECTEDBANKING-DB':
+      return handleConnectedBankingFlow;
     default:
       return undefined;
   }
