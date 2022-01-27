@@ -63,6 +63,13 @@ class Client
             if ($response->status_code >= 400)
             {
                 $description = $parsedResponse['msg'] ?? '';
+                if (isset($parsedResponse['meta']) === true)
+                {
+                    if (isset($parsedResponse['meta']['code']) === true)
+                    {
+                        $description = $description.'. code: '. $parsedResponse['meta']['code'];
+                    }
+                }
 
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
                     null,

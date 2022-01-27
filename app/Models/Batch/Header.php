@@ -75,6 +75,13 @@ class Header
     const RAW_ADDRESS_BULK_COUNTRY = 'country';
     const RAW_ADDRESS_BULK_TAG = 'tag';
     const RAW_ADDRESS_BULK_STATUS = 'status';
+
+    //
+    // FulfillmentOrder Headers
+    //
+    const FULFILLMENT_ORDER_MERCHANT_ORDER_ID = 'merchant_order_id';
+    const FULFILLMENT_ORDER_STATUS = 'status';
+    const FULFILLMENT_ORDER_UPDATED_AT = 'updated_at';
     //
     // Payment Link Headers
     //
@@ -1330,6 +1337,12 @@ class Header
         Header::RAW_ADDRESS_BULK_ZIPCODE,
     ];
 
+    // Following is a list of columns that are mandatory headers in the fulfillment order batch file
+    const MANDATORY_HEADERS_FOR_FULFILLMENT_ORDER = [
+        Header::FULFILLMENT_ORDER_MERCHANT_ORDER_ID,
+        Header::FULFILLMENT_ORDER_STATUS,
+    ];
+
 
     /**
      * Input and output file headers
@@ -1551,6 +1564,19 @@ class Header
                 self::RAW_ADDRESS_BULK_COUNTRY,
                 self::RAW_ADDRESS_BULK_TAG,
                 self::RAW_ADDRESS_BULK_STATUS,
+            ]
+        ],
+
+        Type::FULFILLMENT_ORDER_UPDATE => [
+            self::INPUT => [
+                self::FULFILLMENT_ORDER_MERCHANT_ORDER_ID,
+                self::FULFILLMENT_ORDER_STATUS,
+                self::FULFILLMENT_ORDER_UPDATED_AT,
+            ],
+            self::OUTPUT => [
+                self::FULFILLMENT_ORDER_MERCHANT_ORDER_ID,
+                self::FULFILLMENT_ORDER_STATUS,
+                self::FULFILLMENT_ORDER_UPDATED_AT,
             ]
         ],
 
@@ -4431,6 +4457,12 @@ class Header
             return;
         }
 
+        if ( $type === Type::FULFILLMENT_ORDER_UPDATE)
+        {
+            self::validateFulfillmentOrderUpdateBulkHeaders($expectedHeaders, $actualHeaders);
+            return;
+        }
+
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.
@@ -4700,6 +4732,46 @@ class Header
     public static function validateRawAddressBulkHeaders(array $expectedHeaders, array $actualHeaders)
     {
         $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_RAW_ADDRESS_BULK;
+
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
+    }
+
+    public static function validateFulfillmentOrderUpdateBulkHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_HEADERS_FOR_FULFILLMENT_ORDER;
 
         foreach ($actualHeaders as $actualHeader)
         {

@@ -84,6 +84,7 @@ use RZP\Services\XPayroll\Service as XPayrollService;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
+use RZP\Models\Merchant\OneClickCheckout\FulfillmentOrder\Service as FulfillmentOrderService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Service as ShippingMethodProviderService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingService\Client as ShippingServiceClient;
 use RZP\Models\Base\EntityInstrumentationObserver;
@@ -541,6 +542,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerShippingMethodProviderService();
 
         $this->registerShippingServiceClient();
+
+        $this->registerFulfillmentOrderService();
 
         $this->registerFreshchatClient();
 
@@ -1369,6 +1372,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('shipping_service_client', function($app)
         {
             return new ShippingServiceClient($app);
+        });
+    }
+
+    protected function registerFulfillmentOrderService()
+    {
+        $this->app->singleton('fulfillment_order_service', function($app)
+        {
+            return new FulfillmentOrderService($app);
         });
     }
 

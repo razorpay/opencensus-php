@@ -283,6 +283,8 @@ class Route
         'raw_address_kafka_cron'                  => ['post',     'raw_address/kafka_upload',                      'RawAddressController@uploadAddressesToKafka'                      ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
 
+        'fulfillment_order_update'                 => ['post',     'fulfillment_order/batch_service',             'FulfillmentOrderController@updateOrder'                             ],
+
         // TODO: Add rate limiting on this route!
         'refund_fetch_for_customer'                => ['get',      'customer/refund',                                'RefundController@getRefundDetailsForCustomer'                      ],
         'refunds_fetch_for_customer'               => ['get',      'customer/refunds',                               'RefundController@getRefundsDetailsForCustomer'                     ],
@@ -4339,6 +4341,7 @@ class Route
         'raw_address_create_batch_service',
         'raw_address_kafka_cron',
 
+        'fulfillment_order_update',
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
         'merchant_action_notification_cron',
 
@@ -4551,6 +4554,7 @@ class Route
         'fund_addition_tpv',
         'merchant_coupons_apply',
         'raw_address_create_batch_service',
+        'fulfillment_order_update',
         'shipping_provider_list',
         'shipping_provider_post',
         'shipping_provider_patch',
@@ -11705,6 +11709,7 @@ class Route
             'bulk_risk_action_status_comment',
             'onboard_old_accounts_to_ledger',
             'raw_address_create_batch_service',
+            'fulfillment_order_update',
             'chargeback_poc',
             'whitelisted_domain',
             'debit_note_batch',
