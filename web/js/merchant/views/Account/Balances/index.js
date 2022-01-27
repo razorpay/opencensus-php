@@ -227,6 +227,7 @@ class AddFundsContainer extends Component {
 
   render() {
     const { user } = this.props;
+    const { ticketGenerated } = this.state;
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
@@ -247,14 +248,14 @@ class AddFundsContainer extends Component {
           )}
         </div>
 
-        <CurrentBalance
+        <CurrentBalance handleContactUs={this.handleContactUs} handlAddFunds={this.handlAddFunds} />
+
+        <ReserveBalance
           handleContactUs={this.handleContactUs}
           handlAddFunds={this.handlAddFunds}
           handleActivate={this.handleActivate}
-          ticketGenerated={this.state.ticketGenerated}
+          ticketGenerated={ticketGenerated}
         />
-
-        <ReserveBalance handleContactUs={this.handleContactUs} handlAddFunds={this.handlAddFunds} />
       </div>
     );
   }
