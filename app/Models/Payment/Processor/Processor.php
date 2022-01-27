@@ -242,6 +242,11 @@ class Processor
     const S2S_CARD_PAYMENTS_VIA_PGROUTER = 's2s_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service for headless and rupay, during Payment creation
+     */
+    const HEADLESS_S2S_CARD_PAYMENTS_VIA_PGROUTER = 'headless_s2s_card_payments_via_pg_router';
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -505,8 +510,6 @@ class Processor
                 return false;
             }
 
-            $result = 'off';
-
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
 
@@ -522,8 +525,18 @@ class Processor
                     $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
                 }
             }
-            else if (($this->app['basicauth']->isPrivateAuth() === true) && (($isRupay === false) && ($isHeadless === false))) {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+            else
+            {
+                if (($isRupay === true) || (($isHeadless === true) &&
+                        ($merchant->isFeatureEnabled('otp_auth_default') === true) &&
+                        ($merchant->isHeadlessEnabled() === true)))
+                {
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::HEADLESS_S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                }
+                else
+                {
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                }
             }
 
             return ($result === 'on');
