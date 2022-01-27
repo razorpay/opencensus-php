@@ -160,6 +160,18 @@ class VerifyCsrfToken extends BaseVerifier
             'verify_token'  => md5($token ?? ''),
             'xsrf_token'    => md5($xsrfCookieToken ?? ''),
         ]);
+
+        //
+        // If any one of required tokens are not sent then return false
+        // this is to avoid validating requests when
+        // XSRF was not sent in both header and cookie
+        //
+        if ((empty($xsrfCookieToken) === true) or
+            (empty($token) === true))
+        {
+            return false;
+        }
+
         if ((is_string($xsrfCookieToken) === true) and (is_string($token) === true) and
             hash_equals($xsrfCookieToken, $token) == true) {
 

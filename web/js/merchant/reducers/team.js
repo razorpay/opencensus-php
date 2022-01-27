@@ -32,12 +32,12 @@ const fetchUsers = (_) =>
     mode: 'live',
   });
 
-export const fetchTeamDetails = (params) => {
+export const fetchTeamDetails = () => {
   return {
     type: TEAM_FETCH,
     payload: Promise.all([fetchInvitations(), fetchUsers()]).then((values) => {
       if (!values[0].success || !values[1].success) {
-        throw "Couldn't load team details";
+        throw new Error("Couldn't load team details");
       }
       return values;
     }),
@@ -84,7 +84,7 @@ export const getEmailStatus = (email, setContactEmail) => {
     type: NEW_EMAIL_STATUS,
     payload: merchantFetch({
       url: 'merchants/email_user/status',
-      method: 'get',
+      method: 'post',
       data: { email, set_contact_email: +setContactEmail, reattach_current_owner: false },
     }),
   };
@@ -103,18 +103,18 @@ export const updateSelfContact = (data) => {
 };
 
 export const updateMember = (data) => {
-  const team = new Team();
+  const updateTeam = new Team();
   return {
     type: TEAM_MEMBER_EDIT,
-    payload: team.updateMember(data),
+    payload: updateTeam.updateMember(data),
   };
 };
 
 export const removeMember = (userId) => {
-  const team = new Team();
+  const removeTeam = new Team();
   return {
     type: TEAM_MEMBER_DELETE,
-    payload: team.deleteMember(userId),
+    payload: removeTeam.deleteMember(userId),
   };
 };
 
@@ -147,7 +147,7 @@ export const toggleMerchant2FaEnforcement = (data) => toggle2FaEnforcement(data,
 
 export const toggleUser2FaEnforcement = (data) => toggle2FaEnforcement(data, 'users/2fa');
 
-let initialState = {
+const initialState = {
   loading: true,
   invitations: [],
   users: [],
@@ -158,12 +158,12 @@ export const fetchTeam = (params) => fetchAll(params, Team, 'TEAM_MEMBERS');
 
 export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
   // since update account api does not send all the details in the response
-  ['TEAM_MEMBER_CONTACT_UNVERIFY::SUCCESS']: (state, action) =>
+  'TEAM_MEMBER_CONTACT_UNVERIFY::SUCCESS': (state, action) =>
     updateTeamMember(state, action, '2fa_invalidate'),
-  ['TEAM_MEMBER_UNLOCK::SUCCESS']: (state, action) =>
+  'TEAM_MEMBER_UNLOCK::SUCCESS': (state, action) =>
     updateTeamMember(state, action, 'account_unlock'),
 
-  ['TEAM_MEMBER_EDIT::SUCCESS']: (state, action) => ({
+  'TEAM_MEMBER_EDIT::SUCCESS': (state, action) => ({
     ...state,
     items: state.items.map((item) =>
       item.id === action.payload.id
@@ -179,8 +179,8 @@ export const teamReducer = makeActionCollectionReducer('TEAM_MEMBERS', {
 function updateTeamMember(state, action, operation) {
   const itemIndex = state.items.findIndex((item) => item.id === action.payload.user_id);
 
-  let key = '',
-    value = '';
+  let key = '';
+  let value = '';
   switch (operation) {
     case '2fa_invalidate':
       key = 'contact_mobile_verified';
@@ -190,12 +190,13 @@ function updateTeamMember(state, action, operation) {
       key = 'account_locked';
       value = false;
       break;
+    default:
   }
 
   return set(state, `items.${itemIndex}.${key}`, value);
 }
 
-export default function (state = initialState, action) {
+export default function team(state = initialState, action) {
   switch (action.type) {
     case `${TEAM_FETCH}::PENDING`:
       return set(state, 'loading', true);

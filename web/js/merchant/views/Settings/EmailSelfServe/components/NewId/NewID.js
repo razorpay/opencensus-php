@@ -20,7 +20,7 @@ const NewID = ({ newEmail, user, closeModal }) => {
       </p>
 
       <div className="dialogue-container">
-        <p className="dialogue-msg">Your exisitng email-id {user.user.email} will be deactivated</p>
+        <p className="dialogue-msg">Your existing email-id {user.user.email} will be deactivated</p>
       </div>
 
       <Button.Primary type="button" className="btn-block" onClick={closeModal}>

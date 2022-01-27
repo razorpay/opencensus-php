@@ -87,7 +87,7 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         setDisabled(false);
         showNotification({
           type: 'error',
-          message: err.errors[0] || 'some error occured',
+          message: err.errors[0] || 'some error occurred',
         });
       });
   };
