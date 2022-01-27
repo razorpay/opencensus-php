@@ -59,14 +59,18 @@ class Core extends Base\Core
 
         return $this->createTokenizedCardEntity($input['card'], $merchant, $response);
     }
-    
+
 
     protected function migrationCardToTokenisedCard($card, $input, $merchant, $response)
     {
         $tokenisedCard = $card->replicate();
 
         $tokenisedCard->generateID();
-        
+
+        $tokenisedCard->setVaultToken($response['token']);
+
+        $tokenisedCard->setGlobalFingerprint($response['fingerprint']);
+
         if(empty($response['service_provider_tokens']) === false)
         {
             $tokenisedCard->setVault(strtolower($response['service_provider_tokens'][0]['provider_name']));
@@ -104,7 +108,7 @@ class Core extends Base\Core
             Card\Entity::GLOBAL_FINGERPRINT => $response['fingerprint'],
             Card\Entity::LAST4              => $this->getLast4($input, $response),
             Card\Entity::LENGTH             => 0,
-            Card\Entity::IIN                => '000000',
+            Card\Entity::TOKEN_IIN          => '000000000',
             Card\Entity::TOKEN_EXPIRY_MONTH => '0',
             Card\Entity::TOKEN_EXPIRY_YEAR  => '9999',
         ];
@@ -114,7 +118,11 @@ class Core extends Base\Core
             $createInput[Card\Entity::NAME] = $input[Card\Entity::NAME];
         }
 
-        $createInput[Card\Entity::EXPIRY_MONTH] = $input[Card\Entity::EXPIRY_MONTH];
+        $iinNumber  = substr($input[Card\Entity::NUMBER] ?? null, 0, 6);
+
+        $createInput[Card\Entity::IIN] = $iinNumber;
+
+        $createInput[Card\Entity::EXPIRY_MONTH] = (int)$input[Card\Entity::EXPIRY_MONTH];
 
         $createInput[Card\Entity::EXPIRY_YEAR] = $input[Card\Entity::EXPIRY_YEAR];
 
@@ -122,9 +130,9 @@ class Core extends Base\Core
         {
             $createInput[Card\Entity::VAULT] = strtolower($response['service_provider_tokens'][0]['provider_name']);
 
-            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_iin'))
+            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
             {
-                $createInput[Card\Entity::IIN] = $response['service_provider_tokens'][0]['provider_data']['token_iin'];
+                $createInput[Card\Entity::TOKEN_IIN] = substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9);
             }
             else
             {
@@ -436,6 +444,8 @@ class Core extends Base\Core
             (array_key_exists('number', $input) === true))
         {
             $tokenizedRange = substr($input['number'], 0, 9);
+
+            $iinNumber = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iinNumber;
         }
 
         $network = Card\Network::detectNetwork($iinNumber);
@@ -523,7 +533,10 @@ class Core extends Base\Core
         $this->checkCvvLength($card, $input);
 
          // for tokenised card we need to fetch the details from a static list.
-        if (empty($tokenizedRange) === false)
+        /** token iin not required to be set here in case of token_provision as
+        this field will already have a value in case of provisioning.
+         */
+        if (empty($tokenizedRange) === false && empty($card->getTokenIin()) === true)
         {
             $card->setTokenIIn($tokenizedRange);
         }

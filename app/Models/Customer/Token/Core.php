@@ -1335,9 +1335,7 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
         }
-
-        $input[Entity::CARD]['expiry_month'] = (int)$input[Entity::CARD]['expiry_month'];
-
+        
         if (strlen($input[Entity::CARD]['expiry_year']) === 2)
         {
             $input[Entity::CARD]['expiry_year'] = '20' . $input[Entity::CARD]['expiry_year'];
