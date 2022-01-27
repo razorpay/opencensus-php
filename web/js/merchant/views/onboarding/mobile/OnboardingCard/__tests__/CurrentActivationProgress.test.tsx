@@ -30,6 +30,17 @@ const App: React.FC = () => {
   );
 };
 
+test('should render null incase of activation progress is 90 and activation status is activation_mcc_pending', async () => {
+  ActivationDB.update({
+    ...DataPieces.OnboardingMileStoneL2,
+    ...DataPieces.activationStatus.mccPending,
+    ...DataPieces.activationProgress.activationMccPending,
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('% complete')).not.toBeInTheDocument();
+});
+
 test('should render correct message for poi_verification_status = incorrect_details', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowGG,

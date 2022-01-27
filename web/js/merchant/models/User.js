@@ -1118,6 +1118,10 @@ export default class User {
     return this.getExpStatus('onboarding_v2');
   }
 
+  get isActivationMccPendingProgressbarDisabled() {
+    return this.isOrgRZP && this.getExpStatus('remove_activation_progressbar');
+  }
+
   get isBDAndAovEnabled() {
     return this.getExpStatus('aov_functionality');
   }

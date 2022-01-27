@@ -13,6 +13,18 @@ export const POIStatus = {
   },
 };
 
+export const activationStatus = {
+  mccPending: {
+    activation_status: 'activated_mcc_pending',
+  },
+};
+
+export const activationProgress = {
+  activationMccPending: {
+    activation_progress: 90,
+  },
+};
+
 export const OnboardingMileStoneL1 = {
   activation_form_milestone: 'L1',
 };

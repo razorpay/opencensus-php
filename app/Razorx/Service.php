@@ -228,6 +228,7 @@ class Service extends Base\Service
             'rx_mask_payroll_payouts',
             'show_activation_form_full_view',
             'magic_bulk_address_live',
+            'remove_activation_progressbar',
             'rx_payout_link_workflow',
             'rx_ca_programmatic_engagement'
         ];

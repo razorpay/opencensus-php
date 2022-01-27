@@ -886,6 +886,7 @@ class App extends Component {
       isEmailNonMandatoryOnL1: user.isEmailNonMandatoryOnL1,
       isEmailNonMandatoryOnL2Form: user.isEmailNonMandatoryOnL2Form,
       isActivationFormFullView: user.isActivationFormFullView,
+      isActivationMccPendingProgressbarDisabled: user.isActivationMccPendingProgressbarDisabled,
     };
   };
 

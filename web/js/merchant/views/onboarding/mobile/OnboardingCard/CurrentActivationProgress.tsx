@@ -1,5 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { withRouter, RouteComponentProps, Link as Redirect } from 'react-router-dom';
 import {
   isUnregisteredBusiness,
@@ -7,6 +9,7 @@ import {
   isL1Submitted,
   getFormatedCurrency,
 } from '../services/utils';
+import { showProductsModal } from 'merchant/reducers/home';
 import Link from '@razorpay/commander-shield/src/shared/Link';
 import { getMode, switchMode } from 'common/services/mode';
 import Info from './Info';
@@ -21,8 +24,13 @@ const InlineText = styled.span`
 `;
 
 const CurrentActivationProgress: React.FC<
-  RouteComponentProps & { data: any; escalation: any; referee: IReferee | undefined }
-> = ({ data, escalation, history, referee }) => {
+  RouteComponentProps & {
+    data: any;
+    escalation: any;
+    referee: IReferee | undefined;
+    showProductModal?: any;
+  }
+> = ({ data, escalation, history, referee, showProductModal }) => {
   const { user, experiments } = useApp();
   const trackEvents = useTrackEvents();
   const isReferredMerchant = referee?.status === 'signup';
@@ -289,26 +297,46 @@ const CurrentActivationProgress: React.FC<
     }
 
     if (data.activation_status === 'activated_mcc_pending') {
-      let title = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.title;
-      let description = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.description;
-      if (isInstantActivationEnabled) {
-        title = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_title;
-        description = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_description;
-      }
-      return (
-        <>
-          <Info title={title} description={description} />
-          {isTestMode && (
+      if (
+        data.activation_progress === 90 &&
+        experiments.isActivationMccPendingProgressbarDisabled
+      ) {
+        const description =
+          Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.when_progress_bar_not_required;
+        return (
+          <>
+            <Info title="" description={description} />
+
             <Buttons.Secondary
               onClick={() => {
-                switchMode(user.current, 'live');
-                window.location.reload();
+                showProductModal();
               }}
-              title="Switch To Live Mode"
+              title="Accept Payments Now"
             />
-          )}
-        </>
-      );
+          </>
+        );
+      } else {
+        let title = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.title;
+        let description = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.description;
+        if (isInstantActivationEnabled) {
+          title = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_title;
+          description = Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_description;
+        }
+        return (
+          <>
+            <Info title={title} description={description} />
+            {isTestMode && (
+              <Buttons.Secondary
+                onClick={() => {
+                  switchMode(user.current, 'live');
+                  window.location.reload();
+                }}
+                title="Switch To Live Mode"
+              />
+            )}
+          </>
+        );
+      }
     }
 
     if (data.bank_details_verification_status === 'failed') {
@@ -458,4 +486,9 @@ const CurrentActivationProgress: React.FC<
   return null;
 };
 
-export default withRouter(CurrentActivationProgress);
+export default compose<any>(
+  withRouter,
+  connect(null, {
+    showProductModal: showProductsModal,
+  }),
+)(CurrentActivationProgress);

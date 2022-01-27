@@ -4,6 +4,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { spacings } from '@razorpay/blade-old/src/tokens';
 import { ProgressBar } from 'common/components/ProgressBar';
@@ -17,6 +18,7 @@ import { checkIfDedupe, isUnregisteredBusiness, setLocalStorage } from '../servi
 import { ActivationModal, ModalTypeT } from '../ActivationModals';
 import { useApp } from 'common/context/App';
 import { IReferee } from '../Screens/Home';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 const Separator = styled(View)`
   height: 1px;
@@ -38,6 +40,23 @@ const AccountBlock = styled(View)`
   padding: 4px 8px;
 `;
 
+const MccPendingSubDescription = styled(View)`
+  font-size: 12px;
+  color: #1f890e;
+`;
+
+const CloseIcon = styled(View)`
+  color: #818fa4;
+  font-size: 14px;
+  position: absolute;
+  right: 25px;
+  top: 5px;
+`;
+
+const WrapperView = styled(View)`
+  position: relative;
+`;
+
 interface IOnboardingCardProps {
   referee: IReferee | undefined;
 }
@@ -45,11 +64,13 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const { user, experiments } = useApp();
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
+  const trackEvents = useTrackEvents();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const dedupeStatus = checkIfDedupe({ ...activationData, isInstantActivationEnabled });
   const isDedupe = dedupeStatus === 'blocked';
+  const [isModalClosed, setIsModalClosed] = useState(false);
 
   useEffect(() => {
     if (activationQueryStatus === 'success' && isInstantActivationEnabled) {
@@ -113,6 +134,24 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
     }
   }, [activationQueryStatus]);
 
+  const isActivationmccPending =
+    experiments.isActivationMccPendingProgressbarDisabled &&
+    user.activation_progress === 90 &&
+    user.activation_status === 'activated_mcc_pending';
+
+  useEffect(() => {
+    if (isActivationmccPending) {
+      trackEvents({
+        objectName: 'Onboarding progress bar',
+        actionName: 'hidden',
+        screen: 'home page',
+        properties: {
+          merchantStatus: user.activation_status,
+        },
+      });
+    }
+  }, [isActivationmccPending]);
+
   if (activationQueryStatus === 'loading' || escalationsStatus === 'loading') {
     return <OnboardingCardShimmer />;
   }
@@ -124,24 +163,44 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
     return <div>Something went wrong</div>;
   }
 
+  if (isModalClosed) {
+    return null;
+  }
+
   return (
-    <View>
-      <Card padding={[2]} margin={[2]}>
-        <Flex flexDirection="row" justifyContent="space-between">
+    <WrapperView>
+      <Card padding={isActivationmccPending ? [2, 4, 2, 2] : [2]} margin={[2]}>
+        <Flex
+          flexDirection="row"
+          justifyContent="space-between"
+          alignItems={isActivationmccPending ? 'center' : 'flex-start'}
+        >
           <View>
             <HeadingContainer>
               <Space margin={[0, 0, 0.5, 0]}>
                 <HeadingContainer>
-                  <Text size="large" weight="bold">
-                    Account Activation
-                  </Text>
+                  {isActivationmccPending ? (
+                    <Text size="large" weight="bold">
+                      Congratulations !
+                    </Text>
+                  ) : (
+                    <Text size="large" weight="bold">
+                      Account Activation
+                    </Text>
+                  )}
                 </HeadingContainer>
               </Space>
               {((isDedupe && !activationData.activated) ||
                 activationData.activation_status === 'rejected') &&
               activationData.submitted &&
+              !isActivationmccPending &&
               isInstantActivationEnabled ? (
                 <AccountBlock>Paused</AccountBlock>
+              ) : isActivationmccPending ? (
+                <MccPendingSubDescription>
+                  Now you can accept unlimited payments. Settlements to your bank account have been
+                  enabled.
+                </MccPendingSubDescription>
               ) : (
                 <>
                   <Space margin={[1, 2, 0, 0]}>
@@ -163,6 +222,17 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
               )}
             </HeadingContainer>
             <img src={FormIcon} alt="fill_activation_form_icon" />
+            {isActivationmccPending ? (
+              <CloseIcon>
+                <Button
+                  variant="tertiary"
+                  size="small"
+                  variantColor="shade"
+                  icon="close"
+                  onClick={() => setIsModalClosed(true)}
+                />
+              </CloseIcon>
+            ) : null}
           </View>
         </Flex>
 
@@ -180,7 +250,7 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
           activationData={activationData}
         />
       </Card>
-    </View>
+    </WrapperView>
   );
 };
 

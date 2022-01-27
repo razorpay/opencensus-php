@@ -39,6 +39,7 @@ const customRender = (
       isEmailNonMandatoryOnL1: false,
       isEmailNonMandatoryOnL2Form: false,
       isActivationFormFullView: true,
+      isActivationMccPendingProgressbarDisabled: true,
     };
     return (
       <Provider store={reduxStore}>

@@ -22,6 +22,7 @@ const mockRazorXExp = {
   isEmailNonMandatoryOnL1: false,
   isEmailNonMandatoryOnL2Form: false,
   isActivationFormFullView: true,
+  isActivationMccPendingProgressbarDisabled: true,
 };
 
 addParameters({

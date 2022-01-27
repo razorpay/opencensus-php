@@ -1,13 +1,15 @@
 import ShowWhen from 'merchant/components/ShowWhen';
-import ProgressBar from 'common/ui/ProgressBar';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import { ProgressBar } from 'common/ui/ProgressBar';
 import { classList } from 'common/utils/rzp-utils';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import { useEffect } from 'react';
+import * as EventsActions from 'merchant/reducers/trackEvents';
 
-export default RTracking((state, props, args) => {
-  return window.rzpQ.component('ActivationProgress');
-})(function ActivationProgress(props) {
-  const { user, config } = props;
+function ActivationProgress(props) {
+  const { user, config, trackEvents } = props;
 
   const {
     showInstantActivation,
@@ -15,7 +17,6 @@ export default RTracking((state, props, args) => {
   } = user;
 
   let actionCopy;
-  let subText;
   let trackingIntent = null;
 
   if (user.activation_status === 'under_review') {
@@ -44,6 +45,11 @@ export default RTracking((state, props, args) => {
 
   const activationState = getActivationState(user, user.isUnregisteredBusiness);
 
+  const isActivationmccPending =
+    user.isActivationMccPendingProgressbarDisabled &&
+    user.activation_progress === 90 &&
+    user.activation_status === 'activated_mcc_pending';
+
   if (user.isInstantActivationEnabled) {
     if (activationState === 'account_activated') {
       actionCopy = 'Account Activated';
@@ -52,11 +58,25 @@ export default RTracking((state, props, args) => {
     }
   }
 
+  useEffect(() => {
+    if (isActivationmccPending) {
+      trackEvents({
+        objectName: 'Onboarding progress bar',
+        actionName: 'hidden',
+        screen: 'home page',
+        properties: {
+          merchantStatus: user.activation_status,
+        },
+      });
+    }
+  }, []);
+
   return !isBlacklistFlow &&
     activationState !== 'L1_dedupe_blocked' &&
     activationState !== 'L2_dedupe_blocked' &&
     activationState !== 'rejected' ? (
     <ShowWhen
+      // eslint-disable-next-line no-shadow
       additionalCondition={(user) =>
         user.isAllowedEdit('activation') &&
         !user.isPartner() &&
@@ -92,37 +112,45 @@ export default RTracking((state, props, args) => {
 
           {/*  if isInstantActivationEnabled */}
           {user.isInstantActivationEnabled &&
-            (activationState === 'poi_initiated' ? (
-              <div className="activation-status-secondary">KYC under review</div>
-            ) : activationState === 'account_activated' ? (
-              <div className="activation-status-secondary">Personalise your Account</div>
-            ) : (
+          !isActivationmccPending &&
+          activationState === 'poi_initiated' ? (
+            <div className="activation-status-secondary">KYC under review</div>
+          ) : activationState === 'account_activated' ? (
+            <div className="activation-status-secondary">Personalise your Account</div>
+          ) : (
+            !isActivationmccPending && (
               <div className="activation-bar-content activation-status-secondary">
                 <div className="activation-bar-text">{user.activation_progress}% Complete</div>
                 <div className="activation-bar">
                   <ProgressBar type="success" max={100} value={user.activation_progress} />
                 </div>
               </div>
-            ))}
-
+            )
+          )}
           {/*  if not isInstantActivationEnabled */}
-          {!user.isInstantActivationEnabled ?
-          showInstantActivation &&
-          !isL1Submitted &&
-          user.activation_form_milestone !== 'L2' ? (
-            <div className="activation-status-secondary">KYC not completed</div>
-          ) : !user.isSubmitted || user.activation_progress < 100 ? (
-            <div className="activation-bar-content activation-status-secondary">
-              <div className="activation-bar-text">{user.activation_progress}% Complete</div>
-              <div className="activation-bar">
-                <ProgressBar type="success" max={100} value={user.activation_progress} />
+          {!user.isInstantActivationEnabled && !isActivationmccPending ? (
+            showInstantActivation && !isL1Submitted && user.activation_form_milestone !== 'L2' ? (
+              <div className="activation-status-secondary">KYC not completed</div>
+            ) : !user.isSubmitted || user.activation_progress < 100 ? (
+              <div className="activation-bar-content activation-status-secondary">
+                <div className="activation-bar-text">{user.activation_progress}% Complete</div>
+                <div className="activation-bar">
+                  <ProgressBar type="success" max={100} value={user.activation_progress} />
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="activation-status-secondary">Personalise your Account</div>
-          ):null}
+            ) : (
+              <div className="activation-status-secondary">Personalise your Account</div>
+            )
+          ) : null}
         </div>
       </div>
     </ShowWhen>
   ) : null;
-});
+}
+
+export default compose(
+  rTracking({
+    page: 'ActivationProgress',
+  }),
+  connect(null, { ...EventsActions }),
+)(ActivationProgress);

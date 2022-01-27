@@ -81,6 +81,8 @@ export const ACTIVATION_STATUS_ACTIVATED_MCC_PENDING = {
     'Congratulations! You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications.',
   new_description:
     'Congratulations, now you can accept unlimited payments. Settlements to your bank account have been enabled. Please note that as part of routine compliance checks mandated by our banking partners, we may review your KYC again and reach out in case of further clarifications.',
+  when_progress_bar_not_required:
+    'Please note that as part of routine compliance checks mandated by our banking partners, we may review your KYC again and reach out in case of further clarifications.',
 };
 
 export const PAYMENT_ACTIVATED = {
