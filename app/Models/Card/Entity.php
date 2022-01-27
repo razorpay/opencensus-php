@@ -663,6 +663,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
     }
 
+    public function setLength($length)
+    {
+        $this->setAttribute(self::LENGTH, $length);
+    }
+
     public function setVault($vault)
     {
         $this->setAttribute(self::VAULT, $vault);
@@ -741,6 +746,16 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::EXPIRY_MONTH]);
         }
+    }
+
+    public function setTokenExpiryMonth($tokenExpiryMonth)
+    {
+        $this->setAttribute(self::TOKEN_EXPIRY_MONTH, $tokenExpiryMonth);
+    }
+
+    public function setTokenExpiryYear($tokenExpiryYear)
+    {
+        $this->setAttribute(self::TOKEN_EXPIRY_YEAR, $tokenExpiryYear);
     }
 
     public function setPublicExpiryYearAttribute(array & $array)

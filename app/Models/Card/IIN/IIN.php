@@ -93418,8 +93418,10 @@ class IIN
         {
             if (($tokenizedNumber === $iinRange[0]) or
                 ($tokenizedNumber === $iinRange[1]) or
-                (($tokenizedNumber >= $iinRange[1]) and
-                 ($tokenizedNumber <= $iinRange[0])))
+                ((($tokenizedNumber >= $iinRange[1]) and
+                  ($tokenizedNumber <= $iinRange[0])) or 
+                 (($tokenizedNumber >= $iinRange[0]) and
+                  ($tokenizedNumber <= $iinRange[1]))))
             {
                 return $iinRange[2];
             }

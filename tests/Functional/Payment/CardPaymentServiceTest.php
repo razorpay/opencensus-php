@@ -1633,12 +1633,12 @@ class CardPaymentServiceTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertNotNull($card['trivia']);
-        $this->assertEquals('IN', $card['country']);
-        $this->assertEquals('ICIC', $card['issuer']);
-        $this->assertEquals('credit', $card['type']);
+        $this->assertEquals('US', $card['country']);
+        $this->assertEquals('MDB', $card['issuer']);
+        $this->assertEquals('debit', $card['type']);
 
-        $this->assertEquals('400782', $card['iin']);
-        $this->assertEquals('404464', $card['token_iin']);
+        $this->assertEquals('404464', $card['iin']);
+        $this->assertEquals('404464916', $card['token_iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -1872,12 +1872,12 @@ class CardPaymentServiceTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertNotNull($card['trivia']);
-        $this->assertEquals('IN', $card['country']);
-        $this->assertEquals('ICIC', $card['issuer']);
-        $this->assertEquals('credit', $card['type']);
+        $this->assertEquals('US', $card['country']);
+        $this->assertEquals('MDB', $card['issuer']);
+        $this->assertEquals('debit', $card['type']);
 
-        $this->assertEquals('400782', $card['iin']);
-        $this->assertEquals('404464', $card['token_iin']);
+        $this->assertEquals('404464916', $card['token_iin']);
+        $this->assertEquals('404464', $card['iin']);
 
         $this->disbaleCpsConfig();
     }
@@ -2112,11 +2112,11 @@ class CardPaymentServiceTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertNotNull($card['trivia']);
-        $this->assertEquals('IN', $card['country']);
-        $this->assertEquals('ICIC', $card['issuer']);
-        $this->assertEquals('credit', $card['type']);
-        $this->assertEquals('400782', $card['iin']);
-        $this->assertEquals('404464', $card['token_iin']);
+        $this->assertEquals('US', $card['country']);
+        $this->assertEquals('MDB', $card['issuer']);
+        $this->assertEquals('debit', $card['type']);
+        $this->assertEquals('404464916', $card['token_iin']);
+        $this->assertEquals('404464', $card['iin']);
 
         $this->disbaleCpsConfig();
     }

@@ -50,7 +50,7 @@ class Core extends Base\Core
     {
         $response = $this->getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input);
 
-        return $this->createTokenizedCardEntity($input, $merchant, $response);
+        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response);
     }
 
     public function createTokenizedCard($input, $merchant)
@@ -58,6 +58,43 @@ class Core extends Base\Core
         $response = $this->getTokenizedCardResponseFromVault($input, $merchant);
 
         return $this->createTokenizedCardEntity($input['card'], $merchant, $response);
+    }
+    
+
+    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response)
+    {
+        $tokenisedCard = $card->replicate();
+
+        $tokenisedCard->generateID();
+        
+        if(empty($response['service_provider_tokens']) === false)
+        {
+            $tokenisedCard->setVault(strtolower($response['service_provider_tokens'][0]['provider_name']));
+
+            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_number'))
+            {
+                $tokenisedCard->setTokenIin(substr($response['service_provider_tokens'][0]['provider_data']['token_number'], 0, 9));
+            }
+
+            if($this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_month') &&
+                $this->isPresent($response['service_provider_tokens'][0]['provider_data'], 'token_expiry_year'))
+            {
+                $tokenisedCard->setTokenExpiryMonth($response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+
+                $expiry_year = $response['service_provider_tokens'][0]['provider_data']['token_expiry_year'];
+
+                if ($expiry_year !== null && strlen($expiry_year) == 2)
+                {
+                    $expiry_year = '20' . $expiry_year;
+                }
+
+                $tokenisedCard->setTokenExpiryYear($expiry_year);
+            }
+
+            $tokenisedCard->saveOrFail();
+        }
+
+        return [$tokenisedCard, $response['service_provider_tokens']];
     }
 
     protected function createTokenizedCardEntity($input, $merchant, $response)
@@ -126,6 +163,9 @@ class Core extends Base\Core
         $tokenizedCard->merchant()->associate($merchant);
 
         $card = $this->getCardForIin($tokenizedCard, $input);
+
+        // this is to update token iin incase of s2s merchants;
+        $input[Card\Entity::TOKENISED] = 1;
 
         $iin = $this->fillNetworkDetails($card, $input);
 
@@ -391,13 +431,11 @@ class Core extends Base\Core
     {
         $iinNumber = $card->getIin();
 
-        // for tokenised card we need to fetch the details from a static list.
         if ((empty($input[Card\Entity::TOKENISED]) === false) and
             (boolval($input[Card\Entity::TOKENISED]) === true) and
-            array_key_exists('number', $input) === true)
+            (array_key_exists('number', $input) === true))
         {
             $tokenizedRange = substr($input['number'], 0, 9);
-            $iinNumber = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iinNumber;
         }
 
         $network = Card\Network::detectNetwork($iinNumber);
@@ -408,9 +446,6 @@ class Core extends Base\Core
 
         // Get details for this iin from card repository
         $iin = $this->repo->card->retrieveIinDetails($iinNumber);
-
-        // Get details for this iin from card repository
-        $tokenIin = $this->repo->card->retrieveIinDetails($card->getIin());
 
         $type = null;
 
@@ -478,6 +513,7 @@ class Core extends Base\Core
         }
 
         $type = Card\Type::getType($type, $network);
+
         $card->setType($type);
 
         $card->setSubtype($subtype);
@@ -486,10 +522,10 @@ class Core extends Base\Core
 
         $this->checkCvvLength($card, $input);
 
-        if ((empty($tokenIin) === false) and
-            ($tokenIin->getIin() !== $iin->getIin()))
+         // for tokenised card we need to fetch the details from a static list.
+        if (empty($tokenizedRange) === false)
         {
-            $card->tokenIinRelation()->associate($tokenIin);
+            $card->setTokenIIn($tokenizedRange);
         }
 
         return $iin;
