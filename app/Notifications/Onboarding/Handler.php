@@ -37,7 +37,7 @@ class Handler extends BaseHandler
         Events::ONBOARDING_VERIFY_EMAIL                     => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => [Channel::SMS],
+        Events::FIRST_PAYMENT_OFFER                         => [Channel::SMS, Channel::WHATSAPP],
         Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => [Channel::SMS, Channel::WHATSAPP],
         Events::SIGNUP_STARTED_NOTIFY                       => [Channel::SMS, Channel::WHATSAPP],
     ];
@@ -81,6 +81,8 @@ class Handler extends BaseHandler
      */
     public function sendEventNotificationForMerchant(string $merchantId, string $event)
     {
+        $success = true;
+
         try
         {
             $notificationBlocked = (new PartnerCore())->isSubMerchantNotificationBlocked($merchantId);
@@ -92,6 +94,8 @@ class Handler extends BaseHandler
         }
         catch (\Exception $e)
         {
+            $success = false;
+
             $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_FAILED, [
                 'merchant' => $merchantId,
                 'type'     => 'sendNotification',
@@ -99,6 +103,8 @@ class Handler extends BaseHandler
                 'event'    => $event
             ]);
         }
+
+        return $success;
     }
 
     private function getEventForActivationStatus(?string $activationStatus, Entity $merchant)

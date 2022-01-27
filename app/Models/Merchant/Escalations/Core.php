@@ -548,14 +548,14 @@ class Core extends Base\Core
      *
      * @param $input
      */
-    public function sendNotificationUtility(array $merchantIdList, int $from, int $to, string $event)
+    public function sendNotificationUtility(array $merchantIdList, string $event)
     {
+        $successCount = 0;
+
         $this->trace->info(TraceCode::SEND_NOTIFICATION, [
             'merchants_count' => count($merchantIdList),
             'event'           => $event,
             'type'            => 'sendNotification',
-            'from'            => $from,
-            'to'              => $to
         ]);
 
         if (empty($merchantIdList) === true)
@@ -576,9 +576,13 @@ class Core extends Base\Core
                 Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
             ];
 
-            (new OnboardingNotificationHandler($args))
+            $success = (new OnboardingNotificationHandler($args))
                 ->sendEventNotificationForMerchant($merchantId, $event);
+
+            $successCount += (($success === true) ? 1 : 0);
         }
+
+        return $successCount;
     }
 
     public function sendL1NotSubmittedNotifications($input)
@@ -591,8 +595,6 @@ class Core extends Base\Core
         //L1_ACTIVATION_NOT_SUBMITTED_IN_1_DAY_NOTIFICATION
         $this->sendNotificationUtility(
             $merchantIdList,
-            $from,
-            $to,
             Events::L1_NOT_SUBMITTED_IN_1_DAY
         );
     }
@@ -611,8 +613,6 @@ class Core extends Base\Core
         //L1_NOT_SUBMITTED_IN_1_HOUR_NOTIFICATION
         $this->sendNotificationUtility(
             $merchantIdList,
-            $lastCronTime,
-            $to,
             Events::L1_NOT_SUBMITTED_IN_1_HOUR
         );
     }
@@ -631,8 +631,6 @@ class Core extends Base\Core
         //L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR_NOTIFICATION
         $this->sendNotificationUtility(
             $merchantIdList,
-            $lastCronTime,
-            $to,
             Events::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR
         );
     }
@@ -666,8 +664,6 @@ class Core extends Base\Core
         //L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR_NOTIFICATION
         $this->sendNotificationUtility(
             $finalMerchantIdList,
-            $lastCronTime,
-            $to,
             Events::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR
         );
     }
@@ -752,8 +748,6 @@ class Core extends Base\Core
 
         $this->sendNotificationUtility(
             $merchantList,
-            $lastCronTime,
-            $to,
             Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED
         );
     }
@@ -770,62 +764,7 @@ class Core extends Base\Core
 
         $this->sendNotificationUtility(
             $merchantIdList,
-            $lastCronTime,
-            $to,
             Events::SIGNUP_STARTED_NOTIFY
         );
     }
-
-/*
-    public function sendNotificationsToCouponCodeEligibleMerchant($input)
-    {
-        //Coupon Code Eligible Merchant who have not become mtu in 2 days
-
-        list($from, $to) = $this->getTimeWindowForCron($input, Constants::NOT_MTU_IN_TWO_DAY_CACHE_KEY,2);
-
-        $merchantIdList = $this->repo->merchant->fetchAllLiveAndActivatedRzpOrgMerchants($from,$to);
-
-        $merchantList = $this->repo
-            ->merchant_promotion
-            ->fetchMerchantIdsWithAnyPromotion(
-                $merchantIdList
-            );
-
-        $merchantList =  array_diff($merchantIdList, $merchantList);
-
-        $filteredMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
-            $merchantList, $from);
-
-        $merchantIdList =  array_diff($merchantList, $filteredMerchants);
-
-        $this->trace->info(TraceCode::SEND_NOTIFICATION, [
-            'merchants_count' => count($merchantIdList),
-            'type'            => 'sendNotification',
-            'to'              => $to,
-            'from'            => $from,
-            'event'           => Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU
-        ]);
-
-        if (empty($merchantIdList) === true)
-        {
-            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_SKIPPED, [
-                'merchants_count' => count($merchantIdList),
-                'type'            => 'sendNotification',
-                'reason'          => 'no merchants found',
-                'event'           => Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU
-            ]);
-            return;
-        }
-
-        foreach ($merchantIdList as $merchantId)
-        {
-            $args = [
-                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
-            ];
-
-            (new OnboardingNotificationHandler($args))
-                ->sendEventNotificationForMerchant($merchantId, Events::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU);
-        }
-    }
-*/
 }

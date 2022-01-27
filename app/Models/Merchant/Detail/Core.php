@@ -82,6 +82,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
@@ -2990,9 +2991,7 @@ class Core extends Base\Core
                 $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
             }
 
-            $isSubMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
-
-            $response['isSubMerchant'] = (empty($isSubMerchant) === false);
+            $response['isSubMerchant'] = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
 
             $response = $this->appendBankingSpecificDetails($response, $merchant);
 

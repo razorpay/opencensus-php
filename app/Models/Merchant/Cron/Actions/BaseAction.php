@@ -1,6 +1,5 @@
 <?php
 
-
 namespace RZP\Models\Merchant\Cron\Actions;
 
 use App;

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Models\Merchant\Cron\Actions;
-
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
@@ -31,6 +29,7 @@ class MtuTransactedAction extends BaseAction
         }
 
         $successCount = 0;
+
         foreach ($merchantIdList as $merchantId)
         {
             try

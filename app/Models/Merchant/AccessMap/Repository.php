@@ -41,11 +41,20 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchSubMerchantOnMerchantId(string $merchantId)
+    public function getByMerchantId(string $merchantId)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->first();
+    }
+
+    public function fetchSubMerchants(array $merchantIdList)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->distinct()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 
     public function fetchSubMerchantReferredByPartner(string $submerchantId, string $partnerId)

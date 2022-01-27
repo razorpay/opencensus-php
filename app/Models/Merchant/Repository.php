@@ -444,6 +444,23 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchAllLiveActivatedRegularMerchantsOfOrg(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->select(Entity::ID)
+            ->where(Entity::LIVE, '=', 1)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->where(Entity::ORG_ID, '=', $org)
+            ->whereBetween(Entity::ACTIVATED_AT,[$from, $to])
+            ->whereNull(Entity::SUSPENDED_AT)
+            ->where(Entity::BUSINESS_BANKING, '=', false)
+            ->whereNull(Entity::PARENT_ID)
+            ->whereNull(Entity::PARTNER_TYPE)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
+
     public function fetchAllInstantlyActivatedMerchants(int $from, int $to)
     {
         return $this->newQuery()

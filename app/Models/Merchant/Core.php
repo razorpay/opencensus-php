@@ -95,6 +95,7 @@ use RZP\Models\Merchant\Credits;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Mail\Merchant\CreditsAdditionSuccess;
 use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 
 class Core extends Base\Core
 {
@@ -6411,14 +6412,9 @@ class Core extends Base\Core
             return false;
         }
 
-        // Submerchant
-        $subMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+        // subMerchant
+        $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
 
-        if (empty($subMerchant) === false)
-        {
-            return false;
-        }
-
-        return true;
+        return !$isSubMerchant;
     }
 }

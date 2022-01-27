@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Models\Merchant\Cron\Actions\BaseAction;
 use RZP\Models\Merchant\Cron\Metrics;
 use RZP\Trace\TraceCode;
+use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 
 class BaseCronJob
 {
@@ -54,6 +55,8 @@ class BaseCronJob
 
     protected $args = [];
 
+    protected $defaultArgs = [];
+
     protected $cronName;
 
     protected $lastCronTime;
@@ -65,6 +68,16 @@ class BaseCronJob
     protected $cronEndTime;
 
     protected $attempts = 0;
+
+    protected function getStartInterval(): ?int
+    {
+        return null;
+    }
+
+    protected function getEndInterval(): ?int
+    {
+        return null;
+    }
 
     public function __construct(array $args)
     {
@@ -86,6 +99,8 @@ class BaseCronJob
         $this->cronStartTime = Carbon::now()->getTimestamp();
 
         $this->attempts = $this->attempts + 1;
+
+        $this->args = array_merge($this->args, $this->defaultArgs);
     }
 
     protected function getAttempts(): int
@@ -171,6 +186,20 @@ class BaseCronJob
             {
                 throw new CronConfigIntegrityException("invalid data collector defined");
             }
+
+            $args = $this->args;
+
+            if($this->getStartInterval() != null)
+            {
+                $args["start_time"] = $this->getStartInterval();
+            }
+
+            if($this->getEndInterval() != null)
+            {
+                $args["end_time"] = $this->getEndInterval();
+            }
+
+            $this->args = $args;
 
             $collectorInstance = new $collector($this->lastCronTime, $this->cronStartTime, $this->args);
 

@@ -23,7 +23,7 @@ class Events
     const ACTIVATED_MCC_PENDING_SUCCESS               = 'ACTIVATED_MCC_PENDING_SUCCESS';
     const ACTIVATED_MCC_PENDING_ACTION_REQUIRED       = 'ACTIVATED_MCC_PENDING_ACTION_REQUIRED';
     const ONBOARDING_VERIFY_EMAIL                     = 'ONBOARDING_VERIFY_EMAIL';
-    const COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       = 'COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU';
+    const FIRST_PAYMENT_OFFER                         = 'FIRST_PAYMENT_OFFER';
     const L1_NOT_SUBMITTED_IN_1_DAY                   = 'L1_NOT_SUBMITTED_IN_1_DAY';
     const L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     = 'L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
     const L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   = 'L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
@@ -50,11 +50,11 @@ class Events
         self::ONBOARDING_VERIFY_EMAIL                     => 'sms.onboarding.onboarding_verify_email',
         self::L1_NOT_SUBMITTED_IN_1_DAY                   => 'sms.onboarding.l1_activation_not_started_in_1_day',
         self::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     => 'sms.onboarding.Onboarding_L2_not_submit_bank_details_SMS1A',
-        self::COUPON_CODE_ELIGIBLE_MERCHANT_NOT_MTU       => 'sms.onboarding.coupon_code_eligible_merchant_not_mtu',
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'sms.onboarding.Onboarding_IA_SMS2',
         self::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => 'sms.onboarding.Onboarding_L2_not_submit_Aadhaar_SMS3',
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
         self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.Welcome_SMS_1',
+        self::FIRST_PAYMENT_OFFER                         => 'sms.onboarding.first_payment_offer',
     ];
 
 
@@ -85,6 +85,7 @@ class Events
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'whatsapp.merchant.onboarding.Onboarding_IA_WA2',
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A',
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
+        self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.first_payment_offer',
     ];
 
     const EMAIL_TEMPLATES = [

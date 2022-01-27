@@ -8,11 +8,11 @@ use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 
 abstract class BaseCollector
 {
-    protected $lastCronTime;
-
     protected $args;
 
     protected $name;
+
+    protected $lastCronTime;
 
     protected $cronStartTime;
 

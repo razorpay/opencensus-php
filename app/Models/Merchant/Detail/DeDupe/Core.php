@@ -15,6 +15,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use \RZP\Models\User\Entity as UserEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Services\MerchantRiskClient;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 
 class Core extends Base\Core
 {
@@ -163,11 +164,11 @@ class Core extends Base\Core
 
         $fields = [];
 
-        $isSubMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getId());
+        $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
 
         foreach (Constants::MERCHANT_RISK_CONFIG as $key => $value)
         {
-            if( $isSubMerchant !=null && $key == 'business_website' ) {
+            if($isSubMerchant === true && $key == 'business_website' ) {
                 continue;
             }
 

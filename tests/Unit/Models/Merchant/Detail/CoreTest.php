@@ -865,6 +865,48 @@ class CoreTest extends TestCase
         $this->assertFalse($response['showMtuPopup']);
     }
 
+    public function testSubMerchantFalseCase()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertFalse($response['isSubMerchant']);
+    }
+
+    public function testSubMerchantTrueCase()
+    {
+        $merchantId = '1X4hRFHFx4UiXX';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => $merchantId]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertTrue($response['isSubMerchant']);
+    }
+
     public function testNonRazorpayMerchantNotEligibleForMtuPopupShow()
     {
         $this->enableRazorXTreatmentForRazorX();

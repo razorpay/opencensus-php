@@ -9,7 +9,9 @@ class Factory
 {
     public static function getCronProcessor(array $input)
     {
-        $clazz = Constants::CONFIG[$input[Constants::CRON_NAME]] ?? null;
+        $cronName = $input[Constants::CRON_NAME];
+
+        $clazz = Constants::CONFIG[$cronName] ?? null;
 
         if(empty($clazz) === true)
         {

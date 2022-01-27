@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Models\Merchant\Cron\Collectors;
-
 
 use Database\Connection;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Models\Merchant\Cron\Collectors;
-
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;

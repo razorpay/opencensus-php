@@ -12,7 +12,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\AbstractEventClient;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 
 class SegmentAnalyticsClient extends AbstractEventClient
 {
@@ -185,13 +185,9 @@ class SegmentAnalyticsClient extends AbstractEventClient
             return false;
         }
 
-        $subMerchant = $this->repo->merchant_access_map->fetchSubMerchantOnMerchantId($merchant->getMerchantId());
+        $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
 
-        if(empty($subMerchant) === false) {
-            return false;
-        }
-
-        return true;
+        return !$isSubMerchant;
     }
 
     protected function getIntegrations(Merchant\Entity $merchant)

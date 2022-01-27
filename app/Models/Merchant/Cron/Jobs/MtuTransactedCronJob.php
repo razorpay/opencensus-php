@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RZP\Models\Merchant\Cron\Jobs;
-
 
 use RZP\Models\Merchant\Cron\Actions\MtuTransactedAction;
 use RZP\Models\Merchant\Cron\Collectors\MtuDatalakeCollector;

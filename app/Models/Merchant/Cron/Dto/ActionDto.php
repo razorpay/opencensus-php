@@ -8,7 +8,8 @@ class ActionDto
 {
     protected $status;
 
-    public function __construct(string $status){
+    public function __construct(string $status)
+    {
         $this->status = $status;
     }
 

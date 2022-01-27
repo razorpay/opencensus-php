@@ -449,4 +449,11 @@ class Core extends Base\Core
 
         return $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds($merchantId, $finalAppIds, 'application');
     }
+
+    public function isSubMerchant(string $merchantId)
+    {
+        $merchant = $this->repo->merchant_access_map->getByMerchantId($merchantId);
+
+        return empty($merchant) === false;
+    }
 }
