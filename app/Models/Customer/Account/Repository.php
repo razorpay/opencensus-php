@@ -53,6 +53,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByContactAndMerchantId($contact, $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Customer\Entity::CONTACT, '=', $contact)
+                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->first();
+    }
+
     public function fetchWithVpasBankAcnts($id, $columns = ['*'])
     {
         return $this->newQuery()

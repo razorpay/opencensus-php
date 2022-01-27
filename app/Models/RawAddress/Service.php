@@ -34,6 +34,9 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
+        if (isset($input[Entity::COUNTRY]) === true) {
+            $input[Entity::COUNTRY] = strtolower($input[Entity::COUNTRY]);
+        }
         $raw_address = $this->core()->create($input);
 
         try

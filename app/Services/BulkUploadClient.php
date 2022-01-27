@@ -11,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Http\Response;
 use RZP\Models\RawAddress;
 use RZP\Models\Address;
+use RZP\Models\Merchant\Account;
 
 class BulkUploadClient
 {
@@ -31,7 +32,7 @@ class BulkUploadClient
      *Fetch all pending contacts
      * Fetch all addresses for single contact form addresses and raw_addresses
      * Group the address to contact and send to kafka
-    **/
+     **/
     public function uploadAddressesToKafka()
     {
         $contacts = (new RawAddress\Repository())->fetchAllPendingContacts();
@@ -42,11 +43,33 @@ class BulkUploadClient
             $rawAddresses = (new RawAddress\Repository())->fetchRawAddressesForContact($contact['contact'],
                                                                                        self::STATUS_PENDING);
 
-            $addresses = (new Address\Repository())->fetchAddressesForContact($contact['contact']);
+            $customer = (new Customer\Repository())->findByContactAndMerchantId($contact['contact'],Account::SHARED_ACCOUNT);
+
+            if ($customer !== null)
+            {
+                $addresses = (new Address\Repository())->fetchAddressesForEntity($customer,[]);
+            }
+            else
+            {
+                $details = array('contact' => $contact['contact']);
+                try
+                {
+                    $this->trace->info(TraceCode::CUSTOMER_CREATE_FROM_RAW_ADDRESS,[]);
+
+                    $customer = (new Customer\Core)->createGlobalCustomer($details, true);
+                    $addresses = (new Address\Repository())->fetchAddressesForEntity($customer,[]);
+                }
+                catch (\Exception $e)
+                {
+                    // push to kafka failed
+                    $this->trace->error(TraceCode::KAFKA_UPLOAD_FAILED_AT_CUSTOMER_CREATION, ['error' => $e->getMessage()]);
+                    continue;
+                }
+            }
 
             $requestStructure = $this->convertToKafkaReqPayload($contact['contact'],$rawAddresses->toArray(),$addresses->toArray());
 
-            $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PUSH_REQUEST,["request"=>$requestStructure]);
+            $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PUSH_REQUEST,[]);
 
             $kafkaStart = $this->getCurrentTimeInMillis();
             try
@@ -61,7 +84,7 @@ class BulkUploadClient
                     ['error' => $e->getMessage(),
                      'time_taken' => ($this->getCurrentTimeInMillis() - $kafkaStart)]
                 );
-                return false;
+                continue;
             }
             $this->trace->histogram(
                 TraceCode::RAW_ADDRESS_KAFKA_PUSH_DURATION,
@@ -85,7 +108,7 @@ class BulkUploadClient
             catch (\Throwable $e)
             {
                 $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PAYLOAD_CONVERSION_FAILED,
-                                   ["error"=>$e->getMessage(),"address"=>$address]);
+                                   ["error"=>$e->getMessage()]);
 
                 $this->updateStatus($address[RawAddress\Entity::ID], self::STATUS_INVALID);
                 //update status as invalid
@@ -103,8 +126,7 @@ class BulkUploadClient
             {
                 $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PAYLOAD_CONVERSION_FAILED,
                                    [
-                                       "error"=>$e->getMessage(),
-                                       "address"=>$address
+                                       "error"=>$e->getMessage()
                                    ]);
             }
         }
@@ -139,8 +161,8 @@ class BulkUploadClient
 
             if ($kafkaMessage['statusCode'] !== Response\StatusCode::SUCCESS)
             {
-               $this->handleErrorResponse($kafkaMessage);
-               return null;
+                $this->handleErrorResponse($kafkaMessage);
+                return null;
             }
 
             foreach ($kafkaMessage['addresses'] as $addressCluster)
@@ -152,23 +174,19 @@ class BulkUploadClient
                 $firstAddress = $addressCluster[0];
                 $containsAddressEntity = $this->checkAddressEntity($addressCluster);
 
-                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION,[
-                    "address" => $firstAddress,
-                    "containsAddressEntity" => $containsAddressEntity
-                ]);
-
                 if ($containsAddressEntity === false)
                 {
                     $firstAddress = $this->unsetNullKeys($firstAddress);
                     $this->createNewAddress($firstAddress);
                 }
+                //new loop to mark raw_addresses as processed
+                $this->updateStatusToProcessed($addressCluster);
             }
         }
         catch (\Exception $e)
         {
             $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_CONSUME_FAILED,[
-                "error" => $e->getMessage(),
-                "kafka_message" => $kafkaMessage
+                "error" => $e->getMessage()
             ]);
         }
     }
@@ -176,10 +194,13 @@ class BulkUploadClient
     protected function createNewAddress(array $firstAddress)
     {
         //create new Address
+        $entity_id = null;
         try
         {
             $firstAddress['type'] = Type::SHIPPING_ADDRESS;
             $entity_id = stringify($firstAddress['id']);
+            $raw_address = (new RawAddress\Repository())->findOrFail($entity_id);
+            $merchantId = $firstAddress['merchant_id'];
             unset($firstAddress['id']);
             unset($firstAddress['merchant_id']);
             unset($firstAddress['batch_id']);
@@ -189,14 +210,21 @@ class BulkUploadClient
             unset($firstAddress['updated_at']);
             unset($firstAddress['is_raw_address']);
 
-            (new Address\Core)->create((new RawAddress\Repository())->findOrFail($entity_id), Type::RAW_ADDRESS, $firstAddress,true);
+            if ($raw_address['status'] !== BulkUploadClient::STATUS_PROCESSED)
+            {
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION,[
+                    "raw_address_entity_id" => $entity_id,
+                    "merchant_id" => $merchantId,
+                ]);
+
+                $customer = (new Customer\Repository())->findByContactAndMerchantId($firstAddress['contact'],Account::SHARED_ACCOUNT);
+                (new Address\Core)->create($customer, Type::CUSTOMER, $firstAddress,true);
+            }
         }
-        catch (Exception $e)
+        catch (\Exception $e)
         {
             $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_CONSUME_FAILED,[
-                "error" => $e->getMessage(),
-                "address" => $firstAddress
-            ]);
+                "error" => $e->getMessage()]);
         }
     }
 
@@ -208,15 +236,22 @@ class BulkUploadClient
             if ($address['is_raw_address']===false)
             {
                 $addressEntity = true;
-                //can't break here as need to mark processed for all raw_addresses
-            }
-            else
-            {
-                //update status for raw_address
-                $this->updateStatus(stringify($address[RawAddress\Entity::ID]), self::STATUS_PROCESSED);
+                break;
             }
         }
         return $addressEntity;
+    }
+
+    protected function updateStatusToProcessed(array $addressCluster)
+    {
+        foreach ($addressCluster as $address)
+        {
+            if ($address['is_raw_address'] === true)
+            {
+                $this->updateStatus(stringify($address[RawAddress\Entity::ID]), self::STATUS_PROCESSED);
+            }
+
+        }
     }
 
     protected function getCurrentTimeInMillis()
