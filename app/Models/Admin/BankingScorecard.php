@@ -82,11 +82,11 @@ class BankingScorecard extends Base\Core
 
         $noOfDaysToCalculate = $from->diffInDays($endTimeOfMonthTillNow);
 
-        $daysToAdd = 5;
+        $daysToAdd = 3;
 
-        if (($noOfDaysToCalculate % 5) !== 0)
+        if (($noOfDaysToCalculate % 3) !== 0)
         {
-            $daysToAdd = $noOfDaysToCalculate % 5;
+            $daysToAdd = $noOfDaysToCalculate % 3;
         }
 
         $to = $from->copy()->addDay($daysToAdd)->startOfDay();
@@ -118,7 +118,7 @@ class BankingScorecard extends Base\Core
             }
 
             $from = $to->addSecond(1);
-            $to = $from->copy()->addDay(5)->startOfDay();
+            $to = $from->copy()->addDay(3)->startOfDay();
         }
 
         return $finalResult;

@@ -26,7 +26,7 @@
                 <br />
             </p>
 
-            @if(is_null($merchant_data)===false)
+            @if(is_null($merchant_data['sorted_by_payout_count']) === false)
 
                 <table border="1">
 
@@ -38,7 +38,7 @@
                         <th> Payout Amount Cr. </th>
                     </tr>
 
-                @foreach ($merchant_data as $merchant)
+                @foreach ($merchant_data['sorted_by_payout_count'] as $merchant)
 
                     <tr>
 
@@ -51,6 +51,49 @@
                     </tr>
 
                 @endforeach
+
+                </table>
+
+            @else
+                <p>Not available</p>
+
+            @endif
+
+            <br />
+
+        </div>
+
+        <div>
+            <p>
+                <b>Yesterday's Merchants By Payouts amount -</b>
+                <br />
+            </p>
+
+            @if(is_null($merchant_data['sorted_by_payout_amount']) === false)
+
+                <table border="1">
+
+                    <tr>
+                        <th> Merchant Id </th>
+                        <th> Merchant Name </th>
+                        <th> Merchant Website </th>
+                        <th> Payouts Count </th>
+                        <th> Payout Amount Cr. </th>
+                    </tr>
+
+                    @foreach ($merchant_data['sorted_by_payout_amount'] as $merchant)
+
+                        <tr>
+
+                            <td>{{ $merchant['x_merchant_id'] }}</td>
+                            <td>{{ $merchant['x_merchant_display_name'] }}</td>
+                            <td>{{ $merchant['x_merchant_website'] }}</td>
+                            <td>{{ $merchant['payout_count'] }}</td>
+                            <td>{{ $merchant['payout_amount_cr'] }}</td>
+
+                        </tr>
+
+                    @endforeach
 
                 </table>
 

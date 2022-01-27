@@ -1791,6 +1791,7 @@ class Repository extends Base\Repository
 
     /**
      * get yesterday's total payout amount and tax count for merchants
+     * sorted in descending order by payout count and payout amount
      *
      * @param int $limit
      *
@@ -1815,28 +1816,56 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
-                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
-                    ->betweenTime($from, $to)
-                    ->selectRaw(
-                        $payoutsMerchantIdColumn .' as x_merchant_id' . ',' .
-                        'COALESCE('. $merchantBillingLabelColumn .',' . $merchantNameColumn .') as x_merchant_display_name'. ',' .
-                        'COALESCE('. $merchantWebsiteColumn .',"Not Available") as x_merchant_website,' .
-                        'COUNT(*) AS payout_count' . ',' .
-                        'COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0) AS payout_amount_cr'
-                    )
-                    ->where($merchantBusinessBankingColumn, '=', 1)
-                    ->where($payoutStatusColumn, '=', Status::PROCESSED)
-                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
-                    ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
-                    ->groupBy(
-                        'x_merchant_id',
-                        'x_merchant_display_name',
-                        'x_merchant_website')
-                    ->orderBy('payout_count', 'desc')
-                    ->limit($limit)
-                    ->get();
+        $dataSortedByPayoutCount = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                                        ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                                        ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
+                                        ->betweenTime($from, $to)
+                                        ->selectRaw(
+                                            $payoutsMerchantIdColumn . ' as x_merchant_id' . ',' .
+                                            'COALESCE(' . $merchantBillingLabelColumn . ',' . $merchantNameColumn . ') as x_merchant_display_name' . ',' .
+                                            'COALESCE(' . $merchantWebsiteColumn . ',"Not Available") as x_merchant_website,' .
+                                            'COUNT(*) AS payout_count' . ',' .
+                                            'COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0) AS payout_amount_cr'
+                                        )
+                                        ->where($merchantBusinessBankingColumn, '=', 1)
+                                        ->where($payoutStatusColumn, '=', Status::PROCESSED)
+                                        ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                                        ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
+                                        ->groupBy(
+                                            'x_merchant_id',
+                                            'x_merchant_display_name',
+                                            'x_merchant_website')
+                                        ->orderBy('payout_count', 'desc')
+                                        ->limit($limit)
+                                        ->get();
+
+        $dataSortedByPayoutAmount = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                                         ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+                                         ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
+                                         ->betweenTime($from, $to)
+                                         ->selectRaw(
+                                             $payoutsMerchantIdColumn . ' as x_merchant_id' . ',' .
+                                             'COALESCE(' . $merchantBillingLabelColumn . ',' . $merchantNameColumn . ') as x_merchant_display_name' . ',' .
+                                             'COALESCE(' . $merchantWebsiteColumn . ',"Not Available") as x_merchant_website,' .
+                                             'COUNT(*) AS payout_count' . ',' .
+                                             'COALESCE(ROUND(SUM(' . Entity::AMOUNT . '* 1.0 / 1000000000), 2), 0) AS payout_amount_cr'
+                                         )
+                                         ->where($merchantBusinessBankingColumn, '=', 1)
+                                         ->where($payoutStatusColumn, '=', Status::PROCESSED)
+                                         ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                                         ->where($merchantEmailColumn, 'not like', '%@razorpay.com')
+                                         ->groupBy(
+                                             'x_merchant_id',
+                                             'x_merchant_display_name',
+                                             'x_merchant_website')
+                                         ->orderBy('payout_amount_cr', 'desc')
+                                         ->limit($limit)
+                                         ->get();
+
+        return [
+            'sorted_by_payout_count'  => $dataSortedByPayoutCount,
+            'sorted_by_payout_amount' => $dataSortedByPayoutAmount,
+        ];
     }
 
     /**
