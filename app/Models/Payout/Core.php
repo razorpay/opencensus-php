@@ -5,8 +5,6 @@ namespace RZP\Models\Payout;
 use App;
 use Mail;
 use Carbon\Carbon;
-use RZP\Constants\Product;
-use RZP\Jobs\Transactions;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Diag\EventCode;
@@ -32,6 +30,8 @@ use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Product;
+use RZP\Jobs\Transactions;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
@@ -998,7 +998,10 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processQueuedPayout($payout);
 
-                $this->processLedgerPayout($payout);
+                if ($payout->getStatus() === Status::CREATED)
+                {
+                    $this->processLedgerPayout($payout);
+                }
 
                 //
                 // There might be some type of payouts where we don't want to dispatch FTA.
@@ -1070,7 +1073,10 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processBatchSubmittedPayout($payout);
 
-                $this->processLedgerPayout($payout);
+                if ($payout->getStatus() === Status::CREATED)
+                {
+                    $this->processLedgerPayout($payout);
+                }
 
                 //
                 // There might be some type of payouts where we don't want to dispatch FTA.
@@ -1323,7 +1329,10 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processScheduledPayout($payout);
 
-                $this->processLedgerPayout($payout);
+                if ($payout->getStatus() === Status::CREATED)
+                {
+                    $this->processLedgerPayout($payout);
+                }
 
                 $this->dispatchFtaInitiate($payout);
 
@@ -2036,7 +2045,10 @@ class Core extends Base\Core
                                        ->setMerchant($payout->merchant)
                                        ->processOnHoldPayout($payout);
 
-                        $this->processLedgerPayout($payout);
+                        if ($payout->getStatus() === Status::CREATED)
+                        {
+                            $this->processLedgerPayout($payout);
+                        }
 
                         return $payout;
                     }
@@ -2330,9 +2342,25 @@ class Core extends Base\Core
             return;
         }
 
-    $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus(),$payout->getPurpose());
+        $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus(),$payout->getPurpose());
 
-     (new Transaction\Processor\Ledger\Payout)
+        if (($event === PayoutsLedgerProcessor::PAYOUT_FAILED or
+             $event === PayoutsLedgerProcessor::PAYOUT_REVERSED) and
+             $reversal === null)
+        {
+            // We don't want to call payout_failed event without a reversal
+            // We will return here
+            $this->trace->info(
+                TraceCode::PAYOUT_FAILED_OR_REVERSED_EVENT_BEING_SENT_TO_LEDGER_WITHOUT_REVERSAL,
+                [
+                    'payout_id' => $payout->getPublicId(),
+                ]
+            );
+
+            return;
+        }
+
+        (new Transaction\Processor\Ledger\Payout)
          ->pushTransactionToLedger($payout, $event, $reversal, $ftsSourceAccountInformation);
     }
 
@@ -3582,7 +3610,10 @@ class Core extends Base\Core
                                ->setMerchant($payout->merchant)
                                ->processPendingPayout($payout, $queueFlag);
 
-                $this->processLedgerPayout($payout);
+                if ($payout->getStatus() === Status::CREATED)
+                {
+                    $this->processLedgerPayout($payout);
+                }
 
                 $this->dispatchFtaInitiate($payout);
 
