@@ -538,6 +538,7 @@ class Route
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
         'payment_card_vault_migrate'               => ['post',     'payments/cards',                                 'PaymentController@paymentCardVaultMigrate'                         ],
+        'payments_card_es_sync_cron'               => ['post',     'payments_cards/payments/es_sync',                'PaymentController@paymentsCardEsSyncCron'                          ],
         'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
         'refund_reference1_bulk_update'            => ['post',     'refunds/reference1_bulk_update',                 'RefundController@bulkUpdateRefundsReference1'                      ],
         // Added new route with same controller to avoid auth issues as same route is needed from admin auth and internal auth
@@ -4438,6 +4439,9 @@ class Route
 
         'create_fraud_batch',
         'post_batch_bulk_fraud_notify',
+
+        // payments card es sync cron
+        'payments_card_es_sync_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -11356,6 +11360,7 @@ class Route
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',
+            'payments_card_es_sync_cron'
         ],
 
         'subscriptions' => [

@@ -23,6 +23,7 @@ use RZP\Models\Card\IIN\Country;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Jobs\EsSync;
 use RZP\Trace\Tracer;
 use RZP\Models\Offer;
 use RZP\Models\Invoice;
@@ -4561,5 +4562,52 @@ class Service extends Base\Service
 
         return $library;
 
+    }
+
+    public function paymentsCardEsSyncCron($input)
+    {
+        $backfill = false;
+
+        if (empty($input['backfill']) == false)
+        {
+            $backfill = true;
+        }
+
+        $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
+        
+        $successCount = 0;
+        $failedCount = 0;
+
+        foreach ($response['data'] as $paymentId)
+        {
+            // If $mode is provided use that else default to set rzp.mode
+            $mode = $this->app['rzp.mode'];
+
+            $tracePayload = [
+                'entity_id' => $paymentId,
+                'mode'      => $mode,
+            ];
+
+            try
+            {
+                EsSync::dispatch($mode, Base\EsRepository::CREATE, EntityConstants::PAYMENT, $paymentId, true);
+                $successCount ++;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ES_SYNC_PUSH_FAILED,
+                    $tracePayload);
+
+                $failedCount ++;
+            }
+        }
+
+        return [
+            'success' => $successCount,
+            'failed'  => $failedCount
+        ];
     }
 }

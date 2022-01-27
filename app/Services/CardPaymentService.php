@@ -315,6 +315,18 @@ class CardPaymentService
         return $this->sendRequest('GET', $path, []);
     }
 
+    public function fetchEntityForEsSync($backfill)
+    {
+        $path = self::ENTITIES_PATH . 'payments/es_sync';
+
+        if ($backfill === true)
+        {
+            $path = $path . "?backfill=true";
+        }
+
+        return $this->sendRequest('GET', $path, []);
+    }
+
     public function create(string $entityName, $input)
     {
         $path = self::ENTITIES_PATH_V2 . $entityName;

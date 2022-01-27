@@ -641,4 +641,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function paymentsCardEsSyncCron()
+    {
+        $input = Request::all();
+
+        $success =  $this->service()->paymentsCardEsSyncCron($input);
+
+        return ApiResponse::json($success);
+    }
 }
