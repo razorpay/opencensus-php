@@ -2729,6 +2729,57 @@ We look forward to transacting with you!
         $this->assertNull($referredSubMerchant->getPricingPlanId());
     }
 
+    public function testPutPreSignUpDetailsWithPrimaryReferralCodeInXForAggregator()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], true);
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $referredApp->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals', ["product" => Constants\Product::BANKING]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($referredSubMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $this->assertNotContains('MerchantUser01', $referredSubMerchant->users->getIds());
+    }
+
     public function testPutPreSignUpDetailsWithReferralCodeForAggregator()
     {
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);

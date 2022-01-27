@@ -2016,6 +2016,22 @@ return [
         ],
     ],
 
+    'testPutPreSignUpDetailsWithPrimaryReferralCodeInXForAggregator' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'referral_code'   => 'teslacomikejzc',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithInvalidReferralCode' => [
         'request' => [
             'content' => [

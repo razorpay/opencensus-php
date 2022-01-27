@@ -1456,7 +1456,7 @@ class Service extends Base\Service
 
             $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant, MerchantApp::REFERRED);
 
-            if ($partner->isAggregatorPartner())
+            if ($partner->isAggregatorPartner() && $referralProduct === Product::PRIMARY)
             {
                 $merchantCore->attachSubMerchantOwner($partner->primaryOwner()->getId(), $subMerchant, $referralProduct);
             }
