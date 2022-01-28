@@ -14,7 +14,7 @@ class CreateSubMerchantPartner extends Mailable
     protected $aggregator;
 
     const SUPPORT_URL        = 'https://razorpay.com/support/#request/merchant';
-    
+
     public function __construct(array $subMerchant, array $aggregator)
     {
         parent::__construct();
@@ -37,7 +37,7 @@ class CreateSubMerchantPartner extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('Congratulations! ' . $this->subMerchant['name'] . ' has been added as your sub-merchant');
+        $this->subject('Congratulations! ' . $this->subMerchant['name'] . ' has been added as your referral');
 
         return $this;
     }

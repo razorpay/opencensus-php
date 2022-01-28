@@ -181,24 +181,45 @@
                                                                 <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
                                                             </div>
                                                         </div>
-                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;"><div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> {{$merchant['name']}} has added you to RazorpayX. This means you can now start using RazorpayX for your Payouts and a whole bunch of other needs.</div>
-                                                            <div class="para margin-bottom-24" style="margin: 0 0 5px;">
-                                                                Become a RazorpayX merchant in just 3 steps:
+
+                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px;line-height: 1.5;"><div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> {{$merchant['name']}} has invited you to open a Current Account with RazorpayX.</div>
+                                                            <div class="para margin-bottom-24" style="margin: 0 0 5px; font-weight: bold;">
+                                                                What is RazorpayX?
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0; margin-bottom: 20px;">
+                                                                RazorpayX is a neo-banking platform built for businesses. It aims to make moving money simple & managing finances frictionless.
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0 0 5px; font-weight: bold;">
+                                                                Why RazorpayX CA is more than just a simple Current Account?
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0; margin-bottom: 20px;">
+                                                                <ul style="list-style-type:disc;">
+                                                                    <li>Collateral-free Credit Cards with limits up to ₹5 Lacs
+                                                                    </li>
+                                                                    <li>Free 500 transactions/month, no hidden fee</li>
+                                                                    <li>Instant beneficiary addition & no cooling-off period
+                                                                    </li>
+                                                                    <li>Different access level logins for your team</li>
+                                                                    <li>India’s best Mobile banking app</li>
+                                                                    <li>Intuitive internet banking dashboard</li>
+                                                                </ul>
                                                             </div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 4px;">
-                                                                1. First, click on the button below to create your account. You will be prompted to set your password
+                                                                Get onboarded on RazorpayX Current Account in just four steps:
                                                             </div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 4px;">
-                                                                2. Next, you will have to fill in your KYC for using RazorpayX with a virtual account or current account set up
+                                                                Step 1: Click on the Get Started button below to set up your password
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0 0 4px;">
+                                                                Step 2: Fill in your KYC details via the dashboard
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0 0 4px;">
+                                                                Step 3: Initiate the Current Account (CA) Application via the dashboard
                                                             </div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 20px;">
-                                                                3. Finally, once your activation is done you can start using RazorpayX using APIs or on our dashboard
+                                                                Step 4: Give the documents to a bank RM (who will visit you) & your CA will be activated in ~7 days.
                                                             </div>
-                                                            <div class="para" style="margin: 0;">
-                                                                See you soon!
-                                                            </div>
-                                                            <div class="para" style="margin: 0;"> Team RazorpayX</div>
-                                                            <div class="para-dark center" style="color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">
+                                                            <div class="para-dark center" style="margin: 0 0 20px; color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">
                                                                 @if($token)
                                                                     <a class="link btn primary font-bold" href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
                                                                     .'/forgot-password#token='. $token . '&email=' . $subMerchant['email']}}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 1px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; color: #FFF; background-color: #3281FF; border-color: #3281FF;">GET STARTED</a>
@@ -206,6 +227,10 @@
                                                                     <a class="link btn primary font-bold" href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 1px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; color: #FFF; background-color: #3281FF; border-color: #3281FF;">GET STARTED</a>
                                                                 @endif
                                                             </div>
+                                                            <div class="para" style="margin: 0;">
+                                                                We are glad to have you on board!
+                                                            </div>
+                                                            <div class="para" style="margin: 0;"> Team RazorpayX</div>
                                                         </div>
                                                     </div>
                                                 </div>

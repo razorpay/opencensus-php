@@ -175,21 +175,33 @@
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="card secondary title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;">
                                                         <div class="center-align" style="text-align: center;"><img class="image margin-top-0 medium" src="https://cdn.razorpay.com/static/assets/email/x_merchant_added.png" style="margin: 8px; background: transparent; margin-top: 0px; height: 150px;" height="80"></div>
-                                                        <div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;"> Congratulations! Affiliate account added</div>
+                                                        <div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;"> Congratulations! Referral account added</div>
                                                         <div class="center-align" style="text-align: center;">
                                                             <div class="puck para" style="margin: 0; padding: 12px 0;">
                                                                 <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
                                                             </div>
                                                         </div>
-                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;"><div class="para margin-bottom-8" style="margin: 0; margin-bottom: 28px;"> {{$subMerchant['name']}} has been successfully added to your account. <br> We have sent an invite mail to {{$subMerchant['email']}} for setting up their RazorpayX account password.</div>
+                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;">
+                                                            <div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> Hi {{$merchant['name']}} <br> <br> {{$subMerchant['name']}} has been successfully added to your account. <br> We have sent an invite mail to {{$subMerchant['email']}} for setting up their RazorpayX account.</div>
+                                                            <div class="para margin-bottom-24" style="margin: 0;">
+                                                                Onboarding Process for your referral -:
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0;">
+                                                                Step 1: Set up the password
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0;">
+                                                                Step 2: Fill the KYC details via dashboard
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0;">
+                                                                Step 3: Initiate the Current Account (CA) Application via the dashboard
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0 0 20px;">
+                                                                Step 4: Give the documents to a bank RM & your CA will be activated in ~7 days.
+                                                            </div>
+                                                            <div class="para margin-bottom-24" style="margin: 0 0 28px;">
+                                                                Feel free to reach out to us for any concerns!
+                                                            </div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 5px;">
-                                                                <h3 style="margin: 0 0 3px;line-height: 0.5;">Activation Process</h3>
-                                                                <p>The first step for your affiliate account involves filling up the activation form on their <a href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" style="color: #24bbea; text-decoration: none !important;">RazorpayX Dashboard</a>. The list of documents and details required for us to take the account live can be found in the Activation panel on the dashboard. All requirements have a basic explanation alongside to help you through the process.</p>
-                                                                <p style="margin: 0 0 28px;">This process is crucial as we share the same KYC with our partner banks who do their own due diligence.</p>
-
-                                                                <h3 style="margin: 0 0 3px;line-height: 0.5;">Activation Timeline</h3>
-                                                                <p>As soon as the Activation Process is completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
-
                                                                 <p>
                                                                     Cheers,
                                                                     <br>

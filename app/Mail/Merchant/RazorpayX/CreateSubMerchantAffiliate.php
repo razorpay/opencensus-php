@@ -65,7 +65,7 @@ class CreateSubMerchantAffiliate extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('You have been invited to join RazorpayX');
+        $this->subject('[IMP] '.$this->aggregator['name'].' has invited you to join RazorpayX');
 
         return $this;
     }
