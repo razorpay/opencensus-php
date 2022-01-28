@@ -331,9 +331,15 @@ export default class User {
   }
 
   get isBulkAddressUploadEnabled() {
-    return (
-      this.isFeatureEnabled('one_click_checkout') && this.getExpStatus('magic_bulk_address_live')
-    );
+    return this.getExpStatus('magic_bulk_address_live');
+  }
+
+  get isMerchantOnMagicCheckout() {
+    return this.isFeatureEnabled('one_click_checkout');
+  }
+
+  get isShiprocketEnabled() {
+    return [rolesList.OWNER, rolesList.ADMIN].indexOf(this.userRole) > -1;
   }
 
   get isPaymentPagesEnabled() {

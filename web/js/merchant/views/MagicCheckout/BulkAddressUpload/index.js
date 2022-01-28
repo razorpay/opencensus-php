@@ -1,6 +1,6 @@
-import { NavLink } from 'react-router-dom';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import AddressList from 'merchant/views/MagicCheckout/BulkAddressUpload/containers/List';
+import HeaderAction from 'common/ui/HeaderAction';
 
 import { useCallback } from 'react';
 import { connect } from 'react-redux';
@@ -77,27 +77,24 @@ const BulkAddressUpload = ({ openModal, createBatch, validateBatch }) => {
   }, [createBatch, validateBatch, openModal]);
 
   return (
-    <tabbed-container>
-      <header id="super-checkout-header" className="scrollable-tab-header">
-        <NavLink to="/super-checkout" exact>
-          Address
-        </NavLink>
+    <>
+      <HeaderAction responsive>
+        <div class="btn-toolbar pull-right">
+          <div className="pull-right MultiBatch--action">
+            <a className="btn btn-link" href={SAMPLE_BATCH_UPLOAD_FILE}>
+              Download Sample File
+            </a>
+            <button className="btn btn-primary" onClick={onUploadClick}>
+              Upload Address File
+            </button>
+          </div>
+        </div>
+      </HeaderAction>
 
-        <div className="pull-right MultiBatch--action">
-          <a className="btn btn-link" href={SAMPLE_BATCH_UPLOAD_FILE}>
-            Download Sample File
-          </a>
-          <button className="btn btn-primary" onClick={onUploadClick}>
-            Upload Address File
-          </button>
-        </div>
-      </header>
       <content>
-        <div className="content-wrapper">
-          <AddressList />
-        </div>
+        <AddressList />
       </content>
-    </tabbed-container>
+    </>
   );
 };
 

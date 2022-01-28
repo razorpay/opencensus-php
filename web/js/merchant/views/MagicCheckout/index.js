@@ -8,8 +8,11 @@ import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
 import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
 import MagicCheckoutFeatures from 'merchant/views/MagicCheckout/components/Features';
 import { AsyncBtn } from 'common/new-ui/Button';
-import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
+import { NavLink, Route } from 'react-router-dom';
+import MagicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import JoinWaitlistButton from 'merchant/views/MagicCheckout/components/JoinWaitlistButton';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import 'merchant/views/MagicCheckout/css/magic_checkout.styl';
 
 const MagicCheckout = ({ active, user, magicCheckout, fetchStatus }) => {
   useEffect(() => {
@@ -43,8 +46,44 @@ const MagicCheckout = ({ active, user, magicCheckout, fetchStatus }) => {
     </JoinWaitlistButton>
   );
 
-  if (user.isBulkAddressUploadEnabled) {
-    return <BulkAddressUpload />;
+  if (user.isMerchantOnMagicCheckout) {
+    return (
+      <tabbed-container>
+        <header id="super-checkout-header" className="scrollable-tab-header">
+          {MagicCheckoutRoutes.map((item) => (
+            <ShowWhen
+              key={item.path}
+              additionalCondition={(_user) => {
+                if (!item.condition) return true;
+                return item.condition(_user);
+              }}
+            >
+              <NavLink to={item.path} exact>
+                {item.tabName}
+              </NavLink>
+            </ShowWhen>
+          ))}
+        </header>
+        <content>
+          <div className="content-wrapper">
+            {MagicCheckoutRoutes.map((item) => {
+              if (item.condition) {
+                return (
+                  <ShowWhenRoute
+                    path={item.path}
+                    key={item.path}
+                    exact
+                    component={item.Component}
+                    additionalCondition={(_user) => item.condition(_user)}
+                  />
+                );
+              }
+              return <Route key={item.path} path={item.path} exact component={item.Component} />;
+            })}
+          </div>
+        </content>
+      </tabbed-container>
+    );
   }
 
   return (
