@@ -234,7 +234,8 @@ class Service extends Base\Service
             'magic_bulk_address_live',
             'remove_activation_progressbar',
             'rx_payout_link_workflow',
-            'rx_ca_programmatic_engagement'
+            'rx_ca_programmatic_engagement',
+            'capital_xca_pay_now'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
