@@ -154,3 +154,40 @@ test('should render correct flow', async () => {
   fireEvent.change(stateInput, { target: { value: 'DL' } });
   fireEvent.blur(stateInput);
 });
+
+test('should show error if gstin validation failed', async () => {
+  ActivationDB.update({
+    business_type: '1',
+    activation_form_milestone: 'L1',
+    gstin_verification_status: 'incorrect_details',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(
+    screen.getByText('This GSTIN number is invalid, please enter valid details.'),
+  ).toBeInTheDocument();
+});
+
+test('should show error if cin validation failed', async () => {
+  ActivationDB.update({
+    business_type: '4',
+    cin_verification_status: 'incorrect_details',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(
+    screen.getByText('This CIN number is invalid, please enter valid details.'),
+  ).toBeInTheDocument();
+});
+
+test('should show error if llp validation failed', async () => {
+  ActivationDB.update({
+    business_type: '6',
+    cin_verification_status: 'incorrect_details',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(
+    screen.getByText('This LLPIN number is invalid, please enter valid details.'),
+  ).toBeInTheDocument();
+});

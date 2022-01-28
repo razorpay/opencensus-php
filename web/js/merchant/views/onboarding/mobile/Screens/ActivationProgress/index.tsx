@@ -8,13 +8,20 @@ import useActivation from '../../hooks/useActivation';
 import WhitelistedSteps from './WhitelistedSteps';
 import GreylistedSteps from './GreylistedSteps';
 import ActivationProgressHeader from './ActivationProgressHeader';
-import { checkIfDedupe, isUnregisteredBusiness, isL1Submitted } from '../../services/utils';
+import {
+  checkIfDedupe,
+  isUnregisteredBusiness,
+  isL1Submitted,
+  isVerificationValid,
+} from '../../services/utils';
 import { useApp } from 'common/context/App';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { switchMode } from 'common/services/mode';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import usePartnerActivation from '../../hooks/usePartnerActivation';
 import AccessBlockedSteps from './AccessBlockedSteps';
+import { isVisible } from '../../context/store';
+import { LLPIN_BusinessTypes } from '../../Constants/OnboardingConstants';
 
 const Screen = styled(View)`
   background-color: #f9fbfe;
@@ -76,6 +83,38 @@ const ActivationProgress: React.FC = () => {
     }
   };
 
+  const shouldShowPoiError =
+    !data.submitted &&
+    isVerificationValid(data?.poi_verification_status) &&
+    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
+
+  const isCompanyPanInvalid =
+    isVisible('company_pan', data) &&
+    !data.submitted &&
+    experiments.isSyncExperimentEnabled &&
+    isVerificationValid(data?.company_pan_verification_status);
+
+  const isGstinVerificationFailed =
+    experiments.isGstinSyncFlowEnabled && isVerificationValid(data?.gstin_verification_status);
+
+  const isCinVerificationFailed =
+    (experiments.isLlpinSyncFlowEnabled || experiments.isCinSyncFlowEnabled) &&
+    isVerificationValid(data?.cin_verification_status);
+
+  const CIN_TYPE = LLPIN_BusinessTypes.includes(Number(data?.businessType)) ? 'LLPIN' : 'CIN';
+
+  const getTabError = (): string => {
+    let errorMsg = '';
+    if (shouldShowPoiError || isCompanyPanInvalid) {
+      errorMsg = 'Unable to verify your PAN. Please update';
+    } else if (isGstinVerificationFailed) {
+      errorMsg = 'Unable to verify your GSTIN. Please update';
+    } else if (isCinVerificationFailed) {
+      errorMsg = `Unable to verify your ${CIN_TYPE}. Please update`;
+    }
+    return errorMsg;
+  };
+
   let Steps = WhitelistedSteps;
   if (
     (!isDedupe &&
@@ -107,7 +146,14 @@ const ActivationProgress: React.FC = () => {
                 {shouldBlockMerchantKYC() ? (
                   <AccessBlockedSteps />
                 ) : (
-                  <Steps showL1Modal={(activationData) => openModal(activationData)} />
+                  <Steps
+                    showL1Modal={(activationData) => openModal(activationData)}
+                    getTabError={getTabError}
+                    shouldShowPoiError={shouldShowPoiError}
+                    isCompanyPanInvalid={isCompanyPanInvalid}
+                    isGstinVerificationFailed={isGstinVerificationFailed}
+                    isCinVerificationFailed={isCinVerificationFailed}
+                  />
                 )}
               </Screen>
             </Space>

@@ -83,7 +83,7 @@ import {
   isDedupe,
   isSourceRX,
   getBankTabHeader,
-  isPanVerificationFailed,
+  isVerificationFailed,
 } from './ActivationUtils';
 
 import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
@@ -99,7 +99,6 @@ import CustomEmail from './components/CustomEmail';
 import PaymentChannels from './components/PaymentChannels';
 import SupportButton from 'merchant/components/Home/SupportButton';
 import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
-import { isValidGSTIN } from '../../../common/utils/rzp-utils';
 import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
 import { capitalize } from 'common/utils/rzp-utils';
 
@@ -495,6 +494,27 @@ export default class ActivationWizard extends React.Component {
       },
       toCleverTap: true,
     });
+
+    const {
+      isGstinSyncFlowEnabled,
+      isLlpinSyncFlowEnabled,
+      isCinSyncFlowEnabled,
+      isGstinLLpinCinSyncFlowEnabled,
+    } = this.props.user;
+    if (isGstinSyncFlowEnabled || isLlpinSyncFlowEnabled || isCinSyncFlowEnabled) {
+      this.props.trackEventsAction({
+        objectName: 'BVS in sync mode',
+        actionName: 'qualified',
+        screen: 'KYC form',
+        properties: {
+          page: 'Activation Form',
+          isBvsInSsync: isGstinLLpinCinSyncFlowEnabled,
+          isGstinSync: isGstinSyncFlowEnabled,
+          isLlpinSync: isLlpinSyncFlowEnabled,
+          isCinSync: isCinSyncFlowEnabled,
+        },
+      });
+    }
   }
 
   addVisitedFlag = () => {
@@ -2199,15 +2219,16 @@ export default class ActivationWizard extends React.Component {
   }
 
   render() {
+    const { user } = this.props;
     const isFormLocked = this.isFormLocked;
     const isFormActivated = !!this.props.data.activated;
     const isFormSubmitted = !!this.props.data.submitted;
 
     const userCanSubmitForm =
-      this.props.user.isUnregisteredBusiness &&
-      this.props.user.activation_form_milestone === 'L1' &&
-      !this.props.user.isL2AllowedForPoiInitiated
-        ? this.props.user.poi_verification_status !== 'initiated'
+      user.isUnregisteredBusiness &&
+      user.activation_form_milestone === 'L1' &&
+      !user.isL2AllowedForPoiInitiated
+        ? user.poi_verification_status !== 'initiated'
         : true;
 
     let activeTab = this.state.activeTab;
@@ -2246,7 +2267,7 @@ export default class ActivationWizard extends React.Component {
       (this.isLinkedAccountForm && !isFormSubmitted) ||
       (isL1Completed(this) &&
         !isFormSubmitted &&
-        isDedupe(this.props.user) !== 'blocked' &&
+        isDedupe(user) !== 'blocked' &&
         userCanSubmitForm &&
         this.isAllTabsValid())
     ) {
@@ -2295,6 +2316,16 @@ export default class ActivationWizard extends React.Component {
     const isFormVerificationPending = this.props.data?.activation_status === 'verification_pending';
     const isFormVerificationFailed = this.props.data?.activation_status === 'verification_failed';
     const verificationFailureError = this.props.data?.bank_details_verification_error;
+    const isPanValid = isVerificationFailed(user.poi_verification_status);
+    const isCompanyPanValid = isVerificationFailed(user.company_pan_verification_status);
+    const isGstinValid = isVerificationFailed(user.gstin_verification_status);
+    const isCinValid = isVerificationFailed(user.cin_verification_status);
+
+    const canShowErrorOnTab =
+      (((isPanValid || isCompanyPanValid) && user.isSyncExperimentEnabled) ||
+        (isGstinValid && user.isGstinSyncFlowEnabled) ||
+        (isCinValid && (user.isCinSyncFlowEnabled || user.isLlpinSyncFlowEnabled))) &&
+      FORM_TABS[2] === 'Business Details';
 
     return (
       <div
@@ -2327,14 +2358,7 @@ export default class ActivationWizard extends React.Component {
             tabClickHandler={this.changeTab}
             activeTab={activeTab}
             activeTabContdition={!this.state.showSubmitLayer}
-            isPanVerificationFailed={
-              isPanVerificationFailed(
-                this.props.user.poi_verification_status,
-                this.props.user.company_pan_verification_status,
-              ) &&
-              this.props.user.isSyncExperimentEnabled &&
-              FORM_TABS[2] === 'Business Details'
-            }
+            isFieldVerificationFailed={canShowErrorOnTab}
             isBankVerificationFailed={
               FORM_TABS[3] === 'Bank Account' &&
               this.props.data.bank_details_verification_status &&

@@ -4,15 +4,13 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import useActivation from '../../hooks/useActivation';
-import { isVisible, useActivationFormState } from '../../context/store';
+import { useActivationFormState } from '../../context/store';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import {
   isL1Submitted,
-  getPoiVerificationStatus,
   checkIfDedupe,
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
-  getCompanyPanVerificationStatus,
 } from '../../services/utils';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import useBusinessCategory from '../../hooks/useBusinessCategory';
@@ -23,9 +21,23 @@ const Screen = styled(View)`
   background-color: #f9fbfe;
 `;
 
-const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
+const WhitelistedSteps: React.FC<
+  RouteComponentProps & {
+    showL1Modal: (data: any) => void;
+    getTabError: () => string;
+    shouldShowPoiError: boolean;
+    isCompanyPanInvalid: boolean;
+    isGstinVerificationFailed: boolean;
+    isCinVerificationFailed: boolean;
+  }
+> = ({
   history,
   showL1Modal,
+  getTabError,
+  isGstinVerificationFailed,
+  shouldShowPoiError,
+  isCompanyPanInvalid,
+  isCinVerificationFailed,
 }) => {
   const { data, postData } = useActivation();
   const { user, experiments } = useApp();
@@ -103,17 +115,6 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
     }
   };
 
-  const shouldShowPoiError =
-    !data.submitted &&
-    getPoiVerificationStatus(data?.poi_verification_status) &&
-    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
-
-  const isCompanyPanInvalid =
-    isVisible('company_pan', data) &&
-    !data.submitted &&
-    experiments.isSyncExperimentEnabled &&
-    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
-
   const canL1Submit =
     !isL1Submitted(data.activation_form_milestone) && (!isL1AllTabComplete || isBlackListCategory);
 
@@ -138,9 +139,13 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
       name: 'Business Details',
       id: 'business_details',
       onClick,
-      isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
-      hasErrorText:
-        shouldShowPoiError || isCompanyPanInvalid ? 'Unable to verify your PAN. Please update' : '',
+      isComplete:
+        isBusinessDetailsCompleted &&
+        !shouldShowPoiError &&
+        !isCompanyPanInvalid &&
+        !isGstinVerificationFailed &&
+        !isCinVerificationFailed,
+      hasErrorText: getTabError(),
     },
   ];
   if (
@@ -149,7 +154,6 @@ const WhitelistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any
   )
     [steps[0], steps[1], steps[2]] = [steps[1], steps[2], steps[0]];
 
-  //remove contact details from step
   if (experiments.isEmailNonMandatoryOnL2Form && !user.user?.signup_via_email) steps.shift();
 
   return (

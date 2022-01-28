@@ -344,12 +344,8 @@ export function getDetailsForIFSC(ifscCode: string): any {
   });
 }
 
-export function getPoiVerificationStatus(poiStatus: undefined | string): boolean {
-  return poiStatus === 'incorrect_details' || poiStatus === 'not_matched';
-}
-
-export function getCompanyPanVerificationStatus(companyPanStatus: undefined | string): boolean {
-  return companyPanStatus === 'incorrect_details' || companyPanStatus === 'not_matched';
+export function isVerificationValid(status: undefined | string): boolean {
+  return status === 'incorrect_details' || status === 'not_matched';
 }
 
 export function isBusinessProofUrlVisible(context) {
@@ -499,4 +495,39 @@ export const getBankFieldError = (
     : isBankVerficationFailed && banVerificationAttemptCount == 9
     ? "You have already changed your account 9 times, please ensure you enter the correct details this time as you won't be able to make any more changes after this attempt"
     : '';
+};
+
+export const getGstinFiledError = (
+  isTouched,
+  formikError,
+  isGstinInValid: boolean,
+  status: string,
+): string => {
+  if (isTouched) return formikError;
+  else if (isGstinInValid) {
+    if (status === 'incorrect_details')
+      return 'This GSTIN number is invalid, please enter valid details.';
+    else if (status === 'not_matched')
+      return 'GSTIN information did not match with your business details. Please re-enter by verifying with your physical GSTIN Copy.';
+    return '';
+  }
+  return '';
+};
+
+export const getCinFieldError = (
+  isTouched,
+  formikError,
+  isCinInValid: boolean,
+  type: string,
+  status: string,
+): string => {
+  if (isTouched) return formikError;
+  else if (isCinInValid) {
+    if (status === 'incorrect_details')
+      return `This ${type} number is invalid, please enter valid details.`;
+    else if (status === 'not_matched')
+      return `${type} information did not match with your business details. Please re-enter by verifying with your physical ${type} Copy.`;
+    return '';
+  }
+  return '';
 };

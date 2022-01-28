@@ -21,8 +21,9 @@ import {
   getHelpText,
   getPanError,
   getPanNameError,
-  getPoiVerificationStatus,
-  getCompanyPanVerificationStatus,
+  isVerificationValid,
+  getGstinFiledError,
+  getCinFieldError,
 } from '../services/utils';
 import {
   states,
@@ -156,12 +157,28 @@ const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
 
 interface IBusinessDetailsProps {
   isFormLocked?: boolean;
+  startPolling?: () => void;
 }
 
-const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactElement => {
+const BusinessDetails = ({
+  isFormLocked,
+  startPolling = () => {},
+}: IBusinessDetailsProps): React.ReactElement => {
   const { data, postData } = useActivation();
   const trackEvents = useTrackEvents();
-  const { user, experiments } = useApp();
+  const {
+    user,
+    experiments: {
+      canSkipPoiValidation,
+      isSyncExperimentEnabled,
+      isGstinAutoPopulate,
+      isInstantActivationEnabled,
+      isGstinSyncFlowEnabled,
+      isLlpinSyncFlowEnabled,
+      isCinSyncFlowEnabled,
+      isGstinLLpinCinSyncFlowEnabled,
+    },
+  } = useApp();
   const { gstinDetails } = useGstin();
   const snackbar = useSnackbar();
   const [pinCode, setPinCodeValue] = useState<string>('');
@@ -232,18 +249,16 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
     },
   );
 
-  const hasPoiStatus = getPoiVerificationStatus(data?.poi_verification_status);
+  const hasPoiStatus = isVerificationValid(data?.poi_verification_status);
 
   const shouldShowPoiError: boolean =
-    !data.submitted &&
-    hasPoiStatus &&
-    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
+    !data.submitted && hasPoiStatus && (!canSkipPoiValidation || isSyncExperimentEnabled);
 
   const isCompanyPanInvalid: boolean =
     isVisible('company_pan', data) &&
     !data.submitted &&
-    experiments.isSyncExperimentEnabled &&
-    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
+    isSyncExperimentEnabled &&
+    isVerificationValid(data?.company_pan_verification_status);
 
   useEffect(() => {
     if (hasPoiStatus) {
@@ -266,6 +281,20 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
         pageTitle: 'Business Overview',
       },
     });
+    if (isGstinSyncFlowEnabled || isLlpinSyncFlowEnabled || isCinSyncFlowEnabled) {
+      trackEvents({
+        objectName: 'BVS in sync mode',
+        actionName: 'qualified',
+        screen: 'home page',
+        properties: {
+          pageTitle: 'Business Overview',
+          isBvsInSsync: isGstinLLpinCinSyncFlowEnabled,
+          isGstinSync: isGstinSyncFlowEnabled,
+          isLlpinSync: isLlpinSyncFlowEnabled,
+          isCinSync: isCinSyncFlowEnabled,
+        },
+      });
+    }
   }, []);
 
   const copySameAddress = (reqData, updatedDetails) => {
@@ -317,7 +346,7 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
         business_details: { ...businessDetails, ...updatedDetails },
         hasSameAdress,
         hasGSTIN,
-        isInstantActivationEnabled: experiments.isInstantActivationEnabled,
+        isInstantActivationEnabled,
       },
       'business_details',
     );
@@ -328,7 +357,18 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
     }
     reqData = getRequestData(businessDetails, updatedDetails);
     if (Object.keys(reqData).length) {
-      postData(reqData);
+      postData(reqData).then((res) => {
+        if (isGstinSyncFlowEnabled || isLlpinSyncFlowEnabled || isCinSyncFlowEnabled) {
+          const { gstin_verification_status, cin_verification_status } = res ?? {};
+          //if anyone of these status got updated and status is initiated then start polling.
+          const canStartPolling =
+            [gstin_verification_status, cin_verification_status].indexOf('initiated') !== -1;
+
+          if (canStartPolling) {
+            startPolling();
+          }
+        }
+      });
     }
   };
 
@@ -367,9 +407,15 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
   }, [isCompanyPanInvalid, shouldShowPoiError]);
 
   const isPanVerified: boolean =
-    data.poi_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
+    data.poi_verification_status === 'verified' && isSyncExperimentEnabled;
   const isCompanyPanVerified: boolean =
-    data.company_pan_verification_status === 'verified' && experiments.isSyncExperimentEnabled;
+    data.company_pan_verification_status === 'verified' && isSyncExperimentEnabled;
+  const isGstinVerificationFailed =
+    isGstinSyncFlowEnabled && isVerificationValid(data?.gstin_verification_status);
+  const isCinVerificationFailed =
+    (isLlpinSyncFlowEnabled || isCinSyncFlowEnabled) &&
+    isVerificationValid(data?.cin_verification_status);
+  const CIN_TYPE = LLPIN_BusinessTypes.includes(Number(businessType)) ? 'LLPIN' : 'CIN';
 
   return (
     <Formik
@@ -514,26 +560,6 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                 />
               )}
             </Field>
-            <Field visible={isVisible('company_cin', data)}>
-              <TextInput
-                width="auto"
-                name="company_cin"
-                label={getLabel('company_cin', data)}
-                value={formikProps.values.company_cin}
-                errorText={formikProps.touched.company_cin && formikProps.errors.company_cin}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: 'Company Cin',
-                    screen: 'home page',
-                    eventAction: 'initiated',
-                    user,
-                  });
-                  setBusinessDetailsCardTitle('PAN Details');
-                }}
-                disabled={isFormLocked}
-              />
-            </Field>
             <Field>
               <TextInput
                 width="auto"
@@ -586,6 +612,32 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                   getFieldStatus('promoter_pan_name').description || 'As mentioned in the PAN'
                 }
                 onBlur={() => setBusinessDetailsCardTitle('PAN Details')}
+              />
+            </Field>
+            <Field visible={isVisible('company_cin', data)}>
+              <TextInput
+                width="auto"
+                name="company_cin"
+                label={getLabel('company_cin', data)}
+                value={formikProps.values.company_cin}
+                errorText={getCinFieldError(
+                  formikProps.touched.company_cin,
+                  formikProps.errors.company_cin,
+                  isCinVerificationFailed,
+                  CIN_TYPE,
+                  data?.cin_verification_status,
+                )}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'Company Cin',
+                    screen: 'home page',
+                    eventAction: 'initiated',
+                    user,
+                  });
+                  setBusinessDetailsCardTitle('PAN Details');
+                }}
+                disabled={isFormLocked}
               />
             </Field>
             <Field last>
@@ -846,15 +898,20 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
 
           {isVisible('gstin', {
             ...data,
-            isInstantActivationEnabled: experiments.isInstantActivationEnabled,
+            isInstantActivationEnabled,
           }) ? (
             <FormSection title="Company Details" last disabled={isFormLocked}>
               <Field last>
-                {experiments.isGstinAutoPopulate && gstinDetails?.gstinList ? (
+                {isGstinAutoPopulate && gstinDetails?.gstinList ? (
                   <GstinAutoPopulate
                     gstin={formikProps.values.gstin}
                     gstinDetails={gstinDetails}
-                    errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                    errorText={getGstinFiledError(
+                      formikProps.touched.gstin,
+                      formikProps.errors.gstin,
+                      isGstinVerificationFailed,
+                      data?.gstin_verification_status,
+                    )}
                     updateGstin={(value) => {
                       formikProps.setFieldTouched('gstin');
                       formikProps.setFieldValue('gstin', value);
@@ -871,7 +928,12 @@ const BusinessDetails = ({ isFormLocked }: IBusinessDetailsProps): React.ReactEl
                     name="gstin"
                     label="GST Identification Number (GSTIN)"
                     value={formikProps.values.gstin}
-                    errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                    errorText={getGstinFiledError(
+                      formikProps.touched.gstin,
+                      formikProps.errors.gstin,
+                      isGstinVerificationFailed,
+                      data?.gstin_verification_status,
+                    )}
                     onBlur={() => {
                       setBusinessDetailsCardTitle('Company Details');
                       analyticsTrack({

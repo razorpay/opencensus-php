@@ -103,7 +103,19 @@ function isCompanyPANVerified(activation) {
   );
 }
 
-function checkValidityFromAPI(data, key, errValue, errorMsg) {
+function checkValidityFromAPI(
+  data,
+  key,
+  errValue,
+  errorMsg,
+  hasSeprateErrorMsg = false,
+  notMatchErrorMsg = '',
+) {
+  if (hasSeprateErrorMsg && data) {
+    if (data[key] === errValue) return errorMsg;
+    else if (data[key] === 'not_matched') return notMatchErrorMsg;
+    return '';
+  }
   return data && (data[key] === errValue || data[key] === 'not_matched') ? errorMsg : '';
 }
 
@@ -533,13 +545,8 @@ const getBankTabHeader = (businessType) => {
   return { title, subtitle };
 };
 
-const isPanVerificationFailed = (poiStatus, companyPanStatus) => {
-  return (
-    poiStatus === 'incorrect_details' ||
-    poiStatus === 'not_matched' ||
-    companyPanStatus === 'incorrect_details' ||
-    companyPanStatus === 'not_matched'
-  );
+const isVerificationFailed = (status) => {
+  return status === 'incorrect_details' || status === 'not_matched';
 };
 
 const getBankVerificationAtteemptError = (activation) => {
@@ -594,7 +601,7 @@ export {
   isDedupeOldFunc,
   getBankTabHeader,
   isCompanyPANVerified,
-  isPanVerificationFailed,
+  isVerificationFailed,
   canShowCustomGstinField,
   getBankVerificationAtteemptError,
 };

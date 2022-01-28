@@ -39,6 +39,9 @@ const customRender = (
       isEmailNonMandatoryOnL1: false,
       isEmailNonMandatoryOnL2Form: false,
       isActivationFormFullView: true,
+      isGstinSyncFlowEnabled: true,
+      isLlpinSyncFlowEnabled: true,
+      isCinSyncFlowEnabled: true,
       isActivationMccPendingProgressbarDisabled: true,
     };
     return (

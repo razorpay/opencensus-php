@@ -1483,6 +1483,24 @@ export default class User {
     return this.isFeatureEnabled('new_settlement_service');
   }
 
+  get isGstinLLpinCinSyncFlowEnabled() {
+    // not required for Razorpay X, partner accounts and sub merchants
+    if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {
+      return false;
+    }
+    return this.getExpStatus('bvs_in_sync') && !!this.isOrgRZP;
+  }
+
+  get isGstinSyncFlowEnabled() {
+    return this.isGstinLLpinCinSyncFlowEnabled && this.getExpStatus('gstin_sync');
+  }
+  get isLlpinSyncFlowEnabled() {
+    return this.isGstinLLpinCinSyncFlowEnabled && this.getExpStatus('llpin_sync');
+  }
+  get isCinSyncFlowEnabled() {
+    return this.isGstinLLpinCinSyncFlowEnabled && this.getExpStatus('cin_sync');
+  }
+
   get autoOpenL2Form() {
     return this.getExpStatus('auto-open-L2-form') && !!this.isOrgRZP;
   }

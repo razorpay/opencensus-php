@@ -22,7 +22,7 @@ export const ModalAsideNav = (_) => {
     activeTab,
     activeTabContdition,
     disableTabCondition,
-    isPanVerificationFailed = false,
+    isFieldVerificationFailed = false,
     isBankVerificationFailed = false,
     isActivationFormFullView = false,
     activationFormMilestone,
@@ -63,7 +63,7 @@ export const ModalAsideNav = (_) => {
               isActiveClass = activeTabContdition && isActiveClass;
             }
             const canShowSuccessCheckbox =
-              isPanVerificationFailed && i === 2
+              isFieldVerificationFailed && i === 2
                 ? i !== 2
                 : isBankVerificationFailed && i === 3
                 ? i !== 3
@@ -73,7 +73,7 @@ export const ModalAsideNav = (_) => {
               typeof disableTabCondition === 'function' ? disableTabCondition(i) : false;
 
             const hasError =
-              (isPanVerificationFailed && i === 2) || (isBankVerificationFailed && i === 3);
+              (isFieldVerificationFailed && i === 2) || (isBankVerificationFailed && i === 3);
 
             return (
               <li

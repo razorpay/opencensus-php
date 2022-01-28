@@ -13,11 +13,10 @@ import { FullPageLoader } from 'common/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import {
   isL1Submitted,
-  getPoiVerificationStatus,
+  isVerificationValid,
   hasSelectedBlacklistCategory,
   isUnregisteredBusiness,
   checkIfDedupe,
-  getCompanyPanVerificationStatus,
 } from '../../services/utils';
 import { Tabs, Tab } from 'common/components/Tabs';
 import { isVisible, useActivationFormState } from '../../context/store';
@@ -59,6 +58,8 @@ const StyledHeader = styled(View)`
 const AcknowledgementFooter = styled(View)`
   padding: 4px 20px 2px;
 `;
+
+const POLLING_COUNTER_LIMIT = 5;
 
 const Seprator = styled.hr`
   margin: 6px 0 8px;
@@ -578,8 +579,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         !isL1AllTabComplete ||
         (!isL1Acknowledge && experiments.isSyncExperimentEnabled) ||
         isBlackListCategory ||
-        (getPoiVerificationStatus(data?.poi_verification_status) &&
-          !experiments.canSkipPoiValidation)
+        (isVerificationValid(data?.poi_verification_status) && !experiments.canSkipPoiValidation)
       );
     } else {
       return (
@@ -614,14 +614,42 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
 
   const shouldShowPoiError: boolean =
     !data.submitted &&
-    getPoiVerificationStatus(data?.poi_verification_status) &&
+    isVerificationValid(data?.poi_verification_status) &&
     (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
 
   const isCompanyPanInvalid: boolean =
     isVisible('company_pan', data) &&
     !data.submitted &&
     experiments.isSyncExperimentEnabled &&
-    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
+    isVerificationValid(data?.company_pan_verification_status);
+
+  const isGstinVerificationFailed =
+    experiments.isGstinSyncFlowEnabled && isVerificationValid(data?.gstin_verification_status);
+  const isCinVerificationFailed =
+    (experiments.isLlpinSyncFlowEnabled || experiments.isCinSyncFlowEnabled) &&
+    isVerificationValid(data?.cin_verification_status);
+
+  const startPolling = () => {
+    let intervalTimer;
+    let pollingCounter = 1;
+
+    if (typeof setInterval === 'function') {
+      intervalTimer = setInterval(() => {
+        const { gstin_verification_status, cin_verification_status } = data ?? {};
+        const canStartPolling =
+          [gstin_verification_status, cin_verification_status].indexOf('initiated') !== -1;
+
+        if (pollingCounter < POLLING_COUNTER_LIMIT) {
+          ++pollingCounter;
+          refetch();
+        }
+        if (pollingCounter === POLLING_COUNTER_LIMIT || !canStartPolling) {
+          clearInterval(intervalTimer);
+        }
+      }, 2000);
+    }
+    return () => clearInterval(intervalTimer);
+  };
 
   const getTabs = () => {
     const tabs = [
@@ -646,9 +674,14 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         title="Business Details"
         tabId="business_details"
         completed={isBusinessDetailsCompleted}
-        hasError={shouldShowPoiError || isCompanyPanInvalid}
+        hasError={
+          shouldShowPoiError ||
+          isCompanyPanInvalid ||
+          isGstinVerificationFailed ||
+          isCinVerificationFailed
+        }
       >
-        <BusinessDetails isFormLocked={isFormLocked()} />
+        <BusinessDetails isFormLocked={isFormLocked()} startPolling={startPolling} />
       </Tab>,
     ];
     if (

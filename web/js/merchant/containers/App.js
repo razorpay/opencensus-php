@@ -886,6 +886,10 @@ class App extends Component {
       isEmailNonMandatoryOnL1: user.isEmailNonMandatoryOnL1,
       isEmailNonMandatoryOnL2Form: user.isEmailNonMandatoryOnL2Form,
       isActivationFormFullView: user.isActivationFormFullView,
+      isGstinSyncFlowEnabled: user.isGstinSyncFlowEnabled,
+      isLlpinSyncFlowEnabled: user.isLlpinSyncFlowEnabled,
+      isCinSyncFlowEnabled: user.isCinSyncFlowEnabled,
+      isGstinLLpinCinSyncFlowEnabled: user.isGstinLLpinCinSyncFlowEnabled,
       isActivationMccPendingProgressbarDisabled: user.isActivationMccPendingProgressbarDisabled,
     };
   };

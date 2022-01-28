@@ -25,7 +25,7 @@ import * as EventsActions from 'merchant/reducers/trackEvents';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
-
+const POLLING_COUNTER_LIMIT = 5;
 /*
  * ActivationContainer is used in:
  * 1. '/activation' route for Activation form for merchant, and
@@ -99,6 +99,10 @@ export default class ActivationContainer extends React.Component {
     if (!!settings[rxCaSelectedFlag] && settings[rxCaSelectedFlag] === '1') {
       this.state.rxCaCheckboxSelect = true; // make it checked if the rxCaSelectedFlag exist in Settings (persists post refresh)
     }
+    const { isGstinSyncFlowEnabled, isLlpinSyncFlowEnabled, isCinSyncFlowEnabled } = user;
+
+    this.hasGstinLLpinCinSyncFlow =
+      isGstinSyncFlowEnabled || isLlpinSyncFlowEnabled || isCinSyncFlowEnabled;
 
     window.addEventListener('modal-open', this.handleSupportModalOpen);
   }
@@ -199,6 +203,10 @@ export default class ActivationContainer extends React.Component {
       contact_name,
       playstore_url,
       merchant_business_detail,
+      gstin_verification_status,
+      cin_verification_status,
+      company_cin,
+      gstin,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -229,6 +237,10 @@ export default class ActivationContainer extends React.Component {
       contact_name,
       playstore_url,
       merchant_business_detail,
+      gstin_verification_status,
+      cin_verification_status,
+      company_cin,
+      gstin,
     });
 
     this.props.updateSession({
@@ -497,6 +509,27 @@ export default class ActivationContainer extends React.Component {
     }
   };
 
+  startPollingCounter = () => {
+    let pollingCounter = 1;
+    if (typeof setInterval === 'function') {
+      this.intervalTimer = setInterval(async () => {
+        const { user, data } = this.props;
+        const cinStatus = user.cin_verification_status || data.cin_verification_status;
+        const gstinStatus = user.gstin_verification_status || data.gstin_verification_status;
+
+        const canStartPolling = [gstinStatus, cinStatus].indexOf('initiated') !== -1;
+
+        if (canStartPolling && pollingCounter < POLLING_COUNTER_LIMIT) {
+          ++pollingCounter;
+          await this.fetchMerchantDetails();
+        }
+        if (pollingCounter === POLLING_COUNTER_LIMIT || !canStartPolling) {
+          clearInterval(this.intervalTimer);
+        }
+      }, 2000);
+    }
+  };
+
   saveStep = (data) => {
     return merchantFetch({
       url: 'merchant/activation',
@@ -517,6 +550,19 @@ export default class ActivationContainer extends React.Component {
           });
         } else {
           this.updateSession(response.data);
+
+          if (this.hasGstinLLpinCinSyncFlow) {
+            const { gstin_verification_status, cin_verification_status, submitted } =
+              response.data ?? {};
+
+            //if anyone of these status got updated and status is initiated then start polling.
+            const canStartPolling =
+              [gstin_verification_status, cin_verification_status].indexOf('initiated') !== -1;
+
+            if (canStartPolling && !submitted) {
+              this.startPollingCounter();
+            }
+          }
         }
 
         return response;
@@ -687,8 +733,13 @@ export default class ActivationContainer extends React.Component {
   };
 
   componentDidMount() {
+    const { submitted } = this.props.user;
     this.handleUIUpdate();
     this.getBankVerificationAttemptCount();
+
+    if (this.hasGstinLLpinCinSyncFlow && !submitted) {
+      this.startPollingCounter();
+    }
     this.props.sendEventsForSubMerchantView(
       window.rzpQ
         .routeActions()
@@ -732,6 +783,7 @@ export default class ActivationContainer extends React.Component {
 
   componentWillUnmount() {
     this.handleSupportModalClose();
+    clearInterval(this.intervalTimer);
   }
 
   /*

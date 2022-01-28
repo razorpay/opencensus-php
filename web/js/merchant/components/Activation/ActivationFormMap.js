@@ -807,50 +807,6 @@ const businessDetails = [
         });
       },
     },
-    {
-      label: 'CIN',
-      name: 'company_cin',
-      validator: validateCIN,
-      required: true, // It's mandatory only for certain orgs
-      _autoRenderImpure: true,
-      maxLength: '21',
-      className: 'Input--capitalize',
-      info: 'Example : U67190TN2014PTC096978',
-      onBlur: function onBlur(e, error) {
-        this.sendErrorMessageToSegment(e, error);
-        this.sendInputToSegment({
-          'Field Name': 'CIN',
-          'Field Type': 'Text',
-          'Tab Title': 'Business Details',
-          Mandatory: 'Yes',
-        });
-      },
-      _when: (activation) => {
-        const currentBusinessType =
-          activation.state.dirty.business_type || activation.props.data.business_type;
-        return currentBusinessType && CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1;
-      },
-    },
-    {
-      label: 'LLPIN',
-      name: 'company_cin',
-      required: true, // It's mandatory only for LLP
-      info: 'Example : AAB-2933',
-      className: 'Input--capitalize',
-      validator: (value) => validateCIN(value, 'LLPIN'),
-      onBlur: function onBlur(e, error) {
-        this.sendErrorMessageToSegment(e, error);
-        this.sendInputToSegment({
-          'Field Name': 'LLPIN',
-          'Field Type': 'Text',
-          'Tab Title': 'Business Details',
-          Mandatory: 'Yes',
-        });
-      },
-      _when: (activation) =>
-        activation.props.data.business_type &&
-        LLPIN_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !== -1,
-    },
   ],
   [
     {
@@ -993,6 +949,99 @@ const businessDetails = [
       },
     },
   ],
+  [
+    {
+      label: 'CIN',
+      name: 'company_cin',
+      validator: validateCIN,
+      required: true, // It's mandatory only for certain orgs
+      _autoRenderImpure: true,
+      maxLength: '21',
+      className: 'Input--capitalize',
+      info: 'Example : U67190TN2014PTC096978',
+      checkValidityFromAPI: (activation) => {
+        const { user } = activation.props;
+        if (user.isCinSyncFlowEnabled && !activation.isOnKYCTab()) {
+          const error = checkValidityFromAPI(
+            user,
+            'cin_verification_status',
+            'incorrect_details',
+            'This CIN number is invalid, please enter valid details',
+            true, // to define two seprate error msg
+            'CIN information did not match with your business details. Please re-enter by verifying with your physical CIN Copy.',
+          );
+          return error;
+        }
+        return '';
+      },
+      onBlur: function onBlur(e, error) {
+        const { user } = this.props;
+        if (user.isCinSyncFlowEnabled && !this.isOnKYCTab()) {
+          const { dirty } = this.state;
+          const isCinValid = dirty?.company_cin && !validateCIN(dirty?.company_cin);
+
+          if (isCinValid && dirty?.company_cin !== user?.company_cin) {
+            this.saveCurrentTab();
+          }
+        }
+        this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'CIN',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
+      },
+      _when: (activation) => {
+        const currentBusinessType =
+          activation.state.dirty.business_type || activation.props.data.business_type;
+        return currentBusinessType && CIN_BusinessTypes.indexOf(Number(currentBusinessType)) !== -1;
+      },
+    },
+    {
+      label: 'LLPIN',
+      name: 'company_cin',
+      required: true, // It's mandatory only for LLP
+      info: 'Example : AAB-2933',
+      className: 'Input--capitalize',
+      validator: (value) => validateCIN(value, 'LLPIN'),
+      checkValidityFromAPI: (activation) => {
+        const { user } = activation.props;
+        if (user.isLlpinSyncFlowEnabled && !activation.isOnKYCTab()) {
+          const error = checkValidityFromAPI(
+            user,
+            'cin_verification_status',
+            'incorrect_details',
+            'This LLPIN number is invalid, please enter valid details',
+            true, // to define two seprate error msg
+            'LLPIN information did not match with your business details. Please re-enter by verifying with your physical LLPIN Copy.',
+          );
+          return error;
+        }
+        return '';
+      },
+      onBlur: function onBlur(e, error) {
+        const { user } = this.props;
+        if (user.isLlpinSyncFlowEnabled && !this.isOnKYCTab()) {
+          const { dirty } = this.state;
+          const isLLPINValid = dirty?.company_cin && !validateCIN(dirty?.company_cin, 'LLPIN');
+          if (isLLPINValid && dirty?.company_cin !== user?.company_cin) {
+            this.saveCurrentTab();
+          }
+        }
+        this.sendErrorMessageToSegment(e, error);
+        this.sendInputToSegment({
+          'Field Name': 'LLPIN',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Details',
+          Mandatory: 'Yes',
+        });
+      },
+      _when: (activation) =>
+        activation.props.data.business_type &&
+        LLPIN_BusinessTypes.indexOf(Number(activation.props.data.business_type)) !== -1,
+    },
+  ],
   {
     label: 'Billing Label',
     name: 'business_dba',
@@ -1064,6 +1113,14 @@ const businessDetails = [
         );
       },
       onBlur: function onBlur(e, error) {
+        const { user } = this.props;
+        if (user.isGstinSyncFlowEnabled && !this.isOnKYCTab()) {
+          const { dirty } = this.state;
+          const isGstinValid = dirty?.gstin && isValidGSTIN(dirty.gstin);
+          if (isGstinValid && dirty?.gstin !== user?.gstin) {
+            this.saveCurrentTab();
+          }
+        }
         this.sendInputToSegment({
           'Field Name': 'gstin',
           'Field Type': 'Text',
@@ -1092,7 +1149,9 @@ const businessDetails = [
           activation.props.data,
           'gstin_verification_status',
           'incorrect_details',
-          'Please provide the correct GSTIN details',
+          'This GSTIN number is invalid, please enter valid details',
+          true, // to define two seprate error msg
+          'GSTIN information did not match with your business details. Please re-enter by verifying with your physical GSTIN Copy.',
         );
       },
       className: 'ps-in-modal',
@@ -1668,7 +1727,9 @@ const uploadFields = [
         activation.props.data,
         'gstin_verification_status',
         'incorrect_details',
-        'Please provide the correct GSTIN details',
+        'This GSTIN number is invalid, please enter valid details',
+        true, // to define two seprate error msg
+        'GSTIN information did not match with your business details. Please re-enter by verifying with your physical GSTIN Copy.',
       );
     },
     onBlur: function onBlur(e, error) {

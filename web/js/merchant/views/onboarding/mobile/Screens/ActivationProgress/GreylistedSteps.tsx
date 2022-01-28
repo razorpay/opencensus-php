@@ -3,22 +3,32 @@ import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import View from '@razorpay/blade-old/src/atoms/View';
 import OnboardingStepCard from '../../OnboardingStepCard';
-import { isVisible, useActivationFormState } from '../../context/store';
+import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
 import useConfigDetails from '../../hooks/useConfigDetails';
-import {
-  checkIfDedupe,
-  getCompanyPanVerificationStatus,
-  getPoiVerificationStatus,
-} from '../../services/utils';
+import { checkIfDedupe } from '../../services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { ActivationModal, ModalTypeT } from '../../ActivationModals';
 import { useApp } from 'common/context/App';
 import { getMode, switchMode } from 'common/services/mode';
 
-// eslint-disable-next-line react/no-unused-prop-types
-const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any) => void }> = ({
+const GreylistedSteps: React.FC<
+  RouteComponentProps & {
+    // eslint-disable-next-line react/no-unused-prop-types
+    showL1Modal: (data: any) => void;
+    getTabError: () => string;
+    shouldShowPoiError: boolean;
+    isCompanyPanInvalid: boolean;
+    isGstinVerificationFailed: boolean;
+    isCinVerificationFailed: boolean;
+  }
+> = ({
   history,
+  getTabError,
+  shouldShowPoiError,
+  isCinVerificationFailed,
+  isCompanyPanInvalid,
+  isGstinVerificationFailed,
 }) => {
   const { data, postData } = useActivation();
   const { data: configData } = useConfigDetails('onboarding');
@@ -135,17 +145,6 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
     experiments.isSyncBankVerificationEnabled &&
     configData?.bank_account_verification_attempt_count == 10;
 
-  const shouldShowPoiError =
-    !data.submitted &&
-    getPoiVerificationStatus(data?.poi_verification_status) &&
-    (!experiments.canSkipPoiValidation || experiments.isSyncExperimentEnabled);
-
-  const isCompanyPanInvalid =
-    isVisible('company_pan', data) &&
-    !data.submitted &&
-    experiments.isSyncExperimentEnabled &&
-    getCompanyPanVerificationStatus(data?.company_pan_verification_status);
-
   const steps = [
     {
       name: 'Contact Details',
@@ -163,9 +162,13 @@ const GreylistedSteps: React.FC<RouteComponentProps & { showL1Modal: (data: any)
       name: 'Business Details',
       id: 'business_details',
       onClick,
-      isComplete: isBusinessDetailsCompleted && !shouldShowPoiError && !isCompanyPanInvalid,
-      hasErrorText:
-        shouldShowPoiError || isCompanyPanInvalid ? 'Unable to verify your PAN. Please update' : '',
+      isComplete:
+        isBusinessDetailsCompleted &&
+        !shouldShowPoiError &&
+        !isCompanyPanInvalid &&
+        !isGstinVerificationFailed &&
+        !isCinVerificationFailed,
+      hasErrorText: getTabError(),
     },
     {
       name: 'Bank and Business Details',
