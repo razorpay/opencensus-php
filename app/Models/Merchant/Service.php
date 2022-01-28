@@ -2206,23 +2206,38 @@ class Service extends Base\Service
     {
         $merchantCore = new Merchant\Core;
 
-        switch($type)
+        try
         {
-            case 'online_payment' :
-                return $merchantCore->fundAdditionViaOrders($input);
+            switch ($type) {
+                case 'online_payment' :
+                    return $merchantCore->fundAdditionViaOrders($input);
 
-            case 'account_transfer' :
-                return $merchantCore->fundAdditionViaBankTransfer($input);
+                case 'account_transfer' :
+                    return $merchantCore->fundAdditionViaBankTransfer($input);
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FUND_ADDITION_METHOD_IS_INVALID,
+                null,
+                [
+                    "type" => $type,
+                    "input" => $input
+                ]
+            );
         }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FUND_ADDITION_FAILED,
+                ["type" => $type]
+            );
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_FUND_ADDITION_METHOD_IS_INVALID,
-            null,
-            [
-                "type" => $type,
-                "input" =>$input
-            ]
-        );
+            return [
+                "error_code" => $e->getCode()
+            ];
+        }
     }
 
     /**

@@ -19,6 +19,8 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
+
         ],
     ],
     'testCreateOrderForFeeCreditAddition' => [
@@ -34,6 +36,8 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
+
         ],
     ],
     'testCreateOrderForReserveBalanceAddition' => [
@@ -49,6 +53,8 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
+
         ],
     ],
     'testCreateOrderAndMakePaymentForFeeCreditAddition' => [
@@ -64,6 +70,7 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
         ],
     ],
     'testTpvPaymentEntity' => [
@@ -98,6 +105,7 @@ return [
                     "type" => 'refund_credit'
                 ]
             ],
+            'status_code' => 200,
         ],
     ],
     'testCreateOrderAndMakePaymentForRefundCreditAdditionWithWebhook' => [
@@ -113,6 +121,7 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
         ],
     ],
     'orderPaidWebhookEventData' => [
@@ -191,6 +200,7 @@ return [
                     "type" => 'refund_credit'
                 ]
             ],
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithInvalidOrderStatusForRefundcredits' => [
@@ -263,15 +273,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                "error_code" => ErrorCode::BAD_REQUEST_ORDER_STATUS_INVALID_FOR_FUND_ADDITION
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_STATUS_INVALID_FOR_FUND_ADDITION
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithInvalidOrderStatusForFeeCredits' => [
@@ -344,16 +348,10 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                "error_code" => ErrorCode::BAD_REQUEST_ORDER_STATUS_INVALID_FOR_FUND_ADDITION
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_STATUS_INVALID_FOR_FUND_ADDITION
-        ],
+            'status_code' => 200,
+        ]
     ],
     'testFundAdditionWebhookWithInvalidPaymentIdForRefundCredits' => [
         'request'   => [
@@ -425,15 +423,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                "error_code" => ErrorCode::BAD_REQUEST_INVALID_ORDER_ID_IN_PAYMENT
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ORDER_ID_IN_PAYMENT
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithTamperedAmountForRefundCredits' => [
@@ -506,15 +498,10 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED
+
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAlreadyAddedForOrder' => [
@@ -587,15 +574,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_CREDITS_ALREADY_ADDED_FOR_THE_GIVEN_CAMPAIGN
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CREDITS_ALREADY_ADDED_FOR_THE_GIVEN_CAMPAIGN
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAlreadyAddedForReserveBalance' => [
@@ -668,15 +649,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_RESERVE_BALANCE_ALREADY_ADDED_FOR_GIVEN_DESC
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_RESERVE_BALANCE_ALREADY_ADDED_FOR_GIVEN_DESC
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAdditionInCredits' => [
@@ -749,8 +724,8 @@ return [
         ],
         'response'  => [
             'content'     => [
-
             ],
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAdditionInCreditsWithEmptyNotes' => [
@@ -821,15 +796,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION
+            'status_code' => 200,
         ],
     ],
     'testVACreation' => [
@@ -844,6 +813,7 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAdditionInvalidType' => [
@@ -927,15 +897,9 @@ return [
             ],
             'response'  => [
                 'content'     => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                    ],
+                    'error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION
                 ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class'               => 'RZP\Exception\BadRequestException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION
+                'status_code' => 200,
             ],
         ],
     'fundAdditionToVirtualAccount' => [
@@ -959,6 +923,7 @@ return [
             'content' => [
 
             ],
+            'status_code' => 200,
         ],
     ],
     'addFundsViaWebhook' => [
@@ -973,6 +938,7 @@ return [
             'content' => [
 
             ],
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionViaWebhookWithInvalidPaymentId' => [
@@ -1056,15 +1022,9 @@ return [
     ],
     'response'  => [
         'content'     => [
-            'error' => [
-                'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-            ],
+            'error_code' => ErrorCode::BAD_REQUEST_BANK_TRANSFER_INPUT_DATA_TAMPERED
         ],
-        'status_code' => 400,
-    ],
-    'exception' => [
-        'class'               => 'RZP\Exception\BadRequestException',
-        'internal_error_code' => ErrorCode::BAD_REQUEST_BANK_TRANSFER_INPUT_DATA_TAMPERED
+        'status_code' => 200,
     ],
 ],
 
@@ -1149,15 +1109,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED
+            'status_code' => 200,
         ],
     ],
     'testVACreationForReserveBalance' => [
@@ -1172,6 +1126,7 @@ return [
         'response' => [
             'content' => [
             ],
+            'status_code' => 200,
         ],
     ],
     'testVACreationIfBankAccountDoesNotExist' => [
@@ -1299,15 +1254,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_INFO_NOT_PRESENT_FOR_FUND_ADDITION
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAdditionInCreditsWithFeeMoreThanAmount' => [
@@ -1380,15 +1329,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION
+            'status_code' => 200,
         ],
     ],
     'testFundAdditionWebhookWithFundAdditionInReserveBalanceWithFeeMoreThanAmount' => [
@@ -1461,15 +1404,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
-                ],
+                'error_code' => ErrorCode::BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_AMOUNT_FOR_FUND_ADDITION
+            'status_code' => 200,
         ],
     ],
 ];

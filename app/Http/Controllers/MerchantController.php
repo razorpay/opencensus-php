@@ -475,7 +475,7 @@ class MerchantController extends Controller
 
         $data = $this->service()->addFundsViaWebhook($type, $input);
 
-        return ApiResponse::json($data);
+        return ApiResponse::json($data, 200);
     }
 
     public function putBankAccountUpdate()

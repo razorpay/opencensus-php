@@ -6185,6 +6185,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVALID_INPUT_FOR_FUND_ADDITION                   = 'INVALID_INPUT_FOR_FUND_ADDITION';
     const VIRTUAL_ACCOUNT_CLOSED_FOR_FUND_ADDITION          = 'VIRTUAL_ACCOUNT_CLOSED_FOR_FUND_ADDITION';
     const INVALID_AMOUNT_FOR_FUND_ADDITION                  = 'INVALID_AMOUNT_FOR_FUND_ADDITION';
+    const FUND_ADDITION_FAILED                              = 'FUND_ADDITION_FAILED';
 
     const MTU_COUPON_APPLY_FAILURE                          = 'MTU_COUPON_APPLY_FAILURE';
 
