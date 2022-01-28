@@ -167,6 +167,8 @@ class Tracing
             'tax_payments_edit',
             'tax_payments_cancel',
             'tax_payments_fetch_pending_gst',
+            'tax_payments_downtime_schedules_list',
+            'tax_payments_downtime_schedule',
 
             // direct tax payments API routes
             'direct_tax_payments_tds_category_public',
@@ -174,6 +176,8 @@ class Tracing
             'direct_tax_payments_create',
             'direct_tax_payments_create_options',
             'direct_tax_payments_pg_webhook',
+            'direct_tax_payments_downtime_schedule_public',
+            'direct_tax_payments_downtime_schedule_opt',
 
             // payout API routes
             'payout_create',

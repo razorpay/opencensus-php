@@ -950,7 +950,18 @@ return [
             'content' => []
         ]
     ],
-
+    'testDowntimeScheduleByModule'                        => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/_meta/downtime_schedule/manual_tax_payment',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
     'testReminderCallback'                        => [
         'request'  => [
             'method' => 'POST',
@@ -963,7 +974,6 @@ return [
             'content' => []
         ]
     ],
-
     'testFetchPendingGstCallsServiceMethod' => [
         'request' => [
             'method' => 'GET',

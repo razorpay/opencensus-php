@@ -1582,7 +1582,8 @@ class Route
         'tax_payments_mail_cron'                   => ['post',    'tax-payments/mailCron',                           'TaxPaymentController@mailCron'                                     ],
         'tax_payments_monthly_summary'             => ['get',     'tax-payments/_meta/summary',                      'TaxPaymentController@monthlySummary'                               ],
         'tax_payments_invalid_tan_status'          => ['get',     'tax-payments/_meta/invalid_tan_status',           'TaxPaymentController@getInvalidTanStatus'                          ],
-        'tax_payments_downtime_schedule'           => ['get',     'tax-payments/_meta/downtime_schedule',            'TaxPaymentController@getDowntimeSchedule'                          ],
+        'tax_payments_downtime_schedule'           => ['get',     'tax-payments/_meta/downtime_schedule/{module}',   'TaxPaymentController@getDowntimeSchedule'                          ],
+        'tax_payments_downtime_schedules_list'     => ['get',     'tax-payments/_meta/downtime_schedule',            'TaxPaymentController@listDowntimeSchedule'                         ],
         'tax_payments_admin_auth_api'              => ['post',    'tax-payments/admin',                              'TaxPaymentController@adminActions'                                 ],
         'tax_payments_payout_cron'                 => ['post',    'tax-payments/initiateMonthlyPayouts',             'TaxPaymentController@initiateMonthlyPayouts'                       ],
         'tax_payments_payout_cancel_cron'          => ['post',    'tax-payments/cancelQueuedPayouts',                'TaxPaymentController@cancelQueuedPayouts'                          ],
@@ -1606,12 +1607,13 @@ class Route
 
 
         // Direct Tax Payment
-        'direct_tax_payments_tds_category_public'  => ['get',    'tax-payments/direct/tds-categories',               'TaxPaymentController@getTdsCategories'                             ],
-        'direct_tax_payments_tds_category_opt'     => ['options','tax-payments/direct/tds-categories',               'TaxPaymentController@allowCors'                                   ],
-        'direct_tax_payments_create'               => ['post',   'tax-payments/direct',                              'TaxPaymentController@createDirectTaxPayment'                       ],
-        'direct_tax_payments_create_options'       => ['options','tax-payments/direct',                              'TaxPaymentController@allowCors'                                   ],
-        'direct_tax_payments_pg_webhook'           => ['post',   'tax-payments/direct/pg-webhook',                   'TaxPaymentController@webHookHandler'                               ],
-
+        'direct_tax_payments_tds_category_public'       => ['get',    'tax-payments/direct/tds-categories',               'TaxPaymentController@getTdsCategories'                            ],
+        'direct_tax_payments_tds_category_opt'          => ['options','tax-payments/direct/tds-categories',               'TaxPaymentController@allowCors'                                   ],
+        'direct_tax_payments_create'                    => ['post',   'tax-payments/direct',                              'TaxPaymentController@createDirectTaxPayment'                      ],
+        'direct_tax_payments_create_options'            => ['options','tax-payments/direct',                              'TaxPaymentController@allowCors'                                   ],
+        'direct_tax_payments_pg_webhook'                => ['post',   'tax-payments/direct/pg-webhook',                   'TaxPaymentController@webHookHandler'                              ],
+        'direct_tax_payments_downtime_schedule_public'  => ['get',    'tax-payments/direct/downtime_schedule',            'TaxPaymentController@getDowntimeSchedulePublic'                   ],
+        'direct_tax_payments_downtime_schedule_opt'     => ['options','tax-payments/direct/downtime_schedule',            'TaxPaymentController@allowCors'                                   ],
 
         // Payout Links
         'payout_links_reminder_callback'           => ['post',      'payout-links/send-reminder-callback/{id}',      'PayoutLinkController@sendReminderCallback'                         ],
@@ -5113,6 +5115,7 @@ class Route
         'tax_payments_fetch_pending_gst',
         'tax_payments_invalid_tan_status',
         'tax_payments_downtime_schedule',
+        'tax_payments_downtime_schedules_list',
         'payouts_scheduled_time_slots',
         'proxy_merchant_get_pricing',
         'payment_links_sign_payload',
@@ -7692,6 +7695,7 @@ class Route
         'tax_payments_create'                          => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_invalid_tan_status'              => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_downtime_schedule'               => Permission::CREATE_TAX_PAYMENTS,
+        'tax_payments_downtime_schedules_list'         => Permission::CREATE_TAX_PAYMENTS,
         'tax_payments_fetch_pending_gst'               => Permission::CREATE_TAX_PAYMENTS,
         'salesforce_event'                             => '*',
         'salesforce_opportunity_details'               => '*',
@@ -7903,6 +7907,8 @@ class Route
         'direct_tax_payments_tds_category_opt',
         'direct_tax_payments_create_options',
         'direct_tax_payments_pg_webhook',
+        'direct_tax_payments_downtime_schedule_public',
+        'direct_tax_payments_downtime_schedule_opt',
 
         // NPS webhook
         'consume_survey_typeform_webhook',
@@ -8941,6 +8947,7 @@ class Route
             'tax_payments_update_challan_file_id',
             'tax_payments_invalid_tan_status' ,
             'tax_payments_downtime_schedule',
+            'tax_payments_downtime_schedules_list',
             'tax_update',
             'tax_payments_fetch_pending_gst',
             'terminal_disable',
@@ -10725,6 +10732,7 @@ class Route
             'tax_payments_update_challan_file_id',
             'tax_payments_invalid_tan_status',
             'tax_payments_downtime_schedule',
+            'tax_payments_downtime_schedules_list',
             'tax_payments_fetch_pending_gst',
             'tax_update',
             'templating_create_namespace',
@@ -12668,6 +12676,7 @@ class Route
         'tax_payments_challan_download',
         'tax_payments_invalid_tan_status',
         'tax_payments_downtime_schedule',
+        'tax_payments_downtime_schedules_list',
         'tax_payments_fetch_pending_gst',
 
         // NPS routes

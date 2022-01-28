@@ -878,6 +878,7 @@ class UserRolesScope
             'tax_payments_challan_upload'                          => [Role::OWNER, Role::ADMIN],
             'tax_payments_create'                                  => [Role::OWNER, Role::ADMIN],
             'tax_payments_downtime_schedule'                       => [Role::OWNER, Role::ADMIN],
+            'tax_payments_downtime_schedules_list'                 => [Role::OWNER, Role::ADMIN],
             'tax_payments_edit'                                    => [Role::OWNER, Role::ADMIN],
             'tax_payments_fetch_pending_gst'                       => [Role::OWNER, Role::ADMIN],
             'tax_payments_get_all_settings'                        => [Role::OWNER, Role::ADMIN],

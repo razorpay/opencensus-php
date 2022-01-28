@@ -26,34 +26,35 @@ use RZP\Trace\TraceCode;
 class Service
 {
     // MS endpoints
-    const BASE_PATH = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
-    const GET_ALL_SETTINGS = 'GetAllSettings';
-    const ADD_OR_UPDATE_SETTINGS = 'AddOrUpdateSettings';
-    const GET_TAX_PAYMENT_BY_ID = 'GetTaxPayment';
-    const LIST_TAX_PAYMENTS = 'ListTaxPayments';
-    const PAY_TAX_PAYMENTS = 'PayTaxPayment';
-    const BULK_PAY_TAX_PAYMENTS = 'BulkPayTaxPayments';
-    const INITIATE_MONTHLY_PAYOUTS = 'InitiateMonthlyPayouts';
-    const CANCEL_QUEUED_PAYOUT_CRON = 'CancelQueuedPayoutCron';
-    const TAX_PAYMENT_ENABLED_KEY = 'tax_payment_enabled';
-    const MONTHLY_SUMMARY = 'MonthlySummary';
-    const ADD_PENALTY_CRON = 'AddPenaltyCron';
-    const MARK_AS_PAID = 'MarkAsPaid';
-    const UPLOAD_CHALLAN = 'UploadChallan';
-    const UPDATE_CHALLAN_FILE_ID = 'UpdateChallanFileId';
-    const ADMIN_ACTIONS = 'AdminActions';
-    const EMAIL_CRON = 'EmailCron';
-    const CREATE_MANUAL_TAX_PAYMENT = 'CreateManualTaxPayment';
-    const CREATE_DIRECT_TAX_PAYMENT = 'CreateDirectTaxPayment';
-    const PG_WEBHOOK_HANDLER = 'WebHookHandler';
-    const EDIT_MANUAL_TAX_PAYMENT = 'EditManualTaxPayment';
-    const CANCEL_MANUAL_TAX_PAYMENT = 'CancelManualTaxPayment';
-    const GET_TDS_CATEGORIES        = 'GetTdsCategories';
-    const GET_INVALID_TAN_STATUS    = 'GetInvalidTanStatus';
-    const GET_DOWNTIME_SCHEDULE     = 'GetDowntimeSchedule';
-    const ICICI_RETRY_CALLBACK      = 'IciciRetryCallback';
-    const FETCH_PENDING_GST         = 'FetchPendingGst';
-    const UFH_BULK_DOWNLOAD         = 'InitiateBulkChallanDownload';
+    const BASE_PATH                       = 'twirp/razorpay.vendorpayments.taxpayments.Taxpayments';
+    const GET_ALL_SETTINGS                = 'GetAllSettings';
+    const ADD_OR_UPDATE_SETTINGS          = 'AddOrUpdateSettings';
+    const GET_TAX_PAYMENT_BY_ID           = 'GetTaxPayment';
+    const LIST_TAX_PAYMENTS               = 'ListTaxPayments';
+    const PAY_TAX_PAYMENTS                = 'PayTaxPayment';
+    const BULK_PAY_TAX_PAYMENTS           = 'BulkPayTaxPayments';
+    const INITIATE_MONTHLY_PAYOUTS        = 'InitiateMonthlyPayouts';
+    const CANCEL_QUEUED_PAYOUT_CRON       = 'CancelQueuedPayoutCron';
+    const TAX_PAYMENT_ENABLED_KEY         = 'tax_payment_enabled';
+    const MONTHLY_SUMMARY                 = 'MonthlySummary';
+    const ADD_PENALTY_CRON                = 'AddPenaltyCron';
+    const MARK_AS_PAID                    = 'MarkAsPaid';
+    const UPLOAD_CHALLAN                  = 'UploadChallan';
+    const UPDATE_CHALLAN_FILE_ID          = 'UpdateChallanFileId';
+    const ADMIN_ACTIONS                   = 'AdminActions';
+    const EMAIL_CRON                      = 'EmailCron';
+    const CREATE_MANUAL_TAX_PAYMENT       = 'CreateManualTaxPayment';
+    const CREATE_DIRECT_TAX_PAYMENT       = 'CreateDirectTaxPayment';
+    const PG_WEBHOOK_HANDLER              = 'WebHookHandler';
+    const EDIT_MANUAL_TAX_PAYMENT         = 'EditManualTaxPayment';
+    const CANCEL_MANUAL_TAX_PAYMENT       = 'CancelManualTaxPayment';
+    const GET_TDS_CATEGORIES              = 'GetTdsCategories';
+    const GET_INVALID_TAN_STATUS          = 'GetInvalidTanStatus';
+    const GET_DOWNTIME_SCHEDULE_BY_MODULE = 'GetDowntimeScheduleByModule';
+    const GET_DOWNTIME_SCHEDULE           = 'GetDowntimeSchedule';
+    const ICICI_RETRY_CALLBACK            = 'IciciRetryCallback';
+    const FETCH_PENDING_GST               = 'FetchPendingGst';
+    const UFH_BULK_DOWNLOAD               = 'InitiateBulkChallanDownload';
 
     // general constants
     const DATA = 'data';
@@ -459,7 +460,16 @@ class Service
         return $this->makeRequest($merchant, $url, ['timestamp' => now()]);
     }
 
-    public function getDowntimeSchedule()
+    public function getDowntimeSchedule(string $module)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_DOWNTIME_SCHEDULE_BY_MODULE);
+
+        $input = ['module' => $module];
+
+        return $this->makeRequest(null, $url, $input);
+    }
+
+    public function listDowntimeSchedule()
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_DOWNTIME_SCHEDULE);
 

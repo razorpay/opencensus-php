@@ -7,6 +7,7 @@ use ApiResponse;
 
 class TaxPaymentController extends Controller
 {
+
     public function __construct()
     {
         parent::__construct();
@@ -158,7 +159,7 @@ class TaxPaymentController extends Controller
     {
         return $this->service->bulkChallanDownload($this->ba->getMerchant(), $this->input);
     }
-    
+
     public function listTaxPayments()
     {
         return $this->service->listTaxPayments($this->ba->getMerchant(), $this->input);
@@ -226,9 +227,39 @@ class TaxPaymentController extends Controller
         return $this->service->getInvalidTanStatus($this->ba->getMerchant());
     }
 
-    public function getDowntimeSchedule()
+    public function listDowntimeSchedule()
     {
-        return $this->service->getDowntimeSchedule();
+        return $this->service->listDowntimeSchedule();
+    }
+
+    public function getDowntimeSchedule(string $module)
+    {
+        return $this->service->getDowntimeSchedule($module);
+    }
+
+    public function getDowntimeSchedulePublic()
+    {
+        try
+        {
+            $module = 'direct_tax_payment';
+
+            $response = $this->service->getDowntimeSchedule($module);
+
+            $code = 200;
+
+        }
+        catch (\Exception $e)
+        {
+            $response = $e->getError()->toPublicArray();
+
+            $code = 400;
+        }
+
+        $response = ApiResponse::json($response, $code);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     public function reminderCallback(string $mode, string $type, string $entityId)

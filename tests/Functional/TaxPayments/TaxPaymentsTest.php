@@ -754,6 +754,21 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
+        $tpMock->shouldReceive('listDowntimeSchedule')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('listDowntimeSchedule');
+    }
+
+    public function testDowntimeScheduleByModule()
+    {
+        $this->ba->proxyAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
         $tpMock->shouldReceive('getDowntimeSchedule')->andReturn([]);
 
         $this->app->instance('tax-payments', $tpMock);
