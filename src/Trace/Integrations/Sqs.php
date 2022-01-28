@@ -15,7 +15,6 @@ class Sqs implements IntegrationInterface
         opencensus_trace_method('Aws\AwsClient', 'execute', [static::class, 'handleExecute']);
 
         opencensus_trace_method('Aws\Sqs\SqsClient', '__construct', [static::class, 'handleConstruct']);
-
     }
 
     public static function handleConstruct($command, $args)
@@ -33,7 +32,6 @@ class Sqs implements IntegrationInterface
                 'sameProcessAsParentSpan' => false
             ];
         }
-
     }
 
     public static function handleExecute($command, $args)
@@ -47,7 +45,6 @@ class Sqs implements IntegrationInterface
                 'sameProcessAsParentSpan' => false
             ];
         }
-
     }
 
     public static function formatArguments($command, $arguments)
@@ -81,5 +78,4 @@ class Sqs implements IntegrationInterface
         ];
         return $attributes;
     }
-
 }
