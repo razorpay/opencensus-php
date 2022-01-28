@@ -2624,7 +2624,7 @@ return [
         'response' => [
             'content' => [
                 'submitted'         => true,
-                'activation_status' => 'under_review',
+                'activation_status' => 'activated_mcc_pending',
                 'can_submit'        => true,
             ],
         ],

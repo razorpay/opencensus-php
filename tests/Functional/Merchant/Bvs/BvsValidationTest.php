@@ -297,7 +297,7 @@ class BvsValidationTest extends TestCase
                     'documentVerificationStatus' => 'verified',
                     'validation_status'          => 'success',
                     'error_code'                 => '',
-                    'activation_status'          => 'under_review',
+                    'activation_status'          => 'activated_mcc_pending',
                 ],
                 'merchantDetailsData' => [
                     'merchant_id'                      => $mid,
@@ -309,7 +309,6 @@ class BvsValidationTest extends TestCase
                 ]
             ],
         ];
-
         foreach ($possibleScenarios as $possibleScenario)
         {
             $this->updateBvsValidationStatusAndCheckMerchantDetailsPoa(
@@ -396,7 +395,7 @@ class BvsValidationTest extends TestCase
                     'documentVerificationStatus' => 'verified',
                     'validation_status'          => 'success',
                     'error_code'                 => '',
-                    'activation_status'          => 'under_review',
+                    'activation_status'          => 'activated_mcc_pending',
                 ],
                 'merchantDetailsData' => [
                     'merchant_id'             => $mid,
@@ -422,22 +421,17 @@ class BvsValidationTest extends TestCase
     protected function enableRazorXTreatmentForBvsValidation()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC)
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    return 'off';
+                }));
     }
 
     public function updateBvsValidationStatusAndCheckMerchantDetailsPoa($capturedBvsValidation,

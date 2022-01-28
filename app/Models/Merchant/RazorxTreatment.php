@@ -248,8 +248,6 @@ final class RazorxTreatment
     // experiment to skip poa documents if aadhaar esign is done
     const SKIP_POA_DOCUMENT_FUNCTIONALITY = "SKIP_POA_DOCUMENT_FUNCTIONALITY";
 
-    const AADHAAR_WITH_PAN_VERIFICATION = 'aadhaar_with_pan_verification';
-
     // experiment to enable axis wrapper feature
     const AXIS_WRAPPER_ENABLED = "AXIS_WRAPPER_ENABLED";
 
@@ -289,13 +287,7 @@ final class RazorxTreatment
 
     const PARTNER_SUBMERCHANT_INVITE_SMS = 'partner_submerchant_invite_sms';
 
-    // experiment to enable self serving of auto kyc registered merchants
-    const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
-
     const PRICING_PLAN_DEFAULT_METHODS = 'PRICING_PLAN_DEFAULT_METHODS';
-
-    // experiment to enable self serving of auto kyc unregistered merchants
-    const UNREG_SELF_SERVE_AUTO_KYC = 'unreg_self_serve_auto_kyc';
 
     // Experiment to verify bank account via karza
     const KARZA_BANK_ACCOUNT_VERIFICATION = 'KARZA_BANK_ACCOUNT_VERIFICATION';

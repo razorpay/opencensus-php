@@ -669,7 +669,6 @@ class M2MReferralTest extends TestCase
         $refereeMerchant  = $this->createMerchant('I0qYGdG9IGaVxz');
         $referrerMerchant = $this->createMerchant('Hm9Bv6kFufFS36');
         $this->ba->noAuth();
-
         $this->expectException(BadRequestException::class);
         $this->startTest();
 

@@ -113,8 +113,7 @@ class ActivationTest extends OAuthTestCase
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function($mid, $feature, $mode) {
-                    if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC or
-                        $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
+                    if ($feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
                         $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY or
                         $feature === RazorxTreatment::LITE_ONBOARDING or
                         $feature === RazorxTreatment::UPDATED_LITE_ONBOARDING)
@@ -3423,7 +3422,7 @@ class ActivationTest extends OAuthTestCase
             ValidationEntity::REGISTERED_NAME => "p kumar",
         ];
 
-        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated_mcc_pending');
     }
 
     public function testSuccessBankDetailsVerificationForPartnerShip()
@@ -3498,7 +3497,7 @@ class ActivationTest extends OAuthTestCase
             ValidationEntity::REGISTERED_NAME => "vijay laxmi subramaniam",
         ];
 
-        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'under_review');
+        $this->verifySuccessBankDetailVerification($favAttribute, $merchantDetailAttribute, 'activated_mcc_pending');
     }
 
     public function testProcessFavFromQueueActivatedMerchant()
@@ -3667,23 +3666,24 @@ class ActivationTest extends OAuthTestCase
 
         $this->checkFirstPennyTestingTry($attribute, $merchantDetail, 'initiated');
 
-        $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'under_review', 'verified');
+        $this->checkSecondPennyTestingTry($attribute1, $merchantDetail, 'activated_mcc_pending', 'verified');
 
         $this->assertPennyTestingAttemptCount($merchantDetail->getId(), 2);
     }
 
     public function testPennyTestingCronSuccessful()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
-                                                  ['business_type'                    => 2,
-                                                   'promoter_pan_name'                => 'rishabh acharya',
-                                                   'bank_account_name'                => 'rishabh acharya',
-                                                   'poa_verification_status'          => 'verified',
-                                                   'poi_verification_status'          => 'verified',
-                                                   'bank_details_verification_status' => 'initiated',
-                                                   'penny_testing_updated_at'         => time() - 7300,
-                                                   'submitted'                        => 1,
-                                                   'submitted_at'                     => now()->getTimestamp()]);
+        $attributes = ['business_type'                    => 2,
+            'promoter_pan_name'                => 'rishabh acharya',
+            'bank_account_name'                => 'rishabh acharya',
+            'poa_verification_status'          => 'verified',
+            'poi_verification_status'          => 'verified',
+            'bank_details_verification_status' => 'initiated',
+            'penny_testing_updated_at'         => time() - 7300,
+            'submitted'                        => 1,
+            'submitted_at'                     => now()->getTimestamp()];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
 
         $this->ba->cronAuth();
 
@@ -3697,7 +3697,7 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantDetail['merchant_id']);
 
-        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'under_review', 'verified');
+        $this->checkSecondPennyTestingTry($attribute, $merchantDetail, 'activated_mcc_pending', 'verified');
     }
 
     public function testPennyTestingCronActivatedMerchants()

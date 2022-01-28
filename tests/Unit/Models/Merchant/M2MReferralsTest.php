@@ -39,8 +39,7 @@ class M2MReferralsTest extends TestCase
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
                               function($mid, $feature, $mode) {
-                                  if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC or
-                                      $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
+                                  if ($feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
                                       $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
                                   {
                                       return 'on';

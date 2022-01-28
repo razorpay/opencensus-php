@@ -568,15 +568,6 @@ class Core extends Base\Core
             return;
         }
 
-        $isAadharWithPanVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchantDetails->getMerchantId(),
-            RazorxTreatment::AADHAAR_WITH_PAN_VERIFICATION);
-
-        if($isAadharWithPanVerificationEnabled === false)
-        {
-            return;
-        }
-
         $payload = [
             Constant::ARTEFACT_TYPE   => Constant::AADHAAR,
             Constant::CONFIG_NAME     => Constant::AADHAAR_WITH_PAN,
@@ -3573,14 +3564,7 @@ class Core extends Base\Core
             ($isImpersonated === false) and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
-            $isSelfServeEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-                $merchantDetails->getMerchantId(),
-                RazorxTreatment::SELF_SERVE_AUTO_KYC
-            );
-
-            if ($isSelfServeEnabled) {
-                return Status::ACTIVATED_MCC_PENDING;
-            }
+            return Status::ACTIVATED_MCC_PENDING;
         }
 
         return Status::UNDER_REVIEW;
@@ -3606,14 +3590,7 @@ class Core extends Base\Core
         if (($isImpersonated === false) and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
-            $isSelfServeEnabled = $this->mcore->isRazorxExperimentEnable(
-                $merchantDetails->getMerchantId(),
-                RazorxTreatment::UNREG_SELF_SERVE_AUTO_KYC
-            );
-
-            if ($isSelfServeEnabled) {
                 return Status::ACTIVATED_MCC_PENDING;
-            }
         }
 
         return Status::UNDER_REVIEW;
