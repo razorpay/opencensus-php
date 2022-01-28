@@ -473,7 +473,7 @@ return [
                 'reattach_current_owner' => true
             ],
             'url' => '/merchants/email_user/status',
-            'method' => 'GET',
+            'method' => 'POST',
         ],
         'response' => [
             'content' => [

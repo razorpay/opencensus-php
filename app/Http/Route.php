@@ -331,7 +331,7 @@ class Route
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'update_merchant_mobile_number'            => ['put',      'merchants/{id}/mobile',                          'MerchantController@putMerchantContact'                             ],
-        'email_user_status_for_email_update'       => ['get',      'merchants/email_user/status',                    'MerchantController@getUserStatusForEmailUpdateSelfServe'           ],
+        'email_user_status_for_email_update'       => ['post',     'merchants/email_user/status',                    'MerchantController@getUserStatusForEmailUpdateSelfServe'           ],
         'merchant_edit_email_self_serve'           => ['put',      'merchants/email/update',                         'MerchantController@putEditEmailAndTransferOwnershipToEmailUser'    ],
         'merchant_edit_email_create_user'          => ['post',     'merchants/email/update/create_user',             'MerchantController@putCreateNewUserAndTransferOwnerShip'           ],
         'merchant_billing_label_suggestions'       => ['get',      'merchants/billing_label/suggestions',            'MerchantController@getBillingLabelSuggestions'                     ],
