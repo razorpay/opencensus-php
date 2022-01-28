@@ -229,7 +229,7 @@ class Service extends Base\Service
             'bvs_in_sync',
             'rx_cohesive_pl_flows',
             'free_credit_recovery_banner',
-            'rx_mask_payroll_payouts',
+            'rx_skip_payroll_payouts',
             'show_activation_form_full_view',
             'magic_bulk_address_live',
             'remove_activation_progressbar',
