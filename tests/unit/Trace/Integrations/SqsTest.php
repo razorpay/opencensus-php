@@ -45,9 +45,7 @@ class SqsTest extends TestCase
             'name' => 'Sqs:Constructor',
             'sameProcessAsParentSpan' => false,
         );
-
         $this->assertEquals($expected, $span);
-
     }
 
     public function testHandleExecute()
@@ -85,9 +83,6 @@ class SqsTest extends TestCase
             'name' => 'Sqs SendMessage',
             'sameProcessAsParentSpan' => false,
         );
-
         $this->assertEquals($expected, $span);
-
     }
-
 }
