@@ -3380,8 +3380,6 @@ class ActivationTest extends OAuthTestCase
         $this->createMerchantDocumentEntries($merchantId, 'aadhar_front');
         $this->createMerchantDocumentEntries($merchantId, 'aadhar_back');
 
-        $this->fixtures->merchant->addFeatures(['fund_account_validations']);
-
         $plan = $this->createZeroFundAccountValidationPricingPlan();
 
         $this->createBalanceForSharedMerchant();

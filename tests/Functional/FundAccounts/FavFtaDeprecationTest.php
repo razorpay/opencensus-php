@@ -49,8 +49,6 @@ class FavFtaDeprecationTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->fixtures->merchant->addFeatures([Features::FAV_FTA_DPRCN_FWD, Features::FAV_FTA_DPRCN_BCK]);
-
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $this->ba->privateAuth();

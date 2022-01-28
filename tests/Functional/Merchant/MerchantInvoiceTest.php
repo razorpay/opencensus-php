@@ -33,8 +33,6 @@ class MerchantInvoiceTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['fund_account_validations']);
-
         $this->setUpEInvoiceClientMock();
 
         $this->ba->publicAuth();

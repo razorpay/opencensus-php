@@ -54,7 +54,6 @@ class Constants
     const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
     const CHECKOUT_VA_WITH_CUSTOMER       = 'checkout_va_with_customer';
-    const FUND_ACCOUNT_VALIDATIONS        = 'fund_account_validations';
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
@@ -808,16 +807,6 @@ class Constants
     const MFN = 'mfn';
 
     /**
-     * Used to enable new FAV forward flow, where FTA is deprecated.
-     */
-    const FAV_FTA_DPRCN_FWD = 'fav_fta_dprcn_fwd';
-
-    /**
-     * Used to enable new FAV forward flow, where FTA is deprecated.
-     */
-    const FAV_FTA_DPRCN_BCK = 'fav_fta_dprcn_bck';
-
-    /**
      * Used to enable covid 19 related donation on checkout
      */
     const COVID_19_RELIEF = 'covid_19_relief';
@@ -1271,7 +1260,6 @@ class Constants
         self::REPORTING_GENRERIC_NOTES        => true,
         self::S2S_OTP_JSON                    => true,
         self::S2S_JSON                        => true,
-        self::FUND_ACCOUNT_VALIDATIONS        => true,
         self::DISABLE_REFUNDS                 => true,
         self::DISABLE_CARD_REFUNDS            => true,
         self::DISABLE_AUTO_REFUNDS            => true,
@@ -1447,8 +1435,6 @@ class Constants
         self::PAYOUT_PROCESS_ASYNC            => true,
         self::FTS_REQUEST_NOTES               => true,
         self::RBL_CA_UPI                      => true,
-        self::FAV_FTA_DPRCN_FWD               => true,
-        self::FAV_FTA_DPRCN_BCK               => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::WHITE_LABELLED_INVOICES         => true,
         self::WHITE_LABELLED_ROUTE            => true,
