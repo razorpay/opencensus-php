@@ -40,7 +40,7 @@ return [
     ],
     'testGetReportsForAdmin' => [
         'request'  => [
-            'url'     => '/admin/reports/download/report_id',
+            'url'     => '/admin/reports/admin/list',
             'method'  => 'get',
         ],
         'response' => [
@@ -51,7 +51,7 @@ return [
     ],
     'testReportsGetReportById' => [
         'request'  => [
-            'url'     => '/admin/reports/filters/detailed_transaction',
+            'url'     => '/admin/reports/download/detailed_transaction',
             'method'  => 'get',
         ],
         'response' => [

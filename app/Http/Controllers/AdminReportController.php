@@ -40,7 +40,7 @@ class AdminReportController extends Controller
     }
 
     /*
-     * initiate generation of downloadable report file by report type + filter params
+     * Initiate generation of downloadable report file by report type + filter params
      */
     public function adminReportsDownloadReportsByType($type)
     {
@@ -60,7 +60,7 @@ class AdminReportController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::ADMIN_REPORT)->adminReportsGteReportsForAdmin($input);
+        $response = $this->service(E::ADMIN_REPORT)->adminReportsGetReportsForAdmin($input);
 
         return ApiResponse::json($response);
     }

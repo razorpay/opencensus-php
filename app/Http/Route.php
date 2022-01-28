@@ -1366,7 +1366,7 @@ class Route
         'admin_reports_fetch_filters'              => ['get',      'admin/reports/filters/{type}',                   'AdminReportController@adminReportsFiltersGetByType'                ],
         'admin_reports_fetch_report_data'          => ['get',      'admin/reports/{type}',                           'AdminReportController@adminReportsGetReportData'                   ],
         'admin_reports_fetch_reports_by_type'      => ['get',      'admin/reports/fetch/{type}',                     'AdminReportController@adminReportsDownloadReportsByType'           ],
-        'admin_reports_fetch_reports_for_admin'    => ['get',      'admin/reports',                                  'AdminReportController@adminReportsGetReportsForAdmin'              ],
+        'admin_reports_fetch_reports_for_admin'    => ['get',      'admin/reports/admin/list',                       'AdminReportController@adminReportsGetReportsForAdmin'              ],
         'admin_reports_fetch_reports_by_id'        => ['get',      'admin/reports/download/{report_id}',             'AdminReportController@adminReportsDownloadReportById'              ],
 
         // Permission can only be created by certain organizations.

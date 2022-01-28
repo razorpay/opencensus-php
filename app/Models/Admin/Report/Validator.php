@@ -18,4 +18,15 @@ class Validator extends Base\Validator
     protected static $editRules = [
 
     ];
+
+    public function validateType($type)
+    {
+        if (Type::isValidReportType($type) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid report type.');
+        }
+
+        return false;
+    }
 }
