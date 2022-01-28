@@ -79,13 +79,13 @@ class BankingScorecardTest extends TestCase
 
             // assert for month data
             $this->assertEquals($monthTaxCount, $mailData['month_tax_count']);
-            $this->assertEquals($monthTpv, $mailData['month_tpv']);
-            $this->assertEquals($monthFeesCollected, $mailData['month_fees_collected']);
+            $this->assertEquals($monthTpv, round($mailData['month_tpv'],2));
+            $this->assertEquals($monthFeesCollected, round($mailData['month_fees_collected'],2));
 
             // assert for yesterday data
             $this->assertEquals(2, $mailData['yesterday_tax_count']);
-            $this->assertEquals($yesterdayTpv, $mailData['yesterday_tpv']);
-            $this->assertEquals($yesterdayFeesCollected, $mailData['yesterday_fees_collected']);
+            $this->assertEquals($yesterdayTpv, round($mailData['yesterday_tpv'],2));
+            $this->assertEquals($yesterdayFeesCollected, round($mailData['yesterday_fees_collected'],2));
 
             return true;
         });
