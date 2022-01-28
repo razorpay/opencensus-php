@@ -10,6 +10,11 @@ class EventCode
      * Onboarding Events
      */
 
+    const BVS_IN_SYNC_CALL_RESPONSE             = "Sync mode BVS API Response";
+    const RETRY_INPUT_ACTIVATION_FORM   = "Re-entry Input Activation Form";
+    const BVS_IN_SYNC_CALL_REQUEST              = "Sync mode BVS API Call";
+    const BVS_IN_SYNC_ENABLED             = 'BVS in sync mode qualified';
+
     const ACTIVATION_STATUS_CHANGE  = "Activation Status changed";
 
     const BANKING_ACCOUNT_STATUS_CHANGE = "Banking Account Status Change";

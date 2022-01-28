@@ -77,9 +77,12 @@ abstract class BaseStatusUpdater implements StatusUpdater
      * BaseStatusUpdater constructor.
      *
      * @param MerchantEntity $merchant
+     * @param DetailEntity   $merchantDetails
      * @param Validation     $consumedValidation
      */
-    public function __construct(MerchantEntity $merchant, Entity $consumedValidation)
+    public function __construct(MerchantEntity $merchant,
+                                DetailEntity $merchantDetails,
+                                Entity $consumedValidation)
     {
         $this->app = App::getFacadeRoot();
 
@@ -89,7 +92,7 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
         $this->merchant = $merchant;
 
-        $this->merchantDetails = $merchant->merchantDetail;
+        $this->merchantDetails = $merchantDetails;
 
         $this->merchantId = $this->merchantDetails->getMerchantId();
 

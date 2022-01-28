@@ -38,6 +38,10 @@ class LlpinAuth extends Base
 
     public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
-        $this->merchantDetails->setCinVerificationStatus(BvsValidationConstants::INITIATED);
+
+        if ($this->merchantDetails->getCinVerificationStatus() === BvsValidationConstants::PENDING)
+        {
+            $this->merchantDetails->setCinVerificationStatus(BvsValidationConstants::INITIATED);
+        }
     }
 }

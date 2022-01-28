@@ -30,16 +30,18 @@ class DefaultStatusUpdater extends BaseStatusUpdater
      * DefaultStatusUpdate constructor.
      *
      * @param MerchantEntity $merchant
+     * @param Detail\Entity  $merchantDetails
      * @param string         $documentTypeStatusKey
      * @param Entity         $consumedValidation
      * @param string         $entity
      */
     public function __construct(MerchantEntity $merchant,
+                                Detail\Entity $merchantDetails,
                                 string $documentTypeStatusKey,
                                 Entity $consumedValidation,
                                 string $entity = E::MERCHANT_DETAIL)
     {
-        parent::__construct($merchant, $consumedValidation);
+        parent::__construct($merchant,$merchantDetails, $consumedValidation);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
 

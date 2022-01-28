@@ -43,7 +43,7 @@ class GetGstDetailsResponse extends \Google\Protobuf\Internal\Message
      */
     public function getCount()
     {
-        return $this->count;
+        return isset($this->count) ? $this->count : null;
     }
 
     public function hasCount()

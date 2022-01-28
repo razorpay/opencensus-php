@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Service;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
@@ -20,7 +21,7 @@ use RZP\Models\BankingAccount\Activation\Detail\Entity as BankingAccountActivati
 
 class Core extends Base\Core
 {
-    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT  = 'bvs_validation_processing_attempt_count_';
+    const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT = 'bvs_validation_processing_attempt_count_';
 
     const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_CACHE_KEY = 'bvs_validation_custom_process_validation_%s';
 
@@ -28,21 +29,25 @@ class Core extends Base\Core
 
     const BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT_TTL_IN_SEC = 10800;
 
-    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC  = 36000;
+    const BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC = 36000;
 
     const DEFAULT_CALLBACK_HANDLER_FUNCTION = 'updateValidationStatusForMerchant';
 
     protected $mutex;
 
+    protected $merchantDetails;
+
     protected $cache;
 
-    public function __construct()
+    public function __construct($merchantDetails = null)
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
 
         $this->cache = $this->app['cache'];
+
+        $this->merchantDetails = $merchantDetails;
     }
 
     /**
@@ -58,6 +63,7 @@ class Core extends Base\Core
         (new Validator())->validateInput('process_kafka_message', $payload);
 
         $validationObj = $this->getvalidationObject($payload);
+
 
         $validationId = $validationObj[Entity::VALIDATION_ID];
 
@@ -132,11 +138,11 @@ class Core extends Base\Core
     public function getValidationObject(array $payload): array
     {
         return [
-            Entity::VALIDATION_ID           => $payload[Constants::VALIDATION_ID],
-            Entity::VALIDATION_STATUS       => $payload[Constants::STATUS],
-            Entity::ERROR_CODE              => $payload[Constants::ERROR_CODE] ?? null,
-            Entity::ERROR_DESCRIPTION       => $payload[Constants::ERROR_DESCRIPTION] ?? null,
-            Entity::RULE_EXECUTION_LIST     => $payload[Constants::RULE_EXECUTION_LIST] ?? []
+            Entity::VALIDATION_ID       => $payload[Constants::VALIDATION_ID],
+            Entity::VALIDATION_STATUS   => $payload[Constants::STATUS],
+            Entity::ERROR_CODE          => $payload[Constants::ERROR_CODE] ?? null,
+            Entity::ERROR_DESCRIPTION   => $payload[Constants::ERROR_DESCRIPTION] ?? null,
+            Entity::RULE_EXECUTION_LIST => $payload[Constants::RULE_EXECUTION_LIST] ?? []
         ];
     }
 
@@ -152,11 +158,13 @@ class Core extends Base\Core
      */
     protected function updateValidationStatusForMerchant(string $merchantId, Entity $validation): void
     {
-        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+        [$merchant, $merchantDetails] = (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $merchantDetails = $this->merchantDetails ?? $merchantDetails;
 
         $statusUpdateFactory = new DocumentStatusUpdater\Factory();
 
-        $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
+        $statusUpdater = $statusUpdateFactory->getInstance($merchant, $merchantDetails, $validation);
 
         $statusUpdater->updateValidationStatus();
 
@@ -168,7 +176,7 @@ class Core extends Base\Core
 
     protected function releaseLinkedAccountHoldFundsIfApplicable($merchant, $merchantDetails)
     {
-        if( $merchantDetails->isBankDetailStatusVerified() === true and
+        if ($merchantDetails->isBankDetailStatusVerified() === true and
             $merchant->isLinkedAccount() === true and
             $merchant->getHoldFunds() === true and
             $merchant->getHoldFundsReason() === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING)
@@ -181,7 +189,9 @@ class Core extends Base\Core
 
     protected function UpdateValidationStatusForBankingAccount(string $merchantId, Entity $validation)
     {
-        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+        [$merchant, $merchantDetails] = (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $merchantDetails = $this->merchantDetails ?? $merchantDetails;
 
         $artefactType = $validation->getArtefactType();
 
@@ -190,12 +200,14 @@ class Core extends Base\Core
             case Constant::BUSINESS_PAN:
                 $statusUpdater = new DocumentStatusUpdater\BusinessPanForCA(
                     $merchant,
+                    $merchantDetails,
                     BankingAccountActivationEntity::BUSINESS_PAN_VALIDATION,
                     $validation);
                 break;
             case Constant::PERSONAL_PAN:
                 $statusUpdater = new DocumentStatusUpdater\PersonalPanForCA(
                     $merchant,
+                    $merchantDetails,
                     BankingAccountActivationEntity::BUSINESS_PAN_VALIDATION,
                     $validation);
                 break;
@@ -227,7 +239,7 @@ class Core extends Base\Core
 
     protected function GstinSelfServeCallbackHandler(string $merchantId, Entity $validation): void
     {
-        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+        [$merchant, $merchantDetails] = (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
 
         $service = (new Merchant\Detail\Service());
 
@@ -236,19 +248,14 @@ class Core extends Base\Core
 
     protected function BankAccountUpdateCallbackHandler(string $merchantId, Entity $validation): void
     {
-        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+        [$merchant, $merchantDetails] = (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
 
-        (new BankAccountCore())->handleBankAccountUpdateCallback($merchant, $validation);
+        (new BankAccountCore())->handleBankAccountUpdateCallback($merchant, $merchantDetails, $validation);
     }
 
-    /**
-     * @param string $validationId
-     * @param array  $validationObj
-     */
-    public function processValidation(string $validationId, array $validationObj): void
-    {
-        $validation = $this->repo->bvs_validation->findOrFail($validationId);
 
+    protected function getMerchantId($validation)
+    {
         $ownerId = $validation->getOwnerId();
 
         $validationOwnerType = $validation->getOwnerType();
@@ -259,10 +266,24 @@ class Core extends Base\Core
 
             $merchantId = $bankingAccount->getMerchantId();
         }
+
         else
         {
             $merchantId = $ownerId;
         }
+
+        return $merchantId;
+    }
+
+    /**
+     * @param string $validationId
+     * @param array  $validationObj
+     */
+    public function processValidation(string $validationId, array $validationObj): void
+    {
+        $validation = $this->repo->bvs_validation->findOrFail($validationId);
+
+        $merchantId = $this->getMerchantId($validation);
 
         $validation->edit($validationObj);
 
@@ -295,19 +316,26 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
 
+        $this->UpdateMerchantContext($merchantId, $validation);
+    }
+
+    protected function UpdateMerchantContext($merchantId, $validation)
+    {
         try
         {
             $statusUpdateFactory = new DocumentStatusUpdater\Factory();
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
+            $merchantDetails = $this->merchantDetails ?? $merchant->merchantDetail;
+
+            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $merchantDetails, $validation);
 
             if ($statusUpdater->canUpdateMerchantContext())
             {
                 $this->trace->info(TraceCode::MERCHANT_STATUS_UPDATER_TRY, [
                     'merchant_id'   => $merchantId,
-                    'validation_id' => $validationId,
+                    'validation_id' => $validation->getValidationId(),
                 ]);
 
                 $statusUpdater->updateMerchantContext();
@@ -317,7 +345,7 @@ class Core extends Base\Core
         {
             $errorContext = [
                 'merchant_id'   => $merchantId,
-                'validation_id' => $validationId,
+                'validation_id' => $validation->getValidationId(),
                 'message'       => $e->getMessage(),
             ];
 
@@ -353,13 +381,14 @@ class Core extends Base\Core
 
     /**
      * @param string $validationId
+     *
      * @return int return the retry count for the validationId
      */
     protected function getValidationProcessingAttempts(string $validationId): int
     {
         $bvsValidationProcessingAttemptKey = $this->getbvsValidationProcessingAttemptKey($validationId);
 
-       return $this->cache->get($bvsValidationProcessingAttemptKey) ?? 0;
+        return $this->cache->get($bvsValidationProcessingAttemptKey) ?? 0;
     }
 
 
@@ -368,7 +397,7 @@ class Core extends Base\Core
      *
      * @param string $validationId
      */
-    protected function incrementValidationProcessingAttempt(string $validationId) : void
+    protected function incrementValidationProcessingAttempt(string $validationId): void
     {
         $bvsValidationProcessingAttempt = $this->getValidationProcessingAttempts($validationId);
 
@@ -379,9 +408,9 @@ class Core extends Base\Core
      * Updates the redis key with the retry count
      *
      * @param string $validationId
-     * @param int $count
+     * @param int    $count
      */
-    protected function updateBvsValidationProcessingAttempts(string $validationId, int $count) : void
+    protected function updateBvsValidationProcessingAttempts(string $validationId, int $count): void
     {
         $bvsValidationProcessingAttemptRedisKey = $this->getbvsValidationProcessingAttemptKey($validationId);
 
@@ -390,10 +419,12 @@ class Core extends Base\Core
 
     /**
      * Redis Key for BVS Validation Id retry.
+     *
      * @param string $validationId
+     *
      * @return string
      */
-    protected function getbvsValidationProcessingAttemptKey(string $validationId) : string
+    protected function getbvsValidationProcessingAttemptKey(string $validationId): string
     {
         return self::BVS_VALIDATION_PROCESSING_ATTEMPT_COUNT . $validationId;
     }
@@ -412,8 +443,8 @@ class Core extends Base\Core
         }
 
         $this->trace->info(TraceCode::BVS_USING_CUSTOM_CALLBACK_PROCESSOR, [
-            'validation_id'     => $validation->getValidationId(),
-            'handler'           => $customCallbackHandlerFunction,
+            'validation_id' => $validation->getValidationId(),
+            'handler'       => $customCallbackHandlerFunction,
         ]);
 
         return $customCallbackHandlerFunction;
@@ -421,26 +452,44 @@ class Core extends Base\Core
 
     public function setCustomCallbackHandlerIfApplicable(Base\Entity $validation, $input)
     {
-        if (isset($input[Constant::CUSTOM_CALLBACK_HANDLER]) === false)
+        if ($validation->getValidationStatus() == BvsValidationConstant::CAPTURED)
         {
-            return;
+            if (isset($input[Constant::CUSTOM_CALLBACK_HANDLER]) === false)
+            {
+                return;
+            }
+            $customHandler = studly_case($input[Constant::CUSTOM_CALLBACK_HANDLER]);
+
+            $this->trace->info(TraceCode::BVS_SET_CUSTOM_CALLBACK_PROCESSOR, [
+                'validation_id' => $validation->getValidationId(),
+                'handler'       => $customHandler,
+            ]);
+
+            $customHandlerKey = $this->getCustomHandlerKey($validation);
+
+            $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC);
+        }
+        else
+        {
+            if (isset($input[Constant::CUSTOM_CALLBACK_HANDLER]) === false)
+            {
+                $customHandler = self::DEFAULT_CALLBACK_HANDLER_FUNCTION;
+            }
+            else
+            {
+                $customHandler = studly_case($input[Constant::CUSTOM_CALLBACK_HANDLER]);
+            }
+
+            $merchantId = $this->getMerchantId($validation);
+            $this->$customHandler(
+                $merchantId,
+                $validation);
         }
 
-        $customHandler = studly_case($input[Constant::CUSTOM_CALLBACK_HANDLER]);
-
-        $this->trace->info(TraceCode::BVS_SET_CUSTOM_CALLBACK_PROCESSOR, [
-            'validation_id'     => $validation->getValidationId(),
-            'handler'           => $customHandler,
-        ]);
-
-        $customHandlerKey = $this->getCustomHandlerKey($validation);
-
-        $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC);
     }
 
     protected function getCustomHandlerKey(Base\Entity $validation)
     {
         return sprintf(self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_CACHE_KEY, $validation->getValidationId());
     }
-
 }

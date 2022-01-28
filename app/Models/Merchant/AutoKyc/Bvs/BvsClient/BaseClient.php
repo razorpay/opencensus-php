@@ -28,13 +28,26 @@ class BaseClient
 
     const CLIENT_ID_KEY = 'X-Client-ID';
 
-    function __construct()
+    const IS_SYNC = 'is_sync';
+
+    protected $sync;
+
+    /**
+     * @var mixed|null
+     */
+    protected $merchant;
+
+    function __construct($merchant = null,$sync = false)
     {
         $app = App::getFacadeRoot();
 
         $this->app = $app;
 
         $this->trace = $app['trace'];
+
+        $this->merchant = $merchant;
+
+        $this->sync = $sync;
 
         $this->bvsConfig = $app['config']['services.business_verification_service'];
 
@@ -47,7 +60,9 @@ class BaseClient
         $headers = [
             self::AUTHORIZATION_KEY => $auth,
             self::REQUEST_ID_KEY    => Request::getTaskId(),
-            self::CLIENT_ID_KEY     => $this->bvsConfig['client_id']];
+            self::CLIENT_ID_KEY     => $this->bvsConfig['client_id'],
+            self::IS_SYNC           => ($sync?'true':'false')
+        ];
 
         $this->apiClientCtx = Context::withHttpRequestHeaders([], $headers);
     }

@@ -16,11 +16,14 @@ class POI extends BaseStatusUpdater
      * POI constructor.
      *
      * @param MerchantEntity $merchant
+     * @param Detail\Entity  $merchantDetails
      * @param Entity         $consumedValidation
      */
-    public function __construct(MerchantEntity $merchant, Entity $consumedValidation)
+    public function __construct(MerchantEntity $merchant,
+                                Detail\Entity $merchantDetails,
+                                Entity $consumedValidation)
     {
-        parent::__construct($merchant, $consumedValidation);
+        parent::__construct($merchant,$merchantDetails,$consumedValidation);
 
         $this->documentTypeStatusKey = Detail\Entity::POI_VERIFICATION_STATUS;
     }

@@ -314,7 +314,8 @@ class GetGstDetailsTest extends TestCase
 
         $data = [
             StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1,
+            ConfigKey::MERCHANT_DETAILS =>$merchantDetails->toArray()
         ];
 
         $data = (new StoreCore())->updateMerchantStore($merchantId,
@@ -561,18 +562,18 @@ class GetGstDetailsTest extends TestCase
         Mail::fake();
 
         $merchantDetails = $this->fixtures->create('merchant_detail:valid_fields', [
-            'business_type'             => 4,
-            'business_category'         => 'financial_services',
-            'business_subcategory'      => 'accounting',
-            'activation_flow'           => 'whitelist',
-            'activation_form_milestone' => 'L1',
-            'poi_verification_status'   => 'pending',
-            'promoter_pan'              => 'AAAPA1234J',
-            'activation_status'         => 'instantly_activated',
-            'bank_account_name'         => 'Test1',
-            'bank_account_number'       => '111001',
-            'bank_branch_ifsc'          => 'SBIN0007105',
-            'bank_details_verification_status'=>'failed'
+            'business_type'                    => 4,
+            'business_category'                => 'financial_services',
+            'business_subcategory'             => 'accounting',
+            'activation_flow'                  => 'whitelist',
+            'activation_form_milestone'        => 'L1',
+            'poi_verification_status'          => 'pending',
+            'promoter_pan'                     => 'AAAPA1234J',
+            'activation_status'                => 'instantly_activated',
+            'bank_account_name'                => 'Test1',
+            'bank_account_number'              => '111001',
+            'bank_branch_ifsc'                 => 'SBIN0007105',
+            'bank_details_verification_status' => 'failed'
         ]);
 
         $merchantId = $merchantDetails['merchant_id'];
@@ -583,16 +584,18 @@ class GetGstDetailsTest extends TestCase
 
         $data = [
             StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1,
+            ConfigKey::MERCHANT_DETAILS                        => $merchantDetails->toArray()
         ];
+        $core = new StoreCore();
 
-        $data = (new StoreCore())->updateMerchantStore($merchantId,
-                                                       $data,
-                                                       StoreConstants::INTERNAL);
+        $data = $core->updateMerchantStore($merchantDetails->getMerchantId(),
+                                           $data,
+                                           StoreConstants::INTERNAL);
 
         $this->startTest();
 
-        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantId,'merchant','bank_account');
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantId, 'merchant', 'bank_account');
         $this->assertEmpty($bvsValidation);
 
         $keys = [

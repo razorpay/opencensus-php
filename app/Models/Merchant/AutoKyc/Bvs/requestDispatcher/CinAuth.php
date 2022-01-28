@@ -38,6 +38,9 @@ class CinAuth extends Base
 
     public function performPostProcessOperation(BvsValidation\Entity $validation): void
     {
-        $this->merchantDetails->setCinVerificationStatus(BvsValidationConstants::INITIATED);
+        if ($this->merchantDetails->getCinVerificationStatus() === BvsValidationConstants::PENDING)
+        {
+            $this->merchantDetails->setCinVerificationStatus(BvsValidationConstants::INITIATED);
+        }
     }
 }

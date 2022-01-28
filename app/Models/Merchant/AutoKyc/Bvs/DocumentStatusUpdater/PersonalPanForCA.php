@@ -17,11 +17,12 @@ class PersonalPanForCA extends BaseStatusUpdater
     protected $bankingAccountActivationDetail;
 
     public function __construct(MerchantEntity $merchant,
+                                Detail\Entity $merchantDetails,
                                 string $documentTypeStatusKey,
                                 BvsValidation\Entity $validation,
                                 string $entity = E::BANKING_ACCOUNT_ACTIVATION_DETAIL)
     {
-        parent::__construct($merchant, $validation);
+        parent::__construct($merchant,$merchantDetails, $validation);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
 

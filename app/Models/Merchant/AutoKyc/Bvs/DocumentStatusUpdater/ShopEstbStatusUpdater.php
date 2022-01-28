@@ -26,14 +26,16 @@ class ShopEstbStatusUpdater extends BaseStatusUpdater
      * DefaultStatusUpdate constructor.
      *
      * @param MerchantEntity $merchant
-     * @param Entity $consumedValidation
-     * @param string $entity
+     * @param Detail\Entity  $merchantDetails
+     * @param Entity         $consumedValidation
+     * @param string         $entity
      */
     public function __construct(MerchantEntity $merchant,
+                                Detail\Entity $merchantDetails,
                                 Entity $consumedValidation,
                                 string $entity=E::MERCHANT_DETAIL)
     {
-        parent::__construct($merchant, $consumedValidation);
+        parent::__construct($merchant,$merchantDetails, $consumedValidation);
 
         $this->entity = $entity;
     }

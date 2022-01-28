@@ -8,12 +8,15 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Arr;
+use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Store\Constants;
 use RZP\Models\Merchant\AutoKyc\Response;
 use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\Merchant\MerchantActionNotification;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
@@ -23,6 +26,19 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsBaseResponse;
 
 class Core extends Base\Core
 {
+
+    protected $merchant;
+
+    protected $merchantDetails;
+
+    public function __construct(Entity $merchant = null, DetailEntity $merchantDetails = null)
+    {
+        parent::__construct();
+
+        $this->merchantDetails = $merchantDetails;
+        $this->merchant        = $merchant;
+    }
+
     public function fetchValidationDetails(string $merchantId, array $input, $validationId = null)
     {
         if (is_null($validationId) === true)
@@ -30,14 +46,15 @@ class Core extends Base\Core
             $validationObj = (new BvsValidation\Core)->getLatestArtefactValidation(
                 $merchantId, $input[Constant::ARTEFACT_TYPE], $input[Constant::VALIDATION_UNIT]);
 
-            if (empty($validationObj) === true) {
+            if (empty($validationObj) === true)
+            {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
             }
 
             $validationId = $validationObj->getValidationId();
         }
 
-        $processor = (new Factory())->getProcessor($input);
+        $processor = (new Factory())->getProcessor($input,$this->merchantDetails);
 
         $response = $processor->FetchDetails($validationId);
 
@@ -61,21 +78,21 @@ class Core extends Base\Core
         $input[Constant::OWNER_ID] = $ownerId;
 
         $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, [
-            'owner_id'  => $ownerId,
-            'input'     => Arr::except($input, Constant::MASKED_KEYS_FOR_LOGGING)]);
+            'owner_id' => $ownerId,
+            'input'    => Arr::except($input, Constant::MASKED_KEYS_FOR_LOGGING)]);
 
         $validation                  = null;
         $validationTriggeringSuccess = true;
 
         try
         {
-            $processor = (new Factory())->getProcessor($input);
+            $processor = (new Factory())->getProcessor($input, $this->merchant);
 
             $response = $processor->Process();
 
             $validationObject = $this->getValidationObject($input, $response);
 
-            $bvsCore = new BvsValidation\Core();
+            $bvsCore = new BvsValidation\Core($this->merchantDetails);
 
             $validation = $bvsCore->create($validationObject);
 
@@ -154,8 +171,8 @@ class Core extends Base\Core
      */
     public function getCompanySearchRateLimiterKey(string $merchantId): string
     {
-         return DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
-                                        $merchantId;
+        return DetailConstants::COMPANY_SEARCH_ATTEMPT_COUNT_REDIS_KEY_PREFIX .
+               $merchantId;
     }
 
     /**
@@ -271,11 +288,11 @@ class Core extends Base\Core
 
                 $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
 
-                $gstDetails= $getGstDetailsBase->geGstDetailsResponse();
+                $gstDetails = $getGstDetailsBase->geGstDetailsResponse();
 
                 $data = [
-                    Constants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
-                    ConfigKey::GST_DETAILS_FROM_PAN                 => json_encode($gstDetails),
+                    Constants::NAMESPACE            => ConfigKey::ONBOARDING_NAMESPACE,
+                    ConfigKey::GST_DETAILS_FROM_PAN => json_encode($gstDetails),
                 ];
 
                 $data = (new StoreCore())->updateMerchantStore($pan, $data, Constants::INTERNAL);
@@ -285,5 +302,4 @@ class Core extends Base\Core
 
         }
     }
-
 }

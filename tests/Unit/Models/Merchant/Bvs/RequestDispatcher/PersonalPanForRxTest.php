@@ -6,7 +6,7 @@ namespace Unit\Models\Merchant\Bvs\RequestDispatcher;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\AutoKyc\Bvs\DefaultProcessor;
+use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessor;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\PersonalPanForBankingAccount;
 

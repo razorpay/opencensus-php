@@ -32,10 +32,11 @@ class CertificateOfIncorporationStatusUpdater extends BaseStatusUpdater
      */
 
     public function __construct(MerchantEntity $merchant,
+                                Detail\Entity $merchantDetails,
                                 Entity $consumedValidation,
                                 string $entity=E::MERCHANT_DETAIL)
     {
-        parent::__construct($merchant, $consumedValidation);
+        parent::__construct($merchant,$merchantDetails, $consumedValidation);
 
         $this->entity = $entity;
     }

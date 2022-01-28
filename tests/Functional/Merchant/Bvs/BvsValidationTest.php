@@ -18,6 +18,7 @@ use RZP\Services\KafkaMessageProcessor;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\BvsValidation\Repository;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -60,11 +61,13 @@ class BvsValidationTest extends TestCase
         $expectedValues = [
             'artefact_type'     => 'personal_pan',
             'validation_unit'   => 'identifier',
-            'owner_id'          => '10000000000000',
+            'owner_id'          => $mid,
             'owner_type'        => 'merchant',
             'platform'          => 'pg',
             'validation_status' => 'captured',
         ];
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', 'personal_pan');
 
         // since we've removed that code now.
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
@@ -73,33 +76,38 @@ class BvsValidationTest extends TestCase
 
     public function testCreateBvsValidationPoiFailed()
     {
+        $mid='10000000000000';
         $merchantDetailsData = [
-            'merchant_id' => '10000000000000'
+            'merchant_id' => $mid
         ];
 
         $this->mockRazorX('testCreateBvsValidationPoi',
                           'bvs_auto_kyc',
                           'on',
-                          '10000000000000');
+                          $mid);
 
         $bvsValidation = $this->triggerBvsVerification('testCreateBvsValidationPoi',
                                                        $merchantDetailsData,
                                                        true,
                                                        'failure');
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', 'personal_pan');
+
 
         $this->assertNull($bvsValidation);
     }
 
     public function testCreateBvsValidationRequestFail()
     {
+        $mid='10000000000000';
         $merchantDetailsData = [
-            'merchant_id' => '10000000000000'
+            'merchant_id' => $mid
         ];
 
         $this->mockRazorX('testCreateBvsValidationPoi',
                           'bvs_auto_kyc',
                           'on',
-                          '10000000000000');
+                          $mid);
 
         $httpClient = $this->app['bvs_http_client'];
 
@@ -109,6 +117,8 @@ class BvsValidationTest extends TestCase
                                                        $merchantDetailsData,
                                                        false);
 
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', 'personal_pan');
         $this->assertNull($bvsValidation);
     }
 
@@ -156,6 +166,8 @@ class BvsValidationTest extends TestCase
             'artefact_type' => $artefactType,
             'owner_id'      => $mid,
         ];
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', $artefactType);
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 
@@ -184,6 +196,8 @@ class BvsValidationTest extends TestCase
         $request['content']['document_type'] = sprintf($request['content']['document_type'], Type::AADHAR_BACK);
 
         $bvsValidation = $this->triggerBvsVerification($test, $merchantDetailsData);
+        // Verify bvs_validation entity is created
+        $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($mid, 'merchant', Constant::AADHAAR);
 
         $expectedValues = [
             'artefact_type' => Constant::AADHAAR,

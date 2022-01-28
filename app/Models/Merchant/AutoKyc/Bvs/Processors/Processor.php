@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\AutoKyc\Bvs;
+namespace RZP\Models\Merchant\AutoKyc\Bvs\Processors;
 
 use RZP\Models\Merchant\AutoKyc\Response;
 use \RZP\Models\Merchant\AutoKyc\Processor as AutoKycProcessor;

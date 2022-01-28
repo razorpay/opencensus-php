@@ -737,7 +737,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function handleBankAccountUpdateCallback($merchant, $validation)
+    public function handleBankAccountUpdateCallback($merchant, $merchantDetails,$validation)
     {
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
 
@@ -745,7 +745,7 @@ class Core extends Base\Core
 
         $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
 
-        $status = (new BankAccountStatusUpdater($merchant, $validation))->getDocumentValidationStatus($validation);
+        $status = (new BankAccountStatusUpdater($merchant, $merchantDetails,$validation))->getDocumentValidationStatus($validation);
 
         try
         {

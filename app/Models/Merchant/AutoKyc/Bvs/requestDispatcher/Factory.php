@@ -94,9 +94,9 @@ class Factory
             new PersonalPanOcr($merchant, $merchantDetails),
             new CancelledChequeOcr($merchant, $merchantDetails),
             new ShopEstablishmentAuth($merchant, $merchantDetails),
-            new GstinAuth($merchant, $merchantDetails),
             new LlpinAuth($merchant, $merchantDetails),
             new CinAuth($merchant, $merchantDetails),
+            new GstinAuth($merchant, $merchantDetails),
             new BankAccount($merchant, $merchantDetails),
             new CompanyPan($merchant, $merchantDetails),
             new PersonalPan($merchant, $merchantDetails)

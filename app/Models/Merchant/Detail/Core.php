@@ -92,6 +92,8 @@ use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\CinAuth;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\LlpinAuth;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
@@ -348,6 +350,17 @@ class Core extends Base\Core
                     {
                         $response = $this->updateActivationProgress($merchant);
                     }
+
+                    $data = [
+                        StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
+                        ConfigKey::MERCHANT_DETAILS => $merchantDetails->toArray()
+                    ];
+
+                    $core=new StoreCore();
+
+                    $data = $core->updateMerchantStore($merchantDetails->getMerchantId(),
+                                                       $data,
+                                                       StoreConstants::INTERNAL);
 
                     return $response;
                 });
@@ -1335,7 +1348,7 @@ class Core extends Base\Core
         }
 
         $this->updateDocumentVerificationStatus(
-            $merchant, Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
+            $merchant, $merchantDetails,Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
 
         //call to bvs for personal pan before l1 submission
         (new requestDispatcher\PersonalPan($merchant, $merchantDetails))->triggerBVSRequest();
@@ -1378,7 +1391,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateDocumentVerificationStatus($merchant, Constant::BUSINESS_PAN);
+        $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::BUSINESS_PAN);
 
         //call to bvs for company pan before l1 submission
         (new requestDispatcher\CompanyPan($merchant, $merchantDetails))->triggerBVSRequest();
@@ -3434,11 +3447,16 @@ class Core extends Base\Core
             return;
         }
 
-        if ($this->hasBankDetailsChanged($merchantDetails) or
+        $requiredFields = [
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC
+        ];
+
+        if ($this->hasFieldsChanged($merchantDetails,$requiredFields) or
             ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted()===false) or
             $bankDetailsUpdated === true)
         {
-            $this->updateDocumentVerificationStatus($merchant, Entity::BANK_ACCOUNT_NUMBER);
+            $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Entity::BANK_ACCOUNT_NUMBER);
         }
 
         $isKarzaVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
@@ -4456,7 +4474,48 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateDocumentVerificationStatus($merchant, Constant::GSTIN);
+        if( $this->hasFieldsChanged($merchantDetails, $requiredFields) === false)
+        {
+            return;
+        }
+
+        $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::GSTIN);
+
+        $eventAttributes = [
+            'time_stamp'    => Carbon::now()->getTimestamp(),
+            'artefact_type' => 'gstin'
+        ];
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
+
+        //call to bvs for gstin before l1 submission
+        (new requestDispatcher\GstinAuth($merchant, $merchantDetails))->triggerBVSRequest();
+    }
+
+    public function hasFieldsChanged(Entity $merchantDetails, array $requiredFields)
+    {
+        $keys = [
+            ConfigKey::MERCHANT_DETAILS
+        ];
+
+        $data = (new StoreCore())->fetchValuesFromStore($merchantDetails->getMerchantId(),
+                                                        ConfigKey::ONBOARDING_NAMESPACE,
+                                                        $keys,
+                                                        StoreConstants::INTERNAL);
+
+        if (empty($data) === true or empty($data[ConfigKey::MERCHANT_DETAILS])===true)
+        {
+            return true;
+        }
+
+        foreach ($requiredFields as $field)
+        {
+            if ($merchantDetails->getAttribute($field) !== $data[ConfigKey::MERCHANT_DETAILS][$field])
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -4525,7 +4584,23 @@ class Core extends Base\Core
         {
             return;
         }
+
+        if( $this->hasFieldsChanged($merchantDetails, $dependentFields) === false)
+        {
+            return;
+        }
+
         $this->updateCINorLLPINStatusForBvsVerification($merchant, $merchantDetails);
+
+        $eventAttributes = [
+            'time_stamp'    => Carbon::now()->getTimestamp(),
+            'artefact_type' => 'comapny_cin',
+            'business_type' => $merchantDetails->getBusinessType()
+        ];
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
+
+        (new LlpinAuth($merchant, $merchantDetails))->triggerBVSRequest();
+        (new CinAuth($merchant, $merchantDetails))->triggerBVSRequest();
     }
 
     /**
@@ -4541,7 +4616,7 @@ class Core extends Base\Core
         $fieldType = ($this->isLLPBusinessType($merchantDetails->getBusinessType()) === true) ?
             Constant::LLPIN : Constant::CIN;
 
-        $this->updateDocumentVerificationStatus($merchant, $fieldType);
+        $this->updateDocumentVerificationStatus($merchant,$merchantDetails, $fieldType);
     }
 
     /**
@@ -5217,7 +5292,7 @@ class Core extends Base\Core
             return;
         }
 
-        $this->updateDocumentVerificationStatus($merchant, Entity::SHOP_ESTABLISHMENT_NUMBER);
+        $this->updateDocumentVerificationStatus($merchant, $merchantDetails,Entity::SHOP_ESTABLISHMENT_NUMBER);
     }
 
     /**
@@ -5225,14 +5300,16 @@ class Core extends Base\Core
      * so that verification can be triggered at Form Submission for all such document types.
      *
      * @param Merchant\Entity $merchant
-     * @param string $field // this key can refer to both (proof as well as identifier)
+     * @param Entity          $merchantDetail
+     * @param string          $field          // this key can refer to both (proof as well as identifier)
      *
-     * @param string $validationUnit // if not passed will fetch from config
+     * @param string          $validationUnit // if not passed will fetch from config
+     *
      * @return bool
      * @throws LogicException
      */
     public function updateDocumentVerificationStatus(
-        Merchant\Entity $merchant, string $field, string $validationUnit = ''): bool
+        Merchant\Entity $merchant,Merchant\Detail\Entity $merchantDetail, string $field, string $validationUnit = ''): bool
     {
         $enabledVerificationDocuments = array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION);
 
@@ -5268,7 +5345,7 @@ class Core extends Base\Core
 
             $statusUpdateFactory = new DocumentStatusUpdater\Factory();
 
-            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $validation);
+            $statusUpdater = $statusUpdateFactory->getInstance($merchant,$merchantDetail, $validation);
 
             $statusUpdater->updateStatusToPending();
         }

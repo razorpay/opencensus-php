@@ -16,11 +16,14 @@ class POA extends BaseStatusUpdater
      * POA constructor.
      *
      * @param MerchantEntity       $merchant
+     * @param Detail\Entity        $merchantDetails
      * @param BvsValidation\Entity $consumedValidation
      */
-    public function __construct(MerchantEntity $merchant, BvsValidation\Entity $consumedValidation)
+    public function __construct(MerchantEntity $merchant,
+                                Detail\Entity $merchantDetails,
+                                BvsValidation\Entity $consumedValidation)
     {
-        parent::__construct($merchant, $consumedValidation);
+        parent::__construct($merchant,$merchantDetails, $consumedValidation);
 
         $this->documentTypeStatusKey = Detail\Entity::POA_VERIFICATION_STATUS;
     }

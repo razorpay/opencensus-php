@@ -5,7 +5,7 @@ namespace Unit\Models\Merchant\Bvs\ManualVerificationRequestDispatcher;
 
 
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\AutoKyc\Bvs\DefaultProcessor;
+use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessor;
 use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher\NeedsClarification;
 use RZP\Tests\Functional\TestCase;
 

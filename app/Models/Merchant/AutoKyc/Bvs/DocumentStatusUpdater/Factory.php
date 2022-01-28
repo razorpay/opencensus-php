@@ -20,13 +20,16 @@ class Factory
      * Returns StatusUpdater instance for artefact
      *
      * @param MerchantEntity   $merchant
+     * @param Entity           $merchantDetails
      * @param ValidationEntity $validation
      *
      * @return StatusUpdater
      * @throws LogicException
      */
 
-    public function getInstance(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getInstance(MerchantEntity $merchant,
+                                Entity $merchantDetails,
+                                ValidationEntity $validation): StatusUpdater
     {
         $artefactType = $validation->getArtefactType();
 
@@ -37,12 +40,13 @@ class Factory
 
                 return new DefaultStatusUpdater(
                     $merchant,
+                    $merchantDetails,
                     Entity::CIN_VERIFICATION_STATUS,
                     $validation);
 
             case Constant::GSTIN:
 
-                return $this->getStatusUpdaterForGSTIN($merchant, $validation);
+                return $this->getStatusUpdaterForGSTIN($merchant, $merchantDetails, $validation);
 
             case Constant::BUSINESS_PAN :
 
@@ -55,44 +59,46 @@ class Factory
 
                 return new DefaultStatusUpdater(
                     $merchant,
+                    $merchantDetails,
                     $documentStatusKey,
                     $validation);
 
             case Constant::PERSONAL_PAN :
 
-                return $this->getStatusUpdaterForPersonalPan($merchant, $validation);
+                return $this->getStatusUpdaterForPersonalPan($merchant, $merchantDetails, $validation);
 
             case Constant::BANK_ACCOUNT :
 
-                return $this->getStatusUpdaterForBankAccount($merchant, $validation);
+                return $this->getStatusUpdaterForBankAccount($merchant, $merchantDetails, $validation);
 
             case Constant::AADHAAR :
 
-                return $this->getStatusUpdaterForAadhaar($merchant, $validation);
+                return $this->getStatusUpdaterForAadhaar($merchant, $merchantDetails, $validation);
 
             case Constant::VOTERS_ID:
             case Constant::PASSPORT:
 
-                return new POA($merchant, $validation);
+                return new POA($merchant,$merchantDetails, $validation);
 
             case Constant::SHOP_ESTABLISHMENT :
 
-                return $this->getStatusUpdaterForShopEstb($merchant, $validation);
+                return $this->getStatusUpdaterForShopEstb($merchant, $merchantDetails, $validation);
 
             case Constant::MSME:
 
                 return new DefaultStatusUpdater(
-                    $merchant, Entity::MSME_DOC_VERIFICATION_STATUS,
+                    $merchant, $merchantDetails,
+                    Entity::MSME_DOC_VERIFICATION_STATUS,
                     $validation);
 
             case Constant::PARTNERSHIP_DEED :
-                return new PartnershipDeedOcrStatusUpdater($merchant, $validation);
+                return new PartnershipDeedOcrStatusUpdater($merchant,$merchantDetails, $validation);
 
             case Constant::CERTIFICATE_OF_INCORPORATION:
-                return new CertificateOfIncorporationStatusUpdater($merchant, $validation);
+                return new CertificateOfIncorporationStatusUpdater($merchant,$merchantDetails, $validation);
 
             case Constant::COMMON:
-                return new NullStatusUpdater($merchant, $validation);
+                return new NullStatusUpdater($merchant,$merchantDetails, $validation);
 
             default :
 
@@ -103,33 +109,43 @@ class Factory
 
         }
     }
+
     /**
      * @param MerchantEntity   $merchant
+     * @param Entity           $merchantDetails
      * @param ValidationEntity $validation
      *
      * @return StatusUpdater
      */
-    public function getStatusUpdaterForGSTIN(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getStatusUpdaterForGSTIN(MerchantEntity $merchant,
+                                             Entity $merchantDetails,
+                                             ValidationEntity $validation): StatusUpdater
     {
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
             return new GstCertificateOcrStatusUpdater(
                 $merchant,
+                $merchantDetails,
                 $validation);
         }
 
         return new DefaultStatusUpdater(
             $merchant,
+            $merchantDetails,
             Entity::GSTIN_VERIFICATION_STATUS,
             $validation);
     }
+
     /**
      * @param MerchantEntity   $merchant
+     * @param Entity           $merchantDetails
      * @param ValidationEntity $validation
      *
      * @return StatusUpdater
      */
-    public function getStatusUpdaterForAadhaar(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getStatusUpdaterForAadhaar(MerchantEntity $merchant,
+                                               Entity $merchantDetails,
+                                               ValidationEntity $validation): StatusUpdater
     {
         $validationId = $validation->getValidationId();
 
@@ -138,69 +154,82 @@ class Factory
         {
             return new DefaultStatusUpdater(
                 $merchant,
+                $merchantDetails,
                 StakeholderEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
                 $validation,
                 E::STAKEHOLDER);
         }
         else
         {
-            if (isset($merchant_document)===false or Type::isPoaDocument($merchant_document->getDocumentType()) === true)
+            if (isset($merchant_document) === false or Type::isPoaDocument($merchant_document->getDocumentType()) === true)
             {
-                return new POA($merchant, $validation);
+                return new POA($merchant, $merchantDetails,$validation);
             }
             else
             {
-                return new NullStatusUpdater($merchant, $validation);
+                return new NullStatusUpdater($merchant, $merchantDetails,$validation);
             }
         }
     }
 
     /**
      * @param MerchantEntity   $merchant
+     * @param Entity           $merchantDetails
      * @param ValidationEntity $validation
      *
      * @return StatusUpdater
      */
-    public function getStatusUpdaterForPersonalPan(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getStatusUpdaterForPersonalPan(MerchantEntity $merchant,
+                                                   Entity $merchantDetails,
+                                                   ValidationEntity $validation): StatusUpdater
     {
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
             return new DefaultStatusUpdater(
                 $merchant,
+                $merchantDetails,
                 Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
                 $validation);
         }
 
         return new DefaultStatusUpdater(
             $merchant,
+            $merchantDetails,
             Entity::POI_VERIFICATION_STATUS,
             $validation);
     }
 
-    public function getStatusUpdaterForBankAccount(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getStatusUpdaterForBankAccount(MerchantEntity $merchant,
+                                                   Entity $merchantDetails,
+                                                   ValidationEntity $validation): StatusUpdater
     {
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
             return new DefaultStatusUpdater(
                 $merchant,
+                $merchantDetails,
                 Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS,
                 $validation);
         }
 
-        return new BankAccount($merchant, $validation);
+        return new BankAccount($merchant, $merchantDetails,$validation);
     }
 
-    public function getStatusUpdaterForShopEstb(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
+    public function getStatusUpdaterForShopEstb(MerchantEntity $merchant,
+                                                Entity $merchantDetails,
+                                                ValidationEntity $validation): StatusUpdater
     {
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
             return new ShopEstbStatusUpdater(
                 $merchant,
+                $merchantDetails,
                 $validation);
         }
 
         return new DefaultStatusUpdater(
             $merchant,
+            $merchantDetails,
             Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
             $validation);
     }

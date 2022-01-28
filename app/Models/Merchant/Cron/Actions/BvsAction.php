@@ -38,6 +38,7 @@ class BvsAction extends BaseAction
                 $validationId    = $validation[Constant::VALIDATION_ID];
                 $merchantId      = $validation[Constant::OWNER_ID];
 
+
                 //get the merchant verification status corresponding to the validation artefact type and validation unit
                 $status = $this->getMerchantStatusForValidation($merchantId, $artefact_type, $validation_unit);
 
@@ -46,7 +47,9 @@ class BvsAction extends BaseAction
                     "status" => $status
                 ]);
 
-                $processor = (new Factory())->getProcessor([]);
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $processor = (new Factory())->getProcessor([],$merchant);
 
                 //get validation status from bvs
                 try

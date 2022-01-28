@@ -1,9 +1,11 @@
 <?php
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
-
+use App;
 use RZP\Models\Merchant;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Merchant\AutoKyc;
+use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation;
@@ -11,12 +13,25 @@ abstract class Base implements RequestDispatcher
 {
     protected $merchantCore;
 
+    protected $sync;
+
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
+
     protected $merchant;
 
     protected $merchantDetails;
 
     protected $documentCore;
-
+    /**
+     * The application instance.
+     *
+     * @var Application
+     */
+    protected $app;
     public function __construct(Merchant\Entity $merchant, DetailEntity $merchantDetails)
     {
         $this->merchantCore = new Merchant\Core();
@@ -26,6 +41,13 @@ abstract class Base implements RequestDispatcher
         $this->merchant = $merchant;
 
         $this->merchantDetails = $merchantDetails;
+
+        $this->sync=false;
+
+        $this->app = App::getFacadeRoot();
+
+        $this->repo = $this->app['repo'];
+
     }
 
     /**
@@ -72,7 +94,7 @@ abstract class Base implements RequestDispatcher
                 $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
             }
 
-            $bvsValidation = (new AutoKyc\Bvs\Core())->verify($ownerId, $payload);
+            $bvsValidation = (new AutoKyc\Bvs\Core($this->merchant,$this->merchantDetails))->verify($ownerId, $payload);
 
             if ($bvsValidation != null)
             {
@@ -85,6 +107,6 @@ abstract class Base implements RequestDispatcher
     {
         $input = $this->getRequestPayload();
 
-        return (new AutoKyc\Bvs\Core())->fetchValidationDetails($this->merchantDetails->getEntityId(), $input, $validationId);
+        return (new AutoKyc\Bvs\Core($this->merchant,$this->merchantDetails))->fetchValidationDetails($this->merchantDetails->getEntityId(), $input, $validationId);
     }
 }

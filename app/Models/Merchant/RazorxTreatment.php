@@ -4,7 +4,11 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
-
+    //Razorx treatment constant, whether to make sync call or not
+    const GSTIN_SYNC    = "gstin_sync";
+    const LLPIN_SYNC    = "llpin_sync";
+    const CIN_SYNC      = "cin_sync";
+    const BVS_IN_SYNC      = "bvs_in_sync";
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
 

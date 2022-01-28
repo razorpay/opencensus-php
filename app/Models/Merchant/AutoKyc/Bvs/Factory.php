@@ -4,17 +4,22 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use App;
 
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Processor;
+use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessorMock;
+use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessor;
 
 class Factory
 {
     /**
      * @param array $input
      *
+     * @param       $merchant
+     *
      * @return Processor
      * @throws \RZP\Exception\LogicException
      */
-    public function getProcessor(array $input): Processor
+    public function getProcessor(array $input, $merchant): Processor
     {
         $app = $app = App::getFacadeRoot();
 
@@ -24,9 +29,13 @@ class Factory
 
         if ($mock === true)
         {
-            return new DefaultProcessorMock($input, $configName);
+            $processor = new DefaultProcessorMock($input, $configName, $merchant);
+        }
+        else
+        {
+            $processor = new DefaultProcessor($input, $configName, $merchant);
         }
 
-        return new DefaultProcessor($input, $configName);
+        return $processor;
     }
 }

@@ -5,7 +5,7 @@ namespace Unit\Models\Merchant\Bvs\RequestDispatcher;
 
 
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\AutoKyc\Bvs\DefaultProcessor;
+use RZP\Models\Merchant\AutoKyc\Bvs\Processors\DefaultProcessor;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\CompanyPan;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\PersonalPan;
 use RZP\Tests\Functional\TestCase;

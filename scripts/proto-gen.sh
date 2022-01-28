@@ -23,8 +23,9 @@ protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/credcase/migrate/v1/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/validation/v1/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/probe/v1/*
+protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/validation/v2/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/obs/verification/v1/*
-
+#
 # this will generate swagger json files
 protoc -I "$parentdir"/proto --openapiv2_out "$parentdir"/api/generated/proto \
   --openapiv2_opt grpc_api_configuration="$parentdir"/authz/grpc_api_configuration.yaml \

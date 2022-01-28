@@ -65,7 +65,7 @@ class Rule extends \Google\Protobuf\Internal\Message
      */
     public function getRuleDef()
     {
-        return $this->rule_def;
+        return isset($this->rule_def) ? $this->rule_def : null;
     }
 
     public function hasRuleDef()

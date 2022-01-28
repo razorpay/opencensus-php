@@ -112,7 +112,7 @@ class Enrichment extends \Google\Protobuf\Internal\Message
      */
     public function getNotes()
     {
-        return $this->notes;
+        return isset($this->notes) ? $this->notes : null;
     }
 
     public function hasNotes()
@@ -166,7 +166,7 @@ class Enrichment extends \Google\Protobuf\Internal\Message
      */
     public function getDetails()
     {
-        return $this->details;
+        return isset($this->details) ? $this->details : null;
     }
 
     public function hasDetails()

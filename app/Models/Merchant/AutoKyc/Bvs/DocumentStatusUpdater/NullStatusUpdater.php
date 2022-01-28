@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
+use Rzp\Obs\Verification\V1\Detail;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
@@ -17,13 +18,15 @@ class NullStatusUpdater extends BaseStatusUpdater
     /**
      * DefaultStatusUpdate constructor.
      *
-     * @param MerchantEntity $merchant
-     * @param Entity         $consumedValidation
+     * @param MerchantEntity                     $merchant
+     * @param \RZP\Models\Merchant\Detail\Entity $merchantDetails
+     * @param Entity                             $consumedValidation
      */
     public function __construct(MerchantEntity $merchant,
+                                \RZP\Models\Merchant\Detail\Entity $merchantDetails,
                                 Entity $consumedValidation)
     {
-        parent::__construct($merchant, $consumedValidation);
+        parent::__construct($merchant, $merchantDetails,$consumedValidation);
     }
 
     public function updateValidationStatus(): void

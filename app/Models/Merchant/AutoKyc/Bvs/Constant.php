@@ -12,6 +12,10 @@ use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\VerificationDetail\Constants as VerificationConstant;
 class Constant
 {
+
+    const SYNC = 'sync';
+    const ASYNC = 'async';
+
     //
     // Request fields
     //

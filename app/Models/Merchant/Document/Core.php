@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Document;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -114,8 +116,8 @@ class Core extends Base\Core
      *
      * @return array
      * @throws BadRequestException
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
      */
     public function uploadActivationFile(
         Merchant\Entity $merchant, array $input, bool $validateLock = true, $rule = 'uploadDocument', Base\PublicEntity $entity = null)
@@ -187,7 +189,7 @@ class Core extends Base\Core
                 $merchant
             );
 
-            (new Detail\Core())->updateDocumentVerificationStatus($merchant, $document->getDocumentType());
+            (new Detail\Core())->updateDocumentVerificationStatus($merchant,$merchantDetails, $document->getDocumentType());
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -201,8 +203,8 @@ class Core extends Base\Core
      * @param string $merchantId
      *
      * @return array
-     * @throws \RZP\Exception\BadRequestValidationFailureException
-     * @throws \RZP\Exception\LogicException
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
      */
     public function fetchActivationFilesFromDocument(string $merchantId): array
     {
