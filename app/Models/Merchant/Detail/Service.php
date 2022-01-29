@@ -2111,6 +2111,8 @@ class Service extends Base\Service
     {
         $input = $this->getGstinSelfServeInputFromCache($detail->getId());
 
+        $oldGstin = $detail->getGstin();
+
         if (isset($input[Entity::GSTIN]) === false)
         {
             throw new Exception\ServerErrorException(
@@ -2164,7 +2166,7 @@ class Service extends Base\Service
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADDED_WITH_REGISTERED_ADDRESS : TraceCode::GSTIN_UPDATED_WITH_REGISTERED_ADDRESS;
 
         $this->trace->info($traceCode, [
-            Constants::OLD_GSTIN  => $detail->getGstin(),
+            Constants::OLD_GSTIN  => $oldGstin,
             Constants::NEW_GSTIN  => $input[Entity::GSTIN],
         ]);
     }
@@ -2337,15 +2339,11 @@ class Service extends Base\Service
     {
         $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
 
-        $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_APPROVED : TraceCode::GSTIN_UPDATE_WORKFLOW_APPROVED;
-
-        $this->trace->info($traceCode, [
-            Constants::NEW_GSTIN  => $input[Entity::GSTIN],
-        ]);
-
         $merchant = $this->repo->merchant->findOrFailPublic($input[Merchant\Entity::MERCHANT_ID]);
 
         $merchantDetails = $merchant->merchantDetail;
+
+        $oldGstin = $merchantDetails->getGstin();
 
         // This method is used for backfilling(storing in S3) the PG merchant invoices PDFs for the months on or before Dec-2020 before the merchant details are updated.
         if (($isAddOperation === false) and
@@ -2365,6 +2363,13 @@ class Service extends Base\Service
         );
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+        $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_APPROVED : TraceCode::GSTIN_UPDATE_WORKFLOW_APPROVED;
+
+        $this->trace->info($traceCode, [
+            Constants::OLD_GSTIN  => $oldGstin,
+            Constants::NEW_GSTIN  => $input[Entity::GSTIN],
+        ]);
 
         $this->sendNotificationForGstinUpdatedSelfServe($isAddOperation, false, $merchant);
     }
