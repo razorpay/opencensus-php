@@ -22,7 +22,7 @@ class OneClickCheckoutController
     {
         $input = Request::all();
 
-        $response = (new Shopify\Service)->shopifyCompleteCheckout($input);
+        $response = (new Shopify\Service())->completeCheckoutWithLock($input);
 
         return ApiResponse::json($response, 200);
     }

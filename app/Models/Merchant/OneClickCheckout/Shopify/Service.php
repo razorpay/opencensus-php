@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
+use App;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -11,13 +12,31 @@ use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
+use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 
 class Service extends Base\Service
 {
 
+    const MUTEX_LOCK_TTL_SEC = 60;
+
+    const MAX_RETRY_COUNT = 3;
+
+    const MAX_RETRY_DELAY_MILLIS = 2 * 60 * 1000;
+
+    const MIN_RETRY_DELAY_MILLIS = 2 * 60 * 1000;
+
     const skipListCouponMids = [
         'DzyQ9A6YiAcZpT',
     ];
+
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = App::getFacadeRoot()['api.mutex'];
+    }
 
     /**
      * starts the 1cc flow for shopify
@@ -27,96 +46,127 @@ class Service extends Base\Service
      */
     public function shopifyCreateCheckout(array $input): array
     {
-        $signature = (new Core)->verifyHmacSignature($input);
-
-        if ($signature === false)
-        {
-          $this->trace->info(
-              TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
-              ['input' => $input]
-          );
-          throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
-        }
+        (new Core)->verifyHmacSignature($input);
 
         $checkout = (new Core)->placeShopifyCheckout($input);
 
-        $amount = floatval($checkout['totalPriceV2']['amount']) * 100;
+        $amount = (int)(floatval($checkout['totalPriceV2']['amount']) * 100);
 
         $rzporder = (new Order\Service)->createOrder([
-            'receipt'          => strval(time()),
+            'receipt'          => 'TEMP_' . strval(time()),
             'amount'           => $amount,
             'currency'         => 'INR',
             'payment_capture'  => 1,
             'line_items_total' => $amount,
-            'notes'            => array(
+            'notes'            => [
                 'storefront_id'  => $checkout['id'],
-            ),
+            ],
         ])->toArrayPublic();
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
-            ['rzporder' => $rzporder]
+            ['order_id' => $rzporder['id']]
         );
 
         return [
-            'order_id' => $rzporder['id'],
-            'currency' => 'INR',
-            'name' => $this->merchant->getBillingLabel(),
+            'order_id'    => $rzporder['id'],
+            'currency'    => 'INR',
+            'name'        => $this->merchant->getBillingLabel(),
             'description' => '',
-            'prefill' => [
-                'name'  => '',
-                'email' => '',
+            'prefill'     => [
+                'name'    => '',
+                'email'   => '',
                 'contact' => '',
             ],
             'one_click_checkout' => true,
         ];
     }
 
-    // updates shopify order post payment and redirects the user
-    public function shopifyCompleteCheckout(array $input): array
+    public function completeCheckoutWithLock(array $input, bool $fromShopifyApi = true): array
     {
-        $signature = (new Core)->verifyHmacSignature($input);
+        $key = (new Core)->getMutexKeyForOrder($input['razorpay_order_id']);
 
-        if ($signature === false)
+        $res = $this->mutex->acquireAndRelease(
+            $key,
+            function () use ($input, $fromShopifyApi)
+            {
+                return $this->shopifyCompleteCheckout($input, $fromShopifyApi);
+            },
+            self::MUTEX_LOCK_TTL_SEC,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            self::MAX_RETRY_COUNT,
+            self::MAX_RETRY_DELAY_MILLIS - 500,
+            self::MAX_RETRY_DELAY_MILLIS
+        );
+
+        return $res;
+    }
+
+    // updates shopify order post payment and redirects the user
+    protected function shopifyCompleteCheckout(array $input, bool $fromShopifyApi): array
+    {
+        if ($fromShopifyApi === true)
         {
-          $this->trace->info(
-              TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
-              ['input' => $input]
-          );
-          throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            (new Core)->verifyHmacSignature($input);
         }
 
         $orderId = $input['razorpay_order_id'];
 
         $paymentId = $input['razorpay_payment_id'];
 
-        $rzpSignature = $input['razorpay_signature'];
+        // $rzpSignature = $input['razorpay_signature'];
 
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $this->trace->info(
-          TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
-          ['order' => $order->toArrayPublic(), 'payment' => $payment->toArrayPublic()]
-        );
+        $orderData = $order->toArrayPublic();
 
-        $shopifyOrder = (new Core)->completeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic());
+        $paymentData = $payment->toArrayPublic();
 
-        $this->trace->info(
-          TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
-          ['shopifyOrder' => $shopifyOrder]
-        );
+        if ($paymentData['status'] === 'failed' || $paymentData['status'] === 'refunded')
+        {
+            // TODO: fail the order here
+        }
 
-        $order->setReceipt($shopifyOrder['order']['id']);
+        if ($paymentData['order_id'] !== $orderData['id'])
+        {
+            // code...
+        }
 
-        $this->repo->saveOrFail($order);
+        $shopifyOrder = $this->placeShopifyOrder($order, $payment);
 
-        $orderArr = $order->toArrayPublic();
+        $this->updateRzpOrder($order, $shopifyOrder['order']['id']);
 
         return [
             'order_status_url' => $shopifyOrder['order']['order_status_url'],
         ];
+    }
+
+    // places final order and gateway transaction to Shopify
+    public function placeShopifyOrder($order, $payment): array
+    {
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
+            ['order_id' => $order->getId(), 'payment_id' => $payment->getId()]
+        );
+
+        // TODO: or we do getPublicId()
+        (new Core)->canShopifyOrderBePlaced($order->getId());
+
+        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic());
+
+        (new Core)->saveShopifyOrderAsPlaced($order->getId());
+
+        return $shopifyOrder;
+    }
+
+    // TODO: consider 1cc order meta
+    protected function updateRzpOrder($order, string $id)
+    {
+        $order->setReceipt($id);
+
+        $this->repo->saveOrFail($order);
     }
 
     // returns list of coupons, filter out personal and shipping coupons
@@ -147,7 +197,8 @@ class Service extends Base\Service
 
         $orderQuantity = 0;
 
-        foreach ($checkoutNode['lineItems']['edges'] as $item) {
+        foreach ($checkoutNode['lineItems']['edges'] as $item)
+        {
             $item = $item['node'];
             $orderQuantity += $item['quantity'];
         }
@@ -157,7 +208,8 @@ class Service extends Base\Service
         $discounts = json_decode(json_encode(json_decode($response)), true);
         $discountData = array();
 
-        foreach($discounts['data']['priceRules']['edges'] as $value){
+        foreach($discounts['data']['priceRules']['edges'] as $value)
+        {
             $value = $value['node'];
             $discountMinAmount = floatval($value['prerequisiteSubtotalRange']['greaterThanOrEqualTo']);
             $minQuantityRange = floatval($value['prerequisiteQuantityRange']['greaterThanOrEqualTo']);
@@ -194,9 +246,11 @@ class Service extends Base\Service
 
             $limit = $value['usageLimit'];
 
-            if (!empty($count) && !empty($limit)) {
+            if (!empty($count) && !empty($limit))
+            {
                 $remaining = $limit - $count;
-                if ($remaining <=  0) {
+                if ($remaining <=  0)
+                {
                     continue;
                 }
             }
@@ -235,30 +289,20 @@ class Service extends Base\Service
             {
                 $emailRes = (new Core)->updateCheckoutEmail($checkoutId, $input['email']);
                 $emailRes = json_decode($emailRes, true);
-                $this->trace->info(
-                    TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
-                    ['input' => $input, 'emailRes' => $emailRes]
-                );
             }
             catch (\Exception $e)
             {
               $this->trace->info(
                   TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
-                  ['input' => $input, 'reason' => $e.getMessage()]
+                  ['reason' => $e.getMessage()]
               );
             }
         }
 
         $response = (new Core)->applyCoupon($input, $checkoutId);
 
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_APPLY_COUPON,
-            ['response' => json_decode($response, true)]
-        );
-
         $response = json_decode($response, true);
 
-        // TODO: discuss this error handling
         if (empty($response['errors']) === false)
         {
             return (new Errors)->getInvalidCouponApplicationResponse();
@@ -283,7 +327,7 @@ class Service extends Base\Service
                     'promotion' => [
                         'code'          => $discountData['code'],
                         'reference_id'  => $discountData['code'],
-                        'value'         => $value,
+                        'value'         => (int)$value,
                     ],
                 ],
                 'status_code' => 200,
@@ -332,12 +376,28 @@ class Service extends Base\Service
 
         $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
 
-        $response = array(
-            'id'			       => $address['id'],
-            'zipcode'        => $address['zipcode'],
-            'state_code'     => $address['state_code'],
-            'country'        => $address['country'],
-        );
+        $response = [
+            'id'			   => $address['id'],
+            'zipcode'    => $address['zipcode'],
+            'state_code' => $address['state_code'],
+            'country'    => $address['country'],
+        ];
+
         return array_merge($response, $rates);
+    }
+
+    // TODO: mock this class
+    protected function getShopifyClientByMerchant()
+    {
+        $creds = $this->getShopifyAuthByMerchant();
+
+        return new Client($creds);
+    }
+
+    protected function getShopifyAuthByMerchant()
+    {
+        $config = (new AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
+
+        return $config;
     }
 }

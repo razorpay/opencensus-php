@@ -16,13 +16,24 @@ use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 class Core extends Base\Core
 {
 
-    const POLLING_INTERVAL_MILLIS = 10; // 300ms
+    const POLLING_INTERVAL_MILLIS = 10; // 300ms counting API call
+
     const MAX_TIME_DELAY_SEC = 10; // 10sec
+
     const CACHE_VALIDITY_TTL = 5 * 1440; // 5 days
+
     const SHA_256 = 'sha256';
+
+    const ORDER_CACHE_KEY = 'shopify_1cc_order';
+
+    const ORDER_CACHE_KEY_TTL = 1 * 1440; // 1 day
+
+    const MUTEX_KEY = 'shopify_1cc_place_order_mutex';
 
     public function placeShopifyCheckout(array $input): array
     {
+        $start = millitime();
+
         $cart = $input['cart'];
 
         $client = $this->getShopifyClientByMerchant();
@@ -41,8 +52,8 @@ class Core extends Base\Core
         );
 
         $this->trace->info(
-          TraceCode::SHOPIFY_1CC_CREATE_CHECKOUT_RES,
-          ['body' => $body, 'response' => $response]
+            TraceCode::SHOPIFY_1CC_CREATE_CHECKOUT_RES,
+            ['body' => $body, 'response' => $response, 'time' => millitime() - $start]
         );
 
         if (empty($response['errors']) === false)
@@ -50,7 +61,7 @@ class Core extends Base\Core
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
                 ErrorCode::SERVER_ERROR
-              );
+            );
         }
 
         $checkoutCreate = $response['data']['checkoutCreate'];
@@ -60,7 +71,7 @@ class Core extends Base\Core
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
                 ErrorCode::SERVER_ERROR
-              );
+            );
         }
 
         return $checkoutCreate['checkout'];
@@ -117,8 +128,8 @@ class Core extends Base\Core
         $graphqlQuery = [
             'query' => $mutation,
             'variables' => [
-                'discountCode'=> $input['code'],
-                'checkoutId'=> $checkoutId,
+                'discountCode' => $input['code'],
+                'checkoutId' => $checkoutId,
             ],
         ];
 
@@ -127,68 +138,42 @@ class Core extends Base\Core
 
     public function removeCoupon($checkoutId)
     {
-      $client = $this->getShopifyClientByMerchant();
+        $client = $this->getShopifyClientByMerchant();
 
-      $mutation = (new Mutations)->removeCouponMutation();
+        $mutation = (new Mutations)->removeCouponMutation();
 
-      $graphqlQuery = array('query' => $mutation);
+        $graphqlQuery = array('query' => $mutation);
 
-      $graphqlQuery = [
-          'query' => $mutation,
-          'variables' => [
-              'checkoutId'=> $checkoutId,
-          ],
-      ];
+        $graphqlQuery = [
+            'query' => $mutation,
+            'variables' => [
+                'checkoutId' => $checkoutId,
+            ],
+        ];
 
-      return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
     public function updateCheckoutEmail(string $checkoutId, string $email)
     {
-      $client = $this->getShopifyClientByMerchant();
-
-      $mutation = (new Mutations)->getcheckoutEmailUpdateMutation();
-
-      $graphqlQuery = [
-          'query' => $mutation,
-          'variables' => [
-              'checkoutId' => $checkoutId,
-              'email' => $email,
-          ],
-      ];
-      $this->trace->info(
-          TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
-          ['graphqlQuery' => $graphqlQuery]
-      );
-      return $client->sendStorefrontRequest(json_encode($graphqlQuery));
-    }
-
-    public function placeShopifyOrder($orderDetails)
-    {
         $client = $this->getShopifyClientByMerchant();
-        try {
-            $order = $client->sendRestApiRequest(
-              json_encode($orderDetails),
-              'POST',
-              '/orders.json'
-            );
-          } catch (\Exception $e)
-          {
-            $this->trace->info(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
-                [
-                  'error' => $e->getMessage()
-                ]
-            );
 
-            throw new Exception\ServerErrorException(
-                'Error while calling URL',
-                ErrorCode::SERVER_ERROR,
-                null,
-                $e
-            );
-          }
-          return json_decode($order, true);
+        $mutation = (new Mutations)->getcheckoutEmailUpdateMutation();
+
+        $graphqlQuery = [
+            'query' => $mutation,
+            'variables' => [
+                'checkoutId' => $checkoutId,
+                'email' => $email,
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
+            ['checkoutId' => $checkoutId]
+        );
+
+        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
     public function getShopifyClientByMerchant()
@@ -210,28 +195,31 @@ class Core extends Base\Core
         $client = $this->getShopifyClientByMerchant();
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
 
-        $shippingAddress['country'] = $address['country'];
-        $shippingAddress['province'] = $address['state_code'];
-        $shippingAddress['zip'] = $address['zipcode'];
-        $shippingAddress['city'] = $address['city'];
-
-        // mandatory fields for shopify so we mock them
-        $shippingAddress['firstName'] = 'john';
-        $shippingAddress['lastName'] = 'doe';
-        $shippingAddress['address1'] = '11a john doe residency';
+        // name and address1 are compulsory fields but we don't collect it from
+        // user at this time so we put default value
+        $shippingAddress = [
+            'firstName' => 'name',
+            'lastName'  => 'not entered',
+            'address1'  => 'address not entered',
+            'country'   => $address['country'],
+            'province'  => $address['state_code'],
+            'zip'       => $address['zipcode'],
+            'city'      => $address['city'],
+        ];
 
         $graphqlQuery = [
-            'query' => $mutation,
+            'query'     => $mutation,
             'variables' => [
-                'checkoutId'=> $checkoutId,
+                'checkoutId'      => $checkoutId,
                 'shippingAddress' => $shippingAddress
             ],
         ];
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_SHIPPING_BODY,
-            ['graphqlQuery' => $graphqlQuery]
+            ['checkoutId' => $checkoutId]
         );
+
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
@@ -241,6 +229,7 @@ class Core extends Base\Core
         $currentTries = 0;
         do
         {
+            // TODO: optimize by checking logs
             usleep(self::POLLING_INTERVAL_MILLIS * 1000);
 
             $currentTries++;
@@ -265,20 +254,20 @@ class Core extends Base\Core
 
             if ($isShippingReady === true and empty($shippingRates) === false)
             {
-              $this->trace->info(
-                  TraceCode::SHOPIFY_1CC_SHIPPING_RESPONSE,
-                  ['checkout' => $checkout, 'currentTries' => $currentTries]
-              );
-              return (new Core)->parseShippingRates($shippingRates);
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_SHIPPING_RESPONSE,
+                    ['checkout' => $checkout, 'currentTries' => $currentTries]
+                );
+                return (new Core)->parseShippingRates($shippingRates);
             }
 
         } while ($currentTries < $maxTries);
 
         return [
-            'serviceable' => false,
-            'cod' => false,
+            'serviceable'  => false,
+            'cod'          => false,
             'shipping_fee' => 0,
-            'cod_fee' => null,
+            'cod_fee'      => null,
         ];
     }
 
@@ -294,10 +283,10 @@ class Core extends Base\Core
         if (empty($rates) === true)
         {
             return [
-                'serviceable' => false,
-                'cod' => false,
+                'serviceable'  => false,
+                'cod'          => false,
                 'shipping_fee' => 0,
-                'cod_fee' => null,
+                'cod_fee'      => null,
             ];
         }
 
@@ -348,14 +337,9 @@ class Core extends Base\Core
 
     public function verifyHmacSignature(array $input)
     {
-
         $config = (new Core)->getShopifyAuthByMerchant();
-        $secret = $config[OneClickCheckout\Constants::API_SECRET];
 
-        // replay attacks; trace this!
-        // if (time() - $input['timestamp'] > self::MAX_TIME_DELAY_SEC) {
-        //     return false;
-        // }
+        $secret = $config[OneClickCheckout\Constants::API_SECRET];
 
         $query = ''
             .'key_id=' . $input['key']
@@ -363,25 +347,28 @@ class Core extends Base\Core
             .'shop=' . $input['shop']
             .'timestamp=' . $input['timestamp']
             ;
+
         $hmac = hash_hmac(self::SHA_256, $query, $secret);
 
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_HMAC_SIGNATURE,
-            [
-                'query'     => $query,
-                'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
-                'hmac'      => $hmac,
-                'signature' => $input['signature']
-            ]
-        );
-        return $input['signature'] === $hmac;
+        if ($hmac !== $input['signature'])
+        {
+          $this->trace->info(
+              TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
+              [
+                  'query'     => $query,
+                  'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
+                  'hmac'      => $hmac,
+                  'signature' => $input['signature']
+              ]
+          );
+          throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+        return;
     }
 
-    public function completeShopifyOrder(array $rzpOrder, array $rzpPayment): array
+    public function canShopifyOrderBePlaced(string $orderId)
     {
-        $client = $this->getShopifyClientByMerchant();
-
-        $key = 'MAGIC_CHECKOUT:' . $rzpOrder['id'];
+        $key = $this->getCacheKeyForPlacedOrders($orderId);
 
         $this->cache = $this->app['cache'];
 
@@ -391,48 +378,60 @@ class Core extends Base\Core
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
                   'error' => 'Order has already been placed for this payment',
-                  'order' => $rzpOrder
+                  'order_id' => $orderId
                 ]
             );
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
+    }
+
+    public function saveShopifyOrderAsPlaced(string $orderId)
+    {
+        $key = $this->getCacheKeyForPlacedOrders($orderId);
+
+        $this->cache->put($key, 1, self::CACHE_VALIDITY_TTL);
+    }
+
+    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment): array
+    {
+        $start = millitime();
+
+        $client = $this->getShopifyClientByMerchant();
 
         $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment['method']);
 
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_PLACE_ORDER_BODY,
-            ['body' => $body]
-        );
-
         try
         {
-          $order = $client->sendRestApiRequest(
-            json_encode(['order' => $body]),
-            'POST',
-            '/orders.json'
-          );
+            $order = $client->sendRestApiRequest(
+                json_encode(['order' => $body]),
+                'POST',
+                '/orders.json'
+            );
         }
         catch (\Exception $e)
         {
-          $this->trace->info(
-              TraceCode::SHOPIFY_1CC_API_ERROR,
-              [
-                'error' => $e->getMessage()
-              ]
-          );
-          throw new Exception\ServerErrorException(
-              'Error while calling URL',
-              ErrorCode::SERVER_ERROR,
-              null,
-              $e
-          );
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                  'error' => $e->getMessage()
+                ]
+            );
+            throw new Exception\ServerErrorException(
+                'Error while calling URL',
+                ErrorCode::SERVER_ERROR,
+                null,
+                $e
+            );
         }
 
         $order = json_decode($order, true);
 
-        $this->cache->put($key, 1, self::CACHE_VALIDITY_TTL);
-
         $this->updateShopifyTransaction($order['order']['id'], $rzpPayment['method']);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
+            ['shopify_order_id' => $order['order']['id'], 'time' => millitime() - $start]
+        );
 
         return $order;
     }
@@ -455,31 +454,31 @@ class Core extends Base\Core
 
         $splitNames = $this->splitName($shippingAddress['name']);
 
-        $body['shipping_address'] = array(
+        $body['shipping_address'] = [
             'first_name' => $splitNames[0],
-            'last_name' => $splitNames[1],
-            'address1' => $shippingAddress['line1'],
-            'address2' => $shippingAddress['line2'],
-            'phone' => $shippingAddress['contact'],
-            'city' => $shippingAddress['city'],
-            'province' => $shippingAddress['state'],
-            'country' => $shippingAddress['country'],
-            'zip' => $shippingAddress['zipcode']
-        );
+            'last_name'  => $splitNames[1],
+            'address1'   => $shippingAddress['line1'],
+            'address2'   => $shippingAddress['line2'],
+            'phone'      => $shippingAddress['contact'],
+            'city'       => $shippingAddress['city'],
+            'province'   => $shippingAddress['state'],
+            'country'    => $shippingAddress['country'],
+            'zip'        => $shippingAddress['zipcode']
+        ];
 
         $splitNames = $this->splitName($billingAddress['name']);
 
-        $body['billing_address'] = array(
+        $body['billing_address'] = [
             'first_name' => $splitNames[0],
-            'last_name' => $splitNames[1],
-            'address1' => $billingAddress['line1'],
-            'address2' => $billingAddress['line2'],
-            'phone' => $billingAddress['contact'],
-            'city' => $billingAddress['city'],
-            'province' => $billingAddress['state'],
-            'country' => $billingAddress['country'],
-            'zip' => $billingAddress['zipcode']
-        );
+            'last_name'  => $splitNames[1],
+            'address1'   => $billingAddress['line1'],
+            'address2'   => $billingAddress['line2'],
+            'phone'      => $billingAddress['contact'],
+            'city'       => $billingAddress['city'],
+            'province'   => $billingAddress['state'],
+            'country'    => $billingAddress['country'],
+            'zip'        => $billingAddress['zipcode']
+        ];
 
         $body['email'] = $customerDetails['email'];
 
@@ -489,10 +488,10 @@ class Core extends Base\Core
         {
             $promotions = $rzpOrder['promotions'];
 
-            $body['discount_codes'][] = array(
-                'code' => $promotions[0]['code'],
+            $body['discount_codes'][] = [
+                'code'   => $promotions[0]['code'],
                 'amount' => $promotions[0]['value']/100
-            );
+            ];
 
             $body['current_total_discounts'] = $promotions[0]['value'];
         }
@@ -505,108 +504,161 @@ class Core extends Base\Core
            $shippingFee = $shippingFee + $codFee;
         }
 
-        $body['shipping_lines'] = array(array('price' => $shippingFee,'title' => 'Standard Shipping'));
+        $body['shipping_lines'] = [
+            [
+                'price' => $shippingFee,
+                'title' => 'Standard Shipping'
+            ]
+        ];
 
         return $body;
     }
 
-    protected function splitName(string $name)
+    protected function splitName(string $name): array
     {
-      $name = preg_replace('/\s+/', ' ', trim($name));
+        $name = preg_replace('/\s+/', ' ', trim($name));
 
-      $words = explode(' ', $name);
+        $words = explode(' ', $name);
 
-      if (count($words) === 1)
-      {
-          $lastName = '.';
-
-          $firstName = $name;
-
-      }
-      else
-      {
-          $lastName = array_pop($words);
-
-          $firstName = implode(' ', $words);
-      }
-
-      return [$firstName, $lastName];
-    }
-
-    protected function updateShopifyTransaction(string $merchantOrderId, string $paymentMethod)
-    {
-        $body = [];
-        if (strtolower($paymentMethod) === 'cod')
+        if (count($words) === 1)
         {
-            $body['transaction'] = [
-                'message' => 'Pending Cash on Delivery (COD) payment from the buyer',
-                'gateway' => 'Cash on Delivery (COD)',
-                'status'  => 'pending',
-            ];
+            $lastName = '.';
+
+            $firstName = $name;
+
         }
         else
         {
-            $body['transaction'] = [
-                'message' => 'Paid via Razorpay Magic Checkout',
-                'gateway' => 'Razorpay',
-                'status'  => 'success',
-            ];
+            $lastName = array_pop($words);
+
+            $firstName = implode(' ', $words);
         }
-        $body['transaction']['kind'] = 'sale';
-        $body['transaction']['order_id'] = $merchantOrderId;
-        $body['transaction']['source'] = 'external';
-        $body['transaction']['processing_method'] = 'manual';
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
-            ['body' => $body]
-        );
+
+        return [$firstName, $lastName];
+    }
+
+    protected function updateShopifyTransaction(string $merchantOrderId, string $paymentMethod): array
+    {
+        $start = millitime();
+
+        $body = $this->getTransactionBody($merchantOrderId, $paymentMethod);
+
         try
         {
           $client = $this->getShopifyClientByMerchant();
+
           $order = $client->sendRestApiRequest(
-            json_encode($body),
-            'POST',
-            '/orders/' . strval($merchantOrderId) . '/transactions.json'
+              json_encode($body),
+              'POST',
+              '/orders/' . strval($merchantOrderId) . '/transactions.json'
           );
+
+          $this->trace->info(
+              TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
+              ['body' => $body, 'time' => millitime() - $start]
+          );
+
           return json_decode($order, true);
         }
         catch (\Exception $e)
         {
-          $this->trace->info(
-              TraceCode::SHOPIFY_1CC_API_ERROR,
-              [
-                'error' => $e->getMessage()
-              ]
-          );
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                ['error' => $e->getMessage(), 'time' => millitime() - $start]
+            );
         }
     }
 
-    function getOrderFromCheckout($checkout){
-        $order = array();
-        $order['currency'] = $checkout['currencyCode'];
-        $order['current_subtotal_price'] = $checkout['subtotalPrice'];
+    protected function getTransactionBody(string $merchantOrderId, string $paymentMethod): array
+    {
+        $txn = [
+            'kind'              => 'sale',
+            'order_id'          => $merchantOrderId,
+            'source'            => 'external',
+            'processing_method' => 'manual',
+        ];
 
-        $order['taxes_included'] = $checkout['taxesIncluded'];
-        if(!empty($checkout['lineItems']['edges'])){
-            $line_items = [];
-            foreach($checkout['lineItems']['edges'] as $value){
-                $line_items[] = array(
-                  'variant_id'=>str_replace('gid://shopify/ProductVariant/', '',base64_decode($value['node']['variant']['id'])),
-                  'quantity'=>$value['node']['quantity']
-                );
-            }
-            $order['line_items'] = $line_items;
+        // TODO: evaluate default cod gateway used
+        if (strtolower($paymentMethod) === 'cod')
+        {
+            $txn = array_merge($txn, [
+                'message' => 'Pending Cash on Delivery (COD) payment from the buyer',
+                'gateway' => 'Cash on Delivery (COD)',
+                'status'  => 'pending',
+            ]);
+        }
+        else
+        {
+            $txn = array_merge($txn, [
+                'message' => 'Paid via Razorpay Magic Checkout',
+                'gateway' => 'Razorpay',
+                'status'  => 'success',
+            ]);
         }
 
-        $order['total_tax'] = $checkout['totalTax'];
-        $order['inventory_behaviour'] = 'decrement_obeying_policy';
-        $order['send_receipt'] = false;
-        $order['note_attributes'] = [
-          [
-            "name" => "Paid via",
-            "value" => "Razorpay Magic Checkout"
-          ]
+        return ['transaction' => $txn];
+    }
+
+    protected function getOrderFromCheckout($checkout)
+    {
+        $order = [
+            'currency'               => $checkout['currencyCode'],
+            'current_subtotal_price' => $checkout['subtotalPrice'],
+            'taxes_included'         => $checkout['taxesIncluded'],
+            'total_tax'              => $checkout['totalTax'],
+            'inventory_behaviour'    => 'decrement_obeying_policy',
+            'send_receipt'           => false,
+            'note_attributes'        => [
+                [
+                  'name'  => 'Paid via',
+                  'value' => 'Razorpay Magic Checkout'
+                ]
+            ]
         ];
+
+        if (empty($checkout['lineItems']['edges']) === false)
+        {
+            $lineItems = [];
+
+            foreach ($checkout['lineItems']['edges'] as $value)
+            {
+                $lineItems[] = [
+                  'variant_id' => str_replace('gid://shopify/ProductVariant/', '', base64_decode($value['node']['variant']['id'])),
+                  'quantity'   => $value['node']['quantity']
+                ];
+            }
+            $order['line_items'] = $lineItems;
+        }
+
         return $order;
+    }
+
+    public function getOrderFromCache(string $cartToken, string $browserUuid)
+    {
+        return $this->cache->get($this->getCacheKeyForReusingOrders($cartToken, $browserUuid));
+    }
+
+    public function setOrderFromCache(string $cartToken, string $browserUuid, string $orderId)
+    {
+        return $this->cache->set(
+            $this->getCacheKeyForReusingOrders($cartToken, $browserUuid),
+            $orderId,
+            self::ORDER_CACHE_KEY_TTL
+        );
+    }
+
+    protected function getCacheKeyForReusingOrder(string $cartToken, string $browserUuid): string
+    {
+        return self::ORDER_CACHE_KEY . ':' . $cartToken . ':' . $browserUuid;
+    }
+
+    public function getMutexKeyForOrder(string $paymentId): string
+    {
+        return self::MUTEX_KEY . ':' . $paymentId;
+    }
+
+    protected function getCacheKeyForPlacedOrders(string $orderId): string
+    {
+        return 'MAGIC_CHECKOUT:' . $orderId;
     }
 }

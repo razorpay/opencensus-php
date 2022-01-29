@@ -71,27 +71,27 @@ class Mocks
     public function getShopifyMockPlaceOrder(): array
     {
         return [
-          "order" => [
-            "buyer_accepts_marketing" => true,
-            "discount_codes" => [
+          'order' => [
+            'buyer_accepts_marketing' => true,
+            'discount_codes' => [
               [
-                "code" => "100OFF",
-                "amount" => "100",
-                "type" => "fixed_amount"
+                'code' => '100OFF',
+                'amount' => '100',
+                'type' => 'fixed_amount'
               ]
             ],
-            "line_items" => [
+            'line_items' => [
               [
-                "name" => "fan",
-                "price" => "2200.00",
-                "product_id" => 42021089149155,
-                "quantity" => 1,
-                "title" => "fan"
+                'name' => 'fan',
+                'price' => '2200.00',
+                'product_id' => 42021089149155,
+                'quantity' => 1,
+                'title' => 'fan'
               ]
             ],
-            "inventory_behaviour" => "decrement_obeying_policy",
-            "send_receipt" => false,
-            "test" => true
+            'inventory_behaviour' => 'decrement_obeying_policy',
+            'send_receipt' => false,
+            'test' => true
           ]
         ];
     }

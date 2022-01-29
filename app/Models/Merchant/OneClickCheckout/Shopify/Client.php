@@ -121,7 +121,6 @@ class Client
         $this->headers = $headers;
     }
 
-    // NOTE: decide whether we keep myshopify separate or not in db?
     protected function setUrl(string $apiType, string $resource)
     {
         $domain = 'https://' . $this->shopId . self::MY_SHOPIFY;

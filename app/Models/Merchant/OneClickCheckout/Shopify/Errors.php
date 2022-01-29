@@ -13,7 +13,7 @@ class Errors
   {
     return [
         'response' => [
-            'failure_code' => 'INVALID_COUPON',
+            'failure_code'   => 'INVALID_COUPON',
             'failure_reason' => 'Coupon not applicable',
         ],
         'status_code' => 400,
@@ -24,7 +24,7 @@ class Errors
   {
     return [
         'response' => [
-            'failure_code' => 'INVALID_COUPON',
+            'failure_code'   => 'INVALID_COUPON',
             'failure_reason' => 'Coupon does not exist',
         ],
         'status_code' => 400,
@@ -35,7 +35,7 @@ class Errors
   {
     return [
         'response' => [
-            'failure_code' => 'LOGIN_REQUIRED',
+            'failure_code'   => 'LOGIN_REQUIRED',
             'failure_reason' => 'Coupon requires user to login',
         ],
         'status_code' => 400,

@@ -149,8 +149,6 @@ class Service extends Base\Service
 
         if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
         {
-            // $orderId = $order->toArrayPublic()['notes']['storefront_id'];
-
             $decodedResponse = (new Shopify\Service)->getShippingInfo([
                 'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
                 'addresses' => $nonCachedAddresses
@@ -267,7 +265,18 @@ class Service extends Base\Service
                 unset($address[self::SHIPPING_INFO_ID]);
             });
 
-        $this->traceResponseTime(Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS, $serviceabilityCheckStartTime);
+        $dimensions = [];
+
+        if ($platformConfig !== null)
+        {
+            $dimensions = ['platform' => $platformConfig->getValue()];
+        }
+
+        $this->traceResponseTime(
+            Metric::MERCHANT_SHIPPING_INFO_CHECK_TIME_MILLIS,
+            $serviceabilityCheckStartTime,
+            $dimensions
+        );
 
         return [self::SHIPPING_INFO_ADDRESSES => array_merge($nonCachedAddresses, $cachedAddresses)];
     }

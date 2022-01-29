@@ -94,7 +94,8 @@ class Service extends Base\Service
 
         $this->traceResponseTime(
             Metric::MERCHANT_EXTERNAL_COUPONS_REQUEST_DURATION_MILLIS,
-            $externalCallStart
+            $externalCallStart,
+            $this->addPlatformDimension($platformConfig)
         );
 
         $validator = (new Validator);
@@ -109,7 +110,11 @@ class Service extends Base\Service
             $validator->validateInput('fetchCouponsResponse', $coupon);
         }
 
-        $this->traceResponseTime(Metric::MERCHANT_COUPONS_REQUEST_DURATION_MILLIS, $startTime);
+        $this->traceResponseTime(
+            Metric::MERCHANT_COUPONS_REQUEST_DURATION_MILLIS,
+            $startTime,
+            $this->addPlatformDimension($platformConfig)
+        );
 
         return $decodedResponse;
     }
@@ -205,10 +210,15 @@ class Service extends Base\Service
 
         $this->traceResponseTime(
             Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_TIME_MILLIS,
-            $externalRequestStart
+            $externalRequestStart,
+            $this->addPlatformDimension($platformConfig)
         );
 
-        $this->traceResponseTime(Metric::MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS, $startTimeMillis);
+        $this->traceResponseTime(
+            Metric::MERCHANT_COUPON_VALIDITY_REQUEST_DURATION_MILLIS,
+            $startTimeMillis,
+            $this->addPlatformDimension($platformConfig)
+        );
 
         try
         {
@@ -290,6 +300,7 @@ class Service extends Base\Service
         return $response;
     }
 
+    // NOTE: At scale we will remove merchant_id to reduce cardinality
     protected function traceResponseTime(string $metric, int $startTime, $extraDimensions = [])
     {
         $duration = millitime() - $startTime;
@@ -298,7 +309,8 @@ class Service extends Base\Service
             $extraDimensions,
             [
                 'merchant_id' => $this->merchant->getId(),
-            ]);
+            ]
+        );
 
         $this->trace->histogram($metric, $duration, $dimensions);
     }
@@ -318,5 +330,20 @@ class Service extends Base\Service
       ];
 
       return $this->sendRequest($request, $mockResponse);
+    }
+
+    protected function addPlatformDimension($platformConfig, $dimensions = []): array
+    {
+        if ($platformConfig === null)
+        {
+            return $dimensions;
+        }
+
+        return array_merge(
+            $dimensions,
+            [
+                'platform' => $platformConfig->getValue(),
+            ]
+        );
     }
 }
