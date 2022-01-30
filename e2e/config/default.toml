@@ -1,2 +1,6 @@
-[app]
-    hostname = "https://api.razorpay.com"
+[PaymentPage]
+    hostname = "https://api-web-piyush.dev.razorpay.in"
+    user = "7HQnhEQDgBIdlv"
+    role = "owner"
+    username = "rzp_test_10000000000000"
+    password = "RANDOM_DASH_PASSWORD"

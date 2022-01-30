@@ -4,13 +4,13 @@ import (
 	configpkg "github.com/razorpay/api/e2e/config"
 )
 
-var config *Config
+var Config *Configuration
 
 func init() {
 	// Initializes config once for tests to use.
 	// See config.go.
-	config = &Config{}
-	err := configpkg.NewDefaultConfig().Load("default", config)
+	Config = &Configuration{}
+	err := configpkg.NewDefaultConfig().Load("default", Config)
 	if err != nil {
 		panic(err)
 	}

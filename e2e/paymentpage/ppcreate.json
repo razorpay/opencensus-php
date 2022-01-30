@@ -1,0 +1,31 @@
+{
+  "inr": {
+    "currency": "INR",
+    "title": "test124",
+    "description": null,
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "Amount",
+          "amount": 100000,
+          "currency": "INR"
+        }
+      }
+    ]
+  },
+  "usd": {
+    "currency": "USD",
+    "title": "test12488",
+    "description": null,
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "Amount",
+          "amount": 100000,
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}
+

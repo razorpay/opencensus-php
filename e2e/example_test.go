@@ -1,12 +1,11 @@
 package e2e
 
 import (
-	"net/http"
-	"testing"
-
 	"github.com/razorpay/goutils/itf"
 	"github.com/razorpay/goutils/itf/httpexpect"
 	"github.com/stretchr/testify/suite"
+	"net/http"
+	"testing"
 )
 
 type ExampleAPITestSuite struct {
@@ -35,7 +34,7 @@ func (s *ExampleAPITestSuite) AfterTest(suiteName, testName string) {
 }
 
 func (s *ExampleAPITestSuite) TestCheck() {
-	httpexpect.New(s.T(), config.App.Hostname).
+	httpexpect.New(s.T(), Config.App.Hostname).
 		GET("/").
 		Expect().
 		Status(http.StatusOK).

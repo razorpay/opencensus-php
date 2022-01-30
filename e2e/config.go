@@ -1,9 +1,17 @@
 package e2e
 
-type Config struct {
-	App AppConfig
+type Configuration struct {
+	App PPConfig
+	// Payment Page Config
+	PaymentPage PPConfig
+}
+type PPConfig struct {
+	Hostname string
+	// user for creating PP
+	User     string
+	Role     string
+	Username string
+	Password string
 }
 
-type AppConfig struct {
-	Hostname string
-}
+
