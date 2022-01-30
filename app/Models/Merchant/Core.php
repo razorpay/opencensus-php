@@ -538,6 +538,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::CREDIT_FUND_ADDITION_INITIATED, $creditInput);
 
+        $this->sendFundAdditionInitiatedEvent($creditInput, $merchantId, EventCode::CREDIT_ADDITION_INITIATED);
+
         try
         {
             $response =  ((new Credits\Service)->grantCreditsForMerchant($merchantId, $creditInput));
@@ -553,6 +555,8 @@ class Core extends Base\Core
                     "input"          => $creditInput
                 ]);
 
+            $this->sendFundAdditionFailedEvent($creditInput, $merchantId, $e, EventCode::CREDIT_ADDITION_FAILED);
+
             throw $e;
         }
 
@@ -560,6 +564,8 @@ class Core extends Base\Core
             "merchant_id" => $merchantId,
             "response" => $response
         ]);
+
+        $this->sendFundAdditionSuccessEvent($creditInput, $merchantId, $response, EventCode::CREDIT_ADDITION_SUCCESS);
 
         $this->sendAlertIfCreditFundAdditionIsSuccessful($merchantId, $amountAfterFee, $creditType.'_credit');
 
@@ -580,6 +586,57 @@ class Core extends Base\Core
             $this->app['basicauth']->setModeAndDbConnection('test');
 
             $this->repo->order->findByPublicId($orderInput['id']);
+        }
+    }
+
+    public function sendFundAdditionInitiatedEvent($input, $merchantId, $eventCode)
+    {
+        try
+        {
+            $properties['merchant_id'] = $merchantId;
+
+            $properties['input_request'] = $input;
+
+            $this->app['diag']->trackPaymentEventV2($eventCode, null, null, [], $properties);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
+    }
+
+    public function sendFundAdditionFailedEvent($input, $merchantId, $exception, $eventCode)
+    {
+
+        try
+        {
+            $properties['merchant_id'] = $merchantId;
+
+            $properties['input_request'] = $input;
+
+            $this->app['diag']->trackPaymentEventV2($eventCode, null, $exception, [], $properties);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
+    }
+
+    public function sendFundAdditionSuccessEvent($input, $merchantId, $response, $eventCode)
+    {
+        try
+        {
+            $properties['merchant_id'] = $merchantId;
+
+            $properties['input_request'] = $input;
+
+            $properties['response'] = $response;
+
+            $this->app['diag']->trackPaymentEventV2($eventCode, null, null, [],$properties);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e);
         }
     }
 
@@ -827,6 +884,8 @@ class Core extends Base\Core
             "input" => $input
         ]);
 
+        $this->sendFundAdditionInitiatedEvent($input, $merchantId, EventCode::RESERVE_BALANCE_ADDITION_INITIATED);
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         try
@@ -844,6 +903,8 @@ class Core extends Base\Core
                     "input"          => $input
                 ]);
 
+            $this->sendFundAdditionFailedEvent($input, $merchantId, $e, EventCode::RESERVE_BALANCE_ADDITION_FAILED);
+
             throw $e;
         }
 
@@ -851,6 +912,8 @@ class Core extends Base\Core
             "merchant_id" => $merchant->getId(),
             "response" => $response
         ]);
+
+        $this->sendFundAdditionSuccessEvent($input, $merchantId, $response, EventCode::RESERVE_BALANCE_ADDITION_SUCCESS);
 
         $this->sendAlertIfReserveBalanceAdditionIsSuccessful($merchantId, $amountAfterFee, Type::RESERVE_BALANCE );
 

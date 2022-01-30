@@ -1003,4 +1003,34 @@ class EventCode
         'group'   => 'external_balance',
         'name'    => 'external_balance.fetch.request'
     ];
+
+    const CREDIT_ADDITION_INITIATED = [
+        'group'   => 'credit_addition',
+        'name'    => 'credit.addition.initiated'
+    ];
+
+    const CREDIT_ADDITION_FAILED = [
+        'group'   => 'credit_addition',
+        'name'    => 'credit.addition.failed'
+    ];
+
+    const CREDIT_ADDITION_SUCCESS = [
+        'group'   => 'credit_addition',
+        'name'    => 'credit.addition.success'
+    ];
+
+    const RESERVE_BALANCE_ADDITION_INITIATED = [
+        'group'   => 'reserve_balance_addition',
+        'name'    => 'reserve.balance.addition.initiated'
+    ];
+
+    const RESERVE_BALANCE_ADDITION_FAILED = [
+        'group'   => 'reserve_balance_addition',
+        'name'    => 'reserve.balance.addition.failed'
+    ];
+
+    const RESERVE_BALANCE_ADDITION_SUCCESS = [
+        'group'   => 'reserve_balance_addition',
+        'name'    => 'reserve.balance.addition.success'
+    ];
 }
