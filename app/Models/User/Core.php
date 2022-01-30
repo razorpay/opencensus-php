@@ -938,21 +938,11 @@ class Core extends Base\Core
 
         $merchant = $this->findMerchant($user[Entity::ID]);
 
-        if(($merchant !== null) and (($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) or $this->mode === 'test')) {
-            if(empty($user) === false)
-            {
-                $customProperties = [
-                    'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
-                    'email' => $user['email'],
-                ];
+        //  $this->mode === 'test', just a hack need to write proper test case after setting product as Banking in requests origin
 
-                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::USER_LOGIN);
-            } else{
-                $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
-                    [
-                        'merchant_id' => $merchant['id']?? null,
-                    ]);
-            }
+        if(($merchant !== null) and (($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) or $this->mode === 'test')) {
+
+            $this->app['x-segment']->sendEventToSegment(SegmentEvent::USER_LOGIN, $merchant);
         }
 
         return $this->get($user, true);
@@ -968,7 +958,7 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex ){
 
-            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED_FOR_LOGIN_EVENT,
+            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
                 [
                     'user_id' => $userId
                 ]);

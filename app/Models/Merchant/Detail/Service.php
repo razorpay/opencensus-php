@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use Throwable;
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -1345,20 +1346,9 @@ class Service extends Base\Service
                 {
                     (new Merchant\Activate)->activateBusinessBankingIfApplicable($this->merchant);
 
-                    $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
-                    if(empty($user) === false and empty($merchant) === false)
+                    if((empty($merchant) === false) and (($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) or $this->mode === 'test'))
                     {
-                        $customProperties = [
-                            'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
-                            'email' => $user['email'],
-                        ];
-
-                        $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
-                    } else{
-                        $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
-                            [
-                                'merchant_id' => $merchant['id']?? null,
-                            ]);
+                        $this->app['x-segment']->sendEventToSegment(SegmentEvent::X_SIGNUP_SUCCESS, $merchant);
                     }
                 }
                 catch (Throwable $e)

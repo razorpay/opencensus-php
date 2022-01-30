@@ -2246,25 +2246,15 @@ class Core extends Base\Core
             (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION,
                                                      $payout)->notify();
 
-            if($payout->isBalanceAccountTypeDirect() === false) {
-                $merchantId = $payout->getMerchantId();
+            $merchantId = $payout->getMerchantId();
 
-                $merchant = $this->repo->merchant->findOrFail($merchantId);
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
-                if(empty($user) === false and empty($merchant) === false)
-                {
-                    $customProperties = [
-                        'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
-                        'email' => $user['email'],
-                    ];
-
-                    // $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::CA_PAYOUT_PROCESSED);
-                } else{
-                    $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
-                        [
-                            'merchant_id' => $merchant['id']?? null,
-                        ]);
+            if(empty($merchant)){
+                if($payout->isBalanceAccountTypeDirect() === true) {
+                    $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
+                } else if($payout->isBalanceAccountTypeShared() === true){
+                    $this->app['x-segment']->sendEventToSegment(SegmentEvent::VA_PAYOUT_PROCESSED, $merchant);
                 }
             }
         }

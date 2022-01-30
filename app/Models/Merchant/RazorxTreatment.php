@@ -438,4 +438,6 @@ final class RazorxTreatment
     //Experiment flag to retain last 5 passwords instead of last 3
     const RETAIN_LAST_FIVE_PASSWORDS = 'retain_last_five_passwords';
 
+    //Experiment flag for sending events to segment
+    const SEND_EVENTS_TO_SEGMENT = 'send_events_to_segment';
 }

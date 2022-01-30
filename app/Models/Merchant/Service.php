@@ -7,6 +7,7 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -6568,21 +6569,9 @@ class Service extends Base\Service
                 'product_switch' => true
             ]);
 
-            $merchant = $this->app['basicauth']->getMerchant();
-            $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
-            if(empty($user) === false and empty($merchant) === false)
+            if(($this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING) or $this->mode === 'test')
             {
-                $customProperties = [
-                    'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
-                    'email' => $user['email'],
-                ];
-
-                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::SIGNUP_SUCCESS);
-            } else{
-                $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
-                    [
-                        'merchant_id' => $merchant['id']?? null,
-                    ]);
+                $this->app['x-segment']->sendEventToSegment(SegmentEvent::X_SIGNUP_SUCCESS, $merchant);
             }
         }
     }

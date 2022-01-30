@@ -6,6 +6,7 @@ namespace RZP\Services\Segment;
 
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
+use Respect\Validation\Rules\Even;
 use RZP\Models\Merchant;
 use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -106,7 +107,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
             {
                 $eventData['timestamp'] = $eventTimestamp;
             }
-            else
+            else if($this->isEventXEvent($eventName) === false)
             {
                 $eventData['timestamp'] = Carbon::now()->getTimestamp();
             }
@@ -411,5 +412,27 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
             $this->trace->error(TraceCode::EVENT_QUEUE_SEND_FAILED, $errorContext);
         }
+    }
+
+    protected function isEventXEvent(string $eventName){
+        $xEventsName = [
+            EventCode::USER_LOGIN,
+            EventCode::FUND_ACCOUNT_ADDED,
+            EventCode::CA_PAYOUT_PROCESSED,
+            EventCode::VA_PAYOUT_PROCESSED,
+            EventCode::CONTACT_CREATED,
+            EventCode::CA_ACTIVATED,
+            EventCode::X_SIGNUP_SUCCESS,
+        ];
+
+        $result = false;
+
+        foreach($xEventsName as $event){
+            if($event === $eventName){
+                $result = true;
+            }
+        }
+
+        return $result;
     }
 }

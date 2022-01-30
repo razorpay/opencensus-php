@@ -81,7 +81,11 @@ class EventCode
 
     const USER_LOGIN                = 'User Login';
 
-    const CA_PAYOUT_PROCESSED            = 'CA Payout Processed';
+    const CA_PAYOUT_PROCESSED       = 'CA Payout Processed';
+
+    const VA_PAYOUT_PROCESSED       = 'VA Payout Processed';
+
+    const X_SIGNUP_SUCCESS            = 'X Signup Success';
 
     const EVENT_LABELS = [
         self::L1_SUBMISSION                             => "L1 Form Submit",

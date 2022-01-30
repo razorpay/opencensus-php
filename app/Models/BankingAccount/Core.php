@@ -694,27 +694,6 @@ class Core extends Base\Core
 
         $bankingAccount->load('bankingAccountActivationDetails');
 
-        $currentStatus = $bankingAccount->getStatus();
-
-        if($currentStatus !== $oldStatus AND $currentStatus === 'processed') {
-            $merchant = $bankingAccount->merchant;
-            $user = $this->app['basicauth']->getUser() ?? $merchant->users()->first();
-            if(empty($user) === false and empty($merchant) === false) {
-                $customProperties = [
-                    'status' => $currentStatus,
-                    'phone' => ($user['contact_mobile'] === null) ? null : ('+'.$user['contact_mobile']),
-                    'email' => $user['email'],
-                ];
-
-                $this->app['x-segment']->pushIdentifyandTrackEvent($merchant, $customProperties, SegmentEvent::CA_ACTIVATED);
-            } else{
-                $this->trace->info(TraceCode::USER_FETCH_FAILED_FOR_SEGMENT_EVENT,
-                    [
-                        'merchant_id' => $merchant['id']?? null,
-                    ]);
-            }
-        }
-
         return $bankingAccount;
     }
 
@@ -1389,6 +1368,20 @@ class Core extends Base\Core
             if ($bankingAccountStatusChanged === true)
             {
                 $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+
+                $currentBankingAccountStatus = $bankingAccount->getStatus();
+
+                if($currentBankingAccountStatus === Status::ACTIVATED){
+                    $merchant = $bankingAccount->merchant;
+                    if(empty($merchant) === false){
+                        $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
+                    } else{
+                        $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
+                            [
+                                'event_name'  => SegmentEvent::CA_ACTIVATED,
+                            ]);
+                    }
+                }
             }
             if ($bankingAccountSubStatusChanged === true)
             {

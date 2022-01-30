@@ -2460,7 +2460,7 @@ class BankingAccountTest extends TestCase
             ->getMock();
 
         $this->app->instance('x-segment', $xsegmentMock);
-        $xsegmentMock->expects($this->exactly(2))
+        $xsegmentMock->expects($this->exactly(1))
             ->method('pushIdentifyandTrackEvent')
             ->willReturn(true);
 
