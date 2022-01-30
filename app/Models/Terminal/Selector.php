@@ -147,14 +147,6 @@ class Selector extends Base\Core
 
         $allTerminals = [];
 
-        // Hard coding terminal for Furlenco Test Merchant for UPI ICICI Autopay Intent Testing
-        if ($payment->getMerchantID() === 'FBYspBmKlWefX9')
-        {
-            $terminal = $this->repo->terminal->find('FGKY51d4LxgCxK');
-
-            return [$terminal];
-        }
-
         $verbose = false;
 
         // force_terminal_id is sent in the payment request in manual terminal testing flow, force_terminal_id is forcefully selected for payment inorder to test that terminal
