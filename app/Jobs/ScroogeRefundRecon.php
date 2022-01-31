@@ -76,7 +76,7 @@ class ScroogeRefundRecon extends Job
 
             $this->delete();
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->traceData['job_attempts'] = $this->attempts();
 
