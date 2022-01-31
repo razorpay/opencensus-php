@@ -27,6 +27,7 @@ use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Services\FTS\Constants as FtsConstants;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 
 class Core extends Base\Core
@@ -482,6 +483,29 @@ class Core extends Base\Core
             ($balance['type'] === Balance\Type::PRIMARY))
         {
             return;
+        }
+
+        if (($balance->isAccountTypeShared() === true) &&
+            ($balance->isTypeBanking() === true) &&
+            ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true))
+        {
+            $accountNumber = $balance->getAccountNumber();
+
+            $bankingAccount = $this->repo
+                                   ->banking_account
+                                   ->findByMerchantAndAccountNumberPublic($this->merchant, $accountNumber);
+
+            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchant->getId(), $bankingAccount->getPublicId());
+            if ((empty($ledgerResponse) === false) &&
+                (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
+            {
+                $balanceAmount = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+                $balance->setBalance($balanceAmount);
+                if ($balance >= $fee)
+                {
+                    return;
+                }
+            }
         }
 
         if ($balance->getBalance() >= $fee)

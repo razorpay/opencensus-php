@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Base\BuilderEx;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
@@ -18,6 +19,7 @@ use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Merchant\Credits\Constants;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 
 /**
  * Class Entity
@@ -458,6 +460,41 @@ class Entity extends Base\PublicEntity
                 $data['message']
             );
         }
+    }
+
+    // TODO Locked balance is not there on Ledger yet and needs to be handled later.
+    public function getBalanceWithLockedBalanceFromLedger()
+    {
+        $balance = $this->getBalance();
+
+        //
+        // We are currently checking locked balance only for banking type balance. For other
+        // type of balances, things will need to be handled in the code accordingly before
+        // making a change here. Check for `getBalance` usages specifically, among others.
+        //
+        if (($this->isTypeBanking() === true) and
+            ($this->isAccountTypeShared() === true))
+        {
+            $balance = $balance - $this->getLockedBalance();
+
+            // call ledger when "ledger_journal_reads" is enabled on the merchant.
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true)
+            {
+                $accountNumber = $this->getAccountNumber();
+
+                $bankingAccount = (new BankingAccount\Repository)
+                    ->findByMerchantAndAccountNumberPublic($this->merchant, $accountNumber);
+
+                $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $bankingAccount->getPublicId());
+                if (empty($ledgerResponse) === false and
+                    empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false)
+                {
+                    $balance = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+                }
+            }
+        }
+
+        return $balance;
     }
 
     public function getBalanceWithLockedBalance()

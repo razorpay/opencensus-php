@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
+use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
@@ -517,6 +518,36 @@ class LowBalanceConfigTest extends TestCase
         return [$lowBalanceConfig1, $lowBalanceConfig2, $lowBalanceConfig3, $lowBalanceConfig4, $lowBalanceConfig5];
     }
 
+    // shared account with enabled config
+    public function createSampleLowBalanceConfig()
+    {
+        $merchantDetail = $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', [
+            'contact_name'                  => 'Test Account',
+            'contact_email'                 => 'test@razorpay.com',
+            'contact_mobile'                => '9876543210',
+            'business_name'                 => 'PB_Test',
+            'business_registered_address'   => 'Flat no 12, opp Adugodi Police Station',
+        ]);
+
+        // shared account
+        $lowBalanceConfig = $this->fixtures->on('live')->create('low_balance_config', [
+            'id'                  => 'F0wNzLiuKgNuPF',
+            'balance_id'          => $this->bankingBalance->getId(),
+            'threshold_amount'    => '15000',
+            'notification_emails' => 'rtz+shared@razorpay.com,xyz+shared@razorpay.com',
+            'notify_after'        => '18000', // 5 hrs
+            'status'              => 'enabled',
+            'created_at'          => 1591796314
+        ]);
+
+        $merchantDetail->save();
+
+        $lowBalanceConfig->balance()->associate($this->bankingBalance);
+        $lowBalanceConfig->save();
+
+        return [$lowBalanceConfig];
+    }
+
     protected function setLimitViaRedisKeyForFetchingConfigs($limit)
     {
         (new Admin\Service)->setConfigKeys(
@@ -939,5 +970,61 @@ class LowBalanceConfigTest extends TestCase
         $this->assertEquals($lowBalanceConfig['autoload_amount'], $adjustment['amount']);
         $this->assertEquals($lowBalanceConfig['balance_id'], $adjustment['balance_id']);
         $this->assertEquals(Entity::AUTOLOAD_BALANCE_ADJUSTMENT_DESCRIPTION, $adjustment['description']);
+    }
+
+    public function testLowBalanceConfigsAlertsInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchMerchantAccounts')
+            ->andReturn([
+                'body' => [
+                    "merchant_id"      => "10000000000000",
+                    "merchant_balance" => [
+                        "balance"      => "0.000000",
+                        "min_balance"  => "0.000000"
+                    ],
+                    "reward_balance"  => [
+                        "balance"     => "20.000000",
+                        "min_balance" => "-20.000000"
+                    ],
+                ],
+                'code' => 200,
+            ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+
+        Mail::fake();
+
+        $this->setLimitViaRedisKeyForFetchingConfigs(1);
+
+        list($lowBalanceConfig) = $this->createSampleLowBalanceConfig();
+
+        $observedResponse = $this->processLowBalanceAlertsForMerchants();
+
+        // mail will sent for config
+        Mail::assertQueued(LowBalanceAlert::class, 1);
+
+        $lowBalanceConfig = $this->getDbEntityById('low_balance_config', $lowBalanceConfig->getId(), 'live');
+
+        $expectedResponse =
+            [
+                'batch_0' => [
+                    $lowBalanceConfig->getId(),
+                ]
+            ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+
+        // email will sent for Config as balance < threshold (balance set as 0)
+        $this->assertNotEquals(0, $lowBalanceConfig->getNotifyAt());
+
+        // Asserting that no adjustments were created in this flow since all low balance configs
+        // created were of type notification
+        $this->assertNull($this->getDbLastEntity('adjustment', 'live'));
     }
 }

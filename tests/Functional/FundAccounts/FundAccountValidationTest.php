@@ -12,6 +12,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Jobs\FaVpaValidation;
 use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\RuntimeException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -1972,6 +1973,78 @@ class FundAccountValidationTest extends TestCase
         $this->triggerFlowToUpdateFavWithNewState($fav['id']);
 
         Queue::assertPushed(Transactions::class);
+    }
+
+    public function testCreateFundAccountValidationWithBalanceInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal');
+
+        $mockLedger->shouldReceive('fetchMerchantAccounts')
+            ->andReturn([
+                "merchant_id"      => "10000000000000",
+                "merchant_balance" => [
+                    "balance"      => "10000.000000",
+                    "min_balance"  => "0.000000"
+                ],
+                "reward_balance"  => [
+                    "balance"     => "20.000000",
+                    "min_balance" => "-20.000000"
+                ],
+            ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+
+        $this->mockRazorxTreatment();
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->createFAVBankingPricingPlan();
+
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking'];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+    }
+
+    public function testCreateFailedFundAccountValidationWithInsufficientBalanceInLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+        $mockLedger->shouldReceive('fetchMerchantAccounts')
+            ->andReturn([
+                "merchant_id"      => "10000000000000",
+                "merchant_balance" => [
+                    "balance"      => "0.000000",
+                    "min_balance"  => "0.000000"
+                ],
+                "reward_balance"  => [
+                    "balance"     => "20.000000",
+                    "min_balance" => "-20.000000"
+                ],
+            ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+        $this->mockRazorxTreatment();
+        $this->setUpMerchantForBusinessBanking(false, 0);
+        $this->createFAVBankingPricingPlan();
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+        $this->enableRazorXTreatmentForRazorX();
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+        $this->testData[__FUNCTION__]['request'] = $this->testData['testFundAccValidationWithFailedStatusForBusinessBanking']['request'];
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+        $this->startTest();
     }
 
     public function testFundAccountValidationFailedInZeroPricingInLedgerReverseShadowMode()

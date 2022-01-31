@@ -509,7 +509,7 @@ class Core extends Base\Core
                                                                         $channel,
                                                                         $product)
     {
-        $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
+        $balanceAmount = $balanceEntity->getBalanceWithLockedBalanceFromLedger();
 
         if ($product === Balance\Type::BANKING)
         {

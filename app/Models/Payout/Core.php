@@ -935,7 +935,7 @@ class Core extends Base\Core
                 // fetched at was a while ago(using threshold to decide that).Use this balance amount to dispatch payout.
                 // If account type shared then use balance amount from balance entity.
 
-                $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
+                $balanceAmount = $balanceEntity->getBalanceWithLockedBalanceFromLedger();
 
                 if ($balanceEntity->isAccountTypeDirect() === true)
                 {

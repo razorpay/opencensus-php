@@ -1245,4 +1245,22 @@ return [
             ],
         ],
     ],
+
+    'testCreateFailedFundAccountValidationWithInsufficientBalanceInLedgerReverseShadow' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.',
+                    'step'        => null,
+                    'metadata'    => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+        ],
+    ],
 ];

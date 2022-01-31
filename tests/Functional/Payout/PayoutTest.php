@@ -17843,4 +17843,81 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals(Status::CREATED, $payout->getStatus());
     }
+
+    public function testCreateAndProcessQueuedPayoutWithLowMerchantBalanceInLedgerReverseShadowMode()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+            ->andThrow(new RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 400,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchMerchantAccounts')
+            ->andReturn([
+                "merchant_id"      => "10000000000000",
+                "merchant_balance" => [
+                    "balance"      => "0.000000",
+                    "min_balance"  => "0.000000"
+                ],
+                "reward_balance"  => [
+                    "balance"     => "20.000000",
+                    "min_balance" => "-20.000000"
+                ],
+            ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+
+        // Setting the redis config as empty initially
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $currentBalance = $this->getDbLastEntity('balance');
+
+        $response = $this->startTest();
+
+        $newBalance = $this->getDbLastEntity('balance');
+
+        // Since we created queued payouts, hence balance shouldn't change
+        $this->assertEquals($currentBalance->getBalance(), $newBalance->getBalance());
+
+        $txn = $this->getDbEntity('transaction', ['entity_id' => substr($response['id'], 4)]);
+
+        $this->assertNull($txn);
+
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 4)]);
+
+        $this->assertNull($fta);
+
+        // Create 2 more queued payouts
+        $this->startTest();
+        $this->startTest();
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 3 payouts in queued state.
+        $this->assertEquals(3, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+        $this->assertEquals($dispatchResponse['balance_id_list'][0], $currentBalance['id']);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are still 3 payouts in queued state since there wasn't enough balance to process them
+        $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
+        $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+    }
 }

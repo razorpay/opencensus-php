@@ -16052,4 +16052,35 @@ return [
             ],
         ],
     ],
+
+    'testCreateAndProcessQueuedPayoutWithLowMerchantBalanceInLedgerReverseShadowMode' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/payouts',
+            'content'   => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 10000001,
+                'currency'              => 'INR',
+                'mode'                  => 'IMPS',
+                'purpose'               => 'refund',
+                'fund_account_id'       => 'fa_100000000000fa',
+                'queue_if_low_balance'  => true,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 10000001,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'utr'             => null,
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [],
+            ],
+        ],
+    ],
 ];
