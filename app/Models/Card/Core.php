@@ -834,17 +834,17 @@ class Core extends Base\Core
         return $cardVault->deleteNetworkToken($cardVaultToken);
     }
 
-    public function updateCard($id, $tokenData)
+    public function updateCardWithTokenData($id, $tokenData)
     {
         $updateData = [];
 
-        if(array_key_exists('iin', $tokenData) && $tokenData['iin'] !== null)
+        if(empty($tokenData['iin']) == false)
         {
-            $updateData[Card\Entity::IIN] = $tokenData['iin'];
+            $updateData[Card\Entity::TOKEN_IIN] = $tokenData['iin'];
         }
 
-        if(array_key_exists('expiry_year', $tokenData) && $tokenData['expiry_year'] !== null &&
-            array_key_exists('expiry_month', $tokenData) && $tokenData['expiry_month'] !== null)
+        if((empty($tokenData['expiry_year']) == false) &&
+            (empty($tokenData['expiry_month']) == false))
         {
             $updateData[Card\Entity::TOKEN_EXPIRY_MONTH] = $tokenData['expiry_month'];
 

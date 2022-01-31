@@ -1335,7 +1335,7 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA, $input[Token\Entity::AUTHENTICATION]);
         }
-        
+
         if (strlen($input[Entity::CARD]['expiry_year']) === 2)
         {
             $input[Entity::CARD]['expiry_year'] = '20' . $input[Entity::CARD]['expiry_year'];
@@ -1405,6 +1405,8 @@ class Core extends Base\Core
 
          $this->trace->info(
             TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
+
+        $token->setStatus($serviceProviderTokens[0]['status']);
 
         $token->card()->associate($card);
 
@@ -1618,7 +1620,7 @@ class Core extends Base\Core
 
         $token = $this->repo->token->findOrFailPublic($tokenData['token_id']);
 
-        (new Card\Core)->updateCard($token['card_id'], $tokenData);
+        (new Card\Core)->updateCardWithTokenData($token['card_id'], $tokenData);
 
         return $token;
     }
