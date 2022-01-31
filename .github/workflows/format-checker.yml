@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: 16.13.0
 
+      - name: Setup yarn
+        run: npm install -g yarn
+
       - name: Install Dependencies
         run: |
           npm config set unsafe-perm true

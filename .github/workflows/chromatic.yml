@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: 16.13.1
 
+      - name: Setup yarn
+        run: npm install -g yarn
+
       - name: Install Dependencies
         run: |
           cd web

@@ -20,6 +20,8 @@ jobs:
         with:
           node-version: 12.13.0
 
+      - run: npm install -g yarn
+
       - uses: preactjs/compressed-size-action@v2
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'

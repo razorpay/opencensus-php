@@ -24,6 +24,7 @@ jobs:
     #       key: $\{{ runner.os }}-node-$\{{ hashFiles('**/package-lock.json') }}
     #       restore-keys: |
     #           $\{{ runner.os }}-node-
+      - run: npm install -g yarn
       - run: npm config set unsafe-perm true && npm config set cache npm_cache && npm ci --verbose # Automatically installs npm ci in web
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
