@@ -3,6 +3,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
 import lodashset from 'lodash/set';
 import cloneDeep from 'lodash/cloneDeep';
+import { REQUESTED } from '../views/Settings/PaymentMethods/constants';
 
 const SET_LEAF_INSTRUMENT = 'SET_LEAF_INSTRUMENT';
 const SET_INTERMEDIATE_INSTRUMENT = 'SET_INTERMEDIATE_INSTRUMENT';
@@ -973,7 +974,12 @@ export default function instrumentRequestsReducer(state = initialState, action) 
         );
         lodashset(stateClone, `${path}.path`, s.instrument);
         lodashset(stateClone, `${path}.status`, s.status);
-        lodashset(stateClone, `${path}.created_at`, s.created_at);
+        lodashset(
+          stateClone,
+          `${path}.created_at`,
+          s.status === REQUESTED ? s.updated_at : s.created_at,
+        );
+
         if (['action_required', 'rejected', 'activated_action_required'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
         }
