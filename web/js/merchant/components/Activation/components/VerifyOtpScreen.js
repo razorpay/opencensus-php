@@ -19,6 +19,7 @@ const VerifyOtp = ({
   setError,
   setIsStartAgain,
   trackEvents,
+  handleDownTimeError,
 }) => {
   const [otp, setOtp] = useState('');
   const [wrongOtp, setWrongOtp] = useState(false);
@@ -97,16 +98,11 @@ const VerifyOtp = ({
           if (errorCode === 'INCORRECT_OTP') {
             setWrongOtp(true);
             setOtp('');
-          } else if (
-            errorCode === 'OTP_LIMIT_EXCEEDED' ||
-            errorCode === 'INTERNAL_SERVER_ERROR' ||
-            errorCode === 'INPUT_DATA_ISSUE'
-          ) {
+          } else if (errorCode === 'OTP_LIMIT_EXCEEDED' || errorCode === 'INPUT_DATA_ISSUE') {
             setCaptchaValue('');
             setScreen('');
-          } else if (errorCode === 'NO_PROVIDER_ERROR') {
-            mobileLinkedOnChange(false);
-            setScreen('ProviderError');
+          } else if (errorCode === 'NO_PROVIDER_ERROR' || errorCode === 'INTERNAL_SERVER_ERROR') {
+            handleDownTimeError();
           }
         }
         if (res.data.code) {
@@ -116,8 +112,7 @@ const VerifyOtp = ({
             setScreen('');
             setCaptchaValue('');
           } else if (res.data.code === 'unavailable') {
-            mobileLinkedOnChange(false);
-            setScreen('ProviderError');
+            handleDownTimeError();
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
@@ -142,10 +137,14 @@ const VerifyOtp = ({
       })
       .catch((err) => {
         if (!err.success) {
-          setError(err.errors[0]);
+          const apiError = err.errors[0] || '';
+          setError(apiError);
           setIsApiCall(false);
-          if (err.errors[0] === 'INVALID_SESSION_ID') {
+          if (apiError === 'INVALID_SESSION_ID') {
             setScreen('');
+          }
+          if (apiError.includes('Internal Server Error')) {
+            handleDownTimeError();
           }
         }
         trackEvent(

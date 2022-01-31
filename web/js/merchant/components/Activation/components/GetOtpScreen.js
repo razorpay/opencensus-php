@@ -26,6 +26,7 @@ const GetOtpScreen = ({
   setIsStartAgain,
   isAadharEkycMandatory,
   trackEvents,
+  handleDownTimeError,
 }) => {
   const [captchaImg, setCaptchaImg] = useState('');
   const [hasMobileLinked, setHasMobileLinked] = useState(isAadharLinked);
@@ -91,7 +92,6 @@ const GetOtpScreen = ({
       case 'OTP_LIMIT_EXCEEDED':
         return 'You have exceeded the maximum attempts to submit OTP. Please try again';
       case 'invalid_argument':
-      case 'INTERNAL_SERVER_ERROR':
       case 'INVALID_SESSION_ID':
       case 'INPUT_DATA_ISSUE':
       case error.includes('Internal Server Error'):
@@ -115,16 +115,17 @@ const GetOtpScreen = ({
         }
         if (res.data.error_code) {
           setError(res.data.error_code);
-          if (res.data.error_code === 'NO_PROVIDER_ERROR') {
-            mobileLinkedOnChange(false);
-            setScreen('ProviderError');
+          if (
+            res.data.error_code === 'NO_PROVIDER_ERROR' ||
+            res.data.error_code === 'INTERNAL_SERVER_ERROR'
+          ) {
+            handleDownTimeError();
           }
         }
         if (res.data.code) {
           setError(res.data.code);
           if (res.data.code === 'unavailable') {
-            mobileLinkedOnChange(false);
-            setScreen('ProviderError');
+            handleDownTimeError();
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
@@ -149,7 +150,11 @@ const GetOtpScreen = ({
       })
       .catch((err) => {
         if (!err.success) {
-          setError(err.errors[0]);
+          const apiError = err.errors[0];
+          setError(apiError);
+          if (apiError.includes('Internal Server Error')) {
+            handleDownTimeError();
+          }
         }
         trackEvent(
           window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
@@ -189,17 +194,11 @@ const GetOtpScreen = ({
         if (res.data.error_code) {
           const errorCode = res.data.error_code;
           setError(errorCode);
-          if (
-            errorCode === 'INVALID_AADHAAR_NUMBER' ||
-            errorCode === 'INVALID_CAPTCHA' ||
-            errorCode === 'INTERNAL_SERVER_ERROR'
-          ) {
+          if (errorCode === 'INVALID_AADHAAR_NUMBER' || errorCode === 'INVALID_CAPTCHA') {
             setCaptchaValue('');
           }
-
-          if (errorCode === 'NO_PROVIDER_ERROR') {
-            mobileLinkedOnChange(false);
-            setScreen('ProviderError');
+          if (errorCode === 'NO_PROVIDER_ERROR' || errorCode === 'INTERNAL_SERVER_ERROR') {
+            handleDownTimeError();
           }
         }
         if (res.data.code) {
@@ -207,8 +206,7 @@ const GetOtpScreen = ({
           if (res.data.code === 'invalid_argument') {
             setCaptchaValue('');
           } else if (res.data.code === 'unavailable') {
-            mobileLinkedOnChange(false);
-            setScreen('ProviderError');
+            handleDownTimeError();
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
@@ -234,9 +232,13 @@ const GetOtpScreen = ({
       .catch((err) => {
         btnStyle.style.pointerEvents = 'initial';
         if (!err.success) {
-          setError(err.errors[0]);
-          if (err.errors[0] === 'INVALID_SESSION_ID') {
+          const apiError = err.errors[0];
+          setError(apiError);
+          if (apiError === 'INVALID_SESSION_ID') {
             setCaptchaValue('');
+          }
+          if (apiError.includes('Internal Server Error')) {
+            handleDownTimeError();
           }
         }
         trackEvent(

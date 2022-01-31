@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import RTracking from 'react-tracking';
+import rTracking from 'react-tracking';
 import Input from 'common/new-ui/Input';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import GetOtpScreen from './GetOtpScreen';
@@ -24,6 +24,7 @@ const EAadhar = ({
   const analyticsProperties = {
     properties: {
       location: 'Activation page',
+      error_code: error,
       ...getCommonAnalyticsProperties(window.rzp_user),
     },
   };
@@ -62,11 +63,16 @@ const EAadhar = ({
       <div className="Input Input--small Input--vTop is-mature">
         <div className="Input-label">Aadhar Verification</div>
         <div className="Input-content e-aadhar-provider-error">
-          We are unable to verify your Aadhar details with your number at the moment. Please upload
-          scanned copies of any of these address proofs listed below
+          We can not support OTP based Aadhaar verification because of downtime on UIDAI servers.
+          Please upload copies of one the address proofs listed below.
         </div>
       </div>
     );
+  };
+
+  const handleDownTimeError = () => {
+    mobileLinkedOnChange(false);
+    setScreen('ProviderError');
   };
 
   const commonProps = {
@@ -79,6 +85,7 @@ const EAadhar = ({
     setError,
     captcha,
     aadharNumber,
+    handleDownTimeError,
   };
 
   const renderScreens = () => {
@@ -108,6 +115,6 @@ const EAadhar = ({
   return <div className="e-aadhar">{renderScreens()}</div>;
 };
 
-export default RTracking(() => {
+export default rTracking(() => {
   return window.rzpQ.component('EAadhar');
 })(EAadhar);

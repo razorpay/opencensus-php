@@ -7,6 +7,6 @@ export default {
   component: ESignVerification,
 } as Meta;
 
-const Template: Story = () => <ESignVerification disabled={false} />;
+const Template: Story = () => <ESignVerification disabled={false} showAddressProofDoc={() => {}} />;
 
 export const Default = Template.bind({});

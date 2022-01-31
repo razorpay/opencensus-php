@@ -8,12 +8,14 @@ const AadharError: React.FC = () => {
     <Space padding={[0, 0, 2]}>
       <View>
         <Text size="medium" weight="bold" color="shade.970">
-          Aadhar Verification ( Via OTP )
+          Aadhar Verification
         </Text>
-        <Text size="xsmall" color="shade.950">
-          The Aadhar database does not seem to be working at the moment you can continue without
-          verification
-        </Text>
+        <Space padding={[1, 0, 0]}>
+          <Text size="small" color="shade.960">
+            We can not support OTP based Aadhaar verification because of downtime on UIDAI servers.
+            Please upload copies of one the address proofs listed below.
+          </Text>
+        </Space>
       </View>
     </Space>
   );

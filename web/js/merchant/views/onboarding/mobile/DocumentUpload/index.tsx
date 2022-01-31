@@ -92,6 +92,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
   const [bankDoc, setBankDoc] = useState<string>(defaultBankDoc);
   const [additionalDoc, setAdditionalDoc] = useState<string>(defaultAdditionalDoc);
   const [progress, setProgress] = useState<number>(0);
+  const [isEkycDownTime, setIsEkycDownTime] = useState<boolean>(false);
   const emailVerifyRef = useRef<HTMLDivElement>(null);
   const isEmailVerified = user?.user?.confirmed;
 
@@ -353,7 +354,12 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
 
   return (
     <>
-      {shouldShowEsignFlow && <ESignVerification disabled={isFormLocked} />}
+      {shouldShowEsignFlow && (
+        <ESignVerification
+          disabled={isFormLocked}
+          showAddressProofDoc={() => setIsEkycDownTime(true)}
+        />
+      )}
       {isAnyDocumentNeeded ? (
         <Card padding={[2]} margin={[0, 0, 2, 0]}>
           <Flex>
@@ -440,7 +446,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       >
         {(formikProps) => (
           <Form onSubmit={(e) => e.preventDefault()}>
-            {isVisible('address_proof', data) && (
+            {(isVisible('address_proof', data) || isEkycDownTime) && (
               <FormSection title="Authorised Signatory's Address Proof">
                 <Field>
                   <Select

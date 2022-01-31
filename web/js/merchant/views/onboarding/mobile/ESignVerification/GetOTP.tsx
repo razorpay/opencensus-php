@@ -44,6 +44,7 @@ interface GetOTPPropsT {
   otp: string;
   aadharError: string;
   disabled: boolean;
+  handleDownTimeError: () => void;
 }
 
 const GetOTP: React.FC<GetOTPPropsT> = ({
@@ -53,6 +54,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
   setAadharNumber,
   aadharError,
   disabled,
+  handleDownTimeError,
 }) => {
   const { postData, data } = useActivation();
   const [isAadharLinkedToMobile, setIsaadharLinkedToMobile] = useState(
@@ -65,6 +67,18 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
   const [fetchCaptcha] = useMutation(generateCaptcha, {
     onSuccess: (response) => {
       setCaptcha(response.captcha_image);
+      if (
+        response?.error_code === 'NO_PROVIDER_ERROR' ||
+        response?.error_code === 'INTERNAL_SERVER_ERROR' ||
+        response?.code === 'unavailable'
+      ) {
+        handleDownTimeError();
+      }
+    },
+    onError: (err: { response: { errors: Array<string> } }) => {
+      if (err.response.errors[0].includes('Internal Server Error')) {
+        handleDownTimeError();
+      }
     },
   });
   const { user, experiments } = useApp();
@@ -90,6 +104,19 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           user,
         });
         setApiError(response.error_code);
+        if (
+          response.error_code === 'NO_PROVIDER_ERROR' ||
+          response.error_code === 'INTERNAL_SERVER_ERROR'
+        ) {
+          handleDownTimeError();
+        }
+      } else if (response?.code === 'unavailable') {
+        handleDownTimeError();
+      }
+    },
+    onError: (err: { response: { errors: Array<string> } }) => {
+      if (err.response.errors[0].includes('Internal Server Error')) {
+        handleDownTimeError();
       }
     },
   });

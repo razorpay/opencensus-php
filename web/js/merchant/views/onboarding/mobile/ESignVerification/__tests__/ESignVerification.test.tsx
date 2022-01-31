@@ -26,6 +26,7 @@ const GetOtpApp: React.FC = () => {
   const setAadharNumber = jest.fn();
   const goToNextScreen = jest.fn();
   const setUserEnteredCaptcha = jest.fn();
+  const handleDownTimeError = jest.fn();
   if (status === 'loading') return <div>Loading...</div>;
   return (
     <GetOTP
@@ -36,6 +37,7 @@ const GetOtpApp: React.FC = () => {
       setUserEnteredCaptcha={setUserEnteredCaptcha}
       aadharError=""
       disabled={false}
+      handleDownTimeError={handleDownTimeError}
     />
   );
 };
@@ -44,12 +46,12 @@ const waitForLoadingToFinish = () => waitForElementToBeRemoved(screen.queryByTex
 
 describe('ESignVerification', () => {
   it('should show the disabled form when checkbox is true', async () => {
-    render(<ESignVerification disabled={false} />, {});
+    render(<ESignVerification disabled={false} showAddressProofDoc={() => {}} />, {});
     const disableAadharFlowContainer = screen.getByRole('checkbox', { checked: false });
     await waitFor(() => {
       fireEvent.change(disableAadharFlowContainer, { target: { checked: true } });
     });
-    expect(<ESignVerification disabled={false} />).toMatchSnapshot();
+    expect(<ESignVerification disabled={false} showAddressProofDoc={() => {}} />).toMatchSnapshot();
   });
 });
 
@@ -78,12 +80,14 @@ describe('GetOTP', () => {
 
 describe('VerifyOTP', () => {
   it("should throw an validation message if otp field doesn't have  4 digit number", async () => {
+    const handleDownTimeError = jest.fn();
     const { getByText, getAllByTestId } = render(
       <VerifyOTP
         goToNextScreen={() => {}}
         aadharNumber=""
         inputCaptcha=""
         setAadharInputError={() => {}}
+        handleDownTimeError={handleDownTimeError}
       />,
       {},
     );
@@ -101,12 +105,14 @@ describe('VerifyOTP', () => {
   });
 
   it('should sussfully verify otp', async () => {
+    const handleDownTimeError = jest.fn();
     const { getAllByTestId } = render(
       <VerifyOTP
         goToNextScreen={() => {}}
         aadharNumber=""
         inputCaptcha=""
         setAadharInputError={() => {}}
+        handleDownTimeError={handleDownTimeError}
       />,
       {},
     );

@@ -5,6 +5,7 @@ exports[`AadharError should show the Error screen 1`] = `<AadharError />`;
 exports[`ESignVerification should show the disabled form when checkbox is true 1`] = `
 <ESignVerification
   disabled={false}
+  showAddressProofDoc={[Function]}
 />
 `;
 

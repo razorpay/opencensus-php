@@ -10,16 +10,17 @@ import AadharError from './AadharError';
 
 interface ESignPropsT {
   disabled?: boolean;
+  showAddressProofDoc: () => void;
 }
 
-const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
+const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignPropsT): JSX.Element => {
   const [aadharNumber, setHasAadharNumber] = useState('');
   const [nextStep, setNextStep] = useState('GetOTP');
   const [otp, setHasOTP] = useState('');
   const [inputCaptcha, setInputCaptcha] = useState('');
   const [aadharError, setAadharInputError] = useState('');
   const { user } = useApp();
-  const { data } = useActivation();
+  const { data, postData } = useActivation();
 
   useEffect(() => {
     if (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') {
@@ -46,6 +47,12 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
     setHasOTP(otpInput);
   };
 
+  const handleDownTimeError = () => {
+    goToNextScreen({ nextScreen: 'AadharError' });
+    showAddressProofDoc();
+    postData({ stakeholder: { aadhaar_linked: 0 } });
+  };
+
   const renderComponent = () => {
     switch (nextStep) {
       case 'GetOTP':
@@ -58,6 +65,7 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
             setUserEnteredCaptcha={setInputCaptcha}
             aadharError={aadharError}
             disabled={disabled}
+            handleDownTimeError={handleDownTimeError}
           />
         );
       case 'VerifyOTP':
@@ -67,6 +75,7 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
             aadharNumber={aadharNumber}
             inputCaptcha={inputCaptcha}
             setAadharInputError={setAadharInputError}
+            handleDownTimeError={handleDownTimeError}
           />
         );
       case 'AadharSuccess':
@@ -83,6 +92,7 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
             setUserEnteredCaptcha={setInputCaptcha}
             aadharError={aadharError}
             disabled={disabled}
+            handleDownTimeError={handleDownTimeError}
           />
         );
     }
