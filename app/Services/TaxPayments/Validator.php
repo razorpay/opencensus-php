@@ -52,8 +52,7 @@ class Validator extends Base\Validator
 
         $output = json_decode($response->body);
 
-        if ($output->success !== true)
-        {
+        if ($output->success !== true) {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
                 null,

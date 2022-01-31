@@ -3,6 +3,7 @@
 namespace RZP\Services\TaxPayments;
 
 use Mail;
+use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -89,6 +90,8 @@ class Service
         $this->app = $app;
 
         $this->trace = $app['trace'];
+
+        $this->env = $app['env'];
 
         // we are using the same creds as that of vendor-payments to access the APIs
         $this->config = $app['config']['applications.vendor_payments'];
@@ -432,11 +435,12 @@ class Service
 
     public function createDirectTaxPayment(array $input)
     {
-        // validate recaptcha
-        (new Validator())
-            ->setStrictFalse()
-            ->validateInput(Validator::CREATE_DIRECT_TAX_PAYMENT, $input);
-
+        if (Environment::isEnvironmentQA($this->env) === false) {
+            // validate recaptcha
+            (new Validator())
+                ->setStrictFalse()
+                ->validateInput(Validator::CREATE_DIRECT_TAX_PAYMENT, $input);
+        }
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_DIRECT_TAX_PAYMENT);
 
         return $this->makeRequest(null, $url, $input);
