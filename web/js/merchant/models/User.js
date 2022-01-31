@@ -484,6 +484,10 @@ export default class User {
     return getSplitzExperimentVariant('gs_banners_experiment')?.variables?.result === 'on';
   }
 
+  get isGSExclusiveOfferEnabled() {
+    return getSplitzExperimentVariant('gs_exclusive_offer_experiment')?.variables?.result === 'on';
+  }
+
   get isICICILinkedCAEnabled() {
     return getSplitzExperimentVariant('connected_banking_icici_exp')?.variables?.result === 'on';
   }

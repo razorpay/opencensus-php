@@ -5,6 +5,7 @@ import { assetNames } from 'merchant/models/GrowthService/data';
 
 const FETCH_ANNOUNCEMENTS = 'FETCH_ANNOUNCEMENTS';
 const FETCH_BANNERS = 'FETCH_BANNERS';
+const FETCH_EXCLUSIVE_OFFER = 'FETCH_EXCLUSIVE_OFFER';
 const FETCH_BANNERS_CAROUSEL = 'FETCH_BANNERS_CAROUSEL';
 
 const updateAssets = (status, assetName) => (state, action) => {
@@ -37,6 +38,7 @@ const updateAssets = (status, assetName) => (state, action) => {
 
 const updateAnnouncements = (status) => updateAssets(status, assetNames.ANNOUNCEMENT);
 const updateBanners = (status) => updateAssets(status, assetNames.BANNER);
+const updateExclusiveOffer = (status) => updateAssets(status, assetNames.EXCLUSIVE_OFFER);
 const updateCarouselBanners = (status) => updateAssets(status, assetNames.BANNER_CAROUSEL_ITEM);
 
 export const fetchAnnouncements = ({ fromWhere = 'home' }) => {
@@ -62,6 +64,14 @@ export const fetchCarouselBanner = ({ fromWhere = 'home' }) => {
   };
 };
 
+export const fetchExclusiveOffer = ({ fromWhere = 'home' }) => {
+  const growthService = new GrowthService();
+  return {
+    type: FETCH_EXCLUSIVE_OFFER,
+    payload: growthService.getExclusiveOfferModal(fromWhere),
+  };
+};
+
 const initialState = {
   announcements: {
     loading: false,
@@ -70,6 +80,10 @@ const initialState = {
   banners: {
     loading: false,
     banners: [],
+  },
+  exclusive_offers: {
+    loading: false,
+    exclusive_offers: {},
   },
   banner_carousel_items: {
     loading: false,
@@ -86,6 +100,9 @@ export default makeEntityReducer(
     [`${FETCH_BANNERS}::PENDING`]: updateBanners('PENDING'),
     [`${FETCH_BANNERS}::SUCCESS`]: updateBanners('SUCCESS'),
     [`${FETCH_BANNERS}::ERROR`]: updateBanners('ERROR'),
+    [`${FETCH_EXCLUSIVE_OFFER}::PENDING`]: updateExclusiveOffer('PENDING'),
+    [`${FETCH_EXCLUSIVE_OFFER}::SUCCESS`]: updateExclusiveOffer('SUCCESS'),
+    [`${FETCH_EXCLUSIVE_OFFER}::ERROR`]: updateExclusiveOffer('ERROR'),
     [`${FETCH_BANNERS_CAROUSEL}::PENDING`]: updateCarouselBanners('PENDING'),
     [`${FETCH_BANNERS_CAROUSEL}::SUCCESS`]: updateCarouselBanners('SUCCESS'),
     [`${FETCH_BANNERS_CAROUSEL}::ERROR`]: updateCarouselBanners('ERROR'),

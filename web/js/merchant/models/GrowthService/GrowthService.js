@@ -118,6 +118,20 @@ export default class GrowthService extends GenericEntity {
     return banners;
   };
 
+  getExclusiveOfferModal = async (fromWhere) => {
+    let exclusive_offers = {};
+
+    const gsExclusiveOffer = await this.fetchAssetData(
+      getChannelID(fromWhere, this.user.isOrgRZP),
+      assetNames.EXCLUSIVE_OFFER,
+    );
+
+    if (Array.isArray(gsExclusiveOffer) && gsExclusiveOffer.length > 0) {
+      exclusive_offers = gsExclusiveOffer[0];
+    }
+
+    return exclusive_offers;
+  };
   getCarouselBanners = async (fromWhere) => {
     let carouselBanner =
       (await this.fetchAssetData(

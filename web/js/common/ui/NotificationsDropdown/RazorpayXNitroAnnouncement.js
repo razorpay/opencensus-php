@@ -559,7 +559,7 @@ class InfoForm extends React.Component {
   }
 }
 
-const SubmissionSuccessfull = ({ handleClose }) => {
+export const SubmissionSuccessfull = ({ handleClose }) => {
   return (
     <div className="rxca-submit-finish-modal">
       <div className="header">

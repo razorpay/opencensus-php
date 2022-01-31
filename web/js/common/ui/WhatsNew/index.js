@@ -24,6 +24,7 @@ import {
 } from 'merchant_common/reducers/multiSlider';
 import { trackExpand, trackAnnouncement } from '../NotificationsDropdown/ga';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
+import ExclusiveOffer from '../ExclusiveOffer';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
@@ -145,6 +146,16 @@ class WhatsNew extends Component {
     });
   };
 
+  showGSExclusiveOfferModal = () => {
+    const { closeModal, openModal } = this.props;
+
+    openModal({
+      component: <ExclusiveOffer hideModal={closeModal} fromWhere="whatsnew" />,
+      size: 'xlarge',
+      className: 'GSExclusiveOffer--Modal',
+    });
+  };
+
   onMobileAppCampaignCTAClick = () => {
     // handle the popup open here. refer showRazorpayXNitroAnnouncement function
     const { user } = this.props;
@@ -229,6 +240,9 @@ class WhatsNew extends Component {
         break;
       case 'Aug25-AppStore-Intent-Zapier-cta':
         this.openZapierIntentForm();
+        break;
+      case 'GS-Exclusive-Offer-modal':
+        this.showGSExclusiveOfferModal();
         break;
       case 'JAN22-ICICI-CONNECTEDBANKING-ANN':
         this.handleConnectedBankingFlow();

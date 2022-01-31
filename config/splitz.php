@@ -158,5 +158,8 @@ return [
 
         // Nitro ICICI Mid Marketing Experiment
         'NITRO_ICICI_MID_MARKETING_EXPERIMENT' => env('NITRO_ICICI_MID_MARKETING_EXPERIMENT', ''),
+
+        // Growth Services Integration with Exclusive Offer
+        'GS_EXCLUSIVE_OFFER_SPLITZ' => env('GS_EXCLUSIVE_OFFER_SPLITZ', ''),
     ]
 ];

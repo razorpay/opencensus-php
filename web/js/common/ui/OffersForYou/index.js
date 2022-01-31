@@ -12,6 +12,8 @@ import rTracking from 'react-tracking';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import ExclusiveOffer from '../ExclusiveOffer/index';
+import NitroSelfServe from '../../ui/NotificationsDropdown/Neostone/index';
 import { withRouter } from 'react-router-dom';
 import {
   setActivePageName as fnSetActivePageName,
@@ -112,6 +114,18 @@ const OffersForYou = ({
         ),
         size: 'xlarge',
         className: 'RXPayrollMoonshine--Modal',
+      });
+    } else if (user.isPartOfNeostone) {
+      openModals({
+        component: <NitroSelfServe user={user} handleClose={closeModals} tracking={tracking} />,
+        size: 'xlarge',
+        className: 'RazorpayXNitroAnnouncement--Modal',
+      });
+    } else if (user.isGSExclusiveOfferEnabled) {
+      openModals({
+        component: <ExclusiveOffer fromWhere="gsExclusiveOffer" />,
+        size: 'xlarge',
+        className: 'GSExclusiveOffer--Modal',
       });
     } else {
       openModals({

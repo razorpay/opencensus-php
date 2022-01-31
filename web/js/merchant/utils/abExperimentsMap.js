@@ -212,6 +212,14 @@ export default {
     'IMixjTEYeDBCN9',
   ],
 
+  gs_exclusive_offer_experiment: [
+    // prod
+    'IilXWVG87mw0tZ',
+
+    // beta
+    'IilVBztfuRjNkA',
+  ],
+
   project_moonshine: [
     // prod
     'HmypdLPF5UusXz',

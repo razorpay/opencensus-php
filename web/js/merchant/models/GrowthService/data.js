@@ -167,6 +167,12 @@ export const routeToChannelIDMap = {
       stage: 'IUaSEhwWpxdzIZ',
       production: 'IUaZC0Vjcujv3n',
     },
+    gsExclusiveOffer: {
+      dev: 'IiQPZ3bmxiHyoq',
+      beta: 'HTdu8cC7FJEIHC',
+      stage: 'HTdu8cC7FJEIHC',
+      production: 'IiQPZ3bmxiHyoq',
+    },
     gs_login_card: {
       dev: 'Il7nf6M5YIxTIo',
       beta: 'Il7nf6M5YIxTIo',
@@ -333,6 +339,12 @@ export const routeToChannelIDMap = {
       stage: 'IUbFrNg7pJxXMN',
       production: 'IUbcK1TFmKE1Dd',
     },
+    gsExclusiveOffer: {
+      dev: 'IiQPZ3bmxiHyoq',
+      beta: 'HTdu8cC7FJEIHC',
+      stage: 'HTdu8cC7FJEIHC',
+      production: 'IiQPZ3bmxiHyoq',
+    },
     gs_login_card: {
       dev: 'Il7nf6M5YIxTIo',
       beta: 'Il7nf6M5YIxTIo',
@@ -371,6 +383,7 @@ export const routeToRouteNameMap = {
 export const assetNames = {
   ANNOUNCEMENT: 'ANNOUNCEMENT',
   BANNER: 'BANNER',
+  EXCLUSIVE_OFFER: 'EXCLUSIVE_OFFER',
   BANNER_CAROUSEL_ITEM: 'BANNER_CAROUSEL_ITEM',
 };
 

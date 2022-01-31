@@ -37,6 +37,7 @@ import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 import moment from 'moment';
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
+import ExclusiveOffer from '../ExclusiveOffer';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -186,6 +187,16 @@ class WhatsNewOld extends Component {
     });
   };
 
+  showGSExclusiveOfferModal = () => {
+    const { openModal } = this.props;
+
+    openModal({
+      component: <ExclusiveOffer fromWhere="whatsnew" />,
+      size: 'xlarge',
+      className: 'GSExclusiveOffer--Modal',
+    });
+  };
+
   onMobileAppCampaignCTAClick = () => {
     // handle the popup open here. refer showRazorpayXNitroAnnouncement function
     const { user } = this.props;
@@ -269,6 +280,9 @@ class WhatsNewOld extends Component {
         break;
       case 'Aug25-AppStore-Intent-Zapier-cta':
         this.openZapierIntentForm();
+        break;
+      case 'GS-Exclusive-Offer-modal':
+        this.showGSExclusiveOfferModal();
         break;
       case 'JAN22-ICICI-CONNECTEDBANKING-ANN':
         this.handleConnectedBankingFlow();

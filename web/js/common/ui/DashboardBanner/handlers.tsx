@@ -11,6 +11,7 @@ import {
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import PLFeaturesModal from '../../../merchant/components/Announcements/CatalystCampaignBanner/PLFeaturesModal';
 import { sendDataToSalesForce } from '../../utils/common-api';
+import ExclusiveOffer from '../ExclusiveOffer';
 
 const getClickHandler = (id = '') => {
   const user = getUser();
@@ -37,6 +38,13 @@ const getClickHandler = (id = '') => {
     sendDataToSalesForce(data, userObj);
   };
 
+  const showGSExclusiveOfferModal = () => {
+    openModal({
+      component: <ExclusiveOffer fromWhere="gsExclusiveOffer" />,
+      className: 'GSExclusiveOffer--Modal',
+    });
+  };
+
   const handleConnectedBankingFlow = () => {
     setBaseLocation('/connected-banking/icici-linked-ca');
     setActivePageName('Connected Banking');
@@ -52,6 +60,8 @@ const getClickHandler = (id = '') => {
       return sendPayloadToSalesforce('ultra-campaign', user);
     case 'SEP21-ULTRALOC-BANNER':
       return sendPayloadToSalesforce('ultra-campaign-p2-cash-advance', user);
+    case 'GS-Exclusive-Offer-modal':
+      return showGSExclusiveOfferModal;
     case 'JAN22-ICICI-CONNECTEDBANKING-DB':
       return handleConnectedBankingFlow;
     default:
