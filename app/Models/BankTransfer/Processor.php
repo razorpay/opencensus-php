@@ -660,6 +660,18 @@ class Processor extends VirtualAccount\Processor
     {
         $parentPaymentArray = $this->getDefaultPaymentArray();
 
+        $gatewayIfsc = VirtualAccount\Provider::IFSC[$bankTransfer->getGateway()];
+
+        if (empty($gatewayIfsc) === true)
+        {
+            throw new LogicException('Gateway not matches the bank account', null);
+        }
+
+        if (($gatewayIfsc !== $this->virtualAccount->bankAccount->getIfscCode()) and ($this->virtualAccount->bankAccount2 !== null) and ($gatewayIfsc === $this->virtualAccount->bankAccount2->getIfscCode()))
+        {
+            $parentPaymentArray['receiver']['id'] = $this->virtualAccount->bankAccount2->getPublicId();
+        }
+
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
             Payment\Entity::METHOD      => Payment\Method::BANK_TRANSFER,
