@@ -82,6 +82,8 @@ const Clarifications = (props) => {
 
   const { onCloseClick, mirId, clarifications } = props;
 
+  const lastTab = filteredTabs.length - 1;
+
   async function fetchIirDiscrepancies(mir_Id) {
     try {
       if (mir_Id) {
@@ -117,7 +119,9 @@ const Clarifications = (props) => {
     const isValid = Object.values(formFields).every(
       ({ answer_field_value }) => answer_field_value.length,
     );
-    return selectedTab === filteredTabs[2] && !isValid ? setIsDisabled(true) : setIsDisabled(false);
+    return selectedTab === filteredTabs[lastTab] && !isValid
+      ? setIsDisabled(true)
+      : setIsDisabled(false);
   }, [formFields, selectedTab, filteredTabs]);
 
   const handleFileChange = (uploadedFile, iirId) => {
@@ -145,7 +149,7 @@ const Clarifications = (props) => {
 
   const onSubmitDiscrepancyForm = (event) => {
     event.preventDefault();
-    if (selectedTab === filteredTabs[2]) {
+    if (selectedTab === filteredTabs[lastTab]) {
       const data = [];
       for (const [key, value] of Object.entries(formFields)) {
         const entry = {
@@ -234,7 +238,7 @@ const Clarifications = (props) => {
               onClick={onSubmitDiscrepancyForm}
               disabled={isDisabled}
             >
-              {selectedTab === filteredTabs[2] ? (
+              {selectedTab === filteredTabs[lastTab] ? (
                 <span>
                   Submit Form <i className="i i-chevron-right" />
                 </span>
