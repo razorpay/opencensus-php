@@ -907,7 +907,7 @@ class Header
     const UPI_TERMINAL_ONBOARDING_MERCHANT_ID   =   'Merchant Id';
     const UPI_TERMINAL_ONBOARDING_GATEWAY       =   'Gateway';
     const UPI_TERMINAL_ONBOARDING_VPA           =   'Vpa';
-    const UPI_TERMINAL_ONBOARDING_GATEWAY_TERMINAL_ID  = 'Gateway Terminal ID';
+    const UPI_TERMINAL_ONBOARDING_GATEWAY_TERMINAL_ID  = 'Gateway Terminal ID2';
     const UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE  = 'Gateway Access Code';
     const UPI_TERMINAL_ONBOARDING_EXPECTED             = 'Expected';
     const UPI_TERMINAL_ONBOARDING_VPA_HANDLE           = 'Vpa Handle';

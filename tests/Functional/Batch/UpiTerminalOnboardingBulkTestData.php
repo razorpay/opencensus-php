@@ -86,7 +86,7 @@ return [
                 "Merchant Id",
                 "Gateway",
                 "Vpa",
-                'Gateway Terminal ID',
+                'Gateway Terminal ID2',
                 'Gateway Access Code',
                 'Expected',
                 'Vpa Handle',
@@ -122,7 +122,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'items' => 
+                'items' =>
                 [
                     '0' => [
                         'idempotency_key'    => 'randomIdempotencyKey',
@@ -136,12 +136,12 @@ return [
                         'Merchant Id'           =>  '10NodalAccount',
                         'Gateway'               =>  'upi_juspay',
                         'Vpa'                   =>  'umesh.rzp@abfspay', // would be written in output file by batch file
-                        'Gateway Terminal ID'   =>  'parentMerchantId',
+                        'Gateway Terminal ID2'  =>  'parentMerchantId',
                         'Gateway Access Code'   =>  'parentChannelId',
                         'Expected'              =>  1,
                         'Vpa Handle'            =>  '',
                     ]
-    
+
                 ]
             ]
         ],
