@@ -4284,4 +4284,22 @@ return [
             ]
         ],
     ],
+
+    'testCreateTerminalRupaySiHub' =>  [
+        'request' => [
+            'content' => [
+                'gateway' => 'rupay_sihub',
+                'card' => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'rupay_sihub',
+                'enabled' => true,
+                'status'  => 'activated',
+            ]
+        ],
+        'status_code' => 200,
+    ],
 ];

@@ -3350,6 +3350,32 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTerminalRupaySiHub()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditRupaySiHubTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_rupay_sihub_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'gateway_access_code' => 'random'
+        ];
+
+        $this->editTerminal($tid, $data);
+
+        $terminal = $this->getEntityById('terminal', $tid, true);
+
+        $this->assertEquals('random', $terminal['gateway_access_code']);
+    }
+    
     public function testGetSalesforceDetailsForMerchantIDs() {
         $salesForceResponsePayload = [
             'random-MID-123' => [

@@ -2076,6 +2076,25 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
+    public function createSharedRupaySihubTerminal(array $attributes = [])
+    {
+        $termId = Shared::RUPAY_SIHUB_RAZORPAY_TERMINAL;
+
+        $sharedMerchantAccount = Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => $termId,
+            'merchant_id'           => $sharedMerchantAccount,
+            'gateway'               => 'rupay_sihub',
+            'gateway_merchant_id'   => 'rand_rupay_sihub',
+            'card'                  => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
     public function createSharedAxisGeniusTerminal()
     {
         $termId = \RZP\Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;

@@ -118,6 +118,7 @@ class Gateway
     const UPI_JUSPAY             = 'upi_juspay';
     const BILLDESK_SIHUB         = 'billdesk_sihub';
     const MANDATE_HQ             = 'mandate_hq';
+    const RUPAY_SIHUB            = 'rupay_sihub';
 
     const CARD_FSS               = 'card_fss';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';

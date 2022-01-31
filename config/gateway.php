@@ -131,6 +131,7 @@ return [
         'checkout_dot_com',
         'billdesk_sihub',
         'mandate_hq',
+        'rupay_sihub',
         'emerchantpay',
     ],
 

@@ -154,6 +154,7 @@ class Shared
     const NETBANKING_NSDL_TERMINAL           = '1000NbNsdlTrmnl';
     const BILLDESK_SIHUB_RAZORPAY_TERMINAL   = '100BdSihubTrml';
     const MANDATE_HQ_RAZORPAY_TERMINAL       = '1000ManhqTrmnl';
+    const RUPAY_SIHUB_RAZORPAY_TERMINAL      = '1000RupSiTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -228,6 +229,7 @@ class Shared
         self::NETBANKING_TMB_TERMINAL,
         self::BILLDESK_SIHUB_RAZORPAY_TERMINAL,
         self::MANDATE_HQ_RAZORPAY_TERMINAL,
+        self::RUPAY_SIHUB_RAZORPAY_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -309,6 +311,7 @@ class Shared
         self::NETBANKING_TMB_TERMINAL            => Gateway::NETBANKING_TMB,
         self::BILLDESK_SIHUB_RAZORPAY_TERMINAL   => Gateway::BILLDESK_SIHUB,
         self::MANDATE_HQ_RAZORPAY_TERMINAL       => Gateway::MANDATE_HQ,
+        self::RUPAY_SIHUB_RAZORPAY_TERMINAL      => Gateway::RUPAY_SIHUB,
     ];
 
     public static function getSharedTerminalMapping()

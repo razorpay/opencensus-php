@@ -158,6 +158,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CHECKOUT_DOT_COM,
         Payment\Gateway::BILLDESK_SIHUB,
         Payment\Gateway::MANDATE_HQ,
+        Payment\Gateway::RUPAY_SIHUB,
         Payment\Gateway::NETBANKING_BDBL,
         Payment\Gateway::NETBANKING_UCO,
         Payment\Gateway::MOBIKWIK,
@@ -789,6 +790,21 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|max:15',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::GATEWAY                    => 'sometimes|in:mandate_hq',
+    ];
+
+    protected static $rupaySihubEditTerminalRules = [
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string|max:15',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::GATEWAY                    => 'sometimes|in:rupay_sihub',
     ];
 
     protected static $mpgsEditTerminalRules = [
