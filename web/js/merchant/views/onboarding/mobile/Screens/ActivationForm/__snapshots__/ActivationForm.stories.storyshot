@@ -24,5 +24,3 @@ exports[`Storyshots Onboarding/ActivationForm Default 1`] = `
   />
 </div>
 `;
-
-exports[`Storyshots Onboarding/ActivationProgress Whitelisted Merchant 1`] = `<div />`;

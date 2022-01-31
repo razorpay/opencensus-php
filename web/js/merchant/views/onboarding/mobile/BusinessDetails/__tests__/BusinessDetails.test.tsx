@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { delay, fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
 import BusinessDetails from '../index';
 import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
@@ -153,20 +153,6 @@ test('should render correct flow', async () => {
   fireEvent.blur(cityInput);
   fireEvent.change(stateInput, { target: { value: 'DL' } });
   fireEvent.blur(stateInput);
-});
-
-test('should show error if gstin validation failed', async () => {
-  ActivationDB.update({
-    business_type: '1',
-    activation_form_milestone: 'L1',
-    gstin_verification_status: 'incorrect_details',
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  delay();
-  expect(
-    screen.getByText('This GSTIN number is invalid, please enter valid details.'),
-  ).toBeInTheDocument();
 });
 
 test('should show error if cin validation failed', async () => {

@@ -12,6 +12,7 @@ export interface ExitPopupProps {
   onClose: () => void;
   isOpen: boolean;
   exitToDashBoardLink?: string;
+  closeable?: boolean;
 }
 
 const Container = styled(View)`
@@ -19,7 +20,12 @@ const Container = styled(View)`
   text-align: center;
 `;
 
-const ExitPopup: React.FC<ExitPopupProps> = ({ isOpen, onClose, exitToDashBoardLink }) => {
+const ExitPopup: React.FC<ExitPopupProps> = ({
+  isOpen,
+  onClose,
+  exitToDashBoardLink,
+  closeable = false,
+}) => {
   const trackEvents = useTrackEvents();
   useEffect(() => {
     trackEvents({
@@ -45,7 +51,7 @@ const ExitPopup: React.FC<ExitPopupProps> = ({ isOpen, onClose, exitToDashBoardL
         });
         onClose();
       }}
-      closeable={false}
+      closeable={closeable}
     >
       <ModalBody>
         <Container>
