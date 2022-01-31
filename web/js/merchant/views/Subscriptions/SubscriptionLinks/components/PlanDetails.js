@@ -93,6 +93,8 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
           <div class="Input-content">
             <div class="Input-elWrapper">
               <TypeAhead
+                // Exclusively pass showClear as false so that in the DOM, PowerSelect__Clear element is removed
+                showClear={false}
                 options={plans}
                 class="ps-in-modal"
                 selected={selectedPlan}

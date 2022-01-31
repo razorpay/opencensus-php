@@ -173,12 +173,14 @@ export default class NewSubscriptionLink extends React.Component {
           }));
 
           this.setState(
-            {
-              fields: newSubscription,
-              internals: {
-                _startsImmediately: !start_at,
-                _isNonExpiringLink: !expire_by,
-              },
+            (prevState) => {
+              return {
+                fields: { ...prevState.fields, ...newSubscription },
+                internals: {
+                  _startsImmediately: !start_at,
+                  _isNonExpiringLink: !expire_by,
+                },
+              };
             },
             (_) => this.initializePlan(),
           );
