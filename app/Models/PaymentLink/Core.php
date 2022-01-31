@@ -60,6 +60,8 @@ class Core extends Base\Core
 
     const RAZORX_ASYNC_UPDATE_EXPERIMENT = 'pp_async_update_experiment';
 
+    const RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE = 'RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE';
+
     public function __construct()
     {
         parent::__construct();
@@ -141,7 +143,7 @@ class Core extends Base\Core
         $this->trace->count(Metric::PAYMENT_PAGE_CREATED_TOTAL, $paymentLink->getMetricDimensions());
 
         Tracer::inSpan(['name' => 'payment_page.create.dedupe_actions'], function() use ($paymentLink, $merchant) {
-            $this->doDedupeAndRiskActions($paymentLink, $merchant);
+            $this->dispatchDedupeCall($paymentLink, $merchant);
         });
 
         Tracer::inSpan(['name' => 'payment_page.create.dispatch.app_risk_check'], function() use ($paymentLink) {
@@ -1926,7 +1928,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function doDedupeAndRiskActions(Entity $paymentLink, Merchant\Entity $merchant)
+    public function doDedupeAndRiskActions(Entity $paymentLink)
     {
         try
         {
@@ -2318,5 +2320,55 @@ class Core extends Base\Core
             $this->app['basicauth']->setModeAndDbConnection($slugMetadata['mode']);
 
             return $slugMetadata['id'];
+    }
+
+    private function dispatchDedupeCall(Entity $paymentLink, Merchant\Entity $merchant)
+    {
+        if ($this->mode !== Mode::LIVE)
+        {
+            return;
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            self::RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE,
+            $this->mode
+        );
+
+        /**
+         * We want only the enabled merchants to go through the async flow,
+         * else by default the dedupe call will be sync, till we ramp it up to 100%
+         */
+        if ($variant !== 'on')
+        {
+            $this->doDedupeAndRiskActions($paymentLink);
+
+            return;
+        }
+
+        $request = [
+            'event'             => PaymentPageProcessor::PAYMENT_PAGE_CREATE_DEDUPE,
+            'payment_page_id'   => $paymentLink->getId(),
+            'start_time'        => millitime(),
+        ];
+
+        try {
+            $this->trace->info(
+                TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSH_INIT,
+                $request
+            );
+
+            PaymentPageProcessor::dispatch($this->mode, $request);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSHED,
+                $request
+            );
+        } catch (\Exception $e) {
+            $this->trace->critical(
+                TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSH_FAILED,
+                $request
+            );
+        }
     }
 }

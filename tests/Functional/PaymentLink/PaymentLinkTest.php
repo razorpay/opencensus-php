@@ -12,6 +12,8 @@ use RZP\Models\Order;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Services\Elfin\Impl\Gimli;
+use RZP\Jobs\PaymentPageProcessor;
+use Illuminate\Support\Facades\Bus;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Services\Mock;
 use RZP\Services\Elfin;
@@ -2112,7 +2114,69 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @group nocode_pp_create_dedupe
+     * @return void
+     */
+    public function testOnPaymentPageCreateDedupeCallIsDispatchedInLiveModeAndExperimentOn()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->mockRazorxExperiments([
+            PaymentLink\Core::RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE => 'on'
+        ]);
+
+        Bus::fake();
+
+        $this->startTest();
+
+        Bus::assertDispatched(PaymentPageProcessor::class);
+    }
+
+    /**
+     * @group nocode_pp_create_dedupe
+     * @return void
+     */
+    public function testOnPaymentPageCreateDedupeCallIsNotDispatchedInLiveModeAndExperimentOff()
+    {
+        $this->ba->proxyAuthLive();
+
+        Bus::fake();
+
+        $this->startTest();
+
+        Bus::assertNotDispatched(PaymentPageProcessor::class);
+    }
+
     // -------------------- Protected methods --------------------
+
+    /**
+     * @param array $experimentMap
+     *
+     * @return void
+     */
+    protected function mockRazorxExperiments(array $experimentMap)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($experimentMap)
+                {
+                    $keyExists = $experimentMap[$feature] ?? false;
+                    if ($keyExists)
+                    {
+                        return $experimentMap[$feature];
+                    }
+
+                    return 'off';
+                }));
+    }
 
     protected function activateMerchantToTriggerPaymentHandleCreation(string $billingLabel = 'Test Label 123')
     {

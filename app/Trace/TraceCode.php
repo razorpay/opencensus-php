@@ -6197,6 +6197,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FORCE_SET_SALESFORCE_REQUEST_JOB_MODE             = 'FORCE_SET_SALESFORCE_REQUEST_JOB_MODE';
 
+    // Payment Page Processor
+    const PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSH_INIT          = 'PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSH_INIT';
+    const PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSH_FAILED        = 'PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSH_FAILED';
+    const PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSHED             = 'PAYMENT_PAGE_CREATE_DEDUPE_SQS_PUSHED';
+    const PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_START            = 'PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_START';
+    const PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED        = 'PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED';
+    const PAYMENT_HANDLE_CREATION_QUEUE_FAILED              = 'PAYMENT_HANDLE_CREATION_QUEUE_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

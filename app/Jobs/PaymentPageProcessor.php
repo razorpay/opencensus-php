@@ -20,6 +20,8 @@ class PaymentPageProcessor extends Job
     const REFUND_PROCESSED_EVENT    = 'REFUND_PROCESSED_EVENT';
     const PAYMENT_HANDLE_CREATION   = 'PAYMENT_HANDLE_CREATION';
 
+    const PAYMENT_PAGE_CREATE_DEDUPE    = 'PAYMENT_PAGE_CREATE_DEDUPE';
+
     /**
      * {@inheritDoc}
      */
@@ -192,6 +194,39 @@ class PaymentPageProcessor extends Job
             $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATION_QUEUE_COMPLETED, $context);
         }
         catch(\Throwable $e)
+        {
+            $this->trace->traceException($e, null, null, [
+                'params'    => $this->params->toArray(),
+            ]);
+        }
+
+        $this->delete();
+    }
+
+    protected function handlePaymentPageCreateDedupe()
+    {
+        $paymentPageId  = $this->params->get('payment_page_id');
+
+        $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_START);
+
+        if (empty($paymentPageId) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATION_QUEUE_FAILED, $this->params->toArray());
+
+            $this->delete();
+
+            return;
+        }
+
+        try
+        {
+            $entity = $this->repoManager->payment_link->find($paymentPageId);
+
+            (new PaymentLink\Core)->doDedupeAndRiskActions($entity);
+
+            $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED, $this->params->toArray());
+        }
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e, null, null, [
                 'params'    => $this->params->toArray(),
