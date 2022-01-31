@@ -1095,6 +1095,12 @@ class Constants
     // This feature will be used to control the rollout of authorization via authz enforcer
     const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
 
+    /**
+     * Feature flag to skip email notifications to merchants on processed and reversed payouts
+     * @see shouldNotifyTxnViaEmail function in Payouts\Enity.php
+     */
+    const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1519,7 +1525,7 @@ class Constants
         self::EDIT_SINGLE_VA_EXPIRY           => true,
         self::ADDRESS_NAME_REQUIRED           => true,
         self::NO_DOC_ONBOARDING               => true,
-        self::SUBM_NO_DOC_ONBOARDING           => true,
+        self::SUBM_NO_DOC_ONBOARDING          => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
@@ -1530,6 +1536,7 @@ class Constants
         self::SR_SENSITIVE_BUCKET_3           => true,
         self::SR_SENSITIVE_BUCKET_4           => true,
         self::DCC_ON_OTHER_LIBRARY            => true,
+        self::SKIP_PAYOUT_EMAIL               => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';
@@ -2203,7 +2210,12 @@ class Constants
             'feature'       => self::AUTHORIZE_VIA_AUTHZ,
             'display_name'  => 'Enable authorization via authz enforcer',
             'documentation' => 'This feature will be used to control the rollout of authorization via authz enforcer',
-        ]
+        ],
+        self::SKIP_PAYOUT_EMAIL => [
+            'feature'      => self::SKIP_PAYOUT_EMAIL,
+            'display_name' => 'Skip email notification to merchants',
+            'description'  => 'This feature, if enabled, will not send email notifications to merchants',
+        ],
     ];
 
     /**

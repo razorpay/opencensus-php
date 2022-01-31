@@ -17055,6 +17055,8 @@ class PayoutTest extends OAuthTestCase
 
             return true;
         });
+
+        Mail::assertQueued(PayoutMail::class);
     }
 
     public function testBeneNotificationOnPayoutProcessedNotSentWhenFeatureIsNotEnabled()
@@ -17919,5 +17921,74 @@ class PayoutTest extends OAuthTestCase
         // Assert that there are still 3 payouts in queued state since there wasn't enough balance to process them
         $this->assertEquals(3, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['count']);
         $this->assertEquals(30000003, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['low_balance']['total_amount']);
+    }
+
+    public function testSkipEmailNotificationForFeatureEnabledMerchantOnPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_PAYOUT_EMAIL]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        Mail::assertNotQueued(PayoutMail::class);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::SKIP_PAYOUT_EMAIL]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        Mail::assertQueued(PayoutMail::class);
+
+    }
+
+    public function testSkipEmailNotificationForFeatureEnabledMerchantOnPayoutReversed()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_PAYOUT_EMAIL]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::REVERSED, '933815383814');
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::REVERSED, $payout->getStatus());
+
+        Mail::assertNotQueued(PayoutMail::class);
     }
 }

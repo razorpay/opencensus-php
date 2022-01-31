@@ -2446,6 +2446,7 @@ class Entity extends Base\PublicEntity
         // Ref: \RZP\Mail\Transaction\Payout::getSubject
         return (($this->isBalanceTypeBanking() === true) and
                 ($this->merchant->isFeatureEnabled(Features::HIGH_TPS_COMPOSITE_PAYOUT) === false) and
+                ($this->merchant->isFeatureEnabled(Features::SKIP_PAYOUT_EMAIL) === false) and
                 (in_array($this->getStatus(), [Status::PROCESSED, Status::REVERSED], true) === true));
     }
 
