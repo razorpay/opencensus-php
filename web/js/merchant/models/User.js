@@ -1448,6 +1448,7 @@ export default class User {
   }
 
   get isSyncBankVerificationEnabled() {
+    if (this.isSourceRX) return false; // not required for Razorpay X;
     return this.getExpStatus('KARZA_BANK_ACCOUNT_VERIFICATION') && !!this.isOrgRZP;
   }
 

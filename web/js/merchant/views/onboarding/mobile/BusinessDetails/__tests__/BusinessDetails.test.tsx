@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { delay, fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
 import BusinessDetails from '../index';
 import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
@@ -163,6 +163,7 @@ test('should show error if gstin validation failed', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
+  delay();
   expect(
     screen.getByText('This GSTIN number is invalid, please enter valid details.'),
   ).toBeInTheDocument();

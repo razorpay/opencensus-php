@@ -221,16 +221,25 @@ export const handlers = [
   rest.post(
     'http://localhost:6006/merchant/api/test/bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
     (req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.delay(50),
-        ctx.json({
+      let response = {
+        status_code: 200,
+        data: {
+          is_success: true,
+        },
+      };
+
+      if (req.body.aadhaar_number !== '945252561004') {
+        response = {
           status_code: 200,
           data: {
-            is_success: true,
+            error_code: 'NO_PROVIDER_ERROR',
+            error_description:
+              'hyperverge gateway request failed with http code - 400  internal code  - 11203, error - hyperverge is down',
           },
-        }),
-      );
+        };
+      }
+
+      return res(ctx.status(200), ctx.delay(1000), ctx.json(response));
     },
   ),
 
@@ -250,6 +259,15 @@ export const handlers = [
             error_code: 'INCORRECT_OTP',
             error_description:
               ' hyperverge gateway request failed with http code - 400  internal code  - 11203, error - OTP/TOTP Fail 2 attempts remaining.',
+          },
+        };
+      } else if (req.body.otp === '123452') {
+        response = {
+          status_code: 200,
+          data: {
+            error_code: 'NO_PROVIDER_ERROR',
+            error_description:
+              'hyperverge gateway request failed with http code - 400  internal code  - 11203, error - hyperverge is down',
           },
         };
       }

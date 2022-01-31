@@ -165,7 +165,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
     if (Number(live_website_or_app) && (!data?.business_website || !data?.playstore_url)) {
       postData({ live_website_or_app: false });
     }
-  }, []);
+  }, [data]);
 
   return (
     <Formik

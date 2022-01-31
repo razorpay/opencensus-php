@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor } from 'test-utils';
 import BusinessOverview from '../index';
 import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
@@ -15,6 +15,13 @@ const App: React.FC = () => {
   return <BusinessOverview />;
 };
 test('renders all the input fields of the form correctly', async () => {
+  ActivationDB.update({
+    merchant_business_detail: {
+      website_details: {
+        live_website_or_app: 1,
+      },
+    },
+  });
   render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText('About Your Business')).toBeInTheDocument();
@@ -62,9 +69,15 @@ test('renders all the input fields of the form correctly', async () => {
   expect(
     screen.getByText('Check the pages/section required on the app by clicking on the info icon'),
   ).toBeInTheDocument();
+  const website = screen.getAllByTestId('ds-text-input')[3];
+  fireEvent.change(website, { target: { value: 'www.google.com' } });
+  fireEvent.blur(website);
 
   expect(screen.getByText('Accept payments on app')).toBeInTheDocument();
   const appCheckbox = screen.getByText('Accept payments on app');
   fireEvent.click(appCheckbox);
   expect(screen.getByText('App URL')).toBeInTheDocument();
+  await waitFor(() => fireEvent.change(appCheckbox, { target: { checked: false } }));
+  await waitFor(() => fireEvent.change(websiteCheckbox, { target: { checked: false } }));
+  await waitFor(() => fireEvent.change(liveWebsiteOrAppCheckbox, { target: { checked: false } }));
 });

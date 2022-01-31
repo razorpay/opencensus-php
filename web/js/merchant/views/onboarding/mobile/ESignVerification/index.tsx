@@ -26,7 +26,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
     if (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') {
       setNextStep('AadharSuccess');
     }
-  }, []);
+  }, [data]);
 
   const goToNextScreen = ({ nextScreen }) => {
     analyticsTrack({

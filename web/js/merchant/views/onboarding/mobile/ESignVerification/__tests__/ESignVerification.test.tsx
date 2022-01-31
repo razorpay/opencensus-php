@@ -8,7 +8,7 @@ import GetOTP from '../GetOTP';
 import VerifyOTP from '../VerifyOTP';
 import AadharSuccess from '../AadharSuccess';
 import useActivation from '../../hooks/useActivation';
-import { fireEvent, render, waitFor, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fireEvent, render, waitFor, screen, waitForElementToBeRemoved, delay } from 'test-utils';
 
 afterEach(() => {
   ActivationDB.reset();
@@ -19,6 +19,8 @@ const App: React.FC = () => {
   if (status === 'loading') return <div>Loading...</div>;
   return <AadharSuccess />;
 };
+const aadharErrorMsg =
+  'We can not support OTP based Aadhaar verification because of downtime on UIDAI servers. Please upload copies of one the address proofs listed below.';
 
 const GetOtpApp: React.FC = () => {
   const { status } = useActivation();
@@ -56,6 +58,25 @@ describe('ESignVerification', () => {
 });
 
 describe('GetOTP', () => {
+  it('should throw down time error', async () => {
+    ActivationDB.update({
+      business_type: '1',
+    });
+    render(<GetOtpApp />, {});
+    await waitForLoadingToFinish();
+
+    const [aadharNumber, captcha]: any = screen.getAllByTestId('ds-text-input');
+
+    fireEvent.change(aadharNumber, { target: { value: '941743462460' } });
+    fireEvent.change(captcha, { target: { value: 'DId2s' } });
+    expect(screen.getByText('Submit & Get OTP')).toBeInTheDocument();
+    await waitFor(() => fireEvent.click(screen.getByText('Submit & Get OTP')));
+    delay();
+    render(<AadharError />, {});
+    expect(screen.getByText('Aadhar Verification')).toBeInTheDocument();
+    expect(screen.getByText(aadharErrorMsg)).toBeInTheDocument();
+  });
+
   it("should throw an validation message if get otp pin number field doesn't have  4 digit number", async () => {
     ActivationDB.update({
       business_type: '1',
@@ -102,6 +123,10 @@ describe('VerifyOTP', () => {
 
     fireEvent.change(otpNumberInput, { target: { value: '123452' } });
     await waitFor(() => expect(screen.getByText('Submitting OTP ...')).toBeInTheDocument());
+    delay();
+    render(<AadharError />, {});
+    expect(screen.getByText('Aadhar Verification')).toBeInTheDocument();
+    expect(screen.getByText(aadharErrorMsg)).toBeInTheDocument();
   });
 
   it('should sussfully verify otp', async () => {
