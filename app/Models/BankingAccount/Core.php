@@ -1209,94 +1209,149 @@ class Core extends Base\Core
         }
         if ($bankingAccountStatus == Status::PICKED)
         {
-            if ($bankingAccountSubStatus === Status::DOCS_WALK_THROUGH_PENDING) {
+            if (empty($bankingAccountSubStatus) === true)
+            {
+                $properties['picked'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::DOCS_WALK_THROUGH_PENDING) {
                 $properties['docs_walkthrough_pending'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NEEDS_CLARIFICATION_FROM_SALES) {
+            else if ($bankingAccountSubStatus === Status::NEEDS_CLARIFICATION_FROM_SALES) {
                 $properties['needs_clarification_from_sales'] = true;
             }
-            if ($bankingAccountSubStatus === Status::MERCHANT_NOT_AVAILABLE) {
+            else if ($bankingAccountSubStatus === Status::MERCHANT_NOT_AVAILABLE) {
                 $properties['merchant_not_available'] = true;
             }
-            if ($bankingAccountSubStatus === Status::MERCHANT_PREPARING_DOCS) {
+            else if ($bankingAccountSubStatus === Status::MERCHANT_PREPARING_DOCS) {
                 $properties['merchant_preparing_docs'] = true;
             }
-            if ($bankingAccountSubStatus === Status::READY_TO_SEND_TO_BANK) {
+            else if ($bankingAccountSubStatus === Status::READY_TO_SEND_TO_BANK) {
                 $properties['ready_to_send_to_bank'] = true;
             }
-            if ($bankingAccountSubStatus === Status::UNSERVICEABLE__PINCODE) {
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__WAITING_FOR_BUSINESS_DETAILS) {
+                $properties['follow_up_|_waiting_for_business_details'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__WAITING_FOR_ADDRESS_DETAILS) {
+                $properties['follow_up_|_waiting_for_address_details'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__WANT_CA_AT_LATER_DATE) {
+                $properties['follow_up_|_want_CA_at_later_date'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__DIRECTORS_WILL_BE_AVAILABLE_AT_A_LATER_DATE) {
+                $properties['follow_up_|_directors_will_be_available_at_a_later_date'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__NEED_TIME_TO_PREPARE_DOCS) {
+                $properties['follow_up_|_need_time_to_prepare_docs'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__BUSINESS_GOING_THROUGH_ENTITY_CHANGES) {
+                $properties['follow_up_|_business_going_through_entity_changes'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__REQUESTED_CALL_BACK_IN_REGIONAL_LANGUAGE) {
+                $properties['follow_up_|_requested_call_back_in_regional_language'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__REQUESTED_CALL_BACK_IN_HINDI) {
+                $properties['follow_up_|_requested_call_back_in_hindi'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::FOLLOW_UP__OTHER) {
+                $properties['follow_up_|_other'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::DOCUMENTATION__DOES_NOT_HAVE_ADDRESS_PROOF) {
+                $properties['documentation_|_does_not_have_address_proof'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::DOCUMENTATION__DOES_NOT_HAVE_BUSINESS_PROOF) {
+                $properties['documentation_|_does_not_have_business_proof'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::AVAILABILITY__OUT_OF_STATION_FOR_MORE_THAN_15_DAYS) {
+                $properties['availability_|_out_of_station_for_more_than_15_days'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::AVAILABILITY__DIRECTORS_ARE_AT_UNSERVICEABLE_PINCODE) {
+                $properties['availability_|_directors_are_at_unserviceable_pincode'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::AVAILABILITY__COVID19_RELATED_CONCERN) {
+                $properties['availability_|_covid-19_related_issue'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::UNSERVICEABLE__PINCODE) {
                 $properties['unserviceable_|_pincode'] = true;
             }
-            if ($bankingAccountSubStatus === Status::UNSERVICEABLE__BUSINESS_TYPE) {
+            else if ($bankingAccountSubStatus === Status::UNSERVICEABLE__BUSINESS_TYPE) {
                 $properties['unserviceable_|_business_type'] = true;
             }
-            if ($bankingAccountSubStatus === Status::UNSERVICEABLE__BUSINESS_MODEL) {
+            else if ($bankingAccountSubStatus === Status::UNSERVICEABLE__BUSINESS_MODEL) {
                 $properties['unserviceable_|_business_model'] = true;
             }
-            if ($bankingAccountSubStatus === Status::UNSERVICEABLE__UNREGISTERED_BUSINESS) {
+            else if ($bankingAccountSubStatus === Status::UNSERVICEABLE__UNREGISTERED_BUSINESS) {
                 $properties['unserviceable_|_unregistered_business'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__DID_NOT_HAVE_AN_INTENT) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__DID_NOT_HAVE_AN_INTENT) {
                 $properties['not_interested_in_CA_|_did_not_have_an_intent'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_NEARBY_PHYSICAL_BRANCH) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_NEARBY_PHYSICAL_BRANCH) {
                 $properties['not_interested_in_CA_|_looking_for_nearby_physical_branch'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_ZERO_BALANCE_CA) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_ZERO_BALANCE_CA) {
                 $properties['not_interested_in_CA_|_looking_for_zero_balance_CA'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_RBL_BANK) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_RBL_BANK) {
                 $properties['not_interested_in_CA_|_issue_with_RBL_bank'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_TAT) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_TAT) {
                 $properties['not_interested_in_CA_|_issue_with_TAT'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_MAB_REQUIREMENT) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_MAB_REQUIREMENT) {
                 $properties['not_interested_in_CA_|_issue_with_MAB_requirement'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_RX_PRICING) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__ISSUE_WITH_RX_PRICING) {
                 $properties['not_interested_in_CA_|_issue_with_RX_pricing'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_ONLY_PG_PRODUCTS) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__LOOKING_FOR_ONLY_PG_PRODUCTS) {
                 $properties['not_interested_in_CA_|_looking_for_only_PG_products'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__OPENED_CA_WITH_OTHER_BANK) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__OPENED_CA_WITH_OTHER_BANK) {
                 $properties['not_interested_in_CA_|_opened_CA_with_other_Bank'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__WANT_TO_LINK_EXISTING_CA) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__WANT_TO_LINK_EXISTING_CA) {
                 $properties['not_interested_in_CA_|_want_to_link_existing_CA'] = true;
             }
-            if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__OTHER) {
+            else if ($bankingAccountSubStatus === Status::NOT_INTERESTED_IN_CA__OTHER) {
                 $properties['not_interested_in_CA_|_other'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__PRODUCT_DEMO) {
+            else if ($bankingAccountSubStatus === Status::REGULATORY__BUSINESS_HAS_CC_OD_WITH_OTHER_BANK) {
+                $properties['regulatory_|_business_has_CC/OD_with_other_bank'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::REGULATORY__FRAUD_OR_RISKY_MERCHANT) {
+                $properties['regulatory_|_fraud_or_risky_merchant'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__PRODUCT_DEMO) {
                 $properties['requires_sales_intervention_|_product_demo'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__RX_PRICING_DETAILS) {
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__RX_PRICING_DETAILS) {
                 $properties['requires_sales_intervention_|_RX_pricing_details'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__DETAILS_ABOUT_CURRENT_ACCOUNT) {
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__DETAILS_ABOUT_CURRENT_ACCOUNT) {
                 $properties['requires_sales_intervention_|_details_about_current_account'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_RX_PRODUCT) {
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_RX_PRODUCT) {
                 $properties['requires_sales_intervention_|_unclear_on_RX_product'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_CA_PROCESS) {
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__UNCLEAR_ON_CA_PROCESS) {
                 $properties['requires_sales_intervention_|_unclear_on_CA_process'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__PG_DETAILS) {
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__PG_DETAILS) {
                 $properties['requires_sales_intervention_|_PG_details'] = true;
             }
-            if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__OTHER) {
+            else if ($bankingAccountSubStatus === Status::REQUIRES_SALES_INTERVENTION__OTHER) {
                 $properties['requires_sales_intervention_|_other'] = true;
             }
-            if ($bankingAccountSubStatus === Status::CONNECTIVITY__DID_NOT_PICK_UP_THE_PHONE) {
+            else if ($bankingAccountSubStatus === Status::CONNECTIVITY__DID_NOT_PICK_UP_THE_PHONE) {
                 $properties['connectivity_|_did_not_pick_up_the_phone'] = true;
             }
-            if ($bankingAccountSubStatus === Status::CONNECTIVITY__DISCONNECTED_THE_CALL) {
+            else if ($bankingAccountSubStatus === Status::CONNECTIVITY__ASKED_TO_CALL_LATER) {
+                $properties['connectivity_|_asked_to_call_later'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::CONNECTIVITY__DISCONNECTED_THE_CALL) {
                 $properties['connectivity_|_disconnected_the_call'] = true;
             }
-            if ($bankingAccountSubStatus === Status::CONNECTIVITY__CONNECTIVITY_ISSUE) {
+            else if ($bankingAccountSubStatus === Status::CONNECTIVITY__CONNECTIVITY_ISSUE) {
                 $properties['connectivity_|_connectivity_issue'] = true;
             }
         }
@@ -1305,10 +1360,13 @@ class Core extends Base\Core
             if ($bankingAccountSubStatus === Status::MERCHANT_NOT_AVAILABLE) {
                 $properties['merchant_not_available'] = true;
             }
-            if ($bankingAccountSubStatus === Status::MERCHANT_PREPARING_DOCS) {
+            else if ($bankingAccountSubStatus === Status::MERCHANT_PREPARING_DOCS) {
                 $properties['merchant_preparing_docs'] = true;
             }
-            if ($bankingAccountSubStatus === Status::BANK_PICKED_UP_DOCS) {
+            else if ($bankingAccountSubStatus === Status::BANK_TO_PICKUP_DOCS) {
+                $properties['bank_to_pickup_docs'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::BANK_PICKED_UP_DOCS) {
                 $properties['bank_picked_up_docs'] = true;
             }
         }
@@ -1318,7 +1376,7 @@ class Core extends Base\Core
             if ($bankingAccountSubStatus === Status::BANK_OPENED_ACCOUNT) {
                 $properties['bank_opened_account'] = true;
             }
-            if ($bankingAccountSubStatus === Status::DISCREPANCY_IN_DOCS) {
+            else if ($bankingAccountSubStatus === Status::DISCREPANCY_IN_DOCS) {
                 $properties['discrepancy_in_docs'] = true;
             }
         }
@@ -1328,10 +1386,19 @@ class Core extends Base\Core
             if ($bankingAccountSubStatus === Status::API_ONBOARDING_PENDING) {
                 $properties['api_onboarding_pending'] = true;
             }
-            if ($bankingAccountSubStatus === Status::API_ONBOARDING_INITIATED) {
+            else if ($bankingAccountSubStatus === Status::API_ONBOARDING_INITIATED) {
                 $properties['api_onboarding_initiated'] = true;
             }
-            if ($bankingAccountSubStatus == Status::DISCREPANCY_IN_DOCS) {
+            else if ($bankingAccountSubStatus === Status::API_ONBOARDING_IN_PROGRESS) {
+                $properties['api_onboarding_in_progress'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::MERCHANT_PREPARING_DOCS) {
+                $properties['merchant_preparing_docs'] = true;
+            }
+            else if ($bankingAccountSubStatus === Status::MERCHANT_NOT_AVAILABLE) {
+                $properties['merchant_not_available'] = true;
+            }
+            else if ($bankingAccountSubStatus == Status::DISCREPANCY_IN_DOCS) {
                 $properties['discrepancy_in_docs'] = true;
             }
         }
@@ -1341,9 +1408,24 @@ class Core extends Base\Core
             $properties['activated'] = true;
         }
 
+        if($bankingAccountStatus == Status::CANCELLED)
+        {
+            $properties['cancelled'] = true;
+        }
+
+        if($bankingAccountStatus == Status::UNSERVICEABLE)
+        {
+            $properties['unserviceable'] = true;
+        }
+
         if ($bankingAccountStatus == Status::REJECTED)
         {
             $properties['rejected'] = true;
+        }
+
+        if ($bankingAccountStatus == Status::ARCHIVED)
+        {
+            $properties['archived'] = true;
         }
 
         return $properties;
