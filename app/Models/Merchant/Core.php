@@ -57,9 +57,9 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Mail\Merchant as MerchantMail;
+use RZP\Models\Merchant\Attribute;
 use RZP\Models\Order;
 use RZP\Models\Adjustment;
-
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Balance\Type;
@@ -3965,7 +3965,9 @@ class Core extends Base\Core
         ];
 
         $submerchant[Entity::KYC_ACCESS] = null;
+
         $accessRequest = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityId($partner->getId(), $submerchant->getId())->first();
+
         if(empty($accessRequest) === false)
         {
             $submerchant[Entity::KYC_ACCESS] = $accessRequest->toArrayPublic();
@@ -3973,11 +3975,10 @@ class Core extends Base\Core
 
         if($product === Product::BANKING)
         {
-            list($va_status, $ca_status) = $this->getBankingAccountStatus($submerchant->getId());
+            $caStatus = $this->getBankingAccountStatus($submerchant);
 
             $submerchant[Entity::BANKING_ACCOUNT] = [
-                ENTITY::VA_STATUS => $va_status,
-                ENTITY::CA_STATUS => $ca_status
+                ENTITY::CA_STATUS => $caStatus
             ];
         }
 
@@ -5993,38 +5994,128 @@ class Core extends Base\Core
     }
 
     /**
-     * This method fetches the banking account statuses(Current Account, Virtual Account) for a merchant
+     * This method fetches the current account status for a merchant
      * This is applicable only for merchants with banking products.
      *
-     * @param string $merchantId
-     * @return array
+     * @param Entity $merchant
+     *
+     * @return string
      */
-    public function getBankingAccountStatus(string $merchantId): array
+    public function getBankingAccountStatus(Entity $merchant, string $mode = Mode::LIVE): ?string
     {
-        $bankingAccounts = $this->repo->banking_account->fetchMerchantBankingAccounts($merchantId);
+        try
+        {
+            // fetch the CA channel from 'banking_accounts' table first and if there is no data then check 'merchant_attributes'
+            $bankingAccounts = $this->repo->banking_account->connection($mode)->fetchMerchantBankingAccounts($merchant->getId());
 
-        $va = current(array_filter($bankingAccounts, function($account) {
-            return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'nodal';
-        }));
+            $currentAccount = current(array_filter($bankingAccounts, function ($account) {
+                return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
+            }));
 
-        $ca = current(array_filter($bankingAccounts, function ($account) {
-            return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
-        }));
+            if (empty($currentAccount) === true)
+            {
+                $merchantAttributes = (new Attribute\Core())->fetchKeyValues($merchant, Product::BANKING,
+                    Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS, [Merchant\Attribute\Type::CA_PROCEEDED_BANK], Mode::LIVE);
 
-        $va_status = $va[BankingAccount\Entity::STATUS];
-        $ca_status = $this->transformCaStatus($ca[BankingAccount\Entity::STATUS]);
+                $merchantAttribute = $merchantAttributes->first();
 
-        return array($va_status, $ca_status);
+                // if channel is not found in both banking_accounts and merchant_attributes tables then return status as 'Application not initiated'
+                if (empty($merchantAttribute) === true)
+                {
+                    return Constants::CA_STATUS_MAP[Constants::DEFAULT];
+                }
+
+                $channel = $merchantAttribute[Attribute\Entity::VALUE];
+            }
+            else
+            {
+                $channel = $currentAccount[BankingAccount\Entity::CHANNEL];
+            }
+
+            $caStatus = (new BankingAccount\Core())->getMerchantBankingAccountStatus($channel, $merchant, $mode);
+
+            $transformedCaStatus = $this->getTransformedCaStatus($merchant, $caStatus, $channel);
+
+            return $transformedCaStatus;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::ERROR_FETCHING_SUB_MERCHANT_CA_STATUS,
+                [
+                    'mode'        => $this->mode,
+                    'merchant_id' => $merchant->getId(),
+                    'error'       => $ex->getMessage()
+                ]
+            );
+
+            return null;
+        }
     }
 
-    private function transformCaStatus($status)
+    /**
+     * 1. Transform CA status of a merchant to a more human readable state
+     * 2. If the status mapping is not found for a channel then use the default status
+     * 3. If the transformed status is 'Application completion pending' then
+     *    update the status based on PAN verification status
+     *
+     * @param Entity $merchant
+     * @param string|null $caStatus
+     * @param string $channel
+     *
+     * @return string
+     */
+    private function getTransformedCaStatus(
+        Entity $merchant,
+        ?string $caStatus,
+        string $channel): ?string
     {
-        if($status != null && array_key_exists($status, Constants::CA_STATUS_MAP))
+        if (isset(Constants::CA_STATUS_MAP[$channel][$caStatus]) === true)
         {
-            return Constants::CA_STATUS_MAP[$status];
+            $transformedCaStatus = Constants::CA_STATUS_MAP[$channel][$caStatus];
+
+            if ($transformedCaStatus !== BankingAccount\Status::APPLICATION_COMPLETION_PENDING)
+            {
+                return $transformedCaStatus;
+            }
+        }
+        else
+        {
+            if (array_key_exists($channel, Constants::CA_STATUS_MAP) === true)
+            {
+                $transformedCaStatus = Constants::CA_STATUS_MAP[Constants::DEFAULT];
+
+                return $transformedCaStatus;
+            }
+
+            // if channel or mapping not found then return the original CA status
+            return $caStatus;
         }
 
-        return $status;
+        // transform CA status based on PAN verification
+        $panVerificationStatus = (new BankingAccount\Core())->getMerchantBankingAccountPanStatus($channel, $merchant);
+
+        switch ($panVerificationStatus)
+        {
+            case Merchant\BvsValidation\Constants::PENDING:
+            case Merchant\BvsValidation\Constants::INITIATED:
+                $transformedCaStatus = BankingAccount\Status::PAN_VERIFICATION_IN_PROGRESS;
+                break;
+
+            case Merchant\BvsValidation\Constants::FAILED:
+            case Merchant\BvsValidation\Constants::NOT_MATCHED:
+            case Merchant\BvsValidation\Constants::INCORRECT_DETAILS:
+                $transformedCaStatus = BankingAccount\Status::PAN_VERIFICATION_FAILED;
+                break;
+
+            case Merchant\BvsValidation\Constants::VERIFIED:
+                $transformedCaStatus = BankingAccount\Status::TELEPHONIC_VERIFICATION;
+                break;
+        }
+
+        return $transformedCaStatus;
     }
 
     public function isCurrentAccountActivated(Entity $merchant): bool
@@ -6034,7 +6125,8 @@ class Core extends Base\Core
 
     public function checkIfCurrentAccountIsActivated(Entity $merchant)
     {
-        $bankingAccounts = $this->repo->banking_account->fetchActivatedBankingAccountByMerchantIdAccountTypeAndChannel($merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT);
+        $bankingAccounts = $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
+            $merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT, BankingAccount\Status::ACTIVATED);
 
         //Rbl
         if(empty($bankingAccounts) === false)

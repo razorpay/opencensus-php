@@ -1820,7 +1820,7 @@ return [
         ],
     ],
 
-    'testFetchBankingAccountStatus' => [
+    'testFetchBankingAccountStatusWithVerifiedPanForRBL' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'GET',
@@ -1842,8 +1842,7 @@ return [
                         ],
                         'dashboard_access' => false,
                         'banking_account' => [
-                            'va_status' => null,
-                            'ca_status' =>  'Request received',
+                            'ca_status' =>  'Application completion pending',
                         ]
                     ]
                 ],

@@ -40,6 +40,7 @@ use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\BankingAccountService\Service as BasService;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Models\BankingAccountStatement\Channel as BasChannel;
@@ -2159,5 +2160,53 @@ class Core extends Base\Core
         $activatedBankingAccounts['count'] = count($activatedBankingAccounts['items']);
 
         return $activatedBankingAccounts;
+    }
+
+    /** Fetch merchant BA status (supports only RBL and ICICI channels for now)
+     *  Add custom logic to fetch BA status for any other channel
+     *
+     * @param string|null $channel
+     * @param Merchant\Entity $merchant
+     * @return string
+     */
+    public function getMerchantBankingAccountStatus(?string $channel, Merchant\Entity $merchant, string $mode = Mode::LIVE): ?string
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $bankingAccount = $this->repo->banking_account->connection($mode)->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
+                    $merchant->getId(), Channel::RBL, AccountType::CURRENT);
+                return $bankingAccount->getStatus();
+
+            case Channel::ICICI:
+                return (new BasService())->fetchMerchantBaApplicationStatusForIcici($merchant->getId());
+
+            default:
+                return null;
+        }
+    }
+
+    /** Fetch merchant BA PAN status (supports only RBL and ICICI channels for now)
+     *  Add custom logic to fetch PAN status for any other channel
+     *
+     * @param string $channel
+     * @param Merchant\Entity $merchant
+     * @return string
+     */
+    public function getMerchantBankingAccountPanStatus(string $channel, Merchant\Entity $merchant): ?string
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $bankingAccount = $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
+                    $merchant->getId(), Channel::RBL, AccountType::CURRENT);
+                return $bankingAccount->bankingAccountActivationDetails[Entity::BUSINESS_PAN_VALIDATION];
+
+            case Channel::ICICI:
+                return (new BasService())->fetchMerchantBaPanStatusForIcici($merchant->getId());
+
+            default:
+                return null;
+        }
     }
 }

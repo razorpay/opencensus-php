@@ -729,14 +729,19 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function fetchActivatedBankingAccountByMerchantIdAccountTypeAndChannel(string $merchantId, string $channel, string $accountType)
+    public function fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(string $merchantId, string $channel, string $accountType, string $status = null)
     {
-        return $this->newQuery()
-            ->where(Entity::MERCHANT_ID, $merchantId)
-            ->where(Entity::CHANNEL, $channel)
-            ->where(Entity::ACCOUNT_TYPE, $accountType)
-            ->where(Entity::STATUS, Status::ACTIVATED)
-            ->first();
+        $query = $this->newQuery()
+                      ->where(Entity::MERCHANT_ID, $merchantId)
+                      ->where(Entity::CHANNEL, $channel)
+                      ->where(Entity::ACCOUNT_TYPE, $accountType);
+
+        if (empty($status) === false)
+        {
+            $query->where(Entity::STATUS, $status);
+        }
+
+        return $query->first();
     }
 
     public function getMerchantPocAndBeneficiaryEmail(string $merchantId)

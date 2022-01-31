@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\Attribute;
 
+use RZP\Constants\Mode;
 use RZP\Exception\RuntimeException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Base;
@@ -54,9 +55,9 @@ class Core extends Base\Core
                           ->getValue($merchant, $product, $group, $type);
     }
 
-    public function fetchKeyValues(Merchant\Entity $merchant, string $product, string $group, array $types = [], string $column = null, string $orderType = 'asc')
+    public function fetchKeyValues(Merchant\Entity $merchant, string $product, string $group, array $types = [], string $column = null, string $orderType = 'asc', string $mode = Mode::TEST)
     {
-        return $this->repo->merchant_attribute
+        return $this->repo->merchant_attribute->connection($mode)
                 ->getKeyValues($merchant->getId(), $product, $group, $types, $column, $orderType);
     }
 

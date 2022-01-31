@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Models\Admin\ConfigKey;
-use \RZP\Models\Admin\Service as AdminService;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
@@ -822,15 +822,34 @@ final class Constants
     const LINKED_ACCOUNT_PENNY_TESTING = 'linked_account_penny_testing';
 
     const CA_STATUS_MAP = [
-        'created'       => 'Request received',
-        'picked'        => 'Process started',
-        'initiated'     => 'BANK KYC in progress',
-        'cancelled'     => 'Request Cancelled',
-        'unserviceable' => 'Unserviceable',
-        'rejected'      => 'Request Rejected',
-        'activated'     => 'Active',
-        'archived'      => 'On hold',
-        'processed'     => 'Activation In Progress'
+        self::DEFAULT => 'Application not initiated',
+
+        Channel::RBL => [
+            'created'       => 'Application completion pending',
+            'picked'        => 'Razorpay processing',
+            'initiated'     => 'Documents pick up pending',
+            'processing'    => 'Account opening in progress',
+            'processed'     => 'Account opened',
+            'activated'     => 'Account activated',
+            'cancelled'     => 'Request Cancelled',
+            'unserviceable' => 'Unserviceable',
+            'rejected'      => 'Request Rejected',
+            'archived'      => 'On hold'
+        ],
+
+         Channel::ICICI => [
+             'created'                   => 'Application completion pending',
+             'user_submitted'            => 'Telephonic verification',
+             'sent_to_bank'              => 'Documents pick up pending',
+             'bank_processing'           => 'Account opening in progress',
+             'account_opened'            => 'Account opened',
+             'registration_request_sent' => 'Registration Request Sent',
+             'account_activated'         => 'Account activated',
+             'archived'                  => 'On hold',
+             'rejected'                  => 'Request Rejected',
+             'cancelled'                 => 'Request Cancelled',
+             'unserviceable'             => 'Unserviceable'
+         ]
     ];
 
     const RISK_CONSTRUCTIVE_ACTION_LIST = [

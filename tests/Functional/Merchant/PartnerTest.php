@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
@@ -17,6 +18,7 @@ use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Services\SalesForceClient;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -2277,19 +2279,89 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testFetchBankingAccountStatus()
+    public function testFetchBankingAccountStatusWithVerifiedPanForRBL()
     {
-        $this->createPartnerAndAddMultipleSubmerchants();
+        $this->createPartnerAndAddMultipleSubmerchants(Mode::LIVE);
 
         $this->ba->adminProxyAuth();
 
-        $this->createBankingAccount();
+        // create sub-merchant for banking product
+        $this->fixtures->on(Mode::LIVE)->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
-        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+        $ba = $this->createBankingAccount([], Mode::LIVE);
 
-        $this->ba->proxyAuth();
+        $baActivationDetailParams = [
+            'banking_account_id' => $ba->id,
+            'business_pan_validation' => 'verified'
+        ];
 
-        $this->startTest();
+        $this->createBankingAccountActivationDetail($baActivationDetailParams, Mode::LIVE);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $rblStatusMap = Merchant\Constants::CA_STATUS_MAP[Channel::RBL];
+
+        foreach ($rblStatusMap as $status => $mappedStatus)
+        {
+            $this->fixtures->on(Mode::LIVE)->edit('banking_account', $ba->id, ['status' => $status]);
+
+            $this->fixtures->on(Mode::LIVE)->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, [], 'owner', 'live');
+
+            $this->ba->proxyAuthLive();
+
+            // since PAN is verified, update overall status when rbl status is 'created'
+            if ($status === 'created')
+            {
+                $mappedStatus = 'Telephonic verification';
+            }
+
+            $testData['response']['content']['items'][0]['banking_account']['ca_status'] = $mappedStatus;
+
+            $this->startTest($testData);
+        }
+    }
+
+    public function testFetchBankingAccountStatusWithVariousPanStatusesForRBL()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants(Mode::LIVE);
+
+        $this->ba->adminProxyAuth();
+
+        // create sub-merchant for banking product
+        $this->fixtures->on(Mode::LIVE)->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $ba = $this->createBankingAccount([], Mode::LIVE);
+
+        $baActivationDetailParams = [
+            'banking_account_id' => $ba->id,
+        ];
+
+        $baActivationDetail = $this->createBankingAccountActivationDetail($baActivationDetailParams, Mode::LIVE);
+
+        // since the request response structure is same, no need for a new test data
+        $testData = $this->testData['testFetchBankingAccountStatusWithVerifiedPanForRBL'];
+
+        $panStatusMap = [
+            'pending'           => 'PAN verification in progress',
+            'initiated'         => 'PAN verification in progress',
+            'failed'            => 'PAN Verification Failed',
+            'not_matched'       => 'PAN Verification Failed',
+            'incorrect_details' => 'PAN Verification Failed',
+            'verified'          => 'Telephonic verification',
+        ];
+
+        foreach ($panStatusMap as $status => $mappedStatus)
+        {
+            $this->fixtures->on(Mode::LIVE)->edit('banking_account_activation_detail', $baActivationDetail->id,  ['business_pan_validation' => $status]);
+
+            $this->fixtures->on(Mode::LIVE)->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, [], 'owner', 'live');
+
+            $this->ba->proxyAuthLive();
+
+            $testData['response']['content']['items'][0]['banking_account']['ca_status'] = $mappedStatus;
+
+            $this->startTest($testData);
+        }
     }
 
     public function testFetchSubmsBasedOnProductUsageStatus()
@@ -2424,57 +2496,57 @@ class PartnerTest extends OAuthTestCase
         return $this->fixtures->create('user:user_merchant_mapping', $mappingData);
     }
 
-    protected function createPartnerAndAddMultipleSubmerchants()
+    protected function createPartnerAndAddMultipleSubmerchants(string $mode = Mode::TEST)
     {
-        $this->createPartnerAndUser();
+        $this->createPartnerAndUser($mode);
 
-        $this->createSubmerchantAndUser();
+        $this->createSubmerchantAndUser($mode);
 
         $submerchantId = '10000000000011';
 
         $this->allowAdminToAccessMerchant($submerchantId);
 
-        $this->fixtures->user->createUserForMerchant($submerchantId);
+        $this->fixtures->on($mode)->user->createUserForMerchant($submerchantId);
 
-        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+        $app = $this->fixtures->on($mode)->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
 
         $appId = $app->getId();
 
         // Link new submerchants to the partner account
         $accessMap = $this->getAccessMapArray('application', $appId, self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
 
-        $this->fixtures->create('merchant_access_map',$accessMap);
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
 
         $accessMap = $this->getAccessMapArray('application', $appId, $submerchantId, self::DEFAULT_MERCHANT_ID);
 
-        $this->fixtures->create('merchant_access_map',$accessMap);
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
 
         return $appId;
     }
 
-    protected function createPartnerAndUser()
+    protected function createPartnerAndUser(string $mode = Mode::TEST)
     {
         $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+        $this->fixtures->on($mode)->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
 
-        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID, [], 'sellerapp');
+        $partnerUser = $this->fixtures->on($mode)->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID, [], 'sellerapp');
 
         return $partnerUser;
     }
 
-    protected function createSubmerchantAndUser()
+    protected function createSubmerchantAndUser(string $mode = Mode::TEST)
     {
         $this->allowAdminToAccessSubMerchant();
 
-        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+        $this->fixtures->on($mode)->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
             'name' => 'random_name_1',
             'email' => 'user@example.com',
         ]);
 
-        $this->fixtures->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
+        $this->fixtures->on($mode)->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
 
-        $submerchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+        $submerchantUser = $this->fixtures->on($mode)->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
 
         return $submerchantUser;
     }
@@ -2495,7 +2567,7 @@ class PartnerTest extends OAuthTestCase
         $this->assertCount(count($expected), $actual);
     }
 
-    protected function createBankingAccount(array $extraParams = [])
+    protected function createBankingAccount(array $extraParams = [], string $mode = Mode::TEST)
     {
         $defaultParams = [
             'account_number'        => '2224440041626905',
@@ -2510,9 +2582,23 @@ class PartnerTest extends OAuthTestCase
 
         $params = array_merge($defaultParams, $extraParams);
 
-        $ba1 = $this->fixtures->create('banking_account', $params);
+        $ba1 = $this->fixtures->on($mode)->create('banking_account', $params);
 
         return $ba1;
+    }
+
+    protected function createBankingAccountActivationDetail(array $extraParams = [], string $mode = Mode::TEST)
+    {
+        $defaultParams = [
+            'banking_account_id'      => $extraParams['banking_account_id'] ?? null,
+            'business_pan_validation' => $extraParams['business_pan_validation'] ?? null,
+        ];
+
+        $params = array_merge($defaultParams, $extraParams);
+
+        $baActivationDetail = $this->fixtures->on($mode)->create('banking_account_activation_detail', $params);
+
+        return $baActivationDetail;
     }
 
     public function testPartnerActivationMigrationForNonActivatedPartners()

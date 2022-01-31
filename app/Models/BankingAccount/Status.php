@@ -106,6 +106,11 @@ class Status
     const API_ONBOARDING_IN_PROGRESS_EXTERNAL     = 'API onboarding in Progress';
     const NONE_EXTERNAL                           = 'None';
 
+    // Sub-merchant BA status to be shown on partner dashboard
+    const PAN_VERIFICATION_IN_PROGRESS      = 'PAN verification in progress';
+    const PAN_VERIFICATION_FAILED           = 'PAN Verification Failed';
+    const TELEPHONIC_VERIFICATION           = 'Telephonic verification';
+    const APPLICATION_COMPLETION_PENDING    = 'Application completion pending';
 
     //
     // Account details can be saved only if the status

@@ -31,6 +31,8 @@ class Constants
 
     const APPLICATIONS_PATH             = 'applications';
 
+    const EXPAND_DOCUMENTS              = '?expand_documents=true';
+
     const PERSON_PATH                   = 'person';
 
     const SIGNATORIES                   = 'signatories';

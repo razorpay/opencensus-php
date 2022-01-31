@@ -792,4 +792,67 @@ class Service extends Base\Service
 
         return $response['data'];
     }
+
+    private function sendBusinessRequestAndProcessResponse(string $merchantId, string $path, string $method, bool $preProcess = true): array
+    {
+        $businessId = $this->bankingAccountService->getBusinessId($merchantId);
+
+        $basePath = Constants::BUSINESS_PATH . '/'. $businessId;
+
+        // if the path contains only query params
+        if (strpos($path, '?') === 0)
+        {
+            $uri = $basePath . $path;
+        }
+        else
+        {
+            $uri = $basePath . '/' . $path;
+        }
+
+        $response = $this->bankingAccountService->sendRequestAndProcessResponse($uri, $method, [], [], $preProcess);
+
+        return $response;
+    }
+
+    public function fetchMerchantBaApplicationStatusForIcici(string $merchantId)
+    {
+        $response = $this->sendBusinessRequestAndProcessResponse($merchantId, Constants::APPLICATIONS_PATH, 'GET', false);
+
+        if (isset($response['data'][0]['application_status']) === true)
+        {
+            return $response['data'][0]['application_status'];
+        }
+
+        return null;
+    }
+
+    public function fetchMerchantBaPanStatusForIcici(string $merchantId)
+    {
+        $response = $this->sendBusinessRequestAndProcessResponse($merchantId, Constants::EXPAND_DOCUMENTS, 'GET', false);
+
+        if (isset($response['data']['associated_documents']) === false)
+        {
+            return null;
+        }
+
+        $associatedDocuments = $response['data']['associated_documents'];
+
+        $validDocTypes = ['PERSONAL_PAN', 'BUSINESS_PAN'];
+
+        $panStatus = null;
+
+        foreach ($associatedDocuments as $associatedDocument)
+        {
+            $docType = $associatedDocument[Merchant\Detail\Constants::DOCUMENT_TYPE];
+
+            if (in_array($docType, $validDocTypes, true) === true)
+            {
+                $panStatus = $associatedDocument[Merchant\Detail\Constants::DOCUMENT_VERIFICATION_STATUS];
+
+                break;
+            }
+        }
+
+        return $panStatus;
+    }
 }

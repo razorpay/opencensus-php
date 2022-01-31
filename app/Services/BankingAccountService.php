@@ -230,10 +230,13 @@ class BankingAccountService
         return $bcc . $bankingAccountId;
     }
 
-    public function sendRequestAndProcessResponse($path, $method, $content, $headers = [])
+    public function sendRequestAndProcessResponse($path, $method, $content, $headers = [], $preProcess = true)
     {
-        //Dashboard backend passes the get params in request body
-        $this->preprocessForDashboardGetRequest($path, $content);
+        if ($preProcess === true)
+        {
+            //Dashboard backend passes the get params in request body
+            $this->preprocessForDashboardGetRequest($path, $content);
+        }
 
         $response = $this->sendRequest($path, $method, $content, $headers);
 
