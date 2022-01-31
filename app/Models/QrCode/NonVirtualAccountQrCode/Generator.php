@@ -77,16 +77,7 @@ class Generator extends QrCode\Generator
             return ['vpa' => QrCode\Constants::DUMMY_QR_CODE_VPA];
         }
 
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), Merchant\RazorxTreatment::QR_CODE_DYNAMIC_VPA, $this->mode);
-
-        if ($variant === 'on')
-        {
-            $identifier[self::VPA] = $this->generateVpaForQr($qrCode);
-        }
-        else
-        {
-            $identifier[self::VPA] = $this->getVpaSetting(self::GATEWAY);
-        }
+        $identifier[self::VPA] = $this->generateVpaForQr($qrCode);
 
         $this->trace->info(TraceCode::BHARAT_QR_UPI_IDENTIFIERS,
                            [
@@ -122,16 +113,7 @@ class Generator extends QrCode\Generator
             'id' => $qrCode->getId()
         ]);
 
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), Merchant\RazorxTreatment::QR_CODE_DYNAMIC_VPA, $this->mode);
-
-        if ($variant === 'on')
-        {
-            $vpa = $this->generateVpaForQr($qrCode);
-        }
-        else
-        {
-            $vpa = $this->getVpaSetting(self::GATEWAY);
-        }
+        $vpa = $this->generateVpaForQr($qrCode);
 
         return $this->generateUpiQrIntentUrl($vpa, $qrCode);
     }

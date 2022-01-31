@@ -1096,23 +1096,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
                });
     }
 
-    protected function enableRazorXTreatmentForQrDynamicVpa()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if ($featureFlag === (RazorxTreatment::QR_CODE_DYNAMIC_VPA))
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
-    }
-
     private function runUpiQrV2Assertion($response, string $usageType)
     {
         $this->assertStringContainsString('ver=01', $response['image_content']);
@@ -1130,8 +1113,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testDynamicVpaAdditionToQrCode()
     {
-        $this->enableRazorXTreatmentForQrDynamicVpa();
-
         $this->createQrCode();
 
         $vpa    = $this->getLastEntity('vpa', true);
@@ -1143,6 +1124,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testSettingsVpaAdditionToQrCode()
     {
+        $this->markTestSkipped('Not using settings for VPA anymore');
+        
         $response = $this->createQrCode();
 
         $vpa    = $this->getLastEntity('vpa', true);
@@ -1153,8 +1136,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testVpaVerification()
     {
-        $this->enableRazorXTreatmentForQrDynamicVpa();
-
         $this->createQrCode();
 
         $vpa    = $this->getLastEntity('vpa', true);
