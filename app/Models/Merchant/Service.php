@@ -8369,7 +8369,7 @@ class Service extends Base\Service
     {
         $bankAccountCore = (new BankAccount\Core);
 
-        $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($this->merchant);
+        return $bankAccountCore->isBankAccountUpdatePennyTestingInProgress($this->merchant);
     }
 
     protected function getActionForMerchantWorkflow($workflowType)
