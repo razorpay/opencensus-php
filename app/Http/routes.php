@@ -47,7 +47,7 @@ Route::group(['middleware' => ['web']], function () {
     });
 
     // User (guest auth route)
-    Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
+    Route::any('/user/api/{mode}/{path}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
         ->name('user');
 
