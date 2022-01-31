@@ -80,4 +80,61 @@ class CustomerFailed extends Base
 
         return $this;
     }
+
+    protected function shouldSendEmailViaStork(): bool
+    {
+        return parent::shouldSendEmailViaStork();
+    }
+
+    protected function getParamsForStork(): array
+    {
+        $data = $this->data;
+
+        $storkParams = [
+            'template_namespace'                => 'payments_core',
+            'org_id'                            => $data['org']['id'],
+            'params'        => [
+                'payment' => [
+                    'public_id'                 => $data['payment']['public_id'],
+                    'amount_symbol'             => $data['payment']['amount_spread'][0],
+                    'amount_units'              => $data['payment']['amount_spread'][1],
+                    'amount_subunits'           => $data['payment']['amount_spread'][2],
+                    'created_at_formatted'      => $data['payment']['created_at_formatted'],
+                    'method'                    => [
+                        'first_value'               => $data['payment']['method'][0],
+                        'second_value'              => $data['payment']['method'][1],
+                    ],
+                ],
+
+                'customer'  => [
+                    'email'                    => $data['customer']['email'],
+                    'phone'                    => $data['customer']['phone'],
+                ],
+
+                'merchant'  => [
+                    'billing_label'            => $data['merchant']['billing_label'],
+                    'brand_color'              => $data['merchant']['brand_color'],
+                    'brand_contrast_color'     => $data['merchant']['contrast_color'],
+                    'report_url'               => $data['merchant']['report_url'],
+                ],
+
+                // hardcoding this as of now, will remove this as soon as way
+                // of getting orgs from basic auth is figured
+                // out while sending the email
+                'org'       => [
+                    'name'                 => 'Razorpay Software Private Ltd',
+                    'logo_url'             => 'https://cdn.razorpay.com/logo.png',
+                ],
+            ],
+        ];
+
+        if (isset($data['merchant']['support_details']))
+        {
+            $storkParams['params']['merchant']['support_details'] = $data['merchant']['support_details'];
+        }
+
+        $storkParams['template_name'] = 'payments_customer_failure';
+
+        return $storkParams;
+    }
 }

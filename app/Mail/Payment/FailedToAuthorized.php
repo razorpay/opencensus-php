@@ -68,4 +68,56 @@ class FailedToAuthorized extends Base
         return true;
     }
 
+    protected function shouldSendEmailViaStork(): bool
+    {
+        return parent::shouldSendEmailViaStork();
+    }
+
+    protected function getParamsForStork(): array
+    {
+        $data = $this->data;
+        
+        $storkParams = [
+            'template_namespace'                => 'payments_core',
+            'org_id'                            => $data['org']['id'],
+            'params'        => [
+                'email_logo'                    => $data['email_logo'],
+                'custom_branding'               => $data['custom_branding'],
+                'header_timestamp'              => \Carbon\Carbon::now("Asia/Kolkata")->format('jS F Y'),
+                'payment' => [
+                    'public_id'                 => $data['payment']['public_id'],
+                    'amount'                    => $data['payment']['amount'],
+                    'order_id'                  => $data['payment']['orderId'],
+                ],
+
+                'customer'  => [
+                    'email'                    => $data['customer']['email'],
+                    'phone'                    => $data['customer']['phone'],
+                ],
+
+                'merchant'  => [
+                    'website'                  => $data['merchant']['website'],
+                    'billing_label'            => $data['merchant']['billing_label'],
+                ],
+
+                // hardcoding this as of now, will remove this as soon as way
+                // of getting orgs from basic auth is figured
+                // out while sending the email
+                'org'       => [
+                    'name'                 => 'Razorpay Software Private Ltd',
+                    'logo_url'             => 'https://cdn.razorpay.com/logo.png',
+                ],
+            ],
+        ];
+
+        if (isset($data['message']) === true)
+        {
+            $storkParams['message'] = $data['message'];
+        }
+
+        $storkParams['template_name'] = 'payments_failed_to_authorize';
+
+        return $storkParams;
+    }
+
 }

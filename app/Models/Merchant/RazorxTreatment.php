@@ -312,6 +312,7 @@ final class RazorxTreatment
     const GATEWAY_SCHEDULER_VERIFY_EXPERIMENT           = 'gateway_scheduler_verify_experiment';
     // controls %age of the mail to be sent via stork
     const API_STORK_MAIL_PAYMENT_CAPTURE        = 'api_stork_mail_payment_capture';
+    const API_STORK_MAIL_PAYMENT_FAILURE        = 'api_stork_mail_payment_failure';
     const API_STORK_MAIL_CONTACT_MOBILE_UPDATED = 'api_stork_mail_contact_mobile_updated';
     const API_STORK_MAIL_CUSTOMER_PAYMENT       = 'api_stork_mail_customer_payment';
     const API_STORK_MAIL_CUSTOMER_INVOICE       = 'api_stork_mail_customer_invoice';
