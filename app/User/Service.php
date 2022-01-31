@@ -960,12 +960,12 @@ class Service extends Base\Service
             return [$errors, []];
         }
 
-        $tags = $params['tags'] ?? "1";
-        $features = $params['features'] ?? "1";
-        $splitzExperiments = $params['splitzExperiments'] ?? "1";
-        $experiments = $params['experiments'] ?? "1";
-        $payouts = $params['payouts'] ?? "1";
-        $fetchMerchantDetails = $params['merchant_details'] ?? "1";
+        $tags = $params[Constants::TAGS] ?? "1";
+        $features = $params[Constants::FEATURES] ?? "1";
+        $splitzExperiments = $params[Constants::SPLITZ_EXPERIMENTS] ?? "1";
+        $experiments = $params[Constants::EXPERIMENTS] ?? "1";
+        $payouts = $params[Constants::PAYOUTS] ?? "1";
+        $fetchMerchantDetails = $params[Constants::MERCHANT_DETAILS] ?? "1";
 
         $user = Auth::user();
 
@@ -1066,6 +1066,14 @@ class Service extends Base\Service
                 {
                     if($experiments === "1")
                     {
+
+                        $this->trace->info(
+                            TraceCode::MERCHANT_EXPERIMENTS,
+                            [
+                                'action' => 'FetchStarted'
+                            ]
+                        );
+
                         $experiments = $merchantService->getExperiments();
 
                         $data['experiments'] = $experiments;
@@ -1078,9 +1086,12 @@ class Service extends Base\Service
 
                         $data = $this->updateRXCASelfServeExperiment($merchant, $data);
 
-                        $this->trace->info(TraceCode::MERCHANT_EXPERIMENTS, [
-                            'data' => $data['experiments']
-                        ]);
+                        $this->trace->info(
+                            TraceCode::MERCHANT_EXPERIMENTS, [
+                                'action' => 'FetchEnded',
+                                'data' => $data['experiments']
+                            ]
+                        );
                     }
 
                     $isBankingRequest = ApiUrl::isBankingOriginRequest();
@@ -1104,7 +1115,7 @@ class Service extends Base\Service
 
                     if($splitzExperiments === "1")
                     {
-                        $data['splitz_experiments'] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
+                        $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
                     }
 
                     //

@@ -116,6 +116,7 @@ class Constants
     const TAGS               = 'tags';
     const PAYOUTS            = 'payouts';
     const FEATURES           = 'features';
+    const MERCHANT_DETAILS   = 'merchant_details';
 
     const LOGIN_2FA_WITH_OTP = "otp";
 

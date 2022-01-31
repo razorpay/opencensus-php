@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Constants::TAGS                 => 'sometimes|string|in:0,1',
         Constants::SPLITZ_EXPERIMENTS   => 'sometimes|string|in:0,1',
         Constants::EXPERIMENTS          => 'sometimes|string|in:0,1',
+        Constants::MERCHANT_DETAILS     => 'sometimes|string|in:0,1',
     );
 
 }
