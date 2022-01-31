@@ -2,6 +2,10 @@ import React, { createContext, useContext, useReducer } from 'react';
 
 const PaymentContext = createContext();
 
+export const ACTIONS = {
+  RESET_REPAYMENT: 'RESET_REPAYMENT',
+  SET_TOTAL_DUE_INFO: 'SET_TOTAL_DUE_INFO',
+};
 function reducer(state, action) {
   switch (action.type) {
     case 'SET_ORDER_DATA': {
@@ -13,7 +17,13 @@ function reducer(state, action) {
     case 'SET_PAYMENT_AMOUNT': {
       return {
         ...state,
-        amountToBePaid: action.payload,
+        amountToBePaid: Number(action.payload),
+      };
+    }
+    case ACTIONS.SET_TOTAL_DUE_INFO: {
+      return {
+        ...state,
+        totalDueInfo: { amount: Number(action.payload.amount), date: Number(action.payload.date) },
       };
     }
     case 'SET_PAYMENT_METHOD': {
@@ -34,12 +44,13 @@ function reducer(state, action) {
         failedRepayments: [...state.failedRepayments, action.payload],
       };
     }
-    case 'RETRY_REPAYMENT': {
+    case ACTIONS.RESET_REPAYMENT: {
       return {
         ...state,
         failedRepayments: [],
         successRepayments: [],
-        amountToBePaid: action.payload,
+        amountToBePaid: 0,
+        totalDueInfo: { amount: 0, date: null },
       };
     }
     default: {
@@ -50,6 +61,7 @@ function reducer(state, action) {
 
 function PaymentProvider({ children, creditId, disbursalId, showHeader, showFooter }) {
   const loanData = {
+    totalDueInfo: { amount: 0, date: null }, // date in unix seconds
     amountToBePaid: 0,
     creditId,
     disbursalId,

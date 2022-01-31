@@ -242,7 +242,8 @@
   
   .overview-status
     display: flex
-    height: 274px;
+    min-height: 274px;
+    position: relative;
     .status-pill
       border: 1px solid rgba(0, 134, 89, 1);
       color: rgba(0, 134, 89, 1);
@@ -312,18 +313,57 @@
           .text-size-15
             font-size: 15px;          
 
-    .payment-method
+    .loan-payment-stepper
       padding: 0 24px;
       border-radius: 3px;
       border-top: 3px solid rgba(11, 112, 231, 0.87);
       width: 100%;
       display: flex;
-      flex-direction: column;      
+      flex-direction: column; 
 
-      .payment-method-body
-        margin: 48px 0px;
-        align-items: flex-end
+      &--select-amount
+        .custom-amount-label
+          max-width: 178px;
+        .custom-amount__input
+          margin: 6px 0px 0px 0px;
+          .Input-addons--after
+            pointer-events: auto;
+            background: transparent;
+            margin-right: 7px;
+          &.is-mature:not(.is-focused).is-invalid .Input-addons--after
+            background: transparent;
+          
+          .Input-error
+            font-size: 12px;
+            margin-top: 2px;
+            display: block;
+        .edit-btn
+          margin: 0px 0px 0px 6px;
+      &--select-method
+        &.disabled-custom-amount-feat
+          .loan-payment-stepper__body
+            align-items: center;
+           .right
+            margin-top: 24px;
+
+      &__nav
+        padding: 12px 0px;
+        border-bottom: 1px solid rgba(3,28,58,0.08);
+        font-size: 14px;
+        line-height: 20px;
+        color: rgba(22, 47, 86, 0.87);
+        i
+          color:  #5A99E8;
+        .paginate
+          color: #7A8898;
+          font-weight: bold;
+
+      &__body
+        margin: 16px 0px;
+        align-items: flex-start;
         flex: 1;
+
+        
 
         .left
           flex: 2;
@@ -331,8 +371,23 @@
           .Input--checkbox, .Input--radioLabels > label
             margin: 0;
             padding: 16px;
-            flex: 1
-            border: 1px solid rgba(11, 112, 231, 0.87)
+            flex: 1;
+            border-radius: 2px;
+          .Input--checkbox
+            border: 1px solid rgba(22, 47, 86, 0.1);
+            &.checkbox--selected
+              border: 1px solid #0b70e757;
+              border-bottom: 2px solid #0b70e7de;
+          .Input--radio
+            .Input--radioLabels > label:first-child,
+            .Input--radioLabels > label:last-child
+              border: 1px solid rgba(22, 47, 86, 0.1);
+            &.payment-option-one-selected .Input--radioLabels > label:first-child,
+            &.payment-option-two-selected .Input--radioLabels > label:last-child
+              border: 1px solid #0b70e757;
+              border-bottom: 2px solid #0b70e7de;
+            input:disabled + .Input-radio + .Input-inlineLabel
+              opacity: 0.5;
           .Input--radioLabels
             display: flex;
             .Input-inlineLabel
@@ -342,76 +397,13 @@
             margin: 0;
         .right
           justify-content: flex-end;
-          margin: 15px 24px;
-          margin-right: 0;
+          margin: 42px 0px 0px 24px;
           .cancel-button
             padding: 12px 0px 12px 28px;
         
         .payment-option
           flex-direction: column;
 
-    .payment-success
-      padding: 0 24px;
-      border-top: 3px solid rgba(0, 134, 89, 0.87);
-      border-radius: 3px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-
-      .payment-success-body
-        margin: 24px 0px
-        height: 100%;
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-
-        .top
-          display: flex
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 1px solid rgba(3, 28, 58, 0.08);
-          padding-bottom: 16px;
-
-          .left
-            flex-direction: column;
-            flex: 1
-        
-        .bottom
-          justify-content: space-between;
-          width: 80%;
-          padding-top: 16px;
-          .detail-segment
-            flex-direction: column;
-      footer
-        .Button--transparent
-          padding: 0;
-          margin-left: -16px;
-
-    .payment-failure
-      padding: 0 24px;
-      border-top: 3px solid rgba(178, 87, 87, 0.87);
-      border-radius: 3px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-
-      .payment-failure-body
-        margin: 24px 0px
-        height: 100%;
-        flex: 1;
-        display: flex;
-        align-items: center;
-
-        .top
-          display: flex;
-          flex-direction: column
-
-          .text-content
-            margin: 16px 0;
-            display: flex;
-            flex-direction: column;
-    
     .closed-loan
       padding: 0 24px;
       border-top: 3px solid rgba(0, 134, 89, 0.87);
@@ -439,7 +431,7 @@
     .payment-box-wrapper
       .overview-status
         flex: 1
-        height: auto
+        min-height: auto
 
       .loan-collection-summary
         min-height: auto

@@ -232,6 +232,7 @@ class Service extends Base\Service
             'rx_skip_payroll_payouts',
             'show_activation_form_full_view',
             'magic_bulk_address_live',
+            'loans_allow_custom_amount_repayment',
             'remove_activation_progressbar',
             'rx_payout_link_workflow',
             'rx_ca_programmatic_engagement',

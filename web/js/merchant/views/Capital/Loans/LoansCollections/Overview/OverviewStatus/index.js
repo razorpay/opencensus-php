@@ -1,15 +1,16 @@
 import React, { useState, useMemo } from 'react';
+import { connect } from 'react-redux';
 import { OVERVIEW_STATUS_VIEWS, PLAN_STATUS } from '../../constants';
 import PaymentAmount from './PaymentAmount';
+import PaymentSelectAmount from './PaymentSelectAmount';
 import PaymentMethod from './PaymentMethod';
-import PaymentSuccess from './PaymentSuccess';
-import PaymentFailure from './PaymentFailure';
+import PaymentResult from './PaymentResult';
 import { PaymentProvider } from './PaymentContext';
 import Await, { usePromise } from '../../../../components/Await';
 import api from '../../api';
 import ClosedLoan from './ClosedLoan';
 
-export default function OverviewStatus({
+function OverviewStatus({
   installment,
   plan,
   upcomingPayments,
@@ -17,6 +18,7 @@ export default function OverviewStatus({
   onRefresh,
   showHeader = true,
   showFooter = true,
+  user,
 }) {
   const isPlanClosed = plan.status !== PLAN_STATUS.CREATED;
   const [view, setView] = useState(
@@ -24,29 +26,43 @@ export default function OverviewStatus({
   );
   const fetchPrimaryBalance = useMemo(() => api.getPrimaryBalance(), []);
   const primaryBalance = usePromise(fetchPrimaryBalance);
+  const allowCustomAmountRepayment = user.isLoanCustomAmountRepaymentEnabled;
+
+  const updateView = (toView) => {
+    setView(toView);
+  };
   function renderView() {
     switch (view) {
       default:
       case OVERVIEW_STATUS_VIEWS.PAYMENT_AMOUNT:
         return (
           <PaymentAmount
-            setView={setView}
+            setView={updateView}
             lastRepayment={lastRepayment}
             upcomingPayments={upcomingPayments}
             installment={installment}
             plan={plan}
+            allowCustomAmountRepayment={allowCustomAmountRepayment}
           />
+        );
+      case OVERVIEW_STATUS_VIEWS.PAYMENT_SELECT_AMOUNT:
+        return (
+          <Await promise={primaryBalance}>
+            <PaymentSelectAmount setView={updateView} settlementBalance={primaryBalance.value} />
+          </Await>
         );
       case OVERVIEW_STATUS_VIEWS.PAYMENT_METHOD:
         return (
           <Await promise={primaryBalance}>
-            <PaymentMethod setView={setView} settlementBalance={primaryBalance.value} />
+            <PaymentMethod
+              setView={updateView}
+              settlementBalance={primaryBalance.value}
+              allowCustomAmountRepayment={allowCustomAmountRepayment}
+            />
           </Await>
         );
-      case OVERVIEW_STATUS_VIEWS.PAYMENT_SUCCESS:
-        return <PaymentSuccess onRefresh={onRefresh} />;
-      case OVERVIEW_STATUS_VIEWS.PAYMENT_FAILURE:
-        return <PaymentFailure setView={setView} onRefresh={onRefresh} />;
+      case OVERVIEW_STATUS_VIEWS.PAYMENT_RESULT:
+        return <PaymentResult setView={updateView} onRefresh={onRefresh} />;
       case OVERVIEW_STATUS_VIEWS.LOAN_CLOSED:
         return <ClosedLoan installment={installment} plan={plan} />;
       // AutopayDisabled screen
@@ -69,3 +85,7 @@ export default function OverviewStatus({
     </div>
   );
 }
+
+export default connect((state) => ({
+  user: state.session.user,
+}))(OverviewStatus);

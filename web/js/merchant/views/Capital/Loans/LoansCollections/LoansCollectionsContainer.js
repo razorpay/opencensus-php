@@ -41,7 +41,7 @@ const LoansCollectionsContainer = ({
   };
 
   const onTabClick = () => {
-    const isPaymentSuccess = document.getElementsByClassName('payment-success');
+    const isPaymentSuccess = document.getElementsByClassName('payment_suc_fail__msg');
     if (isPaymentSuccess.length) {
       onRefresh();
     }

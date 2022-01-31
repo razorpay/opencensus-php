@@ -507,6 +507,10 @@ export default class User {
     return getSplitzExperimentVariant('QR_code_experiment')?.variables?.result === 'on';
   }
 
+  get isLoanCustomAmountRepaymentEnabled() {
+    return this.getExpStatus('loans_allow_custom_amount_repayment');
+  }
+
   isNeostoneFlowEnabled = (showState = '') => {
     return (
       this.isPartOfNeostone &&

@@ -7,7 +7,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { DATE_FORMATS, INSTALLMENT_STATUS, OVERVIEW_STATUS_VIEWS } from '../../constants';
 import moment from 'moment';
 import { findFrom, isPastDate, isRepaymentSuccess } from '../../util';
-import { useLoanData } from './PaymentContext';
+import { useLoanData, ACTIONS } from './PaymentContext';
 
 const { PENDING, PARTIALLY_PAID, CREATED } = INSTALLMENT_STATUS;
 
@@ -60,6 +60,7 @@ export default function PaymentAmount({
   upcomingPayments: { amount_expected_till_now: amountExpectedTillNow = 0, schedule = [] },
   installment: { amount_collected, installments = [] },
   plan,
+  allowCustomAmountRepayment,
 }) {
   const {
     state: { showHeader, showFooter },
@@ -79,6 +80,12 @@ export default function PaymentAmount({
   const formattedDate = moment(date * 1000).format(DATE_FORMATS.LOAN_DISBURSAL);
 
   const onRepayNow = () => {
+    dispatch({ type: ACTIONS.SET_TOTAL_DUE_INFO, payload: { amount, date } }); // init due amount amount
+    if (allowCustomAmountRepayment) {
+      dispatch({ type: 'SET_PAYMENT_AMOUNT', payload: 0 }); // Reset amount to be paid
+      setView(OVERVIEW_STATUS_VIEWS.PAYMENT_SELECT_AMOUNT);
+      return;
+    }
     dispatch({ type: 'SET_PAYMENT_AMOUNT', payload: amount });
     setView(OVERVIEW_STATUS_VIEWS.PAYMENT_METHOD);
   };

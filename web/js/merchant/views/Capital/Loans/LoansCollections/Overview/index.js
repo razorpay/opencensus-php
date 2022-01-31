@@ -14,7 +14,7 @@ export default function Overview({ plan, installments, repayments, upcomingPayme
           plan={plan}
           installment={installments}
           upcomingPayments={upcomingPayments}
-          lastRepayment={repayments[0]}
+          lastRepayment={repayments[repayments.length - 1]} // that is latest repayment, api gives in asc order
           onRefresh={onRefresh}
         />
         <RecentRepayments repayments={lastFiveRepayments} />

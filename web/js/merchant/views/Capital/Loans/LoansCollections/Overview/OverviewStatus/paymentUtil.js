@@ -8,7 +8,6 @@ import {
 export const loadCheckoutScript = () => {
   return new Promise((resolve, reject) => {
     if (window.Razorpay) return resolve();
-
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.onload = resolve;
@@ -58,9 +57,10 @@ export function handleCheckoutPayment({ dispatch, loanData, amount }) {
         //eslint-disable-next-line
         const razorpayInstance = new Razorpay({
           order_id,
-          handler: (response) => updateRepayment(response, resolve, reject),
+          handler: (response) =>
+            updateRepayment(response, resolve, (error) => reject({ order_id, error })),
           modal: {
-            ondismiss: reject,
+            ondismiss: () => reject({ order_id, error: new Error('Checkout Modal Closed') }),
           },
         });
         razorpayInstance.open();
@@ -69,13 +69,15 @@ export function handleCheckoutPayment({ dispatch, loanData, amount }) {
     .then((res) => {
       dispatch({
         type: 'REPAYMENT_SUCCESS',
-        payload: { id: res.data.id, amount, type, success: true },
+        payload: { id: res.data.payment_reference_id, amount, type, success: true },
       });
     })
-    .catch(() => {
+    .catch((e) => {
+      const id = e?.order_id || undefined;
+      const error = id ? e.error : e;
       dispatch({
         type: 'REPAYMENT_FAILURE',
-        payload: { amount, type, success: false },
+        payload: { id, amount, type, success: false, error },
       });
       throw new Error('Payment Failure');
     });
@@ -93,13 +95,13 @@ export function handleSettlementBalancePayment({ dispatch, loanData, amount }) {
     .then((res) =>
       dispatch({
         type: 'REPAYMENT_SUCCESS',
-        payload: { id: res.data.id, amount, type, success: true },
+        payload: { id: res.data.payment_reference_id, amount, type, success: true },
       }),
     )
-    .catch(() => {
+    .catch((error) => {
       dispatch({
         type: 'REPAYMENT_FAILURE',
-        payload: { amount, type, success: false },
+        payload: { amount, type, success: false, error },
       });
       throw new Error('Payment Failure');
     });
