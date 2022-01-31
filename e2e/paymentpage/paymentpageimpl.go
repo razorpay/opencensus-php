@@ -10,7 +10,7 @@ import (
 // Create PaymentPage
 func CreatePaymentPage(t *testing.T, paymentPageReq PaymentPageRequest) PaymentPageResponse {
 	var paymentPageRes PaymentPageResponse
-	obj := httpexpect.New(t, e2e.Config.PaymentPage.Hostname).
+	obj := httpexpect.New(t, e2e.Config.App.Hostname).
 		POST("/v1/payment_pages").
 		WithBasicAuth(e2e.Config.PaymentPage.Username,e2e.Config.PaymentPage.Password).
 		WithHeaders(map[string]string{

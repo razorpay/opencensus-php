@@ -1,5 +1,7 @@
-[PaymentPage]
-    hostname = "https://api-web-piyush.dev.razorpay.in"
+[app]
+    hostname = "https://api.razorpay.com"
+
+[paymentpage]
     user = "7HQnhEQDgBIdlv"
     role = "owner"
     username = "rzp_test_10000000000000"
