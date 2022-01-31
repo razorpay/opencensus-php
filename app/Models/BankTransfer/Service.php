@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Trace\Tracer;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Exception;
@@ -429,13 +430,19 @@ class Service extends Base\Service
      */
     public function fetchBankTransferForPayment(string $paymentId)
     {
-        $payment = $this->repo
+        $payment = Tracer::inSpan(['name' => Constants\HyperTrace::BANK_TRANSFER_SERVICE_FIND_BY_PUBLIC_ID_AND_MERCHANT], function() use($paymentId)
+        {
+            return $this->repo
                         ->payment
                         ->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
 
-        $bankTransfer = $this->repo
-                             ->bank_transfer
-                             ->findByPayment($payment);
+        $bankTransfer = Tracer::inSpan(['name' => Constants\HyperTrace::BANK_TRANSFER_SERVICE_FIND_BY_PAYMENT], function() use($payment)
+        {
+            return $this->repo
+                        ->bank_transfer
+                        ->findByPayment($payment);
+        });
 
         $response = $bankTransfer->toArrayPublic();
 

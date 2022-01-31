@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use Lib\Formatters\Xml;
+use RZP\Constants\HyperTrace;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
@@ -12,6 +13,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\VirtualAccount\Entity;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\VirtualAccount\Validator;
+use RZP\Trace\Tracer;
 
 class VirtualAccountController extends Controller
 {
@@ -50,7 +52,10 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->fetchPayments($id, $input);
+        $response = Tracer::inSpan(['name' =>HyperTrace::VIRTUAL_ACCOUNTS_FETCH_PAYMENTS], function() use($id, $input)
+        {
+            return $this->service()->fetchPayments($id, $input);
+        });
 
         return ApiResponse::json($response);
     }

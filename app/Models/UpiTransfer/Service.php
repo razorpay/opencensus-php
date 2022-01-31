@@ -2,6 +2,7 @@
 
 namespace RZP\Models\UpiTransfer;
 
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -11,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\UpiTransferRequest;
+use RZP\Trace\Tracer;
 
 class Service extends Base\Service
 {
@@ -178,18 +180,25 @@ class Service extends Base\Service
      */
     public function fetchForPayment(string $paymentId)
     {
-        $payment = $this->repo
+        $payment = Tracer::inSpan(['name' => HyperTrace::UPI_SERVICE_FIND_BY_PUBLIC_ID_AND_MERCHANT], function() use($paymentId)
+        {
+            return $this->repo
                         ->payment
                         ->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        });
 
         if ($payment->isUpiTransfer() === false)
         {
             return [];
         }
 
-        $upiTransfer = $this->repo
-                            ->upi_transfer
-                            ->findByPaymentId($payment->getId());
+        $upiTransfer = Tracer::inSpan(['name' => HyperTrace::UPI_SERVICE_FIND_BY_PAYMENT_ID], function() use($payment)
+        {
+            return $this->repo
+                        ->upi_transfer
+                        ->findByPaymentId($payment->getId());
+        });
+
 
         $response = $upiTransfer->toArrayPublic();
 

@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
 
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -25,6 +26,7 @@ use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Trace\Tracer;
 
 class Core extends Base\Core
 {
@@ -63,23 +65,28 @@ class Core extends Base\Core
                 $virtualAccount->setSource(SourceType::PAYMENT_LINKS_V2);
             }
 
-            $virtualAccount = $this->mutex->acquireAndRelease(
-                self::VA_BANK_ACCOUNT_GENERATION . $virtualAccount->getId(),
-                function() use ($input, $merchant, $customer, $order, $balance, $virtualAccount)
-                {
-                    return $this->buildVirtualAccountAndReceivers(
-                        $virtualAccount, $input, $customer, $order, $balance);
-                },
-                // The entire VA creation process inside this lock actually takes
-                // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
-                10,
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
-                // A process will generally not need to do multiple retries at all,
-                // since the retry times are adequate for the previous process to complete.
-                5,
-                // 2x and 4x of avg response time for this entire route (not just the process within the lock)
-                200,
-                400);
+            $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_ACQUIRE_AND_RELEASE], function() use($virtualAccount, $input, $merchant, $customer, $order, $balance)
+            {
+                return $this->mutex->acquireAndRelease(
+                    self::VA_BANK_ACCOUNT_GENERATION . $virtualAccount->getId(),
+                    function() use ($input, $merchant, $customer, $order, $balance, $virtualAccount)
+                    {
+                        return $this->buildVirtualAccountAndReceivers(
+                            $virtualAccount, $input, $customer, $order, $balance);
+                    },
+                    // The entire VA creation process inside this lock actually takes
+                    // an avg of 10ms, so 1000x i.e. 10 seconds is more than adequate TTL
+                    10,
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS,
+                    // A process will generally not need to do multiple retries at all,
+                    // since the retry times are adequate for the previous process to complete.
+                    5,
+                    // 2x and 4x of avg response time for this entire route (not just the process within the lock)
+                    200,
+                    400);
+            });
+
+
         }
         catch (\Throwable $e)
         {
@@ -239,13 +246,25 @@ class Core extends Base\Core
 
             $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
-            $this->repo->virtual_account->saveOrFail($virtualAccount);
+            Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_SAVE], function() use($virtualAccount)
+            {
+                $this->repo->virtual_account->saveOrFail($virtualAccount);
+            });
 
-            (new VirtualAccountProducts\Core())->create($virtualAccount);
+            Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_VIRTUAL_ACCOUNT_PRODUCTS], function() use($virtualAccount)
+            {
+                (new VirtualAccountProducts\Core())->create($virtualAccount);
+            });
 
-            (new VirtualAccountTpv\Core())->buildAllowedPayers($virtualAccount, $input);
+            Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_ADD_ALLOWED_PAYER], function() use($virtualAccount, $input)
+            {
+                (new VirtualAccountTpv\Core())->buildAllowedPayers($virtualAccount, $input);
+            });
 
-            (new EntityOrigin\Core)->createEntityOrigin($virtualAccount);
+            Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_CREATE_ORIGIN_ENTITY], function() use($virtualAccount)
+            {
+                (new EntityOrigin\Core)->createEntityOrigin($virtualAccount);
+            });
 
             return $virtualAccount;
         });

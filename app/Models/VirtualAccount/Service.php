@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
@@ -31,6 +32,7 @@ use RZP\Models\VirtualAccountProducts;
 use RZP\Models\VirtualAccount\Constant as VAConstants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Offline\Device as OfflineDevice;
+use RZP\Trace\Tracer;
 
 class Service extends Base\Service
 {
@@ -70,7 +72,10 @@ class Service extends Base\Service
 
         (new Validator)->validateDefaultCloseBy($input);
 
-        $virtualAccount = $this->core->create($input, $this->merchant, $customer, $order);
+         $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_CREATE], function() use($input, $customer, $order)
+         {
+             return $this->core->create($input, $this->merchant, $customer, $order);
+         });
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_CREATED,
@@ -223,13 +228,15 @@ class Service extends Base\Service
 
     public function fetch(string $id)
     {
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->findByPublicIdAndMerchantWithRelations(
-                                    $id,
-                                    $this->merchant,
-                                    ['bankAccount']);
-
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_FETCH], function() use($id)
+        {
+            return $this->repo
+                ->virtual_account
+                ->findByPublicIdAndMerchantWithRelations(
+                    $id,
+                    $this->merchant,
+                    ['bankAccount']);
+        });
         return $virtualAccount->toArrayPublic();
     }
 
@@ -240,9 +247,12 @@ class Service extends Base\Service
             $input[Entity::BALANCE_ID] = $this->merchant->primaryBalance->getId();
         }
 
-        $virtualAccounts = $this->repo
-                                ->virtual_account
-                                ->fetch($input, $this->merchant->getId());
+        $virtualAccounts = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_FETCH_MULTIPLE], function() use($input)
+        {
+            return $this->repo
+                ->virtual_account
+                ->fetch($input, $this->merchant->getId());
+        });
 
         return $virtualAccounts->toArrayPublic();
     }
@@ -534,7 +544,10 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
+        $payments = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_FETCH_PAYMENTS], function() use(&$input, $merchantId)
+        {
+            return $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
+        });
 
         return $payments->toArrayPublic();
     }

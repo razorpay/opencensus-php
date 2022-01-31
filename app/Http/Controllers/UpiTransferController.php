@@ -4,8 +4,11 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Base\ConnectionType;
+use RZP\Constants\HyperTrace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Trace\Tracer;
 
 class UpiTransferController extends Controller
 {
@@ -39,7 +42,10 @@ class UpiTransferController extends Controller
 
     public function fetchForPayment(string $paymentId)
     {
-        $response = $this->service()->fetchForPayment($paymentId);
+        $response = Tracer::inSpan(['name' => HyperTrace::UPI_FETCH_FOR_PAYMENT], function() use($paymentId)
+        {
+            return $this->service()->fetchForPayment($paymentId);
+        });
 
         return ApiResponse::json($response);
     }

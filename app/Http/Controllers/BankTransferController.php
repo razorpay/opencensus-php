@@ -6,6 +6,8 @@ use Request;
 use ApiResponse;
 use Carbon\Carbon;
 
+use RZP\Base\ConnectionType;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Batch;
 use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
@@ -17,6 +19,7 @@ use RZP\Models\BankTransfer\HdfcEcms;
 use RZP\Models\BankTransfer\Validator;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Trace\Tracer;
 
 class BankTransferController extends Controller
 {
@@ -415,7 +418,10 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->fetchBankTransferForPayment($paymentId);
+        $response = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_FETCH_PAYMENTS], function() use($paymentId)
+        {
+            return $this->service()->fetchBankTransferForPayment($paymentId);
+        });
 
         return ApiResponse::json($response);
     }

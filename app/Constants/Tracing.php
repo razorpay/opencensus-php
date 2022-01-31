@@ -247,6 +247,14 @@ class Tracing
             'nach_batch_process',
             'emandate_batch_process',
 
+//            virtual account routes
+            'virtual_account_create',
+            'virtual_account_fetch',
+            'virtual_account_fetch_multiple',
+            'virtual_account_fetch_payments',
+            'payment_bank_transfer_fetch',
+            'payment_upi_transfer_fetch',
+
             // Partner routes
             'merchant_bulk_onboarding_admin'
         ]);
