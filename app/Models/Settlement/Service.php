@@ -68,26 +68,69 @@ class Service extends Base\Service
             'next_settlement_time' => null,
         ];
 
-        //
-        // This will give wrong result for wealthy merchant on saturdays
-        //
-        list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant, $balanceType);
+        $isNewService = (new Bucket\Core())->shouldProcessViaNewService($this->merchant->getId(), $balance);
 
-        if ($status === false)
+        if(($isNewService === true)
+            and ($this->shouldFetchSettlementAmountFromNSS($this->merchant->getId(), $this->mode) === true))
         {
-            return $response + [
-                'no_settlement' =>  $data
-            ];
+                $requestParams = [
+                    'merchant_id' => $this->merchant->getId(),
+                    'balance_type' => strtoupper($balanceType),
+                ];
+
+                try
+                {
+                    $res = app('settlements_merchant_dashboard')->getNextSettlementAmount($requestParams, $this->mode);
+
+                    if(isset($res['no_settlement']) == true)
+                    {
+                        return $response + [
+                                'no_settlement' => $res['no_settlement']
+                            ];
+                    }
+                    else
+                    {
+                        $response['next_settlement_time'] = (int) $res['next_settlement_time'];
+                        $response['settlement_amount']    = $res['settlement_amount'];
+                        $response['settlement_currency']  = $res['settlement_currency'];
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::SETTLEMENT_AMOUNT_FETCH_FROM_NSS_FAILED,
+                        [
+                            'merchant_id' => $this->merchant->getId(),
+                        ]);
+
+                    return $response;
+                }
         }
+        else
+        {
+            //
+            // This will give wrong result for wealthy merchant on saturdays
+            //
+            list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant, $balanceType);
 
-        $nextSettlementTime = (new Bucket\Core)->getNextSettlementTime($this->merchant, $balance);
+            if ($status === false)
+            {
+                return $response + [
+                        'no_settlement' =>  $data
+                    ];
+            }
 
-        $settlementDetails = (new Core)->getMerchantSettlementAmount(
-            $this->merchant,
-            $balance,
-            $nextSettlementTime);
+            $nextSettlementTime = (new Bucket\Core)->getNextSettlementTime($this->merchant, $balance);
 
-        $response = array_merge($response, $settlementDetails);
+            $settlementDetails = (new Core)->getMerchantSettlementAmount(
+                $this->merchant,
+                $balance,
+                $nextSettlementTime);
+
+            $response = array_merge($response, $settlementDetails);
+        }
 
         //
         // settlement amount should be at least 1rs
@@ -1615,5 +1658,17 @@ class Service extends Base\Service
     public function settlementsInitiate($input)
     {
         return app('settlements_dashboard')->settlementsInitiate($input);
+    }
+
+    public function shouldFetchSettlementAmountFromNSS($merchantID, $mode)
+    {
+        $variant = $this->app
+                        ->razorx
+                        ->getTreatment(
+                            $merchantID,
+                            Merchant\RazorxTreatment::FETCH_SETTLEMENT_AMOUNT_FROM_NSS,
+                            $mode);
+
+        return $variant === 'on';
     }
 }

@@ -23,4 +23,17 @@ class MerchantDashboard extends Base
     {
         return $this->makeRequest(self::MERCHANT_DASHBOARD_MERCHANT_CONFIG_GET, $input, self::SERVICE_MERCHANT_DASHBOARD);
     }
+
+
+    /**
+     * @param array $input
+     * @param null $mode
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function getNextSettlementAmount(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::GET_NEXT_SETTLEMENT_AMOUNT, $input, self::SERVICE_MERCHANT_DASHBOARD);
+    }
 }
