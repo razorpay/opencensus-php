@@ -4,7 +4,7 @@ import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 const routes = [
   {
     tabName: 'Address',
-    path: '/magic',
+    path: '/magic/address',
     condition: (_user) => _user.isBulkAddressUploadEnabled,
     Component: BulkAddressUpload,
   },
@@ -15,5 +15,8 @@ const routes = [
     Component: ShippingAccount,
   },
 ];
+
+export const isMagicCheckoutTabsEnabled = (user) =>
+  routes.reduce((enabled, route) => enabled || route.condition(user), false);
 
 export default routes;

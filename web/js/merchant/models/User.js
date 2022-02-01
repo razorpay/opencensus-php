@@ -334,7 +334,7 @@ export default class User {
     return this.getExpStatus('magic_bulk_address_live');
   }
 
-  get isMerchantOnMagicCheckout() {
+  get isMagicCheckoutLive() {
     return this.isFeatureEnabled('one_click_checkout');
   }
 

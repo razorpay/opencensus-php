@@ -25,11 +25,9 @@ const ShippingAccount = ({
   } = shippingService;
 
   useEffect(() => {
-    fetchProviders();
-  }, []);
-
-  useEffect(() => {
-    if (id) {
+    if (!id) {
+      fetchProviders();
+    } else {
       fetchMethod(id);
     }
   }, [id]);

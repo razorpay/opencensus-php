@@ -4,9 +4,12 @@ import { updateMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
 import { CTA_TEXT } from 'merchant/views/MagicCheckout/data';
 import { loadWaitlistForm } from 'merchant/views/MagicCheckout/utils/waitlistForm';
 import { sendToLumberjack } from 'common/utils/analytics';
+import { MAGIC_CHECKOUT_STATUS } from 'merchant/views/MagicCheckout/constants';
 
 const objectName = 'super_checkout_join_waitlist_cta';
 const screen = 'SuperCheckoutOnboarding';
+
+const { LIVE, DEACTIVATED, WAITLISTED, INTERESTED, AVAILABLE } = MAGIC_CHECKOUT_STATUS;
 
 const JoinWaitlistButton = ({ user, magicCheckout, updateStatus, children }) => {
   const onClickJoinWaitlist = () => {
@@ -20,12 +23,12 @@ const JoinWaitlistButton = ({ user, magicCheckout, updateStatus, children }) => 
         merchant_id: current,
       },
     });
-    if (magicCheckout.status === 'available') {
+    if (magicCheckout.status === AVAILABLE) {
       updateStatus({
         merchant_id: current,
-        status: 'interested',
+        status: INTERESTED,
       });
-    } else if (magicCheckout.status === 'interested') {
+    } else if (magicCheckout.status === INTERESTED) {
       sendToLumberjack({
         eventName: `super_checkout_waitlist_form_loaded`,
         properties: {
@@ -45,13 +48,13 @@ const JoinWaitlistButton = ({ user, magicCheckout, updateStatus, children }) => 
         });
         updateStatus({
           merchant_id: current,
-          status: 'waitlisted',
+          status: WAITLISTED,
         });
       });
     }
   };
 
-  if (['deactivated', 'live', 'waitlisted'].includes(magicCheckout?.status)) {
+  if ([DEACTIVATED, LIVE, WAITLISTED].includes(magicCheckout?.status) || user.isMagicCheckoutLive) {
     return null;
   }
   return (
