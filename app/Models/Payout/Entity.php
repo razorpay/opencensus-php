@@ -1083,6 +1083,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS_DETAILS_ID);
     }
 
+    public function getStatusUpdatedAt()
+    {
+        switch ($this->getStatus())
+        {
+            case Status::PROCESSED:
+                return $this->getProcessedAt();
+            case Status::FAILED:
+                return $this->getFailedAt();
+            case Status::REVERSED:
+                return $this->getReversedAt();
+            case Status::REJECTED:
+                return $this->getRejectedAt();
+            case Status::CANCELLED:
+                return $this->getCancelledAt();
+        }
+    }
+
     public function hasBeenQueued()
     {
         return ($this->isAttributeNotNull(self::QUEUED_AT) === true);

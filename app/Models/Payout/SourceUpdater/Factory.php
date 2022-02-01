@@ -53,6 +53,12 @@ class Factory
                     array_push($subscriberList, (new RefundsUpdater($payout, $mode)));
 
                     break;
+
+                case PayoutSourceEntity::CAPITAL_COLLECTIONS:
+
+                    array_push($subscriberList, (new CapitalCollectionsUpdater($payout, $mode)));
+
+                    break;
             }
         }
 

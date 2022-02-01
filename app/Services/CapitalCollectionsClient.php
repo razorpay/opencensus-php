@@ -13,9 +13,12 @@ use RZP\Exception\BadRequestException;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
+use RZP\Models\Payout\Entity as PayoutEntity;
 
 class CapitalCollectionsClient implements ExternalService
 {
+    const PAYOUT_WEBHOOK_ENDPOINT = 'v1/repayments/payout-webhook';
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -65,6 +68,45 @@ class CapitalCollectionsClient implements ExternalService
         return $this->sendRequestAndParseResponse('v1/entity/'. $entity . '/'. $id, [], [], 'GET')['entity'];
     }
 
+    public function pushPayoutStatusUpdate(PayoutEntity $payout, string $mode)
+    {
+        $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY,[
+            'payout' => $payout,
+            'mode'   => $mode,
+        ]);
+
+        return $this->sendRequestAndParseResponse(self::PAYOUT_WEBHOOK_ENDPOINT,
+            $this->getDataFromPayout($payout),
+            ['X-Auth-Type' => 'direct'], 'POST'
+        );
+    }
+
+    protected function getDataFromPayout(PayoutEntity $payout): array
+    {
+        return [
+            'id'              => $payout->getId(),
+            'merchant_id'     => $payout->getMerchantId(),
+            'entity'          => $payout->getEntity(),
+            'fund_account_id' => $payout->getFundAccountId(),
+            'amount'          => $payout->getAmount(),
+            'currency'        => $payout->getCurrency(),
+            'notes'           => $payout->getNotes(),
+            'fees'            => $payout->getFees(),
+            'tax'             => $payout->getTax(),
+            'status'          => $payout->getStatus(),
+            'purpose'         => $payout->getPurpose(),
+            'utr'             => $payout->getUtr(),
+            'mode'            => $payout->getMode(),
+            'channel'         => $payout->getChannel(),
+            'reference_id'    => $payout->getReferenceId(),
+            'narration'       => $payout->getNarration(),
+            'batch_id'        => $payout->getBatchId(),
+            'failure_reason'  => $payout->getFailureReason(),
+            'created_at'      => $payout->getCreatedAt(),
+            'updated_at'      => $payout->getStatusUpdatedAt(),
+        ];
+    }
+
     protected function sendRequestAndParseResponse(
         string $url,
         array $body = [],
@@ -77,7 +119,7 @@ class CapitalCollectionsClient implements ExternalService
         $username                = $config['username'];
         $password                = $config['secret'];
 
-        $headers += [
+        $defaultHeaders = [
             'Accept'            => 'application/json',
             'Content-Type'      => 'application/json',
             'X-Task-Id'         => $this->app['request']->getTaskId(),
@@ -87,7 +129,7 @@ class CapitalCollectionsClient implements ExternalService
             'Authorization'     => 'Basic '. base64_encode($username . ':' . $password),
         ];
 
-        return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
+        return $this->sendRequest($defaultHeaders+$headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 
     protected function sendRequest($headers, $url, $method, $body)

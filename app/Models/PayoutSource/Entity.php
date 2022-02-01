@@ -18,12 +18,13 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE     = 'source_type';
     const PRIORITY        = 'priority';
 
-    const PAYOUT_LINK     = 'payout_links';
-    const VENDOR_PAYMENTS = 'vendor_payments';
-    const TAX_PAYMENTS    = 'tax_payments';
-    const SETTLEMENTS     = 'settlements';
-    const XPAYROLL        = 'xpayroll';
-    const REFUND          = 'refund';
+    const PAYOUT_LINK         = 'payout_links';
+    const VENDOR_PAYMENTS     = 'vendor_payments';
+    const TAX_PAYMENTS        = 'tax_payments';
+    const SETTLEMENTS         = 'settlements';
+    const XPAYROLL            = 'xpayroll';
+    const REFUND              = 'refund';
+    const CAPITAL_COLLECTIONS = 'capital_collections';
 
     // Relations
     const PAYOUT = 'payout';
@@ -39,7 +40,8 @@ class Entity extends Base\PublicEntity
         self::VENDOR_PAYMENTS,
         self::TAX_PAYMENTS,
         self::SETTLEMENTS,
-        self::XPAYROLL
+        self::XPAYROLL,
+        self::CAPITAL_COLLECTIONS
     ];
 
     protected $fillable   = [
