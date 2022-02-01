@@ -59,6 +59,10 @@ export const fetchSupportTicketsApiCall = (params, filter) => {
 };
 
 export const fetchRefundPricingApiCall = () => {
+  if (!window.rzp_user) {
+    return Promise.resolve();
+  }
+
   return merchantFetch('instant_refunds/pricing');
 };
 
@@ -85,6 +89,10 @@ export const fetchActiveTicketsApiCall = () => {
 };
 
 export const checkCallEligibilityApiCall = () => {
+  if (!window.rzp_user) {
+    return Promise.resolve();
+  }
+
   return merchantFetch('merchants/support_call/can_submit').then(
     (res) => res && res.success && res.data && res.data.response === true,
   );

@@ -67,19 +67,20 @@ export default class Support extends Component {
     });
 
     this.bindEvents();
-    merchantFetch({
-      url: 'merchants/support/option/flags',
-    }).then((res) => {
-      this.setState({
-        supportFlags: {
-          no_of_days_for_activation: '3 to 5',
-          cta_list: ['continue_with_ticket', 'faqs'],
-          message_body: `Your account is currently not activated. Our team is working hard to fast track your activation and it can take ${`3 to 5`} business days. If you have any other concerns, please feel free to raise a ticket.`,
-          ...res.data,
-          loaded: true,
-        },
+    this.props.user.current &&
+      merchantFetch({
+        url: 'merchants/support/option/flags',
+      }).then((res) => {
+        this.setState({
+          supportFlags: {
+            no_of_days_for_activation: '3 to 5',
+            cta_list: ['continue_with_ticket', 'faqs'],
+            message_body: `Your account is currently not activated. Our team is working hard to fast track your activation and it can take ${`3 to 5`} business days. If you have any other concerns, please feel free to raise a ticket.`,
+            ...res.data,
+            loaded: true,
+          },
+        });
       });
-    });
   }
 
   bindEvents = () => {

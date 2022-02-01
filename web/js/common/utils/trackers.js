@@ -32,18 +32,21 @@ export const initSegment = (app, user, callback) => {
         });
 
       let dataFromAPI = {};
-      return merchantFetch('merchant/data_for_segment')
-        .then((res) => {
-          if (res.data) {
-            dataFromAPI = res.data;
-            if (callback) {
-              callback(res.data);
+      return (
+        window.rzp_user &&
+        merchantFetch('merchant/data_for_segment')
+          .then((res) => {
+            if (res.data) {
+              dataFromAPI = res.data;
+              if (callback) {
+                callback(res.data);
+              }
             }
-          }
-          segmentIdentiyCall(dataFromAPI);
-          updateWhatAppOptinIdentity(user);
-        })
-        .catch(() => segmentIdentiyCall(dataFromAPI));
+            segmentIdentiyCall(dataFromAPI);
+            updateWhatAppOptinIdentity(user);
+          })
+          .catch(() => segmentIdentiyCall(dataFromAPI))
+      );
     }
   });
 };

@@ -532,6 +532,9 @@ class App extends Component {
   };
 
   fetchSupportedCurrencies() {
+    if (!window.rzp_user) {
+      return Promise.resolve();
+    }
     return merchantFetch('currency/all/proxy');
   }
 

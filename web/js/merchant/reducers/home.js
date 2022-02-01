@@ -35,6 +35,9 @@ const ESCALATIONS_FETCH = 'ESCALATIONS_FETCH';
 const SHOW_PARTNER_KYC_STATUS_MODAL = 'SHOW_PARTNER_KYC_STATUS_MODAL';
 const HIDE_PARTNER_KYC_STATUS_MODAL = 'HIDE_PARTNER_KYC_STATUS_MODAL';
 
+// Invalid Merchant call
+const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
+
 const initialState = {
   analytics: {
     loading: true,
@@ -170,6 +173,11 @@ export const fetchPaymentBreakup = () => {
 };
 
 export const fetchCurrentBalance = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
   return {
     type: CURRENT_BALANCE_FETCH,
     payload: merchantFetch('balance'),
@@ -252,6 +260,11 @@ export const hidePANStatusModal = () => {
 };
 
 export const fetchSettlementAmount = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
   return {
     type: SETTLEMENT_AMOUNT_FETCH,
     payload: merchantFetch('settlements/amount'),
@@ -531,6 +544,9 @@ export default function homeReducer(state = initialState, action) {
           escaltionsLastUpdatedAt: action.payload.data.updated_at,
         },
       });
+
+    case INVALID_MERCHANT_CALL:
+      return state;
 
     default:
       return state;

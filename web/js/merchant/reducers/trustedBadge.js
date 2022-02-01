@@ -6,12 +6,19 @@ import { set, merge } from 'common/utils/immutable';
 /** Start of CONSTANTS */
 const FETCH_TRUSTED_BADGE_STATUS = 'FETCH_TRUSTED_BADGE_STATUS';
 const UPDATE_RTB_MERCHANT_STATUS = 'UPDATE_RTB_MERCHANT_STATUS';
+const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
 
 /** End of CONSTANTS */
 
 /** Start of Actions */
 
 export const fetchTrustedBadgeStatus = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
+
   return {
     type: FETCH_TRUSTED_BADGE_STATUS,
     payload: merchantFetch({
@@ -109,6 +116,10 @@ export default function trustedBadgeReducer(state = initialState, action) {
         updatePending: false,
         updateAction: action.status,
       });
+
+    case INVALID_MERCHANT_CALL:
+      return state;
+
     default:
       return state;
   }

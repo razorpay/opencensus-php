@@ -12,8 +12,15 @@ const FETCH_RESERVE_BALANCE = 'FETCH_RESERVE_BALANCE';
 const STORE_TICKET_DETAILS = 'STORE_TICKET_DETAILS';
 const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
 const CHECK_PASSWORD = 'CHECK_PASSWORD';
+const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
 
 export const fetchBankAccount = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
+
   return {
     type: BANK_ACCOUNT_FETCH,
     payload: merchantFetch({
@@ -91,6 +98,12 @@ export const updateBillingLabel = (data) => {
 };
 
 export const fetchGST = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
+
   return {
     type: GST_FETCH,
     payload: merchantFetch({
@@ -120,6 +133,12 @@ export const fetchBillingLabelSuggestions = () => {
 };
 
 export const fetchBankAccountChangeStatus = (merchantId) => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
+
   return {
     type: BANK_ACCOUNT_CHANGE_STATUS_FETCH,
     payload: merchantFetch({
@@ -199,6 +218,12 @@ export const getTicketStatus = () => {
 };
 
 export const checkPassword = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
+
   return {
     type: CHECK_PASSWORD,
     payload: merchantFetch({
@@ -375,6 +400,10 @@ export default (state = initialState, action) => {
         error: action.payload.errors,
         data: initialState.check_password.data,
       });
+
+    case INVALID_MERCHANT_CALL:
+      return state;
+
     default:
       return state;
   }

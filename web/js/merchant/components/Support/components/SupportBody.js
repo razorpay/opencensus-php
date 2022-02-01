@@ -120,11 +120,15 @@ class SupportBody extends Component {
         'Content-Type': 'application/json',
       },
     };
-    return merchantFetch(params).then((r) => {
-      if (r.success) {
-        this.setState({ timings: r.data });
-      }
-    });
+
+    return (
+      this.props.user.current &&
+      merchantFetch(params).then((r) => {
+        if (r.success) {
+          this.setState({ timings: r.data });
+        }
+      })
+    );
   }
 
   handleClick = (id) => {

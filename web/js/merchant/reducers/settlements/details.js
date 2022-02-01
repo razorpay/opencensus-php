@@ -8,6 +8,8 @@ const SETTLEMENT_SCHEDULE_FETCH = 'SETTLEMENT_SCHEDULE_FETCH';
 const HOLIDAY_LIST_FETCH = 'HOLIDAY_LIST_FETCH';
 const SETTLEMENT_CONFIG_FETCH = 'SETTLEMENT_CONFIG_FETCH';
 
+const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
+
 export const fetchItem = (id) => {
   const settlement = new Settlement();
 
@@ -202,6 +204,9 @@ export default (state = initialState, action) => {
         data: {},
         error: action.payload?.errors,
       });
+
+    case INVALID_MERCHANT_CALL:
+      return state;
 
     default:
       return state;

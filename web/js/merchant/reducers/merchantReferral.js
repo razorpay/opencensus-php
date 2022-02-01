@@ -4,6 +4,8 @@ import { merge } from 'common/utils/immutable';
 //supprt detail constant
 const FETCH_MERCHANT_REFERRAL_DETAILS = 'FETCH_MERCHANT_REFERRAL_DETAILS';
 
+const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
+
 const initialState = {
   loading: true,
   error: null,
@@ -12,6 +14,11 @@ const initialState = {
 
 //actions
 export const fetchMerchantReferralDetail = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
   return {
     type: FETCH_MERCHANT_REFERRAL_DETAILS,
     payload: merchantFetch({ url: 'merchants/onboarding/m2m_referral', mode: 'live' }),
@@ -34,6 +41,9 @@ export default function merchantReferral(state = initialState, action) {
         loading: false,
         error: action.payload.errors,
       });
+
+    case INVALID_MERCHANT_CALL:
+      return state;
 
     default:
       return state;

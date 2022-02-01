@@ -6,6 +6,8 @@ import { set, merge } from 'common/utils/immutable';
 const FETCH_MERCHANT_SUPPORT_DETAIL = 'FETCH_MERCHANT_SUPPORT_DETAIL';
 const ADD_MERCHANT_SUPPORT_DETAIL = 'CREATE_MERCHANT_SUPPORT_DETAIL';
 
+const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
+
 const initialState = {
   merchantSupportDetail: {
     loading: true,
@@ -16,6 +18,12 @@ const initialState = {
 
 //actions
 export const fetchSupportDetail = () => {
+  if (!window.rzp_user) {
+    return {
+      type: INVALID_MERCHANT_CALL,
+    };
+  }
+
   return {
     type: FETCH_MERCHANT_SUPPORT_DETAIL,
     payload: merchantFetch('proxy/merchants/supportdetails'),
@@ -58,6 +66,9 @@ export default (state = initialState, action) => {
         loading: false,
         error: action.payload.errors,
       });
+
+    case INVALID_MERCHANT_CALL:
+      return state;
 
     default:
       return state;
