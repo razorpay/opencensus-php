@@ -81,12 +81,14 @@ export function mapFieldToIndex(field) {
     }
 
     if (isMismatch) {
+      // eslint-disable-next-line no-continue
       continue;
     }
 
     for (let j = 0; j < FIELD_TYPES_keys.length; j++) {
       // EXCEPTION: value for enum is not to be compared as it's an array and will have unique values, it can be skipped and options.cmp will handle existence of 'key:enum'
       if (['enum'].indexOf(FIELD_TYPES_keys[j]) > -1) {
+        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -100,12 +102,14 @@ export function mapFieldToIndex(field) {
     }
 
     if (isMismatch) {
+      // eslint-disable-next-line no-continue
       continue;
     }
 
     for (let j = 0; j < FIELD_TYPES_opts_keys.length; j++) {
       // EXCEPTION 1: values of schema.options.enum_label will always be different. So, skipped because relying on schema.options.cmp == 'select'
       if (['enum_labels'].indexOf(FIELD_TYPES_opts_keys[j]) > -1) {
+        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -121,6 +125,7 @@ export function mapFieldToIndex(field) {
     }
 
     if (isMismatch) {
+      // eslint-disable-next-line no-continue
       continue;
     }
 
@@ -129,7 +134,7 @@ export function mapFieldToIndex(field) {
   }
 
   if (selectedIndexInOptions === null) {
-    throw 'There is mismatch in Schema field.';
+    throw new Error('There is mismatch in Schema field.');
   }
 
   return selectedIndexInOptions;
@@ -306,3 +311,51 @@ export function validateUISchema(udfschema) {
 
   return true;
 }
+
+export const SHIPROCKET_FORM_ITEMS = [
+  {
+    name: 'name',
+    title: 'Name',
+    required: true,
+    type: 'string',
+  },
+  {
+    name: 'shipping_address',
+    title: 'Shipping address',
+    required: true,
+    type: 'string',
+    options: { cmp: 'textarea' },
+  },
+  {
+    name: 'city',
+    title: 'City',
+    required: true,
+    type: 'string',
+  },
+  {
+    name: 'state',
+    title: 'State',
+    required: true,
+    type: 'string',
+  },
+  {
+    name: 'pincode',
+    title: 'Pincode',
+    required: true,
+    type: 'number',
+    minLength: 5,
+    maxLength: 6,
+    pattern: 'number',
+    options: {},
+  },
+];
+
+export const checkIsShiprocketField = (isShiprocket, key) => {
+  if (isShiprocket) {
+    const shiprocketKeys = SHIPROCKET_FORM_ITEMS.map((item) => item.name);
+
+    return shiprocketKeys.indexOf(key) > -1;
+  }
+
+  return false;
+};

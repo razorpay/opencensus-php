@@ -14,6 +14,7 @@ import SubscriptionButtonLaunchFullPageBanner from 'merchant/components/Announce
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
+import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ShiprocketConfirmation';
 import Success from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Success';
 import PPShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
@@ -22,6 +23,7 @@ import MobileActionButtons from './components/MobileActionButtons';
 import { createPaymentPage, editPaymentPage, sendLink, setReceiptDetails } from '../model';
 import track from './track';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import debounce from 'common/utils/debounce';
 
 import {
   autoPrefixUrls,
@@ -40,12 +42,18 @@ import {
   updateTemplateType,
   isFormItemOfTypeAmount,
   updateReceiptDetails,
+  setSettingsModal,
+  replaceInFormItems,
+  setShiprocketModal,
 } from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
-import { validateUISchema } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+import {
+  validateUISchema,
+  SHIPROCKET_FORM_ITEMS,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
 import {
   trackWYSIWYGCloseIntent,
@@ -79,6 +87,9 @@ const ERROR = {
     openModal,
     updateTemplateType,
     updateReceiptDetails,
+    replaceInFormItems,
+    setSettingsModal,
+    setShiprocketModal,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
@@ -97,6 +108,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     onSvelteAppMount: false,
     merchant_tnc: null,
     isMerchantDataLoaded: false,
+    formItemsBackup: [],
   };
 
   componentWillMount() {
@@ -117,9 +129,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       this.setState({
         isPageLoadError: null,
         isTemplatesViewOpened: false,
-        isSettingsOpened: false,
         isPageReceiptModalOpened: false,
       });
+      this.props.setSettingsModal(false);
 
       if (!nextProps.id) {
         this.setState({ isTemplatesViewOpened: true });
@@ -206,6 +218,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               this.togglePageReceiptModal();
             } else if (searchParams.modal === 'page') {
               this.togglePageSettings();
+            } else if (searchParams.modal === 'disableShiprocket') {
+              this.handleShiprocket();
             }
           }
           if (data) {
@@ -271,6 +285,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     document.title = 'Razorpay Dashboard'; // Revert title of dashboard
     this.props.closeModal();
+
+    window.removeEventListener('resize', this.debouncedHandleModalPosition);
   }
 
   fetchMerchantDetails = () => {
@@ -342,7 +358,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           openSettingsModal={(_) => {
             trackPageSettingsClick();
             this.props.closeModal();
-            this.setState({ isSettingsOpened: true });
+            this.props.setSettingsModal(true);
           }}
         />
       );
@@ -366,7 +382,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           openSettingsModal={(_) => {
             trackPageSettingsClick();
             this.props.closeModal();
-            this.setState({ isSettingsOpened: true });
+            this.props.setSettingsModal(true);
           }}
         />
       );
@@ -407,9 +423,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     // Update in store
     this.props.updateData(data);
 
-    this.setState({
-      isSettingsOpened: false,
-    });
+    this.props.setSettingsModal(false);
   };
 
   handleSavePaymentReceipt = (data) => {
@@ -576,6 +590,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         pp_fb_event_initiate_payment_enabled: settings.pp_fb_event_initiate_payment_enabled,
         pp_fb_event_payment_complete_enabled: settings.pp_fb_event_payment_complete_enabled,
         goal_tracker: settings.goal_tracker ? pruneGoalTracker(settings.goal_tracker) : undefined,
+        partner_webhook_settings: settings.partner_webhook_settings,
       },
       slug,
     };
@@ -734,18 +749,136 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   togglePageSettings = () => {
-    if (!this.state.isSettingsOpened) {
+    if (!this.props.isSettingsOpened) {
       track.settings.open();
     }
-    this.setState((prevState) => ({
-      isSettingsOpened: !prevState.isSettingsOpened,
-    }));
+    this.props.setSettingsModal(!this.props.isSettingsOpened);
   };
 
   togglePageReceiptModal = () => {
     this.setState((prevState) => ({
       isPageReceiptModalOpened: !prevState.isPageReceiptModalOpened,
     }));
+  };
+
+  openShiprocketModal = (cb) => {
+    // on open, filter any form items that are same as the shiprocket fields
+    let MODIFIED_FORM_ITEMS = [...this.props.FORM_ITEMS];
+    const shiprocketFieldKeys = SHIPROCKET_FORM_ITEMS.map((item) => item.name);
+
+    MODIFIED_FORM_ITEMS = MODIFIED_FORM_ITEMS.filter((item) => {
+      return shiprocketFieldKeys.indexOf(item.name) === -1;
+    });
+
+    this.setState({ formItemsBackup: this.props.FORM_ITEMS });
+    this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
+
+    this.props.setShiprocketModal(true).then(cb);
+  };
+
+  closeShiprocketModal = (isReplace) => {
+    // if modal is closed, revert the form items back to the original one, remove enable modal's resize event listener
+    window.removeEventListener('resize', this.debouncedHandleModalPosition);
+
+    if (isReplace) {
+      this.props.replaceInFormItems(this.state.formItemsBackup);
+    }
+    this.setState({ formItemsBackup: [] });
+    this.props.setShiprocketModal(false);
+  };
+
+  handleShiprocketEnable = () => {
+    // close modal & add Shiprocket fields to the filtered FORM_ITEMS [update store] & update SR field in redux
+    window.removeEventListener('resize', this.debouncedHandleModalPosition);
+
+    this.setState({ formItemsBackup: [] });
+    this.props.setShiprocketModal(false);
+
+    const MODIFIED_FORM_ITEMS = [...this.props.FORM_ITEMS, ...SHIPROCKET_FORM_ITEMS];
+    this.props.updateData({
+      settings: {
+        partner_webhook_settings: {
+          partner_shiprocket: '1',
+        },
+      },
+    });
+    this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
+  };
+
+  removeShiprocket = () => {
+    // remove shiprocket fields from form items & update SR field in redux
+    let MODIFIED_FORM_ITEMS = [...this.props.FORM_ITEMS];
+    const shiprocketFieldKeys = SHIPROCKET_FORM_ITEMS.map((item) => item.name);
+
+    MODIFIED_FORM_ITEMS = MODIFIED_FORM_ITEMS.filter(
+      (item) => shiprocketFieldKeys.indexOf(item.name) === -1,
+    );
+    this.props.updateData({
+      settings: {
+        partner_webhook_settings: {
+          partner_shiprocket: '0',
+        },
+      },
+    });
+    this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
+    this.closeShiprocketModal();
+  };
+
+  debouncedHandleModalPosition = debounce(() => this.handleModalPosition(), 100);
+
+  handleModalPosition = () => {
+    const shiprocketFormPreviewElement = document.querySelector(
+      '.Modal-container--Paymentpage-shiprocket-fields-preview',
+    );
+    const addNewFieldsElement = document.querySelector('.Field-add-new');
+
+    if (addNewFieldsElement) {
+      const rect = addNewFieldsElement.getBoundingClientRect();
+
+      if (shiprocketFormPreviewElement) {
+        shiprocketFormPreviewElement.style.top = `${rect.top - 360 - 32}px`; // 360px of blank preview + 32px for top padding
+        shiprocketFormPreviewElement.style.left = `${rect.left - 32}px`; // 32px padding (left & right)
+        shiprocketFormPreviewElement.style.width = `${rect.width + 64}px`;
+      }
+    }
+  };
+
+  handleShiprocket = (enablePPClose) => {
+    // if PP Settings modal is going to remain closed after SR modal is open, the SR modal code needs to be in Wysiwyg file
+    const { paymentPageEntity } = this.props;
+
+    const isShiprocket =
+      paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
+
+    enablePPClose && this.togglePageSettings();
+
+    if (isShiprocket) {
+      // turning SR off
+      this.context.confirm({
+        header: 'Address fields will be removed from this page',
+        className: 'shiprocket-confirm-modal',
+        message:
+          'If you proceed, a few fields that were previously added to collect customer’s shipping address will be removed.',
+        affirmativeLabel: 'Continue',
+        action: () => {
+          this.removeShiprocket();
+        },
+        abort: () => {
+          this.closeShiprocketModal();
+        },
+      });
+    } else {
+      // turning SR on
+
+      // open modal & modify layout to show SR form fields
+      // TODO: If form fields are out of the screen, then the preview modal will not be visible (out of screen)
+      // window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.openShiprocketModal(() => {
+        this.handleModalPosition();
+
+        window.addEventListener('resize', this.debouncedHandleModalPosition);
+      });
+    }
   };
 
   render() {
@@ -757,6 +890,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isMerchantDataLoaded,
     } = this.state;
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS } = this.props;
+
+    const isShiprocket =
+      paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
+
     let isAllowedToSubmit, actionBtns, themeColor, content;
 
     const merchantData = {
@@ -875,7 +1012,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           />
         )}
 
-        {this.state.isSettingsOpened && (
+        {this.props.isSettingsOpened && (
           <PPSettingsView
             handleClose={this.togglePageSettings}
             openModal={this.props.openModal}
@@ -883,6 +1020,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             handleAction={this.handleSaveSettings}
             isNew={this.props.id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
+            handleShiprocket={this.handleShiprocket}
+            isShiprocket={isShiprocket}
+            isPPShiprocket={user.isPPShiprocket}
           />
         )}
 
@@ -895,6 +1035,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             trackingDetails={{
               isPaymentPage: true,
             }}
+          />
+        )}
+
+        {this.props.isShiprocketOpened && (
+          <ShiprocketConfirmation
+            handleClose={this.closeShiprocketModal.bind(null, true)}
+            handleConfirm={this.handleShiprocketEnable}
           />
         )}
 

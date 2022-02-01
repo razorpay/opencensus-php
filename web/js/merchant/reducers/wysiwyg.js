@@ -20,8 +20,11 @@ const INIT_DEFAULT_FORM_ITEMS = 'INIT_DEFAULT_FORM_ITEMS';
 const FETCH_ENTITY = 'FETCH_ENTITY';
 const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';
 const UPDATE_DATA = 'UPDATE_DATA';
+const SETTINGS_MODAL = 'SETTINGS_MODAL';
+const SHIPROCKET_MODAL = 'SHIPROCKET_MODAL';
 const DELETE_IN_FORM_ITEMS = 'DELETE_IN_FORM_ITEMS';
 const UPDATE_IN_FORM_ITEMS = 'UPDATE_IN_FORM_ITEMS';
+const REPLACE_IN_FORM_ITEMS = 'REPLACE_IN_FORM_ITEMS';
 const ADD_IN_FORM_ITEMS = 'ADD_IN_FORM_ITEMS';
 const MARK_DATA_SAVED = 'MARK_DATA_SAVED';
 const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
@@ -33,6 +36,7 @@ export const isFormItemOfTypeAmount = (formItem) => formItem.hasOwnProperty('ite
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
 
+  // eslint-disable-next-line no-use-before-define
   return updateData(
     {
       description: data ? JSON.stringify({ value: data, metaText: '' }) : null, // No meta text if nothing updated by user
@@ -62,9 +66,19 @@ export const fetchPaymentPage = (id, isIntentDuplicate) => {
   return {
     type: FETCH_ENTITY,
     payload: fetchPaymentPageEntity(id),
-    isIntentDuplicate: isIntentDuplicate,
+    isIntentDuplicate,
     id,
   };
+};
+
+export const setSettingsModal = (status) => ({
+  type: SETTINGS_MODAL,
+  isSettingsOpened: status,
+});
+
+export const setShiprocketModal = (status) => (dispatch) => {
+  dispatch({ type: SHIPROCKET_MODAL, isShiprocketOpened: status });
+  return Promise.resolve();
 };
 
 export const updateData = (formItem, isPageDirty) => ({
@@ -82,6 +96,11 @@ export const deleteInFormItems = (index) => ({
   index,
 });
 
+export const addInFormItems = (formItem) => ({
+  type: ADD_IN_FORM_ITEMS,
+  formItem,
+});
+
 export const updateInFormItems = ({ formItem, index }) => {
   if (typeof index === 'undefined') {
     return addInFormItems(formItem);
@@ -93,9 +112,9 @@ export const updateInFormItems = ({ formItem, index }) => {
   };
 };
 
-export const addInFormItems = (formItem) => ({
-  type: ADD_IN_FORM_ITEMS,
-  formItem,
+export const replaceInFormItems = (formItems) => ({
+  type: REPLACE_IN_FORM_ITEMS,
+  formItems,
 });
 
 export const markDataSaved = (_) => ({
@@ -112,7 +131,7 @@ export const prefillContactDetails = (data) => ({
   payload: data,
 });
 
-let initialState = {
+const initialState = {
   paymentPageEntity: {
     currency: 'INR', // Initialising with INR currency
     settings: {
@@ -132,6 +151,8 @@ let initialState = {
   payment_page_id: null,
   FORM_ITEMS: null, // Email and Phone are added by default to display in UI and will NOW be sent in udf_schema to API (Added only as per feature flag)
   isPageDirty: false,
+  isSettingsOpened: false,
+  isShiprocketOpened: false, // Modal used to enable Shiprocket
 };
 
 export const reorderFormItems = ({
@@ -144,7 +165,7 @@ export const reorderFormItems = ({
   };
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case INIT_DEFAULT_FORM_ITEMS: {
       const currentUser = action.payload.user;
@@ -214,12 +235,11 @@ export default function (state = initialState, action) {
       }
 
       // 6.
-      let formItems;
       const udfSchema = JSON.parse(entityData.settings.udf_schema);
 
-      formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
+      const formItems = [].concat(udfSchema).concat(entityData.payment_page_items);
 
-      formItems.sort(function (a, b) {
+      formItems.sort((a, b) => {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
@@ -237,6 +257,7 @@ export default function (state = initialState, action) {
       entityData.receipt = receiptSettings;
 
       const storeState = {
+        ...initialState,
         paymentPageEntity: entityData,
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
       };
@@ -266,7 +287,7 @@ export default function (state = initialState, action) {
       } else {
         return {
           ...state,
-          isPageDirty: action.isPageDirty !== void 0 ? action.isPageDirty : true,
+          isPageDirty: action.isPageDirty !== undefined ? action.isPageDirty : true,
           paymentPageEntity: deepMerge(
             // Needed for settings
             state.paymentPageEntity,
@@ -306,6 +327,13 @@ export default function (state = initialState, action) {
         FORM_ITEMS: push(state.FORM_ITEMS, action.formItem), // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
       };
 
+    case REPLACE_IN_FORM_ITEMS:
+      return {
+        ...state,
+        isPageDirty: true,
+        FORM_ITEMS: action.formItems, // Position of items is updated before creating(/saving) the page, otherwise deleting a form item will creating inconsistency
+      };
+
     case MARK_DATA_SAVED:
       return {
         ...state,
@@ -343,7 +371,19 @@ export default function (state = initialState, action) {
         }),
       };
 
+    case SETTINGS_MODAL:
+      return {
+        ...state,
+        isSettingsOpened: action.isSettingsOpened,
+      };
+
+    case SHIPROCKET_MODAL:
+      return {
+        ...state,
+        isShiprocketOpened: action.isShiprocketOpened,
+      };
+
     default:
       return state;
   }
-}
+};

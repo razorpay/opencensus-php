@@ -1,19 +1,26 @@
+import React from 'react';
+import { connect } from 'react-redux';
 import CreatorModal from '../CreatorModal';
 import BaseForm from './BaseForm';
 import Alert from 'common/new-ui/Alert';
+import Button from 'common/new-ui/Button';
+import { setSettingsModal } from 'merchant/reducers/wysiwyg';
 
-export default function CreatorManager(_WrappedDisplayFieldComponent) {
+export default function CreatorManager(WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
-    state = { isBaseFormOpened: false, fieldSchema: null };
+    state = {
+      isBaseFormOpened: false,
+      fieldSchema: null,
+    };
 
-    closeBaseForm = _ => {
+    closeBaseForm = (_) => {
       this.setState({
         isBaseFormOpened: false,
         fieldSchema: null,
       });
     };
 
-    openBaseForm = intentSchema => {
+    openBaseForm = (intentSchema) => {
       const newState = {
         isBaseFormOpened: true,
       };
@@ -34,27 +41,28 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         onDeleteFormItem,
         onSubmitUDFField,
         checkoutOptions,
+        isShiprocket,
         ...restProps
       } = this.props;
 
-      let isFieldDeletable = true,
-        isFieldForcedRequired = false, // If so, then no option in dropdown to set the field optional.
-        isCheckoutOption = false;
+      let isFieldDeletable = true;
+      let isFieldForcedRequired = false; // If so, then no option in dropdown to set the field optional.
+      let isCheckoutOption = false;
 
       if (field) {
-        if (
-          [checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) >
-          -1
-        ) {
+        if ([checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) > -1) {
           isCheckoutOption = true;
           isFieldDeletable = false;
           isFieldForcedRequired = true; // Email and Phone cannot be made as Optional field
+        } else if (isShiprocket) {
+          isFieldDeletable = false;
+          isFieldForcedRequired = true;
         }
       }
 
       return (
         <div class="CreatorManager">
-          <_WrappedDisplayFieldComponent
+          <WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.openBaseForm}
             {...restProps}
@@ -70,6 +78,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               isFieldDeletable={isFieldDeletable}
               isFieldForcedRequired={isFieldForcedRequired}
               isCheckoutOption={isCheckoutOption}
+              isShiprocket={isShiprocket}
             />
           )}
         </div>
@@ -80,12 +89,15 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
   return HOC;
 }
 
+@connect(null, {
+  setSettingsModal,
+})
 class BaseFormModal extends React.PureComponent {
-  onSaveForm = formData => {
+  onSaveForm = (formData) => {
     this.props.onSubmitUDFField(
       formData,
       this.props.indexInRenderOrder,
-      this.props.isCheckoutOption
+      this.props.isCheckoutOption,
     );
     this.props.closeFormModal();
   };
@@ -93,6 +105,11 @@ class BaseFormModal extends React.PureComponent {
   onDeleteFormItem = () => {
     this.props.onDeleteFormItem(this.props.indexInRenderOrder);
     this.props.closeFormModal();
+  };
+
+  openPageSettings = () => {
+    this.props.closeFormModal();
+    this.props.setSettingsModal(true);
   };
 
   render() {
@@ -103,6 +120,7 @@ class BaseFormModal extends React.PureComponent {
       closeFormModal,
       isFieldDeletable,
       isFieldForcedRequired,
+      isShiprocket,
     } = this.props;
 
     return (
@@ -115,13 +133,25 @@ class BaseFormModal extends React.PureComponent {
           onSaveForm={this.onSaveForm}
           onDeleteField={isFieldDeletable ? this.onDeleteFormItem : undefined}
           isFieldForcedRequired={isFieldForcedRequired}
+          isShiprocket={isShiprocket}
         />
-        {!isFieldDeletable && (
-          <Alert.Warning>
-            <b>Mandatory</b> {field.name} field to be filled by customers. This
-            field cannot be deleted.
-          </Alert.Warning>
-        )}
+        {!isFieldDeletable ? (
+          isShiprocket ? (
+            <Alert.Warning>
+              <b>Mandatory</b> {field.title.toLowerCase()} field to be filled by customers and is
+              required to create orders on Shiprocket. To delete this, disable Shiprocket order
+              creation from{' '}
+              <Button.Transparent class="Button--Link" onClick={this.openPageSettings}>
+                Page Settings
+              </Button.Transparent>
+            </Alert.Warning>
+          ) : (
+            <Alert.Warning>
+              <b>Mandatory</b> {field.name} field to be filled by customers. This field cannot be
+              deleted.
+            </Alert.Warning>
+          )
+        ) : null}
       </CreatorModal>
     );
   }

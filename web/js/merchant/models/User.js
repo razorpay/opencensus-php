@@ -728,6 +728,10 @@ export default class User {
     return this.getExpStatus('pp_success_page');
   }
 
+  get isPPShiprocket() {
+    return this.getExpStatus('pp_shiprocket');
+  }
+
   get isPPDonationGoalTracker() {
     return this.getExpStatus('pp_donation_goal_tracker');
   }

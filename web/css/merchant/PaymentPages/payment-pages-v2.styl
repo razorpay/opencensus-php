@@ -421,6 +421,25 @@
     &.fade-out
       border: 3px solid #0B70E7
 
+  // shiprocket styles
+  .shiprocket-section
+    .Input-label
+      display: flex
+      align-items: center
+
+      img
+        margin-right: 2px
+      
+      .badge.bg-success
+        margin-left: 8px
+      
+    .Alert
+      margin-top: 12px
+
+  .Alert
+    color: #8A6D6B
+    border: 0px
+
 .PluginsAndAddOns
   margin: 15px auto
   @media (max-width: $screen-xs-max)
@@ -791,6 +810,9 @@
     border-radius: 2px
     cursor: pointer
 
+    &.default-cursor
+      cursor: auto
+
     .i
       position absolute
       top: 16px
@@ -862,6 +884,12 @@
     box-sizing: border-box
     border-radius: 2px
     padding: 8px 16px !important
+
+  .shiprocket-blank-preview
+    height: 360px
+    width: 100%
+    @media screen and (max-width: 767px)
+      display: none
     
 /* Overriding styles of UI-form */
 .payment-pages-v2 .UI-form
@@ -1060,8 +1088,8 @@
     @media (max-width: $screen-xs-max) 
       .i-info-outline // hiding info icon as on mobile no hover
         display: none
-
-  .bg-success
+  
+  .dropdown__trigger .bg-success
     background: #1F890E
     border-radius: 2px
     font-weight: bold
@@ -1325,3 +1353,45 @@
 .paymentpage-container-goal-tracker.goal-tracker--bottom-sheet
   label
     margin-bottom: 8px
+
+// try to mimic some of context.confirm modal's styles
+.Modal-container--Paymentpage-shiprocket-confirm
+  width: 325px
+  top: 300px !important
+  z-index: 5
+
+  .modal-header
+    padding: 24px 24px 0
+    border-bottom: 0
+
+    .modal-title
+      font-size: 18px
+      font-weight: bold
+      line-height: 1em
+
+  .modal-body
+    padding: 16px 24px 24px
+
+  .Alert
+    color: #8a6d6b
+    border: 0px
+    margin-top: 12px
+    margin-bottom: 24px
+    padding: 8px
+
+  .Modal__actions 
+    & > .btn + .btn
+      margin-left: 4%
+
+    & > .btn
+      width: 48%
+
+    .btn-outline
+      &:hover, &:focus
+        color: #528ff0
+
+.Modal-container--Paymentpage-shiprocket-fields-preview
+  transform: none !important
+
+  .UI-form
+    padding: 0px 30px 24px

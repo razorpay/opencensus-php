@@ -381,6 +381,23 @@ export default class PaymentPagesV3Entity extends React.Component {
                     />
                   )}
                 />
+                {paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket ===
+                  '1' && (
+                  <EntityDetailRow
+                    label="Shiprocket order creation"
+                    value={() => (
+                      <div>
+                        <div class="status-label label label-success">Enabled</div>
+                        <Link
+                          style={{ marginLeft: 12 }}
+                          to={`/paymentpages/${paymentPageEntity.id}/edit?modal=disableShiprocket`}
+                        >
+                          Disable
+                        </Link>
+                      </div>
+                    )}
+                  />
+                )}
               </div>
 
               <div class="item-details">

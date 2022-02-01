@@ -236,7 +236,8 @@ class Service extends Base\Service
             'remove_activation_progressbar',
             'rx_payout_link_workflow',
             'rx_ca_programmatic_engagement',
-            'capital_xca_pay_now'
+            'capital_xca_pay_now',
+            'pp_shiprocket'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

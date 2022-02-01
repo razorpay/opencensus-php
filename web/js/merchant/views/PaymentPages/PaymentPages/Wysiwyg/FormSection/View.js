@@ -14,7 +14,7 @@ import {
   reorderFormItems,
   updateReceiptDetails,
 } from 'merchant/reducers/wysiwyg';
-import { constructFieldSchema } from './UDF/helpers';
+import { checkIsShiprocketField, constructFieldSchema } from './UDF/helpers';
 import { constructAmountField } from './Amount/helpers';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
 
@@ -39,6 +39,7 @@ class SortableFormItemsList extends React.Component {
       onDeleteAmountItem,
       onSubmitUDFField,
       onSubmitAmountField,
+      isShiprocketSetting,
     } = this.props;
 
     // disable sorting in mobile view
@@ -77,6 +78,7 @@ class SortableFormItemsList extends React.Component {
                 onSubmitUDFField={onSubmitUDFField}
                 validateSameTitleExists={validateSameTitleExists}
                 disabled={isSortingDisabled}
+                isShiprocket={checkIsShiprocketField(isShiprocketSetting, fi.name)}
               />
             );
           }
@@ -314,9 +316,14 @@ export default class View extends React.PureComponent {
           onSubmitAmountField={this.onSubmitAmountField}
           onSubmitUDFField={this.onSubmitUDFField}
           validateSameTitleExists={this.validateSameTitleExists}
+          isShiprocketSetting={
+            paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1'
+          }
         />
 
-        <div class="Field" style={{ margin: '32px 0 0' }}>
+        {this.props.isShiprocketOpened && <div class="shiprocket-blank-preview" />}
+
+        <div class="Field Field-add-new" style={{ margin: '32px 0 0' }}>
           <div class="Field-label" style={{ opacity: 0.6 }}>
             Add new
           </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
@@ -98,6 +97,7 @@ export default class BaseForm extends React.PureComponent {
       onCloseForm,
       onDeleteField,
       isFieldForcedRequired,
+      isShiprocket,
     } = this.props;
 
     const { isRequired, hasDescription, disableSubmit, mirrorDisplayTitle } = this.state;
@@ -131,6 +131,7 @@ export default class BaseForm extends React.PureComponent {
           placeholder="Enter field label"
           onInput={this.onInputTitle}
           autoRender
+          disabled={isShiprocket}
           validator={(val) => {
             if (!val) {
               return 'Field title is required';

@@ -5,13 +5,16 @@ import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Alert from 'common/new-ui/Alert';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { trackPageSettingsData } from '../../ga';
 import track from '../../Wysiwyg/track';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 import PluginsAndAddOns from './PluginsAndAddOns';
-export default class extends React.Component {
+import ShiprocketImage from '../../../../../../../css/assets/payment_pages/shiprocket.svg';
+
+export default class PaymentPageSettings extends React.Component {
   state = this.initState();
 
   initState() {
@@ -108,7 +111,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { handleClose, isTestMode, paymentPageEntity } = this.props;
+    const { handleClose, isTestMode, paymentPageEntity, isShiprocket, isPPShiprocket } = this.props;
 
     const {
       slug,
@@ -136,6 +139,7 @@ export default class extends React.Component {
       paymentPageEntity.settings &&
       (paymentPageEntity.settings.pp_ga_pixel_tracking_id ||
         paymentPageEntity.settings.pp_fb_pixel_tracking_id);
+
     const PluginsBtn = (
       <Button.Transparent
         type="button"
@@ -311,9 +315,7 @@ export default class extends React.Component {
                   </div>
                 </div>
                 <div class="settings-section">
-                  <div class="Input-label">
-                    Plugins and Add ons <span class="badge bg-success hidden-xs m-r">New</span>
-                  </div>
+                  <div class="Input-label">Plugins and Add ons</div>
                   <div class="cta-section">
                     <div class="body">
                       {isPluginConfigured ? (
@@ -329,6 +331,42 @@ export default class extends React.Component {
                     <span class="action">{PluginsBtn}</span>
                   </div>
                 </div>
+                {isPPShiprocket && (
+                  <div class="settings-section shiprocket-section">
+                    <div class="Input-label">
+                      <img src={ShiprocketImage} alt="shiprocket-logo" />
+                      Create orders on Shiprocket{' '}
+                      <span class="badge bg-success hidden-xs m-r">New</span>
+                    </div>
+                    <div class="cta-section">
+                      <div class="body">
+                        After your customers pay on this page, automatically create orders on
+                        Shiprocket
+                      </div>
+                      <span class="action">
+                        <Button.Transparent
+                          type="button"
+                          class="Button--Link"
+                          onClick={this.props.handleShiprocket}
+                        >
+                          <b>{!isShiprocket ? 'Enable' : 'Disable'}</b>
+                        </Button.Transparent>
+                      </span>
+                    </div>
+                    <Alert.Warning>
+                      Note - you also need to add <b>Razorpay Payment pages</b> channel on your{' '}
+                      <a href="https://app.shiprocket.in/register" target="_blank" rel="noreferrer">
+                        Shiprocket dashboard <i className="i i-external-link" />
+                      </a>
+                    </Alert.Warning>
+                    <div>
+                      Need help? Refer to our {/* TODO: Add real link */}
+                      <a href="#" target="_blank" rel="noreferrer">
+                        Shiprocket integration docs <i className="i i-external-link" />
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
               <footer>
                 <Button.Transparent

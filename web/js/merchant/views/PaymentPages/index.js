@@ -15,6 +15,7 @@ import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
+import ShiprocketBanner from 'merchant/components/Announcements/ShiprocketBanner/ShiprocketBanner';
 import { getItem } from 'common/utils/localStorage';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 
@@ -36,6 +37,7 @@ export default class PaymentPagesContainer extends Component {
     return (
       <>
         <div className="banner-container">
+          {user.isPPShiprocket && <ShiprocketBanner userId={user?.current} />}
           <DashboardBanner />
           <ShowWhen
             additionalCondition={(currentUser) =>
