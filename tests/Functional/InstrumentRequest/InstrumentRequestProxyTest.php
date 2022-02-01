@@ -4,15 +4,21 @@ namespace RZP\Tests\Functional;
 
 
 use GuzzleHttp\Psr7\Response;
+use RZP\Models\Admin\Admin\Admin\Entity;
 use RZP\Services\TerminalsService;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Admin\Permission\Repository;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 
 class InstrumentRequestProxyTest extends TestCase
 {
     use TerminalTrait;
     use RequestResponseFlowTrait;
+    use HeimdallTrait;
+    use DbEntityFetchTrait;
 
     protected $terminalsServiceMock;
 
@@ -612,6 +618,87 @@ class InstrumentRequestProxyTest extends TestCase
         }
 
     }
+
+    public function testKamAxisAdminDashboardFetchMerchantInstrument()
+    {
+        $this->fixtures->create('merchant', [
+            'id'    => '10000000000001',
+        ]);
+
+        $testCase = [
+            self::REQUEST       =>  [
+                'method'  => 'POST',
+                'url'     => '/merchant_instrument_request_fetch?count=50',
+                'content' => [
+                    'merchant_ids' => [
+                        "10000000000000",
+                        "10000000000001"
+                    ],
+                    'start_time'   => '123',
+                    'end_time'     => '456',
+                    'has_special_pricing_request' => true,
+                ],
+            ],
+            self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/composite_instrument_request',
+            self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+            self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => [
+                    'merchant_ids' => ["10000000000001"],
+                    'start_time'   => '123',
+                    'end_time'     => '456',
+                    'count'        => 50,
+                    'skip'         => 0,
+                    'has_special_pricing_request' => '1',
+            ],
+        ];
+
+        $this->org = $this->fixtures->create('org', [
+            'id'                      => Org::AXIS_ORG_ID,
+            'email'                   => 'admin@axis.com',
+            'from_email'              => 'noreplay@axis.com',
+            'cross_org_access'        => true,
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000001', ['org_id' => Org::AXIS_ORG_ID]);
+
+        $this->org = $this->getDbEntityById('org', Org::AXIS_ORG_ID);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.Org::AXIS_ORG_ID);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->testData[__FUNCTION__]['response'] = ['content' => ['testKey' => 'testValue']];
+
+        $this->testData[__FUNCTION__]['request'] = $testCase[self::REQUEST];
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method, $additionalOptions = [], $additionalHeaders) use ($testCase) {
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE], json_decode($content, true));
+
+            $this->assertArrayHasKey('X-Dashboard-Admin-Email', $additionalHeaders);
+
+            $response = new \Requests_Response;
+
+            $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+            return $response;
+        }, 1);
+
+        $this->startTest();
+    }
+
 
     public function testKamAdminDashboardBulkCreateMerchantInstrumentsV2()
     {

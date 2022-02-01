@@ -7,6 +7,8 @@ use GuzzleHttp\Client;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Http\Controllers\InstrumentRequestController;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -22,6 +24,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 class TerminalsService
 {
     protected $app;
+
+    protected $auth;
 
     protected $config;
 
@@ -148,6 +152,10 @@ class TerminalsService
         $this->trace = $this->app['trace'];
 
         $this->request = $app['request'];
+
+        $this->auth = $this->app['basicauth'];
+
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
     }
 
     public function migrateTerminal(Terminal\Entity $terminal): array
@@ -356,6 +364,9 @@ class TerminalsService
 
     public function getMerchantInstruments(array $input, array $headers): array
     {
+        $dashboardOrgId = $this->auth->getAdmin()->getPublicOrgId();
+
+        $input = $this->validateMIDs($input,$dashboardOrgId);
         $merchantIds = $input['merchant_ids'];
 
        if ($this->areMerchantIdsAccessible($merchantIds))
@@ -377,6 +388,35 @@ class TerminalsService
            return [];
        }
 
+    }
+
+    public function validateMIDs($input, string $dashboardOrgId): array
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        if ($dashboardOrgId === "" || $dashboardOrgId === "org_".Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return $input;
+        }
+
+        $input['ids'] = $input['merchant_ids'];
+        unset($input['merchant_ids']);
+
+        $merchantsInfo = (new Merchant\Service())->getMerchantBulk($input);
+
+        for ($i=0; $i< sizeof($merchantsInfo['items']); $i++)
+        {
+            $merchant = $merchantsInfo['items'][$i];
+            if ("org_".$merchant['org_id'] !== $dashboardOrgId)
+            {
+                unset($merchantIds[$i]);
+            }
+        }
+
+        $input['merchant_ids'] = array_values($merchantIds);
+        unset($input['ids']);
+
+        return $input;
     }
 
     private function areMerchantIdsAccessible(array $merchantIds):bool

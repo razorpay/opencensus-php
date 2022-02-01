@@ -4921,7 +4921,7 @@ class Service extends Base\Service
     {
         $ids = $input["ids"];
 
-        $merchants = $this->repo->merchant->findMany($ids, [Entity::ID, Entity::NAME, Entity::WEBSITE]);
+        $merchants = $this->repo->merchant->findMany($ids, [Entity::ID, Entity::NAME, Entity::WEBSITE, Entity::ORG_ID]);
 
         $data = $merchants->toArrayPublic();
 
