@@ -320,8 +320,8 @@ export const SHIPROCKET_FORM_ITEMS = [
     type: 'string',
   },
   {
-    name: 'shipping_address',
-    title: 'Shipping address',
+    name: 'address',
+    title: 'Address',
     required: true,
     type: 'string',
     options: { cmp: 'textarea' },
