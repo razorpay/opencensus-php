@@ -152,6 +152,15 @@ class Entity extends Base\PublicEntity
     const PP_FB_EVENT_INITIATE_PAYMENT_ENABLED = 'pp_fb_event_initiate_payment_enabled';
     const PP_FB_EVENT_PAYMENT_COMPLETE         = 'pp_fb_event_payment_complete_enabled';
 
+    const PARTNER_WEBHOOK_SETTINGS              = Constants::PARTNER_WEBHOOK_SETTINGS_KEY;
+    const PARTNER_SHIPROCKET                    = Constants::PARTNER_SHIPROCKET;
+
+    // shiprocket specific udfs name
+    const ADDRESS                               = 'address';
+    const CITY                                  = 'city';
+    const STATE                                 = 'state';
+    const PINCODE                               = 'pincode';
+
     const SETTINGS_KEYS                = [
         self::THEME,
         self::UDF_SCHEMA,
@@ -172,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED,
         self::PP_FB_EVENT_PAYMENT_COMPLETE,
         self::GOAL_TRACKER,
+        self::PARTNER_WEBHOOK_SETTINGS,
     ];
 
     const INVOICE_DETAILS_KEYS          = [

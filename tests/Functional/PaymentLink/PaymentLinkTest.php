@@ -2148,7 +2148,124 @@ class PaymentLinkTest extends TestCase
         Bus::assertNotDispatched(PaymentPageProcessor::class);
     }
 
+    /**
+     * @group pp_shiprocket
+     */
+    public function testCreatePaymentPageWithShiprocketEnabledWithoutShiprocketFieldShouldThrowError()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testCreatePaymentPageWithShiprocketDisabledWithoutShiprocketFieldShouldPass()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testCreatePaymentPageWithShiprocketEnabledWithShiprocketFieldShouldPass()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testCreatePaymentPageWithPartnerSettingsAndInvalidPartnerShouldThrowError()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testCreatePaymentPageWithPartnerSettingsAndInvalidPartnerValueShouldThrowError()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testUpdatePaymentPageWithShiprocketEnabledWithoutShiprocketFieldShouldThrowError()
+    {
+        $this->setupPartnerWebhookSettingTestCase([
+            Entity::PARTNER_SHIPROCKET => "1",
+        ], false);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testUpdatePaymentPageWithShiprocketDisabledWithoutShiprocketFieldShouldPass()
+    {
+        $this->setupPartnerWebhookSettingTestCase([
+            Entity::PARTNER_SHIPROCKET => "0",
+        ], false);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testUpdatePaymentPageWithShiprocketEnabledWithShiprocketFieldShouldPass()
+    {
+        $this->setupPartnerWebhookSettingTestCase([
+            Entity::PARTNER_SHIPROCKET => "1",
+        ]);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testUpdatePaymentPageWithPartnerSettingsAndInvalidPartnerShouldThrowError()
+    {
+        $this->setupPartnerWebhookSettingTestCase([
+            Entity::PARTNER_SHIPROCKET => "1",
+        ]);
+
+        $this->startTest();
+    }
+
+    /**
+     * @group pp_shiprocket
+     */
+    public function testUpdatePaymentPageWithPartnerSettingsAndInvalidPartnerValueShouldThrowError()
+    {
+        $this->setupPartnerWebhookSettingTestCase([
+            Entity::PARTNER_SHIPROCKET => "1",
+        ]);
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
+
+    protected function setupPartnerWebhookSettingTestCase(array $webhookSettings, bool $validUdf = true)
+    {
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, ['view_type' => 'page']);
+        $this->createPaymentPageItem();
+        $settings = [
+            Entity::PARTNER_WEBHOOK_SETTINGS    => $webhookSettings,
+            Entity::UDF_SCHEMA                  => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+        ];
+
+        if ($validUdf === false)
+        {
+            $settings[Entity::UDF_SCHEMA ] = "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":6}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":7}}]";
+        }
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+    }
 
     /**
      * @param array $experimentMap

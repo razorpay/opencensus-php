@@ -64,6 +64,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_PAYMENT_COMPLETE         => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::GOAL_TRACKER                         => 'nullable|array',
+        Entity::SETTINGS . '.' . Entity::PARTNER_WEBHOOK_SETTINGS             => 'nullable|array',
         Entity::PAYMENT_PAGE_ITEMS => 'required|sequential_array|min:1',
     ];
 
@@ -97,6 +98,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PP_FB_EVENT_PAYMENT_COMPLETE         => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::GOAL_TRACKER                         => 'nullable|array',
+        Entity::SETTINGS . '.' . Entity::PARTNER_WEBHOOK_SETTINGS             => 'nullable|array',
 
         Entity::PAYMENT_PAGE_ITEMS => 'sometimes|sequential_array|min:1|max:25',
     ];
@@ -139,12 +141,14 @@ class Validator extends Base\Validator
         Entity::SETTINGS,
         Entity::PAYMENT_PAGE_ITEMS,
         Entity::GOAL_TRACKER,
+        Entity::PARTNER_WEBHOOK_SETTINGS,
     ];
 
     protected static $editValidators = [
         Entity::SETTINGS,
         'min_amount', // Since currency will not be available in edit PP sending currency from custom func.
         Entity::GOAL_TRACKER,
+        Entity::PARTNER_WEBHOOK_SETTINGS,
     ];
 
     protected static $createOrderRules = [
@@ -218,6 +222,25 @@ class Validator extends Base\Validator
         Entity::GOAL_AMOUNT             => 'mysql_unsigned_int|min_amount',
         Entity::DISPLAY_DAYS_LEFT       => 'string|in:0,1',
         Entity::DISPLAY_SUPPORTER_COUNT => 'string|in:0,1',
+    ];
+
+    /**
+     * Rules to validate partner webhook settings
+     * @var string[]
+     */
+    protected static $partnerWebhookSettingsRules = [
+        Entity::PARTNER_SHIPROCKET  => 'string|in:0,1'
+    ];
+
+    /**
+     * @var array fields for shiprocket
+     */
+    protected static $partnerShiprocketUdfs = [
+        Entity::NAME,
+        Entity::CITY,
+        Entity::STATE,
+        Entity::PINCODE,
+        Entity::ADDRESS,
     ];
 
     /**
@@ -802,5 +825,94 @@ class Validator extends Base\Validator
 
             throw new BadRequestValidationFailureException("Handle cannot be opened on this url", null, $data);
         }
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function validatePartnerWebhookSettings(array $input)
+    {
+        $partnerWebhooksettings = array_get($input, Entity::SETTINGS . '.' . Entity::PARTNER_WEBHOOK_SETTINGS, []);
+
+        if (count($partnerWebhooksettings) <= 0) {
+            return;
+        }
+
+        $this->validateInput(camel_case(strtolower(Entity::PARTNER_WEBHOOK_SETTINGS)), $partnerWebhooksettings);
+
+        $udfSchemaStr = array_get($input, Entity::SETTINGS . '.' . Entity::UDF_SCHEMA, "{}");
+
+        $this->validatePartnerSpecificUdfs($partnerWebhooksettings, $udfSchemaStr);
+    }
+
+    /**
+     * @param array  $partnerWebhooksettings
+     * @param string $udfSchemaStr
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function validatePartnerSpecificUdfs(array $partnerWebhooksettings, string $udfSchemaStr)
+    {
+        $parsedUdfSchema = json_decode($udfSchemaStr, true);
+
+        $udfSchemaNames = collect($parsedUdfSchema)
+            ->reduce(function ($carrier, $item) {
+                $carrier[] = $item['name'];
+
+                return $carrier;
+            }, []);
+
+        foreach ($partnerWebhooksettings as $partner => $enabledString)
+        {
+            if ($enabledString !== "1")
+            {
+                continue;
+            }
+
+            $partnerFields = $this->getPartnerSpecificFields($partner);
+
+            if (empty($partnerFields) === true)
+            {
+                continue;
+            }
+
+            $commonArray = array_intersect($udfSchemaNames, $partnerFields);
+
+            if (count($commonArray) !== count($partnerFields))
+            {
+                $message = implode(", ", $partnerFields)
+                    . ' Fields should be added for '
+                    . str_replace("_", " ", $partner);
+
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    null,
+                    null,
+                    $message);
+            }
+        }
+    }
+
+    /**
+     * @param string $partner
+     *
+     * @return array
+     */
+    private function getPartnerSpecificFields(string $partner): array
+    {
+        $names = [];
+
+        $partnerVar = camel_case(strtolower($partner)) . "Udfs";
+
+        if (isset(static::$$partnerVar) !== true)
+        {
+            return $names;
+        }
+
+        return static::$$partnerVar;
     }
 }
