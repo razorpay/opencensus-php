@@ -15,6 +15,15 @@ class PayLater
     const HDFC         = 'hdfc';
     const KKBK         = 'kkbk';
 
+    /** @var int[] The minimum order/transaction amount in paisa for each paylater provider. */
+    public const MIN_AMOUNTS = [
+        self::GETSIMPL => 100,    // Rs. 1
+        self::LAZYPAY  => 100,    // Rs. 1
+        self::HDFC     => 100000, // Rs. 1000
+        self::ICICI    => 100,    // Rs. 1
+        self::KKBK     => 200000, // Rs. 2000
+    ];
+
     public static $fullName = [
         self::EPAYLATER    => 'ePayLater',
         self::GETSIMPL     => 'getsimpl',

@@ -23,6 +23,22 @@ class CardlessEmi
 
     const HCIN_IFSC = 'HCIN';
 
+    /** @var int[] The minimum order/transaction amount in paisa for each cardless emi provider. */
+    public const MIN_AMOUNTS = [
+        self::EARLYSALARY  => 300000, // Rs. 3000
+        self::ZESTMONEY    => 90000,  // Rs. 900
+        self::FLEXMONEY    => 300000, // Rs. 3000
+        self::WALNUT369    => 9900,   // Rs. 99
+        self::SEZZLE       => 20000,  // Rs. 200
+        self::BARB         => 500000, // Rs. 5000
+        self::HDFC         => 500000, // Rs. 5000
+        self::KKBK         => 300000, // Rs. 3000
+        self::ICIC         => 700000, // Rs. 7000
+        self::IDFB         => 500000, // Rs. 5000
+        self::FDRL         => 500000, // Rs. 5000
+        self::HCIN         => 50000,  // Rs. 500
+    ];
+
     public static $fullName = [
         self::EARLYSALARY  => 'EarlySalary',
         self::ZESTMONEY    => 'ZestMoney',

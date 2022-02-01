@@ -9,6 +9,8 @@ use RZP\Models\Merchant\Methods\Core as MethodsCore;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Merchant\Checkout;
 use RZP\Models\Offer\Core as OfferCore;
+use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Payment\Processor\PayLater;
 
 class Service extends Base\Service
 {
@@ -68,6 +70,8 @@ class Service extends Base\Service
         if ($this->merchant->methods->isCardlessEmiEnabled() === true)
         {
             $providers = (new MethodsCore())->getProviders($this->merchant, PaymentMethod::CARDLESS_EMI);
+
+            $providers = $this->formatProviders($providers, CardlessEmi::MIN_AMOUNTS);
         }
 
         $data['entities']['cardless_emi']['providers'] = $providers;
@@ -97,6 +101,8 @@ class Service extends Base\Service
         if ($this->merchant->methods->isPayLaterEnabled() === true)
         {
             $providers = (new MethodsCore())->getProviders($this->merchant, PaymentMethod::PAYLATER);
+
+            $providers = $this->formatProviders($providers, PayLater::MIN_AMOUNTS);
         }
 
         $data['entities']['paylater']['providers'] = $providers;
@@ -120,5 +126,27 @@ class Service extends Base\Service
 
         // Base/Service fetches merchant from auth. Removing this gives us null value error on $this->merchant.
         $this->auth->setMerchant($this->merchant);
+    }
+
+    /**
+     * Format CardlessEmi & PayLater providers response.
+     *
+     * @param array $providers  CardlessEmi (or) PayLater providers
+     * @param array $minAmounts Minimum order/transaction amount for each provider
+     *
+     * @return array
+     */
+    protected function formatProviders(array $providers, array $minAmounts): array
+    {
+        $response = [];
+
+        foreach ($providers as $provider => $enabled) {
+            $response[$provider] = [
+                'enabled' => $enabled,
+                'min_amount' => $minAmounts[$provider] ?? null,
+            ];
+        }
+
+        return $response;
     }
 }

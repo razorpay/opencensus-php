@@ -19,6 +19,80 @@ class AffordabilityTest extends TestCase
 
     protected $testDataFilePath = __DIR__ . '/helpers/AffordabilityTestData.php';
 
+    private $expectedCardlessEmiResponse = [
+        'earlysalary' => [
+            'enabled' => true,
+            'min_amount' => 300000,
+        ],
+        'zestmoney' => [
+            'enabled' => true,
+            'min_amount' => 90000,
+        ],
+        'barb' => [
+            'enabled' => true,
+            'min_amount' => 500000,
+        ],
+        'hdfc' => [
+            'enabled' => true,
+            'min_amount' => 500000,
+        ],
+        'kkbk' => [
+            'enabled' => true,
+            'min_amount' => 300000,
+        ],
+        'fdrl' => [
+            'enabled' => true,
+            'min_amount' => 500000,
+        ],
+        'idfb' => [
+            'enabled' => true,
+            'min_amount' => 500000,
+        ],
+        'icic' => [
+            'enabled' => true,
+            'min_amount' => 700000,
+        ],
+        'hcin' => [
+            'enabled' => true,
+            'min_amount' => 50000,
+        ],
+        'walnut369' => [
+            'enabled' => true,
+            'min_amount' => 9900,
+        ],
+        'sezzle' => [
+            'enabled' => true,
+            'min_amount' => 20000,
+        ],
+    ];
+
+    private $expectedPaylaterResponse = [
+        'epaylater' => [
+            'enabled' => true,
+            'min_amount' => null,
+        ],
+        'getsimpl' => [
+            'enabled' => true,
+            'min_amount' => 100,
+        ],
+        'icic' => [
+            'enabled' => true,
+            'min_amount' => 100,
+        ],
+        'hdfc' => [
+            'enabled' => true,
+            'min_amount' => 100000,
+        ],
+        'kkbk' => [
+            'enabled' => true,
+            'min_amount' => 200000,
+        ],
+        'lazypay' => [
+            'enabled' => true,
+            'min_amount' => 100,
+        ],
+    ];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -46,17 +120,8 @@ class AffordabilityTest extends TestCase
         $this->fixtures->merchant->enablePayLater('10000000000000');
         $response = $this->startTest();
 
-        $expectedResponse = [
-            'epaylater' => true,
-            'getsimpl' => true,
-            'icic' => true,
-            'hdfc' => true,
-            'kkbk' => true,
-            'lazypay' => true,
-        ];
-
         $this->assertTrue($response['enabled']);
-        $this->assertEquals($response['entities']['paylater']['providers'], $expectedResponse);
+        $this->assertEquals($response['entities']['paylater']['providers'], $this->expectedPaylaterResponse);
     }
 
     public function testEmiOnAffordabilityWidget()
@@ -97,22 +162,8 @@ class AffordabilityTest extends TestCase
 
         $response = $this->startTest();
 
-        $expectedResponse = [
-            'earlysalary' => true,
-            'zestmoney' => true,
-            'barb' => true,
-            'hdfc' => true,
-            'kkbk' => true,
-            'fdrl' => true,
-            'idfb' => true,
-            'icic' => true,
-            'hcin' => true,
-            'walnut369' => true,
-            'sezzle' => true,
-        ];
-
         $this->assertTrue($response['enabled']);
-        $this->assertEquals($response['entities']['cardless_emi']['providers'], $expectedResponse);
+        $this->assertEquals($response['entities']['cardless_emi']['providers'], $this->expectedCardlessEmiResponse);
     }
 
     public function testAffordabilityWidgetSuite()
@@ -133,29 +184,6 @@ class AffordabilityTest extends TestCase
 
         $response = $this->startTest();
 
-        $expectedPaylaterResponse = [
-            'epaylater' => true,
-            'getsimpl' => true,
-            'icic' => true,
-            'hdfc' => true,
-            'kkbk' => true,
-            'lazypay' => true,
-        ];
-
-        $expectedCardlessEmiResponse = [
-            'earlysalary' => true,
-            'zestmoney' => true,
-            'barb' => true,
-            'hdfc' => true,
-            'kkbk' => true,
-            'fdrl' => true,
-            'idfb' => true,
-            'icic' => true,
-            'hcin' => true,
-            'walnut369' => true,
-            'sezzle' => true,
-        ];
-
         $expectedEmiResponse = [
             'HDFC' => [
                 [
@@ -169,9 +197,9 @@ class AffordabilityTest extends TestCase
         ];
 
         $this->assertTrue($response['enabled']);
-        $this->assertEquals($response['entities']['paylater']['providers'], $expectedPaylaterResponse);
+        $this->assertEquals($response['entities']['paylater']['providers'], $this->expectedPaylaterResponse);
         $this->assertEquals($response['entities']['emi']['items'], $expectedEmiResponse);
-        $this->assertEquals($response['entities']['cardless_emi']['providers'], $expectedCardlessEmiResponse);
+        $this->assertEquals($response['entities']['cardless_emi']['providers'], $this->expectedCardlessEmiResponse);
     }
 
     public function testFetchedOffersAreSortedByPopularity(): void

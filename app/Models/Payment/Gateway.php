@@ -2978,6 +2978,8 @@ class Gateway
 
     /**
      * gateway will not be returned from preferences if the payment amount is less than the amount in this array
+     * @TODO: Replace paylater value with PayLater::MIN_AMOUNTS & cardless_emi value with CardlessEmi::MIN_AMOUNTS
+     *        whenever product folks give a go-ahead.
      *
      * @var array
      */

@@ -53,13 +53,32 @@ return [
                 "enabled" => true,
                 "entities" => [
                     "paylater" => [
-                        "providers" => [
-                            'epaylater' => true,
-                            'getsimpl' => true,
-                            'icic' => true,
-                            'hdfc' => true,
-                            'lazypay' => true,
-                        ]
+                        'providers' => [
+                            'epaylater' => [
+                                'enabled' => true,
+                                'min_amount' => null,
+                            ],
+                            'getsimpl' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                            'icic' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                            'hdfc' => [
+                                'enabled' => true,
+                                'min_amount' => 100000,
+                            ],
+                            'kkbk' => [
+                                'enabled' => true,
+                                'min_amount' => 200000,
+                            ],
+                            'lazypay' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                        ],
                     ],
                 ]
             ]
@@ -134,14 +153,32 @@ return [
                 "enabled" => true,
                 "entities" => [
                     "paylater" => [
-                        "providers" => [
-                            'epaylater' => true,
-                            'getsimpl' => true,
-                            'icic' => true,
-                            'hdfc' => true,
-                            'kkbk' => true,
-                            'lazypay' => true,
-                        ]
+                        'providers' => [
+                            'epaylater' => [
+                                'enabled' => true,
+                                'min_amount' => null,
+                            ],
+                            'getsimpl' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                            'icic' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                            'hdfc' => [
+                                'enabled' => true,
+                                'min_amount' => 100000,
+                            ],
+                            'kkbk' => [
+                                'enabled' => true,
+                                'min_amount' => 200000,
+                            ],
+                            'lazypay' => [
+                                'enabled' => true,
+                                'min_amount' => 100,
+                            ],
+                        ],
                     ],
                     "emi" => [
 
