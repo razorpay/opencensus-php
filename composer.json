@@ -18,6 +18,7 @@
         "php": ">=7.0",
         "psr/log": "^1.0",
         "psr/cache": "^1.0",
+        "aws/aws-sdk-php": "^3.209",
         "cache/adapter-common": "^1.0"
     },
     "require-dev": {
