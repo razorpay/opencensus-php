@@ -904,6 +904,7 @@ class Service extends Base\Service
                 'contentParams'     => [
                     'subMerchantName'   => $subMerchant->getName(),
                     'partnerName'       => $merchant->getName(),
+                    'subMerchantEmail'  => $subMerchant->getEmail(),
                     'resetPasswordLink' => $shortPasswordResetLink
                 ]
             ];
