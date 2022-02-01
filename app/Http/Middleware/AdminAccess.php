@@ -265,7 +265,12 @@ class AdminAccess
 
         // 1. Get all the permissions by all the roles first
 
-        $adminPermissions = $admin->getPermissionsList();
+        $adminRolesPermissions = $admin->getRolesAndPermissionsList();
+        $adminRoles = $adminRolesPermissions['roles'];
+        $adminPermissions = $adminRolesPermissions['permissions'];
+
+        // set admin roles in passport
+        $this->ba->setPassportRoles($adminRoles);
 
         // 2. Check if the specified permissions exist in our
         // generated white list

@@ -173,13 +173,14 @@ class SplitzController extends Controller
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+        $headers[SplitzService::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
+        $headers[SplitzService::X_USER_EMAIL] = $this->ba->getAdmin()->getEmail();
 
         $options = [
             'timeout' => $this->requestTimeout,
-            'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters, 'headers' => $headers]);
+        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters, 'options' => $options]);
 
         return [
             'url'     => $url,

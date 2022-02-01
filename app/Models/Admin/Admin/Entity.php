@@ -634,4 +634,24 @@ class Entity extends Base\Entity
         return $this->hasPermissionOrFail($routePermission);
     }
 
+    public function getRolesAndPermissionsList(): array
+    {
+        $permissions = [];
+        $roleNames = [];
+
+        $roles = $this->roles()->with('permissions')->get();
+
+        // Create a list of all the permissions from all the roles
+        foreach ($roles as $role) {
+            $roleNames[] = $role['name'];
+            foreach ($role->permissions->toArray() as $permission) {
+                $permissions[] = $permission['name'];
+            }
+        }
+
+        $permissions = array_unique($permissions);
+        $roleNames = array_unique($roleNames);
+
+        return ['roles' => $roleNames, 'permissions' => $permissions];
+    }
 }

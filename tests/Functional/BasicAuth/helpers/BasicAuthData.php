@@ -99,6 +99,7 @@ return [
                 ],
             ],
             'credential' => [],
+            'roles' => [],
         ],
     ],
 
@@ -129,6 +130,7 @@ return [
                 ],
             ],
             'credential' => [],
+            'roles' => [],
         ],
     ],
 
@@ -159,6 +161,7 @@ return [
                 ],
             ],
             'credential' => [],
+            'roles' => [],
         ],
     ],
 
@@ -817,6 +820,7 @@ return [
                 ],
             ],
             'credential' => [],
+            'roles' => [],
         ],
     ],
 

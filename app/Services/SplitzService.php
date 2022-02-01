@@ -10,10 +10,14 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use RZP\Http\BasicAuth\BasicAuth;
 
 class SplitzService extends Base\Service
 {
     const CONTENT_TYPE_JSON = 'application/json';
+
+    const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+    const X_USER_EMAIL      = 'X-User-Email';
 
     const EVALUATE_URL              = 'twirp/rzp.splitz.evaluate.v1.EvaluateAPI/Evaluate';
     const CREATE_SEGMENT_URL        = '/twirp/rzp.splitz.segment.v1.SegmentAPI/Create';
@@ -55,6 +59,11 @@ class SplitzService extends Base\Service
 
     protected $env;
 
+    /**
+     * @var BasicAuth
+     */
+    protected $ba;
+
     public function __construct()
     {
         $app                  = App::getFacadeRoot();
@@ -65,6 +74,7 @@ class SplitzService extends Base\Service
         $this->key            = $splitzConfig['username'];
         $this->secret         = $splitzConfig['secret'];
         $this->requestTimeout = $splitzConfig['request_timeout'];
+        $this->ba             = app('basicauth');
     }
 
     public function createSegment($preSignedUrl, $segmentName)
@@ -116,13 +126,14 @@ class SplitzService extends Base\Service
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+        $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
 
         $options = [
             'timeout' => $this->requestTimeout,
             'auth'    => [$this->key, $this->secret],
         ];
 
-        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters, 'headers' => $headers]);
+        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters]);
 
         return [
             'url'     => $url,
@@ -200,6 +211,8 @@ class SplitzService extends Base\Service
     public function bulkCallsToSplitz($input)
     {
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+        $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
+
 
         $options = [
             'timeout' => $this->requestTimeout,
