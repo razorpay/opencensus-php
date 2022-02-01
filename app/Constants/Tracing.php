@@ -28,6 +28,9 @@ class Tracing
     public static function getRoutesToInclude(): array
     {
         $routesToInclude = array_merge([
+            'user_details',
+            'user_mobile_details',
+            'get_user_details',
             'user_signin',
             'admin_catchall',
             'merchant',
