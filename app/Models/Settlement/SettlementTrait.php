@@ -882,7 +882,7 @@ trait SettlementTrait
                         $traceData,
                         null,
                         1,
-                        Config::get('slack.channels.settlement_alerts'));
+                        'settlement_alerts');
 
                     $skipReason = Metric::MAX_SETTLEMENT_AMOUNT_BLOCK;
                 }

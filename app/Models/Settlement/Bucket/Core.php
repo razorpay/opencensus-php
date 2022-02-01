@@ -661,7 +661,7 @@ class Core extends Base\Core
                 $txnIds,
                 $e,
                 1,
-                Config::get('slack.channels.settlement_alerts'));
+                'settlement_alerts');
         }
     }
 }

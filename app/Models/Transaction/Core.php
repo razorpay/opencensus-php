@@ -1984,7 +1984,7 @@ class Core extends Base\Core
                     $txnMapForSettlementService,
                     $e,
                     1,
-                    Config::get('slack.channels.settlement_alerts'));
+                    'settlement_alerts');
             }
         }
 

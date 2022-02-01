@@ -113,7 +113,7 @@ class ProcessSettlementServiceTxns extends Job
                 $traceData,
                 $e,
                 1,
-                Config::get('slack.channels.settlement_alerts'));
+                'settlement_alerts');
         }
         finally
         {
