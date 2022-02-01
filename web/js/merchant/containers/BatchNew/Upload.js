@@ -21,7 +21,10 @@ const successMessageMap = {
   payment_transfer: ROUTE_SUCCESS_MESSAGE,
   linked_account_create: ROUTE_SUCCESS_MESSAGE,
   transfer_reversal: ROUTE_SUCCESS_MESSAGE,
-  raw_address: 'You can download the batch file to check the failed addresses',
+  raw_address:
+    'You can download the feedback for the addresses uploaded from the actions view, after the file is completely processed. Refresh the page to see current status of your upload. Rejected addresses will contain error description, upload a new file to rectify the same.',
+  fulfillment_order_update:
+    'You can download the feedback for the delivery statuses uploaded from the actions view, after the file is completely processed. Refresh the page to see current status of your upload. Rejected delivery statuses will contain error description, upload a new file to rectify the same.',
   virtual_account_edit:
     'You can download the output file from batch details view to check the items which were generated. For the items that could not be generated due to some issues, please upload a new batch file.',
 };
