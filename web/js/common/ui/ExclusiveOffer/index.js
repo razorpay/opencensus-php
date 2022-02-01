@@ -67,14 +67,11 @@ const ExclusiveOffer = ({
       history.push(url);
     }
     tracking.trackEvent(
-      window.rzpQ &&
-        window.rzpQ
-          .merchantActions()
-          .initiated(`merchant_dashboard.click_exclusive_offer_cta_${id}`, {
-            cta_value: label,
-            link_url: url,
-            source: fromWhere,
-          }),
+      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+        cta_text: label,
+        pageUrl: window.location.href,
+        Campaign_ID: id,
+      }),
     );
   };
 
@@ -92,13 +89,11 @@ const ExclusiveOffer = ({
       }
     });
     tracking.trackEvent(
-      window.rzpQ &&
-        window.rzpQ
-          .merchantActions()
-          .initiated(`merchant_dashboard.click_exclusive_offer_cta_${id}`, {
-            cta_value: label,
-            source: fromWhere,
-          }),
+      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+        cta_text: label,
+        pageUrl: window.location.href,
+        Campaign_ID: id,
+      }),
     );
   };
 
