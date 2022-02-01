@@ -103,7 +103,24 @@ test('ActivationForm Flow', async () => {
   fireEvent.click(nextButton);
 
   await waitFor(() => fireEvent.click(screen.getByText('Submit KYC')));
-  fireEvent.click(screen.getByTestId('backIcon'));
   fireEvent.click(screen.getByText('Business Overview'));
   await waitFor(() => fireEvent.click(screen.getByText('FAQs')));
+});
+
+test('should be able to click on back button', async () => {
+  render(<ActivationForm />, {});
+  await waitForLoaderToFinish();
+  expect(screen.getByText('Account Activation')).toBeInTheDocument();
+  fireEvent.click(screen.getByTestId('backIcon'));
+});
+
+test('should be open save and exit modal', async () => {
+  ActivationDB.update({
+    ...DataPieces.OnboardingMileStoneL1,
+  });
+  render(<ActivationForm />, {});
+  await waitForLoaderToFinish();
+  const saveAndExit = screen.getByText('Save and Exit');
+  expect(saveAndExit).toBeInTheDocument();
+  fireEvent.click(saveAndExit);
 });

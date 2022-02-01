@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { delay, fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
 import BusinessDetails from '../index';
 import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
@@ -116,9 +116,9 @@ test('should render correct flow', async () => {
   const [
     businessPanInput,
     buseinessNameInput,
-    cinInput,
     authSignatoryProofInput,
     authSignatoryNameInput,
+    cinInput,
     billingLabelInput,
     pincodeInput,
     cityInput,
@@ -135,6 +135,12 @@ test('should render correct flow', async () => {
   fireEvent.change(authSignatoryNameInput, { target: { value: 'testName' } });
   fireEvent.change(billingLabelInput, { target: { value: 'Some Label' } });
   fireEvent.change(cinInput, { target: { value: 'U74899DL2000PLC105530' } });
+  fireEvent.blur(authSignatoryProofInput);
+  ActivationDB.update({
+    business_type: '4',
+    cin_verification_status: 'initiated',
+  });
+  delay();
   fireEvent.blur(cinInput);
 
   expect(businessPanInput.value).toBe('ABCDE1234F');
@@ -153,28 +159,27 @@ test('should render correct flow', async () => {
   fireEvent.blur(cityInput);
   fireEvent.change(stateInput, { target: { value: 'DL' } });
   fireEvent.blur(stateInput);
+  fireEvent.click(screen.getByText('Operational address is the same as above'));
 });
 
-test('should show error if cin validation failed', async () => {
+test('should autofill billing label with buisness name for reg merchant', async () => {
   ActivationDB.update({
-    business_type: '4',
-    cin_verification_status: 'incorrect_details',
+    business_type: '1',
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText('This CIN number is invalid, please enter valid details.'),
-  ).toBeInTheDocument();
+  const buseinessNameInput = screen.getAllByTestId('ds-text-input')[0];
+  fireEvent.change(buseinessNameInput, { target: { value: 'without billing label' } });
+  fireEvent.blur(buseinessNameInput);
 });
 
-test('should show error if llp validation failed', async () => {
+test('should autofill billing label with promoter pan name for unreg merchant', async () => {
   ActivationDB.update({
-    business_type: '6',
-    cin_verification_status: 'incorrect_details',
+    business_type: '11',
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText('This LLPIN number is invalid, please enter valid details.'),
-  ).toBeInTheDocument();
+  const personalPanName = screen.getAllByTestId('ds-text-input')[1];
+  fireEvent.change(personalPanName, { target: { value: 'without billing label' } });
+  fireEvent.blur(personalPanName);
 });
