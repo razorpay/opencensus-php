@@ -3435,6 +3435,20 @@ return [
         ],
     ],
 
+    'testGetPermissionsForCARoles'  => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'chartered_accountant',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testGetBankingUserWithMerchantRulesWithPermissionNotPresent'   => [
         'response'      => [
             'content'     => [

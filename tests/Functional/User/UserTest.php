@@ -9,10 +9,12 @@ use Hash;
 use Queue;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Http\UserRolePermissionsMap;
 use RZP\Jobs\NotifyRas;
 use RZP\Error\ErrorCode;
 use RZP\Mail\User\Otp;
 use RZP\Mail\User\Login;
+use RZP\Models\User\Role;
 use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -4786,7 +4788,7 @@ class UserTest extends TestCase
         $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
     }
 
-    public function testGetBankingUserWithMerchantRules()
+    public function testGetPermissionsForCARoles()
     {
         $user = $this->fixtures->create('user');
 
@@ -4795,7 +4797,7 @@ class UserTest extends TestCase
         $mappingData = [
             'user_id'     => $user->getId(),
             'merchant_id' => $merchant->getId(),
-            'role'        => 'admin',
+            'role'        => Role::CHARTERED_ACCOUNTANT,
             'product'     => 'banking',
         ];
 
@@ -4814,22 +4816,11 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->fixtures->create('merchant_attribute',
-            [
-                'merchant_id' => $merchant->getId(),
-                'product'     => 'banking',
-                'group'       => 'x_transaction_view',
-                'type'        => 'admin',
-                'value'       => 'true'
-            ]);
-
-        $merchantAttribute = $this->getDbLastEntity('merchant_attribute');
-
         $this->ba->dashboardGuestAppAuth();
 
         $response = $this->startTest();
 
-        $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+        $this->assertArraySelectiveEquals(UserRolePermissionsMap::getRolePermissions(Role::CHARTERED_ACCOUNTANT), $response['merchants'][1]['permissions']);
     }
 
     public function testGetBankingUserWithMerchantRulesWithPermissionNotPresent()

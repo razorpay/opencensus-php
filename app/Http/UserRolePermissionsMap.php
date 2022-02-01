@@ -402,6 +402,8 @@ class UserRolePermissionsMap
                  Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::GET_SIGNED_URL,
+
+                 Permission::VIEW_TRANSACTION_STATEMENT,
              ],
 
              BankingRole::VIEW_ONLY => [
