@@ -1488,10 +1488,6 @@ export default class User {
     return this.getExpStatus('auto-open-L1-form') && !!this.isOrgRZP;
   }
 
-  get isNewSettlementServiceEnabled() {
-    return this.isFeatureEnabled('new_settlement_service');
-  }
-
   get isGstinLLpinCinSyncFlowEnabled() {
     // not required for Razorpay X, partner accounts and sub merchants
     if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {

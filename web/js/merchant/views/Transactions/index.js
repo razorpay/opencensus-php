@@ -98,8 +98,7 @@ class TransactionsContainer extends Component {
     const { no_settlement } = this.props.settlement_amount?.data;
 
     const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
-    const isOnHold =
-      no_settlement?.on_hold || settlementConfig?.data?.config?.features?.disable?.status;
+    const isOnHold = no_settlement?.on_hold;
     const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 
     const pathname = this.props.location.pathname;
@@ -259,7 +258,6 @@ class TransactionsContainer extends Component {
               )}
             </NavLink>
             {no_settlement &&
-            !user.isNewSettlementServiceEnabled &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
             mode === 'live' &&
             this.props.payments &&

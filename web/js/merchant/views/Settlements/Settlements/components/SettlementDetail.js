@@ -28,12 +28,8 @@ class SettlementDetail extends Component {
   };
 
   isOnHold = () => {
-    const { settlementAmount, settlement, transactionOnHold } = this.props;
-    return (
-      settlementAmount.no_settlement?.on_hold ||
-      settlement.config?.data?.config?.features?.disable?.status ||
-      transactionOnHold
-    );
+    const { settlementAmount, transactionOnHold } = this.props;
+    return settlementAmount?.no_settlement?.on_hold || transactionOnHold;
   };
 
   isOnTemporaryHold = () => {

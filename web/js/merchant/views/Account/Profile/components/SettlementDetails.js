@@ -72,8 +72,7 @@ class SettlementDetails extends Component {
 
     const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 
-    const isOnHold =
-      no_settlement?.on_hold || settlementConfig?.data?.config?.features?.disable?.status;
+    const isOnHold = no_settlement?.on_hold;
 
     const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 

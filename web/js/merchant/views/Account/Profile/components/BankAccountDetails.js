@@ -62,9 +62,7 @@ const BankAccountDetails = ({
     }
   }, [bankAccountSectionRef, location]);
 
-  const isSettlementOnHold =
-    (settlement_amount?.no_settlement && settlement_amount?.no_settlement?.on_hold) ||
-    settlementConfig?.data?.config?.features?.disable?.status;
+  const isSettlementOnHold = settlement_amount?.no_settlement?.on_hold;
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 

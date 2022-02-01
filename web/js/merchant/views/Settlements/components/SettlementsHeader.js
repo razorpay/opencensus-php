@@ -23,8 +23,7 @@ function SettlementsHeader(props) {
   const { no_settlement } = settlement_amount.data;
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
-  const isOnHold =
-    no_settlement?.on_hold || settlementConfig?.data?.config?.features?.disable?.status;
+  const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 
   const viewSettlementCycle = () => {

@@ -26,8 +26,7 @@ const SettlementsBanner = (props) => {
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
 
-  const isOnHold =
-    no_settlement?.on_hold || settlementConfig?.data?.config?.features?.disable?.status;
+  const isOnHold = no_settlement?.on_hold;
 
   const balance = current_balance.data.balance || 0;
 

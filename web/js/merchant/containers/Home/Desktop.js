@@ -405,8 +405,7 @@ class AnalyticsDesktop extends Component {
     let negativeBalanceClassName = '';
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
-    const isOnHold =
-      no_settlement?.on_hold || settlementConfig.data?.config?.features?.disable?.status;
+    const isOnHold = no_settlement?.on_hold;
     const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 
     if (balance < 0) {
@@ -842,7 +841,6 @@ class AnalyticsDesktop extends Component {
                     )}
                     {no_settlement &&
                     !isSettlementOnHold &&
-                    !user.isNewSettlementServiceEnabled &&
                     payments &&
                     payments.items.length > 0 &&
                     mode === 'live' ? (
