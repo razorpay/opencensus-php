@@ -2250,7 +2250,7 @@ class Core extends Base\Core
 
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-            if(empty($merchant)){
+            if(empty($merchant) === false){
                 if($payout->isBalanceAccountTypeDirect() === true) {
                     $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
                 } else if($payout->isBalanceAccountTypeShared() === true){
