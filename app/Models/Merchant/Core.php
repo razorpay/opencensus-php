@@ -6208,7 +6208,7 @@ class Core extends Base\Core
         {
             $merchant->setHasKeyAccess(true);
 
-            $merchant->save();
+            $this->repo->saveOrFail($merchant);
         }
     }
 

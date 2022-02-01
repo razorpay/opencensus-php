@@ -147,12 +147,19 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertNull($feature);
 
-        $merchant = $this->getDbEntity('merchant',
+        $testMerchant = $this->getDbEntity('merchant',
             [
                 'id'    => '10000000000000',
             ]);
 
-        $this->assertEquals(0, $merchant['has_key_access']);
+        $liveMerchant = $this->getDbEntity('merchant',
+            [
+                'id'    => '10000000000000',
+            ], 'live');
+
+        $this->assertEquals(0, $testMerchant['has_key_access']);
+
+        $this->assertEquals(0, $liveMerchant['has_key_access']);
 
         $this->ba->bankingAccountServiceAppAuth();
 
@@ -189,12 +196,19 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertEquals('payout', $feature['name']);
 
-        $merchant = $this->getDbEntity('merchant',
+        $testMerchant = $this->getDbEntity('merchant',
             [
                 'id'    => '10000000000000',
             ]);
 
-        $this->assertEquals(1, $merchant['has_key_access']);
+        $liveMerchant = $this->getDbEntity('merchant',
+            [
+                'id'    => '10000000000000',
+            ], 'live');
+
+        $this->assertEquals(1, $testMerchant['has_key_access']);
+
+        $this->assertEquals(1, $liveMerchant['has_key_access']);
 
         $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
 
