@@ -87,6 +87,8 @@ class Validator extends Base\Validator
     const PAYOUT_SERVICE_FTS_CREATE                 = 'payout_service_fts_create';
     const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
 
+    const AMOUNT_REGEX = '/[^0-9]/';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -202,11 +204,17 @@ class Validator extends Base\Validator
     protected static $fundAccountPayoutCompositeValidators = [
         'origin',
         'source_details',
-        'amount'
+        'amount',
+        'amount_as_integer'
+    ];
+
+    protected static $customerWalletPayoutValidators = [
+        'amount_as_integer'
     ];
 
     protected static $fundAccountPayoutValidators = [
-        'amount'
+        'amount',
+        'amount_as_integer'
     ];
 
     protected static $beforeCreateFundAccountPayoutWithOtpValidators = [
@@ -300,6 +308,7 @@ class Validator extends Base\Validator
     // Both regular and on demand payouts are validated through the merchantPayoutValidators.
     protected static $merchantPayoutValidators = [
         'type_and_amount',
+        'amount_as_integer'
     ];
 
     protected static $processScheduledPayoutsRules = [
@@ -1139,6 +1148,42 @@ class Validator extends Base\Validator
                         Entity::AMOUNT => $input[Entity::AMOUNT],
                     ]
                 );
+            }
+        }
+    }
+
+    public function validateAmountAsInteger($input)
+    {
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            $amount = $input[Entity::AMOUNT];
+
+            if (is_string($amount) === true)
+            {
+                if ((empty($amount) === true) or
+                    (preg_match(self::AMOUNT_REGEX, $amount) !== 0))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "The amount must be an integer.",
+                        Entity::AMOUNT,
+                        [
+                            Entity::AMOUNT => $input[Entity::AMOUNT],
+                        ]
+                    );
+                }
+            }
+            else
+            {
+                if (is_int($amount) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "The amount must be an integer.",
+                        Entity::AMOUNT,
+                        [
+                            Entity::AMOUNT => $input[Entity::AMOUNT],
+                        ]
+                    );
+                }
             }
         }
     }
