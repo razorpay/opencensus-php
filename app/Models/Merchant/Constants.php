@@ -926,6 +926,7 @@ final class Constants
     const CONTACT_NAME      = 'Contact Name';
     const CONTACT_EMAIL     = 'Contact Email';
     const GSTIN_NUMBER      = 'GSTIN Number';
+    const AVG_ORDER_VALUE   = 'Avg Order Value';
     const WEBSITE_LINK      = 'Website Link';
     const PRICING_POLICY    = 'Pricing Policy';
     const TERMS             = 'Terms & Conditions';
@@ -1059,6 +1060,18 @@ final class Constants
                 self::SUBCATEGORY => self::BUSINESS_DOE,
                 self::FIELDS      => [
                     'merchant_details|business_doe',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::AVG_ORDER_VALUE,
+                self::FIELDS      => [
+                    'merchant_details|avg_order_min',
+                ]
+            ],
+            [
+                self::SUBCATEGORY => self::AVG_ORDER_VALUE,
+                self::FIELDS      => [
+                    'merchant_details|avg_order_max',
                 ]
             ],
         ],

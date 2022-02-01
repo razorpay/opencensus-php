@@ -1243,7 +1243,15 @@ We look forward to transacting with you!
             'contact_email'      => "razorpay@razorpay.com",
         ];
 
+        $merchantAvgOrderData = [
+            'merchant_id'        => '10000000000155',
+            'min_aov'            => "94",
+            'max_aov'            => "98"
+        ];
+
         $this->fixtures->create('merchant_detail', $merchantDetailData);
+
+        $this->fixtures->create('merchant_avg_order_value', $merchantAvgOrderData);
 
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
@@ -1299,6 +1307,28 @@ We look forward to transacting with you!
                 ]
             ]
         ], $response[MerchantConstants::MERCHANT_DETAILS][10]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::AVG_ORDER_VALUE,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|avg_order_min',
+                    'value'    => 94,
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::MERCHANT_DETAILS][16]);
+
+        $this->assertArraySelectiveEquals([
+            'subcategory' => MerchantConstants::AVG_ORDER_VALUE,
+            'fields'      => [
+                [
+                    'name'     => 'merchant_details|avg_order_max',
+                    'value'    => 98,
+                    'editable' => false
+                ]
+            ]
+        ], $response[MerchantConstants::MERCHANT_DETAILS][17]);
 
         $this->assertArraySelectiveEquals([
             'subcategory' => MerchantConstants::PLAYSTORE_URL,

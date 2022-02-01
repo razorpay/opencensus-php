@@ -836,6 +836,11 @@ final class FactoryData
                                                                      'merchant_id' => '10000000000000'
                                                                  ]
         );
+        $factory(\RZP\Models\Merchant\AvgOrderValue\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id' => '10000000000000'
+            ]
+        );
         $factory(\RZP\Models\Merchant\M2MReferral\Entity::class, [
                                                                       'id'            => $faker->uniqueid,
                                                                       'merchant_id' => '10000000000000',

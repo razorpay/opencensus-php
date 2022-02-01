@@ -4563,6 +4563,15 @@ class Service extends Base\Service
 
             $data['tags'] = $merchant->tagNames();
 
+            $merchantAov = $merchant->merchantDetail->avgOrderValue;
+
+            if (empty($merchantAov) === false)
+            {
+                $data['merchant_details']['avg_order_min'] = $merchantAov->getMinAov();
+
+                $data['merchant_details']['avg_order_max'] = $merchantAov->getMaxAov();
+            }
+
             // Fetch method specific custom_text.Doing only for cred now.
             $methods = $this->merchant->getMethods();
 
