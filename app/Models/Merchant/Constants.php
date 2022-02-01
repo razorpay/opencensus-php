@@ -1405,4 +1405,6 @@ final class Constants
         'merchant_details|business_dba',
         'merchant_details|business_type',
     ];
+
+    const RATIO_OF_TOTAL_TRANSACTION_FOR_PLUGIN = .05;
 }

@@ -10,6 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 
@@ -648,6 +649,67 @@ class FreshdeskTicketV2Test extends TestCase
         $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
 
         $this->assertNotEquals('razorpayid0012', $ticket['id']);
+    }
+
+    public function testCreateTicketNotPluginMerchant()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateTicketRzp'];
+
+        $testCases = [
+            [
+                'razorx'        => 'off',
+            ],
+            [
+                'razorx'             => 'on',
+                'plugin_transaction' => false,
+                'druid_data'         => [
+                    'plugin_transactions' => 1,
+                    'total_transactions'  => 25
+                ],
+            ],
+            [
+                'razorx'             => 'on',
+                'plugin_transaction' => true,
+                'subject'            => 'ticket subject2',
+                'druid_data'         => [
+                    'plugin_transactions' => 5,
+                    'total_transactions'  => 25
+                ],
+            ]
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->mockRazorxTreatment($testCase['razorx']);
+
+            $this->ba->proxyAuth();
+
+            $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
+
+            if ($testCase['razorx'] === 'on')
+            {
+                $this->mockDruid($testCase['druid_data']);
+
+                if ($testCase['plugin_transaction'] === true)
+                {
+                    $expectedRequestResponse['request']['tags']     = ['plugin_merchant'];
+                    $expectedRequestResponse['request']['group_id'] = 1082000586150;
+                }
+            }
+
+            $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
+                                                        $expectedRequestResponse['request'], $expectedRequestResponse['response'], 1);
+
+            $response = $this->startTest();
+
+            $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+            $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+            $this->assertEquals('99', $response['ticket_id']);
+
+            $this->assertEquals($response['id'], $ticket['id']);
+        }
     }
 
     public function testCreateTicketForInternalAuth()
@@ -2313,5 +2375,20 @@ class FreshdeskTicketV2Test extends TestCase
                                                         $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
         }
 
+    }
+
+    protected function mockDruid(array $array)
+    {
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+                             ->setConstructorArgs([$this->app])
+                             ->setMethods([ 'getDataFromDruid'])
+                             ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = $array;
+
+        $druidService->method( 'getDataFromDruid')
+                     ->willReturn([null, [$dataFromDruid]]);
     }
 }

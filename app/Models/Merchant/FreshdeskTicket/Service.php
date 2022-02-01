@@ -17,6 +17,7 @@ use RZP\Notifications;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
 use RZP\Models\Merchant\FreshdeskTicket\Validator as FreshdeskTicketValidator;
@@ -1313,6 +1314,8 @@ class Service extends Base\Service
     {
         $input = $this->addMerchantDetailsToInput($input);
 
+        $input = $this->modifyInputForPluginMerchants($input, $this->auth->getMerchantId(), Type::SUPPORT_DASHBOARD);
+
         $input['custom_fields'][Constants::CF_MERCHANT_ID_DASHBOARD] = $this->getQueryParamMerchantIdForSearchAPI();
 
         $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
@@ -1450,7 +1453,12 @@ class Service extends Base\Service
         return $input['group_id'];
     }
 
-    public function patchTicketInternal($id, $content)
+    protected function getGroupIdForPluginMerchants(): int
+    {
+        return $this->app['config']->get('applications.freshdesk.group_ids.plugin_merchant');
+    }
+
+        public function patchTicketInternal($id, $content)
     {
         $ticket = $this->repo->merchant_freshdesk_tickets->findByIdAndMerchant(
             $id,
@@ -1764,7 +1772,7 @@ class Service extends Base\Service
 
         $data = [
             Constants::CUSTOM_FIELDS => [
-                Constants::CF_MERCHANT_ID_DASHBOARD  => $this->getQueryParamMerchantIdForSearchAPI($ticket->merchant),
+                Constants::CF_MERCHANT_ID_DASHBOARD => $this->getQueryParamMerchantIdForSearchAPI($ticket->merchant),
             ],
         ];
 
@@ -1773,5 +1781,49 @@ class Service extends Base\Service
             $data,
             $url
         );
+    }
+
+    protected function modifyInputForPluginMerchants(array $input, $merchantId, $type)
+    {
+        $variant = $this->app['razorx']->getTreatment($merchantId,
+                                                      Constants::RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG,
+                                                      $app['rzp.mode'] ?? Mode::LIVE);
+
+        $this->trace->info(TraceCode::FRESHDESK_PLUGIN_MERCHANT_TAG_FLAG, [
+            'variant'                           => $variant,
+            'merchant_id'                       => $merchantId,
+        ]);
+
+        if ($variant !== 'on')
+        {
+            return $input;
+        }
+
+        $fdInstance = $this->getFdInstanceFromTypeAndInput($type, $input);
+
+        if ($fdInstance !== Instance::RZPIND)
+        {
+            return $input;
+        }
+
+        $merchantService = new MerchantService();
+
+        $isPluginMerchant = $merchantService->isPluginMerchant($merchantId);
+
+        if ($isPluginMerchant)
+        {
+            if (empty($input[Constants::TICKET_TAGS]) === true)
+            {
+                $input[Constants::TICKET_TAGS] = [Constants::MERCHANT_PLUGIN_TAG];
+            }
+            else
+            {
+                $input[Constants::TICKET_TAGS] = array_push($input[Constants::TICKET_TAGS], [Constants::MERCHANT_PLUGIN_TAG]);
+            }
+
+            $input[Constants::GROUP_ID] = $this->getGroupIdForPluginMerchants();
+        }
+
+        return $input;
     }
 }

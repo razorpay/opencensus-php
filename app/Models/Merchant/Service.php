@@ -8815,17 +8815,60 @@ class Service extends Base\Service
         }
 
         $eventAttribute = [
-            'merchant_id'   => $merchantId,
-            'request'       => 'balance_fetch_multiple',
-            'user_id'       => $userId,
-            'user_role'     => $role,
-            'channel'       => $this->auth->getSourceChannel(),
-            'filters'       => $input
+            'merchant_id' => $merchantId,
+            'request'     => 'balance_fetch_multiple',
+            'user_id'     => $userId,
+            'user_role'   => $role,
+            'channel'     => $this->auth->getSourceChannel(),
+            'filters'     => $input
         ];
 
         $this->app['diag']->trackBalanceEvents(EventCode::BALANCE_FETCH_REQUESTS,
-            null,
-            null,
-            $eventAttribute);
+                                               null,
+                                               null,
+                                               $eventAttribute);
+    }
+
+    public function isPluginMerchant($merchantId)
+    {
+        $data = $this->getPluginAndTotalPaymentCountsFromDruid($merchantId);
+
+        $this->trace->info(
+            TraceCode::DRUID_DATA_PLUGIN_MERCHANT,
+            [
+                'data'          => $data,
+            ]);
+
+        if (empty($data) === false &&
+            array_key_exists('plugin_transactions',$data[0]) === true &&
+            array_key_exists('total_transactions',$data[0]) === true &&
+            $data[0]['plugin_transactions'] >= $data[0]['total_transactions'] * Constants::RATIO_OF_TOTAL_TRANSACTION_FOR_PLUGIN)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getPluginAndTotalPaymentCountsFromDruid($merchantId)
+    {
+        $query = 'select payment_analytics_total_plugin_payments as plugin_transactions,payments_total_payments as total_transactions from druid.plugin_merchant_fact where plugin_merchant_fact.payments_merchant_id=\'%s\'';
+
+        $query = sprintf($query, $merchantId);
+
+        $content = [
+            'query' => $query
+        ];
+
+        $druidService = $this->app['druid.service'];
+
+        [$error, $data] = $druidService->getDataFromDruid($content, self::REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT);
+
+        if (empty($error) === false)
+        {
+            return [];
+        }
+
+        return $data;
     }
 }

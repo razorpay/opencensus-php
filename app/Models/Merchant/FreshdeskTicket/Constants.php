@@ -146,6 +146,7 @@ class Constants
     const RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT           = 'should_migrate_freshdesk_ind_merchant';
     const RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK  = 'Freshdesk_Customer_Ticket_Creation_Server_Pick';
     const RAZORX_FLAG_FRESHDESK_RZPSOL_RZP_MERGED                     = 'freshdesk_rzpsol_rzp_merged';
+    const RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG                      = 'freshdesk_add_plugin_merchant_tag';
 
     // values for account recovery flow
     const MERCHANT          = 'Merchant';
@@ -178,4 +179,6 @@ class Constants
     const CHARGEBACKS_CATEGORY               = 'Chargebacks';
 
     const FRESHDESK_DEFAULT_PAGE_SIZE        = 30;
+
+    const MERCHANT_PLUGIN_TAG       = 'plugin_merchant';
 }
