@@ -178,16 +178,29 @@ export const SubmerchantSettlementStatusMap_New = {
 };
 
 export const XSubmerchantCAStatusMap = {
-  'process started': 'label-info',
-  'request Cancelled': 'label-danger',
-  unserviceable: 'label-danger',
-  'request rejected': 'label-danger',
-  'bank kyc in progress': 'label-pending',
-  'activation in progress': 'label-pending',
-  'request received': 'label-muted',
-  active: 'label-success',
-  inactive: 'label-muted',
-  'on hold': 'label-muted',
+  'process started': 'label-light-neutral',
+  'request cancelled': 'label-light-negative',
+  unserviceable: 'label-light-negative',
+  'request rejected': 'label-light-negative',
+  'bank kyc in progress': 'label-light-warning',
+  'activation in progress': 'label-light-warning',
+  'request received': 'label-light-information',
+  active: 'label-light-positive',
+  inactive: 'label-light-information',
+  'on hold': 'label-light-information',
+
+  'application not initiated': 'label-light-warning',
+  'application completion pending': 'label-light-warning',
+  'pan verification in progress': 'label-light-information',
+  'pan verification failed': 'label-light-negative',
+  'telephonic verification': 'label-light-information',
+  'razorpay processing': 'label-light-information',
+  'documents pick up pending': 'label-light-warning',
+  'account opening in progress': 'label-light-information',
+  'account opened': 'label-light-positive',
+  'account activated': 'label-light-positive',
+
+  'registration request sent': 'label-light-information',
 };
 
 export const XSubmerchantVAStatusMap = {

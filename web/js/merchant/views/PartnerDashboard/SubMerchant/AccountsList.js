@@ -525,10 +525,12 @@ class ProductSubMerchantsList extends ListContainer {
       ? 'reseller-kyc-experiment-disabled'
       : '';
 
+    const currentProduct = product === PRODUCT_TYPE.PG ? 'page-pg' : 'page-x';
+
     return (
       <tabbed-container>
         <content>
-          <div class="sub-merchants-list">
+          <div className={`sub-merchants-list ${currentProduct}`}>
             <div
               className={`content-wrapper ${disabledResellerKYCStyle} ${
                 shouldShowWelcomeScreen ? 'partner-welcome' : ''

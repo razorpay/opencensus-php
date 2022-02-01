@@ -178,6 +178,11 @@
   .list-filter-container
     width: calc(100% - 160px);
 
+  &.page-x
+    .data-table
+      td:nth-child(4)
+        align-items: flex-start;
+
   .data-table
     th
       text-align: center;
@@ -193,6 +198,7 @@
 
     // aligining component SubMerchantKycStatusLabel in table
     td:nth-child(4)
+      max-width: 260px;
       display: flex;
       align-items: center;
       flex-direction: column;
