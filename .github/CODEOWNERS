@@ -83,7 +83,7 @@ app/Models/Plan/                                       @razorpay/TechSubscriptio
 app/Models/Pricing/                                    sunny.aggrawal@razorpay.com
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core
 app/Models/QrCode/                                     @razorpay/TechVirtualAccounts
-app/Models/Reversal/                                   baljeet.kumar@razorpay.com                              @razorpay/Payouts-core
+app/Models/Reversal/                                   soutreya.kundu@razorpay.com                             @razorpay/Payouts-core
 app/Models/Risk/                                       sunny.aggrawal@razorpay.com
 app/Models/Schedule/                                   @razorpay/TechSubscriptions                             @razorpay/TechSettlements
 app/Models/Settings/                                   malligairajan.g@razorpay.com
@@ -98,7 +98,7 @@ app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRoutin
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
 app/Models/Terminal/Category.php                       @razorpay/TechRulesRouting
 app/Models/Transaction/                                prashanth.yv@razorpay.com                               sunny.aggrawal@razorpay.com
-app/Models/Transfer/                                   baljeet.kumar@razorpay.com
+app/Models/Transfer/                                   soutreya.kundu@razorpay.com
 app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Models/User/                                       pankaj.kumar@razorpay.com                               vivek.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
@@ -144,7 +144,7 @@ tests/Functional/Setting/                              malligairajan.g@razorpay.
 tests/Functional/Subscription/                         @razorpay/TechSubscriptions
 tests/Functional/Tax/                                  jitendra.ojha@razorpay.com
 tests/Functional/Transaction/                          sunny.aggrawal@razorpay.com
-tests/Functional/Transfer/                             baljeet.kumar@razorpay.com
+tests/Functional/Transfer/                             soutreya.kundu@razorpay.com
 tests/Functional/User/                                 pankaj.kumar@razorpay.com
 tests/Functional/VirtualAccount/                       @razorpay/TechVirtualAccounts
 tests/Functional/Gateway/                              @razorpay/TechPgIntegrations
