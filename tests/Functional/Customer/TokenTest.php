@@ -249,6 +249,7 @@ class TokenTest extends TestCase
             $token_iin = substr($input['card']['number'] ?? null, 0, 6);
 
             $expiry_year = $input['card']['expiry_year'];
+
             if (strlen($expiry_year) == 2)
             {
                 $expiry_year = '20' . $expiry_year;

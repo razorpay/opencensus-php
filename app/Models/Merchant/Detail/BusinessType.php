@@ -105,8 +105,7 @@ class BusinessType
         self::NGO,
         self::PARTNERSHIP
     ];
-
-
+    
     protected static $ValidateGSTINBusinessType = [
         self::PROPRIETORSHIP
     ];
@@ -131,7 +130,10 @@ class BusinessType
         self::NOT_YET_REGISTERED,
         self::INDIVIDUAL,
         self::PROPRIETORSHIP,
-        self::PARTNERSHIP
+        self::PARTNERSHIP,
+        self::PUBLIC_LIMITED,
+        self::PRIVATE_LIMITED,
+        self::LLP
     ];
 
     public static function isAadhaarEsignVerificationRequired($businessType)
