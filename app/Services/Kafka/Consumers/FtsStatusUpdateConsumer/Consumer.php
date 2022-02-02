@@ -6,7 +6,8 @@ use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
-use RZP\Services\KafkaProducer;
+use RZP\Services\RxKafkaProducer;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Kafka\Utils\Constants;
 use RZP\Models\FundTransfer\Attempt\Service as FtaService;
@@ -44,9 +45,7 @@ class Consumer extends BaseConsumer
 
     protected function getRetryTopicName(): string
     {
-        $appMode    = env('APP_MODE', 'prod');
-
-        return $appMode . '-' . 'fts-status-update-retry-events';
+        return config('kafka_consumer.fts_status_update_retry_topic');
     }
 
     protected function addRetryDetailsToPayload($payload)
@@ -101,7 +100,7 @@ class Consumer extends BaseConsumer
             $retryTopic  = $this->getRetryTopicName();
             $producerKey = $payload[$this->getKeyForProducer()];
 
-            (new KafkaProducer($retryTopic, stringify($payload), $producerKey))->Produce();
+            (new RxKafkaProducer($retryTopic, stringify($payload), $producerKey))->Produce();
 
             $isProcessedSuccessfully = true;
         }

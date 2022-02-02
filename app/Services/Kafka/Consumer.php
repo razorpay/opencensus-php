@@ -44,7 +44,7 @@ class Consumer extends Job
 
     public function consume(): void
     {
-        $this->consumer = new KafkaConsumer($this->setConf());
+        $this->consumer = new KafkaConsumer($this->setConf(Constants::RX_CLUSTER));
 
         $this->consumer->subscribe($this->topics);
 
@@ -114,9 +114,9 @@ class Consumer extends Job
         }
     }
 
-    private function setConf(): Conf
+    private function setConf(string $cluster = Constants::SHARED_CLUSTER): Conf
     {
-        $this->conf = $this->consumerUtils->getNewConf();
+        $this->conf = $this->consumerUtils->getNewConf($cluster);
 
         foreach ($this->handler->getConfig() as $key => $value)
         {

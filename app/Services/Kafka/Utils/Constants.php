@@ -19,4 +19,8 @@ class Constants
     const RESPONSE         = 'response';
     const RETRY_ATTEMPT_NO = 'retry_attempt_no';
     const RETRY_TIMESTAMP  = 'retry_timestamp';
+
+    // clusters
+    const SHARED_CLUSTER = 'shared_cluster';
+    const RX_CLUSTER     = 'rx_cluster';
 }

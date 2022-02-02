@@ -64,9 +64,6 @@ class KafkaConsumerCommand extends Command
         $consumerClass = $options->getConsumer();
         $mode          = $options->getMode();
 
-        $groupId = $this->appendAppModeToGroupId($groupId);
-        $topics  = $this->appendAppModeToTopics($topics);
-
         $trace->info(TraceCode::KAFKA_CONSUMER_COMMAND_INIT,
                      [
                          Constants::TOPICS   => $topics,
@@ -78,30 +75,5 @@ class KafkaConsumerCommand extends Command
         $handler = new $consumerClass();
 
         (new KafkaService\Consumer($handler, $topics, $groupId, $mode))->consume();
-    }
-
-    protected function appendAppModeToGroupId($groupId)
-    {
-        $appMode    = env('APP_MODE', 'prod');
-
-        $groupIdNew = $appMode . '-' . $groupId;
-
-        return $groupIdNew;
-    }
-
-    protected function appendAppModeToTopics(array $topics): array
-    {
-        $appMode    = env('APP_MODE', 'prod');
-
-        $topicsNew = [];
-
-        foreach ($topics as $topic)
-        {
-            $topicNew = $appMode . '-' . $topic;
-
-            array_push($topicsNew, $topicNew);
-        }
-
-        return $topicsNew;
     }
 }
