@@ -2889,6 +2889,188 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($secondMerchantOndemandFeature);
     }
 
+    public function testEnableFullOndemandViaCron()
+    {
+        $this->ba->cronAuth(MODE::TEST);
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international' => 0]);
+
+        $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
+                              ->setConstructorArgs([$this->app])
+                              ->onlyMethods([ 'getDataFromDataLake'])
+                              ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoServiceData = [
+               [ "merchant_id"=> '10000000000000']
+        ];
+
+        $prestoService->method( 'getDataFromDataLake')
+                      ->willReturn($prestoServiceData);
+
+        $this->fixtures->create('settlement.ondemand.feature_config',
+            [
+                'merchant_id'                => '10000000000000',
+                'percentage_of_balance_limit'=> 50,
+                'settlements_count_limit'    => 10000,
+                'max_amount_limit'           => 100000,
+                'pricing_percent'            => 25,
+                'es_pricing_percent'         => 12,
+            ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->startTest();
+
+        $ondemandFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $restrictedFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $this->assertNotNull($ondemandFeature);
+
+        $this->assertNull($restrictedFeature);
+    }
+
+    public function testEnableFullOndemandAndESViaCron()
+    {
+        $this->ba->cronAuth(MODE::TEST);
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh', 'international' => 0]);
+
+        $this->fixtures->create('schedule', [
+            'id'        => 'IaVvw68vQ2lgp2',
+            'period'    => 'hourly',
+            'interval'  => 1,
+            'hour'      => 0,
+            'delay'     => 0,
+            'type'      => 'settlement'
+        ]);
+
+        $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDataLake'])
+            ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoServiceData = [
+            [ "merchant_id"=> '10000000000000']
+        ];
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturn($prestoServiceData);
+
+        $this->fixtures->create('settlement.ondemand.feature_config',
+            [
+                'merchant_id'                => '10000000000000',
+                'percentage_of_balance_limit'=> 50,
+                'settlements_count_limit'    => 10000,
+                'max_amount_limit'           => 100000,
+                'pricing_percent'            => 25,
+                'es_pricing_percent'         => 12,
+            ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic_restricted']);
+
+        $this->startTest();
+
+        $ondemandFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $restrictedOndemandFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $esFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_automatic',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $restrictedEsFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_automatic_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $this->assertNotNull($ondemandFeature);
+
+        $this->assertNull($restrictedOndemandFeature);
+
+        $this->assertNotNull($esFeature);
+
+        $this->assertNull($restrictedEsFeature);
+
+        $secondScheduledTasks = $this->getDbEntity('schedule_task',['merchant_id' => '10000000000000'])->toArray();
+
+        $this->assertArraySelectiveEquals([
+            'schedule_id' => 'IaVvw68vQ2lgp2',
+        ], $secondScheduledTasks);
+
+        $scheduledEarlySettlementmethods = [
+            Payment\Method::AEPS,
+            Payment\Method::CARD,
+            Payment\Method::CARDLESS_EMI,
+            Payment\Method::EMI,
+            Payment\Method::NETBANKING,
+            Payment\Method::PAYLATER,
+            Payment\Method::TRANSFER,
+            Payment\Method::UPI,
+        ];
+
+        $merchant = $this->getDbEntity('merchant',
+            [   'id' => '10000000000000',
+            ],
+            'test');
+
+        foreach ($scheduledEarlySettlementmethods as $method)
+        {
+            $esAutomaticPricingRule = $this->getDbEntity('pricing', ['feature'  => 'esautomatic',
+                'plan_id'   => $merchant['pricing_plan_id'], 'payment_method' => $method, 'international'=> 0])->toArray();
+
+            $this->assertArraySelectiveEquals([
+                    'percent_rate' => 12,
+                ], $esAutomaticPricingRule);
+        }
+    }
+
     public function testUpdateFeatureConfigFromBatchRoute()
     {
         $this->ba->batchAppAuth();

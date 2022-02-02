@@ -4498,6 +4498,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISABLE_ES_JOB_ERROR                                              = 'DISABLE_ES_JOB_ERROR';
     const DISABLE_ES_FOR_MERCHANT                                           = 'DISABLE_ES_FOR_MERCHANT';
     const DISABLE_ES_FOR_MERCHANT_ERROR                                     = 'DISABLE_ES_FOR_MERCHANT_ERROR';
+    const ADD_FULL_ES_JOB                                                   = 'ADD_FULL_ES_JOB';
+    const ADD_FULL_ES_JOB_DISPATCHED                                        = 'ADD_FULL_ES_JOB_DISPATCHED';
+    const ADD_FULL_ES_JOB_ERROR                                             = 'ADD_FULL_ES_JOB_ERROR';
+    const ADD_FULL_ES_FOR_MERCHANT                                          = 'ADD_FULL_ES_FOR_MERCHANT';
+    const ADD_FULL_ES_FOR_MERCHANT_ERROR                                    = 'ADD_FULL_ES_FOR_MERCHANT_ERROR';
+    const FULL_ES_ELIGIBLE_MERCHANTS                                        = 'FULL_ES_ELIGIBLE_MERCHANTS';
     const ADD_ONDEMAND_RESTRICTED_FEATURE_JOB                               = 'ADD_ONDEMAND_RESTRICTED_FEATURE_JOB';
     const ADD_ONDEMAND_RESTRICTED_FEATURE_JOB_DISPATCHED                    = 'ADD_ONDEMAND_RESTRICTED_FEATURE_JOB_DISPATCHED';
     const ADD_ONDEMAND_RESTRICTED_FEATURE_ERROR                             = 'ADD_ONDEMAND_RESTRICTED_FEATURE_ERROR';

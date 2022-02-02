@@ -1871,4 +1871,31 @@ return [
             ],
         ],
     ],
+
+    'testEnableFullOndemandViaCron' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/full',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'AddFullES job dispatched'
+            ],
+        ],
+    ],
+
+    'testEnableFullOndemandAndESViaCron' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/full',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'AddFullES job dispatched'
+            ],
+        ],
+    ],
+
 ];

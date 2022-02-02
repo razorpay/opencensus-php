@@ -17,6 +17,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Jobs\SettlementOndemand\AddFullES;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
 use RZP\Jobs\SettlementOndemand\AddOndemandPricingIfAbsent;
@@ -446,5 +447,14 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+    public function enableFullESFromRestricted(): array
+    {
+        AddFullES::dispatch($this->mode);
+
+        return [
+            'response' => 'AddFullES job dispatched',
+        ];
     }
 }

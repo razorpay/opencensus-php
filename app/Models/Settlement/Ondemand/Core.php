@@ -32,6 +32,8 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Core extends Base\Core
 {
+    const FULL_ES_DATALAKE_QUERY = "select merchant_id from hive.aggregate_pa.es_eligibility_list";
+
     const RESTRICTED_ES_DATALAKE_QUERY = "select merchant_id from hive.aggregate_pa.es_eligibility_day1";
 
     public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, $scheduled = false)
@@ -437,6 +439,24 @@ class Core extends Base\Core
             ]);
 
         });
+    }
+
+    public function findFullESEligilbleMerchants()
+    {
+        $dataLakeData = $this->app['datalake.presto']->getDataFromDataLake(self::FULL_ES_DATALAKE_QUERY);
+
+        $this->trace->info(TraceCode::FULL_ES_ELIGIBLE_MERCHANTS,[
+            'data' => $dataLakeData
+        ]);
+
+        $merchantIdList = [];
+
+        foreach ($dataLakeData as $data)
+        {
+            $merchantIdList[] = $data['merchant_id'];
+        }
+
+        return $merchantIdList;
     }
 
 }

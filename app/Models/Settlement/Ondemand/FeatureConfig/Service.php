@@ -69,11 +69,11 @@ class Service extends Base\Service
 
                             if($input[Entity::FULL_ACCESS] === 'yes')
                             {
-                                $this->disableFeatureFlag($merchant, $input, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+                                $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
 
                                 if ($merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC_RESTRICTED) === true)
                                 {
-                                    $this->disableFeatureFlag($merchant, $input, Feature\Constants::ES_AUTOMATIC_RESTRICTED);
+                                    $this->disableFeatureFlag($merchant, Feature\Constants::ES_AUTOMATIC_RESTRICTED);
 
                                     $this->enableScheduledEs($input[Entity::MERCHANT_ID]);
                                 }
@@ -138,13 +138,13 @@ class Service extends Base\Service
         }
     }
 
-    public function disableFeatureFlag($merchant, $input, $feature)
+    public function disableFeatureFlag($merchant, $feature)
     {
         if ($merchant->isFeatureEnabled($feature) === true)
         {
             $feature = (new Feature\Repository)
                                     ->findByEntityTypeEntityIdAndNameOrFail(Feature\Constants::MERCHANT,
-                                                                            $input['merchant_id'],
+                                                                            $merchant->getId(),
                                                                             $feature);
 
             (new Feature\Core)->delete($feature, true);
@@ -168,7 +168,6 @@ class Service extends Base\Service
             });
         }
     }
-
 
     public function validateWithFeatureConfig()
     {
@@ -234,5 +233,19 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
         $this->app['basicauth']->setMerchant($merchant);
         (new \RZP\Models\Merchant\Service)->enableScheduledEs(true);
+    }
+
+    public function enableFullESFromRestricted($merchantId)
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC_RESTRICTED) === true)
+        {
+            $this->disableFeatureFlag($merchant, Feature\Constants::ES_AUTOMATIC_RESTRICTED);
+
+            $this->enableScheduledEs($merchantId);
+        }
     }
 }
