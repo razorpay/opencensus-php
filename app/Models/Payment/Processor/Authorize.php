@@ -3810,19 +3810,46 @@ trait Authorize
                 'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
             ];
 
-            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+            $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
-            $paymentMetaEntity->payment()->associate($payment);
+            if($library === Analytics\Metadata::DIRECT)
+            {
+                $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+            }
+
+            if(empty($paymentMeta))
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+                $paymentMetaEntity->payment()->associate($payment);
+            }
+            else
+            {
+                $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateDccInfo($paymentMeta, $paymentMetaInput);
+            }
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
     }
 
-    public function checkDccMetaRecord($id): bool
+    public function checkDccMetaRecord($payment): bool
     {
-        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($id);
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
 
-        return empty($paymentMeta);
+        $response = empty($paymentMeta);
+
+        if($response === false)
+        {
+            $library = (new Payment\Service)->getLibraryFromPayment($payment);
+
+            if($library === Analytics\Metadata::DIRECT and
+                $paymentMeta['dcc_offered'] === false)
+            {
+                $response = true;
+            }
+        }
+
+        return $response;
     }
 
     protected function preProcessHdfcVasSurcharge(Payment\Entity $payment)
@@ -9520,7 +9547,7 @@ trait Authorize
             (isset($input['dcc_currency']) === true) and
             (isset($input['currency_request_id']) === true))
         {
-            if ($this->checkDccMetaRecord($payment->getId()) === false)
+            if ($this->checkDccMetaRecord($payment) === false)
             {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS);
             }

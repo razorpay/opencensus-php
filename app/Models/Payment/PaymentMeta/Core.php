@@ -85,4 +85,23 @@ class Core extends Base\Core
             );
         }
     }
+
+    /**
+     * This method is used to update DCC info if metadata already exists.
+     * @param Entity $paymentMeta
+     * @param $input
+     * @return mixed
+     */
+    public function updateDccInfo(PaymentMeta\Entity $paymentMeta, $input)
+    {
+        $paymentMeta->setGatewayAmount($input['gateway_amount']);
+        $paymentMeta->setGatewayCurrency($input['gateway_currency']);
+        $paymentMeta->setForexRate($input['forex_rate']);
+        $paymentMeta->setDccOffered($input['dcc_offered']);
+        $paymentMeta->setDccMarkUpPercent($input['dcc_mark_up_percent']);
+
+        $this->repo->saveOrFail($paymentMeta);
+
+        return $paymentMeta->getId();
+    }
 }

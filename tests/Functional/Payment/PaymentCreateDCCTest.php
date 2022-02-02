@@ -1217,6 +1217,57 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
     }
 
+    public function testPaymentCreateWithDCCDirectLibraryWithMetadata()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
+        $payment = $this->payment;
+        $payment['meta']['action_type'] = 'authenticate';
+        $payment['meta']['reference_id'] = 'G3oNMjSDsXfRp';
+
+        //setMetadataForPublicAuthPayment will take care of setting library to direct
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('USD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+        $this->assertEquals($paymentMeta['action_type'], $payment['meta']['action_type']);
+        $this->assertEquals($paymentMeta['reference_id'], $payment['meta']['reference_id']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+
+        $url = 'http://localhost/v1/payments/'.$paymentMeta['payment_id'].'/updateAndRedirect';
+
+        $duplicateRequest = [
+            'content'=>['currency_request_id'=>'Iqweyfh','dcc_currency'=>$paymentMeta['gateway_currency']],
+            'method'=>'post',
+            'url'=>$url
+        ];
+
+        try {
+            $SecondResponse=$this->sendRequest($duplicateRequest);
+            $responseContent = json_decode($SecondResponse->getContent(), true);
+
+            $this->assertEquals($paymentEntity['id'],$responseContent['razorpay_payment_id']);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("Duplicate request. This request has already been processed.", $e->getMessage());
+        }
+    }
+
     public function testPaymentCreateWithDCCCustomLibraryWithoutFeature()
     {
         $payment = $this->payment;
