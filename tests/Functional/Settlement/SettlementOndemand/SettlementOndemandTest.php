@@ -7,6 +7,7 @@ use Queue;
 use Config;
 use DateTime;
 use Carbon\Carbon;
+use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Constants\HashAlgo;
@@ -18,6 +19,7 @@ use RZP\Services\Mock\RazorpayXClient;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\SettlementOndemand\RequestOndemandPayout;
@@ -803,8 +805,6 @@ class SettlementOndemandTest extends TestCase
 
     }
 
-
-
     public function testOndemandPartialScheduledSettlementWithBalanceLessThanSettleableBalance()
     {
         $this->ba->cronAuth(MODE::TEST);
@@ -899,6 +899,83 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($settlementOndemand);
 
+    }
+
+    public function testEnableRestrictedOndemandViaCron()
+    {
+        $this->ba->cronAuth(MODE::TEST);
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
+                              ->setConstructorArgs([$this->app])
+                              ->onlyMethods([ 'getDataFromDataLake'])
+                              ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoServiceData = [
+            [ "merchant_id"=> '10000000000000']
+        ];
+
+        $prestoService->method( 'getDataFromDataLake')
+                      ->willReturn($prestoServiceData);
+
+        $this->startTest();
+
+        $featureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 1],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'percentage_of_balance_limit'   => FeatureConfig\Entity::DEFAULT_PERCENTAGE_OF_BALANCE_LIMIT,
+            'settlements_count_limit'       => FeatureConfig\Entity::DEFAULT_SETTLEMENTS_COUNT_LIMIT,
+            'max_amount_limit'              => FeatureConfig\Entity::DEFAULT_MAX_AMOUNT_LIMIT,
+            'pricing_percent'               => FeatureConfig\Entity::DEFAULT_PRICING_PERCENT,
+            'es_pricing_percent'            => FeatureConfig\Entity::DEFAULT_ES_PRICING_PERCENT
+        ], $featureConfigs['items'][0]);
+
+        $ondemandPricingRule = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' =>'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $esAutomaticPricingRule = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' =>'esautomatic_restricted',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($ondemandPricingRule['percent_rate'], 30);
+
+        $this->assertEquals($esAutomaticPricingRule['percent_rate'], 12);
+
+        $Ondemandfeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $Restrictedfeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $this->assertNotNull($Ondemandfeature);
+
+        $this->assertNotNull($Restrictedfeature);
     }
 
     public function testUpdateOndemandTransferPayoutId()

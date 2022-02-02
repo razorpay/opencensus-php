@@ -32,6 +32,8 @@ use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Core extends Base\Core
 {
+    const RESTRICTED_ES_DATALAKE_QUERY = "select merchant_id from hive.aggregate_pa.es_eligibility_day1";
+
     public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, $scheduled = false)
     {
         if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
@@ -372,6 +374,25 @@ class Core extends Base\Core
         }
 
         return 25;
+    }
+
+
+    public function findOndemandRestrictedEligilbleMerchants()
+    {
+        $dataLakeData = $this->app['datalake.presto']->getDataFromDataLake(self::RESTRICTED_ES_DATALAKE_QUERY);
+
+        $this->trace->info(TraceCode::RESTRICTED_ES_ELIGIBLE_MERCHANTS,[
+            'data' => $dataLakeData
+        ]);
+
+        $merchantIdList = [];
+
+        foreach ($dataLakeData as $data)
+        {
+            $merchantIdList[] = $data['merchant_id'];
+        }
+
+        return $merchantIdList;
     }
 
     public function addDefaultPricing($merchant, $percentRate, $pricingFeature = PricingFeature::SETTLEMENT_ONDEMAND)

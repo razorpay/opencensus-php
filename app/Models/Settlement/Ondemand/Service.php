@@ -20,6 +20,7 @@ use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Jobs\SettlementOndemand\MockPayoutOndemandWebhook;
 use RZP\Jobs\SettlementOndemand\AddOndemandPricingIfAbsent;
+use RZP\Jobs\SettlementOndemand\AddOndemandRestrictedFeature;
 use RZP\Jobs\SettlementOndemand\PartialScheduledSettlementJob;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
@@ -396,7 +397,17 @@ class Service extends Base\Service
         return [
             'response' => 'PartialScheduledSettlementJob job dispatched',
         ];
+    }
 
+    public function addOndemandRestrictedFeature()
+    {
+        AddOndemandRestrictedFeature::dispatch($this->mode);
+
+        $response = [
+            'response'  => 'AddOndemandRestrictedFeature job dispatched',
+        ];
+
+        return $response;
     }
 
     public function createOrUpdatePricingRule($merchant, $pricingPercent, $pricingFeature)

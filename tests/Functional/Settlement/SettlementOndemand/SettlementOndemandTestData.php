@@ -1858,4 +1858,17 @@ return [
             ],
         ],
     ],
+
+    'testEnableRestrictedOndemandViaCron' =>[
+        'request'  => [
+            'url'     => '/settlements/ondemand/restricted',
+            'method'  => 'post',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'response' => 'AddOndemandRestrictedFeature job dispatched'
+            ],
+        ],
+    ],
 ];

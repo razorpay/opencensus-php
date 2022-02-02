@@ -183,4 +183,11 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function addOndemandRestrictedFeature()
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->addOndemandRestrictedFeature();
+
+        return ApiResponse::json($data);
+    }
 }

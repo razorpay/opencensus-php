@@ -2106,7 +2106,7 @@ class Route
         'setl_ondemand_transfer_payout_update'     => ['post',      'settlements/ondemand/transfer/payout',          'SettlementOndemandController@updateOndemandTransferPayoutId'       ],
         'early_settlement_feature_period_create'   => ['post',      'es/feature/period',                             'SettlementOndemandController@enableFeaturePeriod'                  ],
         'early_settlement_feature_period_disable'  => ['post',      'es/feature/disable',                            'SettlementOndemandController@disableFeaturePeriod'                 ],
-
+        'settlement_ondemand_restricted_enable'    => ['post',      'settlements/ondemand/restricted',               'SettlementOndemandController@addOndemandRestrictedFeature'         ],
 
 
         // OAuth routes
@@ -3852,6 +3852,7 @@ class Route
         'merchant_onboarding_crons',
         'merchant_onboarding_notify',
         'settlement_ondemand_process',
+        'settlement_ondemand_restricted_enable',
         'early_settlement_feature_period_disable',
         'internal_balance_fetch_by_merchant_id',
         'internal_balance_fetch_by_merchant_id_old',
@@ -11186,6 +11187,7 @@ class Route
             'setl_reconcile_pull',
             'setl_transaction_replay',
             'settlement_ondemand_process',
+            'settlement_ondemand_restricted_enable',
             'early_settlement_feature_period_disable',
             'settlement_ondemand_partial_scheduled',
             'nodal_initiate_transfer',
