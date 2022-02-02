@@ -1027,6 +1027,120 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest('100', 'Visa', ['payment' => '1nvp2XPMmaRLxy'], Card\Type::CREDIT);
     }
 
+    public function testCorporateCardRuleWithoutNetwork()
+    {
+        $corporateRule = new Pricing\Entity([
+            'id'                    => '1nvp2XPMmaCORP',
+            'plan_id'               => '1hDYlICobzOCYt',
+            'plan_name'             => 'testMaxFee',
+            'product'               => 'primary',
+            'feature'               => 'payment',
+            'payment_method'        => 'card',
+            'payment_method_type'   => 'credit',
+            'payment_method_subtype'=> 'business',
+            'payment_network'       => null,
+            'payment_issuer'        => null,
+            'amount_range_active'   => false,
+            'amount_range_min'      => 0,
+            'amount_range_max'      => 0,
+            'percent_rate'          => 200,
+            'fixed_rate'            => 0,
+            'international'         => 0,
+            'min_fee'               => 0,
+            'max_fee'               => 1000,
+            'fee_bearer'            => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $nonCorporateRule = new Pricing\Entity([
+            'id'                    => '1nvp2XPnonCorp',
+            'plan_id'               => '1hDYlICobzOCYt',
+            'plan_name'             => 'testMaxFee',
+            'product'               => 'primary',
+            'feature'               => 'payment',
+            'payment_method'        => 'card',
+            'payment_method_type'   => 'credit',
+            'payment_network'       => 'VISA',
+            'payment_issuer'        => null,
+            'amount_range_active'   => false,
+            'amount_range_min'      => 0,
+            'amount_range_max'      => 0,
+            'percent_rate'          => 200,
+            'fixed_rate'            => 0,
+            'international'         => 0,
+            'min_fee'               => 0,
+            'max_fee'               => 1000,
+            'fee_bearer'            => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $pricingRules = [$corporateRule, $nonCorporateRule];
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, false, $pricingRules));
+
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPnonCorp'], Card\Type::CREDIT, false, false, null, null, null, "business");
+
+        // with razorx
+        $this->mockRazorx();
+
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaCORP'], Card\Type::CREDIT, false, false, null, null, null, "business");
+    }
+
+    public function testCorporateCardRuleWithNetwork()
+    {
+        $corporateRule = new Pricing\Entity([
+            'id'                    => '1nvp2XPMmaCORP',
+            'plan_id'               => '1hDYlICobzOCYt',
+            'plan_name'             => 'testMaxFee',
+            'product'               => 'primary',
+            'feature'               => 'payment',
+            'payment_method'        => 'card',
+            'payment_method_type'   => 'credit',
+            'payment_method_subtype'=> 'business',
+            'payment_network'       => 'VISA',
+            'payment_issuer'        => null,
+            'amount_range_active'   => false,
+            'amount_range_min'      => 0,
+            'amount_range_max'      => 0,
+            'percent_rate'          => 200,
+            'fixed_rate'            => 0,
+            'international'         => 0,
+            'min_fee'               => 0,
+            'max_fee'               => 1000,
+            'fee_bearer'            => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $nonCorporateRule = new Pricing\Entity([
+            'id'                    => '1nvp2XPnonCorp',
+            'plan_id'               => '1hDYlICobzOCYt',
+            'plan_name'             => 'testMaxFee',
+            'product'               => 'primary',
+            'feature'               => 'payment',
+            'payment_method'        => 'card',
+            'payment_method_type'   => 'credit',
+            'payment_network'       => 'VISA',
+            'payment_issuer'        => null,
+            'amount_range_active'   => false,
+            'amount_range_min'      => 0,
+            'amount_range_max'      => 0,
+            'percent_rate'          => 200,
+            'fixed_rate'            => 0,
+            'international'         => 0,
+            'min_fee'               => 0,
+            'max_fee'               => 1000,
+            'fee_bearer'            => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $pricingRules = [$corporateRule, $nonCorporateRule];
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo(false, false, false, $pricingRules));
+
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaCORP'], Card\Type::CREDIT, false, false, null, null, null, "business");
+
+        // with razorx
+        $this->mockRazorx();
+
+        $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaCORP'], Card\Type::CREDIT, false, false, null, null, null, "business");
+    }
+
     public function testCreditCardRuleWithDifferentNetworkAndReceiver()
     {
         $pricingRules = $this->getDefaultPricingRules(false, true, false);
@@ -1452,9 +1566,9 @@ class MerchantFeeTest extends TestCase
         $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
-    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null, $procurer = null)
+    protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null, $procurer = null, $subType = null)
     {
-        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType, $procurer);
+        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational, $receiver, $authType, $procurer, $subType);
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -1485,7 +1599,7 @@ class MerchantFeeTest extends TestCase
         $this->fail();
     }
 
-    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null, $procurer = null)
+    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false, $receiver = null, $authType = null, $procurer = null, $subType = null)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
@@ -1500,6 +1614,8 @@ class MerchantFeeTest extends TestCase
         $payment->card->setNetwork($network);
 
         $payment->card->setType($cardType);
+
+        $payment->card->setSubType($subType);
 
         $payment->card->setInternational($isCardInternational);
 

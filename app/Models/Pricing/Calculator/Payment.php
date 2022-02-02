@@ -233,6 +233,44 @@ class Payment extends Base
         return $this->applyFiltersOnRules($rules, $filters);
     }
 
+    protected function getRelevantPricingRuleForCorporateCardPayment($rules)
+    {
+        $payment = $this->entity;
+
+        $cardType = $payment->card->getTypeElseDefault();
+
+        $international = $payment->isInternational();
+
+        $receiverType = $payment->getReceiverType();
+
+        $authType = $payment->getAuthType();
+
+        $network = Card\Network::getCode($payment->card->getNetwork());
+
+        $issuer = $payment->card->getIssuer();
+
+        $subtype = $payment->card->getSubtype();
+
+        $filters1 = [
+            [Pricing\Entity::RECEIVER_TYPE,             $receiverType,  true,   null    ],
+            [Pricing\Entity::INTERNATIONAL,             $international, false,  false   ],
+            [Pricing\Entity::PAYMENT_METHOD_SUBTYPE,    $subtype,       true,   null    ],
+            [Pricing\Entity::PAYMENT_NETWORK,           $network,       true,   null    ],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters1);
+
+        $filters2 = [
+            [Pricing\Entity::PAYMENT_METHOD_TYPE,       $cardType,      true,   null    ],
+            [Pricing\Entity::AUTH_TYPE,                 $authType,      true,   null    ],
+            [Pricing\Entity::PAYMENT_ISSUER,            $issuer,        true,   null    ],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters2);
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
     protected function getRelevantPricingRuleForCardPayment($rules)
     {
         // All the rules for the current pricing plan will be put
@@ -255,6 +293,22 @@ class Payment extends Base
         $issuer = $payment->card->getIssuer();
 
         $subtype = $payment->card->getSubtype();
+
+        $orgId    = $this->entity->merchant->org->getId();
+
+        if($subtype === 'business' && $orgId === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $merchantId = $payment->getMerchantId();
+            $mode = $this->mode ?? Mode::LIVE;
+
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId, RazorxTreatment::CORPORATE_PRICING_FUNCTIONALITY, $mode);
+
+            if ($variant === "on")
+            {
+                return $this->getRelevantPricingRuleForCorporateCardPayment($rules);
+            }
+        }
 
         // Current Implementation
         // * Filter based on receiver type

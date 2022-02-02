@@ -9,6 +9,9 @@ final class RazorxTreatment
     const LLPIN_SYNC    = "llpin_sync";
     const CIN_SYNC      = "cin_sync";
     const BVS_IN_SYNC      = "bvs_in_sync";
+
+    const CORPORATE_PRICING_FUNCTIONALITY = 'CORPORATE_PRICING_FUNCTIONALITY';
+
     // the ON variant
     const RAZORX_VARIANT_ON     = 'on';
 
