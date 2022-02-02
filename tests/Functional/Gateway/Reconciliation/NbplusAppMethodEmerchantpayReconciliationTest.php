@@ -45,13 +45,10 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $paymentArray['amount'] = 1000;
         $paymentArray['dcc_currency'] = $customerSelectedCurrency;
         $paymentArray['currency_request_id'] = $currencyRequestId;
+        $paymentArray['_']['library'] = 'checkoutjs';
         $paymentArray['billing_address'] = $this->getBillingAddressDetails();
 
-        $this->payment = $paymentArray;
-
-        $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+        $payment = $this->makePaymentViaAjaxRouteAndCapture($paymentArray);
 
         $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
         $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
@@ -101,11 +98,12 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $paymentArray['amount'] = 1000;
         $paymentArray['dcc_currency'] = $customerSelectedCurrency;
         $paymentArray['currency_request_id'] = $currencyRequestId;
+        $paymentArray['_']['library'] = 'checkoutjs';
         $paymentArray['billing_address'] = $this->getBillingAddressDetails();
 
-        $this->payment = $paymentArray;
+        $payment = $this->makePaymentViaAjaxRouteAndCapture($paymentArray);
 
-        $this->doAuthCaptureAndRefundPayment($this->payment);
+        $this->refundPayment($payment['public_id'], $payment['amount']);
 
         $refund = $this->getDbLastEntity('refund');
 
@@ -164,13 +162,10 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $paymentArray['amount'] = 1000;
         $paymentArray['dcc_currency'] = $customerSelectedCurrency;
         $paymentArray['currency_request_id'] = $currencyRequestId;
+        $paymentArray['_']['library'] = 'checkoutjs';
         $paymentArray['billing_address'] = $this->getBillingAddressDetails();
 
-        $this->payment = $paymentArray;
-
-        $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+        $payment = $this->makePaymentViaAjaxRouteAndCapture($paymentArray);
 
         $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
         $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
@@ -256,6 +251,21 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $this->fixtures->merchant->edit('10000000000000');
 
         $this->ba->privateAuth();
+    }
+
+    private function makePaymentViaAjaxRouteAndCapture($paymentArray){
+
+        $this->doAuthPaymentViaAjaxRoute($paymentArray);
+
+        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+
+        $this->capturePayment(
+            "pay_".$payment['id'],
+            $payment['amount'],$payment['currency']);
+
+        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+
+        return $payment;
     }
 
     private function getBillingAddressDetails(){

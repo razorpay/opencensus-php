@@ -6228,6 +6228,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED        = 'PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED';
     const PAYMENT_HANDLE_CREATION_QUEUE_FAILED              = 'PAYMENT_HANDLE_CREATION_QUEUE_FAILED';
 
+    const UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS        = 'UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

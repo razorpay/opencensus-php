@@ -797,6 +797,100 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
     }
 
+    public function testTrustlyPaymentFromRazorpayjsLibrary()
+    {
+        $this->setConfigurationInternationalApp('trustly');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'INR';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'EUR';
+
+        $this->assertEquals("EUR", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
+
+        $paymentArray = $this->payment;
+        $paymentArray['_']['library'] = 'razorpayjs';
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            BadRequestException::class,"Payment method not supported on this integration");
+    }
+
+    public function testTrustlyPaymentFromS2SLibrary()
+    {
+        $this->setConfigurationInternationalApp('trustly');
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+
+        $paymentArray = $this->payment;
+
+        //Removed all dcc and billing_address detail from payment request for testing Library Validation Check.
+        unset($paymentArray['billing_address']);
+
+        $paymentArray['_']['library'] = 's2s';
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doS2SPrivateAuthAndCapturePayment($paymentArray);
+            },
+            BadRequestException::class,"Payment method not supported on this integration");
+    }
+
+
     public function testVerify()
     {
         $paymentArray = $this->getDefaultAppPayment($this->provider);
@@ -1059,6 +1153,7 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->payment = $this->getDefaultAppPayment($this->provider);
 
+        $this->payment['_']['library'] = 'checkoutjs';
         $this->payment['billing_address'] = $this->getBillingAddressDetails();
 
         $this->ba->privateAuth();

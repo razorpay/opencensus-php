@@ -176,6 +176,11 @@ class Metadata
         self::DIRECT,
     ];
 
+    const SUPPORTED_LIBRARIES_FOR_INTERNATIONAL_APPS = [
+        self::CHECKOUTJS,
+        self::HOSTED
+    ];
+
     public static function getStringForValue($value, array $map)
     {
         if ($value === null)

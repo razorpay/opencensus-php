@@ -1754,6 +1754,8 @@ trait Authorize
 
             $this->validateCardAndCvv($payment, $input);
 
+            $this->validateLibraryForInternationalApps($payment, $input);
+
             $this->validateAddressIfPresentWithoutRedirect($payment, $input);
 
             $this->validateRecurringIfApplicable($payment, $input);
@@ -9235,6 +9237,20 @@ trait Authorize
         return false;
     }
 
+    /**
+     * @param $library
+     * @return bool
+     */
+    public function isLibrarySupportedForInternationalApps($library): bool
+    {
+        if ((isset($library) === true) and
+            (in_array($library, Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_INTERNATIONAL_APPS) === true)
+        ) {
+            return true;
+        }
+        return false;
+    }
+
     // function accepts, $terminalGatewayInput to check whether we can return a redirect response or not
     // since it has auth terminal selection data and if we can return a redirect response, we are using
     // $gatewayInput to add selected terminalIds node which will be used in the redirect flow
@@ -10182,6 +10198,42 @@ trait Authorize
             }
         }
     }
+    
+    /**  
+     * Validating Libraries for Emerchantpay Payments
+     * This validation will be removed once address and name collection screen
+     * is rolled out for all libraries
+     *  
+     * @param Payment\Entity 
+     * @throws Exception\BadRequestException
+     */
+
+    protected function validateLibraryForInternationalApps(Payment\Entity $payment, array $input)
+    {
+        if ($input['method'] !== Method::APP || $payment->isInternational() !== true){
+            return;
+        }
+
+        $library = (new Payment\Service)->getLibraryFromPayment($payment);
+
+        if($this->isLibrarySupportedForInternationalApps($library) === false){
+
+            $this->trace->info(
+                TraceCode::UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS,
+                [
+                    'app'          => $input['provider'],
+                    'library'      => $library
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+                null,
+                null,
+                "Payment method not supported on this integration"
+            );
+        }
+    }
+
 
     protected function validateAddressIfPresent(Payment\Entity $payment, array $input)
     {
