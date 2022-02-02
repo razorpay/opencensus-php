@@ -50,6 +50,7 @@ import {
   getWorkflowNameForRoute,
 } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
@@ -120,10 +121,7 @@ class Profile extends Component {
     const response = await fetchWorkflowStatus(workflowType);
     const workflow = response?.data;
     if (
-      workflow &&
-      workflow.workflow_exists &&
-      ['open', 'approved'].includes(workflow?.workflow_status) &&
-      workflow?.needs_clarification &&
+      isWorkflowInClarification(workflow, ['open', 'approved']) &&
       workflow?.tags?.includes('awaiting-customer-response')
     ) {
       openModal({

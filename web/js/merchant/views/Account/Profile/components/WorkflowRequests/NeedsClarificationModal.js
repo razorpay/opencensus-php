@@ -11,6 +11,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 
 /**
  * Needs Clarification Modal for merchant to respond to queries
@@ -190,21 +191,16 @@ const NeedsClarificationModal = ({
     if (!refetch) return;
     fetchWorkflowStatus(workflowType).then((res) => {
       const workflow = res.data;
-      if (workflow?.tags?.includes('customer-responded')) {
-        showNotification({
-          type: 'error',
-          message: `You've already responded to ${workflowName} workflow`,
-        });
-        closeModal();
-      } else if (
-        !workflow ||
-        !workflow.workflow_exists ||
-        !['open', 'approved'].includes(workflow?.workflow_status) ||
-        !workflow?.needs_clarification
-      ) {
+      if (!isWorkflowInClarification(workflow, ['open', 'approved'])) {
         showNotification({
           type: 'error',
           message: `No clarification required for ${workflowName} worfklow`,
+        });
+        closeModal();
+      } else if (workflow?.tags?.includes('customer-responded')) {
+        showNotification({
+          type: 'error',
+          message: `You've already responded to ${workflowName} workflow`,
         });
         closeModal();
       }

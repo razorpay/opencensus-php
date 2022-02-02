@@ -3,6 +3,12 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 
+export const isWorkflowInClarification = (workflow, statuses) => {
+  if (!workflow) return false;
+  const { workflow_status, needs_clarification, request_under_validation } = workflow;
+  return statuses.includes(workflow_status) && needs_clarification && !request_under_validation;
+};
+
 /**
  * Shows following workflow status based on the workflow status response
  * - No Status (Default condition)
@@ -23,7 +29,7 @@ const WorkflowStatus = ({
   onReplyClick,
   roles = [],
   reviewWorkflowStatus = ['open', 'approved'],
-  responseRequiredWorfklowStatus = ['open', 'approved'],
+  responseRequiredWorkflowStatus = ['open', 'approved'],
   respondedWorkflowStatus = ['open', 'approved'],
   rejectedWorkflowStatus = ['rejected'],
   showReviewStatus = true,
@@ -43,39 +49,47 @@ const WorkflowStatus = ({
     }
   }, []);
 
+  const workflow = workflows[workflowType];
+  if (!workflow) return null;
+
+  const {
+    workflow_status,
+    needs_clarification,
+    request_under_validation,
+    tags,
+    rejection_reason_message,
+  } = workflow;
+
   return (
     <>
+      {/* Request in review */}
       {showReviewStatus &&
-        workflows[workflowType]?.workflow_status &&
-        reviewWorkflowStatus.includes(workflows[workflowType]?.workflow_status) &&
-        !workflows[workflowType]?.needs_clarification && (
-          <div class="workflow-status inprogress">{reviewStatus}</div>
-        )}
+        ((reviewWorkflowStatus.includes(workflow_status) && !needs_clarification) ||
+          request_under_validation) && <div class="workflow-status inprogress">{reviewStatus}</div>}
+
+      {/* Request Rejected */}
       {showRejectedStatus &&
-        workflows[workflowType]?.workflow_status &&
-        rejectedWorkflowStatus.includes(workflows[workflowType]?.workflow_status) && (
-          <div class="workflow-status rejected">
-            {workflows[workflowType]?.rejection_reason_message}
-          </div>
+        rejectedWorkflowStatus.includes(workflow_status) &&
+        !request_under_validation && (
+          <div class="workflow-status rejected">{rejection_reason_message}</div>
         )}
-      {/* Needs Clarification */}
-      {showResponseRequiredStatus &&
-        workflows[workflowType]?.workflow_status &&
-        respondedWorkflowStatus.includes(workflows[workflowType]?.workflow_status) &&
-        workflows[workflowType]?.needs_clarification &&
-        workflows[workflowType]?.tags?.includes('customer-responded') && (
+
+      {/* Needs Clarification Customer Responded */}
+      {showRespondedStatus &&
+        isWorkflowInClarification(workflow, respondedWorkflowStatus) &&
+        tags?.includes('customer-responded') && (
           <div class="workflow-status inprogress">
             Thank you for providing us with further information. Our team is going through the
             information provided by you and will help resolve this issue.
           </div>
         )}
-      {showRespondedStatus &&
-        workflows[workflowType]?.workflow_status &&
-        responseRequiredWorfklowStatus.includes(workflows[workflowType]?.workflow_status) &&
-        workflows[workflowType]?.needs_clarification &&
-        workflows[workflowType]?.tags?.includes('awaiting-customer-response') && (
+
+      {/* Needs Clarification Awaiting Customer Response */}
+      {showResponseRequiredStatus &&
+        isWorkflowInClarification(workflow, responseRequiredWorkflowStatus) &&
+        tags?.includes('awaiting-customer-response') && (
           <div class="workflow-status rejected">
-            {workflows[workflowType]?.needs_clarification}
+            {needs_clarification}
             {showAddReplyButton && (
               <button class="btn btn-link" onClick={onReplyClick ? onReplyClick : null}>
                 Add Reply
