@@ -892,7 +892,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS } = this.props;
 
     const isShiprocket =
-      paymentPageEntity.settings?.partner_webhook_settings?.partner_shiprocket === '1';
+      paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1';
 
     let isAllowedToSubmit, actionBtns, themeColor, content;
 
