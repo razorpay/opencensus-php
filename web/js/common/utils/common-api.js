@@ -32,7 +32,7 @@ export const sendDataToSalesForce = (data, user = {}, mode = 'live') => {
     },
     'connected-banking-icici': {
       Campaign_ID: 'icici_account_linking',
-      product_name: 'CA',
+      product_name: 'Current_Account',
     },
   };
 
