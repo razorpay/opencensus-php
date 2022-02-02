@@ -51,12 +51,12 @@ const BatchListContainer = (props) => {
       title="Batch Uploads"
       columns={[
         batchId,
-        fileName({ onClick: downloadFile }),
+        fileName,
         totalCount,
         processedCount,
         uploadedOn,
         status,
-        actions({ downloadFailedAddress: downloadFile }),
+        actions({ onClick: downloadFile }),
       ]}
       EmptyComponent={emptyComponent(null, null, 'No address files uploaded yet.')}
       {...props}

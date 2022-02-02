@@ -9,74 +9,46 @@ export const processedCount = { title: 'Processed', value: (item) => item.succes
 
 export const uploadedOn = { title: 'Uploaded On', value: getTime('created_at', 'DD MMM YYYY') };
 
-export const actions = ({ downloadFailedAddress }) => ({
+export const actions = ({ onClick }) => ({
   title: 'Actions',
   value: (item) => {
-    let result;
+    if (item.status === BATCH_STATUS.PROCESSED) {
+      const createdAt = new Date(item.created_at * 1000);
+      const expireAt = new Date();
 
-    // Don't render anything if all rows were processed
-    if (item.success_count === item.total_count) {
-      return null;
+      expireAt.setMonth(createdAt.getMonth() + 1);
+      expireAt.setDate(createdAt.getDate());
+
+      const disabled = new Date() > expireAt;
+
+      return (
+        <Button.Transparent
+          className="font-normal"
+          type="button"
+          disabled={disabled}
+          onClick={onClick(item.id)}
+        >
+          Rejected Addresses <i className="i i-download-blue" />
+        </Button.Transparent>
+      );
     }
 
-    switch (item.status) {
-      case BATCH_STATUS.PROCESSED: {
-        const createdAt = new Date(item.created_at * 1000);
-        const expireAt = new Date();
-
-        expireAt.setMonth(createdAt.getMonth() + 1);
-        expireAt.setDate(createdAt.getDate());
-
-        const disabled = new Date() > expireAt;
-
-        result = (
-          <Button.Transparent
-            type="button"
-            className="font-normal"
-            disabled={disabled}
-            onClick={downloadFailedAddress(item.id)}
-          >
-            Failed Addresses <i className="i i-download-blue" />
-          </Button.Transparent>
-        );
-        break;
-      }
-      default:
-        result = null;
-    }
-    return result;
+    return null;
   },
 });
 
-export const fileName = ({ onClick }) => ({
-  title: 'File Name',
-  value: (item) => {
-    const createdAt = new Date(item.created_at * 1000);
-    const expireAt = new Date();
-
-    expireAt.setMonth(createdAt.getMonth() + 1);
-    expireAt.setDate(createdAt.getDate());
-
-    const disabled = new Date() > expireAt;
-
-    return (
-      <Button.Transparent
-        className="file-name-button"
-        type="button"
-        disabled={disabled}
-        onClick={onClick(item.id)}
-      >
-        {item.name}
-      </Button.Transparent>
-    );
-  },
-});
+export const fileName = { title: 'File Name', value: (item) => item.name };
 
 export const status = {
   title: 'Status',
   value: (item) =>
     batchAddressStatusLabel({
       ...item,
-      status: item.status === 'partially_processed' ? BATCH_STATUS.PROCESSING : item.status,
+      status:
+        item.status === 'partially_processed'
+          ? BATCH_STATUS.PROCESSING
+          : item.status === 'failure'
+          ? BATCH_STATUS.FAILED
+          : item.status,
     }),
 };

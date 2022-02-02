@@ -1,6 +1,7 @@
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import AddressList from 'merchant/views/MagicCheckout/BulkAddressUpload/containers/List';
 import HeaderAction from 'common/ui/HeaderAction';
+import { validateModalInfo } from 'merchant/views/MagicCheckout/BulkAddressUpload/components/Content';
 
 import { useCallback } from 'react';
 import { connect } from 'react-redux';
@@ -15,29 +16,6 @@ import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 const gaEvents = setGaTrack('Dashboard - Magic Checkout - BU');
 const SAMPLE_BATCH_UPLOAD_FILE = `https://dashboard.razorpay.com/files/sample_batch_address_upload.xlsx`;
-
-const validateModalInfo = (maxRows, sampleUrl) => (
-  <div className="modal-info">
-    <h5 className="modal-info-heading">KEEP IN MIND</h5>
-    <ol className="validate-modal-ul">
-      <li>
-        File should follow the template format. Download{' '}
-        <a className="btn-link" href={sampleUrl}>
-          <strong>sample file</strong>
-        </a>{' '}
-        for the template.
-      </li>
-      <li>
-        Contact, Address Line1, City, State, Country and Zipcode are mandatory fields, can’t be left
-        blank.
-      </li>
-      <li>
-        For “address_type”, recommended values are home, office and other, if labels are available.
-      </li>
-      <li>The number of rows should not exceed {maxRows}.</li>
-    </ol>
-  </div>
-);
 
 const successModalContent = () => (
   <div className="text-center">
@@ -63,7 +41,7 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
         createBatch={createBatch}
         validateBatch={validateBatch}
         gaEvents={gaEvents}
-        validateModalInfo={validateModalInfo('1M')}
+        validateModalInfo={validateModalInfo('1M', SAMPLE_BATCH_UPLOAD_FILE)}
         successModalContent={successModalContent()}
         maxFileSize={52428800} // 50MB
       />
@@ -79,12 +57,9 @@ const BulkAddressUpload = ({ openModal, createBatch, validateBatch }) => {
   return (
     <>
       <HeaderAction responsive>
-        <div class="btn-toolbar pull-right">
+        <div className="btn-toolbar pull-right">
           <div className="pull-right MultiBatch--action">
-            <a className="btn btn-link" href={SAMPLE_BATCH_UPLOAD_FILE}>
-              Download Sample File
-            </a>
-            <button className="btn btn-primary" onClick={onUploadClick}>
+            <button type="button" className="btn btn-primary" onClick={onUploadClick}>
               Upload Address File
             </button>
           </div>
