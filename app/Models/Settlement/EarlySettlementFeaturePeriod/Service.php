@@ -206,13 +206,13 @@ class Service extends Base\Service
     {
         if ($input[Entity::FULL_ACCESS] === 'yes')
         {
-            (new \RZP\Models\Merchant\Service)->enableScheduledEs(true);
+            (new \RZP\Models\Merchant\Service)->enableScheduledEs(true, false);
         }
         else if ($input[Entity::FULL_ACCESS] ===  'no')
         {
             $this->createOrUpdateFeatureConfig($input);
 
-            (new \RZP\Models\Merchant\Service)->enablePartialScheduledEs();
+            (new \RZP\Models\Merchant\Service)->enablePartialScheduledEs(false);
         }
     }
 

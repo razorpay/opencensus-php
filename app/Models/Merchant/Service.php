@@ -3781,7 +3781,7 @@ class Service extends Base\Service
         }
     }
 
-    public function enableScheduledEs($skipRoleCheck = false): array
+    public function enableScheduledEs($skipRoleCheck = false, $notify = true): array
     {
         if($skipRoleCheck == false)
         {
@@ -3873,21 +3873,24 @@ class Service extends Base\Service
 
         // All the mail sending steps are taken out of the transactionOnLiveAndTest.
         // We want the flow to not get disturbed or reverted for any issues that may happen with mailer.
-        try
+        if ($notify === true)
         {
-            $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
-        }
+            try
+            {
+                $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
+            }
 
-        catch (\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::ERROR,
-                TraceCode::FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED,
-                [
-                    'merchant_id' => $this->merchant->getId(),
-                    'user_id' => $this->user->getId()
-                ]);
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::FEATURE_ENABLE_EARLY_SETTLEMENT_MAIL_FAILED,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'user_id' => $this->user->getId()
+                    ]);
+            }
         }
 
         return ['success' => true];
@@ -3923,7 +3926,7 @@ class Service extends Base\Service
         });
     }
 
-    public function enablePartialScheduledEs(): array
+    public function enablePartialScheduledEs($notify = true): array
     {
         $pricingForMerchant = $this->getScheduledEarlySettlementPricingForMerchant();
 
@@ -3950,20 +3953,23 @@ class Service extends Base\Service
             );
         });
 
-        try
+        if ($notify === true)
         {
-            $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::ERROR,
-                TraceCode::FEATURE_ENABLE_PARTIAL_ES_MAIL_FAILED,
-                [
-                    'merchant_id' => $this->merchant->getId(),
-                    'user_id' => $this->user->getId()
-                ]);
+            try
+            {
+                $this->sendMailsPostEnableScheduledEs($pricingForMerchant);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::FEATURE_ENABLE_PARTIAL_ES_MAIL_FAILED,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'user_id' => $this->user->getId()
+                    ]);
+            }
         }
 
         return ['success' => true];
