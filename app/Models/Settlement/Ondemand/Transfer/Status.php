@@ -44,6 +44,7 @@ class Status
             self::REVERSED,
         ],
         self::REVERSED => [
+            self::PROCESSING,
             self::PROCESSED,
         ],
     ];
