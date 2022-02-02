@@ -16,6 +16,7 @@ class WorkflowFeature
         self::SKIP_FOR_INTERNAL_PAYOUT        => 4,
         self::SKIP_FOR_PG_PAYOUT              => 5,
         Constants::SKIP_WF_FOR_PAYROLL        => 6,
+        Constants::SKIP_WF_FOR_PAYOUT_LINK    => 7,
     ];
 
     public static function getIntValueFromWorkflowFeature($feature)

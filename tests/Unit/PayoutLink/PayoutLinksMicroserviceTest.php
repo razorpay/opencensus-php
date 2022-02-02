@@ -202,7 +202,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $result['service']->fetchMultipleMerchantSpecific([]);
+        $result['service']->fetchMultipleMerchantSpecific([], "");
 
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('fetchMultiple');
@@ -216,7 +216,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         try
         {
-            $result['service']->fetchMultipleMerchantSpecific([]);
+            $result['service']->fetchMultipleMerchantSpecific([], "");
         }
         catch(\Exception $e)
         {

@@ -311,6 +311,16 @@ class WorkflowTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/wf-service/configs/';
 
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPendingPayoutLinks')->andReturn([
+            'entity' => 'collection',
+            'count' => 0,
+            'items' => []
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
         $this->startTest();
 
         $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
@@ -346,6 +356,43 @@ class WorkflowTest extends TestCase
 
     }
 
+    public function testCreateWorkflowConfigWithPendingPayoutLinks()
+    {
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPendingPayoutLinks')->andReturn([
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'id' => 'poutlk_id1',
+                    'amount' => '1000',
+                ],
+                [
+                    'id' => 'poutlk_id2',
+                    'amount' => '2000',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUT_LINKS);
+
+        $this->startTest();
+    }
+
     public function testUpdateWorkflowConfigNWFS()
     {
         $this->setUpExperimentForNWFS();
@@ -374,6 +421,12 @@ class WorkflowTest extends TestCase
                 'merchant_id'     => '10000000000000',
                 'org_id'          => '100000razorpay',
             ]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPendingPayoutLinks')->andReturn(['count' => 0]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $this->startTest();
 

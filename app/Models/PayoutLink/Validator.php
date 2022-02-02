@@ -31,6 +31,8 @@ class Validator extends Base\Validator
     const SEND_FAILURE_EMAIL_INTERNAL_RULE    = 'send_failure_email_internal';
     const SEND_REMINDER_EMAIL_INTERNAL_RULE   = 'send_reminder_email_internal';
     const SEND_PROCESSING_EXPIRED_EMAIL_INTERNAL_RULE   = 'send_processing_expired_email_internal';
+    const SEND_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_approve_otp_email_internal';
+    const SEND_BULK_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_bulk_approve_otp_email_internal';
     const MAX_IMPS_AMOUNT                  = 50000000;
     const MAX_UPI_AMOUNT                   = 10000000;
     const MAX_AMAZON_PAY_AMOUNT            = 1000000;
@@ -175,6 +177,21 @@ class Validator extends Base\Validator
         Entity::TO_EMAIL      => 'required|email',
         'payout_link_details' => 'required|array',
         'settings'            => 'required|array',
+    ];
+
+    protected static $sendApproveOtpEmailInternalRules = [
+        'to_email'            => 'required|email',
+        'payout_link_details' => 'required|array',
+        'otp'                 => 'required|string|min:4|max:6',
+        'validity'            => 'required|string',
+    ];
+
+    protected static $sendBulkApproveOtpEmailInternalRules = [
+        'to_email'            => 'required|email',
+        'total_amount'        => 'required|numeric',
+        'payout_links_count'  => 'required|integer',
+        'otp'                 => 'required|string|min:4|max:6',
+        'validity'            => 'required|string',
     ];
 
     protected function validateResendNotificationParams(array $input)

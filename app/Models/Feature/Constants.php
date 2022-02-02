@@ -418,6 +418,12 @@ class Constants
     const SKIP_WF_FOR_PAYROLL           = 'skip_wf_for_payroll';
 
     /**
+     * Skips workflow for Payout Link requests for creating payouts for Business Banking (RazorpayX)
+     * Please check WorkflowFeature.php before modifying this value
+     */
+    const SKIP_WF_FOR_PAYOUT_LINK       = 'skip_wf_for_payout_link';
+
+    /**
      * Skips workflow payout specific requests for creating payouts for Business Banking (RazorpayX)
      * Please check WorkflowFeature.php before modifying this value
      */

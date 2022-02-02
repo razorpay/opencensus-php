@@ -187,6 +187,9 @@ final class RazorxTreatment
     // If the feature is mapped to a merchant, the routes will go to MicroService
     const RX_PAYOUT_LINK_MICROSERVICE = 'rx_payout_links_ms';
 
+    // To decide if approval workflow is enabled for the merchant
+    const RX_PAYOUT_LINK_WORKFLOW = 'rx_payout_link_workflow';
+
     // Check whether skip_workflow_payout_specific feature is allowed for merchant or not.
     const SKIP_WORKFLOW_PAYOUT_SPECIFIC_FEATURE = 'skip_workflow_payout_specific_feature';
 

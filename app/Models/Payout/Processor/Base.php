@@ -1775,6 +1775,29 @@ class Base extends BaseCore
             $this->workflowFeature = Features::PAYOUT_WORKFLOWS;
         }
 
+        // if App is Payout Link(and skip_workflow is present), respect it
+        // else continue with the flow i.e. Payout Approval should be applicable as per the existing flow
+        // (respecting all the existing payout-features)
+        // New Flow:
+        // 1. Payout Link gets created and goes through approval
+        // 2. After approval, the link is sent to customer
+        // 3. Customer enters his find account details and a payout gets created
+        // 4. for this new payout, we don't want workflow to kick again
+        // (as payout link has already gone through approval) so skip_workflow = true for such payouts
+        if ((new Payout\Service())->isPayoutLinkApp() === true)
+        {
+            if (($skipWorkflow !== null) and ($skipWorkflow === true))
+            {
+                $this->workflowFeature = Features::SKIP_WF_FOR_PAYOUT_LINK;
+
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
         if ($skipWorkflow !== null)
         {
             $hasSkipWorkflowPayoutSpecificFeature = $this->merchant->isFeatureEnabled(Features::SKIP_WF_AT_PAYOUTS);

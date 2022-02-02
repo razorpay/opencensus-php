@@ -58,6 +58,7 @@ class PayoutLinks
     const STATUS_CANCELLED                         = 'cancelled';
     const EXPIRE_BY                                = 'expire_by';
     const EXPIRED_AT                               = 'expired_at';
+    const USER_DETAILS                             = 'user_details';
     const INTEGRATION_INFO                         = 'integration_info';
     const SOURCE_IDENTIFIER                        = 'source_identifier';
     const IS_EXPIRY_ENABLED                        = 'is_expiry_enabled';
@@ -65,6 +66,13 @@ class PayoutLinks
     const IS_CORRECT_MERCHANT                      = 'is_correct_merchant';
     const IS_DASHBOARD_REQUEST                     = 'is_dashboard_request';
     const IS_INTEGRATION_SUCCESS                   = 'is_integration_success';
+    const APPROVE_WORKFLOW_PATH                    = 'twirp/payoutlinks.Payoutlinks/ApproveAction';
+    const REJECT_WORKFLOW_PATH                     = 'twirp/payoutlinks.Payoutlinks/RejectAction';
+    const WORKFLOW_SUMMARY_PATH                    = 'twirp/payoutlinks.Payoutlinks/WorkflowSummary';
+    const BULK_APPROVE_PATH                        = 'twirp/payoutlinks.Payoutlinks/ApproveBulkPayoutLinks';
+    const BULK_REJECT_PATH                         = 'twirp/payoutlinks.Payoutlinks/RejectBulkPayoutLinks';
+    const APPROVE_OTP_PATH                         = 'twirp/payoutlinks.Payoutlinks/OtpForApproval';
+    const BULK_APPROVE_OTP_PATH                    = 'twirp/payoutlinks.Payoutlinks/OtpForBulkApproval';
     const INTEGRATE_APP_PATH                       = 'twirp/payoutlinks.Payoutlinks/IntegrateApp';
     const EXPIRE_CALLBACK_PATH                     = 'twirp/payoutlinks.Payoutlinks/ExpireCallback';
     const UPDATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLink';
@@ -101,6 +109,7 @@ class PayoutLinks
     const BATCH_PL_PROCESSED                       = 'batch_payout_links_processed';
     const BATCH_PL_INITIATED                       = 'batch_payout_links_initiated';
     const BATCH_PL_EXPIRED                         = 'batch_payout_links_expired';
+    const BATCH_PL_PENDING                         = 'batch_payout_links_pending';
     const BATCH_PL_COUNT                           = 'batch_payout_links_count';
     const BATCH_REQUEST_ROWS                       = 'batch_request_rows';
     const FUND_ACCOUNT                             = 'fund_account';
@@ -121,6 +130,19 @@ class PayoutLinks
     const NOTES                                    = 'notes';
     const COUNT                                    = 'count';
     const ITEMS                                    = 'items';
+    const USER_ROLE                                = 'user_role';
+    const USER_EMAIL                               = 'user_email';
+    const USER_NAME                                = 'user_name';
+    const USER_TYPE                                = 'user_type';
+    const USER_CONTACT                             = 'user_contact';
+    const MERCHANT_FEATURES                        = 'merchant_features';
+    const IS_WORKFLOW_ENABLED                      = 'is_workflow_enabled';
+    const IS_SKIP_WORKFLOW_FOR_PL_API              = 'is_skip_workflow_for_pl_api';
+    const REJECTED_AT                              = 'rejected_at';
+    const ISSUED_AT                                = 'issued_at';
+    const PENDING_ON_USER                          = 'pending_on_user';
+    const WORKFLOW_HISTORY                         = 'workflow_history';
+    const TOTAL_AMOUNT                             = 'total_amount';
 
     const INVALID_REQUEST_ERROR_MSG                = 'the json request could not be decoded';
     const INVALID_REQUEST_RESPONSE_MSG             = 'Invalid request payload';
@@ -171,6 +193,15 @@ class PayoutLinks
         $this->app = $app;
     }
 
+    protected function isWorkflowEnabledForPLMerchant(string $merchantId) {
+        // get pl_workflow_experiment_flag value
+        $variant = $this->app['razorx']->getTreatment($merchantId,
+            Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW,
+            $this->app['rzp.mode'] ?? 'live');
+
+        return ($variant == 'on');
+    }
+
     public function create(MerchantEntity $merchant, array $input): array
     {
         $this->rzpModeCheck($merchant->getId());
@@ -197,6 +228,11 @@ class PayoutLinks
 
         $input[self::SEND_EMAIL] = strval($sendMail);
 
+        $input[self::MERCHANT_FEATURES] = [
+            self::IS_SKIP_WORKFLOW_FOR_PL_API   => $merchant->isFeatureEnabled(Features::SKIP_WORKFLOWS_FOR_API),
+            self::IS_WORKFLOW_ENABLED           => $this->isWorkflowEnabledForPLMerchant($merchant->getId())
+        ];
+
         $response = $this->makeRequest($url, $input);
 
         $expandArray = [0 => self::USER];
@@ -204,6 +240,162 @@ class PayoutLinks
         $this->processParameters($response, false, $expandArray);
 
         return $response;
+    }
+
+    protected function prepareActionInput(array $input, string $payoutLinkId, MerchantEntity $merchant, UserEntity $user, string $userRole) {
+        $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
+
+        $input[self::MERCHANT_ID] = $merchant->getMerchantId();
+
+        $input[self::USER_DETAILS] = [
+            self::USER_ID       => $user->getUserId(),
+            self::USER_ROLE     => $userRole,
+            self::USER_EMAIL    => $user->getEmail(),
+            self::USER_NAME     => $user->getName(),
+            self::USER_TYPE     => self::USER
+        ];
+
+        return $input;
+    }
+
+    protected function prepareBulkActionInput(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole) {
+        $input[self::MERCHANT_ID] = $merchant->getMerchantId();
+
+        $input[self::USER_ID] = $user->getUserId();
+
+        $input[self::USER_DETAILS] = [
+            self::USER_ID       => $user->getUserId(),
+            self::USER_ROLE     => $userRole,
+            self::USER_EMAIL    => $user->getEmail(),
+            self::USER_NAME     => $user->getName(),
+            self::USER_TYPE     => self::USER
+        ];
+
+        return $input;
+    }
+
+    public function approvePayoutLink(string $payoutLinkId, array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
+        $url = $this->getConstructedUrl(self::APPROVE_WORKFLOW_PATH);
+
+        $input = $this->prepareActionInput($input, $payoutLinkId, $merchant, $user, $userRole);
+
+        $this->makeRequest($url, $input);
+    }
+
+    public function rejectPayoutLink(string $payoutLinkId, array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_REJECT_WORKFLOW,
+            [
+                $payoutLinkId,
+                $merchant->getMerchantId(),
+                $user->getUserId(),
+                $userRole
+            ]);
+
+        $url = $this->getConstructedUrl(self::REJECT_WORKFLOW_PATH);
+
+        $input = $this->prepareActionInput($input, $payoutLinkId, $merchant, $user, $userRole);
+
+        $this->makeRequest($url, $input);
+    }
+
+    public function workflowSummary(MerchantEntity $merchant, string $userRole)
+    {
+        if($this->app['rzp.mode'] === Mode::TEST)
+        {
+            return [
+                self::COUNT => 5,
+                self::TOTAL_AMOUNT => 500000,
+            ];
+        }
+
+        $url = $this->getConstructedUrl(self::WORKFLOW_SUMMARY_PATH);
+
+        $request = [
+            self::MERCHANT_ID => $merchant->getMerchantId(),
+            self::USER_ROLE => $userRole,
+        ];
+
+        $response = $this->makeRequest($url, $request);
+
+        $response[self::COUNT] = array_pull($response, self::COUNT, 0);
+
+        $response[self::TOTAL_AMOUNT] = array_pull($response, self::TOTAL_AMOUNT, 0);
+
+        return $response;
+    }
+
+    public function approveBulkPayoutLinks(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
+        $url = $this->getConstructedUrl(self::BULK_APPROVE_PATH);
+
+        $input = $this->prepareBulkActionInput($input, $merchant, $user, $userRole);
+
+        $this->makeRequest($url, $input);
+    }
+
+    public function rejectBulkPayoutLinks(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
+        $url = $this->getConstructedUrl(self::BULK_REJECT_PATH);
+
+        $input = $this->prepareBulkActionInput($input, $merchant, $user, $userRole);
+
+        $this->makeRequest($url, $input);
+    }
+
+    public function approvePayoutLinkOtp(string $payoutLinkId, UserEntity $user, string $userRole)
+    {
+        $url = $this->getConstructedUrl(self::APPROVE_OTP_PATH);
+
+        $userDetails = $this->getUserDetails($user, $userRole);
+
+        $input = [
+            self::PAYOUT_LINK_ID => $payoutLinkId,
+            self::USER_DETAILS   => $userDetails,
+        ];
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function approveBulkPayoutLinksOtp(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
+        $url = $this->getConstructedUrl(self::BULK_APPROVE_OTP_PATH);
+
+        $userDetails = $this->getUserDetails($user, $userRole);
+
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $input[self::USER_DETAILS] = $userDetails;
+
+        return $this->makeRequest($url, $input);
+    }
+
+    public function fetchPendingPayoutLinks(string $merchantId)
+    {
+        $input = [
+            self::MERCHANT_ID => $merchantId,
+            self::STATUS      => 'pending',
+        ];
+
+        return $this->fetchMultiple($input);
+    }
+
+    protected function getUserDetails(UserEntity $user, string $userRole)
+    {
+        return [
+            self::USER_ID => $user->getId(),
+
+            self::USER_ROLE => $userRole,
+
+            self::USER_TYPE => self::USER,
+
+            self::USER_EMAIL => $user->getEmail(),
+
+            self::USER_NAME => $user->getName(),
+
+            self::USER_CONTACT => $user->getContactMobile(),
+        ];
     }
 
     public function getSettings(string $merchantId)
@@ -340,9 +532,11 @@ class PayoutLinks
 
         $payoutlinks = &$response["items"];
 
+        $isDashboardRequest = $this->app['basicauth']->isDashboardApp();
+
         foreach ($payoutlinks as &$value)
         {
-            $this->processParameters($value, false, $expandArray);
+            $this->processParameters($value, false, $expandArray, $isDashboardRequest);
         }
 
         return $response;
@@ -652,6 +846,12 @@ class PayoutLinks
 
         $request[self::MERCHANT_ID] = $merchantId;
 
+        // since batch request is only done via dashboard so removing `SKIP_WORKFLOWS_FOR_API` flag
+        // and also this method does not have access for merchant entity so `$merchant->isFeatureEnabled()` can not be called
+        $request[self::MERCHANT_FEATURES] = [
+            self::IS_WORKFLOW_ENABLED   => $this->isWorkflowEnabledForPLMerchant($merchantId)
+        ];
+
         $request[self::BATCH_REQUEST_ROWS] = $input;
 
         $url = $this->getConstructedUrl(self::CREATE_BATCH);
@@ -678,6 +878,8 @@ class PayoutLinks
         $response[self::BATCH_PL_PROCESSED] = array_pull($response, self::BATCH_PL_PROCESSED, 0);
 
         $response[self::BATCH_PL_EXPIRED] = array_pull($response, self::BATCH_PL_EXPIRED, 0);
+
+        $response[self::BATCH_PL_PENDING] = array_pull($response, self::BATCH_PL_PENDING, 0);
 
         return $response;
     }
@@ -1250,6 +1452,27 @@ class PayoutLinks
             unset($payoutLink[self::EXPIRE_BY]);
 
             unset($payoutLink[self::EXPIRED_AT]);
+        }
+
+        if($isDashboardRequest === false)
+        {
+            unset($payoutLink[self::REJECTED_AT]);
+
+            unset($payoutLink[self::ISSUED_AT]);
+
+            unset($payoutLink[self::WORKFLOW_HISTORY]);
+
+            unset($payoutLink[self::PENDING_ON_USER]);
+        }
+        else
+        {
+            $payoutLink[self::REJECTED_AT] = array_pull($payoutLink, self::REJECTED_AT, 0);
+
+            $payoutLink[self::ISSUED_AT] = array_pull($payoutLink, self::ISSUED_AT, 0);
+
+            $payoutLink[self::PENDING_ON_USER] = array_pull($payoutLink, self::PENDING_ON_USER, false);
+
+            $payoutLink[self::WORKFLOW_HISTORY] = array_pull($payoutLink, self::WORKFLOW_HISTORY, []);
         }
     }
 

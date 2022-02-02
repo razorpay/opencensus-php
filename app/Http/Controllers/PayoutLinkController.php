@@ -80,6 +80,110 @@ class PayoutLinkController extends Controller
     }
 
     /**
+     * Route to approve the workflow pending on user for payout links
+     * @param string $payoutLinkId
+     * @return
+     */
+    public function approvePayoutLink(string $payoutLinkId)
+    {
+        $this->app['payout-links']->approvePayoutLink(
+            $payoutLinkId,
+            $this->input,
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json();
+    }
+
+    /**
+     * Route to reject the workflow pending on user for payout links
+     * @param string $payoutLinkId
+     * @return
+     */
+    public function rejectPayoutLink(string $payoutLinkId)
+    {
+        $this->app['payout-links']->rejectPayoutLink(
+            $payoutLinkId,
+            $this->input,
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json();
+    }
+
+    /**
+     * Route to get data of pending payout links on role
+     */
+    public function workflowSummary()
+    {
+        $response = $this->app['payout-links']->workflowSummary(
+            $this->ba->getMerchant(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Route to approve the workflow pending on user for bulk payout links
+     * @return
+     */
+    public function approveBulkPayoutLinks()
+    {
+        $this->app['payout-links']->approveBulkPayoutLinks(
+            $this->input,
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json();
+    }
+
+    /**
+     * Route to reject the workflow pending on user for bulk payout links
+     * @return
+     */
+    public function rejectBulkPayoutLinks()
+    {
+        $this->app['payout-links']->rejectBulkPayoutLinks(
+            $this->input,
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json();
+    }
+
+    public function approvePayoutLinkOtp(string $payoutLinkId)
+    {
+        $response = $this->app['payout-links']->approvePayoutLinkOtp(
+            $payoutLinkId,
+            $this->ba->getUser(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    public function approveBulkPayoutLinksOtp()
+    {
+        $response = $this->app['payout-links']->approveBulkPayoutLinksOtp(
+            $this->input,
+            $this->ba->getMerchant(),
+            $this->ba->getUser(),
+            $this->ba->getUserRole()
+        );
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * This api call will take the fund-account details, and initiate the payout
      * @param string $payoutLinkId
      * @return array

@@ -2398,4 +2398,247 @@ return [
             'content'     => [],
         ]
     ],
+
+    'testApprovePayoutLinkInvalidPayoutLinkId' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutl_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'payout_link_id: Public id format is incorrect : poutl_12345.'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testApprovePayoutLinkWorkflowAlreadyProcessed' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'workflow-already-processed'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testApprovePayoutLinkPayoutLinkNotPendingOnCurrentUser' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'workflow-not-pending-on-current-user'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testApprovePayoutLinkUserAlreadyActedInSameGroup' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'USER_ALREADY_TAKEN_ACTION_ON_STATE_GROUP'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testApprovePayoutLinkSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
+
+    'testApprovePayoutLinkInternalServerError' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'The server encountered an unexpected condition which prevented it from fulfilling the request.'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testApprovePayoutLinkNoWorkflowForPayoutLink' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'no-workflow-for-payout-link'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testWorkflowSummaryInternalServerError' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/_meta/workflow/summary',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'The server encountered an unexpected condition which prevented it from fulfilling the request.'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testWorkflowSummaryZeroPendingPLs' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/_meta/workflow/summary',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count'        => 0,
+                'total_amount' => 0,
+            ],
+        ]
+    ],
+
+    'testWorkflowSummaryWithPendingPLsLiveMode' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/_meta/workflow/summary',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count'        => 2,
+                'total_amount' => 1000,
+            ],
+        ]
+    ],
+
+    'testWorkflowSummaryTestMode' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/_meta/workflow/summary',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count'        => 5,
+                'total_amount' => 500000,
+            ],
+        ]
+    ],
+
+    'testApproveOtpSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve/otp',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'token'   => 'test.token'
+            ],
+        ]
+    ],
+
+    'testRejectPayoutLinkSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/reject',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
+
+    'testBulkApproveSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/approve/bulk',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
+
+    'testBulkApproveOtpSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/approve/bulk/otp',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
+
+    'testBulkRejectSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/reject/bulk',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ]
 ];

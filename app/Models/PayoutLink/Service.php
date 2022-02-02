@@ -19,8 +19,10 @@ use RZP\Models\Batch\Core as BatchCore;
 use RZP\Mail\PayoutLink\FailedInternal;
 use RZP\Mail\PayoutLink\SuccessInternal;
 use RZP\Mail\PayoutLink\SendLinkInternal;
+use RZP\Mail\PayoutLink\ApprovalOtpInternal;
 use RZP\Mail\PayoutLink\CustomerOtpInternal;
 use RZP\Mail\PayoutLink\SendReminderInternal;
+use RZP\Mail\PayoutLink\BulkApprovalOtpInternal;
 use RZP\Mail\PayoutLink\SendProcessingExpiredInternal;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
@@ -288,6 +290,16 @@ class Service extends Base\Service
                 $response = $this->sendProcessingExpiredPayoutLinkEmailInternal($input);
                 return $response;
             }
+            else if($emailType === 'approval_otp')
+            {
+                $response = $this->sendApprovalOtpEmailInternal($input);
+                return $response;
+            }
+            else if($emailType === 'bulk_approval_otp')
+            {
+                $response = $this->sendBulkApprovalOtpEmailInternal($input);
+                return $response;
+            }
             else
             {
                 throw new BadRequestException(
@@ -305,6 +317,39 @@ class Service extends Base\Service
                 []
             );
         }
+    }
+
+    public function sendApprovalOtpEmailInternal($input)
+    {
+        (new Validator())->validateInput(Validator::SEND_APPROVE_OTP_EMAIL_INTERNAL_RULE, $input);
+
+        $approvalOtpEmail = new ApprovalOtpInternal(
+            $input['payout_link_details'],
+            $input[Entity::TO_EMAIL],
+            $input[Entity::OTP],
+            $input['validity']
+        );
+
+        Mail::queue($approvalOtpEmail);
+
+        return [Entity::SUCCESS => Entity::OK];
+    }
+
+    public function sendBulkApprovalOtpEmailInternal($input)
+    {
+        (new Validator())->validateInput(Validator::SEND_BULK_APPROVE_OTP_EMAIL_INTERNAL_RULE, $input);
+
+        $bulkApprovalOtpEmail = new BulkApprovalOtpInternal(
+            $input['payout_links_count'],
+            $input['total_amount'],
+            $input[Entity::TO_EMAIL],
+            $input[Entity::OTP],
+            $input['validity']
+        );
+
+        Mail::queue($bulkApprovalOtpEmail);
+
+        return [Entity::SUCCESS => Entity::OK];
     }
 
     public function sendOtpEmailInternal($input)
@@ -751,6 +796,13 @@ class Service extends Base\Service
             return $entity->toArrayPublic();
         }
 
+        if($this->auth->isProxyAuth() === true)
+        {
+            $input['user_id'] = $this->auth->getUser()->getId();
+
+            $input['user_role'] = $this->auth->getUserRole();
+        }
+
         return $this->app['payout-links']->fetch($id, $input, $this->merchant->getMerchantId());
     }
 
@@ -765,7 +817,16 @@ class Service extends Base\Service
 
             return $entities->toArrayPublic();
         }
+
         $input['merchant_id'] = $this->merchant->getId();
+
+        if($this->auth->isProxyAuth() === true)
+        {
+            $input['user_id'] = $this->auth->getUser()->getId();
+
+            $input['user_role'] = $this->auth->getUserRole();
+        }
+
         return $this->app['payout-links']->fetchMultiple($input);
     }
 

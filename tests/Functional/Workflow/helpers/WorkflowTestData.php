@@ -844,6 +844,170 @@ return [
         ]
     ],
 
+    'testCreateWorkflowConfigWithPendingPayoutLinks' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/wf-service/configs/',
+            'content' => [
+                "config" => [
+                    "template" => [
+                        "type" => "approval",
+                        "state_transitions" => [
+                            "START_STATE" => [
+                                "current_state" => "START_STATE",
+                                "next_states" => [
+                                    "0_1k_workflow",
+                                    "1k_10k_workflow",
+                                    "10k_10Cr_workflow"
+                                ]
+                            ],
+                            "0_1k_workflow" => [
+                                "current_state" => "0_1k_workflow",
+                                "next_states" => [
+                                    "END_STATE"
+                                ]
+                            ],
+                            "1k_10k_workflow" => [
+                                "current_state" => "1k_10k_workflow",
+                                "next_states" => [
+                                    "FL1_Approval"
+                                ]
+                            ],
+                            "FL1_Approval" => [
+                                "current_state" => "FL1_Approval",
+                                "next_states" => [
+                                    "END_STATE"
+                                ]
+                            ],
+                            "10k_10Cr_workflow" => [
+                                "current_state" => "10k_10Cr_workflow",
+                                "next_states" => [
+                                    "Owner_Approval"
+                                ]
+                            ],
+                            "Owner_Approval" => [
+                                "current_state" => "Owner_Approval",
+                                "next_states" => [
+                                    "END_STATE"
+                                ]
+                            ]
+                        ],
+                        "states_data" => [
+                            "0_1k_workflow" => [
+                                "name" => "0_1k_workflow",
+                                "group_name" => "ABC",
+                                "type" => "between",
+                                "rules" => [
+                                    "key" => "amount",
+                                    "min" => 1,
+                                    "max" => 1000
+                                ]
+                            ],
+                            "1k_10k_workflow" => [
+                                "name" => "1k_10k_workflow",
+                                "group_name" => "ABC",
+                                "type" => "between",
+                                "rules" => [
+                                    "key" => "amount",
+                                    "min" => 1000,
+                                    "max" => 10000
+                                ]
+                            ],
+                            "10k_10Cr_workflow" => [
+                                "name" => "10k_10Cr_workflow",
+                                "group_name" => "ABC",
+                                "type" => "between",
+                                "rules" => [
+                                    "key" => "amount",
+                                    "min" => 10000,
+                                    "max" => 100000000
+                                ]
+                            ],
+                            "FL1_Approval" => [
+                                "name" => "FL1_Approval",
+                                "group_name" => "ABC",
+                                "type" => "checker",
+                                "rules" => [
+                                    "actor_property_key" => "role",
+                                    "actor_property_value" => "fl1",
+                                    "count" => 2
+                                ],
+                                "callbacks" => [
+                                    "status" => [
+                                        "in" => [
+                                            "created",
+                                            "processed"
+                                        ]
+                                    ]
+                                ]
+                            ],
+                            "Owner_Approval" => [
+                                "name" => "Owner_Approval",
+                                "group_name" => "ABC",
+                                "type" => "checker",
+                                "rules" => [
+                                    "actor_property_key" => "role",
+                                    "actor_property_value" => "owner",
+                                    "count" => 1
+                                ],
+                                "callbacks" => [
+                                    "status" => [
+                                        "in" => [
+                                            "created",
+                                            "processed"
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "allowed_actions" => [
+                            "checker" => [
+                                "actions" => [
+                                    "approved",
+                                    "rejected"
+                                ]
+                            ],
+                            "admin" => [
+                                "actions" => [
+                                    "update_data",
+                                    "rejected"
+                                ]
+                            ],
+                            "rx_live" => [
+                                "actions" => [
+                                    "rejected"
+                                ]
+                            ],
+                            "rx_test" => [
+                                "actions" => [
+                                    "rejected"
+                                ]
+                            ]
+                        ],
+                        "meta" => [
+                            "domain" => "payouts",
+                            "task_list_name" => "payouts-approval"
+                        ]
+                    ],
+                    "version" => "1",
+                    "type" => "payout-approval",
+                    "name" => "10000000000000 - Payout approval workflow",
+                    "service" => "rx_live",
+                    "owner_id" => "10000000000000",
+                    "owner_type" => "merchant",
+                    "org_id" => "100000razorpay",
+                    "context" => [
+                        "aa" => "test context"
+                    ],
+                    "enabled" => "true"
+                ]
+            ],
+        ],
+        'response' => [
+
+        ]
+    ],
+
     'testUpdateWorkflowConfigNWFS' => [
         'request'  => [
             'method'  => 'PATCH',

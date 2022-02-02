@@ -106,6 +106,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UTM_PARAMS                                            = 'UTM_PARAMS';
     const RZP_UTM                                               = 'RZP_UTM';
     // payout links
+    const PAYOUT_LINK_APPROVE_WORKFLOW                          = "PAYOUT_LINK_APPROVE_WORKFLOW";
+    const PAYOUT_LINK_REJECT_WORKFLOW                           = "PAYOUT_LINK_REJECT_WORKFLOW";
     const PAYOUT_LINK_NOTIFICATION_JOB_RELEASED                 = 'PAYOUT_LINK_NOTIFICATION_JOB_RELEASED';
     const PAYOUT_LINK_CREATE_REQUEST                            = 'PAYOUT_LINK_CREATE_REQUEST';
     const PAYOUT_LINK_INITIATE_REQUEST                          = 'PAYOUT_LINK_INITIATE_REQUEST';

@@ -78,4 +78,18 @@ class Validator extends Base\Validator
             );
         }
     }
+
+    public function validateForNoPendingPayoutLinks(Merchant\Entity $merchant)
+    {
+        $pendingPayoutLinks = app('payout-links')->fetchPendingPayoutLinks($merchant->getId());
+
+        if ($pendingPayoutLinks['count'] > 0)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUT_LINKS,
+                null,
+                ['merchant_id' => $merchant->getId()]
+            );
+        }
+    }
 }

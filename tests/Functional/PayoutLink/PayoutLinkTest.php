@@ -3203,4 +3203,219 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    protected function getMockedServiceMakeRequestErrorResponse(string $message)
+    {
+        $plMock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+
+        $plMock->method('makeRequest')->willThrowException(new BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+            null,
+            null,
+            $message));
+
+        return $plMock;
+    }
+
+    protected function getMockedServiceMakeRequestSuccessResponse(array $successData)
+    {
+        $plMock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+
+        $plMock->method('makeRequest')->willReturn($successData);
+
+        return $plMock;
+    }
+
+    public function testApprovePayoutLinkInternalServerError()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('The server encountered an unexpected condition which prevented it from fulfilling the request.');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkWorkflowAlreadyProcessed()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('workflow-already-processed');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkPayoutLinkNotPendingOnCurrentUser()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('workflow-not-pending-on-current-user');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkUserAlreadyActedInSameGroup()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('USER_ALREADY_TAKEN_ACTION_ON_STATE_GROUP');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkSuccess()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkInvalidPayoutLinkId()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('payout_link_id: Public id format is incorrect : poutl_12345.');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkNoWorkflowForPayoutLink()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('no-workflow-for-payout-link');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSummaryInternalServerError()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('The server encountered an unexpected condition which prevented it from fulfilling the request.');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSummaryZeroPendingPLs()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSummaryWithPendingPLsLiveMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'count'        => 2,
+            'total_amount' => 1000,
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSummaryTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'count'        => 5,
+            'total_amount' => 500000,
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testApproveOtpSuccess()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'token' => 'test.token',
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutLinkSuccess()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkApproveSuccess()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkApproveOtpSuccess()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkRejectSuccess()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
 }
+

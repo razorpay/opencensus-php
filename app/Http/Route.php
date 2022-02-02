@@ -1617,6 +1617,13 @@ class Route
         'direct_tax_payments_downtime_schedule_opt'     => ['options','tax-payments/direct/downtime_schedule',            'TaxPaymentController@allowCors'                                   ],
 
         // Payout Links
+        'payout_links_approve'                     => ['post',      'payout-links/{id}/approve',                     'PayoutLinkController@approvePayoutLink'                            ],
+        'payout_links_approve_otp'                 => ['post',      'payout-links/{id}/approve/otp',                 'PayoutLinkController@approvePayoutLinkOtp'                         ],
+        'payout_links_reject'                      => ['post',      'payout-links/{id}/reject',                      'PayoutLinkController@rejectPayoutLink'                             ],
+        'payout_links_workflow_summary'            => ['get',       'payout-links/_meta/workflow/summary',           'PayoutLinkController@workflowSummary'                              ],
+        'payout_links_bulk_approve'                => ['post',      'payout-links/approve/bulk',                     'PayoutLinkController@approveBulkPayoutLinks'                       ],
+        'payout_links_bulk_approve_otp'            => ['post',      'payout-links/approve/bulk/otp',                 'PayoutLinkController@approveBulkPayoutLinksOtp'                    ],
+        'payout_links_bulk_reject'                 => ['post',      'payout-links/reject/bulk',                      'PayoutLinkController@rejectBulkPayoutLinks'                        ],
         'payout_links_reminder_callback'           => ['post',      'payout-links/send-reminder-callback/{id}',      'PayoutLinkController@sendReminderCallback'                         ],
         'payout_links_expire_callback'             => ['post',      'payout-links/expire-callback/{id}',             'PayoutLinkController@expireCallback'                               ],
         'payout_links_admin_auth_api'              => ['post',      'payout-links/admin',                            'PayoutLinkController@adminActions'                                 ],
@@ -4560,6 +4567,8 @@ class Route
         'reminder_send', // Reminders service sends reminder to send webhook after 45 mins, webhook should have detokenized mpans
     ];
 
+    //
+
     public static $proxy = [
         'fund_addition_tpv',
         'merchant_coupons_apply',
@@ -5006,6 +5015,13 @@ class Route
         'payout_links_integration_details',
         'payout_links_integrate_app',
         'payout_links_fetch_shopify_order',
+        'payout_links_approve',
+        'payout_links_approve_otp',
+        'payout_links_reject',
+        'payout_links_workflow_summary',
+        'payout_links_bulk_approve',
+        'payout_links_bulk_approve_otp',
+        'payout_links_bulk_reject',
 
         'fetch_payment_merchant_actions',
         'virtual_account_banking_fetch_multiple',
@@ -5245,8 +5261,6 @@ class Route
         'payout_status_to_reason_mapping',
 
     ];
-
-    //
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
     //
@@ -7514,6 +7528,13 @@ class Route
         'payout_links_fetch_multiple'                  => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_create'                          => Permission::CREATE_PAYOUT_LINKS,
+        'payout_links_approve'                         => Permission::APPROVE_PAYOUT_LINKS,
+        'payout_links_approve_otp'                     => Permission::APPROVE_PAYOUT_LINKS,
+        'payout_links_reject'                          => Permission::REJECT_PAYOUT_LINKS,
+        'payout_links_workflow_summary'                => Permission::VIEW_PAYOUT_LINKS,
+        'payout_links_bulk_approve'                    => Permission::BULK_APPROVE_PAYOUT_LINKS,
+        'payout_links_bulk_approve_otp'                => Permission::BULK_APPROVE_PAYOUT_LINKS,
+        'payout_links_bulk_reject'                     => Permission::BULK_REJECT_PAYOUT_LINKS,
         'payout_links_update'                          => Permission::CREATE_PAYOUT_LINKS,
         'payout_links_cancel'                          => Permission::CANCEL_PAYOUT_LINKS,
         'payout_links_merchant_on_boarding_status'     => Permission::VIEW_PAYOUT_LINKS,
@@ -8740,6 +8761,13 @@ class Route
             'payout_fetch_by_id',
             'payout_fetch_multiple',
             'payout_fetch_reversals',
+            'payout_links_approve',
+            'payout_links_approve_otp',
+            'payout_links_reject',
+            'payout_links_workflow_summary',
+            'payout_links_bulk_approve',
+            'payout_links_bulk_approve_otp',
+            'payout_links_bulk_reject',
             'payout_status_to_reason_mapping',
             'payout_links_added_fund_accounts',
             'payout_links_added_fund_accounts_cors',

@@ -364,6 +364,11 @@ class Service extends Base\Service
         return $this->auth->isXPayrollApp();
     }
 
+    public function isPayoutLinkApp(): bool
+    {
+        return $this->auth->isPayoutLinkApp();
+    }
+
     public function isScroogeApp(): bool
     {
         return $this->auth->isScroogeApp();

@@ -475,6 +475,10 @@ class Name
     const VIEW_PAYOUT_WORKFLOW_SUMMARY        = 'view_payout_workflow_summary';
     const VIEW_PAYOUT_LINKS                   = 'view_payout_links';
     const CREATE_PAYOUT_LINKS                 = 'create_payout_links';
+    const APPROVE_PAYOUT_LINKS                = 'approve_payout_links';
+    const REJECT_PAYOUT_LINKS                 = 'reject_payout_links';
+    const BULK_APPROVE_PAYOUT_LINKS           = 'bulk_approve_payout_links';
+    const BULK_REJECT_PAYOUT_LINKS            = 'bulk_reject_payout_links';
     const CANCEL_PAYOUT_LINKS                 = 'cancel_payout_links';
     const SUMMARY_PAYOUT_LINKS                = 'summary_payout_links';
     const ONBOARDING_PAYOUT_LINKS             = 'onboarding_payout_links';

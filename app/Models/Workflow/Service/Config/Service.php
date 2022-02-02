@@ -30,6 +30,7 @@ class Service extends Base\Service
         $validator = new Validator;
         $validator->validateInput(Validator::WORKFLOW_CONFIG_CREATE, $input[Entity::CONFIG]);
         $validator->validateForNoPendingPayouts($merchant);
+        $validator->validateForNoPendingPayoutLinks($merchant);
         $validator->validateOrgId($input[Entity::CONFIG], $merchant);
 
         return $this->core->create($input);
@@ -47,6 +48,7 @@ class Service extends Base\Service
         $validator = new Validator;
         $validator->validateInput(Validator::WORKFLOW_CONFIG_UPDATE, $input);
         $validator->validateForNoPendingPayouts($merchant);
+        $validator->validateForNoPendingPayoutLinks($merchant);
 
         /** @var Entity $config */
         $config = $this->repo->workflow_config->getByConfigId($input[Entity::ID]);
