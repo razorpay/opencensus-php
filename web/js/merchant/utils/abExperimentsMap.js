@@ -217,7 +217,7 @@ export default {
     'IilXWVG87mw0tZ',
 
     // beta
-    'IilVBztfuRjNkA',
+    'IgmrwyclL61hVU',
   ],
 
   project_moonshine: [
