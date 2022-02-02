@@ -43,6 +43,21 @@ return [
         ],
     ],
 
+    'testInitiateOnboardingProxyRouteForPhonepe' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/terminals/onboard',
+            'content' => [
+                'gateway' => 'wallet_phonepe',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testInitiateOnboardingWithNoGatewayInInput' => [
         'request' => [
             'method' => 'POST',
