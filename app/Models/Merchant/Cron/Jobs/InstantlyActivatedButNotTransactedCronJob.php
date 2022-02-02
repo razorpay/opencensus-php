@@ -8,7 +8,9 @@ use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 
 class InstantlyActivatedButNotTransactedCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [InstantlyActivatedButNotTransactedDataCollector::class];
+    protected $dataCollectors = [
+        "merchant_notification_data" => InstantlyActivatedButNotTransactedDataCollector::class
+    ];
 
     protected $actions = [SendNotificationAction::class];
 

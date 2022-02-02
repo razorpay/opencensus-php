@@ -8,7 +8,9 @@ use RZP\Models\Merchant\Cron\Collectors\L1NotSubmittedDataCollector;
 
 class L1NotSubmittedIn1HourCronJob extends BaseCronJob
 {
-     protected $dataCollectors = [L1NotSubmittedDataCollector::class];
+     protected $dataCollectors = [
+         "merchant_notification_data" => L1NotSubmittedDataCollector::class
+     ];
 
      protected $actions = [SendNotificationAction::class];
 

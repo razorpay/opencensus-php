@@ -8,7 +8,9 @@ use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 
 class BankDetailsNotSubmittedCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [BankDetailsNotSubmittedDataCollector::class];
+    protected $dataCollectors = [
+        "merchant_notification_data" => BankDetailsNotSubmittedDataCollector::class
+    ];
 
     protected $actions = [SendNotificationAction::class];
 

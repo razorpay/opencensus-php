@@ -14,8 +14,6 @@ use RZP\Trace\TraceCode;
 
 class FirstTouchProductDataLakeCollector extends MtuDatalakeCollector
 {
-    protected $name = "first_touch_product";
-
     const FIRST_TOUCH_PRODUCT_QUERY = "select * from hive.aggregate_pa.payments_product where merchant_id in (%s) and first_txn = 1";
 
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto

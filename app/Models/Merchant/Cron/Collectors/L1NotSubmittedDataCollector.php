@@ -8,8 +8,6 @@ use RZP\Trace\TraceCode;
 
 class L1NotSubmittedDataCollector extends TimeBoundDbDataCollector
 {
-    protected $name = "notify_merchants";
-
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [

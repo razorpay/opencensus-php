@@ -8,8 +8,6 @@ use RZP\Models\Merchant;
 
 class AadhardetailsNotSubmittedDataCollector extends TimeBoundDbDataCollector
 {
-    protected $name = "notify_merchants";
-
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         // fetch all merchants who've submitted L1

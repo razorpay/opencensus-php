@@ -10,7 +10,7 @@ class SendNotificationAction extends BaseAction
 {
     public function execute($data = []): ActionDto
     {
-        $collectorData = $data["notify_merchants"]; // since data collector is an array
+        $collectorData = $data["merchant_notification_data"]; // since data collector is an array
 
         $data = $collectorData->getData();
 

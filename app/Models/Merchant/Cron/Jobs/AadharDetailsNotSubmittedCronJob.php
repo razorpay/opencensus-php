@@ -8,7 +8,9 @@ use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 
 class AadharDetailsNotSubmittedCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [AadhardetailsNotSubmittedDataCollector::class];
+    protected $dataCollectors = [
+        "merchant_notification_data" => AadhardetailsNotSubmittedDataCollector::class
+    ];
 
     protected $actions = [SendNotificationAction::class];
 

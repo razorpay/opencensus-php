@@ -1160,6 +1160,7 @@ class CoreTest extends TestCase
     public function testCouponFlowForInvalidCreditType()
     {
         $this->expectException(BadRequestException::class);
+        
         $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_ONLY_AMOUNT_CREDITS_COUPON_APPLICABLE);
 
         $merchant = $this->fixtures->create('merchant');

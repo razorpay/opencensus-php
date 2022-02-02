@@ -8,7 +8,9 @@ use RZP\Notifications\Onboarding\Events as OnboardingEvents;
 
 class EmailNotVerfiedCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [EmailNotVerifiedDataCollector::class];
+    protected $dataCollectors = [
+        "merchant_notification_data" => EmailNotVerifiedDataCollector::class
+    ];
 
     protected $actions = [SendNotificationAction::class];
 

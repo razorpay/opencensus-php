@@ -11,8 +11,6 @@ use RZP\Models\Merchant\Core as MerchantCore;
 
 class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 {
-    protected $name = "notify_merchants";
-
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         $this->app['rzp.mode'] = Mode::LIVE;

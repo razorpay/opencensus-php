@@ -8,7 +8,9 @@ use RZP\Models\Merchant\Cron\Collectors\SignupStartedDataCollector;
 
 class SignupStartedCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [SignupStartedDataCollector::class];
+    protected $dataCollectors = [
+        "merchant_notification_data" => SignupStartedDataCollector::class
+    ];
 
     protected $actions = [SendNotificationAction::class];
 

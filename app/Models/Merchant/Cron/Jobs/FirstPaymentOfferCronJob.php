@@ -8,7 +8,9 @@ use RZP\Models\Merchant\Cron\Collectors\FirstPaymentOfferDataCollector;
 
 class FirstPaymentOfferCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [FirstPaymentOfferDataCollector::class];
+    protected $dataCollectors = [
+        "merchant_notification_data" => FirstPaymentOfferDataCollector::class
+    ];
 
     protected $actions = [SendNotificationAction::class];
 
