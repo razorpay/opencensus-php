@@ -1955,6 +1955,15 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('@testlabel123', $ph->getSlugFromShortUrl());
     }
 
+    public function testPaymentHandlePrecreation()
+    {
+        $this->mockGimliPaymentHandle();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testPaymentHandleCreationWithDashInBillingLabel()
     {
         // billing label with -

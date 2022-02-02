@@ -637,4 +637,13 @@ class Service extends Base\Service
 
         return $prevBasicAuth;
     }
+
+    public function precreatePaymentHandle(): array
+    {
+        (new Validator)->validatePaymentHandleExistsForMerchant($this->merchant);
+
+        $paymentHandle = $this->core->precreatePaymentHandle($this->merchant);
+
+        return $paymentHandle;
+    }
 }

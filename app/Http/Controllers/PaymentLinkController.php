@@ -398,4 +398,11 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json(compact('exists'));
     }
+
+    public function precreatePaymentHandle()
+    {
+        $response =  $this->service()->precreatePaymentHandle();
+
+        return ApiResponse::json($response);
+    }
 }

@@ -2371,4 +2371,66 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function precreatePaymentHandle(Merchant\Entity $merchant): array
+    {
+        // get unique handle
+        $handle = $this->suggestionPaymentHandle(1);
+
+        $handle = $handle[0];
+
+        $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
+
+        $this->createGimliEntryForHandle($handle, $merchant->getPublicId());
+
+        // upsert handle in merchant setting
+        $this->upsertDefaultPaymentHandleForMerchant([Entity::DEFAULT_PAYMENT_HANDLE => $handle]);
+
+        return [
+            Entity::TITLE          => $merchant->getBillingLabel(),
+            Entity::URL            => $url,
+            Entity::SLUG           => $handle
+        ];
+    }
+
+    protected function createGimliEntryForHandle(string $handle, string $merchantId)
+    {
+        // Fail: If failed to shorten the URL, do not continue with creation and fail
+        $fail = true;
+
+        // No fall back: Only use Gimli(our shortener service) and do not fall back to Bitly etc if that fails
+        $this->elfin->setNoFallback();
+
+        $params = [
+            'ptype'          => 'link',
+            'alias'          => $handle,
+            'fail_if_exists' => true,
+            'metadata'       => [
+                'mode'          => $this->mode,
+                'entity'        => ViewType::PAYMENT_HANDLE,
+                'merchant_id'   => $merchantId
+            ],
+        ];
+
+        $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
+
+        try
+        {
+            $this->elfin->shorten($url, $params, $fail);
+        }
+        catch (BaseException $e)
+        {
+            // TODO: Gimli should return 4xx & Elfin service should propagate that error to callee
+            if (preg_match('/Duplicate|Blacklisted/', $e->getDataAsString()) === 1)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    ViewType::PAYMENT_HANDLE,
+                    [
+                        Entity::SLUG => $handle,
+                    ]);
+            }
+            throw $e;
+        }
+    }
 }

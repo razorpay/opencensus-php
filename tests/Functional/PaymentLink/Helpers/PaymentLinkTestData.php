@@ -3050,6 +3050,20 @@ return [
         ],
     ],
 
+    'testPaymentHandlePrecreation'  => [
+        'request'  => [
+            'url'   => '/precreate_payment_handle',
+            'method'=> 'post',
+        ],
+        'response' => [
+            'content'   => [
+                'title'      =>    'Test Merchant',
+                'slug'       =>    '@testmerchant',
+                'url'        =>    'https://razorpay.me/@testmerchant'
+            ]
+        ]
+    ],
+
     'testUpdatePageWithGoalTrackerInactiveAndEndDatePastShouldNotThrowValidationError' => [
         'request' => [
             'url'     => '/payment_pages/pl_100000000000pl',
