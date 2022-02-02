@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor;
 
 use App;
+use Closure;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\Error;
@@ -489,6 +490,8 @@ class Base extends BaseCore
 
         try
         {
+            assertTrue($this->repo->isTransactionActive() === false);
+
             $this->trace->info(TraceCode::SYNC_FTS_FUND_TRANSFER_INIT,
                                [
                                    'payout_id'    => $payout->getId(),
