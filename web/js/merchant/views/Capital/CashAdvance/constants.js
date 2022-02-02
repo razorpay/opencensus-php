@@ -304,3 +304,8 @@ export const ONHOLD_REASONS = {
   CLD_RISK_POLICY: 'cld_risk_policy',
   END_OF_CREDIT_LINE_TENURE: 'end_of_credit_line_tenure',
 };
+
+export const REPAYMENT_TYPES = {
+  FLAT_INTEREST: 'FLAT_INTEREST',
+  REDUCING_INTEREST: 'REDUCING_INTEREST',
+};

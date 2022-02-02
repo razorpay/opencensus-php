@@ -29,6 +29,7 @@ import {
   CASH_ADVANCE_FIRST_LOGIN_KEY,
   REPAYMENT_FREQUENCY_TYPES,
   ONHOLD_REASONS,
+  REPAYMENT_TYPES,
 } from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
@@ -58,6 +59,7 @@ import {
   trackWithdrawStatus,
 } from './TrackEvents/trackEvents';
 import { getItem, setItem } from 'common/utils/localStorage';
+import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -428,11 +430,14 @@ export default class AmountWithdraw extends React.Component {
 
     const roi = parseInt(interest, 10) / 100;
 
+    const isInterestTypeReducing = this.isInterestTypeReducing();
+
     const amount = {
       principle: parseInt(this.state.withdrawalAmount, 10),
       interest: (diffDays * parseInt(this.state.withdrawalAmount, 10) * roi) / 100,
       diffDays,
       roi,
+      isInterestTypeReducing,
     };
 
     return amount;
@@ -825,6 +830,15 @@ export default class AmountWithdraw extends React.Component {
     }
   };
 
+  getInterestType = () => {
+    return (
+      this.props.withdrawalConfigurationDetails.data?.configuration?.interest_type ||
+      REPAYMENT_TYPES.FLAT_INTEREST
+    );
+  };
+
+  isInterestTypeReducing = () => this.getInterestType() === REPAYMENT_TYPES.REDUCING_INTEREST;
+
   handleAutomatedTextMouseOver = () => {
     trackAutomatedCA.hoverAutomatedText({});
     const { isAutomatedTagPulsating } = this.state;
@@ -1102,6 +1116,19 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  getRepaymentHelperText = () => {
+    if (this.isInterestTypeReducing()) {
+      return (
+        <span>
+          {' '}
+          is the repayable amount at reducing interest. <ReducingRepaymentTooltip />
+        </span>
+      );
+    }
+
+    return ' will be the repayable amount';
+  };
+
   withdrawableSection = () => {
     const {
       withdrawalAmount,
@@ -1223,7 +1250,7 @@ export default class AmountWithdraw extends React.Component {
               {hasDueDateAndWithdrawnAmount && !withdrawalInputHasError && (
                 <div class="repayable-amount-hint">
                   <strong>{repayableAmount}</strong>
-                  <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
+                  <span class="repayable-helper-text">{this.getRepaymentHelperText()}</span>
                   {user.isAutomatedLOCEligible &&
                     !automated_loc &&
                     this.isRepaymentFrequencyCustom() && (

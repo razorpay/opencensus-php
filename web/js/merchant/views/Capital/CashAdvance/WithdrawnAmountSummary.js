@@ -3,12 +3,30 @@ import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 
-function WithdrawnAmountSummary({ showFirstWithdrawalOffer, principle, interest, roi, diffDays }) {
+function WithdrawnAmountSummary({
+  showFirstWithdrawalOffer,
+  principle,
+  interest,
+  roi,
+  diffDays,
+  isInterestTypeReducing = false,
+}) {
   const totalRepayableAmount = (principle + interest) * 100;
   const interestPopoverContent = `(${getFormattedAmountNew(
     principle * 100,
     true,
   )} X ${roi}%) * ${diffDays} ${diffDays > 1 ? 'days' : 'day'}`;
+
+  const getPopoverContent = () => {
+    if (isInterestTypeReducing) {
+      return (
+        <>
+          Earlier you pay before the due date, <br /> lesser the interest amount'
+        </>
+      );
+    }
+    return interestPopoverContent;
+  };
 
   return (
     <div className="withdrawals__credit-meta card">
@@ -30,15 +48,12 @@ function WithdrawnAmountSummary({ showFirstWithdrawalOffer, principle, interest,
         <div className="withdrawals__credit-meta__list-item">
           <div className="description__wrapper bordered-bottom no-top-padding">
             <div className="description flex">
-              <p>Interest</p>
+              <p>{isInterestTypeReducing ? 'Reducing Interest' : 'Interest'}</p>
               <small className="help-content" style={{ paddingLeft: '4px' }}>
-                <i
-                  className="i i-info-outline"
-                  // onMouseOver={() => trackMouseOver('tenure')}
-                />
+                <i className="i i-info-outline" />
                 <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
                   <PopoverBody>
-                    <div class="text-center">{interestPopoverContent}</div>
+                    <div class="text-center">{getPopoverContent()}</div>
                   </PopoverBody>
                 </Popover>
               </small>
