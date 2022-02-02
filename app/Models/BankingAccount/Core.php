@@ -2171,6 +2171,8 @@ class Core extends Base\Core
      */
     public function getMerchantBankingAccountStatus(?string $channel, Merchant\Entity $merchant, string $mode = Mode::LIVE): ?string
     {
+        //lower casing channel value since some entities are storing bank names in upper cases
+        $channel = strtolower($channel);
         switch ($channel)
         {
             case Channel::RBL:
@@ -2195,6 +2197,8 @@ class Core extends Base\Core
      */
     public function getMerchantBankingAccountPanStatus(string $channel, Merchant\Entity $merchant): ?string
     {
+        //lower casing channel value since some entities are storing bank names in upper cases
+        $channel = strtolower($channel);
         switch ($channel)
         {
             case Channel::RBL:

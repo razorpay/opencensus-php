@@ -6014,8 +6014,8 @@ class Core extends Base\Core
 
             if (empty($currentAccount) === true)
             {
-                $merchantAttributes = (new Attribute\Core())->fetchKeyValues($merchant, Product::BANKING,
-                    Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS, [Merchant\Attribute\Type::CA_PROCEEDED_BANK], Mode::LIVE);
+                $merchantAttributes = (new Attribute\Core())->fetchKeyValuesByMode($merchant, Product::BANKING,
+                    Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS, [Merchant\Attribute\Type::CA_PROCEEDED_BANK], null, 'asc', Mode::LIVE);
 
                 $merchantAttribute = $merchantAttributes->first();
 
@@ -6072,6 +6072,9 @@ class Core extends Base\Core
         ?string $caStatus,
         string $channel): ?string
     {
+        //lower casing channel value since some entities are storing bank names in upper cases
+        $channel = strtolower($channel);
+
         if (isset(Constants::CA_STATUS_MAP[$channel][$caStatus]) === true)
         {
             $transformedCaStatus = Constants::CA_STATUS_MAP[$channel][$caStatus];
