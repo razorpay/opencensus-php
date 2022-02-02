@@ -2297,6 +2297,31 @@ return [
         ],
     ],
 
+    'testChangePasswordRateLimit' => [
+        'request' => [
+            'url'     => '/users/password',
+            'method'  => 'PUT',
+            'content' => [
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'old_password'          => '12345',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CHANGE_PASSWORD_THRESHOLD_EXHAUSTED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_THRESHOLD_EXHAUSTED,
+        ],
+    ],
+
     'testChangePassword' => [
         'request' => [
             'url'     => '/users/id/password',

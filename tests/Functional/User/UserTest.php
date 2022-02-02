@@ -3274,6 +3274,26 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testChangePasswordRateLimit()
+    {
+        $user = $this->fixtures->create('user', ['password' => '12345']);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set($user['id'].Constants::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX, Constants::CHANGE_PASSWORD_RATE_LIMIT_THRESHOLD);
+
+        $this->startTest();
+
+        $redis->del($user['id'].Constants::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX);
+
+    }
+
     public function testChangePasswordMatchesLastNPasswords()
     {
         $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
@@ -3313,6 +3333,9 @@ class UserTest extends TestCase
 
             $this->startTest($testData);
         }
+
+        $redis = Redis::connection('mutex_redis')->client();
+        $redis->del($user['id'].Constants::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX);
 
         // After N attempts, the original password should again be reusable
         $testData['request']['content']['password']             = $origPassword;

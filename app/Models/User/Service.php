@@ -33,6 +33,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 
 class Service extends Base\Service
 {
@@ -758,6 +759,14 @@ class Service extends Base\Service
     public function changePassword(array $input): array
     {
         $user = $this->user;
+        $userId = $user->getId();
+
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $userId,
+            Constants::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX,
+            Constants::CHANGE_PASSWORD_RATE_LIMIT_TTL,
+            Constants::CHANGE_PASSWORD_RATE_LIMIT_THRESHOLD
+        );
 
         $user->getValidator()->validateInput('changePassword', $input);
 

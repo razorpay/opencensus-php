@@ -118,6 +118,10 @@ class Constants
 
     const SIGNUP_OTP_VERIFICATION_THRESHOLD = 9;
 
+    const CHANGE_PASSWORD_RATE_LIMIT_TTL = 1800; // 30 mins
+    const CHANGE_PASSWORD_RATE_LIMIT_THRESHOLD = 5;
+
+
     public static $attributionList = [
         self::UTM_SOURCE,
         self::UTM_CAMPAIGN,
@@ -297,6 +301,8 @@ class Constants
     const LOGIN_OTP_ACTION                          = 'login_otp';
     const VERIFY_USER_ACTION                        = 'verify_user';
 
+    const CHANGE_PASSWORD_RATE_LIMIT_SUFFIX         = '_change_password_count';
+
     const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX = 'update_contact_mobile_attempts_%s';
     const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT            = 3;
 
@@ -320,6 +326,13 @@ class Constants
             "redisTraceCode"            => TraceCode::VERIFY_SIGNUP_OTP_REDIS_ERROR,
             "redisErrorCode"            => ErrorCode::SERVER_ERROR_VERIFY_SIGNUP_OTP_REDIS_ERROR,
             "redisErrorDescription"     => "An error occurred while interacting with redis on signup otp verification route.",
+        ],
+        self::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::CHANGE_PASSWORD_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_CHANGE_PASSWORD_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::CHANGE_PASSWORD_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_CHANGE_PASSWORD_REDIS_ERROR,
+            "redisErrorDescription"     => "An error occurred while interacting with redis while changing the password.",
         ],
         "default" => [
             "thresholdTraceCode"        => TraceCode::REDIS_KEY_THRESHOLD_EXCEEDED,
