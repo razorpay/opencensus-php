@@ -18,7 +18,7 @@ class StatusReasonMap
 
     const LOW_BALANCE                           = 'low_balance';
 
-    const NPCI_SYSTEM_DOWN                      = 'npci_system_down';
+    const NPCI_SYSTEM_DOWN                      = 'NPCI_system_down';
 
     const BENEFICIARY_BANK_DOWN                 = 'beneficiary_bank_down';
 
@@ -62,9 +62,9 @@ class StatusReasonMap
 
     public static $payoutStatusToReasonMap = [
         PayoutStatus::PROCESSING => [
-            self::PAYOUT_BANK_PROCESSING,
             self::BENEFICIARY_BANK_CONFIRMATION_PENDING,
             self::BANK_WINDOW_CLOSED,
+            self::PAYOUT_BANK_PROCESSING,
         ],
 
         PayoutStatus::PROCESSED => [
