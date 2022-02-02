@@ -93,6 +93,31 @@ class Core extends Base\Core
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
+    public function getDataForFbPixels(array $cart): array
+    {
+        $cartItems = $cart['items'];
+
+        $items = [];
+
+        foreach ($cartItems as $item)
+        {
+            $items[] = [
+                'id'         => strval($item['product_id']),
+                'variant_id' => strval($item['id']),
+                'name'       => $item['title'],
+                'value'      => (new Utils)->formatNumber($item['price']/100),
+                'quantity'   => $item['quantity'],
+            ];
+        }
+
+        return [
+            'currency'     => $cart['currency'],
+            'value'        => (new Utils)->formatNumber($cart['total_price']/100),
+            'content_type' => 'product',
+            'contents'     => $items,
+        ];
+    }
+
     public function getAvailableShippingRates($checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();

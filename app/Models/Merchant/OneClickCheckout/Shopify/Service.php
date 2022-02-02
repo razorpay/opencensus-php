@@ -79,6 +79,7 @@ class Service extends Base\Service
                 'contact' => '',
             ],
             'one_click_checkout' => true,
+            'customer_cart'      => (new Core)->getDataForFbPixels($input['cart']),
         ];
     }
 
