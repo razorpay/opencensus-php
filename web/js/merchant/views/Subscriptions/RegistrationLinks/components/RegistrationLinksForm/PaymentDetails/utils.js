@@ -54,7 +54,7 @@ export function checkIfAmountForFirstCharge(maxAmount, value) {
   }
 
   if (amount > maxAmount) {
-    return 'Amount is should be less than or equal Token Max Amount';
+    return 'Amount should be less than or equal to Token Max Amount';
   }
 
   return !isAmount(value) && 'Invalid Amount';

@@ -7,9 +7,9 @@ import { AmountTooltip } from 'common/ui/Amount';
 
 import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
 
-const MAX_TOKEN_AMOUNT = 100000000;
-const CARD_MAX_ALLOWED_AMOUNT = 5000; //Rs
-const MAX_TOKEN_AMOUNT_NACH = 1000000000;
+export const MAX_TOKEN_AMOUNT = 100000000; // in Paisa
+export const CARD_MAX_ALLOWED_AMOUNT = 5000; //Rs
+export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
 
 const OptionLabel = ({ title, desc }) => (
   <div className="label-container">
@@ -166,12 +166,13 @@ export default function TokenDetailsForm({
               type="number"
               placeholder={defaultFirstChargeAmount}
               size="half_big"
-              label="Amount"
+              label="First Charge Amount"
               class="Input--Amount"
               description="Amount of First Charge"
               data-name="first_payment_amount"
               onBlur={onBlurElement}
               value={firstPaymentAmount}
+              // TODO: validators need to re-run if the sibling element(here mandateMaxAmount) is changed
               validator={firstPaymentAmountValidator(mandateMaxAmount)}
               addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
             />

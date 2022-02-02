@@ -20,9 +20,13 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 import DocsLink from 'merchant/components/DocsLink';
 
 import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
-import { isEmail, isPhone, isAmount, validateBeneficiaryName } from 'common/utils/validators';
+import { isEmail, isPhone, validateBeneficiaryName } from 'common/utils/validators';
 import PaymentDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
-import TokenDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
+import TokenDetailsForm, {
+  MAX_TOKEN_AMOUNT,
+  MAX_TOKEN_AMOUNT_NACH,
+  CARD_MAX_ALLOWED_AMOUNT,
+} from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
 import {
   trackClickPaymentMethod,
   trackClickNext,
@@ -32,6 +36,7 @@ import {
 } from './ga';
 import analytics from '../analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { isAmountLiesInRange } from '../utils';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -72,25 +77,39 @@ const PAYMENT_METHODS = {
 };
 
 let DEFAULT_MAX_AMOUNT = 99999;
-const DEFAULT_FIRST_CHARGE = 0;
-const CARD_MAX_AMOUNT = 5000;
+const DEFAULT_FIRST_CHARGE = 0; // in Paisa
 const GATEWAY_MAX_LIMIT = 200000;
+
+// gatewayMaxLimitValidator fn restrics the max gateway amount to be not greater than GATEWAY_MAX_LIMIT.
+const gatewayMaxLimitValidator = (value) =>
+  isAmountLiesInRange(value, rupeesToPaise(GATEWAY_MAX_LIMIT));
 
 const CardMandatoryFields = [
   {
     name: 'amount',
-    validator: (value) => {
-      return isAmount(value) && value <= GATEWAY_MAX_LIMIT && value >= 1;
-    },
+    validator: gatewayMaxLimitValidator,
   },
 ];
 
 const UPIMandatoryFields = [
   {
     name: 'amount',
-    validator: (value) => {
-      return isAmount(value) && value <= GATEWAY_MAX_LIMIT && value >= 1;
-    },
+    validator: gatewayMaxLimitValidator,
+  },
+];
+
+/* getTokenMandatoryFields fn validates tokendetails tab only for emandate & Nach payment methods
+   The fn also ensures firstPaymentAmount is always lesser than or equal to the mandateMaxAmount
+*/
+const getTokenMandatoryFields = (maxAmount, isNach = false) => [
+  {
+    name: 'mandateMaxAmount',
+    validator: (value) =>
+      isAmountLiesInRange(value, isNach ? MAX_TOKEN_AMOUNT_NACH : MAX_TOKEN_AMOUNT),
+  },
+  {
+    name: 'firstPaymentAmount',
+    validator: (value) => isAmountLiesInRange(value, maxAmount, DEFAULT_FIRST_CHARGE), // TODO: TO check the first charge amount
   },
 ];
 
@@ -391,6 +410,8 @@ export default class NewRegistrationLink extends React.Component {
       payload.subscription_registration.auth_type = 'physical';
     }
 
+    let maxAmount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
+
     if (this.isEmandatePayment || this.isNACHPayment) {
       if (data.firstPaymentAmount) {
         payload.subscription_registration.first_payment_amount = rupeesToPaise(
@@ -398,35 +419,52 @@ export default class NewRegistrationLink extends React.Component {
         );
       }
 
-      let max_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
-
       if (data.mandateMaxAmount) {
-        max_amount = rupeesToPaise(data.mandateMaxAmount);
+        maxAmount = rupeesToPaise(data.mandateMaxAmount);
       }
 
-      payload.subscription_registration.max_amount = max_amount;
+      payload.subscription_registration.max_amount = maxAmount;
     }
 
     if (this.isUPIPayment) {
       // Frequency now support 'monthly' and 'as_presented'
       payload.subscription_registration.frequency = data.frequency;
 
-      let max_amount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
-
       if (data.mandateMaxAmount) {
-        max_amount = rupeesToPaise(data.mandateMaxAmount);
+        maxAmount = rupeesToPaise(data.mandateMaxAmount);
       }
-      payload.subscription_registration.max_amount = max_amount;
+      payload.subscription_registration.max_amount = maxAmount;
       payload.subscription_registration.bank_account = bankAccountDetails;
     }
 
     if (this.isCardPayment) {
       payload.subscription_registration.frequency = 'as_presented';
-      const max_amount = rupeesToPaise(data.mandateMaxAmount || CARD_MAX_AMOUNT);
-      payload.subscription_registration.max_amount = max_amount;
+      const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || CARD_MAX_ALLOWED_AMOUNT);
+      payload.subscription_registration.max_amount = cardMaxAmount;
     }
 
     return payload;
+  };
+
+  checkIfFormValid = (mandatoryFields = []) => {
+    let isValid = false;
+    if (!mandatoryFields.length) {
+      return isValid;
+    }
+
+    isValid = mandatoryFields.every((type) => {
+      let value = this.state.formFields[type] && this.state.formFields[type].length;
+
+      if (type instanceof Object) {
+        value = this.state.formFields[type.name];
+
+        return value && type.validator(value);
+      }
+
+      return value;
+    });
+
+    return isValid;
   };
 
   onCreate = () => {
@@ -491,8 +529,6 @@ export default class NewRegistrationLink extends React.Component {
       }
 
       case 1: {
-        let isValid = false;
-
         let mandatoryFields = [];
 
         if (this.isEmandatePayment) {
@@ -509,39 +545,32 @@ export default class NewRegistrationLink extends React.Component {
           mandatoryFields = NACHMandatoryFields;
         }
 
-        if (!mandatoryFields.length) {
-          return isValid;
-        }
-
-        isValid = mandatoryFields.every((type) => {
-          let value = this.state.formFields[type] && this.state.formFields[type].length;
-
-          if (type instanceof Object) {
-            value = this.state.formFields[type.name];
-
-            return value && type.validator(value);
-          }
-
-          return value;
-        });
-
-        return isValid;
+        return this.checkIfFormValid(mandatoryFields);
       }
 
       case 2: {
+        let tokenMandatoryFields = [];
+        const { formFields: fields = {} } = this.state;
+        const maxAmount = fields.mandateMaxAmount;
+        const maxAmountInPaisa = rupeesToPaise(maxAmount);
+
         if (this.isUPIPayment) {
-          const fields = this.state.formFields;
-          const maxAmount = rupeesToPaise(fields.mandateMaxAmount);
-          const amount = rupeesToPaise(fields.amount);
-          if (maxAmount > 20000000 || maxAmount < amount) {
+          if (maxAmount > GATEWAY_MAX_LIMIT || maxAmount < fields.amount) {
             return false;
           }
         }
         if (this.isCardPayment) {
-          const maxAmount = this.state.formFields.mandateMaxAmount;
-          if (maxAmount > CARD_MAX_AMOUNT) {
+          if (maxAmount > CARD_MAX_ALLOWED_AMOUNT) {
             return false;
           }
+        }
+        if (this.isEmandatePayment) {
+          tokenMandatoryFields = getTokenMandatoryFields(maxAmountInPaisa);
+          return this.checkIfFormValid(tokenMandatoryFields);
+        }
+        if (this.isNACHPayment) {
+          tokenMandatoryFields = getTokenMandatoryFields(maxAmountInPaisa, true);
+          return this.checkIfFormValid(tokenMandatoryFields);
         }
         return true;
       }

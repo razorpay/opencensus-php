@@ -198,8 +198,6 @@ function paymentMethodOption({ option }, optionsList) {
   );
 }
 
-export { checkIfAmount };
-
 function amountValidator(value) {
   const validation = checkIfAmount(value);
 
