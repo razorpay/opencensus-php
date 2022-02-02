@@ -471,6 +471,13 @@ class Service extends Base\Service
             {
                 $cc = 'keyaccounts@razorpay.com';
             }
+
+            $ids = array('8RerE9oY0d7rbC', 'GCwhxngAcMtWC8', 'GDJYY4pJqT0cQ5', '5Q9dttFwD5E89W', 'GtFwVSbNTDTM9C', 'GtG3WLjGVjzx2n');
+
+            if(in_array($downtime->getMerchantId(), $ids))
+            {
+                $recipientEmail = 'ameya@ixigo.com';
+            }
         }
 
         try
