@@ -19,6 +19,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from '../ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 @connect(
   (state) => ({
@@ -129,6 +130,7 @@ export default class SubMerchantsList extends Component {
 
   render() {
     const { user } = this.props;
+    const not_pure_platform = user.isPartner() && !user.isPartner('pure_platform');
 
     if (user.isPartnerIntent()) {
       this.props.openModal({
@@ -143,6 +145,25 @@ export default class SubMerchantsList extends Component {
     return (
       <Fragment>
         <Announcement user={this.props.user} mode={this.props.mode} />
+        {not_pure_platform && user.isPartnershipForXEnabled ? (
+          <AnnouncementBanner
+            title="Introducing Partnerships for Current Account"
+            theme="warning"
+            card_id="current-account-partnership-banner"
+          >
+            Invite your affiliates to open a Current Account with RazorpayX and earn up to 3000/- on
+            each referral{'  '}
+            <a
+              className="pointer"
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://razorpay.com/blog/launching-partnerships-for-razorpayx-current-accounts/"
+            >
+              <strong>&nbsp; Know More</strong>
+            </a>
+          </AnnouncementBanner>
+        ) : null}
+
         <tabbed-container>
           <header className="partner-dashboard-header">
             <NavLink
@@ -150,15 +171,19 @@ export default class SubMerchantsList extends Component {
               to="/partners/submerchants"
               onClick={(e) => this.sendAnalytics(e, 'navlink-Payments')}
             >
-              Affiliate Razorpay Accounts
+              Payments Affiliate Accounts
             </NavLink>
-            <ShowWhen additionalCondition={(currentUser) => currentUser.isPartnershipForXEnabled}>
+            <ShowWhen
+              additionalCondition={(currentUser) =>
+                not_pure_platform && currentUser.isPartnershipForXEnabled
+              }
+            >
               <NavLink
                 exact
                 to="/partners/submerchants/x"
                 onClick={(e) => this.sendAnalytics(e, 'navlink-X')}
               >
-                Affiliate RazorpayX Accounts
+                RazorpayX Affiliate Accounts
               </NavLink>
             </ShowWhen>
           </header>

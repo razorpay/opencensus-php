@@ -82,13 +82,11 @@ export default function ReferralBox({
   }
   return (
     <div class="referral-box-modal">
-      <ModalHeader title={'Share Referral Link'} onCloseClick={handleModalClose} />
+      <ModalHeader title="Share Referral Link" onCloseClick={handleModalClose} />
       <div className="modal-body">
         <SelectBox
-          label={'Razorpay Payments'}
-          description={
-            'Refer merchants to Razorpay Payment gateway and other products to receive payments'
-          }
+          label="Razorpay Payments"
+          description="Invite affiliates to use Razorpay Payment products to collect payments"
           onClick={() => setProductType(PRODUCT_TYPE.PG)}
           checked={productType === PRODUCT_TYPE.PG}
         >
@@ -105,7 +103,7 @@ export default function ReferralBox({
         </SelectBox>
         <SelectBox
           label="RazorpayX"
-          description="Refer merchants to RazorpayX products like Current account to process payouts"
+          description="Invite affiliates to open RazorpayX powered Current Account to process payouts"
           onClick={() => setProductType(PRODUCT_TYPE.X)}
           checked={productType === PRODUCT_TYPE.X}
         >

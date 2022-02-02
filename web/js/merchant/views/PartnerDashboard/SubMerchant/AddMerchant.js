@@ -439,7 +439,7 @@ export default class AddMerchant extends Component {
             <div className="step">
               <SelectBox
                 label="Razorpay Payments"
-                description="Refer merchants to Razorpay Payment gateway and other products to receive payments"
+                description="Invite affiliates to use Razorpay Payment products to collect payments"
                 onClick={() => {
                   this.setState({ merchantType: PRODUCT_TYPE.PG });
                   this.trackUserEvent('partnerships.submerchant.add.product_group', {
@@ -450,7 +450,7 @@ export default class AddMerchant extends Component {
               />
               <SelectBox
                 label="RazorpayX"
-                description="Refer merchants to RazorpayX products like Current account to process payouts"
+                description="Invite affiliates to open RazorpayX powered Current Account to process payouts"
                 onClick={() => {
                   this.setState({ merchantType: PRODUCT_TYPE.X });
                   this.trackUserEvent('partnerships.submerchant.add.product_group', {
