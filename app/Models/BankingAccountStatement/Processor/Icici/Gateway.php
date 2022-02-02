@@ -39,35 +39,45 @@ class Gateway extends BaseProcessor
     const ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT = 200;
 
     /**
-     * IMPS credit remarks => "MMT/IMPS/105400750777/TestIciciProd06/harsh     /HDFC0000004",
-     */
-    const CREDIT_REGEX_IMPS = '/^MMT\/IMPS\/(.*?)\//';
-
-    /**
      * NEFT credit remarks => "NEFT-RETURN-23629988951DC-AYUSH MITTAL-ACCOUNT DOES NOT EXIST  R03"
      * utr is 023629988951
      */
-    const CREDIT_REGEX_NEFT = '/^NEFT-RETURN-(.*?)-/';
+    const CREDIT_REGEX_NEFT_RETURN = '/^NEFT-RETURN-(.*?)-/';
 
     /**
-     * IMPS debit remarks => "MMT/IMPS/105400750777/TestIciciProd06/harsh     /HDFC0000004",
+     *  IMPS credit remarks => "MMT/IMPS/105400750777/TestIciciProd06/harsh     /HDFC0000004",
+     *  NEFT credit remarks => "NEFT-AXISCN0118376057-RAZORPAY SOFTWARE PRIVATE LIMITED-RAZORPAY SOFTWARE PVT L"
+     *  IFT credit remarks  => "INF/INFT/025802182571/Razorpay curren/CAMPUS CONNECT",
+     *  UPI credit remarks  => "UPI/115421282359/UPI/praveenraam06-1/DBS Bank India",
+     *  RTGS credit remarks => "RTGS-AUBLR12021123000584069-FINAVRIO TECHNOLOGY PRIVATE LIMITED-212121133524511",
+     *  BIL credit remarks  => "BIL/INFT/000270116851/Paid up capital/ CHIRAG V"
      */
-    const DEBIT_REGEX_IMPS = '/^MMT\/IMPS\/(.*?)\//';
+    const CREDIT_REGEX = [
+        '/^MMT\/IMPS\/(.*?)\//',
+        '/^NEFT-(.*?)-/',
+        '/^INF\/INFT\/(.*?)\//',
+        '/^UPI\/(.*?)\//',
+        '/^RTGS-(.*?)-/',
+        '/^BIL\/INFT\/(.*?)\//'
+    ];
 
     /**
-     * NEFT debit remarks => "INF/NEFT/023629988951/SBIN0050103/TestIciciProd03/Ayush Mittal",
+     *  IMPS debit remarks     => "MMT/IMPS/105400750777/TestIciciProd06/harsh     /HDFC0000004",
+     *  NEFT debit remarks     => "INF/NEFT/023629988951/SBIN0050103/TestIciciProd03/Ayush Mittal",
+     *  IFT debit remarks      => "INF/INFT/023652565741/TestIciciProd06/Raja",
+     *  RTGS debit remarks     => "RTGS/ICICR42021042600532758/YESB0000022/RZPX pvtltd",
+     *  UPI debit remarks      => "UPI/115600327157/NA/praveenraam06@d/",
+     *  BIL/BPAY debit remarks => "BIL/BPAY/000000043NVN/Bangalore Electricity",
+     *  BIL/ONL debit remarks  => "BIL/ONL/000286716570/Google Ads",
      */
-    const DEBIT_REGEX_NEFT = '/^INF\/NEFT\/(.*?)\//';
-
-    /**
-     * IFT debit remarks => "INF/INFT/023652565741/TestIciciProd06/Raja",
-     */
-    const DEBIT_REGEX_IFT = '/^INF\/INFT\/(.*?)\//';
-
-    /**
-     * RTGS debit remarks => "RTGS/ICICR42021042600532758/YESB0000022/RZPX pvtltd",
-     */
-    const DEBIT_REGEX_RTGS = '/^RTGS\/(.*?)\//';
+    const DEBIT_REGEX = [
+        '/^MMT\/IMPS\/(.*?)\//',
+        '/^INF\/NEFT\/(.*?)\//',
+        '/^INF\/INFT\/(.*?)\//',
+        '/^RTGS\/(.*?)\//',
+        '/^UPI\/(.*?)\//',
+        '/^BIL\/(?:BPAY\/|ONL\/)(.*?)\//'
+    ];
 
     protected $mozartNonRetriableCode = [
         TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTIONS_DO_NOT_EXIST_WITH_THE_GIVEN_CRITERIA,
@@ -773,21 +783,25 @@ class Gateway extends BaseProcessor
     {
         $description = $basEntity->getDescription();
 
-        $regex = self::CREDIT_REGEX_IMPS;
+        $regex = self::CREDIT_REGEX_NEFT_RETURN;
 
         if (($match = preg_match($regex, $description, $matches)) === 1)
         {
-            return $matches[1];
-        }
+            $utr = $matches[1];
 
-        $regex = self::CREDIT_REGEX_NEFT;
-
-        if (($match = preg_match($regex, $description, $matches)) === 1)
-        {
-            $utr =  $matches[1];
-            $utr = '0' . substr($utr, 0, strlen($utr) -2);
+            $utr = '0' . substr($utr, 0, strlen($utr) - 2);
 
             return $utr;
+        }
+
+        $regexes = self::CREDIT_REGEX;
+
+        foreach ($regexes as $regex)
+        {
+            if (($match = preg_match($regex, $description, $matches)) === 1)
+            {
+                return $matches[1];
+            }
         }
 
         return null;
@@ -797,34 +811,15 @@ class Gateway extends BaseProcessor
     {
         $description = $basEntity->getDescription();
 
-        $regex = self::DEBIT_REGEX_NEFT;
+        $regexes = self::DEBIT_REGEX;
 
-        if (($match = preg_match($regex, $description, $matches)) === 1)
+        foreach ($regexes as $regex)
         {
-            return $matches[1];
+            if (($match = preg_match($regex, $description, $matches)) === 1)
+            {
+                return $matches[1];
+            }
         }
-
-        $regex = self::DEBIT_REGEX_IMPS;
-
-        if (($match = preg_match($regex, $description, $matches)) === 1)
-        {
-            return $matches[1];
-        }
-
-        $regex = self::DEBIT_REGEX_IFT;
-
-        if (($match = preg_match($regex, $description, $matches)) === 1)
-        {
-            return $matches[1];
-        }
-
-        $regex = self::DEBIT_REGEX_RTGS;
-
-        if (($match = preg_match($regex, $description, $matches)) === 1)
-        {
-            return $matches[1];
-        }
-
         return null;
     }
 }

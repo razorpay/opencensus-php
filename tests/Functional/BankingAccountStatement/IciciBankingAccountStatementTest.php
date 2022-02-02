@@ -193,6 +193,109 @@ class IciciBankingAccountStatementTest extends TestCase
         return $response;
     }
 
+    protected function getIciciDataResponseForVariousRegex()
+    {
+        $response = [
+            "data"              => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "100.00",
+                        "BALANCE"       => "100.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "NEFT-AXISCN0118376057-RAZORPAY PVT",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "101.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "INF/INFT/025802182571/Razorpay/Leaf",
+                        "TRANSACTIONID" => "S74203578",
+                        "TXNDATE"       => "18-02-2021 13:20:51",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "102.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "BIL/INFT/000270116851/TEST ICICI/Ishiki",
+                        "TRANSACTIONID" => "S86758818",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "103.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "RTGS-AUBLR12021123000584069-RZP PVT-212121133524511",
+                        "TRANSACTIONID" => "S86234818",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "104.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "UPI/115421282359/UPI/Jiraya/DBS Bank India",
+                        "TRANSACTIONID" => "S86569818",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "103.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "BIL/BPAY/000000043NVN/Testing",
+                        "TRANSACTIONID" => "S86758150",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "102.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "BIL/ONL/000286716570/Testing",
+                        "TRANSACTIONID" => "S86758346",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "101.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "UPI/115600327157/NA/Itachi/",
+                        "TRANSACTIONID" => "S86758231",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ]
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "SATYANAR"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        return $response;
+    }
+
     protected function getIciciDataResponseForExistingAccounts()
     {
         $response = [
@@ -548,6 +651,108 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
+    public function testIciciAccountStatementWithVariousRegex()
+    {
+        $mockedResponse = $this->getIciciDataResponseForVariousRegex();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $transactions = $mockedResponse[F::DATA][F::RECORD];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $txnEntity->toArray();
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => trim($txn[F::TRANSACTION_ID]),
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 100,
+            BasEntity::BALANCE               => 10100,
+            BasEntity::POSTED_DATE           => 1613689192,
+            BasEntity::TRANSACTION_DATE      => 1613673000,
+            BasEntity::DESCRIPTION           => trim($txn[F::REMARKS]),
+            BasEntity::CHANNEL               => 'icici',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->bankingBalance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+
+        $utrsExpected = [
+            'AXISCN0118376057',
+            '025802182571',
+            '000270116851',
+            'AUBLR12021123000584069',
+            '115421282359',
+            '000000043NVN',
+            '000286716570',
+            '115600327157',
+        ];
+
+        $utrsActual = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)
+                           ->map(function($basEntity) {
+                               return $basEntity->getUtr();
+                           })->all();
+
+        $this->assertEqualsCanonicalizing($utrsExpected, $utrsActual);
     }
 
     /**

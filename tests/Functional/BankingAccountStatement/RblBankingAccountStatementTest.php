@@ -3903,7 +3903,7 @@ class RblBankingAccountStatementTest extends TestCase
                                         'currencyCode' => 'INR'
                                     ],
                                     'txnDate' => '2015-12-29T00:00:00.000',
-                                    'txnDesc' => 'DEBIT CARD ANNUAL FEE 2635',
+                                    'txnDesc' => 'IMPS 202413709376 FROM EASEBUZZ PVT LTD NOD',
                                     'txnType' => 'C'
                                 ],
                                 'txnBalance' => [
@@ -4159,7 +4159,7 @@ class RblBankingAccountStatementTest extends TestCase
                                 'txnId' => '  S807010',
                                 'txnSrlNo' => '  4',
                                 'valueDate' => '2016-01-05T00:00:00.000'
-                            ],
+                            ]
                         ],
                     ],
                     'Header' => [
@@ -8988,7 +8988,7 @@ class RblBankingAccountStatementTest extends TestCase
             BasEntity::AMOUNT                => 11450,
             BasEntity::BALANCE               => 21450,
             BasEntity::TRANSACTION_DATE      => 1451327400,
-            BasEntity::DESCRIPTION           => 'DEBIT CARD ANNUAL FEE 2635',
+            BasEntity::DESCRIPTION           => 'IMPS 202413709376 FROM EASEBUZZ PVT LTD NOD',
             BasEntity::CHANNEL               => 'rbl',
             BasEntity::ENTITY_ID             => $externalId,
             BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
@@ -9087,7 +9087,7 @@ class RblBankingAccountStatementTest extends TestCase
             BasEntity::AMOUNT                => 11450,
             BasEntity::BALANCE               => 21450,
             BasEntity::TRANSACTION_DATE      => 1451327400,
-            BasEntity::DESCRIPTION           => 'DEBIT CARD ANNUAL FEE 2635',
+            BasEntity::DESCRIPTION           => 'IMPS 202413709376 FROM EASEBUZZ PVT LTD NOD',
             BasEntity::CHANNEL               => 'rbl',
             BasEntity::ENTITY_ID             => $externalId,
             BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],

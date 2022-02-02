@@ -49,7 +49,7 @@ class Gateway extends BaseProcessor
     const PAGINATION_KEY_TTL_IN_WEEKS = 4;
 
     // regex to fetch utr from description
-    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-)(.*?)(\/|-)/';
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-|IMPS )(.*?)(\/|-| )/';
 
     // sample IMPS - 010617021414-QCREDIT 234412
     const IMPS_DEBIT_REGEX = '/^(.*?)-/';

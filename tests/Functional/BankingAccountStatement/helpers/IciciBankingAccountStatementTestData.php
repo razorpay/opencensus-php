@@ -22,6 +22,19 @@ return [
         ],
     ],
 
+    'testIciciAccountStatementWithVariousRegex' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'accounts_processed' => ['2224440041626905']
+            ],
+        ],
+    ],
+
     'testCreatingIFTPayout' => [
         'request'  => [
             'method'  => 'POST',
