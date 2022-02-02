@@ -7405,9 +7405,9 @@ class Service extends Base\Service
         return (new Escalations\Core())->handleEscalationsCron();
     }
 
-    public function handleCron($input)
+    public function handleCron($cronType, $input)
     {
-        return (New Cron\Core())->handleCron($input);
+        return (New Cron\Core())->handleCron($cronType, $input);
     }
 
     public function updateMerchantStore(array $input)

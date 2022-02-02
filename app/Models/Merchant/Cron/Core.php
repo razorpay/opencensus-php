@@ -8,11 +8,11 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function handleCron($input)
+    public function handleCron($cronType, $input)
     {
         (new Validator())->validateInput("run", $input);
 
-        $processor = Factory::getCronProcessor($input);
+        $processor = Factory::getCronProcessor($cronType, $input);
 
         return $processor->process();
     }

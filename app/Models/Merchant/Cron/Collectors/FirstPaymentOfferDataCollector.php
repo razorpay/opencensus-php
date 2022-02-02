@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Merchant\Cron\Collectors;
 
+use RZP\Constants\Mode;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Models\Admin\Org;
 
 class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 {
@@ -15,6 +15,8 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
             'args'          => $this->args,
             'start_time'    => $startTime,

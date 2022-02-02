@@ -10,13 +10,11 @@ abstract class BaseCollector
 {
     protected $args;
 
-    protected $name;
-
     protected $lastCronTime;
 
     protected $cronStartTime;
 
-    public function __construct(int $lastCronTime, int $cronStartTime, array $args)
+    public function __construct(?int $lastCronTime, ?int $cronStartTime, array $args)
     {
         $this->app = App::getFacadeRoot();
 
@@ -30,9 +28,4 @@ abstract class BaseCollector
     }
 
     abstract public function collect() : CollectorDto;
-
-    public function getName()
-    {
-        return $this->name;
-    }
 }

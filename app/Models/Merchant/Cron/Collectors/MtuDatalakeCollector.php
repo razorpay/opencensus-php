@@ -12,8 +12,6 @@ class MtuDatalakeCollector extends TimeBoundDbDataCollector
 {
     const DATALAKE_QUERY =  "SELECT merchant_id FROM hive.realtime_hudi_api.transactions WHERE type='payment' GROUP BY merchant_id HAVING MIN(created_at) >= %s AND MIN(created_at) < %s";
 
-    protected $name = "mtu_transacted_merchants";
-
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         $dataLakeQuery = sprintf(self::DATALAKE_QUERY, $startTime, $endTime);

@@ -12,7 +12,9 @@ class TransactionDetailsCronJob extends BaseCronJob
 {
     use RetryMechanismTrait;
 
-    protected $dataCollectors = [TransactionDetailsCollector::class];
+    protected $dataCollectors = [
+        "transaction_details"   => TransactionDetailsCollector::class
+    ];
 
     protected $actions = [TransactionDetailsAction::class];
 

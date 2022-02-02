@@ -14,5 +14,7 @@ class FirstPaymentOfferCronJob extends BaseCronJob
 
     protected $lastCronTimestampCacheKey = "first_payment_offer_cron_timestamp";
 
-    protected $eventName =  OnboardingEvents::FIRST_PAYMENT_OFFER;
+    protected $defaultArgs = [
+        'event_name' => OnboardingEvents::FIRST_PAYMENT_OFFER
+    ];
 }

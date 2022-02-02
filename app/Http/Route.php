@@ -89,7 +89,7 @@ class Route
 
         'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                     ],
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'  ],
-        'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/crons',                     'MerchantController@handleOnboardingCrons'],
+        'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/{cronType}/crons',          'MerchantController@handleOnboardingCrons'],
         'merchant_onboarding_notify'               => ['post',     'merchants/onboarding/notify',                    'MerchantController@handleSendNotificationCron'       ],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'           ],

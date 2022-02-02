@@ -40,11 +40,6 @@ class BaseCronJob
      */
     protected $cacheOnly = false;
 
-    /**
-     * @var bool Enable if want to persist the cron in DB. Ideally this should be enabled always.
-     */
-    protected $persistCron = true;
-
     protected $app;
 
     /**
@@ -100,6 +95,21 @@ class BaseCronJob
 
         $this->attempts = $this->attempts + 1;
 
+        $this->populateDefaultArgs();
+    }
+
+    private function populateDefaultArgs() {
+
+        if($this->getStartInterval() != null)
+        {
+            $this->args["start_time"] = $this->getStartInterval();
+        }
+
+        if($this->getEndInterval() != null)
+        {
+            $this->args["end_time"] = $this->getEndInterval();
+        }
+
         $this->args = array_merge($this->args, $this->defaultArgs);
     }
 
@@ -113,6 +123,7 @@ class BaseCronJob
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
             'args'              => $this->args,
             'last_cron_time'    => $this->lastCronTime,
+            'attemptys'         => $this->attempts
         ]);
 
         $this->app['trace']->count(Metrics::CRON_STARTED_TOTAL, $this->getMetricDimensions());
@@ -180,32 +191,18 @@ class BaseCronJob
     {
         $data = [];
 
-        foreach ($this->dataCollectors as $collector)
+        foreach ($this->dataCollectors as $name => $collector)
         {
             if(is_subclass_of($collector, BaseCollector::class) === false)
             {
                 throw new CronConfigIntegrityException("invalid data collector defined");
             }
 
-            $args = $this->args;
-
-            if($this->getStartInterval() != null)
-            {
-                $args["start_time"] = $this->getStartInterval();
-            }
-
-            if($this->getEndInterval() != null)
-            {
-                $args["end_time"] = $this->getEndInterval();
-            }
-
-            $this->args = $args;
-
             $collectorInstance = new $collector($this->lastCronTime, $this->cronStartTime, $this->args);
 
             $collectorData = $collectorInstance->collect();
 
-            $data[$collectorInstance->getName()] = $collectorData ?? null;
+            $data[$name] = $collectorData ?? null;
         }
 
         return $data;
@@ -240,7 +237,10 @@ class BaseCronJob
 
     public function updateLastCronTimeIfApplicable($timeStamp)
     {
-        $this->app['cache']->put($this->lastCronTimestampCacheKey, $timeStamp);
+        if(empty($this->lastCronTimestampCacheKey) === false)
+        {
+            $this->app['cache']->put($this->lastCronTimestampCacheKey, $timeStamp);
+        }
     }
 
     /**
@@ -250,11 +250,11 @@ class BaseCronJob
      * @return int|null
      * @throws CronConfigIntegrityException
      */
-    protected function getLastCronTime(): int
+    protected function getLastCronTime(): ?int
     {
         if (empty($this->lastCronTimestampCacheKey) === true)
         {
-            throw new CronConfigIntegrityException("cache key should not be empty");
+            return null;
         }
 
         $cacheValue = $this->app['cache']->get($this->lastCronTimestampCacheKey);

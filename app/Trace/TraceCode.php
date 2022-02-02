@@ -5009,6 +5009,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREATE_CRON_JOB                       = 'CREATE_CRON_JOB';
     const EDIT_CRON_JOB                         = 'EDIT_CRON_JOB';
 
+    const DATA_COLLECTOR_TRACE                  = 'DATA_COLLECTOR_TRACE';
     const CRON_ATTEMPT_STARTED                  = 'CRON_ATTEMPT_STARTED';
     const CRON_ATTEMPT_SKIPPED                  = 'CRON_ATTEMPT_SKIPPED';
     const CRON_ATTEMPT_COMPLETE                 = 'CRON_ATTEMPT_COMPLETE';

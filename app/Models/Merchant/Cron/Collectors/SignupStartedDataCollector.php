@@ -8,16 +8,8 @@ use RZP\Trace\TraceCode;
 
 class SignupStartedDataCollector extends TimeBoundDbDataCollector
 {
-    protected $name = "notify_merchants";
-
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
-        $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
-            'args'          => $this->args,
-            'start_time'    => $startTime,
-            'end_time'      => $endTime
-        ]);
-
         $merchantIdList = $this->repo->merchant->fetchMerchantsCreatedBetween($startTime, $endTime);
 
         $data["merchantIds"] = $merchantIdList;

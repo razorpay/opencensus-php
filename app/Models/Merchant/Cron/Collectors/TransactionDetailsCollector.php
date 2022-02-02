@@ -14,8 +14,6 @@ class TransactionDetailsCollector extends TimeBoundDbDataCollector
 {
     use ConnectionFallbackMechanism;
 
-    protected $name = "transaction_details";
-
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [

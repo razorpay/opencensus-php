@@ -170,8 +170,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -201,8 +200,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -232,8 +230,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -263,8 +260,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'failed';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -294,8 +290,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -325,8 +320,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -356,8 +350,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -387,8 +380,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'failed';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -418,8 +410,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -452,8 +443,7 @@ class CoreTest extends TestCase
 
         $this->fixtures->connection('live')->create('merchant_verification_detail', $verificationDetail->toArray());
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -489,8 +479,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -520,8 +509,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -554,8 +542,7 @@ class CoreTest extends TestCase
 
         $this->fixtures->connection('live')->create('merchant_verification_detail', $verificationDetail->toArray());
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -591,8 +578,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'success';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
@@ -616,8 +602,7 @@ class CoreTest extends TestCase
         $bvsResponse = 'failed';
         $this->mockBvsService($bvsResponse);
 
-        (new CronJobHandler\Core())->handleCron([
-            "cron_name"  => "bvs_cron",
+        (new CronJobHandler\Core())->handleCron("bvs_cron", [
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);

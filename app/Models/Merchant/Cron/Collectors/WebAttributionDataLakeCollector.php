@@ -14,8 +14,6 @@ use RZP\Trace\TraceCode;
 
 class WebAttributionDataLakeCollector extends TimeBoundDbDataCollector
 {
-    protected $name = "web_attribution";
-
     const DATA_LAKE_WEB_ATTRIBUTION_QUERY   = " SELECT m.id, pam.acquisition_medium, pam.acquisition_source, pam.acquisition_campaign, pam.device " .
                                               " FROM hive.realtime_hudi_api.merchants m " .
                                               " Join hive.aggregate_pa.mid_attribution pam on m.id = pam.mid where " .

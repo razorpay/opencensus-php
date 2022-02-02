@@ -9,7 +9,9 @@ use RZP\Models\Merchant\Cron\Collectors\BvsDataCollector;
 
 class BvsCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [BvsDataCollector::class];
+    protected $dataCollectors = [
+        "bvs_validations" => BvsDataCollector::class
+    ];
 
     protected $actions = [BvsAction::class];
 

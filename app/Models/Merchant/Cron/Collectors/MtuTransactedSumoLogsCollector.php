@@ -10,8 +10,6 @@ use RZP\Models\Merchant\Cron\Collectors\Core\SumoLogsDataCollector;
 
 class MtuTransactedSumoLogsCollector extends SumoLogsDataCollector
 {
-    protected $name = "mtu_sumo_logs_count";
-
     protected function getSumoQuery(): string
     {
         return "SEGMENT_EVENT_PUSH | json auto | where %context.eventData.type=\"track\" and %context.eventData.event= \"MTU Transacted\"";

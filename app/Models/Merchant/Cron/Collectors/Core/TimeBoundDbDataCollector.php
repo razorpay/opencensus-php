@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron\Collectors\Core;
 
 
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
+use RZP\Trace\TraceCode;
 
 abstract class TimeBoundDbDataCollector extends DbDataCollector
 {
@@ -38,6 +39,12 @@ abstract class TimeBoundDbDataCollector extends DbDataCollector
     {
         $startTime = $this->getStartIntervalFromArgs() ?? $this->getStartInterval();
         $endTime = $this->getEndIntervalFromArgs() ?? $this->getEndInterval();
+
+        $this->app['trace']->info(TraceCode::DATA_COLLECTOR_TRACE, [
+            'args'          => $this->args,
+            'start_time'    => $startTime,
+            'end_time'      => $endTime
+        ]);
 
         return $this->collectDataWithinInterval($startTime, $endTime);
     }

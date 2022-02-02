@@ -9,7 +9,9 @@ use RZP\Models\Merchant\Cron\Collectors\WebAttributionDataLakeCollector;
 
 class WebAttributionCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [WebAttributionDataLakeCollector::class];
+    protected $dataCollectors = [
+        "web_attribution"   => WebAttributionDataLakeCollector::class
+    ];
 
     protected $actions = [WebAttributionAction::class];
 

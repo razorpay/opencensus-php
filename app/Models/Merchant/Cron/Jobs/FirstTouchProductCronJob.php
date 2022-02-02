@@ -9,7 +9,9 @@ use RZP\Models\Merchant\Cron\Collectors\FirstTouchProductDataLakeCollector;
 
 class FirstTouchProductCronJob extends BaseCronJob
 {
-    protected $dataCollectors = [FirstTouchProductDataLakeCollector::class];
+    protected $dataCollectors = [
+        "first_touch_product"   => FirstTouchProductDataLakeCollector::class
+    ];
 
     protected $actions = [FirstTouchProductAction::class];
 

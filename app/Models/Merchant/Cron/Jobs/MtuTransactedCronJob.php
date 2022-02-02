@@ -11,7 +11,9 @@ class MtuTransactedCronJob extends BaseCronJob
 {
     use RetryMechanismTrait;
 
-    protected $dataCollectors = [MtuDatalakeCollector::class];
+    protected $dataCollectors = [
+        "mtu_transacted_merchants"  => MtuDatalakeCollector::class
+    ];
 
     protected $actions = [MtuTransactedAction::class];
 
