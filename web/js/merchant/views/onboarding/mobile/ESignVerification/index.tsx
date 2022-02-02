@@ -7,6 +7,7 @@ import useActivation from '../hooks/useActivation';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import { useApp } from 'common/context/App';
 import AadharError from './AadharError';
+import useTrackEvents from 'merchant/hooks/useTrackEvents';
 
 interface ESignPropsT {
   disabled?: boolean;
@@ -21,6 +22,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
   const [aadharError, setAadharInputError] = useState('');
   const { user } = useApp();
   const { data, postData } = useActivation();
+  const trackEvents = useTrackEvents();
 
   useEffect(() => {
     if (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') {
@@ -51,6 +53,12 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
     goToNextScreen({ nextScreen: 'AadharError' });
     showAddressProofDoc();
     postData({ stakeholder: { aadhaar_linked: 0 } });
+    trackEvents({
+      objectName: 'kyc',
+      actionName: 'e aadhar downtime fallback',
+      eventAction: 'initiated',
+      screen: 'Documents',
+    });
   };
 
   const renderComponent = () => {

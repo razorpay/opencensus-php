@@ -4,6 +4,7 @@ import Input from 'common/new-ui/Input';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import GetOtpScreen from './GetOtpScreen';
 import VerifyOtpScreen from './VerifyOtpScreen';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const EAadhar = ({
   isAadharEkycMandatory,
@@ -72,6 +73,13 @@ const EAadhar = ({
 
   const handleDownTimeError = () => {
     mobileLinkedOnChange(false);
+    trackEvent(window.rzpQ.onbr().initiated('kyc.e_aadhar_downtime_fallback'));
+    analyticsTrack({
+      objectName: 'kyc',
+      actionName: 'e aadhar downtime fallback initiated',
+      screen: 'Documents',
+      ...analyticsProperties,
+    });
     setScreen('ProviderError');
   };
 
