@@ -9924,11 +9924,15 @@ trait Authorize
 
         if (isset($billingAddressFromInput['first_name']) === true)
         {
+            $billingAddressFromInput['name'] = $billingAddressFromInput['first_name'];
+
             unset($billingAddressFromInput['first_name']);
         }
 
         if (isset($billingAddressFromInput['last_name']) === true)
         {
+            $billingAddressFromInput['name'] .= " " . $billingAddressFromInput['last_name'];
+
             unset($billingAddressFromInput['last_name']);
         }
 

@@ -202,6 +202,184 @@ class NbPlusPaymentServiceAppsTest extends TestCase
         $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
     }
 
+    public function testTrustlyPaymentWithoutBillingAddress()
+    {
+        $this->setConfigurationInternationalApp('trustly');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'INR';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'EUR';
+
+        $this->assertEquals("EUR", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
+
+        $paymentArray = $this->payment;
+
+        unset($paymentArray["billing_address"]);
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            BadRequestException::class,"Billing Address is Empty");
+    }
+
+    public function testTrustlyPaymentWithoutFirstOrLastName()
+    {
+        $this->setConfigurationInternationalApp('trustly');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'INR';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'EUR';
+
+        $this->assertEquals("EUR", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
+
+        $paymentArray = $this->payment;
+        unset($paymentArray["billing_address"]["first_name"]);
+        unset($paymentArray["billing_address"]["last_name"]);
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            BadRequestException::class,"First or Last Name is Empty");
+    }
+
+    public function testSavedBillingAddressDetailsForTrustlyPayment()
+    {
+        $this->setConfigurationInternationalApp('trustly');
+
+        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
+        $flowsRequestData['content']['currency'] = 'INR';
+
+        $response = $this->sendRequest($flowsRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $app_currency = $responseContent['app_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $customerSelectedCurrency = 'EUR';
+
+        $this->assertEquals("EUR", $app_currency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $paymentArray = $this->payment;
+
+        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
+        $paymentArray['currency_request_id'] = $currencyRequestId;
+
+        $expectedBillingAddress =  $paymentArray['billing_address'];
+
+        // We Save Concatenation of First and Last name as name in addresses table.
+        $expectedBillingAddress["name"] = $expectedBillingAddress['first_name'] . " " . $expectedBillingAddress['last_name'];
+        unset($expectedBillingAddress['first_name']);
+        unset($expectedBillingAddress['last_name']);
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        // Validate Saved Billing Address for a Payment
+        $paymentEntity = $this->getDbEntityById('payment', $payment['id']);
+        $actualAddress = $paymentEntity->fetchBillingAddress();
+
+        $this->assertEquals($expectedBillingAddress['name'], $actualAddress->getName());
+        $this->assertEquals($expectedBillingAddress['line1'], $actualAddress->getLine1());
+        $this->assertEquals($expectedBillingAddress['line2'], $actualAddress->getLine2());
+        $this->assertEquals($expectedBillingAddress['city'], $actualAddress->getCity());
+        $this->assertEquals($expectedBillingAddress['postal_code'], $actualAddress->getZipCode());
+        $this->assertEquals($expectedBillingAddress['state'], $actualAddress->getState());
+        $this->assertEquals($expectedBillingAddress['country'], $actualAddress->getCountry());
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+    }
+
     public function testAuthorizeTrustlyPaymentWithUSDCurrency()
     {
         $this->setConfigurationInternationalApp('trustly');
@@ -875,10 +1053,27 @@ class NbPlusPaymentServiceAppsTest extends TestCase
 
         $this->fixtures->merchant->enableApp('10000000000000', $provider);
 
+        $this->fixtures->merchant->addFeatures(['address_name_required']);
+
         $this->fixtures->merchant->edit('10000000000000');
 
         $this->payment = $this->getDefaultAppPayment($this->provider);
 
+        $this->payment['billing_address'] = $this->getBillingAddressDetails();
+
         $this->ba->privateAuth();
+    }
+
+    private function getBillingAddressDetails(){
+        $billing_address['first_name'] = "Max";
+        $billing_address['last_name']  = "Musterman";
+        $billing_address['line1'] = "91,Apartment 7R";
+        $billing_address['line2'] = "Wellington Street";
+        $billing_address['city'] = "Striya";
+        $billing_address['state'] = "Tauchen";
+        $billing_address['country'] = "at";
+        $billing_address['postal_code'] = "202112";
+
+        return $billing_address;
     }
 }

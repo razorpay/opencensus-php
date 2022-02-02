@@ -420,6 +420,16 @@ class Gateway
     ];
 
     /**
+     * These are the gateways that require
+     * address and name for processing the payment.
+     * address and name is collected on basis of feature flag address_name_required
+     * ADDRESS_REQUIRED_APPS Map Contains apps which comes under gateway emerchantpay
+     */
+    const ADDRESS_NAME_REQUIRED_GATEWAYS = [
+        self::EMERCHANTPAY
+    ];
+
+    /**
     * Gateways for which we can validate the refunds
     * if they are successful after they are 'initiated'
     */
@@ -4200,5 +4210,17 @@ class Gateway
             return self::CURRENCIES_SUPPORTED_BY_APPS[$app];
         }
         return [];
+    }
+    
+   /* 
+    * Used at Settlement/Bucket/core.php
+    * For Getting Remitter Name from Address Table during OPGSP Settlement Meta Data Creation. 
+    * @param $gateway
+    * @return bool
+    */
+
+    public static function isAddressAndNameRequiredGateway($gateway) : bool
+    {
+        return (in_array($gateway, self::ADDRESS_NAME_REQUIRED_GATEWAYS, true));
     }
 }

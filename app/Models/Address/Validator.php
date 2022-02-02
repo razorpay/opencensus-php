@@ -33,6 +33,7 @@ class Validator extends Base\Validator
         Entity::STATE   => 'sometimes|string|between:2,32',
         Entity::COUNTRY => 'required|string|between:2,64|custom',
         Entity::PRIMARY => 'sometimes|in:0,1',
+        Entity::NAME    => 'sometimes|string|between:2,64',
     ];
 
     protected static $editRules = [

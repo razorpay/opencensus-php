@@ -45,6 +45,7 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $paymentArray['amount'] = 1000;
         $paymentArray['dcc_currency'] = $customerSelectedCurrency;
         $paymentArray['currency_request_id'] = $currencyRequestId;
+        $paymentArray['billing_address'] = $this->getBillingAddressDetails();
 
         $this->payment = $paymentArray;
 
@@ -100,6 +101,7 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $paymentArray['amount'] = 1000;
         $paymentArray['dcc_currency'] = $customerSelectedCurrency;
         $paymentArray['currency_request_id'] = $currencyRequestId;
+        $paymentArray['billing_address'] = $this->getBillingAddressDetails();
 
         $this->payment = $paymentArray;
 
@@ -162,6 +164,7 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $paymentArray['amount'] = 1000;
         $paymentArray['dcc_currency'] = $customerSelectedCurrency;
         $paymentArray['currency_request_id'] = $currencyRequestId;
+        $paymentArray['billing_address'] = $this->getBillingAddressDetails();
 
         $this->payment = $paymentArray;
 
@@ -248,9 +251,24 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
 
         $this->fixtures->merchant->enableApp('10000000000000', $provider);
 
+        $this->fixtures->merchant->addFeatures(['address_name_required']);
+
         $this->fixtures->merchant->edit('10000000000000');
 
         $this->ba->privateAuth();
+    }
+
+    private function getBillingAddressDetails(){
+        $billing_address['first_name'] = "Max";
+        $billing_address['last_name']  = "Musterman";
+        $billing_address['line1'] = "91,Apartment 7R";
+        $billing_address['line2'] = "Wellington Street";
+        $billing_address['city'] = "Striya";
+        $billing_address['state'] = "Tauchen";
+        $billing_address['country'] = "at";
+        $billing_address['postal_code'] = "202112";
+
+        return $billing_address;
     }
 
 }

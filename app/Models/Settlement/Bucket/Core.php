@@ -359,6 +359,12 @@ class Core extends Base\Core
         {
             $remitterName = $payment->card->getName();
         }
+        // If Payment is not a card Payment and If gateway is under ADDRESS_NAME_REQUIRED_GATEWAYS array 
+        // we will fetch remitter name from addresses table.
+        else if (Payment\Gateway::isAddressAndNameRequiredGateway($payment->getGateway()) === true)
+        {
+            $remitterName = $payment->fetchBillingAddress()->getName();
+        }
 
         //if empty, try fetching from customer
         if ((empty($remitterName) === true) and ($payment->customer !== null)){
