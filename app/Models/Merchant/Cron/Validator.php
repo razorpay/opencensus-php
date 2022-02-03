@@ -11,5 +11,4 @@ class Validator extends Base\Validator
         "start_time"            => "sometimes|int",
         "end_time"              => "sometimes|int"
     ];
-
 }
