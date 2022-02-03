@@ -147,10 +147,10 @@ class WhatsNew extends Component {
   };
 
   showGSExclusiveOfferModal = () => {
-    const { closeModal, openModal } = this.props;
+    const { openModal } = this.props;
 
     openModal({
-      component: <ExclusiveOffer hideModal={closeModal} fromWhere="whatsnew" />,
+      component: <ExclusiveOffer />,
       size: 'xlarge',
       className: 'GSExclusiveOffer--Modal',
     });

@@ -123,7 +123,7 @@ const OffersForYou = ({
       });
     } else if (user.isGSExclusiveOfferEnabled) {
       openModals({
-        component: <ExclusiveOffer fromWhere="gsExclusiveOffer" />,
+        component: <ExclusiveOffer />,
         size: 'xlarge',
         className: 'GSExclusiveOffer--Modal',
       });

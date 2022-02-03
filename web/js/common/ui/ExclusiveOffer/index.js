@@ -10,7 +10,6 @@ import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAn
 import { sendDataToSalesForce } from '../../utils/common-api';
 
 const ExclusiveOffer = ({
-  fromWhere,
   tracking,
   fetchExclusiveOffer,
   loading,
@@ -20,7 +19,7 @@ const ExclusiveOffer = ({
   history,
 }) => {
   useEffect(() => {
-    fetchExclusiveOffer(fromWhere);
+    fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
   }, []);
 
   const defaultExclusiveOffer = {

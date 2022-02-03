@@ -191,7 +191,7 @@ class WhatsNewOld extends Component {
     const { openModal } = this.props;
 
     openModal({
-      component: <ExclusiveOffer fromWhere="whatsnew" />,
+      component: <ExclusiveOffer />,
       size: 'xlarge',
       className: 'GSExclusiveOffer--Modal',
     });

@@ -40,7 +40,7 @@ const getClickHandler = (id = '') => {
 
   const showGSExclusiveOfferModal = () => {
     openModal({
-      component: <ExclusiveOffer fromWhere="gsExclusiveOffer" />,
+      component: <ExclusiveOffer />,
       className: 'GSExclusiveOffer--Modal',
     });
   };
