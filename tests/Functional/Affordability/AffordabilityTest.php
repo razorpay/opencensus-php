@@ -140,14 +140,16 @@ class AffordabilityTest extends TestCase
 
         $expectedEmiResponse = [
             'HDFC' => [
-                [
-                    'duration' => 3,
-                    'interest' => 12,
-                    'subvention' => "customer",
-                    'min_amount' => 300000,
-                    'merchant_payback' => "5.18"
-                ]
-            ]
+                'values' => [
+                    [
+                        'duration' => 3,
+                        'interest' => 12,
+                        'subvention' => "customer",
+                        'min_amount' => 300000,
+                        'merchant_payback' => "5.18",
+                    ],
+                ],
+            ],
         ];
 
         $response = $this->startTest();
@@ -186,14 +188,16 @@ class AffordabilityTest extends TestCase
 
         $expectedEmiResponse = [
             'HDFC' => [
-                [
-                    'duration' => 3,
-                    'interest' => 12,
-                    'subvention' => "customer",
-                    'min_amount' => 300000,
-                    'merchant_payback' => "5.18"
-                ]
-            ]
+                'values' => [
+                    [
+                        'duration' => 3,
+                        'interest' => 12,
+                        'subvention' => "customer",
+                        'min_amount' => 300000,
+                        'merchant_payback' => "5.18"
+                    ],
+                ],
+            ],
         ];
 
         $this->assertTrue($response['enabled']);

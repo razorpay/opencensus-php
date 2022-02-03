@@ -11,6 +11,7 @@ use RZP\Models\Merchant\Checkout;
 use RZP\Models\Offer\Core as OfferCore;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
+use stdClass;
 
 class Service extends Base\Service
 {
@@ -74,19 +75,24 @@ class Service extends Base\Service
             $providers = $this->formatProviders($providers, CardlessEmi::MIN_AMOUNTS);
         }
 
-        $data['entities']['cardless_emi']['providers'] = $providers;
+        $data['entities']['cardless_emi']['providers'] = $this->formatAsDictionary($providers);
     }
 
     protected function fetchEmiComponent(array &$data): void
     {
-        $items = [];
+        $emiOptions = [];
 
         if ($this->merchant->methods->isEmiEnabled() === true)
         {
-            $items = (new EmiService())->getEmiPlansAndOptions()['options'];
+            $emiOptions = (new EmiService())->getEmiPlansAndOptions()['options'];
         }
 
-        $data['entities']['emi']['items'] = $items;
+        $items = [];
+        foreach ($emiOptions as $bank => $options) {
+            $items[$bank]['values'] = $options;
+        }
+
+        $data['entities']['emi']['items'] = $this->formatAsDictionary($items);
     }
 
     protected function fetchOffersComponent(array &$data): void
@@ -105,7 +111,7 @@ class Service extends Base\Service
             $providers = $this->formatProviders($providers, PayLater::MIN_AMOUNTS);
         }
 
-        $data['entities']['paylater']['providers'] = $providers;
+        $data['entities']['paylater']['providers'] = $this->formatAsDictionary($providers);
     }
 
     protected function fetchOptionsComponent(array &$data): void
@@ -113,6 +119,19 @@ class Service extends Base\Service
         $data['options']['theme']['color'] = $this->merchant->getBrandColor();
 
         $data['options']['image'] = $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
+    }
+
+    /**
+     * Ensures empty associative arrays "[]" show up as empty dictionaries "{}"
+     * when run through json_encode().
+     *
+     * @param array $response
+     *
+     * @return stdClass
+     */
+    protected function formatAsDictionary(array $response): stdClass
+    {
+        return (object) $response;
     }
 
     /**
