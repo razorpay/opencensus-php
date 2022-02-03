@@ -192,6 +192,11 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
+            if (isset($input['contact_mobile']) === true)
+            {
+                $input['contact_mobile'] = mask_phone($input['contact_mobile']);
+            }
+
             $this->trace->traceException(
                 $e,
                 null,
@@ -1122,6 +1127,11 @@ class Core extends Base\Core
         {
             $this->trace->count(Metric::USER_SMS_OTP_SEND_FAILED);
 
+            if (isset($input['contact_mobile']) === true)
+            {
+                $input['contact_mobile'] = mask_phone($input['contact_mobile']);
+            }
+
             $this->trace->traceException(
                 $e,
                 null,
@@ -2009,6 +2019,11 @@ class Core extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->count(Metric::USER_SMS_OTP_SEND_FAILED);
+
+            if (isset($input['contact_mobile']) === true)
+            {
+                $input['contact_mobile'] = mask_phone($input['contact_mobile']);
+            }
 
             $this->trace->traceException(
                 $e,
