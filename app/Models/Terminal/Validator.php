@@ -1725,7 +1725,8 @@ class Validator extends Base\Validator
     protected static $netbankingUcoTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_uco',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
-        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingUcoEditTerminalRules = [
