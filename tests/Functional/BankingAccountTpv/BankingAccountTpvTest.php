@@ -158,6 +158,8 @@ class BankingAccountTpvTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $attribute);
 
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
+
         $attributes = $this->getTpvInput();
 
         $fav = $this->getFundAccountValidationInput();
@@ -526,6 +528,8 @@ class BankingAccountTpvTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $attribute);
 
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
+
         $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::OWNER);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $ownerRoleUser->getId());
@@ -572,7 +576,9 @@ class BankingAccountTpvTest extends TestCase
 
         $this->fixtures->create('merchant_detail', $attribute);
 
-        $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::OWNER);
+        $this->fixtures->edit('merchant', 10000000000099, ['live' => 1]);
+
+        $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000099', [], Role::OWNER);
 
         $this->ba->proxyAuth('rzp_test_10000000000099', $ownerRoleUser->getId());
 
@@ -592,6 +598,8 @@ class BankingAccountTpvTest extends TestCase
             ];
 
         $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
 
         $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::ADMIN);
 
@@ -664,6 +672,27 @@ class BankingAccountTpvTest extends TestCase
         $this->assertEquals(ltrim($payerAccountNumber, '0'), $trimmedPayerAccountNumber);
     }
 
+    public function testDisableTpvForLiveDisabledMerchant()
+    {
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 0]);
+
+        $attribute = [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $ownerRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
+
     // Test creation of tpv with prepended zeros from dashboard
     public function testCreateTpvFromXDashboardAdminUserWithPrependedZerosInPayerAccountNumber()
     {
@@ -675,6 +704,8 @@ class BankingAccountTpvTest extends TestCase
             ];
 
         $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
 
         $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::ADMIN);
 

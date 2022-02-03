@@ -588,4 +588,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_TPV,
         ],
     ],
+
+    'testDisableTpvForLiveDisabledMerchant' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

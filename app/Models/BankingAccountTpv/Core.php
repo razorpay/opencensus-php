@@ -273,6 +273,12 @@ class Core extends Base\Core
         $input[Entity::STATUS]      = Status::PENDING;
         $input[Entity::CREATED_BY]  = $this->merchant->getName();
 
+        // check if merchant is live disabled or not
+        if($this->merchant->isLive() === false)
+        {
+            return [];
+        }
+
         //re using create tpv function
         $tpv =  $this->buildTpv($input, TraceCode::CREATE_TPV_X_DASHBOARD);
 
