@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Services\SplitzService;
 
 class SplitzController extends Controller
@@ -166,6 +167,8 @@ class SplitzController extends Controller
 
         $headers = [];
 
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        
         $parameters = Request::all();
 
         unset($parameters['service_path']);
@@ -203,4 +206,6 @@ class SplitzController extends Controller
         return $path;
     }
 }
+
+
 

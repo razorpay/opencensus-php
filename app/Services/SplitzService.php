@@ -3,12 +3,14 @@
 namespace RZP\Services;
 
 use App;
+use Request;
 use Throwable;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use RZP\Http\BasicAuth\BasicAuth;
 
@@ -128,6 +130,8 @@ class SplitzService extends Base\Service
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
 
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+
         $options = [
             'timeout' => $this->requestTimeout,
             'auth'    => [$this->key, $this->secret],
@@ -213,6 +217,8 @@ class SplitzService extends Base\Service
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
 
+
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $options = [
             'timeout' => $this->requestTimeout,
