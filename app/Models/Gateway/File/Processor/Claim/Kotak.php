@@ -7,10 +7,11 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class Kotak extends Base
+class Kotak extends NetbankingBase
 {
     use FileHandler;
 
@@ -47,7 +48,6 @@ class Kotak extends Base
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];
-
         foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
@@ -55,11 +55,11 @@ class Kotak extends Base
 
             $formattedData[] = [
                 $index + 1,
-                $row['gateway']['merchant_code'],
+                $this->fetchBankGatewayCode($row),
                 $date,
-                $row['gateway']['int_payment_id'],
+                $this->fetchBankGatewayId($row),
                 $row['payment']['amount'] / 100,
-                $row['gateway']['bank_payment_id'],
+                $this->fetchBankPaymentId($row)
             ];
         }
 
@@ -75,5 +75,31 @@ class Kotak extends Base
         $name = ($this->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
 
         return static::BASE_STORAGE_DIRECTORY . $name . '_' . $this->mode . '_' . $time;
+    }
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['payment']['transaction_id']; // payment through nbplus service
+        }
+
+        return $data['gateway']['bank_payment_id'];
+    }
+    protected function fetchBankGatewayCode($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['terminal']['gateway_merchant_id']; // payment through nbplus service
+        }
+        return $data['gateway']['merchant_code'];
+    }
+    protected function fetchBankGatewayId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['payment']['id']; // payment through nbplus service
+        }
+
+        return $data['gateway']['int_payment_id'];
     }
 }

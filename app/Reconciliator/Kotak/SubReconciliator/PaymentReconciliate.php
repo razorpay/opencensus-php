@@ -2,12 +2,11 @@
 
 namespace RZP\Reconciliator\Kotak\SubReconciliator;
 
-use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
 use Razorpay\Spine\Exception\DbQueryException;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     /*******************
      * Row Header Names
@@ -38,21 +37,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
             $paymentId = $gatewayPayment->getPaymentId();
         }
-        catch (DbQueryException $ex)
-        {
-            //
-            // Only tracing as error, not sending slack messages as this can happen in three cases
-            // 1. file with wrong format has been uploaded and all payment_ids is mapped to some other data.
-            // 2. only few rows are not in proper format (extra data or less data in a row) and mapping goes wrong.
-            // 3. Int payment id present in file is genuinely not present in our database.
-            //
-            $this->messenger->setSkipSlack(true)->raiseReconAlert(
-                [
-                    'trace_code'            => TraceCode::RECON_MISMATCH,
-                    'info_code'             => Base\InfoCode::PAYMENT_ABSENT,
-                    'payment_reference_id'  => $intPaymentId,
-                    'gateway'               => $this->gateway
-                ]);
+        catch (DbQueryException $ex) {
+            $paymentId = $intPaymentId;
         }
 
         return $paymentId;

@@ -566,7 +566,9 @@ class GatewayController extends Controller
 
         $gateway = Payment\Gateway::NETBANKING_KOTAK;
 
-        $mode = Mode::LIVE;
+        $input = Request::all();
+
+        $mode = $input['mode'];
 
         return $this->staticCallbackGateway($method, $gateway, $mode, $input);
     }

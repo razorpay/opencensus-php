@@ -126,6 +126,22 @@ return [
         'fc_process_date'           => Carbon::today()->format("dmY")
     ],
 
+    'testKotakSuccessRecon' => [
+        'Merchant ID'                   => '123456',
+        'Merchant ID 2'                 => '123456',
+        'Contact No'                    => '6211',
+        'Customer Name'                 => 'RAZORPAY',
+        'Bank ID'                       => '12345678',
+        'Bank ID 2'                     => '12345678',
+        'Amount'                        => '500.00',
+        'Date'                          => Carbon::today()->format("d-m-Y"),
+        'Int Payment ID'                => '0',
+        'Processed'                     => 'C',
+        'Combined Details'              => '123456 0 1234567',
+        'Bank Reference No'             => '1234567',
+        'Date Time'                     => Carbon::today()->format("d/m/Y H:i:s")
+    ],
+
     'testDlbSuccessRecon' => [
         'Sr.NO'                     => '1',
         'BankMerchantId'            => 'RAZORPG',
