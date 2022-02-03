@@ -73,6 +73,7 @@ class ListFilter extends Component {
 
     this.props.history.push({
       pathname: this.props.location.pathname,
+      hash: this.props.location.hash,
       search: stringifyQueryParams(props),
     });
 
