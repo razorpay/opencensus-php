@@ -1523,7 +1523,20 @@ return [
                 ]
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'settlement_ondemand_transfer_id' => '12345678910111',
+                        'success'                         => true
+                    ],
+                    [
+                        'settlement_ondemand_transfer_id' => '12345678910112',
+                        'success'                         => true
+                    ],
+                ],
+            ],
         ],
     ],
 

@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Settlement\Ondemand\Transfer;
 
+use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\Ondemand\Attempt;
 use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandBulkTransfer;
@@ -61,16 +64,61 @@ class Service extends Base\Service
 
     public function triggerOndemandTransfer(array $settlementOndemandTransferIds)
     {
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_TRANSFER_RETRY, [
+            'settlement_ondemand_transfer_ids' => $settlementOndemandTransferIds,
+        ]);
+
+        $result = new Base\PublicCollection;
+
         foreach ($settlementOndemandTransferIds as $id)
         {
-            $settlementOndemandTransfer = (new Repository)->findById($id);
+                $this->app['api.mutex']->acquireAndReleaseStrict(
+                'settlement_ondemand_transfer_retry'.$id,
+                function() use ($id, $result) {
 
-            $attempt = (new Attempt\Core)->createAttempt($settlementOndemandTransfer);
+                    try
+                    {
+                        $settlementOndemandTransfer = (new Repository)->find($id);
 
-            CreateSettlementOndemandBulkTransfer::dispatch($this->mode, $attempt->getId(), $settlementOndemandTransfer)->delay(10);
+                        if ($settlementOndemandTransfer->getStatus() === Status::REVERSED)
+                        {
+                            $attempt = (new Attempt\Core)->createAttempt($settlementOndemandTransfer);
+
+                            CreateSettlementOndemandBulkTransfer::dispatch($this->mode,
+                                                                           $attempt->getId(),
+                                                                           $settlementOndemandTransfer)->delay(10);
+                        }
+
+                        $result->push([
+                            'settlement_ondemand_transfer_id' => $id,
+                            'success'                         => true,
+                        ]);
+
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $result->push([
+                            'settlement_ondemand_transfer_id' => $id,
+                            'success'                         => false,
+                            'error'                           => [
+                                Error::DESCRIPTION       => $e->getMessage(),
+                                Error::PUBLIC_ERROR_CODE => $e->getCode(),
+                            ]
+                        ]);
+
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::SETTLEMENT_ONDEMAND_TRANSFER_RETRY_FAILURE,
+                            [
+                                'settlement_ondemand_transfer_id' => $id
+                            ]);
+                    }
+
+                });
+
         }
 
-        return [];
+        return $result->toArrayWithItems();
     }
-
 }

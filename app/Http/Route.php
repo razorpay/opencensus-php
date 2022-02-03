@@ -6332,7 +6332,7 @@ class Route
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_enqueue'              => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_processed'         => Permission::CAPITAL_DEVELOPER,
-        'setl_ondemand_transfer_trigger'           => Permission::CAPITAL_DEVELOPER,
+        'setl_ondemand_transfer_trigger'           => Permission::SETTLEMENT_ONDEMAND_TRANSFER_RETRY,
         'setl_ondemand_transfer_payout_update'     => Permission::CAPITAL_DEVELOPER,
         'settlement_ondemand_feature_enable'       => Permission::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         'early_settlement_feature_period_create'   => Permission::CAPITAL_DEVELOPER,

@@ -1489,6 +1489,10 @@ return [
                 'description' => 'Allow access to admin APIs for ES On Demand',
                 'assignable'  => true,
             ],
+            Permission::SETTLEMENT_ONDEMAND_TRANSFER_RETRY => [
+                'description' => 'Allow access to ondemand transfer trigger API',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::PAYOUTS => [

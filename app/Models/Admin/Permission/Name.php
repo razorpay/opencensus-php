@@ -107,6 +107,7 @@ class Name
     const RETRY_SETTLEMENT                    = 'retry_settlement';
     const SETTLEMENT_BULK_UPDATE              = 'settlement_bulk_update';
     const SETTLEMENT_ONDEMAND_FEATURE_ENABLE  = 'settlement_ondemand_feature_enable';
+    const SETTLEMENT_ONDEMAND_TRANSFER_RETRY  = 'settlement_ondemand_transfer_retry';
     const CREATE_NODAL_ACCOUNT_TRANSFER       = 'create_nodal_account_transfer';
     const MERCHANT_INVOICE_EDIT               = 'merchant_invoice_edit';
     const MERCHANT_INVOICE_CONTROL            = 'merchant_invoice_control';
