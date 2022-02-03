@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\OneClickCheckout\FulfillmentOrder;
 
 
 use DateTime;
+use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use RZP\Models\Batch\Header;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -37,7 +38,8 @@ class Service
 
         if (isset($input[Header::FULFILLMENT_ORDER_UPDATED_AT]) === true && $input[Header::FULFILLMENT_ORDER_UPDATED_AT] !== '')
         {
-            $input[Header::FULFILLMENT_ORDER_UPDATED_AT] = $this->validateAndConvertDateFormat($input[Header::FULFILLMENT_ORDER_UPDATED_AT]);
+            $input['source'][Header::FULFILLMENT_ORDER_UPDATED_AT] = $this->validateAndConvertDateFormat($input[Header::FULFILLMENT_ORDER_UPDATED_AT]);
+            unset($input[Header::FULFILLMENT_ORDER_UPDATED_AT]);
         }
 
         $params = self::PARAMS[self::UPDATE_FULFILLMENT_ORDER];
@@ -49,6 +51,7 @@ class Service
     {
 
         $input['merchant_id'] = $merchantId;
+        $input['source']['origin'] = "batch";
 
         return $input;
     }
