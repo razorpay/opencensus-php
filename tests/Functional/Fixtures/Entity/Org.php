@@ -190,7 +190,7 @@ class Org extends Base
             'org_id' => self::AXIS_ORG_ID,
         ] + $input);
         $input = [];
-        
+
         $adminRole = $this->fixtures->create('role', [
             'id'     => 'AxiAdminRoleId',
             'org_id' => self::AXIS_ORG_ID,
@@ -418,5 +418,20 @@ class Org extends Base
         ]);
 
         return $org;
+    }
+
+    public function addFeatures($featureNames, $id = '10000000000000')
+    {
+        $features = collect();
+
+        foreach ((array) $featureNames as $featureName) {
+            $attributes = [
+                'name'      => $featureName,
+                'entity_id' => $id
+            ];
+            $features->push($this->fixtures->create('feature', $attributes));
+        }
+
+        return $features;
     }
 }

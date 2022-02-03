@@ -1004,6 +1004,7 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
     }
 
+
     /**
      * Get the non-pureplatform partner if it exists
      *
@@ -1678,6 +1679,11 @@ class Entity extends Base\PublicEntity
     protected function getReceiptEmailEnabledAttribute()
     {
         return (bool) $this->attributes[self::RECEIPT_EMAIL_ENABLED];
+    }
+
+    public function setReceiptEmailEnabledAttribute($setReceiptEmail)
+    {
+        $this->attributes[self::RECEIPT_EMAIL_ENABLED] = $setReceiptEmail;
     }
 
     protected function getHoldFundsAttribute()

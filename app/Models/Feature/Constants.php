@@ -1100,7 +1100,11 @@ class Constants
     const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
 
     /**
-     * Feature flag to skip email notifications to merchants on processed and reversed payouts
+     * Disable default email receipt feature at org level
+     */
+    const ORG_DISABLE_DEF_EMAIL_RECEIPT = 'disable_def_email_receipt';
+
+     /** Feature flag to skip email notifications to merchants on processed and reversed payouts
      * @see shouldNotifyTxnViaEmail function in Payouts\Enity.php
      */
     const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
@@ -1527,6 +1531,7 @@ class Constants
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
         self::EDIT_SINGLE_VA_EXPIRY           => true,
         self::ADDRESS_NAME_REQUIRED           => true,
+        self::ORG_DISABLE_DEF_EMAIL_RECEIPT   => true,
         self::NO_DOC_ONBOARDING               => true,
         self::SUBM_NO_DOC_ONBOARDING          => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,

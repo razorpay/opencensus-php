@@ -242,6 +242,14 @@ class Service extends Base\Service
         /** @var Entity $merchant */
         $merchant = $this->core()->create($input, $merchantDetailInputData);
 
+        // merchant info
+        $merchant_org = $merchant->org;
+
+        if($merchant_org->isDisableDefaultEmailReceipt() === true)
+        {
+            $merchant->setReceiptEmailEnabledAttribute(false);
+        }
+
         $this->enableBusinessBankingIfApplicable($merchant);
 
         $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);

@@ -1821,6 +1821,33 @@ class MerchantCreateTest extends TestCase
         }
     }
 
+
+    public function testCreateMerchantWithDefaultEmailReceiptDisabled()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->org->addFeatures(['disable_def_email_receipt']);
+
+        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $testData = $this->testData['testCreateMerchant'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $liveConfig = $this->getDbLastEntity(
+            Constants\Entity::FEATURE, 'live');
+
+        $testConfig = $this->getDbLastEntity(
+            Constants\Entity::FEATURE, 'test');
+
+        $this->assertEquals($this->merchantId, $liveConfig['entity_id']);
+        $this->assertEquals($this->merchantId, $testConfig['entity_id']);
+
+    }
+
+
     public function testCreateMerchantWithDefaultLateAuthConfig()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();

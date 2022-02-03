@@ -546,6 +546,11 @@ class Entity extends Base\Entity
         }
     }
 
+    public function isDisableDefaultEmailReceipt(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ORG_DISABLE_DEF_EMAIL_RECEIPT) === true);
+    }
+
     public function setPublicSecondFactorAuthModeAttribute($array)
     {
         if (isset($array[self::SECOND_FACTOR_AUTH_MODE]) === true)
