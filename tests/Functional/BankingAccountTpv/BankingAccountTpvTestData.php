@@ -249,6 +249,22 @@ return [
         ],
     ],
 
+    'testLimitOnSourceAccounts' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testFetchMerchantTpvsWithNoRecords' => [
         'request'  => [
             'url'     => '/merchant/tpvs',

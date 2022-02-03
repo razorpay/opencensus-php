@@ -28,6 +28,8 @@ class Core extends Base\Core
 
     const RZP_MERCHANT_ID            = '100000Razorpay';
 
+    const LIMIT_TO_SOURCE_ACCOUNTS   = 40;
+
     public function __construct()
     {
         parent::__construct();
@@ -273,8 +275,17 @@ class Core extends Base\Core
         $input[Entity::STATUS]      = Status::PENDING;
         $input[Entity::CREATED_BY]  = $this->merchant->getName();
 
+        $countOfSourceAccounts = count($this->repo->banking_account_tpv->fetchMerchantTpvs($this->merchant->getId()));
+
+        // check if source accounts limit for given merchant is already crossed
+        if($countOfSourceAccounts === self::LIMIT_TO_SOURCE_ACCOUNTS)
+        {
+            return [];
+        }
+
         // check if merchant is live disabled or not
         if($this->merchant->isLive() === false)
+
         {
             return [];
         }

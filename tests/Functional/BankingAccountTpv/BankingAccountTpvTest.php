@@ -819,4 +819,30 @@ class BankingAccountTpvTest extends TestCase
 
         return array_merge($default, $input);
     }
+
+    public function testLimitOnSourceAccounts()
+    {
+        $attribute = [
+            'activation_status' => 'activated',
+            'merchant_id' => '10000000000000',
+            'business_type' => '2',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $attributes = $this->getTpvInput();
+
+        for ($i = 0; $i < 40; $i++)
+        {
+            $this->fixtures->create('banking_account_tpv', $attributes);
+        }
+
+        $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $ownerRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
 }
