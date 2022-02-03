@@ -699,6 +699,8 @@ class FundAccountValidationTest extends TestCase
         // validate fund transfer attempt table last entry
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
+        $this->assertEquals($txn['entity_id'], $fav['id']);
+        $this->assertEquals($txn['id'], 'txn_'.$fav['transaction_id']);
     }
 
     public function testFundAccValidationWithAccountNumberAndBankAccountOnLiveMode()

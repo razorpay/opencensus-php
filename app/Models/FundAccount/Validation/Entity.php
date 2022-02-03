@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_STATUS         = 'account_status';
     const REGISTERED_NAME        = 'registered_name';
     const UTR                    = 'utr';
+    const TRANSACTION_ID         = 'transaction_id';
     const FEES                   = 'fees';
     const TAX                    = 'tax';
     const AMOUNT                 = 'amount';
@@ -78,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::RETRY_AT,
         self::FEES,
         self::TAX,
+        self::TRANSACTION_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -175,6 +177,11 @@ class Entity extends Base\PublicEntity
     public function setFees(int $fees)
     {
         $this->setAttribute(self::FEES, $fees);
+    }
+
+    public function setTransactionId(string $transactionId)
+    {
+        $this->setAttribute(self::TRANSACTION_ID, $transactionId);
     }
 
     public function associateFundAccount(FundAccount $fundAccount)

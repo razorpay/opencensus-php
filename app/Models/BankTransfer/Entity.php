@@ -51,6 +51,8 @@ class Entity extends Base\PublicEntity
     const BALANCE_ID         = 'balance_id';
     const VIRTUAL_ACCOUNT    = 'virtual_account';
 
+    const TRANSACTION_ID     = 'transaction_id';
+
     const AMOUNT             = 'amount';
 
     // Modes: NEFT, RTGS, IMPS, IFT
@@ -157,6 +159,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::NARRATION,
         self::UTR,
+        self::TRANSACTION_ID,
         self::TIME,
         self::EXPECTED,
         self::UNEXPECTED_REASON,
@@ -555,6 +558,11 @@ class Entity extends Base\PublicEntity
     public function setUtr(string $utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setTransactionId(string $transactionId)
+    {
+        $this->setAttribute(self::TRANSACTION_ID, $transactionId);
     }
 
     public function setNotified(bool $notified)

@@ -3324,9 +3324,13 @@ class BankTransferTest extends TestCase
 
         // Created bank transfer is an expected one
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $transaction = $this->getLastEntity('transaction', true);
+
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertEquals($transaction['entity_id'], $bankTransfer['id']);
+        $this->assertEquals($transaction['id'], 'txn_'.$bankTransfer['transaction_id']);
 
         Mail::assertNotQueued(BankTransfer::class);
 
@@ -3478,6 +3482,7 @@ class BankTransferTest extends TestCase
 
 
         $bankTransfersCreated = $this->getDbEntities('bank_transfer', [], 'live');
+        $transaction = $this->getLastEntity('transaction', true, 'live');
 
         for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
         {
@@ -3499,6 +3504,8 @@ class BankTransferTest extends TestCase
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
             $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerRequestPayload['identifiers']);
             $this->assertArrayNotHasKey('fts_account_type', $ledgerRequestPayload['identifiers']);
+            $this->assertEquals($transaction['entity_id'], 'bt_'.$bankTransfersCreated[$index]['id']);
+            $this->assertEquals($transaction['id'], 'txn_'.$bankTransfersCreated[$index]['transaction_id']);
         }
     }
 

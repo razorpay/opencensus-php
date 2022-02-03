@@ -459,6 +459,10 @@ class Processor extends VirtualAccount\Processor
             list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
 
             $this->repo->saveOrFail($txn);
+
+            $bankTransfer->setTransactionId($txn->getId());
+
+            $this->repo->saveOrFail($bankTransfer);
         }
 
         // Updates virtual account's stats.

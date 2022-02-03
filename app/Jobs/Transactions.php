@@ -171,6 +171,10 @@ class Transactions extends Job
 
                     list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($tempBankTransfer))->createTransactionWithIdAndLedgerBalance($journalId, intval($balance));
                     $this->repoManager->saveOrFail($txn);
+
+                    $bankTransfer->setTransactionId($txn->getId());
+                    $this->repoManager->saveOrFail($bankTransfer);
+
                     return [$bankTransfer, $txn];
                 });
 

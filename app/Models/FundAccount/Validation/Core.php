@@ -171,6 +171,7 @@ class Core extends Base\Core
             {
                 $validation->setFees($txn->getFee());
                 $validation->setTax($txn->getTax());
+                $validation->setTransactionId($txn->getId());
 
                 $this->repo->saveOrFail($validation);
             }
@@ -1115,6 +1116,9 @@ class Core extends Base\Core
                    $txn = $processor->createTransactionForLedger($ledgerResponse);
 
                     $this->repo->saveOrFail($txn);
+
+                    $fav->setTransactionId($txn->getId());
+                    $this->repo->saveOrFail($fav);
 
                     if ($feeSplit !== null)
                     {

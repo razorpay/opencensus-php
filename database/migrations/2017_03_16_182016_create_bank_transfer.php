@@ -54,6 +54,9 @@ class CreateBankTransfer extends Migration
             $table->string(BankTransfer::GATEWAY)
                   ->nullable(false);
 
+            $table->char(BankTransfer::TRANSACTION_ID, BankTransfer::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(BankTransfer::AMOUNT);
 
             $table->string(BankTransfer::MODE, 5);
