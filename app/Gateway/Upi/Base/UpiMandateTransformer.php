@@ -8,7 +8,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\UpiMandate\Status as Status;
 use RZP\Models\UpiMandate\Entity as Mandate;
 
-class UpiMandateTransformer extends UpiTransanformer
+class UpiMandateTransformer extends UpiTransformer
 {
     /**
      * @var Mandate
@@ -126,9 +126,9 @@ class UpiMandateTransformer extends UpiTransanformer
     /**
      * Sets the value of UMN, RRN, and NPCI Transaction ID from the response
      *
-     * @return UpiTransanformer
+     * @return UpiTransformer
      */
-    protected function updateMetadataFromResponse(): UpiTransanformer
+    protected function updateMetadataFromResponse(): UpiTransformer
     {
         $this->item->setUmn($this->response(Mandate::UMN))
              ->setRrn($this->response(Mandate::RRN))

@@ -5,7 +5,7 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Exception\BaseException;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 
-abstract class UpiTransanformer
+abstract class UpiTransformer
 {
     /**
      * @var Gateway
@@ -44,7 +44,7 @@ abstract class UpiTransanformer
 
     abstract protected function getResponseArray(): array;
 
-    abstract protected function updateMetadataFromResponse(): UpiTransanformer;
+    abstract protected function updateMetadataFromResponse(): UpiTransformer;
 
     public function __construct(Gateway $context, Anomalies $anomalies)
     {

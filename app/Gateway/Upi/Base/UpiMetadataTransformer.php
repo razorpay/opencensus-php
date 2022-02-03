@@ -12,7 +12,7 @@ use RZP\Models\Payment\UpiMetadata\Mode as Mode;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
-class UpiMetadataTransformer extends UpiTransanformer
+class UpiMetadataTransformer extends UpiTransformer
 {
     /**
      * @var Metadata
@@ -246,9 +246,9 @@ class UpiMetadataTransformer extends UpiTransanformer
      * Updates the following attributes of UPI Metadata:
      *  UMN, RRN, and NPCI Transaction ID
      *
-     * @return UpiTransanformer
+     * @return UpiTransformer
      */
-    protected function updateMetadataFromResponse(): UpiTransanformer
+    protected function updateMetadataFromResponse(): UpiTransformer
     {
         $this->item->setUmn($this->response(Metadata::UMN))
              ->setRrn($this->response(Metadata::RRN))
@@ -295,9 +295,9 @@ class UpiMetadataTransformer extends UpiTransanformer
     }
 
     /**
-     * @return UpiTransanformer
+     * @return UpiTransformer
      */
-    private function setVpa(): UpiTransanformer
+    private function setVpa(): UpiTransformer
     {
         $vpa = $this->upi->getVpa() ?? $this->response('upi.vpa') ?? null;
 
