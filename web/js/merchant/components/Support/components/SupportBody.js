@@ -209,8 +209,9 @@ class SupportBody extends Component {
     trackSupportOptions('faqs');
   };
   render() {
-    const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig } = this.props;
+    const { notifyCount, isOpened, onToggle, isCallEnabled, scheduleCallConfig, user } = this.props;
     const { handleClick, openDashboardGuide } = this;
+    const { careSupportSection } = this.state;
     const shouldDisable = !isWorkingDay();
     let scheduleCallbackReason =
       scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
@@ -250,12 +251,19 @@ class SupportBody extends Component {
 
     return (
       <div class={classList('support-body', isOpened && 'active')}>
-        {this.state.careSupportSection ? (
+        {careSupportSection ? (
           <SupportSection
-            user={this.props.user}
+            user={{
+              experiments: user.experiments,
+              email: user.email,
+              name: user.name,
+              id: user.id,
+              contact_mobile: user.contact_mobile,
+            }}
             analyticsInstance={analyticsTrack}
-            module={this.state.careSupportSection.module}
-            initialData={this.state.careSupportSection.initialData}
+            // removing hash to support frontend care package
+            module={careSupportSection.module?.replace('#', '')}
+            initialData={careSupportSection.initialData}
             onClose={() => {
               this.setState({
                 careSupportSection: null,
