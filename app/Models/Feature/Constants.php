@@ -2219,6 +2219,11 @@ class Constants
             'display_name' => 'Skip email notification to merchants',
             'description'  => 'This feature, if enabled, will not send email notifications to merchants',
         ],
+        self::LEDGER_JOURNAL_READS => [
+            'feature'      => self::LEDGER_JOURNAL_READS,
+            'display_name' => 'Ledger Journal Reads',
+            'description'  => 'This feature, if enabled, will cause reporting to be served from ledger data',
+        ],
     ];
 
     /**
