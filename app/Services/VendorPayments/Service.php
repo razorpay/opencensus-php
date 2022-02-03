@@ -40,6 +40,7 @@ class Service
     const EDIT_VENDOR_PAYMENTS          = 'EditVendorPayment';
     const CANCEL_VENDOR_PAYMENTS        = 'CancelVendorPayment';
     const BULK_CANCEL_VENDOR_PAYMENTS   = 'BulkCancelVP';
+    const ACCEPT_VENDOR_PAYMENTS        = 'AcceptVendorPayment';
     const GET_INVOICE_SIGNED_URL        = 'GetInvoiceSignedURL';
     const VP_SUMMARY_API                = 'SummaryApi';
     const GET_OCR_DATA                  = 'GetOcrData';
@@ -410,6 +411,15 @@ class Service
         }
 
         $input['cancelling_user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function accept(MerchantEntity $merchant, string $vendorPaymentId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ACCEPT_VENDOR_PAYMENTS);
+
+        $input = ['id' => $vendorPaymentId];
 
         return $this->makeRequest($merchant, $url, $input);
     }

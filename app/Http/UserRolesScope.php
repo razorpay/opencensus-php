@@ -947,6 +947,7 @@ class UserRolesScope
             'user_verify_contact'                                  => Role::ALL_ROLES,
             'user_verify_email'                                    => Role::ALL_ROLES,
             'validate_file_name'                                   => [Role::OWNER, Role::ADMIN],
+            'vendor_payment_accept'                                => [Role::OWNER, Role::ADMIN],
             'vendor_payment_bulk_cancel'                           => [Role::OWNER, Role::ADMIN],
             'vendor_payment_bulk_invoice_download'                 => [Role::OWNER, Role::ADMIN],
             'vendor_payment_cancel'                                => [Role::OWNER, Role::ADMIN],

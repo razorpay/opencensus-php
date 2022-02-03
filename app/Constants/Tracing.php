@@ -113,6 +113,7 @@ class Tracing
             'vendor_payment_edit',
             'vendor_payment_cancel',
             'vendor_payment_bulk_cancel',
+            'vendor_payment_accept',
             'vendor_payment_get_ocr_data',
             'vendor_payment_get_ocr_data',
             'vendor_payment_mark_as_paid',

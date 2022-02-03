@@ -660,5 +660,19 @@ return [
                 'success' => true
             ]
         ]
+    ],
+
+    'testVendorPaymentAccept' => [
+    'request'  => [
+        'method'  => 'POST',
+        'server'  => [
+            'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            'HTTP_X-Dashboard-User-Id' => '20000000000000',
+        ],
+        'url'     => '/vendor-payments/vendor123/accept',
+    ],
+    'response' => [
+        'content' => []
     ]
+],
 ];

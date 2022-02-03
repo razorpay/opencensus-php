@@ -524,7 +524,7 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('getAutoProcessedInvoice');
     }
-    
+
     public function testSendVendorInvite()
     {
         $user = $this->fixtures->create('user', ['id' => '20000000000006']);
@@ -552,5 +552,20 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('inviteVendor');
 
+    }
+
+    public function testVendorPaymentAccept()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments\Service');
+
+        $vpMock->shouldReceive('accept')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('accept');
     }
 }

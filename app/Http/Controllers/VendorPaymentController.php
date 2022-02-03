@@ -168,6 +168,11 @@ class VendorPaymentController extends Controller
         return $this->service->bulkCancel($this->ba->getMerchant(), $this->input, $this->ba->getUser());
     }
 
+    public function accept(string $vendorPaymentId)
+    {
+        return $this->service->accept($this->ba->getMerchant(), $vendorPaymentId);
+    }
+
     public function listContacts()
     {
         return $this->service->listContacts($this->ba->getMerchant(), $this->input);
