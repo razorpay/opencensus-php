@@ -79,7 +79,7 @@ class Service extends Base\Service
                 'contact' => '',
             ],
             'one_click_checkout' => true,
-            'customer_cart'      => (new Core)->getDataForFbPixels($input['cart']),
+            'customer_cart'      => (new Core)->getDataForFbPixels($checkout),
         ];
     }
 
@@ -373,6 +373,16 @@ class Service extends Base\Service
 
         if (empty($response['errors']) === false)
         {
+          // address has no PII so we can log it
+          $this->trace->info(
+              TraceCode::SHOPIFY_1CC_API_ERROR,
+              [
+                  'type'       => 'update_address_failed',
+                  'response'   => $response,
+                  'checkoutId' => $checkoutId,
+                  'address'    => $address
+              ]
+          );
         }
 
         $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);

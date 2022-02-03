@@ -118,8 +118,13 @@ class Mutations
                     id
                     title
                     quantity
-                    variant{
-                        id
+                    variant {
+                      id
+                      title
+                      priceV2 {
+                        amount
+                        currencyCode
+                      }
                     }
                     customAttributes {
                       key
@@ -730,6 +735,19 @@ class Mutations
                   id
                   title
                   quantity
+                  variant {
+                    id
+                    title
+                    priceV2 {
+                      amount
+                      currencyCode
+                    }
+                    product {
+                      id
+                      handle
+                      title
+                    }
+                  }
                   customAttributes {
                     key
                     value

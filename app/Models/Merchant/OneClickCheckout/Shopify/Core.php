@@ -16,7 +16,7 @@ use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 class Core extends Base\Core
 {
 
-    const POLLING_INTERVAL_MILLIS = 10; // 300ms counting API call
+    const POLLING_INTERVAL_MILLIS = 100; // 400ms counting API call
 
     const MAX_TIME_DELAY_SEC = 10; // 10sec
 
@@ -58,6 +58,14 @@ class Core extends Base\Core
 
         if (empty($response['errors']) === false)
         {
+            $this->trace->info(
+                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 [
+                     'type'     => 'error_creating_checkout',
+                     'response' => $response,
+                 ]
+            );
+
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
                 ErrorCode::SERVER_ERROR
@@ -68,6 +76,14 @@ class Core extends Base\Core
 
         if (empty($checkoutCreate['checkoutUserErrors']) === false)
         {
+            $this->trace->info(
+                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 [
+                     'type'     => 'error_creating_checkout',
+                     'response' => $response,
+                 ]
+            );
+
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
                 ErrorCode::SERVER_ERROR
@@ -93,26 +109,30 @@ class Core extends Base\Core
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
-    public function getDataForFbPixels(array $cart): array
+    public function getDataForFbPixels(array $checkout): array
     {
-        $cartItems = $cart['items'];
+        $lineItems = $checkout['lineItems']['edges'];
 
         $items = [];
 
-        foreach ($cartItems as $item)
+        foreach ($lineItems as $lineItem)
         {
+            $item = $lineItem['node'];
+
+            $variant = $item['variant'];
+
             $items[] = [
-                'id'         => strval($item['product_id']),
-                'variant_id' => strval($item['id']),
+                'id'         => str_replace('gid://shopify/Product/', '', base64_decode($variant['product']['id'])),
+                'variant_id' => str_replace('gid://shopify/ProductVariant/', '', base64_decode($variant['id'])),
                 'name'       => $item['title'],
-                'value'      => (new Utils)->formatNumber($item['price']/100),
+                'value'      => $variant['priceV2']['amount'],
                 'quantity'   => $item['quantity'],
             ];
         }
 
         return [
-            'currency'     => $cart['currency'],
-            'value'        => (new Utils)->formatNumber($cart['total_price']/100),
+            'currency'     => $checkout['currencyCode'],
+            'value'        => $checkout['totalPriceV2']['amount'],
             'content_type' => 'product',
             'contents'     => $items,
         ];
@@ -242,7 +262,7 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_SHIPPING_BODY,
-            ['checkoutId' => $checkoutId]
+            ['checkoutId' => $checkoutId, 'shippingAddress' => $shippingAddress]
         );
 
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
@@ -251,7 +271,10 @@ class Core extends Base\Core
     // processing is async so we need to sleep and poll
     public function sleepAndPollForShippingInfo(string $checkoutId, int $maxTries = 5)
     {
+        $start = millitime();
+
         $currentTries = 0;
+
         do
         {
             // TODO: optimize by checking logs
@@ -265,6 +288,17 @@ class Core extends Base\Core
 
             if (empty($body['errors']) === false || $body['data'] === null)
             {
+                $this->trace->info(
+                     TraceCode::SHOPIFY_1CC_API_ERROR,
+                     [
+                         'type'       => 'invalid_response_fetching_rates',
+                         'response'   => $body,
+                         'checkoutId' => $checkoutId,
+                         'retries'    => $currentTries,
+                         'time'       => millitime() - $start,
+                     ]
+                );
+
                 throw new Exception\ServerErrorException(
                     'Fetching shipping rates from Shopify failed',
                     ErrorCode::SERVER_ERROR
@@ -279,14 +313,32 @@ class Core extends Base\Core
 
             if ($isShippingReady === true and empty($shippingRates) === false)
             {
+                $rates = (new Core)->parseShippingRates($shippingRates);
+
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_SHIPPING_RESPONSE,
-                    ['checkout' => $checkout, 'currentTries' => $currentTries]
+                    [
+                        'checkout'     => $checkout,
+                        'currentTries' => $currentTries,
+                        'time'         => millitime() - $start,
+                        'rates'        => $rates,
+                    ]
                 );
-                return (new Core)->parseShippingRates($shippingRates);
+
+                return $rates;
             }
 
         } while ($currentTries < $maxTries);
+
+        $this->trace->info(
+             TraceCode::SHOPIFY_1CC_API_ERROR,
+             [
+                 'type'       => 'rety_limit_exceeded_fetching_rates',
+                 'checkoutId' => $checkoutId,
+                 'retries'    => $currentTries,
+                 'time'       => millitime() - $start,
+             ]
+        );
 
         return [
             'serviceable'  => false,
@@ -297,11 +349,10 @@ class Core extends Base\Core
     }
 
     /**
-     * discuss limitation for release v1
      * in shopify shipping rate includes cod fee so we try and split it intelligently
-     * this is a hack which might not scale
+     * this is a hack which needs to be monitored
      * other option is we use cod slabs and ask merchant to not set diff fees in shopify
-     * NOTE: if multiple cod options are available the lowest is chosen, this may be incorrect
+     * if multiple cod options are available the lowest is chosen
      */
     public function parseShippingRates($rates): array
     {
