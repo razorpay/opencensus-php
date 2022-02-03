@@ -30,6 +30,9 @@ class CreateMerchantBusinessDetail extends Migration
             $table->json(BusinessDetailEntity::APP_URLS)
                 ->nullable();
 
+            $table->string(BusinessDetailEntity::BUSINESS_PARENT_CATEGORY, 255)
+                ->nullable();
+
             $table->integer(BusinessDetailEntity::CREATED_AT);
 
             $table->integer(BusinessDetailEntity::UPDATED_AT);

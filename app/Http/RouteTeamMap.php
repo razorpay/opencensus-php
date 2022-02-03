@@ -239,6 +239,7 @@ class RouteTeamMap
         'merchant_activation_update_website'              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_update_website_status'       => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_business_categories'         => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_business_categories_v2'      => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_business_details'            => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_company_search'              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_activation_gst_details'                 => [self::TEAM_PAYMENTS_GROWTH],

@@ -2183,6 +2183,25 @@ class ActivationTest extends OAuthTestCase
         $this->assertNotNull($merchantDetail->getBankAccountName());
     }
 
+    public function testKycSubmissionForInstantlyActivatedBusinessParentCategory()
+    {
+        $this->enableRazorXTreatmentForActivation();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $testData = $this->testData['submitKyc'];
+
+        $this->startTest($testData);
+
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+
+        $this->assertNotNull($merchantDetail->getBankAccountName());
+    }
+
     public function testKycSubmissionForInstantlyActivatedMerchantForRazorpayOrg()
     {
         Mail::fake();

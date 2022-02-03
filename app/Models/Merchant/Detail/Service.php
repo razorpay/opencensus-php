@@ -1092,6 +1092,60 @@ class Service extends Base\Service
         return $businessCategories;
     }
 
+    public function getBusinessCategoriesV2(): array
+    {
+        $categoriesMap      = BusinessCategoriesV2\BusinessParentCategory::CATEGORY_MAP;
+        $parentCategories   = [];
+
+        foreach ($categoriesMap as $parentCategory => $categories)
+        {
+            $categoriesMetaData = [];
+
+            foreach ($categories as $category)
+            {
+                $subCategoriesMetaData = [];
+
+                foreach (BusinessCategoriesV2\BusinessCategory::SUBCATEGORY_MAP[$category] as $subCategory)
+                {
+                    $subcategoryMetaDataFields = BusinessCategoriesV2\BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory];
+
+                    if ($this->isSubcategoryToBeShownOnDashboard($subcategoryMetaDataFields) === true)
+                    {
+                        $subCategoriesMetaData[] = [
+                            BusinessCategoriesV2\BusinessSubCategoryMetaData::SUBCATEGORY_NAME               => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::DESCRIPTION],
+                            BusinessCategoriesV2\BusinessSubCategoryMetaData::SUBCATEGORY_VALUE              => $subCategory,
+                            Entity::ACTIVATION_FLOW                                                          => $subcategoryMetaDataFields[Entity::ACTIVATION_FLOW],
+                            BusinessCategoriesV2\BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::NON_REGISTERED_ACTIVATION_FLOW],
+                            BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER                  => $subcategoryMetaDataFields[BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER],
+                        ];
+                    }
+                }
+
+                array_multisort(array_column($subCategoriesMetaData, BusinessCategoriesV2\BusinessSubCategoryMetaData::DISPLAY_ORDER), $subCategoriesMetaData);
+
+                $categoriesMetaData[] = [
+                    BusinessCategoriesV2\BusinessCategory::CATEGORY_NAME    => BusinessCategoriesV2\BusinessCategory::DESCRIPTIONS[$category],
+                    BusinessCategoriesV2\BusinessCategory::CATEGORY_VALUE   => $category,
+                    BusinessCategoriesV2\BusinessCategory::DISPLAY_ORDER    => BusinessCategoriesV2\BusinessCategory::DISPLAY_ORDER_LIST[$category],
+                    BusinessCategoriesV2\BusinessCategory::SUBCATEGORIES    => $subCategoriesMetaData,
+                ];
+            }
+
+            array_multisort(array_column($categoriesMetaData, BusinessCategoriesV2\BusinessCategory::DISPLAY_ORDER), $categoriesMetaData);
+
+            $parentCategories[] =  [
+                BusinessCategoriesV2\BusinessParentCategory::PARENT_CATEGORY_NAME   => BusinessCategoriesV2\BusinessParentCategory::DESCRIPTIONS[$parentCategory],
+                BusinessCategoriesV2\BusinessParentCategory::PARENT_CATEGORY_VALUE  => $parentCategory,
+                BusinessCategoriesV2\BusinessParentCategory::DISPLAY_ORDER          => BusinessCategoriesV2\BusinessParentCategory::DISPLAY_ORDER_LIST[$parentCategory],
+                BusinessCategoriesV2\BusinessParentCategory::CATEGORIES             => $categoriesMetaData,
+            ];
+        }
+
+        array_multisort(array_column($parentCategories, BusinessCategoriesV2\BusinessParentCategory::DISPLAY_ORDER), $parentCategories);
+
+        return $parentCategories;
+    }
+
     /**
      * @param array $input
      *

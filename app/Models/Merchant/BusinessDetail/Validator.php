@@ -23,7 +23,8 @@ class Validator extends Base\Validator
         Entity::WEBSITE_DETAILS . '.' . Constants::WEBSITE_OR_APP   => 'sometimes|boolean',
         Entity::APP_URLS                                            => 'sometimes|array',
         Entity::APP_URLS.'.'.Constants::PLAYSTORE_URL               => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::APP_URLS.'.'.Constants::APPSTORE_URL                => 'sometimes|custom:active_url|max:255|nullable'
+        Entity::APP_URLS.'.'.Constants::APPSTORE_URL                => 'sometimes|custom:active_url|max:255|nullable',
+        Entity::BUSINESS_PARENT_CATEGORY                            => 'sometimes|string|nullable',
     ];
 
     protected static $editRules   = [
@@ -42,6 +43,7 @@ class Validator extends Base\Validator
         Entity::WEBSITE_DETAILS . '.' . Constants::WEBSITE_OR_APP   => 'sometimes|boolean',
         Entity::APP_URLS                                            => 'sometimes|array',
         Entity::APP_URLS.'.'.Constants::PLAYSTORE_URL               => 'sometimes|custom:active_url|max:255|nullable',
-        Entity::APP_URLS.'.'.Constants::APPSTORE_URL                => 'sometimes|custom:active_url|max:255|nullable'
+        Entity::APP_URLS.'.'.Constants::APPSTORE_URL                => 'sometimes|custom:active_url|max:255|nullable',
+        Entity::BUSINESS_PARENT_CATEGORY                            => 'sometimes|string|nullable',
     ];
 }

@@ -6,7 +6,6 @@ namespace RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstant;
 
 /**
  * Class Entity
@@ -18,29 +17,32 @@ use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstant;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID              = 'id';
-    const MERCHANT_ID     = 'merchant_id';
-    const WEBSITE_DETAILS = 'website_details';
-    const APP_URLS        = 'app_urls';
-    const CREATED_AT      = 'created_at';
-    const UPDATED_AT      = 'updated_at';
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const WEBSITE_DETAILS           = 'website_details';
+    const APP_URLS                  = 'app_urls';
+    const BUSINESS_PARENT_CATEGORY  = 'business_parent_category';
+    const CREATED_AT                = 'created_at';
+    const UPDATED_AT                = 'updated_at';
 
     protected $entity     = 'merchant_business_detail';
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable           = [
-        self::MERCHANT_ID,
-        self::WEBSITE_DETAILS,
-        self::APP_URLS
-    ];
-
     protected $public             = [
         self::MERCHANT_ID,
         self::WEBSITE_DETAILS,
         self::APP_URLS,
+        self::BUSINESS_PARENT_CATEGORY,
         self::CREATED_AT,
         self::UPDATED_AT
+    ];
+
+    protected $fillable           = [
+        self::MERCHANT_ID,
+        self::WEBSITE_DETAILS,
+        self::APP_URLS,
+        self::BUSINESS_PARENT_CATEGORY,
     ];
 
     protected $casts              = [
@@ -66,17 +68,17 @@ class Entity extends Base\PublicEntity
     public static function getDefaultAppUrls()
     {
         return [
-            BusinessDetailConstant::PLAYSTORE_URL    => null,
-            BusinessDetailConstant::APPSTORE_URL     => null,
+            Constants::PLAYSTORE_URL    => null,
+            Constants::APPSTORE_URL     => null,
         ];
     }
 
     public function getPlaystoreUrl(){
-        return $this->getAppUrls()[BusinessDetailConstant::PLAYSTORE_URL] ?? null;
+        return $this->getAppUrls()[Constants::PLAYSTORE_URL] ?? null;
     }
 
     public function getAppstoreUrl(){
-        return $this->getAppUrls()[BusinessDetailConstant::APPSTORE_URL] ?? null;
+        return $this->getAppUrls()[Constants::APPSTORE_URL] ?? null;
     }
 
     public function getWebsiteDetails()
@@ -87,52 +89,52 @@ class Entity extends Base\PublicEntity
     public static function getDefaultWebsiteDetails()
     {
         return [
-            BusinessDetailConstant::ABOUT          => null,
-            BusinessDetailConstant::CONTACT        => null,
-            BusinessDetailConstant::CANCELLATION   => null,
-            BusinessDetailConstant::PRICING        => null,
-            BusinessDetailConstant::PRIVACY        => null,
-            BusinessDetailConstant::REFUND         => null,
-            BusinessDetailConstant::TERMS          => null,
-            BusinessDetailConstant::LOGIN          => null,
-            BusinessDetailConstant::PHYSICAL_STORE => false,
-            BusinessDetailConstant::SOCIAL_MEDIA   => false,
-            BusinessDetailConstant::WEBSITE_OR_APP => false
+            Constants::ABOUT          => null,
+            Constants::CONTACT        => null,
+            Constants::CANCELLATION   => null,
+            Constants::PRICING        => null,
+            Constants::PRIVACY        => null,
+            Constants::REFUND         => null,
+            Constants::TERMS          => null,
+            Constants::LOGIN          => null,
+            Constants::PHYSICAL_STORE => false,
+            Constants::SOCIAL_MEDIA   => false,
+            Constants::WEBSITE_OR_APP => false
         ];
     }
 
     public function getWebsiteAbout()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::ABOUT]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::ABOUT] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::ABOUT]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::ABOUT] : null;
     }
 
     public function getWebsiteContact()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::CONTACT]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::CONTACT] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::CONTACT]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::CONTACT] : null;
     }
 
     public function getWebsitePricing()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::PRICING]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::PRICING] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::PRICING]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::PRICING] : null;
     }
 
     public function getWebsitePrivacy()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::PRIVACY]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::PRIVACY] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::PRIVACY]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::PRIVACY] : null;
     }
 
     public function getWebsiteRefund()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::REFUND]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::REFUND] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::REFUND]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::REFUND] : null;
     }
 
     public function getWebsiteTerms()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::TERMS]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::TERMS] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::TERMS]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::TERMS] : null;
     }
 
     public function getWebsiteCancellation()
     {
-        return isset($this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::CANCELLATION]) ? $this->getAttribute(self::WEBSITE_DETAILS)[BusinessDetailConstant::CANCELLATION] : null;
+        return isset($this->getAttribute(self::WEBSITE_DETAILS)[Constants::CANCELLATION]) ? $this->getAttribute(self::WEBSITE_DETAILS)[Constants::CANCELLATION] : null;
     }
 }

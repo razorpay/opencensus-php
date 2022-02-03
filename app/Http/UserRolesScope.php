@@ -342,6 +342,7 @@ class UserRolesScope
             'la_fetch'                                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT, Role::SELLERAPP_PLUS,],
             'los_service'                                   => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::SUPPORT, Role::SELLERAPP_PLUS, Role::SELLERAPP,],
             'merchant_activation_business_categories'       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE],
+            'merchant_activation_business_categories_v2'    => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE],
             'merchant_activation_gst_details'               => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_save'                      => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_otp_send'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],

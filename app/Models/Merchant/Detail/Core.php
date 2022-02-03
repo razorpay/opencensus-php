@@ -264,7 +264,13 @@ class Core extends Base\Core
             }
         }
 
-        if(empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false || empty($businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS]) === false)
+
+        $businessDetailsInput[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] ?? null;
+        unset($input[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]);
+
+        if (empty($businessDetailsInput[BusinessDetailEntity::APP_URLS]) === false or
+            empty($businessDetailsInput[BusinessDetailEntity::WEBSITE_DETAILS]) === false or
+            empty($businessDetailsInput[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY]) === false)
         {
             if(array_key_exists(BusinessDetailEntity::APP_URLS,$businessDetailsInput)) {
                 $this->checkForCorrectAppUrls($businessDetailsInput[BusinessDetailEntity::APP_URLS]);
@@ -283,7 +289,7 @@ class Core extends Base\Core
             );
         }
 
-        if(empty($input['business_website']) === false)
+        if (empty($input['business_website']) === false)
         {
             //Calling Profanity Checker during onboarding
             (new MRS())->enqueueProfanityCheckerRequest($merchant->getId(), 'site', 'merchant', $merchant->getId(), $input['business_website'], 2, Constants::MERCHANT_ONBOARDING);
@@ -2965,6 +2971,7 @@ class Core extends Base\Core
         $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
         $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
         $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+        $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
 
         if(empty($merchantDetails->getKycClarificationReasons()) === false)
         {
