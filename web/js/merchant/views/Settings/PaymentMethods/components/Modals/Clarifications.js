@@ -3,13 +3,42 @@ import ModalHeader from 'common/ui/ModalHeader';
 import FileUpload from 'merchant/components/File/Upload';
 import { connect } from 'react-redux';
 import { merchantFetch } from 'merchant/utils/ajax';
+import {
+  getIirDiscrepancies,
+  fetchMerchantInstruments,
+  setInstrument,
+} from 'merchant/reducers/instrumentRequests';
+import { closeModal } from 'merchant_common/reducers/modals';
 
-import { WEBSITE_DETAILS, MERCHANT_DOCUMENTS, MERCHANT_DETAILS } from '../../constants';
+import Spinner from 'common/ui/Spinner';
+
+import { bindActionCreators } from 'redux';
+
+import {
+  WEBSITE_DETAILS,
+  MERCHANT_DOCUMENTS,
+  MERCHANT_DETAILS,
+  ACTION_REQUIRED,
+  REJECTED,
+} from '../../constants';
 
 const tabTitle = {
   [WEBSITE_DETAILS]: 'Website Clarifications',
   [MERCHANT_DOCUMENTS]: 'Document Clarifications',
   [MERCHANT_DETAILS]: 'Other Clarifications',
+};
+
+const config = {
+  [ACTION_REQUIRED]: {
+    showInput: true,
+    header: 'Clarifications needed',
+    headerInstruction: 'Provide clarifications & submit form to activate method',
+  },
+  [REJECTED]: {
+    showInput: false,
+    header: 'Discrepancies',
+    headerInstruction: 'These are the reasons because of which the request has been rejected',
+  },
 };
 
 const ClarificationInput = (props) => {
@@ -24,6 +53,7 @@ const ClarificationInput = (props) => {
     answer,
     setFiles,
     files,
+    status,
   } = props;
   const [fileRemoved, setFileRemoved] = useState(false);
 
@@ -41,32 +71,36 @@ const ClarificationInput = (props) => {
       <i className="i i-info-circle" />
       <div className="input-container">
         <p className="input-label">{label}</p>
-        <div className="textarea-container">
-          <textarea
-            disabled={answer?.length}
-            name={iirDiscrepancyId}
-            id="clarification-textarea"
-            placeholder="Sample text or whatever the merchant wants to add here ."
-            onChange={onTextChange}
-            value={discrepancyAnswer}
-            maxLength="500"
-          />
+        {config[status].showInput && (
+          <>
+            <div className="textarea-container">
+              <textarea
+                disabled={answer?.length}
+                name={iirDiscrepancyId}
+                id="clarification-textarea"
+                placeholder="Sample text or whatever the merchant wants to add here ."
+                onChange={onTextChange}
+                value={discrepancyAnswer}
+                maxLength="500"
+              />
 
-          {fileUpload && <i className="i i-file-attach" />}
-        </div>
-        {fileUpload && (
-          <div className="file-upload">
-            <label className="upload-label">Upload File</label>
-            <FileUpload
-              onCloseClick={() => removeFile(iirDiscrepancyId)}
-              files={fileRemoved ? [] : selectedFile && [selectedFile]}
-              onFileChange={handleFileChange}
-              name="clarification-file-upload"
-              id="clarification-file-upload"
-              accept={['pdf', 'jpg', 'jpeg']}
-              maxSize={1048576} // 1MB
-            />
-          </div>
+              {fileUpload && <i className="i i-file-attach" />}
+            </div>
+            {fileUpload && (
+              <div className="file-upload">
+                <label className="upload-label">Upload File</label>
+                <FileUpload
+                  onCloseClick={() => removeFile(iirDiscrepancyId)}
+                  files={fileRemoved ? [] : selectedFile && [selectedFile]}
+                  onFileChange={handleFileChange}
+                  name="clarification-file-upload"
+                  id="clarification-file-upload"
+                  accept={['pdf', 'jpg', 'jpeg']}
+                  maxSize={1048576} // 1MB
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -79,39 +113,58 @@ const Clarifications = (props) => {
   const [formFields, setFormFields] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
   const [files, setFiles] = useState({});
+  const [clarifications, setClarifications] = useState(false);
 
-  const { onCloseClick, mirId, clarifications } = props;
+  const {
+    onCloseClick,
+    mirId,
+    merchantDiscrepancies,
+    discrepancyCategories,
+    loading,
+    status,
+  } = props;
 
   const lastTab = filteredTabs.length - 1;
 
-  async function fetchIirDiscrepancies(mir_Id) {
-    try {
-      if (mir_Id) {
-        await props.getIirDiscrepancies(mir_Id);
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  async function fetchIirDiscrepancies() {
+    await props.getIirDiscrepancies(mirId);
   }
 
   useEffect(() => {
-    fetchIirDiscrepancies(mirId);
-    const fields = {};
-    if (clarifications?.length > 0) {
-      clarifications.forEach(({ iir_discrepancy_id }) => {
-        fields[iir_discrepancy_id] = {
-          answer_field_value: '',
-        };
-      });
-      setFormFields(fields);
-    }
+    fetchIirDiscrepancies();
   }, []);
 
   useEffect(() => {
+    if (merchantDiscrepancies) {
+      const cl = merchantDiscrepancies.map((m) => {
+        return Object.assign(
+          {},
+          ...m,
+          ...discrepancyCategories.filter((d) => d.discrepancy_id === m.discrepancy_id),
+        );
+      });
+      setClarifications(cl);
+      if (cl.length > 0) {
+        const tabs = Array.from(new Set(cl?.map(({ category }) => category))).filter(Boolean);
+        if (JSON.stringify(tabs) !== JSON.stringify(filteredTabs)) {
+          setFilteredTabs(tabs);
+        }
+        setSelectedTab(tabs[0]);
+      }
+    }
+  }, [merchantDiscrepancies]);
+
+  useEffect(() => {
+    const fields = {};
     if (clarifications?.length > 0) {
-      const tabs = Array.from(new Set(clarifications?.map(({ category }) => category)));
-      setFilteredTabs(tabs);
-      setSelectedTab(tabs[0]);
+      clarifications.forEach(({ iir_discrepancy_id, iir_discrepancy_answer }) => {
+        fields[iir_discrepancy_id] = {
+          answer_field_value: iir_discrepancy_answer?.answer_field_value,
+        };
+      });
+    }
+    if (JSON.stringify(formFields) !== JSON.stringify(fields)) {
+      setFormFields(fields);
     }
   }, [clarifications]);
 
@@ -144,7 +197,8 @@ const Clarifications = (props) => {
       method: 'post',
       data: formData,
     });
-    window.location.reload();
+    props.fetchMerchantInstruments().then(() => props.setInstrument(props.instrument));
+    props.closeModal();
   };
 
   const onSubmitDiscrepancyForm = (event) => {
@@ -206,48 +260,52 @@ const Clarifications = (props) => {
         </ul>
       </div>
       <div className="form-container">
-        <ModalHeader title="Clarifications Needed" onCloseClick={onCloseClick} />
-        <form>
-          <div className="form">
-            {clarifications
-              .filter(({ category }) => {
-                return category === selectedTab;
-              })
-              .map(({ discrepancy_comment, iir_discrepancy_id, iir_discrepancy_answer }) => {
-                return (
-                  <ClarificationInput
-                    answer={iir_discrepancy_answer?.answer_field_value}
-                    iirDiscrepancyId={iir_discrepancy_id}
-                    handleFileChange={(file, _) => handleFileChange(file, iir_discrepancy_id)}
-                    label={discrepancy_comment}
-                    key={iir_discrepancy_id}
-                    fileUpload={true}
-                    onTextChange={onTextChange}
-                    formFields={formFields}
-                    setFiles={setFiles}
-                    files={files}
-                  />
-                );
-              })}
-          </div>
+        <ModalHeader title={config[status].header} onCloseClick={onCloseClick} />
+        {loading && <Spinner />}
+        {clarifications && clarifications.length > 0 && (
+          <form>
+            <div className="form">
+              {clarifications
+                .filter(({ category }) => {
+                  return category === selectedTab;
+                })
+                .map(({ discrepancy_comment, iir_discrepancy_id, iir_discrepancy_answer }) => {
+                  return (
+                    <ClarificationInput
+                      answer={iir_discrepancy_answer?.answer_field_value}
+                      iirDiscrepancyId={iir_discrepancy_id}
+                      handleFileChange={(file, _) => handleFileChange(file, iir_discrepancy_id)}
+                      label={discrepancy_comment}
+                      key={iir_discrepancy_id}
+                      fileUpload={true}
+                      onTextChange={onTextChange}
+                      formFields={formFields}
+                      setFiles={setFiles}
+                      files={files}
+                      status={status}
+                    />
+                  );
+                })}
+            </div>
 
-          <div className="footer">
-            <button
-              type="submit"
-              className="Button--primary Button"
-              onClick={onSubmitDiscrepancyForm}
-              disabled={isDisabled}
-            >
-              {selectedTab === filteredTabs[lastTab] ? (
-                <span>
-                  Submit Form <i className="i i-chevron-right" />
-                </span>
-              ) : (
-                <span>Next</span>
-              )}
-            </button>
-          </div>
-        </form>
+            <div className="footer">
+              <button
+                type="submit"
+                className="Button--primary Button"
+                onClick={onSubmitDiscrepancyForm}
+                disabled={isDisabled}
+              >
+                {selectedTab === filteredTabs[lastTab] ? (
+                  <span>
+                    Submit Form <i className="i i-chevron-right" />
+                  </span>
+                ) : (
+                  <span>Next</span>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
@@ -256,7 +314,22 @@ const Clarifications = (props) => {
 const mapStateToProps = (state) => {
   return {
     leafInstrument: state.instrumentRequests.leafInstrument,
+    loading: state.instrumentRequests.loading,
+    merchantDiscrepancies: state.instrumentRequests.merchantDiscrepancies,
+    discrepancyCategories: state.instrumentRequests.discrepancyCategories,
   };
 };
 
-export default connect(mapStateToProps, null)(Clarifications);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      getIirDiscrepancies,
+      fetchMerchantInstruments,
+      closeModal,
+      setInstrument,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Clarifications);

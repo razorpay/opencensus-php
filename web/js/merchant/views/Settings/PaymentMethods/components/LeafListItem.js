@@ -12,7 +12,6 @@ import {
   cancelMerchantInstrumentRequest,
   fetchMerchantInstruments,
   fetchRequestedInstruments,
-  setIntrument,
   getIirDiscrepancies,
 } from 'merchant/reducers/instrumentRequests';
 
@@ -25,7 +24,6 @@ import {
   ACTION_REQUIRED,
   ACTIVATED_ACTION_REQUIRED,
   REQUESTED,
-  PENDING,
   ACTIVATED,
   ACCOUNT_LINKABLE,
   REJECTED,
@@ -35,7 +33,7 @@ import {
 } from '../constants';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
-import Clarifications from './Modals/Clarifications';
+import RejectedAndActionRequired from './InstrumentStatuses/RejectedAndActionRequired';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -235,32 +233,6 @@ class LeafListItem extends React.Component {
     }
   };
 
-  handleUpdateForm = async (mir) => {
-    await this.props.getIirDiscrepancies(mir);
-    const { merchantDiscrepancies, discrepancyCategories } = this.props;
-    const clarifications =
-      (merchantDiscrepancies &&
-        merchantDiscrepancies.map((m) => {
-          return Object.assign(
-            {},
-            ...m,
-            ...discrepancyCategories.filter((d) => d.discrepancy_id === m.discrepancy_id),
-          );
-        })) ||
-      [];
-
-    return this.props.openModal({
-      component: (
-        <Clarifications
-          onCloseClick={this.props.closeModal}
-          clarifications={clarifications}
-          merchantDiscrepancies={merchantDiscrepancies}
-        />
-      ),
-      className: 'clarifications-modal',
-    });
-  };
-
   render() {
     const { instrument, intermediateInstrument, instrumentsTat, user } = this.props;
     const ctaClass = {
@@ -366,17 +338,7 @@ class LeafListItem extends React.Component {
                   Raise Request
                 </button>
               )}
-            {![
-              PENDING,
-              ACTIVATED,
-              REJECTED,
-              ACTION_REQUIRED,
-              ACTIVATED_ACTION_REQUIRED,
-              REQUESTABLE,
-              GREYED,
-              ACCOUNT_LINKABLE,
-              CANCELLED,
-            ].includes(instrument.status) && (
+            {instrument.status === REQUESTED && (
               <button className="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                 Cancel
               </button>
@@ -463,30 +425,7 @@ class LeafListItem extends React.Component {
         <RequestedStatus instrument={instrument} tat={instrumentsTat} />
 
         {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
-          <div className="comment" title={instrument.comment}>
-            <img
-              src="https://cdn.razorpay.com/static/assets/instrument-request/alert-triangle.svg"
-              alt="alert"
-              height="15px"
-              width="15px"
-            />
-            <p>
-              {user.isSmartDashboardActive && instrument.status === ACTION_REQUIRED ? (
-                <>
-                  <span>We need more information to proceed further with the application,</span>{' '}
-                  <a
-                    onClick={() => this.handleUpdateForm(instrument.merchant_instrument_request_id)}
-                  >
-                    update Request Form.
-                  </a>
-                </>
-              ) : !user.isSmartDashboardActive || instrument.status === REJECTED ? (
-                instrument.comment
-              ) : (
-                <span>No comments available</span>
-              )}
-            </p>
-          </div>
+          <RejectedAndActionRequired instrument={instrument} />
         )}
         {/* {instrument.status === ACTIVATED_ACTION_REQUIRED && (
           <div className="comment">
@@ -538,7 +477,6 @@ const mapDispatchToProps = (dispatch) => {
       fetchMerchantInstruments,
       fetchRequestedInstruments,
       getIirDiscrepancies,
-      setIntrument,
     },
     dispatch,
   );

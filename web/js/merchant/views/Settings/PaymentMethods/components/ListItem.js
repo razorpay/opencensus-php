@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import qs from 'query-string';
 import { getIcon } from './paymentMethodIcons';
 import {
-  setIntrument,
+  setInstrument,
   clearIntermediateInstrument,
   clearLeafInstrument,
 } from 'merchant/reducers/instrumentRequests';
@@ -14,7 +14,7 @@ const ListItem = ({
   instrument,
   handleClickedInstument,
   from,
-  setIntrument,
+  setInstrument,
   clearLeafInstrument,
   clearIntermediateInstrument,
   clickedName,
@@ -27,7 +27,7 @@ const ListItem = ({
       clearIntermediateInstrument();
     }
     handleClickedInstument(instrument.name);
-    setIntrument(instrument);
+    setInstrument(instrument);
   };
 
   // for auto-selecting the first child node
@@ -77,7 +77,7 @@ const ListItem = ({
 };
 
 export default connect(null, {
-  setIntrument,
+  setInstrument,
   clearIntermediateInstrument,
   clearLeafInstrument,
 })(ListItem);

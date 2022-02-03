@@ -29,7 +29,7 @@ export const clearLeafInstrument = () => {
   };
 };
 
-export const setIntrument = (instrument) => {
+export const setInstrument = (instrument) => {
   if (instrument.leafList) {
     return {
       type: SET_LEAF_INSTRUMENT,
@@ -952,10 +952,14 @@ export default function instrumentRequestsReducer(state = initialState, action) 
       return set(state, 'loading', true);
     case `${GET_DISCREPANCY_CATEGORIES}::SUCCESS`:
       return set(state, 'discrepancyCategories', action.payload.data);
-    case `${GET_IIR_DISCREPANCIES}::SUCCESS`:
-      return set(state, 'merchantDiscrepancies', action.payload?.data);
-    case `${GET_IIR_DISCREPANCIES}::ERROR`:
-      return set(state, 'merchantDiscrepancies', []);
+    case `${GET_IIR_DISCREPANCIES}::PENDING`:
+      return set(state, 'loading', true);
+    case `${GET_IIR_DISCREPANCIES}::SUCCESS`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'loading', false);
+      lodashset(stateClone, 'merchantDiscrepancies', action.payload.data);
+      return stateClone;
+    }
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::ERROR`:
       return set(state, 'loading', false);
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`: {
