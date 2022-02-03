@@ -2625,7 +2625,9 @@ class Route
         'governor_update_merchant_rule_group_mode'  => ['put',      'merchant/mid/rule_groups/{rule_group_id}/mode/{mode}',                                                   'GovernorController@proxy'              ],
         'governor_create_merchant_rule_group'       => ['post',     'merchant/mid/rule_groups',                                                                               'GovernorController@proxy'              ],
         'governor_delete_merchant_rule_group'       => ['delete',   'merchant/mid/rule_groups/{rule_group_id}',                                                               'GovernorController@proxy'              ],
-        'governor_optimizer_events'                 => ['get',      'optimizer/events/payment',                                                                               'GovernorController@proxyGetOptimizerEvents'              ],
+        'governor_optimizer_events'                 => ['get',      'optimizer/events/payment',                                                                               'GovernorController@proxyWithQueryParams'              ],
+        'governor_optimizer_rulegroup_stats'        => ['get',      'optimizer/stats/rule_group',                                                                             'GovernorController@proxyWithQueryParams'              ],
+        'governor_optimizer_merchant_stats'         => ['post',      'optimizer/stats/merchant',                                                                              'GovernorController@proxy'              ],
 
         'gateway_downtime_for_payment'            => ['POST',     'router/gateway/downtimes',                                  'GatewayController@getGatewayDowntimeForRouter'             ],
 
@@ -5870,6 +5872,8 @@ class Route
         'governor_update_rule_index_v1',
         'governor_search_rules',
         'governor_optimizer_events',
+        'governor_optimizer_rulegroup_stats',
+        'governor_optimizer_merchant_stats',
 
         // governor optimizer on-boarding
         'governor_optimizer_create_merchant',
@@ -7020,6 +7024,8 @@ class Route
         'governor_reorder_merchant_rule_groups'    => Permission::EDIT_GATEWAY_RULE,
         'governor_search_rules'                    => Permission::VIEW_GATEWAY_RULE,
         'governor_optimizer_events'                => Permission::VIEW_GATEWAY_RULE,
+        'governor_optimizer_rulegroup_stats'       => Permission::VIEW_GATEWAY_RULE,
+        'governor_optimizer_merchant_stats'        => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_merchant_rule_group'      => Permission::DELETE_GATEWAY_RULE,
         'governor_update_merchant_rule_group_mode' => Permission::EDIT_GATEWAY_RULE,
         'governor_optimizer_create_merchant'       => Permission::CREATE_GATEWAY_RULE,
@@ -9784,6 +9790,8 @@ class Route
             'governor_rule_list',
             'governor_search_rules',
             'governor_optimizer_events',
+            'governor_optimizer_rulegroup_stats',
+            'governor_optimizer_merchant_stats',
             'governor_update_chain_group_sequence_v1',
             'governor_update_config_v1',
             'governor_update_merchant_rule_group',

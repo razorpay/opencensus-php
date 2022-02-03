@@ -147,17 +147,20 @@ class GovernorController extends Controller
         return response()->json($response['response_body'])->setStatusCode($response['response_code']);
     }
 
-    public function proxyGetOptimizerEvents()
+    // Gets the query params sent from dashboard in input body and sends them as query params to governor
+    public function proxyWithQueryParams()
     {
         $input = Request::all();
 
-        $paymentId = $input['payment_id'];
+        $query = "?";
 
-        $paymentDate = $input['payment_date'];
+        foreach ($input as $key => $value) {
+            $query = $query . $key . '=' . $value . '&';
+        }
 
-        $merchantId = $input['merchant_id'];
+        $query = substr($query, 0, -1);
 
-        $path = Request::path() . '?payment_id=' . $paymentId . '&payment_date=' . $paymentDate . '&merchant_id=' . $merchantId;
+        $path = Request::path() . $query;
 
         $method = Request::method();
 
