@@ -33,4 +33,7 @@ class Constants
     // Batch targets that are not actual gateways
     const ENACH_NB_ICICI                 = 'enach_nb_icici';
     const ENACH_RBL                      = 'enach_rbl';
+
+    //actions
+    const CANCEL                         = 'cancel';
 }

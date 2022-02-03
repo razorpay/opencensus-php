@@ -88,6 +88,25 @@ class LambdaTest extends TestCase
         $this->validateBatch($batches);
     }
 
+    public function testENachRblCancelBatchZipAwsKey()
+    {
+        $file = $this->getBatchFileToUploadForMandateCancelRes();
+
+        $request = [
+            'url'    => '/lambda/emandate',
+            'method' => 'POST',
+            'content' => [
+                'sub_type' => 'cancel',
+                'gateway'  => 'enach_rbl',
+                'key'      => $file
+            ],
+        ];
+
+        $batches = $this->makeRequestAndGetContent($request);
+
+        $this->validateBatch($batches);
+    }
+
     protected function validateBatch($batches)
     {
         $this->assertEquals('collection', $batches['entity']);
@@ -218,5 +237,24 @@ class LambdaTest extends TestCase
         $data = $excel->raw('Xlsx');
 
         return $data;
+    }
+
+    protected function getBatchFileToUploadForMandateCancelRes(): TestingFile
+    {
+        $xmlData1 = file_get_contents(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.xml');
+
+        $zip = new ZipArchive();
+
+        $zip->open(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', ZipArchive::CREATE);
+
+        $zip->addFromString( 'MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.xml', $xmlData1);
+
+        $zip->addFromString( 'MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000002-RES.xml', $xmlData1);
+
+        $zip->close();
+
+        $handle = fopen(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', 'r');
+
+        return (new TestingFile('MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', $handle));
     }
 }

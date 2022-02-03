@@ -159,7 +159,8 @@ class Service extends Base\Service
         $files = [];
 
         if (($this->fileProcessor->isZipFile($file, $locationType) === true) and
-            (in_array($input['type'], self::SKIP_INPUT_EXTRACT, true) === false))
+            ((in_array($input['type'], self::SKIP_INPUT_EXTRACT, true) === false) and
+            (($input['sub_type'] !== Batch\Constants::CANCEL) or ($input['gateway'] !== Batch\Constants::ENACH_RBL))))
         {
             // Gets the actual zip file's details first.
             $zipFileDetails = $this->fileProcessor->getFileDetails($file, $locationType);
