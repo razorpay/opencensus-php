@@ -729,24 +729,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function handleSuggestedOptIn()
-    {
-        $mids = $this->repo->feature->findMerchantIdsHavingFeatures([Constants::SUGGESTED_ADDRESS_OPT_IN]);
-
-        $merchants = $this->repo->merchant->findManyWithRelations($mids, ['merchantDetail']);
-
-        foreach ($merchants as $merchant)
-        {
-            $merchantDetail = $merchant->merchantDetail;
-
-            $merchantDetail->setBusinessRegisteredAddress($merchantDetail->getBusinessSuggestedAddress());
-
-            $merchantDetail->setBusinessRegisteredPin($merchantDetail->getBusinessSuggestedPin());
-
-            $this->repo->merchant_detail->saveOrFail($merchantDetail);
-        }
-    }
-
     /**
      *
      * Gets merchant IDs having the given features

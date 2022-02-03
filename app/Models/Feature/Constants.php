@@ -748,8 +748,6 @@ class Constants
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
 
-    const SUGGESTED_ADDRESS_OPT_IN         = 'suggested_address_opt_in';
-
     const DIRECT_TRANSFER                   = 'direct_transfer';
 
     const DASHBOARD_INTERNAL               = 'DASHBOARD_INTERNAL';
@@ -1420,7 +1418,6 @@ class Constants
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
         self::WALLET                          => true,
-        self::SUGGESTED_ADDRESS_OPT_IN        => true,
         self::OFFER_ON_SUBSCRIPTION           => true,
         self::AUTOMATED_LOC_ELIGIBLE          => true,
         self::PREVENT_TEST_MODE               => true,
@@ -2012,11 +2009,6 @@ class Constants
             'display_name'  => 'Prevent user to switch to test mode from live mode',
             'documentation' => '',
         ],
-        self::SUGGESTED_ADDRESS_OPT_IN  => [
-            'feature'       => self::SUGGESTED_ADDRESS_OPT_IN,
-            'display_name'  => 'Update correct pin and address for the merchant business',
-            'documentation' => '',
-        ],
         self::DIRECT_TRANSFER => [
             'feature'       => self::DIRECT_TRANSFER,
             'display_name'  => 'Required to make direct transfers',
@@ -2268,7 +2260,6 @@ class Constants
         self::NEW_BANKING_ERROR,
         self::LOC_STAGE_2,
         self::SETTLEMENTS_SMS_STOP,
-        self::SUGGESTED_ADDRESS_OPT_IN,
         self::COVID_19_RELIEF,
         self::CRED_MERCHANT_CONSENT,
         self::ONE_CLICK_CHECKOUT,
