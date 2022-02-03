@@ -533,6 +533,14 @@ return [
         ],
     ],
 
+    E::EARLY_SETTLEMENT_FEATURE_PERIOD => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::SETTLEMENT_ONDEMAND_ATTEMPT => [
         Type::PRIVILEGE_AUTH => [
             [

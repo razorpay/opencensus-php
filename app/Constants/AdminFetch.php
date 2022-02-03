@@ -2330,6 +2330,10 @@ class AdminFetch
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
+            Entity::EARLY_SETTLEMENT_FEATURE_PERIOD => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+            ],
+
             Entity::SETTLEMENT_ONDEMAND_PAYOUT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'settlement_ondemand_id' => [
