@@ -33,6 +33,7 @@ use RZP\Mail\Transaction\BankTransfer;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankTransfer\Entity as E;
+use RZP\Models\BankTransfer\Status as S;
 use RZP\Models\BankTransferRequest\Entity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed;
@@ -130,6 +131,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
+
         $this->assertNotNull($bankTransfer['payment_id']);
 
         // Payment is automatically captured
@@ -181,6 +184,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -234,6 +238,8 @@ class BankTransferTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest();
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
     }
 
     public function testHidePayerDetailsWithFeatureFlag()
@@ -260,6 +266,8 @@ class BankTransferTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayNotHasKey('payer_bank_account', $response);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
     }
 
     public function testBankTransferProcessForTinyAmount()
@@ -280,6 +288,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(99, $bankTransfer['amount']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -307,6 +316,7 @@ class BankTransferTest extends TestCase
         $payment =  $this->getDbLastEntityToArray('payment', 'test');
         $this->assertEquals(343946, $payment['amount']);
         $this->assertEquals('bt_rbl', $payment['gateway']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
     }
 
     public function testBankTransferProcessForDisabledMethod()
@@ -345,6 +355,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals('va_ShrdVirtualAcc', $bankTransfer['virtual_account_id']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is made to test merchant and left authorized
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -376,6 +387,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE', $bankTransfer['unexpected_reason']);
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $this->runBankTransferRequestAssertions(
             true,
@@ -420,12 +432,16 @@ class BankTransferTest extends TestCase
 
         // Amount less than 100
         $this->processBankTransfer($accountNumber, $ifsc, null, 80);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $transaction = $this->getLastEntity('transaction', true);
         // Pricing 16%
         $this->assertEquals($transaction['amount'] * 16 / 100, $transaction['fee'] - $transaction['tax']);
 
         // Amount greater than 100
         $this->processBankTransfer($accountNumber, $ifsc, null, 10000);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $transaction = $this->getLastEntity('transaction', true);
         // Pricing 15 + 1%
         $this->assertEquals(1500 + $transaction['amount'] * 1 / 100, $transaction['fee'] - $transaction['tax']);
@@ -633,6 +649,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -702,6 +719,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -760,6 +778,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -820,6 +839,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -881,6 +901,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -1208,7 +1229,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -1273,6 +1294,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -1352,6 +1374,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -1389,6 +1412,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -1503,6 +1527,8 @@ class BankTransferTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
     }
 
     public function testPaymentFetchOnBanfReference()
@@ -1552,6 +1578,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -1629,6 +1656,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Invalid account forced creation of a temp acc for default merchant
         $virtualAccount =  $this->getLastEntity('virtual_account', true);
@@ -1717,6 +1745,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertEquals('VIRTUAL_ACCOUNT_NOT_FOUND', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Invalid account forced creation of a temp acc for default merchant
         $virtualAccount =  $this->getLastEntity('virtual_account', true);
@@ -1846,6 +1875,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(false, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Notify API always returns true
         $response = $this->notifyBankTransfer($accountNumber, $ifsc, $bankTransfer['utr']);
@@ -1893,6 +1923,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(true, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Notify API still returns true
         $response = $this->notifyBankTransfer($accountNumber, $ifsc, $utr);
@@ -1907,6 +1938,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertEquals(true, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
     }
 
     public function testBankTransferNotifyNonFailure()
@@ -2799,6 +2831,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('ShrdVirtualAcc', $bankTransfer->getVirtualAccountId());
         $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
         $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(S::PROCESSED, $bankTransfer->getStatus());
 
         // Assertions on payer bank account for bank transfer
         $this->assertNotNull($bankTransfer->getPayerBankAccountId());
@@ -3204,6 +3237,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -3329,6 +3363,9 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
+
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
+
         $this->assertEquals($transaction['entity_id'], $bankTransfer['id']);
         $this->assertEquals($transaction['id'], 'txn_'.$bankTransfer['transaction_id']);
 
@@ -3780,6 +3817,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($payeeIfsc, $bankTransfer->getPayeeIfsc());
         $this->assertEquals($description, $bankTransfer->getDescription());
         $this->assertEquals($utr, $bankTransfer->getUtr());
+        $this->assertEquals(S::PROCESSED, $bankTransfer->getStatus());
 
         // Since approved and active TPV account was not found, we shall send the Fund Loading failed email
         Mail::assertNotQueued(FundLoadingFailed::class);
@@ -4172,6 +4210,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -4245,6 +4284,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment =  $this->getLastEntity('payment', true);
@@ -4401,6 +4441,7 @@ class BankTransferTest extends TestCase
         // Created bank transfer is an expected one
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment = $this->getLastEntity('payment', true);
@@ -4675,6 +4716,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertEquals('Payment failed because fees or tax was tampered', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -4759,6 +4801,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertEquals('The fees calculated for payment is greater than the payment amount. Please provide a higher amount', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('bank_transfer', $payment['method']);
@@ -4802,6 +4845,7 @@ class BankTransferTest extends TestCase
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $this->runBankTransferRequestAssertions(
             true,
@@ -4844,6 +4888,7 @@ class BankTransferTest extends TestCase
         $bankTransfer = $this->getLastEntity('bank_transfer', true);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment = $this->getLastEntity('payment', true);
@@ -4863,6 +4908,7 @@ class BankTransferTest extends TestCase
         $bankTransfer = $this->getDbLastEntityToArray('bank_transfer');
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         // Payment is automatically captured
         $payment = $this->getDbLastEntityToArray('payment');
@@ -4887,6 +4933,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $this->assertEquals('bank_account', $payment['receiver_type']);
     }
 
@@ -4911,7 +4958,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals('VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED', $bankTransfer['unexpected_reason']);
         $this->assertNotNull($bankTransfer['payment_id']);
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $this->runBankTransferRequestAssertions(
             true,
             'VIRTUAL_ACCOUNT_PAYMENT_TPV_FAILED'
@@ -4997,6 +5044,7 @@ class BankTransferTest extends TestCase
         $bankTransfer = $this->getDbLastEntity('bank_transfer');
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
@@ -5023,6 +5071,7 @@ class BankTransferTest extends TestCase
         $bankTransfer = $this->getDbLastEntity('bank_transfer');
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
@@ -5043,7 +5092,7 @@ class BankTransferTest extends TestCase
         $this->startTest($testData);
 
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
         $this->assertEquals(343946, $bankTransfer['amount']);
 
@@ -5105,7 +5154,7 @@ class BankTransferTest extends TestCase
         $creditTransaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',
@@ -5244,7 +5293,7 @@ class BankTransferTest extends TestCase
         $creditTransaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -5385,7 +5434,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(false, $bankTransfer->isExpected());
         $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING',
                             $bankTransfer->getUnexpectedReason());
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer->getStatus());
         // Assertions on payer bank account for bank transfer
         $this->assertNotNull($bankTransfer->getPayerBankAccountId());
 
@@ -5525,6 +5574,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('TPV_NOT_FOUND_FOR_BANKING_ACCOUNT_FUND_LOADING',
                             $bankTransfer->getUnexpectedReason());
 
+        $this->assertEquals(S::PROCESSED, $bankTransfer->getStatus());
         // Assertions on payer bank account for bank transfer
         $this->assertNotNull($bankTransfer->getPayerBankAccountId());
 
@@ -5629,7 +5679,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -5725,7 +5775,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -5827,7 +5877,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -5929,7 +5979,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -6031,7 +6081,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -6136,7 +6186,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -6230,7 +6280,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',
@@ -6344,7 +6394,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -6452,7 +6502,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -6550,7 +6600,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $merchantId = $this->bankingBalance->getMerchantId();
@@ -6828,7 +6878,7 @@ class BankTransferTest extends TestCase
         $transaction = $this->getDbLastEntity('transaction', 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',
@@ -6956,7 +7006,7 @@ class BankTransferTest extends TestCase
                                                 ], 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',
@@ -7114,7 +7164,7 @@ class BankTransferTest extends TestCase
                                                 ], 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',
@@ -7295,7 +7345,7 @@ class BankTransferTest extends TestCase
                                                 ], 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',
@@ -7477,7 +7527,7 @@ class BankTransferTest extends TestCase
                                                 ], 'live');
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
         $expectedAmount = $request['content']['amount'] . '00';
 
         $sharedVirtualAccount = $this->getDbEntity('virtual_account',

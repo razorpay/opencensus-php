@@ -99,6 +99,7 @@ class Base
 
         'wallet_account'                   => \RZP\Models\WalletAccount\Entity::class,
         'payouts_status_details'           => \RZP\Models\PayoutsStatusDetails\Entity::class,
+        'bank_transfer'                     => \RZP\Models\BankTransfer\Entity::class,
     ];
 
     protected static $liveAndTest = [

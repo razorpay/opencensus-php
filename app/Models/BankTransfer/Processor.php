@@ -287,6 +287,10 @@ class Processor extends VirtualAccount\Processor
                 // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
                 list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
                 $this->repo->saveOrFail($txn);
+                // this will be removed once we add sync and async retries
+                // for ledger response and status will be updated to proc
+                $bankTransfer->setStatus(Status::PROCESSED);
+                $this->repo->saveOrFail($bankTransfer);
                 return $txn;
             });
 
@@ -310,6 +314,10 @@ class Processor extends VirtualAccount\Processor
             return;
         }
 
+        // Call to ledger was successful and so marking
+        // BT as processed
+        $bankTransfer->setStatus(Status::PROCESSED);
+        $this->repo->saveOrFail($bankTransfer);
         // Push txn to sqs
         try {
             // push to ledger transaction sqs
@@ -395,6 +403,8 @@ class Processor extends VirtualAccount\Processor
                 $this->createAndAssociatePayerBankAccount($bankTransfer);
             }
 
+            $bankTransfer->setStatus(Status::PROCESSED);
+
             $this->repo->saveOrFail($bankTransfer);
 
             // Updates virtual account's stats.
@@ -459,12 +469,15 @@ class Processor extends VirtualAccount\Processor
             list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
 
             $this->repo->saveOrFail($txn);
+            // since for a shadow flow a transaction creation in
+            // API means BT is processed
+            $bankTransfer->setStatus(Status::PROCESSED);
+
 
             $bankTransfer->setTransactionId($txn->getId());
 
             $this->repo->saveOrFail($bankTransfer);
         }
-
         // Updates virtual account's stats.
         $this->virtualAccount->updateWithBankTransferForBanking($bankTransfer);
 
@@ -1037,6 +1050,7 @@ class Processor extends VirtualAccount\Processor
             }
         }
 
+        // this will record BT in created state.
         $this->repo->saveOrFail($bankTransfer);
     }
 

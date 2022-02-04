@@ -84,6 +84,9 @@ class CreateBankTransfer extends Migration
             $table->integer(BankTransfer::CREATED_AT);
             $table->integer(BankTransfer::UPDATED_AT);
 
+            $table->string(BankTransfer::STATUS)
+                  ->nullable();
+
             $table->foreign(BankTransfer::VIRTUAL_ACCOUNT_ID)
                   ->references('id')
                   ->on(Table::VIRTUAL_ACCOUNT)

@@ -66,6 +66,8 @@ class Core extends Base\Core
 
         $bankTransfer->setGateway($provider);
 
+        $bankTransfer->setStatus(Status::CREATED);
+
         return $bankTransfer;
     }
 

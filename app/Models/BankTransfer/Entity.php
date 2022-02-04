@@ -108,6 +108,7 @@ class Entity extends Base\PublicEntity
     const FILE                          = 'file';
     const CALLBACK                      = 'callback';
     const SOURCE                        = 'source';
+    const STATUS                        = 'status';
 
     protected $requestSource;
 
@@ -123,6 +124,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::DESCRIPTION,
         self::NARRATION,
+        self::STATUS,
     ];
 
     protected $public = [
@@ -166,6 +168,7 @@ class Entity extends Base\PublicEntity
         self::NOTIFIED,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::STATUS,
     ];
 
     protected $casts = [
@@ -432,6 +435,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYER_IFSC);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     public function getMappedPayerIfsc()
     {
         $ifsc = $this->getPayerIfsc();
@@ -593,6 +601,11 @@ class Entity extends Base\PublicEntity
     public function setRequestSource($requestSource)
     {
         $this->requestSource = $requestSource;
+    }
+
+    public function setStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 
     public function getRefundNarration()
