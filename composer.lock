@@ -7968,12 +7968,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ifsc.git",
-                "reference": "426ad496f5ddb389a762fd11f3be300cc6925394"
+                "reference": "5ed3817ea05e648746e8ade6953bcde1ad1b5d70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/426ad496f5ddb389a762fd11f3be300cc6925394",
-                "reference": "426ad496f5ddb389a762fd11f3be300cc6925394",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/5ed3817ea05e648746e8ade6953bcde1ad1b5d70",
+                "reference": "5ed3817ea05e648746e8ade6953bcde1ad1b5d70",
                 "shasum": ""
             },
             "require": {
@@ -8007,7 +8007,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2021-12-08T11:41:50+00:00"
+            "time": "2022-01-25T09:51:40+00:00"
         },
         {
             "name": "razorpay/lqext",
