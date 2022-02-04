@@ -186,7 +186,7 @@ const VerifyOtp = ({
   return (
     <>
       <div class="Input-label otp-label" style={{ textAlign: 'right' }}>
-        Aadhar Verification <br /> ( via OTP )
+        Aadhaar Verification <br /> ( via OTP )
       </div>
       <Input
         type="text"
@@ -198,7 +198,7 @@ const VerifyOtp = ({
       <div className="otp-screen">
         <div className="Input-content otp-screen__otp">
           <OtpInputComponent
-            heading="OTP has been sent to the number linked with Aadhar"
+            heading="OTP has been sent to the number linked with Aadhaar"
             onComplete={updateOtpValue}
             onChange={updateOtpValue}
             wrong={wrongOtp}
@@ -231,8 +231,8 @@ const VerifyOtp = ({
             className="e-aadhar__desc e-aadhar__consent"
             text={
               <>
-                By verifying, you consent to share your Aadhar details with Razorpay for KYC and you
-                agree with the{' '}
+                By verifying, you consent to share your Aadhaar details with Razorpay for KYC and
+                you agree with the{' '}
                 <a
                   href="https://razorpay.com/privacy/"
                   target="_blank"

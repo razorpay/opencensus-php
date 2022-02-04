@@ -167,8 +167,8 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
       validationSchema={() => {
         return Yup.object().shape({
           aadharNumber: Yup.string()
-            .length(12, 'Aadhar should be of 12 digits')
-            .required('Aadhar Number is a required field'),
+            .length(12, 'Aadhaar should be of 12 digits')
+            .required('Aadhaar Number is a required field'),
           captchaCode: Yup.string().required('captcha is a required field'),
         });
       }}
@@ -179,7 +179,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           <Space margin={[0, 0, 5, 0]}>
             <View>
               <Text size="medium" weight="bold" color="shade.970">
-                Aadhar Verification ( Via OTP )
+                Aadhaar Verification ( via OTP )
               </Text>
 
               {aadharError === 'OTP_LIMIT_EXCEEDED' && (
@@ -204,13 +204,13 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                       width="auto"
                       name="aadharNumber"
                       type="text"
-                      label="12 Digit Aadhar Number"
+                      label="12 Digit Aadhaar Number"
                       value={formikProps.values.aadharNumber}
                       errorText={
                         apiError === 'INVALID_AADHAAR_NUMBER'
-                          ? 'Aadhar number is invalid'
+                          ? 'Aadhaar number is invalid'
                           : apiError === 'MOBILE_NOT_LINKED'
-                          ? 'This Aadhar is not linked to any number'
+                          ? 'This Aadhaar is not linked to any number'
                           : formikProps.touched.aadharNumber && formikProps.errors.aadharNumber
                       }
                       onChange={(value) => {
@@ -313,7 +313,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                 <View>
                   <StyledView disable={!isAadharLinkedToMobile || disabled}>
                     <Text size="xsmall" color="shade.950">
-                      An OTP will be sent to number linked with your Aadhar. Enter it on next step
+                      An OTP will be sent to number linked with your Aadhaar. Enter it on next step
                       to verify
                     </Text>
                   </StyledView>
@@ -323,7 +323,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                       <View>
                         <CheckBox
                           onChange={mobileNotLinked}
-                          title="My Aadhar is not linked with any mobile number"
+                          title="My Aadhaar is not linked with any mobile number"
                           checked={!isAadharLinkedToMobile}
                           disabled={disabled}
                         />
@@ -333,7 +333,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
 
                   {!isAadharLinkedToMobile && (
                     <Text size="small" color="mustard.900">
-                      You can continue without Aadhar verification via OTP but KYC verification and
+                      You can continue without Aadhaar verification via OTP but KYC verification and
                       account activation will get delayed by 2 weeks. Usually it takes 3-4 days.
                     </Text>
                   )}

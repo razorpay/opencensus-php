@@ -46,14 +46,14 @@ const EAadhar = ({
         <Input
           type="text"
           class="Input--small"
-          label="Aadhar Verification"
+          label="Aadhaar Verification"
           defaultValue="XXXXXXXXXXXX"
           style={{ border: '1px solid rgba(31, 137, 14, 0.54)' }}
           addonAfter={<i className="i i-check text-success" />}
           readOnly={true}
         />
         <div className="Input-content e-aadhar-success-text">
-          We have receive your Aadhar details
+          We have receive your Aadhaar details
         </div>
       </>
     );
@@ -62,7 +62,7 @@ const EAadhar = ({
   const ProviderErrorScreen = () => {
     return (
       <div className="Input Input--small Input--vTop is-mature">
-        <div className="Input-label">Aadhar Verification</div>
+        <div className="Input-label">Aadhaar Verification</div>
         <div className="Input-content e-aadhar-provider-error">
           We can not support OTP based Aadhaar verification because of downtime on UIDAI servers.
           Please upload copies of one the address proofs listed below.

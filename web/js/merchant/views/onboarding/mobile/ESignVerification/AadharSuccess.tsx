@@ -8,10 +8,10 @@ const AadharSuccess: React.FC = () => {
   return (
     <View>
       <Text size="medium" weight="bold" color="shade.970">
-        Aadhar Verification ( Via OTP )
+        Aadhaar Verification ( via OTP )
       </Text>
       <Text size="xsmall" color="positive.900">
-        We have Received your Aadhar details successfully
+        We have Received your Aadhaar details successfully
       </Text>
       <Space margin={[4, 0, 0, 0]}>
         <View>
@@ -19,7 +19,7 @@ const AadharSuccess: React.FC = () => {
             width="auto"
             name="aadharNumber"
             type="text"
-            label="12 Digit Aadhar Number"
+            label="12 Digit Aadhaar Number"
             value="XXXXXXXXXXXX"
             hasRightIcon="check"
             disabled

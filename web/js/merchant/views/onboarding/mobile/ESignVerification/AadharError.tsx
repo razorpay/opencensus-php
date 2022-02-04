@@ -8,7 +8,7 @@ const AadharError: React.FC = () => {
     <Space padding={[0, 0, 2]}>
       <View>
         <Text size="medium" weight="bold" color="shade.970">
-          Aadhar Verification
+          Aadhaar Verification
         </Text>
         <Space padding={[1, 0, 0]}>
           <Text size="small" color="shade.960">

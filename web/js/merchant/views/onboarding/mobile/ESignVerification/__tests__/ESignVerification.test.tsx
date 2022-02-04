@@ -73,7 +73,7 @@ describe('GetOTP', () => {
     await waitFor(() => fireEvent.click(screen.getByText('Submit & Get OTP')));
     delay();
     render(<AadharError />, {});
-    expect(screen.getByText('Aadhar Verification')).toBeInTheDocument();
+    expect(screen.getByText('Aadhaar Verification')).toBeInTheDocument();
     expect(screen.getByText(aadharErrorMsg)).toBeInTheDocument();
   });
 
@@ -84,10 +84,10 @@ describe('GetOTP', () => {
     render(<GetOtpApp />, {});
     await waitForLoadingToFinish();
 
-    expect(screen.getByText('12 Digit Aadhar Number')).toBeInTheDocument();
+    expect(screen.getByText('12 Digit Aadhaar Number')).toBeInTheDocument();
     expect(screen.getByText('Enter the captcha shown above')).toBeInTheDocument();
     const [aadharNumber, captcha]: any = screen.getAllByTestId('ds-text-input');
-    const checkbox = screen.getByText('My Aadhar is not linked with any mobile number');
+    const checkbox = screen.getByText('My Aadhaar is not linked with any mobile number');
 
     fireEvent.change(aadharNumber, { target: { value: '941743462460' } });
     fireEvent.change(captcha, { target: { value: 'DId2s' } });
@@ -125,7 +125,7 @@ describe('VerifyOTP', () => {
     await waitFor(() => expect(screen.getByText('Submitting OTP ...')).toBeInTheDocument());
     delay();
     render(<AadharError />, {});
-    expect(screen.getByText('Aadhar Verification')).toBeInTheDocument();
+    expect(screen.getByText('Aadhaar Verification')).toBeInTheDocument();
     expect(screen.getByText(aadharErrorMsg)).toBeInTheDocument();
   });
 
@@ -160,7 +160,7 @@ describe('AadharSuccess', () => {
     render(<App />, {});
     await waitForLoadingToFinish();
     expect(
-      screen.getByText('We have Received your Aadhar details successfully'),
+      screen.getByText('We have Received your Aadhaar details successfully'),
     ).toBeInTheDocument();
   });
 });

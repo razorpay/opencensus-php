@@ -132,10 +132,10 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           <Space margin={[4, 0, 5, 0]}>
             <View>
               <Text size="medium" weight="bold" color="shade.970">
-                Aadhar Verification ( Via OTP )
+                Aadhaar Verification ( via OTP )
               </Text>
               <Text size="xsmall" color="shade.950">
-                An OTP will be sent to number linked with your Aadhar
+                An OTP will be sent to number linked with your Aadhaar
               </Text>
               <Space margin={[4, 0, 4, 0]}>
                 <View>
@@ -143,7 +143,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                     width="auto"
                     name="aadharNumber"
                     type="text"
-                    label="12 Digit Aadhar Number"
+                    label="12 Digit Aadhaar Number"
                     value={formikProps.values.aadharNumber}
                     errorText={formikProps.touched.aadharNumber && formikProps.errors.aadharNumber}
                     onChange={(value) => formikProps.setFieldValue('aadharNumber', value.trim())}
@@ -158,7 +158,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                 type="text"
                 label="Enter OTP"
                 value={formikProps.values.enteredOTP}
-                helpText="An OTP has been sent to mobile number linked with your Aadhar"
+                helpText="An OTP has been sent to mobile number linked with your Aadhaar"
                 errorText={
                   apiError === 'INCORRECT_OTP'
                     ? 'Invalid OTP. Try again'
@@ -231,7 +231,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
               <Space padding={[1.5, 0, 2]}>
                 <View>
                   <Text size="xsmall" color="shade.960">
-                    By verifying, you consent to share your aadhar details with us and agree to{' '}
+                    By verifying, you consent to share your aadhaar details with us and agree to{' '}
                     <Link
                       size="xsmall"
                       href="https://razorpay.com/privacy/"

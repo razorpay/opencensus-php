@@ -18,7 +18,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
               color="shade.970"
               data-testid="ds-text"
             >
-              Aadhar Verification ( Via OTP )
+              Aadhaar Verification ( via OTP )
             </div>
             <div
               class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-rwemlf-1 jCiXGV"
@@ -51,7 +51,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                               value=""
                               width="auto"
                             >
-                              12 Digit Aadhar Number
+                              12 Digit Aadhaar Number
                             </label>
                           </div>
                           <div
@@ -188,7 +188,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                   color="shade.950"
                   data-testid="ds-text"
                 >
-                  An OTP will be sent to number linked with your Aadhar. Enter it on next step to verify
+                  An OTP will be sent to number linked with your Aadhaar. Enter it on next step to verify
                 </div>
               </div>
               <div
@@ -228,7 +228,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                       color="shade.980"
                       data-testid="ds-text"
                     >
-                      My Aadhar is not linked with any mobile number
+                      My Aadhaar is not linked with any mobile number
                     </div>
                   </label>
                 </div>

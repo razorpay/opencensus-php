@@ -64,13 +64,13 @@ const GetOtpScreen = ({
   const getAadharFieldErrorMsg = () => {
     switch (error) {
       case 'MOBILE_NOT_LINKED':
-        return 'Aadhar is not linked to any mobile number';
+        return 'Aadhaar is not linked to any mobile number';
       case 'INVALID_AADHAAR_NUMBER':
-        return 'Aadhar number is invalid';
+        return 'Aadhaar number is invalid';
       case 'empty_aadhar_value':
-        return 'Please enter your Aadhar Number';
+        return 'Please enter your Aadhaar Number';
       case 'invalid_aadhar_length':
-        return 'Aadhar number should be of 12 digits';
+        return 'Aadhaar number should be of 12 digits';
       default:
         return '';
     }
@@ -282,10 +282,10 @@ const GetOtpScreen = ({
         class="Input--small Input--vTop is-mature"
         label={() => (
           <>
-            Aadhar Verification <br /> ( via OTP )
+            Aadhaar Verification <br /> ( via OTP )
           </>
         )}
-        placeholder="Enter 12 digit Aadhar Number"
+        placeholder="Enter 12 digit Aadhaar Number"
         onChange={onChange}
         disabled={!hasMobileLinked}
         propagatedError={getAadharFieldErrorMsg()}
@@ -403,7 +403,7 @@ const GetOtpScreen = ({
         {!!getApiErrorMsg() ? (
           <div className="e-aadhar__error">{getApiErrorMsg()}</div>
         ) : (
-          <Description text="OTP will be sent to the number linked to your Aadhar. Enter it on the next step to verify." />
+          <Description text="OTP will be sent to the number linked to your Aadhaar. Enter it on the next step to verify." />
         )}
       </div>
 
@@ -412,13 +412,13 @@ const GetOtpScreen = ({
           <Input.Check
             onChange={handleMoblieLinkedOnChange}
             defaultValue={hasMobileLinked ? '0' : '1'}
-            fieldLabel="My Aadhar is not linked to my number"
+            fieldLabel="My Aadhaar is not linked to my number"
             className="e-aadhar__not-linked-checkbox"
           />
           {!hasMobileLinked && (
             <Description
               className="Input-content e-aadhar__not-linked-text"
-              text="You can continue without Aadhar verification via OTP but KYC verification and account activation will get delayed by 2 weeks. Usually it takes 3-4 days."
+              text="You can continue without Aadhaar verification via OTP but KYC verification and account activation will get delayed by 2 weeks. Usually it takes 3-4 days."
             />
           )}
         </div>
