@@ -256,7 +256,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                   => 'sometimes|string|max:255',
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_MOBILE                  => 'sometimes|max:15|contact_syntax',
-        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
+//        Entity::CONTACT_EMAIL                   => 'sometimes|email|max:255|unique:merchant_details',
         Entity::BUSINESS_WEBSITE                => 'sometimes|max:255|custom',
     ];
 
