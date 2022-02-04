@@ -151,6 +151,8 @@ class Service extends Base\Service
     const REQUEST_TIMEOUT_MERCHANT_ANALYTICS = 5;  // in seconds
     const REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT = 5;  // in seconds
 
+    const MERCHANT_USER_FETCH_RETRY = 5;
+
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES = [
         'source'        => 'array',
         'source.mids'   => 'array|min:1|max:10000',
@@ -8704,35 +8706,38 @@ class Service extends Base\Service
                     Trace::ERROR,
                     TraceCode::ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH);
 
-                // retry the call to product switch, this call should
-                $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
+                // In case two calls are made during product switch by FE in parallel,
+                // it might happen that both the threads try to insert the same record in merchant_users table
+                // This will lead to integrity constraint violation.
+                // So in case of such a violation, the other thread keeps on fetching record from merchant_users table (with certain threshold)
+                // until it finds it
 
-                if (empty($mapping) === false)
+                $mapping = null;
+
+                $currentAttempt = 1;
+
+                while ($currentAttempt <= self::MERCHANT_USER_FETCH_RETRY)
                 {
-                    $this->trace->info(
-                        TraceCode::SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH,
-                        [
-                            'merchant_id' => $merchant->getId(),
-                        ]);
-                    // return null to indicate that the mapping wasn't created
-                    return null;
+                    $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
+
+                    if (empty($mapping) === true)
+                    {
+                        $currentAttempt++;
+
+                        sleep(1);
+                    }
+                    else
+                    {
+                        $this->trace->info(
+                            TraceCode::SUCCESSFUL_MERCHANT_USER_FETCH_RETRY,
+                            [
+                                'merchant_id' => $merchant->getId(),
+                                'currentAttempt' => $currentAttempt
+                            ]);
+
+                        break;
+                    }
                 }
-            }
-
-            throw $ex;
-        }
-        catch (Throwable $ex)
-        {
-            //The INSERT query failed due to a unique constraint violation.
-            if ($ex->getCode() === ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH);
-
-                // retry the call to product switch, this call should
-                $mapping = $this->getMerchantUserMappingForProduct($product, $merchant->getId(), null, true);
 
                 if (empty($mapping) === false)
                 {

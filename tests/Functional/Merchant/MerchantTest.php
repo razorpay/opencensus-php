@@ -14468,34 +14468,7 @@ The same has been enabled for the account.
         $this->assertEquals('success', $responseData['status']);
     }
 
-    public function testAddMerchantUserMappingOnProductReturnsNull()
-    {
-        $validatorMock = $this->getMockBuilder(\RZP\Models\Merchant\Service::class)
-                              ->setMethods(['addProductSwitchRole','getMerchantUserMappingForProduct'])
-                              ->getMock();
-
-        $validatorMock->method('addProductSwitchRole')
-                      ->will($this->throwException(new BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS)));
-
-        $validatorMock->method('getMerchantUserMappingForProduct')
-                      ->will($this->returnCallback(
-                          function ()
-                          {
-                              return "mapping";
-                          }));
-
-        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
-
-        $method = $validatorMockReflectionObj->getMethod('addMerchantUserMappingOnProduct');
-
-        $method->setAccessible(true);
-
-        $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
-
-        $this->assertNull($return);
-    }
-
-    public function testAddMerchantUserMappingOnProductReturnsNullOnQueryException()
+    public function merchantUserMappingSetup (...$args)
     {
         try
         {
@@ -14518,11 +14491,7 @@ The same has been enabled for the account.
             ->will($this->throwException($queryException));
 
         $validatorMock->method('getMerchantUserMappingForProduct')
-            ->will($this->returnCallback(
-                function ()
-                {
-                    return "mapping";
-                }));
+            ->will($this->onConsecutiveCalls(...$args));
 
         $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
 
@@ -14531,63 +14500,24 @@ The same has been enabled for the account.
         $method->setAccessible(true);
 
         $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
+
+        return $return;
+    }
+
+    public function testAddMerchantUserMappingOnProductOnSuccessfulRetry()
+    {
+        $return = $this->merchantUserMappingSetup(null, null, null, null, "mapping");
 
         $this->assertNull($return);
     }
 
-    public function testAddMerchantUserMappingOnProductThrowsException()
+    public function testAddMerchantUserMappingOnProductOnFailure()
     {
-        $this->expectException(BadRequestException::class);
+        $this->expectException(\Illuminate\Database\QueryException::class);
 
-        $validatorMock = $this->getMockBuilder(\RZP\Models\Merchant\Service::class)
-            ->setMethods(['addProductSwitchRole','getMerchantUserMappingForProduct'])
-            ->getMock();
-
-        $validatorMock->method('addProductSwitchRole')
-            ->will($this->throwException(new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED)));
-
-        $validatorMock->method('getMerchantUserMappingForProduct')
-            ->will($this->returnCallback(
-                function ()
-                {
-                    return "mapping";
-                }));
-
-        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
-
-        $method = $validatorMockReflectionObj->getMethod('addMerchantUserMappingOnProduct');
-
-        $method->setAccessible(true);
-
-        $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
+        $this->merchantUserMappingSetup(null, null, null, null, null);
     }
 
-    public function testAddMerchantUserMappingOnProductThrowsExceptionOnEmptyMapping()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $validatorMock = $this->getMockBuilder(\RZP\Models\Merchant\Service::class)
-            ->setMethods(['addProductSwitchRole','getMerchantUserMappingForProduct'])
-            ->getMock();
-
-        $validatorMock->method('addProductSwitchRole')
-            ->will($this->throwException(new BadRequestException(ErrorCode::BAD_REQUEST_USER_WITH_ROLE_ALREADY_EXISTS)));
-
-        $validatorMock->method('getMerchantUserMappingForProduct')
-            ->will($this->returnCallback(
-                function ()
-                {
-                    return null;
-                }));
-
-        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
-
-        $method = $validatorMockReflectionObj->getMethod('addMerchantUserMappingOnProduct');
-
-        $method->setAccessible(true);
-
-        $return = $method->invoke($validatorMock, new \RZP\Models\Merchant\Entity, null);
-    }
 
     public function initializeMerchantAndBankAccount($merchantId)
     {

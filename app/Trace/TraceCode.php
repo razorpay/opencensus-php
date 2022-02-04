@@ -101,6 +101,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH       = 'ERROR_DUE_TO_DATABASE_LAG_DURING_PRODUCT_SWITCH';
     const SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH        = 'SUCCESSFUL_READ_FROM_MASTER_FOR_PRODUCT_SWITCH';
+    const SUCCESSFUL_MERCHANT_USER_FETCH_RETRY                  = "SUCCESSFUL_MERCHANT_USER_FETCH_RETRY";
 
     const PRODUCT_SWITCH                                        = 'PRODUCT_SWITCH';
     const UTM_PARAMS                                            = 'UTM_PARAMS';
