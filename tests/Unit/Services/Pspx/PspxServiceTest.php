@@ -1,6 +1,6 @@
 <?php
 
-namespace Unit\Services;
+namespace Unit\Services\Pspx;
 
 use RZP\Tests\TestCase;
 use RZP\Services\Pspx\Service;

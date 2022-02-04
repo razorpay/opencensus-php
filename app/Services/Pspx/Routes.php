@@ -6,4 +6,9 @@ class Routes
 {
     // V1 Routes
     const PING_V1 = '/v1/ping';
+
+    const CREATE_MANDATE    = 'CREATE_MANDATE';
+    const FETCH_MANDATE     = 'FETCH_MANDATE';
+    const UPDATE_MANDATE    = 'UPDATE_MANDATE';
+    const DELETE_MANDATE    = 'DELETE_MANDATE';
 }

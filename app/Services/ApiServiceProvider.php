@@ -1820,6 +1820,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new RZP\Services\Pspx\Service();
         });
+
+        $this->app->singleton('pspx_mandate', function ($app)
+        {
+            $mock = $app['config']->get('applications.pspx.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Pspx\Mock\Mandate();
+            }
+
+            return new RZP\Services\Pspx\Mandate();
+        });
     }
 
     protected function registerPayoutServiceWorkflow()

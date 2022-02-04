@@ -2,7 +2,7 @@
 
 namespace RZP\Models\P2p\Mandate;
 
-use RZP\Models\P2P\Base;
+use RZP\Models\P2p\Base;
 
 /**
  * Class Entity
