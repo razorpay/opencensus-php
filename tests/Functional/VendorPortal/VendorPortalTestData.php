@@ -116,4 +116,53 @@ return [
             'content' => []
         ]
     ],
+
+    'testVendorFetchUser' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                    ],
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
+    'testVendorEditUser' => [
+        'request' => [
+            'url'     => '/users',
+            'method'  => 'PATCH',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'name'           => 'Updated Name',
+                'contact_mobile' => '123456789',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'           => 'Updated Name',
+                'contact_mobile' => '123456789',
+            ],
+        ],
+    ],
 ];

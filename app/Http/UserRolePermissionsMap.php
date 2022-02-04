@@ -459,6 +459,10 @@ class UserRolePermissionsMap
 
              BankingRole::VENDOR => [
                  Permission::VENDOR_PORTAL_PERMISSION,
+
+                 //API's needed to fetch and edit self user details
+                 Permission::VIEW_USER,
+                 Permission::UPDATE_USER_PROFILE,
              ],
         ];
 

@@ -4,6 +4,9 @@ namespace RZP\Tests\Functional\VendorPortal;
 
 use App;
 use Mockery;
+use RZP\Models\User\Entity as UserEntity;
+use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
@@ -12,6 +15,7 @@ class VendorPortalTest extends TestCase
 {
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     protected $config;
 
@@ -137,5 +141,47 @@ class VendorPortalTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('getOcrData');
+    }
+
+    public function testVendorFetchUser()
+    {
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '1DummyMerchant',
+            'user_id'     => 'ExistingUserId',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . 'ExistingUserId';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = 'ExistingUserId';
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testVendorEditUser()
+    {
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $this->fixtures->create('user',[ 'id' => 'ExistingUserId', 'email' => 'vendorportal@razorpay.com' ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '1DummyMerchant',
+            'user_id'     => 'ExistingUserId',
+            'role'        => 'vendor',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_1DummyMerchant', 'ExistingUserId');
+
+        $this->startTest();
     }
 }
