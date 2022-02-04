@@ -229,9 +229,14 @@ class SmartRouting
             {
                 unset($traceData['payment']['card']);
             }
+            $traceCode = TraceCode::SMART_ROUTING_SERVICE_ERROR;
 
+            if ($action===self::CREATE_GATEWAY_DOWNTIME_DATA || $action===self::DELETE_GATEWAY_DOWNTIME_DATA){
+
+                $traceCode = TraceCode::SMART_ROUTING_DOWNTIME_CACHE_WRITE_ERROR;
+            }
             $this->trace->error(
-                TraceCode::SMART_ROUTING_SERVICE_ERROR,
+                $traceCode,
                 [
                     'response' => $response ?? null,
                     'error'    => $e->getMessage(),

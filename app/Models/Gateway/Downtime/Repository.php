@@ -89,7 +89,7 @@ class Repository extends Base\Repository
         catch (\Throwable $ex)
         {
 
-            $this->trace->error(TraceCode::SMART_ROUTING_DOWNTIME_DATA_ERROR, [
+            $this->trace->error(TraceCode::SMART_ROUTING_DOWNTIME_CACHE_WRITE_ERROR, [
                 "gateway_downtime_data" => $entity,
                 'error'    => $ex->getMessage(),
             ]);
@@ -117,7 +117,7 @@ class Repository extends Base\Repository
         }
         catch (\Throwable $ex){
 
-            $this->trace->error(TraceCode::SMART_ROUTING_DOWNTIME_DATA_ERROR, [
+            $this->trace->error(TraceCode::SMART_ROUTING_DOWNTIME_CACHE_WRITE_ERROR, [
                 "gateway_downtime_data" => $entity,
                 "error"    => $ex->getMessage(),
             ]);
