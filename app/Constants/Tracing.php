@@ -35,7 +35,8 @@ class Tracing
             'admin_catchall',
             'merchant',
             'signin',
-            'admin'
+            'admin',
+            'graph_request'
             ]
         );
 
