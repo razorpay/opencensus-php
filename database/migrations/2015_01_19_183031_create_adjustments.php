@@ -55,6 +55,9 @@ class CreateAdjustments extends Migration
             $table->integer(Adjustment::CREATED_AT);
             $table->integer(Adjustment::UPDATED_AT);
 
+            $table->string(Adjustment::STATUS, Adjustment::ID_LENGTH)
+                  ->nullable();
+
             $table->foreign(Adjustment::SETTLEMENT_ID)
                   ->references(Settlement\Entity::ID)
                   ->on(Table::SETTLEMENT)

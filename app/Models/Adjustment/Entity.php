@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const BALANCE_ID        = 'balance_id';
     const SETTLEMENT_ID     = 'settlement_id';
+    const STATUS            = 'status';
 
     // For report
     const DISPUTE_ID        = 'dispute_id';
@@ -45,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::CHANNEL,
         self::DESCRIPTION,
+        self::STATUS,
     ];
 
     protected $visible = [
@@ -60,7 +62,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ENTITY_TYPE,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::STATUS,
     ];
 
     protected $public = [
@@ -128,6 +131,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     public function hasTransaction()
     {
         return ($this->isAttributeNotNull(self::TRANSACTION_ID));
@@ -136,6 +144,11 @@ class Entity extends Base\PublicEntity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 
     public function merchant()

@@ -6635,6 +6635,7 @@ ALTER TABLE merchant_notification_configs
     DROP COLUMN `last_enabled_at`,
     DROP COLUMN `last_disabled_at`;
 
+ALTER TABLE adjustments ADD COLUMN status varchar(14) default NULL;
 
 ALTER TABLE bank_transfers ADD COLUMN status varchar(14) default NULL;
 

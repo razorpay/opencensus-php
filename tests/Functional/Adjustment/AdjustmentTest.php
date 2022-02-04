@@ -8,6 +8,7 @@ use Queue;
 use RZP\Jobs\Transactions;
 use RZP\Models\Feature;
 use RZP\Services\RazorXClient;
+use RZP\Models\Adjustment\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Transaction\Adjustment;
 use RZP\Models\Merchant\Balance\Type;
@@ -77,6 +78,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('primary', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -135,6 +137,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('primary', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -190,6 +193,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(5000000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('reserve_primary', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -251,6 +255,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(5000000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('reserve_primary', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -312,6 +317,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(5000000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('reserve_banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -373,6 +379,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(5000000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('reserve_banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -446,6 +453,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100xyz000xyz00', $adjustment['merchant_id']);
         $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('100def000def00', $balanceId);
         $this->assertEquals('reserve_primary', $balance['type']);
@@ -502,6 +510,8 @@ class AdjustmentTest extends TestCase
         $balance = $this->getDbEntity('balance', ['id' => '100def000def00']);
 
         $this->assertEquals(-4000, $balance['balance']);
+        $adjustment = $this->getDbLastEntity('adjustment');
+        $this->assertEquals(Status::PROCESSED, $adjustment->getStatus());
 
         Mail::assertQueued(NegativeBalanceThresholdAlert::class);
     }
@@ -617,6 +627,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(250000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -759,6 +770,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(-250000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -885,6 +897,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(250000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -989,6 +1002,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(-250000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals('banking', $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -1160,6 +1174,8 @@ class AdjustmentTest extends TestCase
 
         $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
 
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
+
         $this->assertNull($newAdjustments['transaction_id']);
 
         Queue::assertPushed(Transactions::class);
@@ -1186,6 +1202,10 @@ class AdjustmentTest extends TestCase
         $this->startTest();
 
         $countOfAdjustmentsAfterTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
 
         $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
     }
@@ -1231,6 +1251,10 @@ class AdjustmentTest extends TestCase
         $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
 
         $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
 
         $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
 
@@ -1300,6 +1324,8 @@ class AdjustmentTest extends TestCase
 
         $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
 
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
+
         $this->assertNull($newAdjustments['transaction_id']);
 
         Queue::assertPushed(Transactions::class);
@@ -1342,6 +1368,7 @@ class AdjustmentTest extends TestCase
         $this->assertEquals($txnId, $adjustment['transaction_id']);
         $this->assertEquals('100abc000abc00', $adjustment['merchant_id']);
         $this->assertEquals(500000, $adjustment['amount']);
+        $this->assertEquals(Status::PROCESSED, $adjustment['status']);
 
         $this->assertEquals(Type::PRINCIPAL, $balance['type']);
         $this->assertEquals('100abc000abc00', $balance['merchant_id']);
@@ -1414,6 +1441,8 @@ class AdjustmentTest extends TestCase
 
         $this->assertEquals(-1000, $sourceAdjustment->getAmount());
         $this->assertEquals(1000, $destinationAdjustment->getAmount());
+        $this->assertEquals(Status::PROCESSED, $sourceAdjustment->getStatus());
+        $this->assertEquals(Status::PROCESSED, $destinationAdjustment->getStatus());
 
         $this->assertEquals($sourceAdjustment->transaction->getDebit(), $destinationAdjustment->transaction->getCredit());
         $this->assertEquals(0, $sourceAdjustment->transaction->getCredit());

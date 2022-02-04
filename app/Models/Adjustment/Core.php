@@ -100,6 +100,8 @@ class Core extends Base\Core
 
         $adj->balance()->associate($balance);
 
+        $adj->setStatus(Status::CREATED);
+
         $this->app['workflow']
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
              ->handle((new \stdClass), $adj);
@@ -357,7 +359,7 @@ class Core extends Base\Core
         {
             $txn = (new Transaction\Core)->createFromAdjustment($adj);
             $this->repo->saveOrFail($txn);
-
+            $adj->setStatus(Status::PROCESSED);
             $this->repo->saveOrFail($adj);
             (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
         }
@@ -526,6 +528,8 @@ class Core extends Base\Core
 
         $adj->balance()->associate($balance);
 
+        $adj->setStatus(Status::CREATED);
+
         /** @var Entity|null $adjustment */
         $adjustment = null;
 
@@ -633,6 +637,8 @@ class Core extends Base\Core
 
         $adj->merchant()->associate($merchant);
 
+        $adj->setStatus(Status::PROCESSED);
+
         $this->repo->saveOrFail($adj);
 
         $txn = (new Transaction\Core)->createFromAdjustment($adj);
@@ -669,18 +675,21 @@ class Core extends Base\Core
         catch (DefaultException $ex)
         {
             // Create api txn manually for credit case and Todo: send slack alert
-            if ($adj->getAmount() >= 0) {
+            if ($adj->getAmount() >= 0)
+            {
                 $tempAdj = $adj;
                 $txn = $this->repo->transaction(
                     function () use ($tempAdj) {
                         $adj = clone $tempAdj;
                         $txn = (new Transaction\Core)->createFromAdjustment($adj);
                         $this->repo->saveOrFail($txn);
+                        $adj->setStatus(Status::PROCESSED);
                         $this->repo->saveOrFail($adj);
                         (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
                         return $txn;
                     });
             }
+            // if the adjustment is of -ve amount, it will stayed in created state
 
             $alertPayload = [
                 'adjustment_id'         => $adj->getId(),
@@ -700,6 +709,10 @@ class Core extends Base\Core
 
             return;
         }
+
+        // call to ledger is successful, so marking adjustment as processed
+        $adj->setStatus(Status::PROCESSED);
+        $this->repo->saveOrFail($adj);
 
         // Push txn to sqs
         try {
