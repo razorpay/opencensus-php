@@ -24,6 +24,12 @@ import {
   BUSINESS_PROOF_TYPE_DOCS,
   ADDITIONAL_DOCS_LABEL_VALUE_MAP,
   BUSINESS_PROOF_CERTIFICATE_TYPES,
+  PROPRIETORSHIP,
+  PARTNERSHIP,
+  PRIVATE,
+  PUBLIC,
+  LLP,
+  NOT_REGISTERED,
 } from '../Constants/OnboardingConstants';
 import useActivation from '../hooks/useActivation';
 import {
@@ -326,8 +332,19 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     );
   };
 
-  const shouldShowEsignFlow =
-    data.business_type === '11' || data.business_type === '1' || data.business_type === '3';
+  const ekycRequiredforBusinessType = [
+    PROPRIETORSHIP,
+    PARTNERSHIP,
+    PRIVATE,
+    PUBLIC,
+    LLP,
+    NOT_REGISTERED,
+  ];
+
+  const shouldShowEsignFlow = ekycRequiredforBusinessType.includes(
+    parseInt(data.business_type, 10),
+  );
+
   const shouldShowAddressProofField = !(
     shouldShowEsignFlow &&
     data.stakeholder &&
