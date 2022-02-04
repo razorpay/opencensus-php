@@ -86,6 +86,7 @@ class ListFilter extends Component {
   resetForm = () => {
     this.props.history.push({
       search: stringifyQueryParams({}),
+      hash: this.props.location.hash,
     });
 
     this.props.reset();
