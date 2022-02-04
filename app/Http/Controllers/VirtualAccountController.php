@@ -73,7 +73,9 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->addReceivers($id, $input);
+        $data = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_ADD_RECEIVER], function() use ($id, $input) {
+            return $this->service()->addReceivers($id, $input);
+        });
 
         return ApiResponse::json($data);
     }
@@ -287,15 +289,18 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->addAllowedPayer($id, $input);
+        $data = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_ADD_ALLOWED_PAYER], function() use ($id, $input) {
+            return $this->service()->addAllowedPayer($id, $input);
+        });
 
         return ApiResponse::json($data);
     }
 
     public function deleteAllowedPayer(string $virtualAccountId, string $tpvId)
     {
-        $this->service()->deleteAllowedPayer($virtualAccountId, $tpvId);
-
+        Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_DELETE_ALLOWED_PAYER], function() use ($virtualAccountId, $tpvId) {
+            $this->service()->deleteAllowedPayer($virtualAccountId, $tpvId);
+        });
         return ApiResponse::json([], 204);
     }
 }

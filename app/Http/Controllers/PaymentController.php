@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Constants\HyperTrace;
+use RZP\Trace\Tracer;
 use View;
 
 use RZP\Constants\Entity as E;
@@ -116,7 +118,9 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $refund = $this->service()->refund($id, $input);
+        $refund = Tracer::inSpan(['name' => HyperTrace::PAYMENT_REFUND], function() use ($id, $input) {
+            return $this->service()->refund($id, $input);
+        });
 
         return ApiResponse::json($refund);
     }

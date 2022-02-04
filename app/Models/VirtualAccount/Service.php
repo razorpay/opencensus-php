@@ -689,9 +689,13 @@ class Service extends Base\Service
 
         (new Validator())->validateInput('addReceivers', $input);
 
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_ADD_RECEIVERS_FIND_BY_PUBLIC_ID_AND_MERCHANT], function() use ($id) {
+            return $this->repo
+                        ->virtual_account
+                        ->findByPublicIdAndMerchant($id, $this->merchant);
+        });
+
 
         if ($virtualAccount->hasOrder() === true)
         {
@@ -709,18 +713,21 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        $virtualAccount = $this->mutex->acquireAndRelease(
-            self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
-            function() use ($input, $virtualAccount)
-            {
-                return $this->core->addReceivers($virtualAccount, $input);
-            },
-            10,
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
-            5,
-            200,
-            400
-        );
+
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_ADD_RECEIVERS_ACQUIRE_AND_RELEASE], function() use ($virtualAccount, $input) {
+            return $this->mutex->acquireAndRelease(
+                self::VA_ADD_RECEIVER . "_" . $virtualAccount->getPublicId(),
+                function() use ($input, $virtualAccount)
+                {
+                    return $this->core->addReceivers($virtualAccount, $input);
+                },
+                10,
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
+                5,
+                200,
+                400
+            );
+        });
 
         return $virtualAccount->toArrayPublic();
     }
@@ -1209,9 +1216,11 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADD_REQUEST, $input);
 
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_ADD_ALLOWED_PAYER_FIND_BY_PUBLIC_ID_AND_MERCHANT], function() use ($id, $input) {
+            return $this->repo
+                        ->virtual_account
+                        ->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
         if ($virtualAccount->isClosed() === true)
         {
@@ -1225,18 +1234,20 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_LIMIT_EXCEEDED);
         }
 
-        $virtualAccount = $this->mutex->acquireAndRelease(
-            self::VA_ADD_ALLOWED_PAYER . "_" . $virtualAccount->getPublicId(),
-            function() use ($input, $virtualAccount)
-            {
-                return (new VirtualAccountTpv\Core())->addAllowedPayerToExistingVa($virtualAccount, $input);
-            },
-            10,
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_IN_PROGRESS,
-            5,
-            200,
-            400
-        );
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_ADD_ALLOWED_PAYER_ACQUIRE_AND_RELEASE], function() use ($virtualAccount, $input) {
+            return $this->mutex->acquireAndRelease(
+                    self::VA_ADD_ALLOWED_PAYER . "_" . $virtualAccount->getPublicId(),
+                    function() use ($input, $virtualAccount)
+                    {
+                        return (new VirtualAccountTpv\Core())->addAllowedPayerToExistingVa($virtualAccount, $input);
+                    },
+                    10,
+                    ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_ALLOWED_PAYER_IN_PROGRESS,
+                    5,
+                    200,
+                    400
+            );
+        });
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_ADDED, $virtualAccount->toArrayPublic());
 
@@ -1247,9 +1258,11 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETE_REQUEST);
 
-        $virtualAccount = $this->repo
-                               ->virtual_account
-                               ->findByPublicIdAndMerchant($virtualAccountId, $this->merchant);
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_DELETE_ALLOWED_PAYER_FIND_BY_PUBLIC_ID_AND_MERCHANT], function() use ($virtualAccountId) {
+                return $this->repo
+                            ->virtual_account
+                            ->findByPublicIdAndMerchant($virtualAccountId, $this->merchant);
+        });
 
         if ($virtualAccount->isClosed() === true)
         {
@@ -1257,18 +1270,21 @@ class Service extends Base\Service
             'virtual_account_id');
         }
 
-        $this->mutex->acquireAndRelease(
-            self::VA_DELETE_ALLOWED_PAYER . "_" . $virtualAccount->getPublicId(),
-            function() use ($tpvId, $virtualAccount)
-            {
-                return (new VirtualAccountTpv\Core())->deleteAllowedPayer($virtualAccount, $tpvId);
-            },
-            10,
-            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
-            5,
-            200,
-            400
-        );
+        Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_SERVICE_DELETE_ALLOWED_PAYER_ACQUIRE_AND_RELEASE], function() use ($virtualAccount, $tpvId) {
+            $this->mutex->acquireAndRelease(
+                self::VA_DELETE_ALLOWED_PAYER . "_" . $virtualAccount->getPublicId(),
+                function() use ($tpvId, $virtualAccount)
+                {
+                    return (new VirtualAccountTpv\Core())->deleteAllowedPayer($virtualAccount, $tpvId);
+                },
+                10,
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_ADD_RECEIVER_IN_PROGRESS,
+                5,
+                200,
+                400
+            );
+        });
+
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_ALLOWED_PAYER_DELETED);
 
     }

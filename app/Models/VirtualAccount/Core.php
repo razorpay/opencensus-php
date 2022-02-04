@@ -747,18 +747,20 @@ class Core extends Base\Core
 
     public function addReceivers(Entity $virtualAccount, array $input)
     {
-        $virtualAccount = $this->repo->transaction(function () use ($virtualAccount, $input)
-        {
-            $this->buildReceivers($virtualAccount, $input);
-
-            if ($this->repo->virtual_account_tpv->isTpvEnabledForVa($virtualAccount->getId()) === true)
+        $virtualAccount = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_CORE_ADD_RECEIVERS], function() use ($virtualAccount, $input) {
+            return $this->repo->transaction(function () use ($virtualAccount, $input)
             {
-                (new VirtualAccountTpv\Core())->validateReceiversForTpv($virtualAccount);
-            }
+                $this->buildReceivers($virtualAccount, $input);
 
-            $this->repo->saveOrFail($virtualAccount);
+                if ($this->repo->virtual_account_tpv->isTpvEnabledForVa($virtualAccount->getId()) === true)
+                {
+                    (new VirtualAccountTpv\Core())->validateReceiversForTpv($virtualAccount);
+                }
 
-            return $virtualAccount;
+                $this->repo->saveOrFail($virtualAccount);
+
+                return $virtualAccount;
+            });
         });
 
         $this->dispatchForRiskCheck($virtualAccount, $input[Entity::TYPES]);

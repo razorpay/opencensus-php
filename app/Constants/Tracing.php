@@ -255,9 +255,15 @@ class Tracing
             'virtual_account_fetch_payments',
             'payment_bank_transfer_fetch',
             'payment_upi_transfer_fetch',
+            'virtual_account_add_allowed_payer',
+            'virtual_account_delete_allowed_payer',
+            'virtual_account_add_receivers',
+            'payment_refund',
 
             // Partner routes
-            'merchant_bulk_onboarding_admin'
+            'merchant_bulk_onboarding_admin',
+
+            'payment_refund'
         ]);
     }
 
