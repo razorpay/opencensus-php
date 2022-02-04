@@ -108,6 +108,29 @@ return [
         ],
     ],
 
+    'testUpdatePayoutStatusToProcessedManuallyFailed' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/id/manual/status',
+            'content'   => [
+                'status'                => 'processed',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Fts fund account id and type are required to move."
+                 ."payout from initiated to processed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithNarrationNull' => [
         'request'  => [
             'method'  => 'POST',

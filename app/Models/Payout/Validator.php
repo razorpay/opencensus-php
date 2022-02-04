@@ -23,6 +23,7 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Models\Feature\Repository as FeatureRepo;
@@ -317,8 +318,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $payoutStatusManualRules = [
-        Entity::STATUS              => 'required|string',
-        Entity::FAILURE_REASON      => 'sometimes|string',
+        Entity::STATUS                  => 'required|string',
+        Entity::FAILURE_REASON          => 'sometimes|string',
+        Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string',
+        Constants::FTS_FUND_ACCOUNT_ID  => 'sometimes|string'
     ];
 
     protected static $payoutStatusManualValidators = [
@@ -352,10 +355,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $payoutBulkStatusUpdateManualRules = [
-        Entity::PAYOUT_IDS          => 'required|array',
-        Entity::PAYOUT_IDS . '.*'   => 'required|string|size:14',
-        Entity::STATUS              => 'required|string',
-        Entity::FAILURE_REASON      => 'sometimes|string',
+        Entity::PAYOUT_IDS              => 'required|array',
+        Entity::PAYOUT_IDS . '.*'       => 'required|string|size:14',
+        Entity::STATUS                  => 'required|string',
+        Entity::FAILURE_REASON          => 'sometimes|string',
+        Constants::FTS_FUND_ACCOUNT_ID  =>  'sometimes|string',
+        Constants::FTS_ACCOUNT_TYPE     => 'sometimes|string',
     ];
 
     protected static $payoutBulkStatusUpdateManualValidators = [
@@ -879,6 +884,45 @@ class Validator extends Base\Validator
                 null,
                 null
             );
+        }
+    }
+
+    public function validatePayoutStatusUpdateManually(Entity $payout,
+                                                       string $toStatus,
+                                                       $ftsFundAccountId = null,
+                                                       $ftsFundAccountType = null)
+    {
+        // returning currently for CA payouts till Ledger starts
+        // handling of CA payouts and this route is used heavily
+        // for CA to different status transitions for which
+        // solutioning will be needed in ledger
+        if ($payout->balance->isAccountTypeShared() === false)
+            return;
+
+        $fromStatus = $payout->getStatus();
+
+        if (($fromStatus === Status::INITIATED and $toStatus === Status::PROCESSED) or
+        ($fromStatus === Status::PROCESSED and $toStatus === Status::REVERSED))
+        {
+            if ((empty($ftsFundAccountId) === true) or
+                (empty($ftsFundAccountType) === true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                sprintf("Fts fund account id and type are required to move."
+                 ."payout from %s to %s ", $fromStatus, $toStatus));
+            }
+        }
+        else if (($fromStatus === Status::INITIATED and $toStatus === Status::REVERSED) and
+        ((empty($ftsFundAccountId) === true) or (empty($ftsFundAccountType) === true)))
+        {
+            // doing no validation here as it's not clear if the debit credit actually
+            // happened or not. Raising alert to just know if this happens
+
+            $operation = 'Received initiated to reversed in manual ';
+
+            $data[Entity::ID] = $payout->getId();
+
+            (new SlackNotification)->send($operation, $data, null, 0, 'x-payouts-core-alerts');
         }
     }
 

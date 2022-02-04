@@ -3535,14 +3535,32 @@ class Core extends Base\Core
 
         $ftaFailureReason  = $input[Attempt\Constants::FAILURE_REASON] ?? null;
 
+        $ftsFundAccountId = $input[Attempt\Constants::FTS_FUND_ACCOUNT_ID] ?? null;
+
+        $ftsAccountType = $input[Attempt\Constants::FTS_ACCOUNT_TYPE] ?? null;
+
+        $payoutValidator = $payout->getValidator();
+
+        $payoutValidator->validatePayoutStatusUpdateManually($payout, $status,$ftsFundAccountId, $ftsAccountType);
+
+        $ftsSourceInformation = [
+            Attempt\Constants::FTS_ACCOUNT_TYPE     => $ftsAccountType,
+            Attempt\Constants::FTS_FUND_ACCOUNT_ID  => $ftsFundAccountId,
+        ];
+
         switch ($status)
         {
             case Status::PROCESSED:
-                $this->handlePayoutProcessed($payout);
+                $this->handlePayoutProcessed($payout, null, $ftsSourceInformation);
                 break;
 
             case Status::REVERSED:
-                $this->handlePayoutReversed($payout, $ftaFailureReason);
+                $this->handlePayoutReversed(
+                    $payout,
+                    $ftaFailureReason,
+                    null,
+                    null,
+                    $ftsSourceInformation);
                 break;
 
             case Status::FAILED:

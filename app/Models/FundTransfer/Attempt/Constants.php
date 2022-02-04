@@ -61,6 +61,10 @@ final class Constants
 
     const PROCESSED_BY_TIME = 'processed_by_time';
 
+    const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
+
+    const FTS_ACCOUNT_TYPE      = 'fts_account_type';
+
     //Card Issuer bank IFSC Code mapping
     const BANK_IFSC = [
         Issuer::UTIB => [

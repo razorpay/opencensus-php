@@ -8322,7 +8322,9 @@ class PayoutTest extends OAuthTestCase
             'url'       => '/payouts/' . $payout['id'] . '/manual/status',
             'method'    => 'PATCH',
             'content'   => [
-                'status' => 'processed',
+                'status'                => 'processed',
+                'fts_fund_account_id'   => '12345',
+                'fts_account_type'      => 'NODAL',
             ]
         ];
 
@@ -8339,6 +8341,38 @@ class PayoutTest extends OAuthTestCase
 
         // Assert that fta status was also updated along with payout status.
         $this->assertEquals('processed', $fta->getStatus());
+    }
+
+    public function testUpdatePayoutStatusToProcessedManuallyFailed()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['request']['url']= '/payouts/' . $payout['id'] . '/manual/status';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('initiated', $payout->getStatus());
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status.
+        $this->assertEquals('initiated', $fta->getStatus());
     }
 
     public function testUpdatePayoutToSomeIntermediateStatus()
@@ -8392,7 +8426,9 @@ class PayoutTest extends OAuthTestCase
             'url'     => '/payouts/' . $payout['id'] . '/manual/status',
             'method'  => 'PATCH',
             'content' => [
-                'status' => 'processed',
+                'status'                => 'processed',
+                'fts_fund_account_id'   => '12345',
+                'fts_account_type'      => 'NODAL',
             ]
         ];
 
@@ -8414,8 +8450,10 @@ class PayoutTest extends OAuthTestCase
             'url'     => '/payouts/' . $payout['id'] . '/manual/status',
             'method'  => 'PATCH',
             'content' => [
-                'status'         => 'reversed',
-                'failure_reason' => 'payout reversed at bank'
+                'status'                => 'reversed',
+                'failure_reason'        => 'payout reversed at bank',
+                'fts_fund_account_id'   => '12345',
+                'fts_account_type'      => 'NODAL',
             ]
         ];
 
@@ -14387,6 +14425,8 @@ class PayoutTest extends OAuthTestCase
             'content' => [
                 'payout_ids' => [$payout1['id'], $payout2['id']],
                 'status' => 'processed',
+                'fts_fund_account_id'   => '12345',
+                'fts_account_type'      => 'NODAL',
             ]
         ];
 
@@ -14430,6 +14470,8 @@ class PayoutTest extends OAuthTestCase
             'content' => [
                 'payout_ids' => [$payout1['id'], $payout2['id']],
                 'status' => 'processed',
+                'fts_fund_account_id'   => '12345',
+                'fts_account_type'      => 'NODAL',
             ]
         ];
 
@@ -14451,7 +14493,9 @@ class PayoutTest extends OAuthTestCase
             'content' => [
                 'payout_ids' => [$payout1['id'], $payout2['id']],
                 'status' => 'reversed',
-                'failure_reason' => 'payout reversed at bank'
+                'failure_reason' => 'payout reversed at bank',
+                 'fts_fund_account_id'   => '12345',
+                 'fts_account_type'      => 'NODAL',
             ]
         ];
 
