@@ -110,4 +110,8 @@ class Constants
 
     const IDEMPOTENCY_KEY   = 'idempotency_key';
     const SUCCESS           = 'success';
+
+    const JAN_1_1970_TIMESTAMP = 25569;
+
+    const DAYS_TO_SECONDS_MULTIPLIER = 86400;
 }

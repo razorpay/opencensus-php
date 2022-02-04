@@ -99,6 +99,11 @@ class Core extends Base\Core
         return [$arnArr, $arnVsRrn];
     }
 
+    protected function getUnixTimestampFromExcelTimestamp($excelTimestamp)
+    {
+        return ($excelTimestamp - Constants::JAN_1_1970_TIMESTAMP) * Constants::DAYS_TO_SECONDS_MULTIPLIER;
+    }
+
     protected function saveFraudEntityFromBatchInputRow($row, $batchId): array
     {
         $row[Fraud\Entity::BATCH_ID] = $batchId;
@@ -130,15 +135,14 @@ class Core extends Base\Core
             $row[Constants::BATCH_KEY_SUB_TYPE] = explode(' ', $row[Constants::BATCH_KEY_SUB_TYPE])[0];
 
             $row[Fraud\Entity::SOURCE] = Constants::MASTERCARD_FRAUD_FILE_SOURCE;
+
+            $row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT] =
+                $this->getUnixTimestampFromExcelTimestamp((int)$row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]);
         }
         else
         {
             $row[Fraud\Entity::SOURCE] = Constants::VISA_FRAUD_FILE_SOURCE;
         }
-
-        $row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT] = (strlen($row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT]) > 0)
-            ? Carbon::createFromFormat('d/m/Y', $row[Constants::BATCH_KEY_REPORTED_TO_ISSUER_AT])->getTimestamp()
-            : null;
 
         return (new Fraud\Core())->createOrUpdateFraudEntity($row);
     }

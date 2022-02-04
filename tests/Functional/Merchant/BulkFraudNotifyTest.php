@@ -560,6 +560,11 @@ class BulkFraudNotifyTest extends TestCase
         $this->assertEquals($paymentId, $fraud->first()->payment_id);
         $this->assertEquals($reportedBy, $fraud->first()->reported_by);
 
+        if ($reportedBy === 'MasterCard')
+        {
+            $this->assertEquals(1635552000, $fraud->first()->reported_to_issuer_at);
+        }
+
         return $fraud->first()->id;
     }
 

@@ -120,7 +120,7 @@ return [
                     'type'                  =>  '06 - CNP Fraud',
                     'sub_type'              =>  'N - PIN Not Used',
                     'amount_in_cents'       =>  '2975',
-                    'reported_to_issuer_at' =>  '11/02/2021',
+                    'reported_to_issuer_at' =>  44499,
                     'chargeback_code'       =>  '001',
                     'base_amount'           =>  '29750',
                     'reported_by'           =>  'MasterCard',
