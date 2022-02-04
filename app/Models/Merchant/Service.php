@@ -3871,9 +3871,9 @@ class Service extends Base\Service
             // Updating the merchant_config for merchants migrated to new settlement service
             if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true)
             {
-                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(),Settlement\Core::PAYOUT,Mode::LIVE);
+                (new Settlement\Core)->updateMerchantSchedule($this->merchant->getId(),Mode::LIVE);
 
-                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(),Settlement\Core::PAYOUT,Mode::TEST);
+                (new Settlement\Core)->updateMerchantSchedule($this->merchant->getId(),Mode::TEST);
 
             }
 
@@ -3923,12 +3923,11 @@ class Service extends Base\Service
                 });
             }
 
-            //TODO: avoid direct call here
             if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true) {
 
-                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(), Settlement\Core::PAYOUT, Mode::LIVE);
+                (new Settlement\Core)->updateMerchantSchedule($this->merchant->getId(), Mode::LIVE);
 
-                (new Settlement\Core)->MigrateMerchantConfiguration($this->merchant->getId(), Settlement\Core::PAYOUT, Mode::TEST);
+                (new Settlement\Core)->updateMerchantSchedule($this->merchant->getId(), Mode::TEST);
             }
 
         });

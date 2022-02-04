@@ -891,6 +891,51 @@ class Core extends Base\Core
             ]);
     }
 
+    public function updateMerchantSchedule($merchantId, $mode)
+    {
+        $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
+
+        $req = [
+            'merchant_id' => $merchant->getId(),
+        ];
+
+        $featureResult = $this->repo
+                              ->feature
+                              ->findMerchantWithFeaturesOnConnection($merchant->getId(),
+                                [
+                                    Constants::BLOCK_SETTLEMENTS,
+                                    Constants::ES_AUTOMATIC,
+                                    Constants::ES_AUTOMATIC_THREE_PM,
+                                ] , $mode);
+
+        $scheduleMapping = $this->getScheduleMappingForMethodNewService($merchant, $mode, $featureResult);
+
+        $response =  app('settlements_api')->merchantConfigGet($req, $mode);
+
+        unset($response['config']['active']);
+
+        foreach ($scheduleMapping as $type => $methods)
+        {
+            foreach ($methods as $method => $scheduleId)
+            {
+                $response['config']['schedules'][$type][$method] = $scheduleId;
+            }
+        }
+
+        $request = array_merge($req, $response);
+
+        $result = app('settlements_api')->migrateMerchantConfigUpdate($request, $mode);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_UPDATE_SUCCESS,
+            [
+                'merchant' => $merchant->getId(),
+                'request'  => $request,
+                'mode'     => $mode,
+                'result'   => $result,
+            ]);
+    }
+
     public function getScheduleMappingForMethodNewService($merchant, $mode, $features)
     {
         $newSettlementSchedules = array();
