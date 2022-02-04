@@ -315,11 +315,12 @@ export default class extends React.Component {
                   <EntityDetailRow label="Notes">
                     {virtualaccount.notes && Object.keys(virtualaccount.notes).length === 0
                       ? '--'
-                      : Object.keys(virtualaccount.notes).map((key, index) => (
+                      : virtualaccount?.notes &&
+                        Object.keys(virtualaccount?.notes).map((key, index) => (
                           <div class="m-b" key={index}>
                             <Definition>
                               {key}
-                              {String(virtualaccount.notes[key])}
+                              {String(virtualaccount?.notes[key])}
                               <i />
                             </Definition>
                           </div>
