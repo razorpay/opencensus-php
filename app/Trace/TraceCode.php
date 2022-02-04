@@ -2583,6 +2583,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_CHECK_HAS_PASSWORD_ACTION                        = 'USER_CHECK_HAS_PASSWORD_ACTION';
     const USER_SET_PASSWORD_ACTION                              = 'USER_SET_PASSWORD_ACTION';
     const USER_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'USER_ACCOUNT_LOCK_UNLOCK_ACTION';
+    const SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT             = 'SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT';
 
     //Trace codes for user device details
     const USER_DEVICE_DETAIL_DOES_NOT_EXIST                     = 'USER_DEVICE_DETAIL_DOES_NOT_EXIST';

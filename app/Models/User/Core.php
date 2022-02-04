@@ -3948,6 +3948,17 @@ class Core extends Base\Core
         {
             $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
 
+            if ((empty($receiver) === true) and
+                (isset($input['medium']) === true) and
+                ($input['medium'] === 'sms_and_email'))
+            {
+                $this->trace->info(TraceCode::SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT, [
+                    Entity::USER_ID => $user->getId()
+                ]);
+
+                $receiver = $user->getEmail();
+            }
+
             $response = compact(
                 'token',
                 'receiver',
