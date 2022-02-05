@@ -371,6 +371,76 @@ class CreditLogsTest extends TestCase
         }
     }
 
+    public function testBulkCreditRouteWithLedgerReverseShadow()
+    {
+        // No call to ledger in shadow mode
+        $this->mockLedgerSns(0);
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        // enable feature to call ledger in reverse shadow mode
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'id'          => '10000BankingB1',
+            'type'        => 'banking',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        Mail::fake();
+
+        $balance = $this->fixtures->on('live')->create('balance', [
+            'id'          => '10000SampleBal',
+            'type'        => 'credit',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->batchAppAuth('rzp_live');
+
+        $admin = $this->fixtures->on('live')->create('admin', [
+            'id'     => Org::SUPER_ADMIN,
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        $headers = [
+            'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiAa',
+            'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
+            'HTTP_X_Creator_Type'      => 'admin',
+        ];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBulkCreditLedgerReverseShadowRoute'];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+
+        Mail::assertQueued(ConfirmationForKycUsers::class, function ($mail)
+        {
+            $data = $mail->subject;
+
+            $this->assertEquals('Your ₹1.00 worth Free Credits are waiting for you!', $data);
+
+            return true;
+        });
+
+        $creditsCreated = $this->getDbLastEntity('credits', 'live');
+        $this->assertEquals(100, $creditsCreated['value']);
+        $this->assertEquals('bkwydgsZPxiesSRCRAa', $creditsCreated['idempotency_key']);
+    }
+
     public function testBulkCreditRouteInTestMode()
     {
         $this->ba->batchAppAuth();

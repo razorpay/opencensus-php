@@ -9,8 +9,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
-use RZP\Models\Promotion;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Promotion;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Credits;
@@ -218,7 +219,15 @@ class Core extends Base\Core
             return $creditsLog;
         });
 
-        $this->processLedgerForCreditAddition($creditsLog);
+        // check for reverse shadow for banking balance
+        if ($creditsLog->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+        {
+            $this->processLedgerForReverseShadow($creditsLog);
+        }
+        else
+        {
+            $this->processLedgerForCreditAddition($creditsLog);
+        }
 
         return $creditsLog;
     }
@@ -309,5 +318,41 @@ class Core extends Base\Core
 
         (new Ledger\Rewards)->pushTransactionToLedger($creditLogs,
                                                       $event);
+    }
+
+    /**
+     * @param Entity $creditLogs
+     *
+     *
+     * This function processes txn in reverse shadow mode
+     * We call ledger in sync and use ledger response to
+     * create txn in api db in async
+     *
+     */
+    protected function processLedgerForReverseShadow(Entity $creditLogs)
+    {
+
+        if ($creditLogs->getProduct() !== Balance\Product::BANKING)
+        {
+            return;
+        }
+        // create journal in sync
+        $ledgerPayload = (new Ledger\Rewards)->createPayloadForJournalEntry($creditLogs, Ledger\Rewards::FUND_LOADING_PROCESSED);
+        try {
+            (new Ledger\Rewards)->createJournalEntry($ledgerPayload);
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception
+            $alertPayload = [
+                'credits_id'            => $creditLogs->getId(),
+                'ledger_payload'        => $ledgerPayload,
+            ];
+            $this->trace->traceException(
+                $ex,
+                TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW,
+                $alertPayload
+            );
+        }
     }
 }

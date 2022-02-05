@@ -510,6 +510,44 @@ return [
         ]
     ],
 
+    'testBulkCreditLedgerReverseShadowRoute' => [
+        'request' => [
+            'url'       => '/merchants/credits/bulk/batch',
+            'method'    => 'post',
+            'server' => [],
+            'content'   => [
+                [
+                    Entity::IDEMPOTENCY_KEY => 'bkwydgsZPxiesSRCRAa',
+                    Entity::MERCHANT_ID     => '10000000000000',
+                    Entity::REMARKS         => 'some test credits',
+                    Entity::CAMPAIGN        => 'test credits',
+                    Entity::VALUE           => 100,
+                    Entity::PRODUCT         => 'banking',
+                    Entity::TYPE            => 'reward_fee',
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items' => [
+                    [
+                        'merchant_id'           => "10000000000000",
+                        'campaign'              =>  "test credits",
+                        'value'                 =>  100,
+                        'remarks'               => "some test credits",
+                        'idempotency_key'       => "bkwydgsZPxiesSRCRAa",
+                        'batch_id'              =>  "C0zv9I46W4wiAa",
+                        'type'                  =>  "reward_fee",
+                        'product'               =>  "banking",
+                        'creator_name'          => "test admin",
+                    ],
+                ]
+            ]
+        ]
+    ],
+
     'testBulkCreditRouteInTestMode' => [
         'request' => [
             'url'       => '/merchants/credits/bulk/batch',

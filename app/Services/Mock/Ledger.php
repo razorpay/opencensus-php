@@ -315,7 +315,23 @@ class Ledger extends BaseLedger
         }
         else if (strpos($input['transactor_event'], 'fund_loading') !== false)
         {
-            $balance = $app['repo']->bank_transfer->findByPublicId($input['transactor_id'])->balance->getBalance();
+            // credits fund loading
+            if (isset($input['additional_params']) === true)
+            {
+                $additional_params = $input['additional_params'];
+                if ((isset($additional_params['fee_accounting']) === true) && $additional_params['fee_accounting'] === 'reward')
+                {
+                    $balance = 0;
+                }
+                else
+                {
+                    $balance = $app['repo']->bank_transfer->findByPublicId($input['transactor_id'])->balance->getBalance();
+                }
+            }
+            else
+            {
+                $balance = $app['repo']->bank_transfer->findByPublicId($input['transactor_id'])->balance->getBalance();
+            }
         }
         else
         {
