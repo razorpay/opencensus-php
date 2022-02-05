@@ -248,7 +248,7 @@
                                                     <div class="card highlight" style="width: 85%; max-width: 860px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;">
                                                         <ol style="text-align: left; font-size: 16px; line-height: 1.5; color: #0D2366; padding-left: 16px;">
                                                             <li>Please fill this form for your Physical Card kit: <a href="https://razorpay.typeform.com/to/hKPzCtEl">https://razorpay.typeform.com/to/hKPzCtEl</a></li>
-                                                            <li>You can manage your card from here: <a href="https://x.razorpay.com/cards/apply">x.razorpay.com/cards</a></li>
+                                                            <li>You can manage your card from here: <a href="https://x.razorpay.com/cards?utm_source=product&utm_medium=email&utm_campaign=Activation+Drip">x.razorpay.com/cards</a></li>
                                                             <li>Direct link to card details: <a href="https://razorpay.yappay.in/">https://razorpay.yappay.in/</a></li>
                                                         </ol>
                                                         <p class="center-align para-normal font-size-normal" style="text-align: left; font-size: 16px; line-height: 1.5; color: #0D2366;">
