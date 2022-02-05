@@ -29,6 +29,8 @@ class EventCode
 
     const PURCHASE_EVENT_SENT            = 'Purchase Event Sent';
 
+    const M2M_ENABLED_EXPERIMENT         = 'M2M EXPERIMENT ENABLED';
+
     const KYC_FORM_SAVED            = 'KYC Form Saved';
 
     const KYC_STATUS_CHANGE         = 'KYC Status Change';

@@ -80,6 +80,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -6239,6 +6240,15 @@ class Core extends Base\Core
             ];
 
             (new Store\Core())->updateMerchantStore($merchantId, $data, Store\Constants::INTERNAL);
+
+            $properties = [
+                'experiment_timestamp' => Carbon::now()->getTimestamp(),
+            ];
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['segment-analytics']->pushTrackEvent(
+                $merchant, $properties, SegmentEvent::M2M_ENABLED_EXPERIMENT);
 
         }
         catch (\Exception $e)
