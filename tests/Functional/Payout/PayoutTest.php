@@ -680,6 +680,13 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreateCompositePayoutWithOldIfsc()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCustomerWalletPayoutWithNarrationAsArray()
     {
 

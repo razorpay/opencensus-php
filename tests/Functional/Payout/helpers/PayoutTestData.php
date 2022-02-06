@@ -553,6 +553,7 @@ return [
         ],
     ],
 
+
     'testCompositePayoutWithNarrationAsArray' => [
         'request'  => [
             'method'  => 'POST',
@@ -602,6 +603,79 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
 
+    ],
+
+    'testCreateCompositePayoutWithOldIfsc' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'abc and xyz',
+                'mode'           => 'IMPS',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'bank_account',
+                    'bank_account' => [
+                        'name'           => 'Sagnik Saha',
+                        'ifsc'           => 'UTBI0TFRM42',
+                        'account_number' => '3434000111000'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Sagnik S',
+                        'email'   => 'sagnik.saha@razorpay.com',
+                        'contact' => '9876543210',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity"         => "payout",
+                "fund_account"   => [
+                    "contact"        => [
+                        'entity'  => 'contact',
+                        'name'    => 'Sagnik S',
+                        'email'   => 'sagnik.saha@razorpay.com',
+                        'contact' => '9876543210',
+                        'type'    => 'employee',
+                        'active'  => true,
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "entity"       => "fund_account",
+                    "account_type" => "bank_account",
+                    "bank_account" => [
+                        "ifsc"           => "PUNB0221320",
+                        "name"           => "Sagnik Saha",
+                        "notes"          => [],
+                        "account_number" => "3434000111000"
+                    ],
+                ],
+                "amount"         => 2000000,
+                "currency"       => "INR",
+                "notes"          => [
+                    "abc" => "xyz",
+                ],
+                "status"         => "processing",
+                "purpose"        => "refund",
+                "mode"           => "IMPS",
+                "narration"      => "abc and xyz",
+                "batch_id"       => null,
+                "failure_reason" => null,
+                'merchant_id'    => '10000000000000'
+            ],
+        ],
     ],
 
     'testCustomerWalletPayoutWithNarrationAsArray' => [

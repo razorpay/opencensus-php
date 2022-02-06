@@ -155,53 +155,46 @@ class Base extends BaseCore
 
         if ($this->isIfscSwappingRequired($ifscCode) === true)
         {
-            $variant  = $this->app['razorx']->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::OLD_TO_NEW_IFSC_FOR_MERGED_BANK,
-                $this->mode);
+            $ifscCode = $this->getNewIfscMapping($bankAccount->getIfscCode());
 
-            if ($variant === 'on')
+            // only below parameters are required for FA payouts
+            $input = [
+                BankAccount\Entity::IFSC_CODE        => $ifscCode,
+                BankAccount\Entity::ACCOUNT_NUMBER   => $bankAccount->getAccountNumber(),
+                BankAccount\Entity::BENEFICIARY_NAME => $bankAccount->getBeneficiaryName(),
+                BankAccount\Entity::TYPE             => $bankAccount->getType(),
+                BankAccount\Entity::ENTITY_ID        => $bankAccount->getEntityId(),
+            ];
+
+            $existingBankAccount = $this->repo->bank_account->fetchBankAccount(
+                $merchant,
+                $input);
+
+            if ($existingBankAccount !== null)
             {
-                $ifscCode = $this->getNewIfscMapping($bankAccount->getIfscCode());
+                $this->trace->info(TraceCode::EXISTING_BANK_ACCOUNT_FOUND,
+                                   [
+                                       'bank_account_id' => $existingBankAccount->getId(),
+                                   ]);
 
-                // only below parameters are required for FA payouts
-                $input = [
-                    BankAccount\Entity::IFSC_CODE         => $ifscCode,
-                    BankAccount\Entity::ACCOUNT_NUMBER    => $bankAccount->getAccountNumber(),
-                    BankAccount\Entity::BENEFICIARY_NAME  => $bankAccount->getBeneficiaryName(),
-                    BankAccount\Entity::TYPE              => $bankAccount->getType(),
-                    BankAccount\Entity::ENTITY_ID         => $bankAccount->getEntityId(),
-                ];
-
-                $existingBankAccount =  $this->repo->bank_account->fetchBankAccount(
-                                                                    $merchant,
-                                                                    $input);
-
-                if ($existingBankAccount !== null)
-                {
-                    $this->trace->info(TraceCode::EXISTING_BANK_ACCOUNT_FOUND,
-                        [
-                            'bank_account_id' => $existingBankAccount->getId(),
-                        ]);
-
-                    return $existingBankAccount;
-                }
-
-                // The below fields will be filled when bank account gets associated to its source
-                unset($input[BankAccount\Entity::TYPE]);
-                unset($input[BankAccount\Entity::ENTITY_ID]);
-
-                $bankAccount = (new BankAccount\Core)->createBankAccountForSource($input,
-                                                                                  $merchant,
-                                                                                  $bankAccount->source,
-                                                                         "add_bank_account");
-
-                $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED,
-                    [
-                        'bank_account_id' => $bankAccount->getId(),
-                    ]);
+                return $existingBankAccount;
             }
+
+            // The below fields will be filled when bank account gets associated to its source
+            unset($input[BankAccount\Entity::TYPE]);
+            unset($input[BankAccount\Entity::ENTITY_ID]);
+
+            $bankAccount = (new BankAccount\Core)->createBankAccountForSource($input,
+                                                                              $merchant,
+                                                                              $bankAccount->source,
+                                                                              "add_bank_account");
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_CREATED,
+                               [
+                                   'bank_account_id' => $bankAccount->getId(),
+                               ]);
         }
+
         return $bankAccount;
     }
 

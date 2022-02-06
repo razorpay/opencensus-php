@@ -97,6 +97,42 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountWithOldIfsc()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'PUNB0RRBTGB',
+            'account_number'   => '12345678998',
+            'beneficiary_name' => 'Sagnik Saha',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|12345678998|PUNB0RRBTGB|SagnikSaha';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
@@ -143,7 +179,7 @@ class FundAccountsTest extends TestCase
         $expectedBankAccount = [
             'type'             => 'contact',
             'entity_id'        => '1000000contact',
-            'ifsc_code'        => 'SBIN0000011',
+            'ifsc_code'        => 'FINO0009001',
             'account_number'   => '111000371',
             'beneficiary_name' => 'Chirag C',
             'merchant_id'      => '10000000000000',
@@ -153,7 +189,7 @@ class FundAccountsTest extends TestCase
 
         $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
 
-        $expectedHashInput = '10000000000000|contact|bank_account|111000371|SBIN';
+        $expectedHashInput = '10000000000000|contact|bank_account|111000371|FINO';
 
         $expectedHash = hash('sha3-256', $expectedHashInput);
 

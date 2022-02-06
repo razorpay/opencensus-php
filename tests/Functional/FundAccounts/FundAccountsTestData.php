@@ -120,13 +120,42 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountWithOldIfsc' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'UTBI0RRBTGB',
+                    'name'           => 'Sagnik Saha',
+                    'account_number' => '12345678998',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'PUNB0RRBTGB',
+                    'name'           => 'Sagnik Saha',
+                    'account_number' => '12345678998'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateFundAccountBankAccountWithFeatureFlagEnabled' => [
         'request'  => [
             'content' => [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
-                    'ifsc'           => 'SBIN0000011',
+                    'ifsc'           => 'FINO0001023',
                     'name'           => 'Chirag C',
                     'account_number' => '111000371',
                 ],
@@ -140,7 +169,7 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
-                    'ifsc'           => 'SBIN0000011',
+                    'ifsc'           => 'FINO0009001',
                     'name'           => 'Chirag C',
                     'account_number' => '111000371',
                 ],
@@ -155,7 +184,7 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000001contact',
                 'bank_account'      => [
-                    'ifsc'           => 'SBIN0000011',
+                    'ifsc'           => 'FINO0001023',
                     'name'           => 'Chirag Chiranjib',
                     'account_number' => '111000371',
                 ],
@@ -169,7 +198,7 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
-                    'ifsc'           => 'SBIN0000011',
+                    'ifsc'           => 'FINO0009001',
                     'name'           => 'Chirag C',
                     'account_number' => '111000371',
                 ],
