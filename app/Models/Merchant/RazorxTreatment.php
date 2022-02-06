@@ -130,6 +130,9 @@ final class RazorxTreatment
     // Onboard merchant on Ledger
     const LEDGER_ONBOARDING = 'ledger_onboarding';
 
+    // Onboard merchant on Ledger with reverse shadow
+    const LEDGER_ONBOARDING_REVERSE_SHADOW = 'ledger_onboarding_reverse_shadow';
+
     // Fund transfer request from payout to fts in sync mode
     const PAYOUT_TO_FTS_SYNC_MODE = 'payout_to_fts_sync_mode';
 

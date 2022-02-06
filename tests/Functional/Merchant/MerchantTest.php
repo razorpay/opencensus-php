@@ -8603,6 +8603,128 @@ IFSC Code  ICIC0001206
         $this->assertContains('ledger_journal_writes', $liveFeaturesArray);
     }
 
+    public function testMerchantSwitchProductWithLedgerReverseShadowExperimentOn($expValue = 'on', $category2 = 'school')
+    {
+        $this->mockLedgerSns(0);
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->enableRazorXTreatmentForXOnboarding($expValue, 'off', 'on');
+
+        $liveUser = (new User())->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ],'owner', 'live');
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => false, 'category2' => $category2]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
+            ['merchant_id' => '100000Razorpay']);
+
+        // To create a virtual account we need to enable bank transfer
+        $this->fixtures->edit('methods', '10000000000000', ['bank_transfer' => true]);
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNull($liveBankingAccount);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $liveUser['id'], 'owner');
+
+        $this->startTest();
+
+        $liveBankingAccount = $this->getDbEntity('banking_account',
+            [
+                'merchant_id' => '10000000000000',
+            ],
+            'live');
+
+        $this->assertNotNull($liveBankingAccount);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedBankingAccount = [
+            'channel'     => 'yesbank',
+            'merchant_id' => '10000000000000',
+            'status'      => 'activated',
+            'pincode'     => null
+        ];
+
+        $balanceId = $liveBankingAccount->getBalanceId();
+
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $bankingAccount->toArray());
+        $this->assertArraySelectiveEquals($expectedBankingAccount, $liveBankingAccount->toArray());
+        $this->assertNotNull($balanceId);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $balance = $this->getDbEntityById('balance', $balanceId, 'live');
+
+        $expectedBalance = [
+            'type'             => 'banking',
+            'account_type'     => 'shared',
+            'channel'          => null,
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBalance, $balance->toArray());
+
+        $merchants = DB::connection('live')->table('merchant_users')
+            ->where('user_id', '=', $liveUser['id'])
+            ->pluck('merchant_id', 'product');
+
+        $this->assertEquals(count($merchants), 2);
+
+        $this->assertArrayHasKey('banking', $merchants);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
+
+        $testFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $liveFeaturesArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'live')->pluck('name')->toArray();
+
+        $this->assertContains('payout', $testFeaturesArray);
+        $this->assertContains('payout', $liveFeaturesArray);
+
+        $this->assertContains('skip_hold_funds_on_payout', $testFeaturesArray);
+        $this->assertContains('skip_hold_funds_on_payout', $liveFeaturesArray);
+
+        $this->assertContains(Features::NEW_BANKING_ERROR, $testFeaturesArray);
+        $this->assertContains(Features::NEW_BANKING_ERROR, $liveFeaturesArray);
+
+        // Assert that the ledger_reverse_shadow feature is enabled for live mode
+        $this->assertContains('ledger_reverse_shadow', $testFeaturesArray);
+        $this->assertContains('ledger_reverse_shadow', $liveFeaturesArray);
+
+        // Assert that the ledger_journal_reads feature is enabled for live mode
+        $this->assertContains('ledger_journal_reads', $testFeaturesArray);
+        $this->assertContains('ledger_journal_reads', $liveFeaturesArray);
+    }
+
     /**
      * Switches product of merchant from PG to BB.
      */
@@ -10177,7 +10299,8 @@ IFSC Code  ICIC0001206
     }
 
     protected function enableRazorXTreatmentForXOnboarding($value = 'on',
-                                                           $ledgerOnboardingValue = 'control')
+                                                           $ledgerOnboardingValue = 'control',
+                                                           $ledgerReverseShadowOnboardingValue = 'control')
     {
         (new Admin\Service)->setConfigKeys(
             [
@@ -10200,7 +10323,7 @@ IFSC Code  ICIC0001206
 
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
-                              function ($mid, $feature, $mode) use ($value, $ledgerOnboardingValue)
+                              function ($mid, $feature, $mode) use ($value, $ledgerOnboardingValue, $ledgerReverseShadowOnboardingValue)
                               {
                                   if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_TEST_MODE_ONBOARDING)
                                   {
@@ -10219,6 +10342,11 @@ IFSC Code  ICIC0001206
                                   if ($feature == Merchant\RazorxTreatment::LEDGER_ONBOARDING)
                                   {
                                       return $ledgerOnboardingValue;
+                                  }
+
+                                  if ($feature == Merchant\RazorxTreatment::LEDGER_ONBOARDING_REVERSE_SHADOW)
+                                  {
+                                      return $ledgerReverseShadowOnboardingValue;
                                   }
 
                                   return 'off';

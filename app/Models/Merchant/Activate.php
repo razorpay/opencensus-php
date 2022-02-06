@@ -3,9 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
-use RZP\Models\Feature\Constants;
 use Throwable;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Admin;
@@ -17,14 +15,16 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Models\PaymentLink;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BankingAccount;
-use RZP\Models\PaymentLink;
-use RZP\Mail\Merchant\AxisActivation;
+use RZP\Models\Feature\Constants;
 use RZP\Models\BankingAccountTpv;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Merchant\AxisActivation;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -761,31 +761,81 @@ class Activate extends Base\Core
             // Create Banking Account
             [$bankingAccount, $baCreatedNow] = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
 
-            // Call Ledger Entity method which will take care of creating the account for this balance in Ledger.
-            // Flow will come here only if balance is created successfully in API DB.
-            $ledgerExperimentActive = $this->onBoardMerchantOnLedger($merchant, $mode);
-
-            // check if experiment is active and balance is created in this call
-            if (($ledgerExperimentActive === true) and ($created === true))
+            // Create accounts on ledger only when balance is created on API
+            if ($created === true)
             {
-                if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)
+                // Call Ledger Entity method which will take care of creating the account for this balance in Ledger
+                // in reverse shadow mode.
+                $ledgerReverseShadowExperimentActive = $this->onBoardMerchantOnLedgerInReverseShadow($merchant, $mode);
+                if ($ledgerReverseShadowExperimentActive === true)
                 {
-                    (new Feature\Core)->create(
-                        [
-                            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                            Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                            Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_WRITES,
-                        ]);
+                    // assign LEDGER_REVERSE_SHADOW feature for the merchant to be onboarded in
+                    // reverse shadow mode
+                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                    {
+                        (new Feature\Core)->create(
+                            [
+                                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                Feature\Entity::NAME        => Feature\Constants::LEDGER_REVERSE_SHADOW,
+                            ]);
 
-                    $this->trace->info(
-                        TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
-                        [
-                            'merchant_id'       => $merchant->getId(),
-                            'mode'              => $mode,
-                        ]);
+                        $this->trace->info(
+                            TraceCode::LEDGER_REVERSE_SHADOW_FEATURE_ASSIGNED,
+                            [
+                                'merchant_id'       => $merchant->getId(),
+                                'mode'              => $mode,
+                            ]);
+                    }
+                    // assign LEDGER_JOURNAL_READS feature for the merchant to be onboarded in
+                    // reverse shadow mode
+                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === false)
+                    {
+                        (new Feature\Core)->create(
+                            [
+                                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_READS,
+                            ]);
+
+                        $this->trace->info(
+                            TraceCode::LEDGER_JOURNAL_READS_FEATURE_ASSIGNED,
+                            [
+                                'merchant_id'       => $merchant->getId(),
+                                'mode'              => $mode,
+                            ]);
+                    }
+                    (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode, AccountType::SHARED, 0, 0, $ledgerReverseShadowExperimentActive);
                 }
+                else
+                {
+                    // Call Ledger Entity method which will take care of creating the account for this balance in Ledger in shadow mode.
+                    // Flow will come here only if balance is created successfully in API DB.
+                    $ledgerExperimentActive = $this->onBoardMerchantOnLedger($merchant, $mode);
 
-                (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
+                    // check if experiment is active for shadow mode
+                    if ($ledgerExperimentActive === true)
+                    {
+                        if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)
+                        {
+                            (new Feature\Core)->create(
+                                [
+                                    Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                    Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_WRITES,
+                                ]);
+
+                            $this->trace->info(
+                                TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                                [
+                                    'merchant_id'       => $merchant->getId(),
+                                    'mode'              => $mode,
+                                ]);
+                        }
+
+                        (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
+                    }
+                }
             }
 
             (new Counter\Core)->fetchOrCreate($balance);
@@ -959,6 +1009,17 @@ class Activate extends Base\Core
     {
         $variant = $this->app->razorx->getTreatment($merchant->getId(),
             Merchant\RazorxTreatment::LEDGER_ONBOARDING,
+            $mode
+        );
+
+        return (strtolower($variant) === 'on');
+    }
+
+    // Returns true if experiment and env variable to onboard merchant on ledger in reverse shadow is running.
+    protected function onBoardMerchantOnLedgerInReverseShadow(Entity $merchant, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::LEDGER_ONBOARDING_REVERSE_SHADOW,
             $mode
         );
 

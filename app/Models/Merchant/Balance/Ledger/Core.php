@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance\Ledger;
 
 use App;
 
+use Ramsey\Uuid\Uuid;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -24,6 +25,7 @@ class Core extends Base\Core
     const TENANT                = 'tenant';
     const MERCHANT_ID           = 'merchant_id';
     const EVENT                 = 'event';
+    const EVENTS                = 'events';
     const EVENT_NAME            = 'name';
     const EVENT_DESCRIPTION     = 'description';
     const ENTITIES              = 'entities';
@@ -68,13 +70,66 @@ class Core extends Base\Core
      * @param string $mode
      * @param string $accountType can be shared (for Virtual Accounts) or direct (for Current Accounts)
      * @param int $balanceAmount
+     * @param int $creditBalance
+     * @param bool $isReverseShadow
      */
     public function createXLedgerAccount(Merchant $merchant, BankingAccount $bankingAccount,
                                          string   $mode, string $accountType = self::SHARED,
-                                         int $balanceAmount = 0, int $creditBalance = 0)
+                                         int $balanceAmount = 0, int $creditBalance = 0, bool $isReverseShadow = false)
     {
         $event = $accountType == self::SHARED ? self::SHARED_MERCHANT_ONBOARDING : self::DIRECT_MERCHANT_ONBOARDING;
 
+        $snsPyload = $this->getLedgerAccountCreateSNSPayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance);
+        if ($isReverseShadow === false)
+        {
+            // onboard to ledger in async for shadow mode
+            $this->createXLedgerAccountPushToSNS($snsPyload);
+            return;
+        }
+
+        try
+        {
+            // onboard to ledger in sync for reverse shadow mode
+            $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance);
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->setIdempotencyKey(Uuid::uuid1());
+            $ledgerService->setTenantHeader('X');
+            $ledgerService->createAccountsOnEvent($payload, true);
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception and retry in async
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_CREATE_REQUEST_FAILED,
+                $snsPyload);
+            $this->createXLedgerAccountPushToSNS($snsPyload);
+        }
+
+    }
+
+    public function createXLedgerAccountPushToSNS($payload)
+    {
+        $this->trace->info(TraceCode::LEDGER_ACCOUNT_STREAMING_STARTED, $payload);
+        try
+        {
+            $sns = $this->app['sns'];
+            $target = self::LEDGER_ACCOUNT_ONBOARDING;
+            $sns->publish(json_encode($payload), $target);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_STREAMING_FAILED,
+                $payload);
+        }
+    }
+
+    public function getLedgerAccountCreateSNSPayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance)
+    {
         $payload = [
             self::TENANT            => self::X,
             self::MODE              => $mode,
@@ -104,24 +159,48 @@ class Core extends Base\Core
             $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
         }
 
-        $this->trace->info(TraceCode::LEDGER_ACCOUNT_STREAMING_STARTED, $payload);
+        return $payload;
+    }
 
-        try
+    public function getLedgerAccountCreatePayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance)
+    {
+        $eventObj = [
+            self::EVENT_NAME            => $event,
+            self::EVENT_DESCRIPTION     => $this->eventDescription[$event],
+            self::ENTITIES              => [
+                self::BANKING_ACCOUNT_ID => [$bankingAccount->getPublicId()],
+            ],
+        ];
+
+        if ($bankingAccount->getFtsFundAccountId() !== null)
         {
-            $sns = $this->app['sns'];
-
-            $target = self::LEDGER_ACCOUNT_ONBOARDING;
-
-            $sns->publish(json_encode($payload), $target);
+            $eventObj[self::ENTITIES][self::FTS_FUND_ACCOUNT_ID] = [$bankingAccount->getFtsFundAccountId()];
         }
-        catch (\Throwable $e)
+
+        $payload = [
+            self::TENANT            => self::X,
+            self::MODE              => $mode,
+            self::IDEMPOTENCY_KEY   => gen_uuid(self::UUID_FORMAT),
+            self::MERCHANT_ID       => $merchant->getId(),
+            self::EVENTS             => [
+                $eventObj
+            ]
+        ];
+
+        if ($balanceAmount !== 0)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::LEDGER_ACCOUNT_STREAMING_FAILED,
-                $payload);
+            $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
         }
+
+        // Todo: Add creditBalance to request payload after changes on ledger side
+        $this->trace->info(
+            TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
+            [
+                'payload'               => $payload,
+            ]
+        );
+
+        return $payload;
     }
 
     /**

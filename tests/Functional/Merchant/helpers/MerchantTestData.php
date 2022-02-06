@@ -6308,6 +6308,17 @@ return [
         ],
     ],
 
+    'testMerchantSwitchProductWithLedgerReverseShadowExperimentOn' => [
+        'request'  => [
+            'url'     => '/merchants/product-switch',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
     'testMerchantSwitchProductActivationSMS' => [
         'request'  => [
             'url'     => '/merchants/product-switch',

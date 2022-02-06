@@ -508,6 +508,11 @@ class Ledger
         $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $key;
     }
 
+    public function setTenantHeader(string $key)
+    {
+        $this->headers[self::LEDGER_TENANT_HEADER] = $key;
+    }
+
     /**
      * @param array $request
      *
