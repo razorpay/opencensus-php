@@ -40,7 +40,7 @@ class CashAdvanceEligible extends Base\Mailable
 
     protected function addSubject()
     {
-        $subject = 'Now withdraw additional funds for your business!';
+        $subject = 'Congratulations, you have unlocked Razorpay Credit line facility';
 
         $this->subject($subject);
 

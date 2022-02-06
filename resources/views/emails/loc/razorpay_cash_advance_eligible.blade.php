@@ -88,7 +88,230 @@
             >
           <![endif]-->
 
-      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:center;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0px;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+            <tr>
+              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:center;color:#000000;">
+        <div class="header" style="box-sizing: border-box; max-width: 100%;"><div class="content branding rzp" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;"><img src="https://cdn.razorpay.com/logo_invert.png" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"><div class="center-align" style="text-align: center;"><img class="image small" src="https://cdn.razorpay.com/static/assets/email/flash.png" style="margin: 8px; background: transparent; height: 44px;" height="44"></div></div></div></div>
+      </div>
+
+              </td>
+            </tr>
+
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]>
+            </td>
+
+        </tr>
+
+                  </table>
+                <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]>
+          </td>
+        </tr>
+      </table>
+
+      <table
+         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+      >
+        <tr>
+          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+      <![endif]-->
+
+
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                <!--[if mso | IE]>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+
+            <td
+               class="" style="vertical-align:top;width:600px;"
+            >
+          <![endif]-->
+
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:center;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0px;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+            <tr>
+              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:center;color:#000000;">
+        <div class="card title" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-large font-color-primary" style="text-align: center; font-size: 24px; line-height: 1.5; color: #000000;">Hello,</div><div class="center-align font-size-normal font-color-secondary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #000000;">Greetings from Razorpay!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #3BD541;"></div></div></div><div class="center-align font-size-medium font-color-tertiary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #000000;">Congratulations, You have unlocked Razorpay Cash Advance!🚀
+               <br/>Now, get cash for your urgent business needs in 10 seconds.
+            </div></div>
+      </div>
+
+              </td>
+            </tr>
+
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]>
+            </td>
+
+        </tr>
+
+                  </table>
+                <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]>
+          </td>
+        </tr>
+      </table>
+
+      <table
+         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+      >
+        <tr>
+          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+      <![endif]-->
+
+
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                <!--[if mso | IE]>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+
+            <td
+               class="" style="vertical-align:top;width:600px;"
+            >
+          <![endif]-->
+
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:center;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0px;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+            <tr>
+              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:center;color:#000000;">
+        <div class="card highlight" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #000000;">You can enable Razorpay Cash Advance, a Line of Credit facility, for FREE!
+                <br/>Be it temporary low sales or emergency needs, never run out of money with <br/> Razorpay Cash Advance.
+                <br/>
+                <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="https://dashboard.razorpay.com/app/capital/cash-advance?utm_source=backend&utm_medium=email&utm_campaign=cash_advance_automatic" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF;"><G>Get Started</G></a></div>
+                And, unlock a special offer of 0%* on your first withdrawal!
+            </div></div>
+      </div>
+
+              </td>
+            </tr>
+
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]>
+            </td>
+
+        </tr>
+
+                  </table>
+                <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]>
+          </td>
+        </tr>
+      </table>
+
+      <table
+         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+      >
+        <tr>
+          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+      <![endif]-->
+
+
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                <!--[if mso | IE]>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+
+            <td
+               class="" style="vertical-align:top;width:600px;"
+            >
+          <![endif]-->
+
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:center;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
 
       <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
         <tbody>
@@ -101,7 +324,166 @@
               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
       <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="header" style="box-sizing: border-box; max-width: 100%;"><div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 12px; padding-bottom: 12px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5; color: #8D92A4;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px; margin-left: 5px;"><img src="https://cdn.razorpay.com/logo_invert.png" style="height: 100%; width: 100%;"></div></div></div><div class="content title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"><div class="center-align" style="text-align: center;"><img class="image small" src="https://cdn.razorpay.com/static/assets/email/flash.png" style="margin: 8px; background: transparent; height: 44px;" height="44"></div></div></div></div>
+        <div class="card highlight" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 64px; padding-right: 64px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #000000;">As a selected account for this service, you will get the following benefits:
+                <div style="padding-left: 34px;">
+                <br/>🚀 0%* interest on your first withdrawal (Upto 50K)
+                <br/>💸 No processing fee or annual fee
+                <br/>💰 24/7 withdrawal even during bank holidays and non-banking hours
+                <br/>💡 Auto-repayment from your settlement balance
+                <br/>⚡️ Interest only on the amount withdrawn from your credit limit
+                </div>
+          <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+              <div class="center-align" style="text-align: center;"><a class="link btn primary font-bold" href="https://form.typeform.com/to/MJsyg1fu#name={{ $data['contact_name'] }}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 12px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; text-align: center; color: #FFF; background-color: #3281FF; border-color: #3281FF; margin: 24px auto 0 auto;">I am Interested</a></div>
+                  <br/>You can reach us on <a href="https://razorpay.com/support">https://razorpay.com/support</a> for any queries.</div>
+          </div>
+            </div></div>
+
+              </td>
+            </tr>
+
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]>
+            </td>
+
+        </tr>
+
+                  </table>
+                <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]>
+          </td>
+        </tr>
+      </table>
+
+      <table
+         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+      >
+        <tr>
+          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+      <![endif]-->
+
+
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                <!--[if mso | IE]>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+
+            <td
+               class="" style="vertical-align:top;width:600px;"
+            >
+          <![endif]-->
+
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:center;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0px;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+            <tr>
+              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+
+
+              </td>
+            </tr>
+
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]>
+            </td>
+
+        </tr>
+
+                  </table>
+                <![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]>
+          </td>
+        </tr>
+      </table>
+
+      <table
+         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
+      >
+        <tr>
+          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
+      <![endif]-->
+
+
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+                <!--[if mso | IE]>
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+
+        <tr>
+
+            <td
+               class="" style="vertical-align:top;width:600px;"
+            >
+          <![endif]-->
+
+      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:center;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0px;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+
+            <tr>
+              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+
+      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+        <div class="card" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 64px; padding-right: 64px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #000000;">*Offer Terms -
+            <ol>
+                <li style="font-size: 14px; line-height: 1.5; color: #000000;">Offer is applicable only upto Rs. 50,000 worth of first withdrawal</li>
+                <li style="font-size: 14px; line-height: 1.5; color: #000000;">We will refund the interest collected from you to make your withdrawal free</li>
+                <li style="font-size: 14px; line-height: 1.5; color: #000000;">Please ensure on-time re-payment to qualify for the offer</li>
+            </ol>
+           </div>
       </div>
 
               </td>
@@ -173,7 +555,7 @@
               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
       <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-large font-color-primary" style="text-align: center; font-size: 24px; line-height: 1.5; color: #0D2366;">Hello,</div><div class="center-align font-size-normal font-color-secondary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #515978;">Greetings from Razorpay!</div><div class="center-align" style="text-align: center;"><div class="puck para" style="padding: 12px 0; margin: 0;"><div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #3BD541;"></div></div></div><div class="center-align font-size-medium font-color-tertiary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">We are glad to inform you that you are now eligible for Razorpay Cash Advance.</div></div>
+        <div class="card" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="center-align font-size-medium font-color-tertiary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #000000;">Thanks & Regards,</div><div class="center-align font-size-medium font-color-secondary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #000000;">Razorpay Team</div></div>
       </div>
 
               </td>
@@ -245,371 +627,7 @@
               <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
       <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="font-size-normal font-color-secondary" style="font-size: 16px; line-height: 1.5; color: #515978;">What is Razorpay Cash Advance?</div><div class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #7B8199;">Cash Advance is Razorpay’s Line Of Credit facility from where you can get access to additional cash. Get money in your bank account instantly for your urgent business needs and don't let anything stop you from growing. Once Cash Advance is enabled, withdraw money, repay and borrow again from the approved credit limit at a nominal fee.</div></div>
-      </div>
-
-              </td>
-            </tr>
-
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
-      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-        <tbody>
-          <tr>
-            <td style="vertical-align:top;padding:0px;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-            <tr>
-              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="font-size-normal font-color-secondary" style="font-size: 16px; line-height: 1.5; color: #515978;">Benifits of Cash Advance for your business</div><div class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #7B8199;"><ol>
- <li>Get backup fund for unexpected cash needs</li>
- <li>Withdraw cash now & repay later from payments</li>
- <li>Pay a fees only on the amount and days taken</li>
-</ol> </div></div>
-      </div>
-
-              </td>
-            </tr>
-
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
-      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-        <tbody>
-          <tr>
-            <td style="vertical-align:top;padding:0px;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-            <tr>
-              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #7B8199;">Razorpay Capital will enable Cash Advance in less than 3 days after application. Let us know if you are interested by replying to this mail. Looking forward to hearing from you.</p></div>
-      </div>
-
-              </td>
-            </tr>
-
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
-      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-        <tbody>
-          <tr>
-            <td style="vertical-align:top;padding:0px;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-            <tr>
-              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="font-size-medium font-color-tertiary" style="font-size: 14px; line-height: 1.5; color: #7B8199;">For any queries, please reach out to us by responding to this mail or through our support channel at&nbsp; <a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;">razorpay.com/support </a>.</p></div>
-      </div>
-
-              </td>
-            </tr>
-
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
-      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-        <tbody>
-          <tr>
-            <td style="vertical-align:top;padding:0px;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-            <tr>
-              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="card" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><div class="center-align font-size-medium font-color-tertiary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #7B8199;">Thanks & Regards,</div><div class="center-align font-size-medium font-color-secondary" style="text-align: center; font-size: 14px; line-height: 1.5; color: #515978;">Razorpay Team</div></div>
-      </div>
-
-              </td>
-            </tr>
-
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]>
-            </td>
-
-        </tr>
-
-                  </table>
-                <![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]>
-          </td>
-        </tr>
-      </table>
-
-      <table
-         align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-      >
-        <tr>
-          <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-      <![endif]-->
-
-
-      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                <!--[if mso | IE]>
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-
-        <tr>
-
-            <td
-               class="" style="vertical-align:top;width:600px;"
-            >
-          <![endif]-->
-
-      <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-        <tbody>
-          <tr>
-            <td style="vertical-align:top;padding:0px;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-            <tr>
-              <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-      <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-        <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><br></div>
+        <div class="footer" style="width: 85%; max-width: 660px; min-width: 608px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><br></div>
       </div>
 
               </td>
