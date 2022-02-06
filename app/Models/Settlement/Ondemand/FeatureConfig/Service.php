@@ -80,7 +80,7 @@ class Service extends Base\Service
                             }
                             else if ($input[Entity::FULL_ACCESS] === 'no')
                             {
-                                $this->enableFeatureFlag($merchant, $input, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+                                $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
                             }
 
                             $this->createOrUpdateFeatureConfig($input);
@@ -124,12 +124,12 @@ class Service extends Base\Service
         return $result->toArrayWithItems();
     }
 
-    public function enableFeatureFlag($merchant, $input, $feature)
+    public function enableFeatureFlag($merchant, $feature)
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {
             $featureInput = [
-                Feature\Entity::ENTITY_ID   => $input["merchant_id"],
+                Feature\Entity::ENTITY_ID   => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
                 Feature\Entity::NAME        => $feature,
             ];
@@ -238,6 +238,8 @@ class Service extends Base\Service
     public function enableFullESFromRestricted($merchantId)
     {
         $merchant = $this->repo->merchant->find($merchantId);
+
+        $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND);
 
         $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
 

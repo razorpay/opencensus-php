@@ -2922,12 +2922,6 @@ class SettlementOndemandTest extends TestCase
                 'es_pricing_percent'         => 12,
             ]);
 
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
-
         $this->startTest();
 
         $ondemandFeature = $this->getDbEntity('feature',

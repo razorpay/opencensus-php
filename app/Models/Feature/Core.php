@@ -969,8 +969,7 @@ class Core extends Base\Core
     {
         $restrictedEsInvalidAuth = (($feature->getName() === Feature::ES_ON_DEMAND_RESTRICTED) &&
                                     ($feature->getEntityType() === Constants::MERCHANT) &&
-                                    !($this->app['basicauth']->isBatchApp() === true ||
-                                        $this->app['basicauth']->isCron() === true));
+                                    ($this->app['basicauth']->isAdminAuth() === true));
 
         if ($restrictedEsInvalidAuth)
         {
