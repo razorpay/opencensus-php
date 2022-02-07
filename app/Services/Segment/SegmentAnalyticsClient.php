@@ -7,6 +7,7 @@ namespace RZP\Services\Segment;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 use Respect\Validation\Rules\Even;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -57,7 +58,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
             if($eventTimestamp != null)
             {
-                $eventData['timestamp'] = $eventTimestamp;
+                $eventData['timestamp'] = Carbon::createFromTimestamp($eventTimestamp, Timezone::IST)->toISOString(true);
             }
 
             $this->pushEvent($merchant, $eventData);
@@ -105,11 +106,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
             if($eventTimestamp != null)
             {
-                $eventData['timestamp'] = $eventTimestamp;
+                $eventData['timestamp'] = Carbon::createFromTimestamp($eventTimestamp, Timezone::IST)->toISOString(true);
             }
             else if($this->isEventXEvent($eventName) === false)
             {
-                $eventData['timestamp'] = Carbon::now()->getTimestamp();
+                $eventData['timestamp'] = Carbon::now(Timezone::IST)->toISOString(true);
             }
 
             $this->pushEvent($merchant, $eventData);
