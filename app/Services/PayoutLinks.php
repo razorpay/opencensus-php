@@ -242,34 +242,24 @@ class PayoutLinks
         return $response;
     }
 
-    protected function prepareActionInput(array $input, string $payoutLinkId, MerchantEntity $merchant, UserEntity $user, string $userRole) {
+    protected function prepareActionInput(array $input, string $payoutLinkId, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
 
         $input[self::MERCHANT_ID] = $merchant->getMerchantId();
 
-        $input[self::USER_DETAILS] = [
-            self::USER_ID       => $user->getUserId(),
-            self::USER_ROLE     => $userRole,
-            self::USER_EMAIL    => $user->getEmail(),
-            self::USER_NAME     => $user->getName(),
-            self::USER_TYPE     => self::USER
-        ];
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
 
         return $input;
     }
 
-    protected function prepareBulkActionInput(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole) {
+    protected function prepareBulkActionInput(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
+    {
         $input[self::MERCHANT_ID] = $merchant->getMerchantId();
 
         $input[self::USER_ID] = $user->getUserId();
 
-        $input[self::USER_DETAILS] = [
-            self::USER_ID       => $user->getUserId(),
-            self::USER_ROLE     => $userRole,
-            self::USER_EMAIL    => $user->getEmail(),
-            self::USER_NAME     => $user->getName(),
-            self::USER_TYPE     => self::USER
-        ];
+        $input[self::USER_DETAILS] = $this->getUserDetails($user, $userRole);
 
         return $input;
     }
@@ -285,14 +275,6 @@ class PayoutLinks
 
     public function rejectPayoutLink(string $payoutLinkId, array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_REJECT_WORKFLOW,
-            [
-                $payoutLinkId,
-                $merchant->getMerchantId(),
-                $user->getUserId(),
-                $userRole
-            ]);
-
         $url = $this->getConstructedUrl(self::REJECT_WORKFLOW_PATH);
 
         $input = $this->prepareActionInput($input, $payoutLinkId, $merchant, $user, $userRole);
