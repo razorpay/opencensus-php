@@ -113,10 +113,6 @@ export default class PaymentLinkCreateV2 extends React.Component {
   prepareDataForPaymentLinkCreation() {
     const promiseList = [];
 
-    if (!this.props.user.isVirtualAccountsEnabled) {
-      this.enableVAFeature();
-    }
-
     const searchQuery = getURLQueryParams(this.props.location.search);
     if (searchQuery.duplicate_id) {
       promiseList.push(this.fetchIfIntentDuplicate(searchQuery.duplicate_id));
@@ -132,34 +128,6 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
     return Promise.all(promiseList);
   }
-
-  enableVAFeature = () => {
-    // To Use UPI BE internally uses the VA
-    const FEATURE = 'virtual_accounts';
-
-    if (this.props.isTestMode) {
-      return this.props
-        .updateFeatures(
-          {
-            features: {
-              [FEATURE]: 1,
-            },
-          },
-          this.props.user.current,
-        )
-        .then(() => {
-          this.props.updateUserFeatures(FEATURE, true);
-        });
-    }
-
-    return this.props
-      .saveOnboarding(FEATURE, {
-        business_model: this.props.user.business_model,
-      })
-      .then(() => {
-        this.props.updateUserFeatures(FEATURE, true);
-      });
-  };
 
   // Duplicate Payment Link
   fetchIfIntentDuplicate = (duplicatePLId) => {
