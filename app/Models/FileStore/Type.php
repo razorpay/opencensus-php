@@ -178,6 +178,10 @@ class Type
 
     const UCO_NETBANKING_REFUND             = 'uco_netbanking_refund';
 
+    const HDFC_CORP_NETBANKING_CLAIMS       = 'hdfc_corp_netbanking_claims';
+
+    const HDFC_CORP_NETBANKING_REFUNDS      = 'hdfc_corp_netbanking_refunds';
+
     const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
     const BULK_DISPUTES_FILE                = 'bulk_disputes_file';
@@ -381,6 +385,8 @@ class Type
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
             self::UCO_NETBANKING_REFUND,
+            self::HDFC_CORP_NETBANKING_CLAIMS,
+            self::HDFC_CORP_NETBANKING_REFUNDS,
         ],
 
         Constants\Entity::BATCH => [
@@ -554,6 +560,8 @@ class Type
         self::DATA_LAKE_SEGMENT_FILE,
         self::RECON_INPUT,
         self::BULK_FRAUD_NOTIFICATION,
+        self::HDFC_CORP_NETBANKING_REFUNDS,
+        self::HDFC_CORP_NETBANKING_CLAIMS,
     ];
 
     /**
@@ -707,6 +715,8 @@ class Type
             self::BDBL_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
             self::UCO_NETBANKING_REFUND,
+            self::HDFC_CORP_NETBANKING_REFUNDS,
+            self::HDFC_CORP_NETBANKING_CLAIMS,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

@@ -53,6 +53,7 @@ class Base extends BaseProcessor
         Constants::INDUSIND,
         Constants::BDBL,
         Constants::UCO,
+        Constants::HDFC_CORP,
     ];
 
     public function fetchEntities(): PublicCollection

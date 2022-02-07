@@ -2865,6 +2865,7 @@ class Gateway
         IFSC::BDBL => Gateway::NETBANKING_BDBL,
         IFSC::UCBA => Gateway::NETBANKING_UCO,
         IFSC::TMBL => Gateway::NETBANKING_TMB,
+        Netbanking::HDFC_C =>Gateway::NETBANKING_HDFC,
     ];
 
     /**

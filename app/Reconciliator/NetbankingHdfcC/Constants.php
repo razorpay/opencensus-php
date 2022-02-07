@@ -36,4 +36,35 @@ class Constants
         self::COLUMN_PAYMENT_DATE,
         self::ERROR_DESCRIPTION,
     ];
+
+    const REFUND_FILE_HEADERS = [
+        'Sr.No.',
+        'Refund Id',
+        'Bank Id',
+        'Merchant Name',
+        'Txn Date',
+        'Refund Date',
+        'Bank Merchant Code',
+        'Bank Ref No.',
+        'PGI Reference No.',
+        'Txn Amount (Rs Ps)',
+        'Refund Amount (Rs Ps)',
+        'Bank Account No.',
+        'Bank Pay Type',
+        'PGI Bank Id',
+        'Txn Currency Code'
+    ];
+
+    const CLAIM_FILE_HEADERS = [
+        'Sr No.',
+        'Line No.',
+        'Record Line',
+        'PGIRefNo',
+        'BankRefNo',
+        'TxnAmount',
+        'TxnDate',
+        'BillerId',
+        'MeBankId',
+        'AuthStatus'
+    ];
 }

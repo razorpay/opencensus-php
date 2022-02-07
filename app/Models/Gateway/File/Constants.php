@@ -65,6 +65,8 @@ class Constants
     const UCO              = 'uco';
     const ICICI_EMI        = 'icici_emi';
     const HSBC             = 'hsbc';
+    const HDFC_CORP        = 'hdfc_corp';
+
     const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
     const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
     const ENACH_NB_ICICI                    = 'enach_nb_icici';  // deprecated
@@ -98,6 +100,7 @@ class Constants
             self::HDFC_EMANDATE,
             self::UPI_SBI,
             self::ICICI_EMI,
+            self::HDFC_CORP,
         ],
         Type::CLAIM => [
         ],
@@ -152,6 +155,7 @@ class Constants
             self::NSDL,
             self::BDBL,
             self::UCO,
+            self::HDFC_CORP,
         ],
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING,
@@ -226,6 +230,7 @@ class Constants
             self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::AUBL          => ['ausf-netbanking-refunds@razorpay.com'],
             self::ICICI_EMI     => ['icicicards.emi@razorpay.com'],
+            self::HDFC_CORP     => [],
         ],
 
         Type::COMBINED => [
@@ -268,6 +273,7 @@ class Constants
             self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
             self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com'],
             self::UCO         => ['uco-netbanking-refunds@razorpay.com'],
+            self::HDFC_CORP   => [],
         ],
 
         Type::EMANDATE_REGISTER => [
