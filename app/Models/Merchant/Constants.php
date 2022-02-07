@@ -316,6 +316,17 @@ final class Constants
     ];
 
     /**
+     * Partner types that are allowed to have referral links
+     *
+     * @var array
+     */
+    public static $referralPartnerTypes = [
+        self::RESELLER,
+        self::AGGREGATOR,
+        self::FULLY_MANAGED,
+    ];
+
+    /**
      * Step Map gives information on attributes filled by merchant Step wise.
      * this is used to let merchant know what all the steps are finished and
      * can continue from where merchant left the activation form.

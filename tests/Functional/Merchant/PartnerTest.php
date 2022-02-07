@@ -346,6 +346,12 @@ class PartnerTest extends OAuthTestCase
 
         $this->startTest($testData);
 
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
+
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, $liveMode);
 
         $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
@@ -2001,6 +2007,12 @@ class PartnerTest extends OAuthTestCase
 
         $this->startTest();
 
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
+
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
@@ -2057,6 +2069,12 @@ class PartnerTest extends OAuthTestCase
 
         $this->startTest();
 
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
+
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
@@ -2076,9 +2094,17 @@ class PartnerTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        //check if no referral links are created for the pure platform partner
+        $this->assertNull($this->checkReferrals($merchantId, 'banking', Mode::TEST));
+        $this->assertNull($this->checkReferrals($merchantId, 'primary', Mode::TEST));
+        $this->assertNull($this->checkReferrals($merchantId, 'banking', Mode::LIVE));
+        $this->assertNull($this->checkReferrals($merchantId, 'primary', Mode::LIVE));
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
@@ -2122,6 +2148,12 @@ class PartnerTest extends OAuthTestCase
         $testData = $this->testData['testUpdatePartnerTypeAsResellerUsingProxyAuth'];
 
         $this->runRequestResponseFlow($testData);
+
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
@@ -2204,6 +2236,12 @@ class PartnerTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
+
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
         $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
@@ -2233,6 +2271,8 @@ class PartnerTest extends OAuthTestCase
 
         $now = Carbon::now()->getTimestamp();
 
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
                                         [
                                             'activated'    => true,
@@ -2250,6 +2290,12 @@ class PartnerTest extends OAuthTestCase
         $testData = $this->testData['testUpdatePartnerTypeAsPurePlatformUsingProxyAuth'];
 
         $this->runRequestResponseFlow($testData);
+
+        //check if no referral links are created for the pure platform partner
+        $this->assertNull($this->checkReferrals($merchantId, 'banking', Mode::TEST));
+        $this->assertNull($this->checkReferrals($merchantId, 'primary', Mode::TEST));
+        $this->assertNull($this->checkReferrals($merchantId, 'banking', Mode::LIVE));
+        $this->assertNull($this->checkReferrals($merchantId, 'primary', Mode::LIVE));
 
         $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
 
@@ -2760,5 +2806,15 @@ class PartnerTest extends OAuthTestCase
         $this->app->instance('salesforce', $salesforceClientMock);
 
         $salesforceClientMock->expects($this->exactly($count))->method($method);
+    }
+
+    private function checkReferrals(string $merchantId, string $product, string $mode = Mode::TEST)
+    {
+        $bankingReferral = $this->getDbEntity('referrals',
+            [
+                'merchant_id' => $merchantId , 'product' => $product
+            ], $mode);
+
+        return $bankingReferral;
     }
 }

@@ -2828,6 +2828,13 @@ class Core extends Base\Core
                     $this->createReferredAppAndPartnerConfigForManaged($merchant);
                 }
 
+                $partnerType = $merchant->getPartnerType();
+
+                if(in_array($partnerType, Constants::$referralPartnerTypes) === true)
+                {
+                    (new Referral\Core)->createOrFetch($merchant);
+                }
+
                 $dimensionsForMerchantApplication = [
                     Entity::PARTNER_TYPE => $merchant->getPartnerType(),
                     'application_type'   => $applicationType
