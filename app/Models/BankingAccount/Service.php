@@ -329,7 +329,7 @@ class Service extends Base\Service
                 ($balance->getAccountType() === Balance\AccountType::SHARED))
             {
                 // Only call ledger when "ledger_journal_reads" is enabled on the merchant.
-                if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true)
+                if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
                 {
                     $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $ba->getPublicId());
                     if (empty($ledgerResponse) === false)

@@ -478,7 +478,7 @@ class Entity extends Base\PublicEntity
             $balance = $balance - $this->getLockedBalance();
 
             // call ledger when "ledger_journal_reads" is enabled on the merchant.
-            if ($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true)
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
             {
                 $accountNumber = $this->getAccountNumber();
 

@@ -57,7 +57,7 @@ class Service extends Transaction\Service
 
         // In case feature flag is added to the merchant and it is a shared banking balance,
         // only in that case ledger service will be called.
-        if (($this->ledgerStatementService->isLedgerJournalReadsEnabled() === true) &&
+        if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) &&
             ($this->merchant->sharedBankingBalance !== null))
         {
             $ledgerTransaction = $this->ledgerStatementService->fetchFromLedger($id);

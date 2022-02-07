@@ -534,7 +534,7 @@ class Core extends Base\Core
 
         if (($balance->isAccountTypeShared() === true) &&
             ($balance->isTypeBanking() === true) &&
-            ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true))
+            ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true))
         {
             $accountNumber = $balance->getAccountNumber();
 

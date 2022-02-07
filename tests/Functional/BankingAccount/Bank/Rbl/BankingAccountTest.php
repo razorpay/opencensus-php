@@ -3826,7 +3826,7 @@ class BankingAccountTest extends TestCase
                 'channel'        => 'icici',
             ]);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
         $this->ba->proxyAuth();
 

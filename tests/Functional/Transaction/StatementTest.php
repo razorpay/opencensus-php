@@ -249,7 +249,7 @@ class StatementTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/transactions/' . $transaction->getPublicId();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
         $this->ba->privateAuth();
         $response = $this->startTest();

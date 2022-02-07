@@ -3179,7 +3179,7 @@ class Core extends Base\Core
 
         // Calling ledger when merchant has "ledger_journal_reads" feature flag enabled
         // and balance is of type "shared".
-        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true) &&
+        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) &&
             ($accountType === Merchant\Balance\AccountType::SHARED))
         {
             $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccountId);

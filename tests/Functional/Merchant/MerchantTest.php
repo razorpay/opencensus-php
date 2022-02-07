@@ -10186,7 +10186,7 @@ IFSC Code  ICIC0001206
         $user = $this->fixtures->user->createUserForMerchant('10000000000001', [], 'owner', 'test');
 
         $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::LEDGER_JOURNAL_READS,
+            'name'        => Feature\Constants::LEDGER_REVERSE_SHADOW,
             'entity_id'   => 10000000000001,
             'entity_type' => 'merchant',
         ]);

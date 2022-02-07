@@ -17943,8 +17943,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
-
         // Setting the redis config as empty initially
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
 

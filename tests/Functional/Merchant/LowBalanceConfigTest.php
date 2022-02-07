@@ -996,8 +996,6 @@ class LowBalanceConfigTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_READS]);
-
         Mail::fake();
 
         $this->setLimitViaRedisKeyForFetchingConfigs(1);

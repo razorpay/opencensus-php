@@ -73,14 +73,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Returns whether LEDGER_JOURNAL_READS feature flag is true for a merchant.
-     * @return bool
-     */
-    public function isLedgerJournalReadsEnabled(): bool {
-        return $this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === true;
-    }
-
-    /**
      * Calling ledger service to fetch transactions. Here, txn_id is used to
      * fetch journal since txn_id is journal_id at ledger.
      * After fetching journal, attaching the source entity fields of payouts, reversal,
