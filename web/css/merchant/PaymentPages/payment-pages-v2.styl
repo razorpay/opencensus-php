@@ -315,7 +315,7 @@
   .Modal-container
     width: 400px
     margin: 12px 0
-    overflow: auto
+    overflow: visible // prevents tooltips from getting clipped
     height: 600px
     @media (max-width: $screen-xs-max)
       width: 100%
@@ -1359,6 +1359,13 @@
   width: 325px
   top: 300px !important
   z-index: 5
+  left: 40% !important
+
+  @media (max-width: 1400px)
+    left: 35% !important
+
+  @media screen and (max-width: 767px)
+    left: 50% !important
 
   .modal-header
     padding: 24px 24px 0
@@ -1392,6 +1399,8 @@
 
 .Modal-container--Paymentpage-shiprocket-fields-preview
   transform: none !important
+  @media screen and (max-width: $screen-xs-max)
+    display: none
 
   .UI-form
     padding: 0px 30px 24px

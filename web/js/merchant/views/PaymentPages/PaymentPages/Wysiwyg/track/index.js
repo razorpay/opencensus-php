@@ -144,6 +144,18 @@ function _track() {
         sendToSegment('settings', `create hyperlink`);
       },
       clickExpiryDate: () => sendToSegment('settings expiry', 'added'),
+      clickShiprocketEnable: () => {
+        sendToSegment('settings', 'shiprocket enable');
+      },
+      clickShiprocketEnableConfirm: () => {
+        sendToSegment('settings', 'shiprocket enable confirm');
+      },
+      clickShiprocketDisable: () => {
+        sendToSegment('settings', 'shiprocket disable');
+      },
+      clickShiprocketDisableConfirm: () => {
+        sendToSegment('settings', 'shiprocket disable confirm');
+      },
     },
 
     success: {
@@ -232,6 +244,12 @@ function _track() {
       deleteGoalTracker: (isExisting) => {
         sendToLumberjack('goal_tracker.delete_button', { is_new: !isExisting ? '1' : '0' });
         sendToSegment('goal tracker', 'delete button', { is_new: !isExisting ? '1' : '0' });
+      },
+      clickPageSettingsViaSRField: () => {
+        sendToSegment('form section field', 'page settings'); // for shiprocket fields
+      },
+      clickShiprocketDocsLink: () => {
+        sendToSegment('form section field', 'page settings'); // for shiprocket fields
       },
     },
 

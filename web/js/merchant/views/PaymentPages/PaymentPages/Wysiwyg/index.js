@@ -803,6 +803,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       },
     });
     this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
+
+    track.settings.clickShiprocketEnableConfirm();
   };
 
   removeShiprocket = () => {
@@ -822,6 +824,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
     this.props.replaceInFormItems(MODIFIED_FORM_ITEMS);
     this.closeShiprocketModal();
+
+    track.settings.clickShiprocketDisableConfirm();
   };
 
   debouncedHandleModalPosition = debounce(() => this.handleModalPosition(), 100);
@@ -867,6 +871,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           this.closeShiprocketModal();
         },
       });
+
+      track.settings.clickShiprocketDisable();
     } else {
       // turning SR on
 
@@ -878,6 +884,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
         window.addEventListener('resize', this.debouncedHandleModalPosition);
       });
+      track.settings.clickShiprocketEnable();
     }
   };
 

@@ -341,7 +341,20 @@ export default class PaymentPageSettings extends React.Component {
                     <div class="cta-section">
                       <div class="body">
                         After your customers pay on this page, automatically create orders on
-                        Shiprocket
+                        Shiprocket{' '}
+                        <span>
+                          <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                          <Popover
+                            align="top"
+                            theme="dark"
+                            parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                          >
+                            <PopoverBody>
+                              Shiprocket is an eCommerce shipping solution, known for low shipping
+                              rates and wide reach
+                            </PopoverBody>
+                          </Popover>
+                        </span>
                       </div>
                       <span class="action">
                         <Button.Transparent
