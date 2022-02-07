@@ -25,7 +25,7 @@ import {
 const tabTitle = {
   [WEBSITE_DETAILS]: 'Website Clarifications',
   [MERCHANT_DOCUMENTS]: 'Document Clarifications',
-  [MERCHANT_DETAILS]: 'Other Clarifications',
+  [MERCHANT_DETAILS]: 'Onboarding Clarifications',
 };
 
 const config = {
