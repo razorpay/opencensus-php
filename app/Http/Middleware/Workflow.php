@@ -25,6 +25,7 @@ class Workflow
     // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
     // the code.
     const EXCLUDED_PERMISSIONS = [
+        Permission::EDIT_THROTTLE_SETTINGS,
         Permission::EDIT_MERCHANT_METHODS,
         Permission::ASSIGN_MERCHANT_BANKS,
         Permission::ADD_MERCHANT_CREDITS,

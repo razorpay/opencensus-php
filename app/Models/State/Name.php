@@ -34,6 +34,7 @@ class Name
         self::EXECUTED,
         self::OPEN,
         self::CLOSED,
+        self::FAILED,
 
         // Activation Action States
         Status::ACTIVATED_MCC_PENDING,

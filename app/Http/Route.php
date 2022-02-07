@@ -2696,8 +2696,8 @@ class Route
         'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
         'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
 
-        'edge_list_services'                      => ['get',      'edge/services',                                             'EdgeThrottleController@getServices'                        ],
-        'edge_list_routes'                        => ['get',      'edge/service/{service}/routes',                             'EdgeThrottleController@getRoutes'                          ],
+        'edge_list_services'                      => ['get',      'edge/services',                                             'EdgeThrottleController@listServices'                       ],
+        'edge_list_routes'                        => ['get',      'edge/service/{service}/routes',                             'EdgeThrottleController@listRoutes'                         ],
         'edge_create_rate_limit_rule'             => ['post',     'edge/rate_limiter/rule',                                    'EdgeThrottleController@createRule'                         ],
         'edge_list_rate_limit_rules'              => ['get',      'edge/rate_limiter/rules',                                   'EdgeThrottleController@listRules'                          ],
         'edge_update_rate_limit_rule'             => ['patch',    'edge/rate_limiter/rule/{id}',                               'EdgeThrottleController@updateRule'                         ],

@@ -4286,6 +4286,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EDGE_RATE_LIMITER_ERROR                               = 'EDGE_RATE_LIMITER_ERROR';
     const EDGE_RATE_LIMITER_REQUEST                             = 'EDGE_RATE_LIMITER_REQUEST';
 
+    const EDGE_CONTROLLER_WORKFLOW_REQUEST                      = 'EDGE_CONTROLLER_WORKFLOW_REQUEST';
+    const EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST               = 'EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST';
+
     // Api<>credcase integration.
     const CREDCASE_REQUEST_FAILED                               = 'CREDCASE_REQUEST_FAILED';
     const CREDCASE_OUTBOX_REQUEST_MIGRATE                       = 'CREDCASE_OUTBOX_REQUEST_MIGRATE';

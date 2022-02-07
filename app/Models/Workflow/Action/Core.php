@@ -934,7 +934,11 @@ class Core extends Base\Core
 
             $internalResponse = $controller->$functionName(...array_values($routeParams));
 
-            if ($internalResponse->getStatusCode() !== 200)
+            //
+            // consider all non 2xx as failures
+            //
+            if (($internalResponse->getStatusCode() < 200) and
+                ($internalResponse->getStatusCode() >= 300))
             {
                 $state = State\Name::FAILED;
             }

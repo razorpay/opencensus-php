@@ -23,6 +23,16 @@ use GuzzleHttp\Exception\InvalidArgumentException;
 class EdgeThrottleController extends Controller
 {
     /**
+     * Rate limiter entities definition to use in workflows
+     */
+    CONST ENTITY_RATE_LIMITER_RULE_CREATE   = 'rate_limiter_rule_create';
+    CONST ENTITY_RATE_LIMITER_RULE_UPDATE   = 'rate_limiter_rule_update';
+    CONST ENTITY_RATE_LIMITER_RULE_DELETE   = 'rate_limiter_rule_delete';
+    CONST ENTITY_RATE_LIMITER_LIMIT_CREATE  = 'rate_limiter_limit_create';
+    CONST ENTITY_RATE_LIMITER_LIMIT_UPDATE  = 'rate_limiter_limit_update';
+    CONST ENTITY_RATE_LIMITER_LIMIT_DELETE  = 'rate_limiter_limit_delete';
+
+    /**
      * @var ClientInterface
      */
     protected $httpClient;
@@ -46,7 +56,7 @@ class EdgeThrottleController extends Controller
      *
      * @throws NotFoundException|InvalidArgumentException
      */
-    public function getServices()
+    public function listServices()
     {
         $request = Request::instance();
         $method = $request->method();
@@ -69,7 +79,7 @@ class EdgeThrottleController extends Controller
      * @throws InvalidArgumentException
      * @throws NotFoundException
      */
-    public function getRoutes(string $serviceId)
+    public function listRoutes(string $serviceId)
     {
         $request = Request::instance();
 
@@ -95,19 +105,16 @@ class EdgeThrottleController extends Controller
      */
     public function createRule()
     {
-        $request = Request::instance();
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_CREATE);
 
-        $method = $request->method();
+        $path = $this->rulePathPrefix($input, true) . '/rate-limit-rules';
 
-        $path = $this->rulePathPrefix(false) . '/rate-limit-rules';
-
-        $input = Request::all();
         unset($input['service_id']);
         unset($input['route_id']);
 
         $input['enabled'] = (empty($input['enabled']) === true) ? false : true;
 
-        $response = $this->request($method, $path, $input);
+        $response = $this->request('POST', $path, $input);
 
         return $this->finalizeResponse($response, [
             'service',
@@ -132,7 +139,7 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        $path = $this->rulePathPrefix(true) . '/rate-limit-rules' . $this->constructQueryParam();
+        $path = $this->rulePathPrefix($request, true) . '/rate-limit-rules' . $this->constructQueryParam();
 
         $response = $this->request($method, $path);
 
@@ -157,19 +164,17 @@ class EdgeThrottleController extends Controller
      */
     public function updateRule($id)
     {
-        $request = Request::instance();
-
-        $method = $request->method();
-
-        $path = $this->rulePathPrefix(true) . '/rate-limit-rules/' . $id;
-
         $input = Request::all();
+
+        $path = $this->rulePathPrefix($input, true) . '/rate-limit-rules/' . $id;
+
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_UPDATE, $id, $this->getRule($path));
 
         $body = [
            'enabled' => (empty($input['enabled']) === true) ? false : true,
         ];
 
-        $response = $this->request($method, $path, $body);
+        $response = $this->request('PATCH', $path, $body);
 
         return $this->finalizeResponse($response, [
             'id',
@@ -192,13 +197,13 @@ class EdgeThrottleController extends Controller
      */
     public function deleteRule($id)
     {
-        $request = Request::instance();
+        $request = Request::all();
 
-        $method = $request->method();
+        $path = $this->rulePathPrefix($request, true) . '/rate-limit-rules/' . $id;
 
-        $path = $this->rulePathPrefix(false) . '/rate-limit-rules/' . $id;
+        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_RULE_DELETE, $id, $this->getRule($path));
 
-        $response = $this->request($method, $path);
+        $response = $this->request('DELETE', $path);
 
         return $this->finalizeResponse($response, []);
     }
@@ -213,13 +218,13 @@ class EdgeThrottleController extends Controller
      */
     public function createLimit($ruleId)
     {
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_CREATE);
+
         $request = Request::instance();
 
         $method = $request->method();
 
         $path = '/rate-limits';
-
-        $input = Request::all();
 
         $input['rule'] = [
             'id' => $ruleId,
@@ -285,13 +290,9 @@ class EdgeThrottleController extends Controller
      */
     public function updateLimit($id)
     {
-        $request = Request::instance();
-
-        $method = $request->method();
-
         $path = '/rate-limits/' . $id;
 
-        $input = Request::all();
+        $input = $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_UPDATE, $id, $this->getLimit($path));
 
         // for now we will not let key to be updated from admin dashboard
         unset($input['key']);
@@ -310,7 +311,7 @@ class EdgeThrottleController extends Controller
             $input['config']['bucket']['buffer'] = null;
         }
 
-        $response = $this->request($method, $path, $input);
+        $response = $this->request('PATCH', $path, $input);
 
         return $this->finalizeResponse($response, [
             'id',
@@ -331,13 +332,11 @@ class EdgeThrottleController extends Controller
      */
     public function deleteLimit($id)
     {
-        $request = Request::instance();
-
-        $method = $request->method();
-
         $path = '/rate-limits/' . $id;
 
-        $response = $this->request($method, $path);
+        $this->routeViaWorkflow(self::ENTITY_RATE_LIMITER_LIMIT_DELETE, $id, $this->getLimit($path));
+
+        $response = $this->request('DELETE', $path);
 
         return $this->finalizeResponse($response, []);
     }
@@ -357,14 +356,13 @@ class EdgeThrottleController extends Controller
      * Used only for routes which operates on rate limit rules
      * It'll construct the route path based on the attributes of request body or query param
      *
+     * @param $input
      * @param $serviceOperationAllowed
      * @return string
      * @throws BadRequestException
      */
-    protected function rulePathPrefix($serviceOperationAllowed): string
+    protected function rulePathPrefix($input, $serviceOperationAllowed): string
     {
-        $input = Request::all();
-
         if (isset($input['route_id']) === true)
         {
             return '/routes/' . $input['route_id'];
@@ -516,5 +514,97 @@ class EdgeThrottleController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * lists rate limit rules configured on a service/route.
+     *
+     * @param string $path
+     * @return mixed
+     */
+    protected function getRule(string $path)
+    {
+        $response = $this->request('GET', $path);
+
+        $arrayResponse = json_decode($response->getBody()->getContents(), true);
+
+        return $this->extractKeys($arrayResponse, [
+            'id',
+            'route',
+            'service',
+            'rule',
+            'enabled',
+        ]);
+    }
+
+    /**
+     * lists rate limit rules configured on a service/route.
+     *
+     * @param string $path
+     * @return mixed
+     */
+    protected function getLimit(string $path)
+    {
+        $response = $this->request('GET', $path);
+
+        $arrayResponse = json_decode($response->getBody()->getContents(), true);
+
+        return $this->extractKeys($arrayResponse, [
+            'id',
+            'rule',
+            'key',
+            'config',
+        ]);
+    }
+
+    /**
+     * Route the request via workflow.
+     *
+     * @param string $entity name of the entity which is being updated
+     * @param string|null $id entity id. If not present then use subset of request id
+     * @param array $originalValue
+     * @return array
+     */
+    protected function routeViaWorkflow(string $entity, string $id = null, array $originalValue = [])
+    {
+        $input = Request::all();
+
+        // If the request is triggered via workflow then let it perform the operation
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+        {
+            $this->app['trace']->info(TraceCode::EDGE_CONTROLLER_WORKFLOW_REQUEST, [
+                'input' => $input,
+            ]);
+
+            return $input;
+        }
+
+        //
+        // ID is required to associate with entity while creating workflow.
+        // So in our case when we do create request there won't any id so using request ID as reference
+        //
+        if ($id === null)
+        {
+            $id = $this->app['request']->getId();
+        }
+
+        //
+        // At this point ID could be UUID as per rate limiter configs or request ID
+        // in both the cases, id length is greater 14 characters.
+        // Whereas entity id could be only 14 char hence taking first 14 chars
+        //
+        $id = substr($id,0,14);
+
+        $this->app['trace']->info(TraceCode::EDGE_CONTROLLER_WORKFLOW_CREATE_REQUEST, [
+            'input' => $input,
+        ]);
+
+        $this->app['workflow']
+             ->setEntityAndId($entity, $id)
+             ->handle(
+                 ['data' => json_encode($originalValue, JSON_NUMERIC_CHECK)],
+                 ['data' => json_encode($input, JSON_NUMERIC_CHECK)]);
+
+        return $input;
     }
 }
