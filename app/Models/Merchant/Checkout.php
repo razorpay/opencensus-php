@@ -99,7 +99,7 @@ class Checkout
 
         $data[Entity::METHODS] = (new Methods\Core)->addUpiType($merchant, $data[Entity::METHODS]);
 
-        $this->checkAndFillSavedTokens($input, $merchant, $data, $mode);
+        $this->checkAndFillSavedTokens($input, $merchant, $data,$mode);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
@@ -643,7 +643,7 @@ class Checkout
         }
     }
 
-    protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data ,$mode)
+    protected function checkAndFillSavedTokens(array $input, Entity $merchant, array & $data,$mode )
     {
         // we don't return the customer data if request is jsonp
         if (isset($input['callback']) === true)
@@ -756,7 +756,9 @@ class Checkout
             if ($treatment === 'on')
             {
                 // Unsets Customer email, name and contact if block_customer_prefill experiment is enabled
-                if (isset($data['customer']) === true)
+                if ((isset($data['customer']) === true)
+                    and (isset($input[Payment\Entity::RECURRING]) === true)
+                    and (($input[Payment\Entity::RECURRING]) === '1'))
                 {
                     $data['customer']['email']   = '';
                     $data['customer']['contact'] = '';
@@ -1387,7 +1389,7 @@ class Checkout
             $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
         }
 
-        $this->checkAndFillSavedTokens($input, $merchant, $data ,$mode);
+        $this->checkAndFillSavedTokens($input, $merchant, $data,$mode);
 
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 

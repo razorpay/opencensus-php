@@ -414,6 +414,22 @@ class InvoiceController extends Controller
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
         {
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+
+            // Gets mode per route and sets application & db mode.
+            $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
+
+            // Get razorx treatment
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::BLOCK_PAN_DETAIL_IN_AUTHLINK_HTML,
+                $mode
+            );
+            if (strtolower($variant) === 'on')
+            {
+                unset($data['merchant']['pan']);
+            }
+
             $view = 'invoice.auth_link';
         }
 
