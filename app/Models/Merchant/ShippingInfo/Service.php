@@ -186,7 +186,7 @@ class Service extends Base\Service
                 catch(Throwable $exception)
                 {
                     // Swallowing the exception to allow the request to go through in case merchant call fails
-                    $this->trace->info($exception->getMessage());
+                    $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
 
                     $decodedResponse = ['addresses' => []];
                 }
