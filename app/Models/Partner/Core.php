@@ -314,7 +314,7 @@ class Core extends Detail\Core
 
                     if ($this->canSubmit($input, $response[E::PARTNER_ACTIVATION]) === true)
                     {
-                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $partnerActivation);
+                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $partnerActivation,$input);
 
                         $newPartnerActivationStatus = $response[E::PARTNER_ACTIVATION][Activation\Entity::ACTIVATION_STATUS];
 
@@ -338,13 +338,14 @@ class Core extends Detail\Core
      * @param Merchant\Entity $merchant
      * @param Entity $merchantDetails
      * @param Activation\Entity $partnerActivation
+     * @param array $input
      * @param string $source
      *
      * @return array
      * @throws \Throwable
      */
     public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails,
-                                                Activation\Entity $partnerActivation, string $source = Constants::PARTNER): array
+                                                Activation\Entity $partnerActivation,array $input, string $source = Constants::PARTNER): array
     {
         $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails, $partnerActivation);
 
@@ -352,7 +353,7 @@ class Core extends Detail\Core
 
         if ($source === Constants::PARTNER)
         {
-            $this->attemptPennyTesting($merchantDetails, $merchant);
+            $this->attemptPennyTesting($merchantDetails, $merchant,false,$input);
 
             $this->triggerValidationRequests($merchant, $merchantDetails);
         }

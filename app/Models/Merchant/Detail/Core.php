@@ -284,10 +284,10 @@ class Core extends Base\Core
             //Calling App Checker Service during onboarding
             (new HealthChecker\Core())->notifyRiskChecker(
                 $merchant->getId(), HealthCheckerConstants::PERFORM_HEALTH_CHECK_JOB, [
-                    HealthCheckerConstants::RETRY_COUNT_KEY          => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
-                    HealthCheckerConstants::EVENT_TYPE               => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
-                    HealthCheckerConstants::CHECKER_TYPE             => HealthCheckerConstants::APP_CHECKER,
-                ]
+                                      HealthCheckerConstants::RETRY_COUNT_KEY          => HealthCheckerConstants::MAX_RISK_CHECK_RETRIES,
+                                      HealthCheckerConstants::EVENT_TYPE               => HealthCheckerConstants::ONBOARDING_CHECKER_EVENT,
+                                      HealthCheckerConstants::CHECKER_TYPE             => HealthCheckerConstants::APP_CHECKER,
+                                  ]
             );
         }
 
@@ -312,7 +312,9 @@ class Core extends Base\Core
 
         $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
-        $this->attemptPennyTesting($merchantDetails, $merchant);
+        $this->attemptPennyTesting($merchantDetails, $merchant, false, $input);
+
+        $this->triggerSyncValidationRequests($merchant, $merchantDetails);
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -358,17 +360,6 @@ class Core extends Base\Core
                     {
                         $response = $this->updateActivationProgress($merchant);
                     }
-
-                    $data = [
-                        StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
-                        ConfigKey::MERCHANT_DETAILS => $merchantDetails->toArray()
-                    ];
-
-                    $core=new StoreCore();
-
-                    $data = $core->updateMerchantStore($merchantDetails->getMerchantId(),
-                                                       $data,
-                                                       StoreConstants::INTERNAL);
 
                     return $response;
                 });
@@ -586,7 +577,7 @@ class Core extends Base\Core
             ],
         ];
 
-        $bvsValidation = (new AutoKyc\Bvs\Core())->verify($merchantDetails->getId(), $payload);
+        $bvsValidation = (new AutoKyc\Bvs\Core($merchant, $merchantDetails))->verify($merchantDetails->getId(), $payload);
     }
 
     public function canActivateMerchant(DetailEntity $merchantDetails, $isRiskyMerchant)
@@ -981,6 +972,8 @@ class Core extends Base\Core
         //
         $this->verifyCINDetailsIfApplicable($merchantDetails, $merchant, $input);
 
+        $this->triggerSyncValidationRequests($merchant, $merchantDetails);
+
         $this->validateEmailVerificationIfApplicable($merchant);
 
         return $this->transactionInstantActivationDetails($input,$merchantDetails, $merchant);
@@ -1141,8 +1134,8 @@ class Core extends Base\Core
     public function isRasSignupFraudMerchant($merchantId): bool
     {
         return (empty($this->app['cache']->connection()->hget(
-            MerchantRiskAlert\Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
-            === false);
+                MerchantRiskAlert\Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
+                === false);
     }
 
     /**
@@ -1361,13 +1354,13 @@ class Core extends Base\Core
 
         $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
             $dependentFields,
+            $requiredFields,
             $input,
             Entity::POI_VERIFICATION_STATUS,
             [POIStatus::FAILED],
             $merchant->getId());
 
-        if (($isAutoKycAttemptRequired === false) or
-            ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false))
+        if ($isAutoKycAttemptRequired === false)
         {
             return;
         }
@@ -1375,14 +1368,7 @@ class Core extends Base\Core
         $this->updateDocumentVerificationStatus(
             $merchant, $merchantDetails,Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
 
-        // don't trigger bvs request for no-doc onboarding until form is locked
-        if($merchant->isNoDocOnboardingEnabled() === true)
-        {
-            return;
-        }
 
-        //call to bvs for personal pan before l1 submission
-        (new requestDispatcher\PersonalPan($merchant, $merchantDetails))->triggerBVSRequest();
     }
 
     /**
@@ -1412,28 +1398,18 @@ class Core extends Base\Core
 
         $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
             $dependentFields,
+            $dependentFields,
             $input,
             Entity::COMPANY_PAN_VERIFICATION_STATUS,
             [CompanyPanStatus::FAILED],
             $merchant->getId());
 
-        if (($isAutoKycAttemptRequired === false) or
-            ($this->hasAllRequiredFields($merchantDetails, $input, $dependentFields) === false))
+        if ($isAutoKycAttemptRequired === false)
         {
             return;
         }
 
         $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::BUSINESS_PAN);
-
-
-        // don't trigger BVS request for no-doc onboarding until form is locked
-        if($merchant->isNoDocOnboardingEnabled() === true)
-        {
-            return;
-        }
-
-        //call to bvs for company pan before l1 submission
-        (new requestDispatcher\CompanyPan($merchant, $merchantDetails))->triggerBVSRequest();
     }
 
     /**
@@ -1592,7 +1568,7 @@ class Core extends Base\Core
         $newReasons                        = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
 
         if((empty($existingClarificationReasonsV2) === true)
-            && ((empty($existingReasons) === false) || (empty($existingAdditionalDetails) === false))) {
+           && ((empty($existingReasons) === false) || (empty($existingAdditionalDetails) === false))) {
             //add existing clarificationReasons And AdditionalDetails in clarification_reasons_v2
             $existingClarificationReasonsV2 = $this->getClarificationReasonsV2($existingReasons ?? [],$existingAdditionalDetails ?? []);
             $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] = $existingClarificationReasonsV2;
@@ -1693,7 +1669,7 @@ class Core extends Base\Core
                                 $currNcCount = $value[Merchant\Constants::NC_COUNT];
                                 if(in_array($currNcCount.'$'.$value[Entity::CREATED_AT],$ncCountReferenceArray[$related_field]) === false){
                                     array_push($value[NCConstants::RELATED_FIELDS], [
-                                            Merchant\Constants::FIELD_NAME => $related_field,
+                                        Merchant\Constants::FIELD_NAME => $related_field,
                                     ]);
                                 }
                             }
@@ -3004,26 +2980,26 @@ class Core extends Base\Core
                 'isUnderReview' => !$isDedupeBlocked
             ];
 
-        $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
-        $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
-        $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
-        $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
-        $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
-        $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
-        $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
-        $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
-        $response['dedupe']                                     = $dedupe;
-        $response['isDedupe']                                   = $isDedupeBlocked;
-        $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
-        $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
-        $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
-        $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
-        $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
+            $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
+            $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
+            $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
+            $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
+            $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
+            $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
+            $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
+            $response[Entity::MERCHANT_VERIFICATION_DETAIL]         = $merchantDetails->verificationDetail;
+            $response['dedupe']                                     = $dedupe;
+            $response['isDedupe']                                   = $isDedupeBlocked;
+            $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
+            $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
+            $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
+            $response[Entity::MERCHANT_BUSINESS_DETAIL]             = $merchantBusinessDetails;
+            $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
 
-        if(empty($merchantDetails->getKycClarificationReasons()) === false)
-        {
-            $response[Entity::KYC_CLARIFICATION_REASONS] = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
-        }
+            if(empty($merchantDetails->getKycClarificationReasons()) === false)
+            {
+                $response[Entity::KYC_CLARIFICATION_REASONS] = $this->getUpdatedKycClarificationReasons([], $merchantDetails->getMerchantId());
+            }
 
             return $response;
         });
@@ -3433,25 +3409,40 @@ class Core extends Base\Core
     {
         $this->attemptPennyTesting($merchantDetails, $merchant, $bankDetailsUpdated);
     }
+
     /**
      * @param Entity $merchantDetails
      * @param Merchant\Entity $merchant
      *
+     * @param array           $input
      * @param bool $bankDetailsUpdated
+     *
      * @throws Exception\InvalidPermissionException
      * @throws LogicException
      */
-    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated=false)
+    protected function attemptPennyTesting(Entity $merchantDetails, Merchant\Entity $merchant, $bankDetailsUpdated = false, array $input = [])
     {
         if($merchant->isLinkedAccount() === true and
-            $merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
+           $merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === false)
         {
             return;
         }
 
+        $requiredFields = [
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_BRANCH_IFSC
+        ];
+
+        $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired($requiredFields,
+                                                                    $requiredFields,
+                                                                    $input,
+                                                                    DetailEntity::BANK_DETAILS_VERIFICATION_STATUS,
+                                                                    [BvsValidationConstants::FAILED],
+                                                                    $merchant->getId());
+
         if (($merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED or
              $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
-            $this->hasBankDetailsChanged($merchantDetails) === false)
+            $isAutoKycAttemptRequired === false)
         {
             return;
         }
@@ -3463,7 +3454,7 @@ class Core extends Base\Core
         }
 
         if ((new Merchant\Core())->isAutoKycEnabled($merchantDetails, $merchant) === false and
-                $merchant->isLinkedAccount() === false)
+            $merchant->isLinkedAccount() === false)
         {
             return;
         }
@@ -3492,45 +3483,13 @@ class Core extends Base\Core
             return;
         }
 
-        $requiredFields = [
-            Entity::BANK_ACCOUNT_NUMBER,
-            Entity::BANK_BRANCH_IFSC
-        ];
-
-        if ($this->hasFieldsChanged($merchantDetails,$requiredFields) or
+        if ($isAutoKycAttemptRequired === true or
             ($pennyTestingAttemptsCount == 0 and $merchantDetails->isSubmitted()===false) or
             $bankDetailsUpdated === true)
         {
+
             $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Entity::BANK_ACCOUNT_NUMBER);
         }
-
-        $isKarzaVerificationEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
-            $merchant->getId(),
-            RazorxTreatment::KARZA_BANK_ACCOUNT_VERIFICATION);
-
-        if (($isKarzaVerificationEnabled === true and
-             $merchant->getOrgId() === Org\Entity::RAZORPAY_ORG_ID))
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_BVS_BANK_VERIFICATION,
-                ['merchant_id' => $merchant->getId()]);
-            //call to bvs for Bank Account before L2 submission
-            (new requestDispatcher\BankAccount($merchant, $merchantDetails))->triggerBVSRequest();
-
-        }
-    }
-
-    public function hasBankDetailsChanged($merchantDetails)
-    {
-        $existingMerchantDetails = $this->repo->merchant_detail->findOrFail($merchantDetails->getId());
-
-        if ($merchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) === $existingMerchantDetails->getAttribute(Entity::BANK_BRANCH_IFSC) and
-            $merchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER) === $existingMerchantDetails->getAttribute(Entity::BANK_ACCOUNT_NUMBER))
-        {
-            return false;
-        }
-
-        return true;
     }
 
 
@@ -3656,7 +3615,7 @@ class Core extends Base\Core
         if (($isImpersonated === false) and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
-                return Status::ACTIVATED_MCC_PENDING;
+            return Status::ACTIVATED_MCC_PENDING;
         }
 
         return Status::UNDER_REVIEW;
@@ -3718,7 +3677,7 @@ class Core extends Base\Core
         if ($businessType === BusinessType::PARTNERSHIP and $merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
         {
             $isExperimentEnabledForPartnershipBiz = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                RazorxTreatment::AUTO_KYC_PARTNERSHIP);
+                                                                                                  RazorxTreatment::AUTO_KYC_PARTNERSHIP);
 
             if($isExperimentEnabledForPartnershipBiz === false)
             {
@@ -3777,7 +3736,7 @@ class Core extends Base\Core
         if((in_array($businessType, BusinessType::getCOIApplicableBusinessTypes(), true) === true) && ($type == Constant::CERTIFICATE_OF_INCORPORATION))
         {
             $isExperimentEnabledForCOI = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                RazorxTreatment::AUTO_KYC_COI);
+                                                                                       RazorxTreatment::AUTO_KYC_COI);
 
             $this->trace->info(TraceCode::COI_EXPERIMENT,[
                 "merchantId"                 => $merchantDetails->getMerchantId(),
@@ -4229,6 +4188,7 @@ class Core extends Base\Core
      * this function takes key of the fields and return true if that fields was updated else false
      *
      * @param array  $dependentFields
+     * @param array  $requiredFields
      * @param array  $input
      * @param string $documentVerificationStatusFieldKey
      * @param array  $retriableVerificationStatus
@@ -4238,26 +4198,20 @@ class Core extends Base\Core
      */
     protected function isAutoKycAttemptRequired(
         array $dependentFields,
+        array $requiredFields,
         array $input,
         string $documentVerificationStatusFieldKey,
         array $retriableVerificationStatus,
         string $merchantId)
     {
+        $merchantDetails = $this->repo->merchant_detail->findOrFailPublic($merchantId);
 
-        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+        if ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false)
+        {
+            return false;
+        }
 
         $verificationStatus = $merchantDetails->getAttribute($documentVerificationStatusFieldKey);
-
-        //
-        // Check if document verification status is not already set,
-        // This is for handling backward compatibility test, for few merchant who have filled form before autokyc
-        // Fields won't change but we still need to call
-        //
-
-        if (empty($verificationStatus) === true)
-        {
-            return true;
-        }
 
         if(array_search($verificationStatus, $retriableVerificationStatus, true) !== false)
         {
@@ -4310,7 +4264,7 @@ class Core extends Base\Core
     private function isAadhaarEsignVerificationDone(Entity $merchantDetails)
     {
         $merchantDetails->load('stakeholder');
-        
+
         $stakeholder = $merchantDetails->stakeholder;
 
         if(empty($stakeholder) === true)
@@ -4570,18 +4524,13 @@ class Core extends Base\Core
 
         $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
             $dependentFields,
+            $requiredFields,
             $input,
             Entity::GSTIN_VERIFICATION_STATUS,
             [GSTINVerificationStatus::FAILED],
             $merchant->getId());
 
-        if (($isAutoKycAttemptRequired === false) or
-            ($this->hasAllRequiredFields($merchantDetails, $input, $requiredFields) === false))
-        {
-            return;
-        }
-
-        if( $this->hasFieldsChanged($merchantDetails, $requiredFields) === false)
+        if ($isAutoKycAttemptRequired === false)
         {
             return;
         }
@@ -4594,36 +4543,8 @@ class Core extends Base\Core
         ];
         $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
 
-        //call to bvs for gstin before l1 submission
-        (new requestDispatcher\GstinAuth($merchant, $merchantDetails))->triggerBVSRequest();
-    }
-
-    public function hasFieldsChanged(Entity $merchantDetails, array $requiredFields)
-    {
-        $keys = [
-            ConfigKey::MERCHANT_DETAILS
-        ];
-
-        $data = (new StoreCore())->fetchValuesFromStore($merchantDetails->getMerchantId(),
-                                                        ConfigKey::ONBOARDING_NAMESPACE,
-                                                        $keys,
-                                                        StoreConstants::INTERNAL);
-
-        if (empty($data) === true or empty($data[ConfigKey::MERCHANT_DETAILS])===true)
-        {
-            return true;
         }
 
-        foreach ($requiredFields as $field)
-        {
-            if ($merchantDetails->getAttribute($field) !== $data[ConfigKey::MERCHANT_DETAILS][$field])
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * @param Entity $merchantDetail
@@ -4681,22 +4602,16 @@ class Core extends Base\Core
 
         $isAutoKycAttemptRequired = $this->isAutoKycAttemptRequired(
             $dependentFields,
+            $dependentFields,
             $input,
             Entity::CIN_VERIFICATION_STATUS,
             [CinVerificationStatus::FAILED],
             $merchant->getId());
 
-        if (($isAutoKycAttemptRequired === false) or
-            ($this->hasAllRequiredFields($merchantDetails, $input, $dependentFields) === false))
+        if (($isAutoKycAttemptRequired === false))
         {
             return;
         }
-
-        if( $this->hasFieldsChanged($merchantDetails, $dependentFields) === false)
-        {
-            return;
-        }
-
         $this->updateCINorLLPINStatusForBvsVerification($merchant, $merchantDetails);
 
         $eventAttributes = [
@@ -4704,10 +4619,8 @@ class Core extends Base\Core
             'artefact_type' => 'comapny_cin',
             'business_type' => $merchantDetails->getBusinessType()
         ];
-        $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
 
-        (new LlpinAuth($merchant, $merchantDetails))->triggerBVSRequest();
-        (new CinAuth($merchant, $merchantDetails))->triggerBVSRequest();
+        $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::RETRY_INPUT_ACTIVATION_FORM);
     }
 
     /**
@@ -5346,6 +5259,37 @@ class Core extends Base\Core
     }
 
     /**
+     * Triggers validation requests
+     *
+     * @param Merchant\Entity $merchant
+     * @param Entity          $merchantDetails
+     */
+    protected function triggerSyncValidationRequests(Merchant\Entity $merchant, Entity $merchantDetails): void
+    {
+        $factory = new requestDispatcher\Factory();
+
+        $requestCreators = $factory->getSyncBvsRequestDispatchers($merchant, $merchantDetails);
+
+        foreach ($requestCreators as $requestCreator)
+        {
+            try
+            {
+                if ($requestCreator instanceof requestDispatcher\RequestDispatcher)
+                {
+                    $requestCreator->triggerBVSRequest();
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::BVS_VERIFICATION_ERROR, ['message'        => $e->getMessage(),
+                                                                        'merchantId'     => $merchant->getId(),
+                                                                        'requestCreator' => get_class($requestCreator)]);
+
+            }
+        }
+    }
+
+    /**
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
      * @param array           $input
@@ -5679,30 +5623,30 @@ class Core extends Base\Core
         if($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $businessDetailsComment = sprintf(DetailConstants::MERCHANT_BUSINESS_WEBSITE_COMMENT,
-                $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
-                $input[DetailConstants::BUSINESS_WEBSITE_ABOUT_US],
-                $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
-                $input[DetailConstants::BUSINESS_WEBSITE_PRICING_DETAILS],
-                $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
-                $input[DetailConstants::BUSINESS_WEBSITE_TNC],
-                $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
-                $dedupeFlaggedMIDs
+                                              $input[DetailConstants::BUSINESS_WEBSITE_MAIN_PAGE],
+                                              $input[DetailConstants::BUSINESS_WEBSITE_ABOUT_US],
+                                              $input[DetailConstants::BUSINESS_WEBSITE_CONTACT_US],
+                                              $input[DetailConstants::BUSINESS_WEBSITE_PRICING_DETAILS],
+                                              $input[DetailConstants::BUSINESS_WEBSITE_PRIVACY_POLICY],
+                                              $input[DetailConstants::BUSINESS_WEBSITE_TNC],
+                                              $input[DetailConstants::BUSINESS_WEBSITE_REFUND_POLICY],
+                                              $dedupeFlaggedMIDs
             );
 
             if ((empty($input[DetailConstants::BUSINESS_WEBSITE_USERNAME]) === false) and
                 (empty($input[DetailConstants::BUSINESS_WEBSITE_PASSWORD]) === false))
             {
                 $testCredentialComment = sprintf(DetailConstants::MERCHANT_WEBSITE_TEST_CREDENTIAL_COMMENT,
-                    $input[DetailConstants::BUSINESS_WEBSITE_USERNAME],
-                    $input[DetailConstants::BUSINESS_WEBSITE_PASSWORD]
+                                                 $input[DetailConstants::BUSINESS_WEBSITE_USERNAME],
+                                                 $input[DetailConstants::BUSINESS_WEBSITE_PASSWORD]
                 );
             }
         }
         else
         {
             $businessDetailsComment = sprintf(DetailConstants::MERCHANT_APP_URL_COMMENT,
-                $input[DetailConstants::BUSINESS_APP_URL],
-                $dedupeFlaggedMIDs
+                                              $input[DetailConstants::BUSINESS_APP_URL],
+                                              $dedupeFlaggedMIDs
             );
 
             if (
@@ -5710,8 +5654,8 @@ class Core extends Base\Core
                 (empty($input[DetailConstants::BUSINESS_APP_PASSWORD]) === false))
             {
                 $testCredentialComment = sprintf(DetailConstants::MERCHANT_APP_TEST_CREDENTIAL_COMMENT,
-                    $input[DetailConstants::BUSINESS_APP_USERNAME],
-                    $input[DetailConstants::BUSINESS_APP_PASSWORD]
+                                                 $input[DetailConstants::BUSINESS_APP_USERNAME],
+                                                 $input[DetailConstants::BUSINESS_APP_PASSWORD]
                 );
             }
         }
@@ -5721,13 +5665,13 @@ class Core extends Base\Core
         ]);
 
         $workFlowAction = (new ActionCore())->fetchOpenActionOnEntityOperation($merchantDetails->getId(),
-            $merchantDetails->getEntity(),
-            $permissionName
+                                                                               $merchantDetails->getEntity(),
+                                                                               $permissionName
         )->first();
 
         $businessDetailsCommentEntity = (new CommentCore())->create([
-            CommentEntity::COMMENT =>  $businessDetailsComment,
-        ]);
+                                                                        CommentEntity::COMMENT =>  $businessDetailsComment,
+                                                                    ]);
 
         $businessDetailsCommentEntity->entity()->associate($workFlowAction);
 
@@ -5738,8 +5682,8 @@ class Core extends Base\Core
             $encryptedComment = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER . encrypt($testCredentialComment);
 
             $testCredentialCommentEntity = (new CommentCore())->create([
-                CommentEntity::COMMENT =>  $encryptedComment,
-            ]);
+                                                                           CommentEntity::COMMENT =>  $encryptedComment,
+                                                                       ]);
 
             $testCredentialCommentEntity->entity()->associate($workFlowAction);
 
@@ -5793,12 +5737,12 @@ class Core extends Base\Core
                          ->first();
 
         $this->trace->info(TraceCode::MERCHANT_USER_NUMBER_CHANGE, [
-                Entity::MERCHANT_ID                 => $merchant->getMerchantId(),
-                Entity::CONTACT_MOBILE              => mask_phone($input[DetailConstants::NEW_CONTACT_NUMBER]),
-                DetailConstants::OLD_CONTACT_NUMBER => mask_phone($merchant->merchantDetail->getContactMobile()),
-                Constants::MERCHANT_USER            => $user->getId(),
-                Constants::USER_CONTACT_MOBILE      => mask_phone($user->getContactMobile())
-            ]);
+            Entity::MERCHANT_ID                 => $merchant->getMerchantId(),
+            Entity::CONTACT_MOBILE              => mask_phone($input[DetailConstants::NEW_CONTACT_NUMBER]),
+            DetailConstants::OLD_CONTACT_NUMBER => mask_phone($merchant->merchantDetail->getContactMobile()),
+            Constants::MERCHANT_USER            => $user->getId(),
+            Constants::USER_CONTACT_MOBILE      => mask_phone($user->getContactMobile())
+        ]);
 
         $user->setContactMobile($input[DetailConstants::NEW_CONTACT_NUMBER]);
 
@@ -5969,7 +5913,7 @@ class Core extends Base\Core
             $merchantDetails->getValidator()->validatePartnerActivationStatus($merchant);
 
             $input[DetailEntity::KYC_CLARIFICATION_REASONS] = $partnerCore->fetchCommonFieldsFromMerchantKycClarificationReasons(
-                                                                            $input, $merchant);
+                $input, $merchant);
         }
         else
         {
@@ -5983,7 +5927,7 @@ class Core extends Base\Core
             $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
         }
 
-        $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, Constants::MERCHANT);
+        $partnerCore->submitPartnerActivationForm($merchant, $merchant->merchantDetail, $partnerActivation, $input, Constants::MERCHANT);
     }
 
     public function postAddAdditionalWebsiteSelfServe(Entity $merchantDetails, string $urlType, array $input)
@@ -6068,15 +6012,15 @@ class Core extends Base\Core
     protected function addCommentForAddAdditionalWebsitePostWorkflowCreation(Entity $merchantDetails, array $input, string $urlType)
     {
         $workFlowAction = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation($merchantDetails->getMerchantId(),
-            $merchantDetails->getEntity(),
-            Permission\Name::ADD_ADDITIONAL_WEBSITE,
-            $merchantDetails->merchant->getOrgId()
+                                                                                       $merchantDetails->getEntity(),
+                                                                                       Permission\Name::ADD_ADDITIONAL_WEBSITE,
+                                                                                       $merchantDetails->merchant->getOrgId()
         )->first();
 
         if (is_null($workFlowAction) === true)
         {
             throw new Exception\ServerErrorException('Workflow Action Not Found',
-                ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED);
+                                                     ErrorCode::SERVER_ERROR_WORKFLOW_ACTION_CREATE_FAILED);
         }
 
         $this->createCommentForAddAdditionalWebsitePages($workFlowAction, $input, $urlType);
@@ -6084,9 +6028,9 @@ class Core extends Base\Core
         $this->createCommentForAddAdditionalWebsiteDedupe($workFlowAction, $input);
 
         if (((empty($input[DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME]) === false) and
-            (empty($input[DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD]) === false)) or
+             (empty($input[DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD]) === false)) or
             ((empty($input[DetailConstants::ADDITIONAL_APP_TEST_USERNAME]) === false) and
-            (empty($input[DetailConstants::ADDITIONAL_APP_TEST_PASSWORD]) === false)))
+             (empty($input[DetailConstants::ADDITIONAL_APP_TEST_PASSWORD]) === false)))
         {
             $this->createCommentForAddAdditionalWebsiteTestCredentials($workFlowAction, $input, $urlType);
         }
@@ -6105,25 +6049,25 @@ class Core extends Base\Core
         if ($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_PAGES_COMMENT_STRUCTURE,
-                $input[DetailConstants::ADDITIONAL_WEBSITE_MAIN_PAGE],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_ABOUT_US],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_CONTACT_US],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_PRICING_DETAILS],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_PRIVACY_POLICY],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_TNC],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_REFUND_POLICY]
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_MAIN_PAGE],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_ABOUT_US],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_CONTACT_US],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_PRICING_DETAILS],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_PRIVACY_POLICY],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_TNC],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_REFUND_POLICY]
             );
         }
         else
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_APP_WORKFLOW_PAGE_COMMENT_STRUCTURE,
-                $input[DetailConstants::ADDITIONAL_APP_URL]
+                               $input[DetailConstants::ADDITIONAL_APP_URL]
             );
         }
 
         $commentEntity = (new CommentCore())->create([
-            DetailConstants::COMMENT => $comment,
-        ]);
+                                                         DetailConstants::COMMENT => $comment,
+                                                     ]);
 
         $commentEntity->entity()->associate($workFlowAction);
 
@@ -6137,13 +6081,13 @@ class Core extends Base\Core
         if ($input[DetailConstants::DEDUPE_STATUS] === true)
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_DEDUPE_COMMENT_STRUCTURE,
-                $input[DetailConstants::DEDUPE_FLAGGED_MIDS]
+                               $input[DetailConstants::DEDUPE_FLAGGED_MIDS]
             );
         }
 
         $commentEntity = (new CommentCore())->create([
-            DetailConstants::COMMENT => $comment,
-        ]);
+                                                         DetailConstants::COMMENT => $comment,
+                                                     ]);
 
         $commentEntity->entity()->associate($workFlowAction);
 
@@ -6155,23 +6099,23 @@ class Core extends Base\Core
         if($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE,
-                $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME],
-                $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD]
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME],
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD]
             );
         }
         else
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_TEST_CREDENTIALS_COMMENT_STRUCTURE,
-                $input[DetailConstants::ADDITIONAL_APP_TEST_USERNAME],
-                $input[DetailConstants::ADDITIONAL_APP_TEST_PASSWORD]
+                               $input[DetailConstants::ADDITIONAL_APP_TEST_USERNAME],
+                               $input[DetailConstants::ADDITIONAL_APP_TEST_PASSWORD]
             );
         }
 
         $encryptedComment = DetailConstants::ENCRYPTED_WEBSITE_DETAILS_IDENTIFIER . encrypt($comment);
 
         $commentEntity = (new CommentCore())->create([
-            DetailConstants::COMMENT => $encryptedComment,
-        ]);
+                                                         DetailConstants::COMMENT => $encryptedComment,
+                                                     ]);
 
         $commentEntity->entity()->associate($workFlowAction);
 
@@ -6183,20 +6127,20 @@ class Core extends Base\Core
         if($urlType === DetailConstants::URL_TYPE_WEBSITE)
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE,
-                $input[DetailConstants::ADDITIONAL_WEBSITE_REASON]
+                               $input[DetailConstants::ADDITIONAL_WEBSITE_REASON]
             );
         }
         else
         {
             $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_REASON_COMMENT_STRUCTURE,
-                $input[DetailConstants::ADDITIONAL_APP_REASON]
+                               $input[DetailConstants::ADDITIONAL_APP_REASON]
             );
         }
 
 
         $commentEntity = (new CommentCore())->create([
-            DetailConstants::COMMENT => $comment,
-        ]);
+                                                         DetailConstants::COMMENT => $comment,
+                                                     ]);
 
         $commentEntity->entity()->associate($workFlowAction);
 
@@ -6206,13 +6150,13 @@ class Core extends Base\Core
     protected function createCommentForAddAdditionalWebsiteUrlProof(WorkFlowActionEntity $workFlowAction, array $input)
     {
         $comment = sprintf(DetailConstants::ADD_ADDITIONAL_WEBSITE_WORKFLOW_URL_COMMENT_STRUCTURE,
-            $this->app->config->get('applications.dashboard.url'),
-            $input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]
+                           $this->app->config->get('applications.dashboard.url'),
+                           $input[DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL]
         );
 
         $commentEntity = (new CommentCore())->create([
-            DetailConstants::COMMENT => $comment,
-        ]);
+                                                         DetailConstants::COMMENT => $comment,
+                                                     ]);
 
         $commentEntity->entity()->associate($workFlowAction);
 

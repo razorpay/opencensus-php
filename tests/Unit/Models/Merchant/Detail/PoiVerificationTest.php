@@ -64,13 +64,13 @@ class PoiVerificationTest extends TestCase
 
         $this->app->instance("rzp.mode", Mode::LIVE);
         // Submit L2 form
-        $detailCore->saveMerchantDetails(["submit"=>"1"], $merchantDetail->merchant);
+        $detailCore->saveMerchantDetails(["promoter_pan"=>"BRRPK8070K"], $merchantDetail->merchant);
 
         // Verify bvs_validation entity is created
         $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(),'merchant',Bvs\Constant::PERSONAL_PAN);
         $this->assertNotEmpty($bvsValidation);
 
-        $this->assertEquals($bvsValidation->getArtefactType(), Bvs\Constant::PERSONAL_PAN);
-        $this->assertEquals($bvsValidation->getValidationStatus(), "captured");
+        $this->assertEquals(Bvs\Constant::PERSONAL_PAN, $bvsValidation->getArtefactType());
+        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
     }
 }

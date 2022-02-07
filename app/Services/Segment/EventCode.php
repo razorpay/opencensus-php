@@ -14,6 +14,8 @@ class EventCode
     const RETRY_INPUT_ACTIVATION_FORM   = "Re-entry Input Activation Form";
     const BVS_IN_SYNC_CALL_REQUEST              = "Sync mode BVS API Call";
     const BVS_IN_SYNC_ENABLED             = 'BVS in sync mode qualified';
+    const BVS_ASYNC_CALL_RESPONSE             = "Async mode BVS API Response";
+    const BVS_ASYNC_CALL_REQUEST              = "Async mode BVS API Call";
 
     const ACTIVATION_STATUS_CHANGE  = "Activation Status changed";
 

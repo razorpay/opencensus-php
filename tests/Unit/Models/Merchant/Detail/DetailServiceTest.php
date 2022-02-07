@@ -28,6 +28,11 @@ class DetailServiceTest extends TestCase
     protected $merchantAccountCore;
     protected $adminEntityMock;
 
+    /**
+     * @var Mockery\LegacyMockInterface|Mockery\MockInterface|\RZP\Models\Merchant\Detail\Repository
+     */
+    private $merchantDetailRepositoryMock;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -137,7 +142,10 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
-
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
+        $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
+        $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
         $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
 
         $this->assertEquals([], $response);
@@ -174,6 +182,10 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
+        $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
+        $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
 
         $actualResponse = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
 
@@ -375,9 +387,9 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
 
-        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailEntityMock);
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
 
-        $this->merchantDetailEntityMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
+        $this->merchantDetailRepositoryMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
 
         $this->merchantDetailEntityMock->shouldReceive('getKycClarificationReasons')->andReturn([]);
 
@@ -438,9 +450,9 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
 
-        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailEntityMock);
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
 
-        $this->merchantDetailEntityMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
+        $this->merchantDetailRepositoryMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
 
         $this->merchantDetailEntityMock->shouldReceive('getKycClarificationReasons')->andReturn([]);
 
@@ -463,6 +475,9 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('toArrayPublic')->andReturn([]);
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('stakeholder')->andReturn($this->stakeholderEntityMock);
+        $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
+
+        $this->merchantDetailRepositoryMock->shouldReceive('findByPublicId')->andReturn($this->merchantDetailEntityMock);
 
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_type')->andReturn(11);
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->with('business_category')->andReturn('ecommerce');
@@ -741,6 +756,8 @@ class DetailServiceTest extends TestCase
 
         // Merchant Business details Mocking
         $this->merchantBusinessDetailEntityMock = Mockery::mock('RZP\Models\Merchant\BusinessDetail\Entity');
+        // M2M Referrals Repo mocking
+        $this->merchantDetailRepositoryMock = Mockery::mock('RZP\Models\Merchant\Detail\Repository');
 
         $this->partnerActivationMock = Mockery::mock('RZP\Models\Partner\Activation\Entity');
 

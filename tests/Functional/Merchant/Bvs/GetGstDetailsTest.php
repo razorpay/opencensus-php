@@ -312,20 +312,10 @@ class GetGstDetailsTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $data = [
-            StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1,
-            ConfigKey::MERCHANT_DETAILS =>$merchantDetails->toArray()
-        ];
-
-        $data = (new StoreCore())->updateMerchantStore($merchantId,
-                                                       $data,
-                                                       StoreConstants::INTERNAL);
-
         $this->startTest();
 
         $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantId,'merchant','bank_account');
-        $this->assertEmpty($bvsValidation);
+        $this->assertNotEmpty($bvsValidation);
 
         $keys = [
             ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT
@@ -582,21 +572,10 @@ class GetGstDetailsTest extends TestCase
 
         $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
-        $data = [
-            StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1,
-            ConfigKey::MERCHANT_DETAILS                        => $merchantDetails->toArray()
-        ];
-        $core = new StoreCore();
-
-        $data = $core->updateMerchantStore($merchantDetails->getMerchantId(),
-                                           $data,
-                                           StoreConstants::INTERNAL);
-
         $this->startTest();
 
         $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantId, 'merchant', 'bank_account');
-        $this->assertEmpty($bvsValidation);
+        $this->assertNotEmpty($bvsValidation);
 
         $keys = [
             ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT

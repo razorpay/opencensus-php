@@ -15,15 +15,15 @@ class ConfigKey
      * Keys are defined here
      */
 
-    const MTU_COUPON_POPUP_COUNT             = 'mtu_coupon_popup_count';
-    const ENABLE_MTU_CONGRATULATORY_POPUP    = 'enable_mtu_congratulatory_popup';
+    const MTU_COUPON_POPUP_COUNT          = 'mtu_coupon_popup_count';
+    const ENABLE_MTU_CONGRATULATORY_POPUP = 'enable_mtu_congratulatory_popup';
 
     //m2m referral
     const REFERRED_COUNT               = 'referred_count';
     const REFERRAL_LINK                = 'referral_link';
     const REFERRAL_CODE                = 'referral_code';
     const REFERRAL_SUCCESS_POPUP_COUNT = 'referral_success_popup_count';
-    const REFEREE_SUCCESS_POPUP_COUNT = 'referee_success_popup_count';
+    const REFEREE_SUCCESS_POPUP_COUNT  = 'referee_success_popup_count';
     const REFEREE_NAME                 = 'referee_name';
     const REFEREE_ID                   = 'referee_id';
     const REFERRAL_AMOUNT              = 'referral_amount';
@@ -35,11 +35,6 @@ class ConfigKey
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT = 'bank_account_verification_attempt_count';
 
     const NO_DOC_ONBOARDING_INFO                  = 'no_doc_onboarding_info';
-
-
-
-    const MERCHANT_DETAILS               = 'merchant_details';
-
     /*
      * config that defines which key belongs to which namespace
      * Read : tells who can view the data. if it is empty it is public
@@ -48,52 +43,52 @@ class ConfigKey
      */
     const NAMESPACE_KEY_CONFIG = [
         self::ONBOARDING_NAMESPACE => [
-            self::MTU_COUPON_POPUP_COUNT       => [
+            self::MTU_COUPON_POPUP_COUNT          => [
                 Constants::STORE => Constants::REDIS
             ],
-            self::ENABLE_MTU_CONGRATULATORY_POPUP       => [
+            self::ENABLE_MTU_CONGRATULATORY_POPUP => [
                 Constants::STORE => Constants::REDIS
             ],
-            self::REFERRAL_CODE                => [
+            self::REFERRAL_CODE                   => [
                 Constants::STORE => Constants::REDIS,
                 Constants::READ  => [Constants::INTERNAL],
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-            self::REFERRAL_LINK                => [
+            self::REFERRAL_LINK                   => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-            self::REFERRED_COUNT               => [
+            self::REFERRED_COUNT                  => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-            self::REFERRAL_SUCCESS_POPUP_COUNT => [
+            self::REFERRAL_SUCCESS_POPUP_COUNT    => [
                 Constants::STORE => Constants::REDIS
             ],
-            self::REFEREE_SUCCESS_POPUP_COUNT => [
+            self::REFEREE_SUCCESS_POPUP_COUNT     => [
                 Constants::STORE => Constants::REDIS
             ],
-            self::REFEREE_NAME                 => [
+            self::REFEREE_NAME                    => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL],
             ],
-            self::REFEREE_ID                   => [
+            self::REFEREE_ID                      => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL],
             ],
-            self::REFERRAL_AMOUNT              => [
+            self::REFERRAL_AMOUNT                 => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-            self::REFERRAL_AMOUNT_CURRENCY     => [
+            self::REFERRAL_AMOUNT_CURRENCY        => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-            self::IS_SIGNED_UP_REFEREE         => [
+            self::IS_SIGNED_UP_REFEREE            => [
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-            self::GST_DETAILS_FROM_PAN         => [
+            self::GST_DETAILS_FROM_PAN            => [
                 Constants::STORE => Constants::REDIS,
                 Constants::READ  => [Constants::INTERNAL],
                 Constants::WRITE => [Constants::INTERNAL],
@@ -113,19 +108,12 @@ class ConfigKey
                 Constants::TTL   => Constants::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT_TTL_IN_SECONDS
             ],
 
-
             self::NO_DOC_ONBOARDING_INFO => [
                 Constants::STORE => Constants::REDIS,
                 Constants::READ  => [Constants::INTERNAL],
                 Constants::WRITE => [Constants::INTERNAL],
                 Constants::TTL   => Constants::STORE_MERCHANT_DETAILS_TTL_IN_SECONDS
-            ],
-
-            self::MERCHANT_DETAILS => [
-                Constants::STORE => Constants::REDIS,
-                Constants::READ  => [Constants::INTERNAL],
-                Constants::WRITE => [Constants::INTERNAL]
-            ],
+            ]
         ]
     ];
 }

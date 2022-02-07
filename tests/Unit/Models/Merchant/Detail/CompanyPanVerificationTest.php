@@ -65,13 +65,13 @@ class CompanyPanVerificationTest extends TestCase
         [$merchantDetail] = $this->createAndFetchFixtures();
 
         $this->app->instance("rzp.mode", Mode::LIVE);
-        $detailCore->saveMerchantDetails(["submit"=>"1"], $merchantDetail->merchant);
+        $detailCore->saveMerchantDetails(["company_pan"=>"ABCCD1234A"], $merchantDetail->merchant);
 
         $bvsValidation = (new Repository)->getLatestArtefactValidationForOwnerIdAndOwnerType($merchantDetail->getMerchantId(),'merchant',Bvs\Constant::BUSINESS_PAN);
         $this->assertNotEmpty($bvsValidation);
 
-        $this->assertEquals($bvsValidation->getArtefactType(), Bvs\Constant::BUSINESS_PAN);
-        $this->assertEquals($bvsValidation->getValidationStatus(), "captured");
+        $this->assertEquals(Bvs\Constant::BUSINESS_PAN, $bvsValidation->getArtefactType());
+        $this->assertEquals("captured", $bvsValidation->getValidationStatus());
     }
 
 }

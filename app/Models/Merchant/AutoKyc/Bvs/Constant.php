@@ -258,9 +258,7 @@ class Constant
         Constant::GSTIN                   => [],
         self::LLPIN                       => [],
         self::CIN                         => [],
-        Entity::BANK_ACCOUNT_NUMBER       => [
-            self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PENNY_TESTING,
-        ],
+        Entity::BANK_ACCOUNT_NUMBER       => [],
         Constant::BUSINESS_PAN            => [],
     ];
 

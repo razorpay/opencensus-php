@@ -8,7 +8,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
-
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 class Factory
 {
     public function getBvsRequestDispatcherForArtefact(
@@ -73,7 +73,8 @@ class Factory
 
     public function getBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails, string $activationFormMilestone = ''): array
     {
-        if ($activationFormMilestone === DetailConstants::L1_SUBMISSION) {
+        if ($activationFormMilestone === DetailConstants::L1_SUBMISSION)
+        {
             return [
                 new CompanyPan($merchant, $merchantDetails),
                 new PersonalPan($merchant, $merchantDetails)
@@ -101,5 +102,36 @@ class Factory
             new CompanyPan($merchant, $merchantDetails),
             new PersonalPan($merchant, $merchantDetails)
         ];
+    }
+
+    public function getSyncBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
+    {
+        if ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID and $merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return [
+                new LlpinAuth($merchant, $merchantDetails),
+                new CinAuth($merchant, $merchantDetails),
+                new GstinAuth($merchant, $merchantDetails),
+                new BankAccount($merchant, $merchantDetails),
+                new CompanyPan($merchant, $merchantDetails),
+                new PersonalPan($merchant, $merchantDetails)
+            ];
+        }
+        else
+        {
+            if ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID and $merchant->isNoDocOnboardingEnabled() === true)
+            {
+                return [
+                    new LlpinAuth($merchant, $merchantDetails),
+                    new CinAuth($merchant, $merchantDetails),
+                    new GstinAuth($merchant, $merchantDetails),
+                    new BankAccount($merchant, $merchantDetails),
+                ];
+            }
+            else
+            {
+                return [];
+            }
+        }
     }
 }

@@ -2559,8 +2559,6 @@ return [
         'response'    => [
             'content' => [
                 'promoter_pan_name'    => 'John Doe',
-                'gstin'                => null,
-                'p_gstin'              => null,
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
                 'archived'             => 0,
@@ -2618,8 +2616,6 @@ return [
         'response'    => [
             'content' => [
                 'promoter_pan_name'    => 'John Doe',
-                'gstin'                => null,
-                'p_gstin'              => null,
                 'business_category'    => 'ecommerce',
                 'business_subcategory' => 'fashion_and_lifestyle',
                 'archived'             => 0,

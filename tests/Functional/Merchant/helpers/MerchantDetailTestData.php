@@ -127,7 +127,9 @@ return [
     'testSubmit' => [
         'request'  => [
             'content' => [
-                'submit' => true
+                "submit"=>"1",
+                "company_cin" => "U67190TN2014PTC096971",
+                "gstin"=>"03AADCB1234M1ZX"
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST'

@@ -103,10 +103,27 @@ class BvsValidationClient extends BaseClient
 
         try
         {
+            if (empty($this->merchant) === false)
+            {
+                $eventAttributes = [
+                    'time_stamp'    => Carbon::now()->getTimestamp(),
+                    'artefact_type' => $artefactType
+                ];
 
+                $this->app['segment-analytics']->pushTrackEvent($this->merchant, $eventAttributes, SegmentEvent::BVS_ASYNC_CALL_REQUEST);
+            }
             $response = $this->ValidationApiClient->CreateValidation($this->apiClientCtx, $validationCreateRequest);
 
+            if (empty($this->merchant) === false)
+            {
+                $eventAttributes = [
+                    'time_stamp'    => Carbon::now()->getTimestamp(),
+                    'artefact_type' => $artefactType,
+                    'response'      => $response
+                ];
 
+                $this->app['segment-analytics']->pushTrackEvent($this->merchant, $eventAttributes, SegmentEvent::BVS_ASYNC_CALL_RESPONSE);
+            }
             $requestSuccess = true;
 
             $this->trace->count(
@@ -127,6 +144,17 @@ class BvsValidationClient extends BaseClient
         {
 
             $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
+
+            if (empty($this->merchant) === false)
+            {
+                $eventAttributes = [
+                    'time_stamp'    => Carbon::now()->getTimestamp(),
+                    'artefact_type' => $artefactType,
+                    'response'      => $e->getMessage()
+                ];
+
+                $this->app['segment-analytics']->pushTrackEvent($this->merchant, $eventAttributes, SegmentEvent::BVS_ASYNC_CALL_RESPONSE);
+            }
 
             throw new IntegrationException('
                 Could not receive proper response from BVS service');

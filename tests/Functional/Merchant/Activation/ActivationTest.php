@@ -14,7 +14,9 @@ use RZP\Constants\Mode;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
@@ -43,6 +45,7 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use \RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
@@ -2398,7 +2401,14 @@ class ActivationTest extends OAuthTestCase
                                               [
                                                   'pricing_plan_id' => $plan->getPlanId()
                                               ]);
+        $data = [
+            StoreConstants::NAMESPACE                          => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 1
+        ];
 
+        $data = (new StoreCore())->updateMerchantStore("1cXSLlUU8V9sXl",
+                                                       $data,
+                                                       StoreConstants::INTERNAL);
         foreach ($testSuits as $index => $testSuit)
         {
             $testData = $this->testData[$testSuit];
@@ -2464,7 +2474,7 @@ class ActivationTest extends OAuthTestCase
             'bank_details_verification_status' => $bankDetailsVerificationStatus,
         ];
         $data = array_merge($data, $otherMerchantDetailAttributes);
-        $this->fixtures->create('merchant_detail', $data);
+        $this->fixtures->create('merchant_detail:valid_fields', $data);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
