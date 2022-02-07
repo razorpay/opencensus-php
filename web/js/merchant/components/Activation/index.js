@@ -2769,12 +2769,10 @@ export function ActivationField(field) {
   if (_optionsFn) {
     if (field.name === 'business_subcategory') {
       rest.options = field._optionsFn(this, this.props.categories);
-    }
-    if (field.name === 'merchant_avg_order_value') {
+    } else if (field.name === 'merchant_avg_order_value') {
       rest.options = field._optionsFn(this);
       rest.defaultValue = this.state.selected_aov;
-    }
-    if (field._name === 'has_url') {
+    } else {
       rest.options = field._optionsFn(this);
     }
   }

@@ -1529,6 +1529,10 @@ export default class User {
     }
     return this.getExpStatus('show_activation_form_full_view') && !!this.isOrgRZP;
   }
+
+  get isMsmeDisabled() {
+    return this.getExpStatus('disable_msme_upload');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

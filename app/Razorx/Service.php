@@ -238,7 +238,8 @@ class Service extends Base\Service
             'rx_ca_programmatic_engagement',
             'capital_xca_pay_now',
             'pp_shiprocket',
-            'rx_ca_sales_led_welcome_screen'
+            'rx_ca_sales_led_welcome_screen',
+            'disable_msme_upload'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

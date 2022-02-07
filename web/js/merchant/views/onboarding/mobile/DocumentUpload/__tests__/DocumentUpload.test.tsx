@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { ADDRESS_PROOF_TYPES } from '../../Constants/OnboardingConstants';
+import { ADDRESS_PROOF_TYPES, BUSINESS_PROOF_TYPE_DOCS } from '../../Constants/OnboardingConstants';
 import DocumentUpload from '..';
 import useActivation from '../../hooks/useActivation';
 import * as ActivationDB from '../../services/data/ActivationDB';
@@ -19,6 +19,54 @@ const App: React.FC = () => {
 };
 
 const waitForLoadingToFinish = () => waitForElementToBeRemoved(screen.queryByText('Loading...'));
+
+test('should render all option available for Business Registration Proof', async () => {
+  ActivationDB.update({
+    business_type: '1',
+    documents: {
+      msme_certificate: [
+        {
+          id: 'It4NCPW4WHW8Nk',
+          file_store_id: 'It4NFVRHbAueUB',
+          merchant_id: 'IgSqDJUNuBAiOU',
+          created_at: 1644226070,
+        },
+      ],
+    },
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  const businessRegistrationProofSelect = screen.getAllByPlaceholderText(
+    'SELECT REGISTRATION PROOF TYPE',
+  )[0];
+  fireEvent.click(businessRegistrationProofSelect);
+  Object.values(BUSINESS_PROOF_TYPE_DOCS).forEach((value) => {
+    expect(screen.getByText(value)).toBeInTheDocument();
+  });
+});
+
+test('should not render msme option for Business Registration Proof', async () => {
+  ActivationDB.update({
+    business_type: '1',
+    documents: {
+      gst_certificate: [
+        {
+          id: 'It4NCPW4WHW8Nk',
+          file_store_id: 'It4NFVRHbAueUB',
+          merchant_id: 'IgSqDJUNuBAiOU',
+          created_at: 1644226070,
+        },
+      ],
+    },
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  const businessRegistrationProofSelect = screen.getAllByPlaceholderText(
+    'SELECT REGISTRATION PROOF TYPE',
+  )[0];
+  fireEvent.click(businessRegistrationProofSelect);
+  expect(screen.queryAllByText('MSME/Udyam/Udyog Certificate')).toHaveLength(0);
+});
 
 test('should render all option available for Address ', async () => {
   ActivationDB.update({

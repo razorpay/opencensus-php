@@ -347,15 +347,15 @@ function doesHaveBusinessProofDocs(activation) {
 function getDefaultBusinessProofDoc(activation) {
   let defaultBusinessProofDoc = '';
   const documents = activation.props.data.documents;
-  if (documents.gst_certificate && documents.gst_certificate.length) {
-    defaultBusinessProofDoc = 'gst_certificate';
+  if (documents.msme_certificate && documents.msme_certificate.length) {
+    defaultBusinessProofDoc = 'msme_certificate';
   } else if (
     documents.shop_establishment_certificate &&
     documents.shop_establishment_certificate.length
   ) {
     defaultBusinessProofDoc = 'shop_establishment_certificate';
   } else {
-    defaultBusinessProofDoc = 'msme_certificate';
+    defaultBusinessProofDoc = 'gst_certificate';
   }
   return defaultBusinessProofDoc;
 }

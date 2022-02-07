@@ -293,7 +293,7 @@ export function getDefaultSelectedDocs(context, type) {
       defaultSelectedDoc = Object.keys(BUSINESS_PROOF_TYPE_DOCS).filter(
         (key) => documents[key].value,
       );
-      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['msme_certificate'];
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['gst_certificate'];
       break;
     default:
       defaultSelectedDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]

@@ -894,6 +894,7 @@ class App extends Component {
       isCinSyncFlowEnabled: user.isCinSyncFlowEnabled,
       isGstinLLpinCinSyncFlowEnabled: user.isGstinLLpinCinSyncFlowEnabled,
       isActivationMccPendingProgressbarDisabled: user.isActivationMccPendingProgressbarDisabled,
+      isMsmeDisabled: user.isMsmeDisabled,
     };
   };
 

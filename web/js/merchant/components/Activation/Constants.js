@@ -287,14 +287,15 @@ export const FOOTER_BUTTONS = {
 };
 
 export const BUSINESS_PROOF_CERTIFICATE_TYPES = {
-  MSME_CERTIFICATE: 'msme_certificate',
   GST_CERTIFICATE: 'gst_certificate',
   SHOP_ESTABLISHMENT_CERTIFICATE: 'shop_establishment_certificate',
+  MSME_CERTIFICATE: 'msme_certificate',
 };
 
 // Business Proof Docs (Only for Proprietorship business)
 export const BUSINESS_PROOF_TYPE_DOCS = {
-  [BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE]: 'MSME/Udyam/Udyog Certificate',
   [BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE]: 'GST Certificate',
-  [BUSINESS_PROOF_CERTIFICATE_TYPES.SHOP_ESTABLISHMENT_CERTIFICATE]: 'Shop Establishment Act Certificate',
+  [BUSINESS_PROOF_CERTIFICATE_TYPES.SHOP_ESTABLISHMENT_CERTIFICATE]:
+    'Shop Establishment Act Certificate',
+  [BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE]: 'MSME/Udyam/Udyog Certificate',
 };

@@ -43,6 +43,7 @@ const customRender = (
       isLlpinSyncFlowEnabled: true,
       isCinSyncFlowEnabled: true,
       isActivationMccPendingProgressbarDisabled: true,
+      isMsmeDisabled: true,
     };
     return (
       <Provider store={reduxStore}>

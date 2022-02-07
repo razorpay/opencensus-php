@@ -76,6 +76,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       isSyncBankVerificationEnabled,
       isUpdatedLiteOnboarding,
       isEmailNonMandatoryOnL2Form,
+      isMsmeDisabled,
     },
   } = useApp();
   const { gstinDetails } = useGstin();
@@ -604,7 +605,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                 <Field>
                   <Select
                     label="Choose Proof Type"
-                    placeholder="SELECT PROOF TYPE"
+                    placeholder="SELECT REGISTRATION PROOF TYPE"
                     searchable={false}
                     onChange={(value) => {
                       setBusinessDoc(value);
@@ -628,15 +629,25 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                     disabled={isFormLocked}
                   >
                     {/*eslint-disable dot-notation*/}
-                    {Object.keys(BUSINESS_PROOF_TYPE_DOCS).map((business_proof_type) => (
-                      <Option
-                        key={business_proof_type}
-                        value={business_proof_type}
-                        label={BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
-                      >
-                        {BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
-                      </Option>
-                    ))}
+                    {Object.keys(BUSINESS_PROOF_TYPE_DOCS).map((business_proof_type) => {
+                      if (
+                        business_proof_type === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE &&
+                        businessDoc !== 'msme_certificate' &&
+                        !formikProps.values.msme_certificate &&
+                        isMsmeDisabled
+                      ) {
+                        return null;
+                      }
+                      return (
+                        <Option
+                          key={business_proof_type}
+                          value={business_proof_type}
+                          label={BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
+                        >
+                          {BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
+                        </Option>
+                      );
+                    })}
                   </Select>
                 </Field>
                 {isVisible('shop_establishment_number', data) &&

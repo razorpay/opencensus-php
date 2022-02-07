@@ -1579,10 +1579,24 @@ const uploadFields = [
     label: 'Business Registration Proof',
     _name: 'business_proof_type',
     _cmp: Input.Select,
-    options: Object.keys(BUSINESS_PROOF_TYPE_DOCS).map((type) => ({
-      label: BUSINESS_PROOF_TYPE_DOCS[type],
-      name: type,
-    })),
+    _optionsFn: (activation) => {
+      const options = [];
+      Object.keys(BUSINESS_PROOF_TYPE_DOCS).forEach((type) => {
+        if (
+          type !== BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
+          activation.state.business_proof_type ===
+            BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
+          activation.props.data?.documents?.msme_certificate ||
+          !activation.props.user.isMsmeDisabled
+        ) {
+          options.push({
+            label: BUSINESS_PROOF_TYPE_DOCS[type],
+            name: type,
+          });
+        }
+      });
+      return options;
+    },
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
     },
