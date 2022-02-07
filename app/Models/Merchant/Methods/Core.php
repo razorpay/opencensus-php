@@ -73,7 +73,7 @@ class Core extends Base\Core
         $workflow = $this->app['workflow']->setOriginal(clone $methods);
 
         $mcc = $merchant->getCategory();
-        if(isset($input['emi']['credit']) ===  true || isset($input['emi']['debit']) === true)
+        if((isset($input['emi']['credit']) ===  true && $input['emi']['credit'] === '1') || (isset($input['emi']['debit']) === true && $input['emi']['debit'] === '1'))
         {
             (new Validator)->validateCategoryForEmi($mcc);
         }
