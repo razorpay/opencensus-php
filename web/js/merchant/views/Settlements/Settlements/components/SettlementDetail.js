@@ -258,7 +258,7 @@ class SettlementDetail extends Component {
                         <span className="pr-5">will be settled by</span>
                         <Time
                           value={this.props.settlementAmount.next_settlement_time}
-                          format="DD MMM YYYY, hh:mm:ss A"
+                          format="DD MMM YYYY, hh:mm A"
                         />
                       </Fragment>
                     )}

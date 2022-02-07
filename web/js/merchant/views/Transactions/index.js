@@ -291,7 +291,7 @@ class TransactionsContainer extends Component {
                 <Time
                   className="pr-5"
                   value={this.props.settlement_amount.data.next_settlement_time}
-                  format="DD MMM YYYY, hh:mm:ss a"
+                  format="DD MMM YYYY, hh:mm a"
                 />
                 {this.props.settlement_amount.data.reason_for_delay && (
                   <div style={{ display: 'inline' }}>

@@ -873,7 +873,7 @@ class AnalyticsDesktop extends Component {
                         <Time
                           className="pr-5"
                           value={settlement_amount.data.next_settlement_time}
-                          format="DD MMM YYYY, hh:mm:ss a"
+                          format="DD MMM YYYY, hh:mm a"
                         />
                         {settlement_amount.data.reason_for_delay && (
                           <span>
