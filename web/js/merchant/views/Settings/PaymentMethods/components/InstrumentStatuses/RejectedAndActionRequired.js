@@ -27,6 +27,10 @@ const RejectedAndActionRequired = (props) => {
     });
   };
 
+  const hasComment =
+    !isSmartDashboardActive ||
+    (isSmartDashboardActive && [ACTION_REQUIRED, REJECTED].includes(status) && comment);
+
   return (
     <div className="comment" title={comment}>
       <img
@@ -36,17 +40,15 @@ const RejectedAndActionRequired = (props) => {
         width="15px"
       />
       <p>
-        {isSmartDashboardActive && [ACTION_REQUIRED, REJECTED].includes(status) ? (
+        {hasComment ? (
+          comment || 'No comments Available'
+        ) : (
           <>
             <span>We need more information to proceed further with the application,</span>{' '}
             <a onClick={() => handleUpdateForm(merchant_instrument_request_id)}>
               update Request Form.
             </a>
           </>
-        ) : !isSmartDashboardActive ? (
-          comment
-        ) : (
-          <span>No comments available</span>
         )}
       </p>
     </div>

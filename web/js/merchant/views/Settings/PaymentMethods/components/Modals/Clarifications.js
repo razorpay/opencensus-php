@@ -32,12 +32,14 @@ const config = {
   [ACTION_REQUIRED]: {
     showInput: true,
     header: 'Clarifications needed',
-    headerInstruction: 'Provide clarifications & submit form to activate method',
+    title: 'Update Information',
+    subtitle: 'Provide clarifications & submit form to activate method',
   },
   [REJECTED]: {
     showInput: false,
     header: 'Discrepancies',
-    headerInstruction: 'These are the reasons because of which the request has been rejected',
+    title: 'Update Information',
+    subtitle: 'These are the reasons because of which the request has been rejected',
   },
 };
 
@@ -132,6 +134,9 @@ const Clarifications = (props) => {
 
   useEffect(() => {
     fetchIirDiscrepancies();
+    return () => {
+      setClarifications(false);
+    };
   }, []);
 
   useEffect(() => {
@@ -235,41 +240,44 @@ const Clarifications = (props) => {
     });
   };
 
+  const filteredClarifications =
+    clarifications &&
+    clarifications.filter(({ category }) => {
+      return category === selectedTab;
+    });
+
   return (
     <div className="container">
       <div className="sidebar">
         <div className="header">
-          <h3>Update Information</h3>
-          <p className="subtitle">Provide clarifications & submit form to activate method</p>
+          <h3>{config[status].title}</h3>
+          <p className="subtitle">{config[status].subtitle}</p>
         </div>
-
-        <ul>
-          {filteredTabs?.map((tab) => {
-            const isActive = tab === selectedTab;
-            return (
-              <a
-                key={tab}
-                onClick={() => setSelectedTab(tab)}
-                className={isActive ? 'active' : 'inactive'}
-              >
-                <li>{tab && tabTitle[tab]}</li>
-                {isActive && <i className="i i-chevron-right" />}
-              </a>
-            );
-          })}
-        </ul>
+        {!loading && clarifications && (
+          <ul>
+            {filteredTabs?.map((tab) => {
+              const isActive = tab === selectedTab;
+              return (
+                <a
+                  key={tab}
+                  onClick={() => setSelectedTab(tab)}
+                  className={isActive ? 'active' : 'inactive'}
+                >
+                  <li>{tab && tabTitle[tab]}</li>
+                  {isActive && <i className="i i-chevron-right" />}
+                </a>
+              );
+            })}
+          </ul>
+        )}
       </div>
       <div className="form-container">
         <ModalHeader title={config[status].header} onCloseClick={onCloseClick} />
-        {loading && <Spinner />}
-        {clarifications && clarifications.length > 0 && (
+        {!loading && clarifications && clarifications.length > 0 ? (
           <form>
             <div className="form">
-              {clarifications
-                .filter(({ category }) => {
-                  return category === selectedTab;
-                })
-                .map(({ discrepancy_comment, iir_discrepancy_id, iir_discrepancy_answer }) => {
+              {filteredClarifications.map(
+                ({ discrepancy_comment, iir_discrepancy_id, iir_discrepancy_answer }) => {
                   return (
                     <ClarificationInput
                       answer={iir_discrepancy_answer?.answer_field_value}
@@ -285,26 +293,31 @@ const Clarifications = (props) => {
                       status={status}
                     />
                   );
-                })}
+                },
+              )}
             </div>
 
-            <div className="footer">
-              <button
-                type="submit"
-                className="Button--primary Button"
-                onClick={onSubmitDiscrepancyForm}
-                disabled={isDisabled}
-              >
-                {selectedTab === filteredTabs[lastTab] ? (
-                  <span>
-                    Submit Form <i className="i i-chevron-right" />
-                  </span>
-                ) : (
-                  <span>Next</span>
-                )}
-              </button>
-            </div>
+            {status === ACTION_REQUIRED && (
+              <div className="footer">
+                <button
+                  type="submit"
+                  className="Button--primary Button"
+                  onClick={onSubmitDiscrepancyForm}
+                  disabled={isDisabled}
+                >
+                  {selectedTab === filteredTabs[lastTab] ? (
+                    <span>
+                      Submit Form <i className="i i-chevron-right" />
+                    </span>
+                  ) : (
+                    <span>Next</span>
+                  )}
+                </button>
+              </div>
+            )}
           </form>
+        ) : (
+          <Spinner />
         )}
       </div>
     </div>
