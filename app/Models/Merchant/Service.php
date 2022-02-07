@@ -4659,6 +4659,13 @@ class Service extends Base\Service
             }
 
             $value = $value[$v] ?? null;
+
+            if (($v === 'business_type') and (is_null($value) === false))
+            {
+                $value = MerchantDetBusinessType::getKeyFromIndex($value);
+            }
+
+
         }
 
         return [

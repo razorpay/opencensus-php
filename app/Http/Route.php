@@ -2954,6 +2954,7 @@ class Route
         'create_iir_discrepancy'                  => ['post',      'terminals/proxy/iir_discrepancies',                                        'TerminalController@proxyV2TerminalService' ],
         'create_iir_discrepancy_bulk'             => ['post',      'terminals/proxy/iir_discrepancies_bulk',                                   'TerminalController@proxyV2TerminalService' ],
         'fetch_iir_discrepancies_of_iir'          => ['get',       'terminals/proxy/internal_instrument_request/{id}/iir_discrepancies',       'TerminalController@proxyV2TerminalService' ],
+        'fetch_iir_discrepancies_for_merchant'    => ['get',       'terminals/proxy/merchants/{id}/iir_discrepancies',                         'TerminalController@proxyV2TerminalService' ],
         'patch_iir_discrepancy_by_id'             => ['patch',     'terminals/proxy/iir_discrepancies/{id}',                                   'TerminalController@proxyV2TerminalService' ],
         'fetch_iir_discrepancies_of_mir'          => ['get',       'terminals/proxy/merchant_instrument_request/{id}/iir_discrepancies',       'TerminalController@proxyV2TerminalService' ],
         'create_iir_discrepancy_answer'           => ['post',      'terminals/proxy/iir_discrepancy_answers',                                  'TerminalController@proxyV2TerminalService' ],
@@ -6082,6 +6083,7 @@ class Route
         'create_iir_discrepancy',
         'create_iir_discrepancy_bulk',
         'fetch_iir_discrepancies_of_iir',
+        'fetch_iir_discrepancies_for_merchant',
         'patch_iir_discrepancy_by_id',
 
         // gateway credentials
@@ -7257,6 +7259,7 @@ class Route
         'create_iir_discrepancy'                      => Permission::CREATE_IIR_DISCREPANCY,
         'create_iir_discrepancy_bulk'                 => Permission::CREATE_IIR_DISCREPANCY,
         'fetch_iir_discrepancies_of_iir'              => Permission::VIEW_IIR_DISCREPANCY,
+        'fetch_iir_discrepancies_for_merchant'        => Permission::VIEW_IIR_DISCREPANCY,
         'patch_iir_discrepancy_by_id'                 => Permission::CREATE_IIR_DISCREPANCY,
 
 
@@ -10217,6 +10220,7 @@ class Route
             'create_iir_discrepancy',
             'create_iir_discrepancy_bulk',
             'fetch_iir_discrepancies_of_iir',
+            'fetch_iir_discrepancies_for_merchant',
             'patch_iir_discrepancy_by_id',
             'payment_acknowledge',
             'payment_add_metadata',

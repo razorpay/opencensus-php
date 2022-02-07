@@ -1280,7 +1280,7 @@ We look forward to transacting with you!
             'fields'      => [
                 [
                     'name'     => 'merchant_details|business_type',
-                    'value'    => '1',
+                    'value'    => 'proprietorship',
                     'editable' => false
                 ]
             ],
