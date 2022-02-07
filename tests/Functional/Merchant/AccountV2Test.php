@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccountV2\Metric;
+use RZP\Models\Merchant\Detail\POIStatus;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -129,21 +130,9 @@ class AccountV2Test extends TestCase
         $this->startTest();
     }
 
-    public function testEditSubmerchantAccountNoDocFeature()
+    public function testIsAutoKycDoneForNoDoc()
     {
         $this->setUpPartnerWithKycHandled();
-
-        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
-
-        $result = $this->runRequestResponseFlow($testData);
-
-        $accountId = $result['id'];
-
-        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
-
-        $feature = $this->getDbEntity('feature', ['name' => 'no_doc_onboarding', 'entity_id' => $accountId, 'entity_type' => 'merchant']);
-
-        $this->assertNull($feature);
 
         $featureParams = [
             Entity::ENTITY_ID   => '10000000000000',
@@ -153,15 +142,62 @@ class AccountV2Test extends TestCase
 
         (new Core())->create($featureParams,true);
 
-        $testData = $this->testData[__FUNCTION__];
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+        $result = $this->runRequestResponseFlow($testData);
 
-        $this->startTest($testData);
+        $accountId = $result['id'];
 
-        $feature = $this->getDbEntity('feature', ['name' => 'no_doc_onboarding', 'entity_id' => $accountId, 'entity_type' => 'merchant']);
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
 
-        $this->assertNotNull($feature);
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails->setBankDetailsVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setCompanyPanVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setGstinVerificationStatus(POIStatus::VERIFIED);
+
+        $value = (new \RZP\Models\Merchant\Detail\Core())->isAutoKycDone($merchantDetails);
+
+        $this->assertEquals(true, $value);
+    }
+
+    public function testGetApplicableStatusForNoDoc()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams,true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountId = $result['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails->setBankDetailsVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setCompanyPanVerificationStatus(POIStatus::VERIFIED);
+
+        $merchantDetails->setGstinVerificationStatus(POIStatus::VERIFIED);
+
+        $value = (new \RZP\Models\Merchant\Detail\Core())->getApplicableActivationStatus($merchantDetails);
+
+        $this->assertEquals('activated', $value);
     }
 
     public function testEditAccountV2ProfileAddress()

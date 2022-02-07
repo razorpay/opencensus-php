@@ -3,8 +3,10 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant\Entity;
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
@@ -25,7 +27,7 @@ class GstinAuth extends Base
     {
         return [
             Constant::ARTEFACT_TYPE   => Constant::GSTIN,
-            Constant::CONFIG_NAME     => Constant::GSTIN,
+            Constant::CONFIG_NAME     => $this->getConfigName(),
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
             Constant::DETAILS         => [
                 Constant::GSTIN      => $this->merchantDetails->getGstin(),
@@ -33,6 +35,23 @@ class GstinAuth extends Base
                 Constant::TRADE_NAME => $this->merchantDetails->getBusinessName() ?? ''
             ],
         ];
+    }
+
+    public function getConfigName()
+    {
+        if ($this->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            switch($this->merchantDetails->getBusinessType())
+            {
+                case BusinessType::PROPRIETORSHIP:
+                case BusinessType::UNREGISTERED:
+                    return Constant::GSTIN;
+
+                default :
+                    return Constant::GSTIN_WITH_BUSINESS_PAN_FOR_NO_DOC;
+            }
+        }
+        return Constant::GSTIN;
     }
 
     public function performPostProcessOperation(BvsValidation\Entity $entity): void

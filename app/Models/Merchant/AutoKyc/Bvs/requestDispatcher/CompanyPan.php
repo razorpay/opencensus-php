@@ -13,8 +13,10 @@ class CompanyPan extends Base
     {
         $businessTypeValue = $this->merchantDetails->getBusinessTypeValue();
 
+        //We trigger company pan BVS request for all business types if No Doc Onboarding feature is enabled.
         return (($this->merchantDetails->getCompanyPanVerificationStatus() === BvsValidationConstants::PENDING) and
-                BusinessType::isCompanyPanEnableBusinessTypes($businessTypeValue) === true);
+                (BusinessType::isCompanyPanEnableBusinessTypes($businessTypeValue) === true or
+                $this->merchant->isNoDocOnboardingEnabled() === true));
     }
 
     public function getRequestPayload(): array

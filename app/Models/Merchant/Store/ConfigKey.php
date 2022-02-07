@@ -34,8 +34,12 @@ class ConfigKey
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  = 'get_gst_details_from_bvs_attempt_count';
     const BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT = 'bank_account_verification_attempt_count';
 
+    const NO_DOC_ONBOARDING_INFO                  = 'no_doc_onboarding_info';
+
+
 
     const MERCHANT_DETAILS               = 'merchant_details';
+
     /*
      * config that defines which key belongs to which namespace
      * Read : tells who can view the data. if it is empty it is public
@@ -109,12 +113,19 @@ class ConfigKey
                 Constants::TTL   => Constants::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT_TTL_IN_SECONDS
             ],
 
+
+            self::NO_DOC_ONBOARDING_INFO => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::STORE_MERCHANT_DETAILS_TTL_IN_SECONDS
+            ],
+
             self::MERCHANT_DETAILS => [
                 Constants::STORE => Constants::REDIS,
                 Constants::READ  => [Constants::INTERNAL],
                 Constants::WRITE => [Constants::INTERNAL]
             ],
-
         ]
     ];
 }

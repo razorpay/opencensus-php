@@ -51,6 +51,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\lib\ConditionParser\Operator;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AvgOrderValue;
 use RZP\Models\Workflow\Action\MakerType;
@@ -101,6 +102,7 @@ use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Notifications\Dashboard\Constants as DashboardNotificationConstants;
 use RZP\Models\Merchant\Fraud\HealthChecker\Constants as HealthCheckerConstants;
@@ -664,6 +666,8 @@ class Core extends Base\Core
 
         $this->markSubmittedAndLock($merchantDetails);
 
+        $this->initializeValidationDetailsForNoDocOnboarding($merchantDetails);
+
         $this->updateActivationSource($merchant, $originProduct);
 
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
@@ -698,6 +702,30 @@ class Core extends Base\Core
         $this->submitPartnerActivationFormIfApplicable($merchant, $input);
 
         return $response;
+    }
+
+    public function initializeValidationDetailsForNoDocOnboarding(Entity $merchantDetails): ?array
+    {
+        if($merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return null;
+        }
+
+        $gst = $merchantDetails->getGstin();
+
+        $noDocData = [
+            'gst'           => empty($gst) ? [] : [$gst],
+            'current_index' => 0,
+        ];
+
+        $data = [
+            ConfigKey::NO_DOC_ONBOARDING_INFO   => $noDocData,
+            StoreConstants::NAMESPACE           => ConfigKey::ONBOARDING_NAMESPACE
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantDetails->getMerchantId(), $data, StoreConstants::INTERNAL);
+
+        return $noDocData;
     }
 
     public function updateActivationProgress(Merchant\Entity $merchant): array
@@ -1347,6 +1375,12 @@ class Core extends Base\Core
         $this->updateDocumentVerificationStatus(
             $merchant, $merchantDetails,Constant::PERSONAL_PAN, BvsValidationConstants::IDENTIFIER);
 
+        // don't trigger bvs request for no-doc onboarding until form is locked
+        if($merchant->isNoDocOnboardingEnabled() === true)
+        {
+            return;
+        }
+
         //call to bvs for personal pan before l1 submission
         (new requestDispatcher\PersonalPan($merchant, $merchantDetails))->triggerBVSRequest();
     }
@@ -1359,7 +1393,8 @@ class Core extends Base\Core
     protected function verifyCompanyPanDetailsIfApplicable(Entity $merchantDetails, Merchant\Entity $merchant, array $input)
     {
         // For handling business type switch
-        if (BusinessType::isCompanyPanEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false)
+        if (BusinessType::isCompanyPanEnableBusinessTypes($merchantDetails->getBusinessTypeValue()) === false and
+            $merchant->isNoDocOnboardingEnabled() === false)
         {
             $merchantDetails->setCompanyPanVerificationStatus(null);
 
@@ -1389,6 +1424,13 @@ class Core extends Base\Core
         }
 
         $this->updateDocumentVerificationStatus($merchant,$merchantDetails, Constant::BUSINESS_PAN);
+
+
+        // don't trigger BVS request for no-doc onboarding until form is locked
+        if($merchant->isNoDocOnboardingEnabled() === true)
+        {
+            return;
+        }
 
         //call to bvs for company pan before l1 submission
         (new requestDispatcher\CompanyPan($merchant, $merchantDetails))->triggerBVSRequest();
@@ -2341,6 +2383,11 @@ class Core extends Base\Core
                 }
             }
 
+            if($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING)
+            {
+                (new Merchant\Activate)->activate($merchant, false, $shouldSave);
+            }
+
             if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
             {
                 $this->triggerWorkflowForRejectionActivationStatusChange(
@@ -2762,7 +2809,7 @@ class Core extends Base\Core
         // @todo: Activation flow will define its own validation fields
 
        // If no doc onboarding feature is enabled will pick only required validation fields.
-       if ($merchantDetails->merchant->isFeatureEnabled(FeatureConstants::NO_DOC_ONBOARDING))
+       if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
        {
             [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
 
@@ -3518,6 +3565,18 @@ class Core extends Base\Core
      */
     public function getApplicableActivationStatus(Entity $merchantDetails): string
     {
+        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $status = $this->getApplicableActivationStatusForNoDoc($merchantDetails);
+
+            $this->trace->info(TraceCode::APPLICABLE_ACTIVATION_STATUS_FOR_NO_DOC,[
+                'merchant_id'       => $merchantDetails->getId(),
+                'activation_status' => $status,
+            ]);
+
+            return $status;
+        }
+
         $autoKyc = $this->isAutoKycDone($merchantDetails);
 
         if ($autoKyc)
@@ -3603,7 +3662,26 @@ class Core extends Base\Core
         return Status::UNDER_REVIEW;
     }
 
-    public function isAutoKycDone($merchantDetails)
+    private function getApplicableActivationStatusForNoDoc(Entity $merchantDetails): string
+    {
+        $autoKycDone = $this->isAutoKycDone($merchantDetails);
+
+        if ($autoKycDone === true)
+        {
+            if($merchantDetails->getGstinVerificationStatus() === DetailConstants::VERIFIED)
+            {
+                return Status::ACTIVATED;
+            }
+            else
+            {
+                return Status::ACTIVATED_KYC_PENDING;
+            }
+        }
+
+        return Status::UNDER_REVIEW;
+    }
+
+    public function isAutoKycDone(Entity $merchantDetails)
     {
         $businessType = $merchantDetails->getBusinessType();
 
@@ -3612,14 +3690,32 @@ class Core extends Base\Core
             return false;
         }
 
-        if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
+        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $gstValidationCompleted = (new UpdateContextRequirements())->isNoDocGstValidationCompleted($merchantDetails);
+
+            if ($gstValidationCompleted === false)
+            {
+                return false;
+            }
+
+            $conditions = $this->fetchAutoKycConditionsForNoDoc($merchantDetails);
+
+            $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_FOR_NO_DOC,[
+                'merchant_id'   => $merchantDetails->getId(),
+                'business_type' => $businessType,
+            ]);
+        }
+        else if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
         {
             return false;
         }
+        else
+        {
+            $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
+        }
 
-        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
-
-        if ($businessType === BusinessType::PARTNERSHIP)
+        if ($businessType === BusinessType::PARTNERSHIP and $merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
         {
             $isExperimentEnabledForPartnershipBiz = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
                 RazorxTreatment::AUTO_KYC_PARTNERSHIP);
@@ -3645,6 +3741,31 @@ class Core extends Base\Core
                     return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in);
             }
         });
+    }
+
+    private function fetchAutoKycConditionsForNoDoc(Entity $merchantDetails)
+    {
+        $businessType = $merchantDetails->getBusinessType();
+
+        $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS_NO_DOC[Constants::DEFAULT];
+
+        if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS_NO_DOC[$businessType]) === true)
+        {
+            $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS_NO_DOC[$businessType];
+        }
+
+        $updateContextRequirement = (new UpdateContextRequirements());
+
+        $isGstValidationCompleted = $updateContextRequirement->isNoDocGstValidationCompleted($merchantDetails);
+
+        $isGstStatusInTerminalState = $updateContextRequirement->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
+
+        if($isGstValidationCompleted === true and $isGstStatusInTerminalState === true)
+        {
+            $conditions = array_merge($conditions[Operator::AND], [Entity::GSTIN_VERIFICATION_STATUS => AutoKyc\Constants::GSTIN_CONDITION]);
+        }
+
+        return $conditions;
     }
 
     protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
@@ -4188,6 +4309,8 @@ class Core extends Base\Core
 
     private function isAadhaarEsignVerificationDone(Entity $merchantDetails)
     {
+        $merchantDetails->load('stakeholder');
+        
         $stakeholder = $merchantDetails->stakeholder;
 
         if(empty($stakeholder) === true)

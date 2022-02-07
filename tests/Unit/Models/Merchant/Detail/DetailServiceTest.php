@@ -132,6 +132,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('isLinkedAccount')->andReturn(false);
 
+        $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
+
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankBranchIfsc')->andReturn();
@@ -166,6 +168,8 @@ class DetailServiceTest extends TestCase
         $this->createMerchantTestDependencyMocks();
 
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
 
         $this->merchantDetailEntityMock->shouldReceive('getBankDetailsVerificationStatus')->andReturn();
         $this->merchantDetailEntityMock->shouldReceive('getBankAccountNumber')->andReturn();
@@ -224,6 +228,8 @@ class DetailServiceTest extends TestCase
                 'activation_progress' => 50,
             ]
         ];
+
+        $this->merchantEntityMock->shouldReceive('isNoDocOnboardingEnabled')->andReturn(false);
 
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn($response);
 

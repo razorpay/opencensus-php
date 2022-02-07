@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Unit\Models\Merchant\Detail;
 
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Mode;
 use RZP\Models\Feature\Entity;
+use RZP\Models\Merchant\Store;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\UpdateMerchantContext;
+use RZP\Models\Merchant\Store\ConfigKey;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
@@ -1058,6 +1060,18 @@ class NeedsClarificationTest extends TestCase
         ];
 
         (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $value = [
+            'gst' => ['09AAACR5055K1Z5'],
+            'current_index' =>0,
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $value
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
 
         $this->mockRazorxTreatment('on');
 

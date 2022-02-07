@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\lib\FuzzyMatcher;
@@ -688,6 +689,24 @@ class PennyTesting extends Base\Core
      */
     public function getAllowedMerchantAttributesDetails(Entity $merchantDetails): array
     {
+        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            switch ($merchantDetails->getBusinessType())
+            {
+                case BusinessType::NOT_YET_REGISTERED:
+                case BusinessType::PROPRIETORSHIP:
+                    return [
+                        Constants::PROMOTER_PAN_NAME => $merchantDetails->getPromoterPanName(),
+                        Constants::COMPANY_PAN_NAME => $merchantDetails->getBusinessName()
+                    ];
+
+                default:
+                    return [
+                        Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
+                    ];
+            }
+        }
+
         // For linked accounts, we don't have promoter pan name so directly sending Business name.
         if($merchantDetails->merchant->isLinkedAccount() === true)
         {

@@ -26,7 +26,9 @@ class Validator extends Base\Validator
         ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT  => 'filled|integer',
         ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT => 'filled|integer',
         ConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP         => 'filled|bool',
+        ConfigKey::NO_DOC_ONBOARDING_INFO                  => 'filled|array',
         ConfigKey::MERCHANT_DETAILS                        => 'filled|array',
+
     ];
 
     protected static $fetchRules  = [

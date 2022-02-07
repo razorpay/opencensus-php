@@ -43,7 +43,6 @@ class Validator extends Merchant\Validator
         Constants::BRAND                           => 'sometimes|array',
         Constants::TOS_ACCEPTANCE                  => 'sometimes|array',
         Constants::NOTES                           => 'sometimes|notes',
-        Constants::NO_DOC_ONBOARDING               => 'sometimes|bool',
     ];
 
     protected static $profileRules = [

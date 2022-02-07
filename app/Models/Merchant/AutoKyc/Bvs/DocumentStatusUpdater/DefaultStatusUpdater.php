@@ -50,6 +50,13 @@ class DefaultStatusUpdater extends BaseStatusUpdater
 
     public function updateValidationStatus(): void
     {
+        $this->processUpdateValidationStatus();
+
+        $this->postUpdateValidationStatus();
+    }
+
+    protected function processUpdateValidationStatus()
+    {
         $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
             $this->merchantId,
             $this->artefactType,
@@ -97,7 +104,10 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         }
 
         $this->instantlyActivateMerchantIfApplicable($this->merchant, $this->merchantDetails);
+    }
 
+    protected function postUpdateValidationStatus()
+    {
         $this->updateMerchantContext();
 
         $this->sendConsumedValidationResultEvent();

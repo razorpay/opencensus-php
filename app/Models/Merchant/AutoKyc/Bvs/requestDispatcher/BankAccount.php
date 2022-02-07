@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 use Illuminate\Support\Facades\Bus;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\Constants;
@@ -50,6 +51,19 @@ class BankAccount extends Base
 
     public function getConfigName()
     {
+        if ($this->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            switch ($this->merchantDetails->getBusinessType())
+            {
+                case BusinessType::PROPRIETORSHIP:
+                case BusinessType::NOT_YET_REGISTERED:
+                    return Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN;
+
+                default:
+                    return Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN;
+            }
+        }
+
         if ($this->merchantDetails->isUnregisteredBusiness() === true)
         {
             return Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN;

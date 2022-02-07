@@ -212,7 +212,8 @@ class ValidationFields
         Entity::CONTACT_MOBILE,
         Entity::COMPANY_PAN,
         Entity::BANK_ACCOUNT_NUMBER,
-        Entity::BUSINESS_REGISTERED_ADDRESS
+        Entity::BUSINESS_REGISTERED_ADDRESS,
+        Entity::BUSINESS_OPERATION_ADDRESS
     ];
 
     const UNREGISTERED_NO_DOC_FIELDS = [
@@ -231,6 +232,7 @@ class ValidationFields
         Entity::PROMOTER_PAN,
         Entity::BANK_ACCOUNT_NUMBER,
         Entity::BUSINESS_REGISTERED_ADDRESS,
+        Entity::BUSINESS_OPERATION_ADDRESS
     ];
 
 
@@ -333,7 +335,7 @@ class ValidationFields
         return [$requiredFields, $selectiveRequiredFields, $optionalFields];
     }
 
-    public static function getValidationFieldsForNoDocOnboarding(Entity $merchantDetails)
+    public static function getValidationFieldsForNoDocOnboarding(Entity $merchantDetails): array
     {
             $requiredFields = self::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
             $selectiveRequiredFields = [];
@@ -348,8 +350,10 @@ class ValidationFields
         {
             case BusinessType::NOT_YET_REGISTERED:
                 return self::UNREGISTERED_NO_DOC_FIELDS;
+
             case BusinessType::PROPRIETORSHIP:
                 return self::PROPRIETORSHIP_NO_DOC_FIELDS;
+
             default:
                 return self::DEFAULT_REGISTERED_NO_DOC_FIELDS;
         }

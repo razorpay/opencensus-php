@@ -2208,6 +2208,11 @@ class Entity extends Base\PublicEntity
         return (($this->isAggregatorPartner() === true) and ($this->hasOptionalSubmerchantEmailFeature() === true));
     }
 
+    public function isNoDocOnboardingEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING) === true);
+    }
+
     protected function setEmailAttribute($email)
     {
         $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));

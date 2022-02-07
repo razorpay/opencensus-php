@@ -74,15 +74,21 @@ class BvsProbeClient extends BaseClient
 
     /**
      * @param string $pan
+     * @param string|null $authStatus
      *
      * @return probeV1\GetGstDetailsResponse
      * @throws IntegrationException
      */
-    public function getGstDetails(string $pan): probeV1\GetGstDetailsResponse
+    public function getGstDetails(string $pan, ?string $authStatus = null): probeV1\GetGstDetailsResponse
     {
         $getGstDetailsRequest = new probeV1\GetGstDetailsRequest();
 
         $getGstDetailsRequest->setPan($pan);
+
+        if (empty($authStatus) === false)
+        {
+            $getGstDetailsRequest->setAuthStatus($authStatus);
+        }
 
         $requestSuccess = false;
 

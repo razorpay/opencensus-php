@@ -11,6 +11,7 @@ use Illuminate\Support\Arr;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Store\Constants;
 use RZP\Models\Merchant\AutoKyc\Response;
@@ -121,7 +122,7 @@ class Core extends Base\Core
      * @param string $searchString
      *
      * @return array
-     * @throws \RZP\Exception\IntegrationException
+     * @throws IntegrationException
      */
     public function probeCompanySearch(string $searchString): array
     {
@@ -240,11 +241,13 @@ class Core extends Base\Core
 
     /**
      * @param string $pan
+     * @param string|null $authStatus
      *
      * @return array
-     * @throws \RZP\Exception\IntegrationException
+     * @throws Exception\InvalidPermissionException
+     * @throws IntegrationException
      */
-    public function probeGetGstDetails(string $pan): array
+    public function probeGetGstDetails(string $pan, ?string $authStatus = null): array
     {
         $this->trace->info(TraceCode::BVS_GET_GST_DETAILS_REQUEST, ['input' => $pan]);
 
@@ -284,7 +287,7 @@ class Core extends Base\Core
 
             if (empty($data[ConfigKey::GST_DETAILS_FROM_PAN]))
             {
-                $response = (new BvsProbeClient())->getGstDetails($pan);
+                $response = (new BvsProbeClient())->getGstDetails($pan, $authStatus);
 
                 $getGstDetailsBase = new GetGstDetailsBaseResponse($response);
 

@@ -136,13 +136,17 @@ class Core extends Merchant\Core
 
         $subMerchant = $this->repo->merchant->findOrFailPublic($subMerchantId);
 
-        $noDocOnboarding = $input['no_doc_onboarding'] ?? false;
+        $noDocOnboarding = $input[Feature\Constants::NO_DOC_ONBOARDING] ?? false;
 
         if($noDocOnboarding == true)
         {
             if ($this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
             {
-                   $this->addSubmerchantNoDocOnboardingFeature($subMerchantId);
+                $this->trace->info(TraceCode::NO_DOC_ONBOARDING_ENABLED_FOR_SUBMERCHANT,[
+                    'merchant_id'   => $subMerchantId,
+                ]);
+
+                $this->addSubmerchantNoDocOnboardingFeature($subMerchantId);
             }
             else
             {

@@ -2,13 +2,20 @@
 
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
+
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Store;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Partner\Activation\Entity as PAEntity;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Partner\Activation\Constants as PAConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater\GstInStatusUpdater;
 
 
 class UpdateContextRequirements
@@ -71,33 +78,13 @@ class UpdateContextRequirements
     ];
 
     const UPDATE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS = [
+        self::default => [
+            [self::COMPANY_PAN_VERIFICATION],
+            [self::BANK_DETAILS_VERIFICATION],
+        ],
         BusinessType::PROPRIETORSHIP      => [
             [self::PERSONAL_PAN_VERIFICATION],
             [self::BANK_DETAILS_VERIFICATION],
-        ],
-        BusinessType::PRIVATE_LIMITED     => [
-            [self::BANK_DETAILS_VERIFICATION],
-            [self::COMPANY_PAN_VERIFICATION],
-        ],
-        BusinessType::PARTNERSHIP         => [
-            [self::BANK_DETAILS_VERIFICATION],
-            [self::COMPANY_PAN_VERIFICATION],
-        ],
-        BusinessType::LLP                 => [
-            [self::BANK_DETAILS_VERIFICATION],
-            [self::COMPANY_PAN_VERIFICATION],
-        ],
-        BusinessType::INDIVIDUAL          => [
-            [self::BANK_DETAILS_VERIFICATION],
-            [self::COMPANY_PAN_VERIFICATION],
-        ],
-        BusinessType::TRUST               => [
-            [self::BANK_DETAILS_VERIFICATION],
-            [self::COMPANY_PAN_VERIFICATION],
-        ],
-        BusinessType::SOCIETY             => [
-            [self::BANK_DETAILS_VERIFICATION],
-            [self::COMPANY_PAN_VERIFICATION],
         ],
         BusinessType::NOT_YET_REGISTERED  => [
             [self::PERSONAL_PAN_VERIFICATION],
@@ -171,6 +158,15 @@ class UpdateContextRequirements
         if ($merchantDetails->isSubmitted() === false)
         {
             return false;
+        }
+        else if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $isNoDocGstValidationCompleted = $this->isNoDocGstValidationCompleted($merchantDetails);
+
+            if ($isNoDocGstValidationCompleted === false)
+            {
+                return false;
+            }
         }
 
         $canUpdateMerchantContext = true;
@@ -305,10 +301,6 @@ class UpdateContextRequirements
      */
     public function getUpdateContextRequirement(PublicEntity $entity): array
     {
-        if ($entity->merchant->isFeatureEnabled('no_doc_onboarding') === true){
-            return $this->getNoDocUpdateContextRequirement($entity);
-        }
-        
         switch ($entity->getEntityName())
         {
             case E::PARTNER_ACTIVATION:
@@ -317,6 +309,11 @@ class UpdateContextRequirements
                 break;
 
             case E::MERCHANT_DETAIL:
+                if ($entity->merchant->isNoDocOnboardingEnabled() === true)
+                {
+                    return $this->getNoDocUpdateContextRequirement($entity);
+                }
+
                 $updateContextRequirements = self::UPDATE_MERCHANT_CONTEXT_REQUIREMENTS;
                 $type = $entity->getBusinessType();
                 break;
@@ -335,23 +332,113 @@ class UpdateContextRequirements
         return $requirementList;
     }
 
-    public function getNoDocUpdateContextRequirement(PublicEntity $entity): array
+    public function getNoDocUpdateContextRequirement(Entity $merchantDetails): array
     {
         $updateContextRequirements = self::UPDATE_NO_DOC_MERCHANT_CONTEXT_REQUIREMENTS;
 
-        $type = $entity->getBusinessType();
+        $businessType = $merchantDetails->getBusinessType();
 
-        $requirementList = [];
+        $requirementList = $updateContextRequirements[self::default];
 
-        if (isset($updateContextRequirements[$type]) === true)
+        if (isset($updateContextRequirements[$businessType]) === true)
         {
-            $requirementList = $updateContextRequirements[$type];
+            $requirementList = $updateContextRequirements[$businessType];
         }
 
-        if(empty($entity[Entity::GSTIN]) === false) {
-            $requirementList = array_merge($requirementList, [[self::GSTIN_VERIFICATION]]);
+        if (in_array($businessType, [BusinessType::PROPRIETORSHIP, BusinessType::NOT_YET_REGISTERED], true) === true)
+        {
+            $companyPanStatus = $merchantDetails->getCompanyPanVerificationStatus();
+
+            $personalPanStatus = $merchantDetails->getPoiVerificationStatus();
+
+            $failedStatus = [BvsValidationConstants::NOT_MATCHED, BvsValidationConstants::INCORRECT_DETAILS, BvsValidationConstants::FAILED];
+
+            // if company is verified then put company pan in requirements
+            if ($companyPanStatus === DEConstants::VERIFIED)
+            {
+                array_push($requirementList, [self::COMPANY_PAN_VERIFICATION]);
+
+                // if personal pan verification failed then remove it under requirements since we want to activate
+                // proprietorship and unregistered business types if one of company or personal pan is verified during
+                // no-doc onboarding
+                if (in_array($personalPanStatus, $failedStatus, true) === true)
+                {
+                    $requirementList = $updateContextRequirements[self::default];
+                }
+            }
+        }
+
+        $isGstValidationCompleted = $this->isNoDocGstValidationCompleted($merchantDetails);
+
+        $isGstStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getGstinVerificationStatus());
+
+        // add GST under requirements if it is verified or all GSTs fetched from personal/company pan have failed
+        if ($isGstValidationCompleted === true and $isGstStatusInTerminalState === true)
+        {
+            array_push($requirementList, [self::GSTIN_VERIFICATION]);
         }
 
         return $requirementList;
+    }
+
+    public function isArtifactStatusInTerminalState(?string $kycArtifactStatus): bool
+    {
+        if (in_array($kycArtifactStatus, self::REQUIRED_VERIFICATION_STATUSES, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isNoDocGstValidationCompleted(Entity $merchantDetails): bool
+    {
+        $data = (new StoreCore)->fetchValuesFromStore($merchantDetails->getMerchantId(),ConfigKey::ONBOARDING_NAMESPACE,
+            [ConfigKey::NO_DOC_ONBOARDING_INFO],StoreConstants::INTERNAL);
+
+        $noDocData = $data[ConfigKey::NO_DOC_ONBOARDING_INFO];
+
+        $isPanValidationDone = $this->isNoDocPanValidationCompleted($merchantDetails);
+
+        $noDocGsts = $noDocData['gst'] ?? [];
+
+        $currentGstIndex = $noDocData['current_index'] ?? 0;
+
+        $gstVerificationStatus = $merchantDetails->getGstinVerificationStatus();
+
+        $isGstStatusInTerminalState = (new UpdateContextRequirements())->isArtifactStatusInTerminalState($gstVerificationStatus);
+
+        if (($isPanValidationDone === true and count($noDocGsts) === 0) or
+            (($currentGstIndex + 1 === count($noDocGsts)) and ($isGstStatusInTerminalState === true)) or
+            ($gstVerificationStatus === DEConstants::VERIFIED))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isNoDocPanValidationCompleted(Entity $merchantDetails): bool
+    {
+        $isPersonalPanStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getPoiVerificationStatus());
+
+        $isCompanyPanStatusInTerminalState = $this->isArtifactStatusInTerminalState($merchantDetails->getCompanyPanVerificationStatus());
+
+        switch ($merchantDetails->getBusinessType())
+        {
+            case BusinessType::PROPRIETORSHIP:
+            case BusinessType::NOT_YET_REGISTERED:
+                if (($merchantDetails->getPan() === null and $isPersonalPanStatusInTerminalState === true) or
+                    ($merchantDetails->getPromoterPan() === null and $isCompanyPanStatusInTerminalState === true) or
+                    ($isPersonalPanStatusInTerminalState === true and $isCompanyPanStatusInTerminalState === true))
+                {
+                    return true;
+                }
+
+                return false;
+
+            default:
+                return ($isCompanyPanStatusInTerminalState === true);
+        }
     }
 }

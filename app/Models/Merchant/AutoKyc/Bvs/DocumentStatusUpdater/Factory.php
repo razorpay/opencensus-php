@@ -49,7 +49,6 @@ class Factory
                 return $this->getStatusUpdaterForGSTIN($merchant, $merchantDetails, $validation);
 
             case Constant::BUSINESS_PAN :
-
                 $documentStatusKey = Entity::COMPANY_PAN_VERIFICATION_STATUS;
 
                 if ($validation->getValidationUnit() === Constants::PROOF)
@@ -57,7 +56,7 @@ class Factory
                     $documentStatusKey = Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS;
                 }
 
-                return new DefaultStatusUpdater(
+                return new PanStatusUpdater(
                     $merchant,
                     $merchantDetails,
                     $documentStatusKey,
@@ -129,7 +128,7 @@ class Factory
                 $validation);
         }
 
-        return new DefaultStatusUpdater(
+        return new GstInStatusUpdater(
             $merchant,
             $merchantDetails,
             Entity::GSTIN_VERIFICATION_STATUS,
@@ -185,14 +184,14 @@ class Factory
     {
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
-            return new DefaultStatusUpdater(
+            return new PanStatusUpdater(
                 $merchant,
                 $merchantDetails,
                 Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
                 $validation);
         }
 
-        return new DefaultStatusUpdater(
+        return new PanStatusUpdater(
             $merchant,
             $merchantDetails,
             Entity::POI_VERIFICATION_STATUS,

@@ -158,6 +158,35 @@ class Constants
         ],
     ];
 
+    const AUTO_KYC_VERIFICATION_CONDITIONS_NO_DOC = [
+        BusinessType::NOT_YET_REGISTERED => [
+            Operator::AND => [
+                Operator::OR => [
+                        Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                        Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                ],
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION
+            ]
+        ],
+
+        BusinessType::PROPRIETORSHIP => [
+            Operator::AND => [
+                Operator::OR => [
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                ],
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION
+            ]
+        ],
+
+        MerchantConstants::DEFAULT => [
+            Operator::AND => [
+                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+            ]
+        ],
+    ];
+
     const PARTNER_KYC_VERIFICATION_CONDITIONS = [
         BusinessType::NOT_YET_REGISTERED => [
             Operator:: AND => [

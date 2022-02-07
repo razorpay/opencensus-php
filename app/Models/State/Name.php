@@ -43,6 +43,7 @@ class Name
         Status::NEEDS_CLARIFICATION,
         Status::ACTIVATED,
         Status::REJECTED,
+        Status::ACTIVATED_KYC_PENDING,
     ];
 
     public static function validate(string $state)
