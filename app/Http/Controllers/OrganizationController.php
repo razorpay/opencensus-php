@@ -403,7 +403,6 @@ class OrganizationController extends Controller
     public function postAuthenticate()
     {
         $input = Request::all();
-
         $response = $this->service(E::ADMIN)->authenticate($input);
 
         return ApiResponse::json($response);
