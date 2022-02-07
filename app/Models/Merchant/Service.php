@@ -7145,6 +7145,7 @@ class Service extends Base\Service
             "partner_bank_account" => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
             "pan_details"          => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getPan() : null,
             "purpose_code"         => $merchant->getPurposeCode(),
+            "iec_code"             => $merchant->getIecCode(),
             "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
             "global_hold_status"   => $merchant->getHoldFunds(),
             "global_hold_reason"   => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
@@ -8042,20 +8043,49 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * Updates merchant purpose code in merchants table along with its iec code in merchant_details table
+     * @param array $input
+     * @return bool[]
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
     public function patchMerchantPurposeCode(array $input)
     {
-        $dba[Merchant\Entity::PURPOSE_CODE] = $input['purpose_code'];
+        $merchantFields[Merchant\Entity::PURPOSE_CODE] = $input['purpose_code'];
+        $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE] = $this->getIecCode($input);
 
-        $this->merchant->edit($dba);
+        (new Validator)->validateIecCode($merchantFields[Merchant\Entity::PURPOSE_CODE],
+            $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE], $this->merchant->getBankIfsc());
 
-        $this->repo->merchant->saveOrFail($this->merchant);
+        if(!empty($merchantFields[Merchant\Entity::PURPOSE_CODE])) {
+            $this->merchant->edit($merchantFields);
+            $this->repo->merchant->saveOrFail($this->merchant);
+        }
+
+        if($this->merchant->merchantDetail !== NULL and
+            !empty($merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE])) {
+            $this->merchant->merchantDetail->edit($merchantDetailsFields);
+            $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
+        }
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT, [
             Entity::ID => $this->merchant->getId(),
             Entity::PURPOSE_CODE => $this->merchant->getPurposeCode(),
+            Merchant\Detail\Entity::IEC_CODE => $this->merchant->getIecCode(),
         ]);
         return ['success' => true];
+    }
+
+    private function getIecCode(array $input)
+    {
+        if (isset($input['iec_code']) === true)
+        {
+            return $input['iec_code'];
+        }
+
+        return null;
     }
 
     public function saveMerchantCheckoutDetail(array $input)

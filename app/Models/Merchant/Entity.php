@@ -2523,6 +2523,16 @@ class Entity extends Base\PublicEntity
         return $this->merchantDetail->getBusinessRegisteredState();
     }
 
+    public function getBankIfsc()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getBankBranchIfsc();
+    }
+
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
@@ -3163,6 +3173,16 @@ class Entity extends Base\PublicEntity
     {
         if (empty($this->getPurposeCode()) === false) {
             return PurposeCodeList::getPurposeCodeDescDescription($this->getPurposeCode());
+        }
+
+        return null;
+    }
+
+    public function getIecCode()
+    {
+        if ($this->merchantDetail !== null)
+        {
+            return $this->merchantDetail->getIecCode();
         }
 
         return null;

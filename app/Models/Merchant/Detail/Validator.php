@@ -244,6 +244,7 @@ class Validator extends Base\Validator
         BusinessDetailConstants::PHYSICAL_STORE          => 'sometimes|boolean',
         BusinessDetailConstants::SOCIAL_MEDIA            => 'sometimes|boolean',
         BusinessDetailConstants::WEBSITE_OR_APP          => 'sometimes|boolean',
+        Entity::IEC_CODE                                 => 'sometimes|string|max:20',
     ];
 
     protected static $preSignupRules = [

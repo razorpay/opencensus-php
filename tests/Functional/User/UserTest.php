@@ -9,6 +9,7 @@ use Hash;
 use Queue;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Table;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Jobs\NotifyRas;
 use RZP\Error\ErrorCode;
@@ -19,6 +20,7 @@ use RZP\Constants\Product;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\User\Constants;
 use RZP\Models\User\Entity;
 use RZP\Mail\User\OtpSignup;
@@ -30,6 +32,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Error\PublicErrorCode;
 use RZP\Services\SalesForceClient;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\BankingAccount\Channel;
@@ -5275,6 +5278,7 @@ class UserTest extends TestCase
                             'billing_label'     => $merchant->getBillingLabelNotName(),
                             'purpose_code'      => $merchant->getPurposeCode(),
                             'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                            'iec_code'          => $merchant->getIecCode(),
                         ],
                     ],
                 ],
@@ -5716,7 +5720,6 @@ class UserTest extends TestCase
         $this->assertTrue($user->isAccountLocked());
     }
 
-
     public function testUserPurposeCodeDetails()
     {
         $user = $this->fixtures->create('user');
@@ -5750,6 +5753,7 @@ class UserTest extends TestCase
                             'billing_label'     => $merchant->getBillingLabelNotName(),
                             'purpose_code'      => $merchant->getPurposeCode(),
                             'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                            'iec_code'          => $merchant->getIecCode(),
                         ],
                     ],
                 ],
@@ -5759,6 +5763,124 @@ class UserTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testGetIecCode()
+    {
+        $merchant = $this->fixtures->create('merchant', ['purpose_code' => PurposeCodeList::P0001]);
+        $user = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'iec_code'=> 'iec_code_x',
+        ]);
+
+        // check the data for default test merchant
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users/purpose/code?email='.$user['email'],
+            ],
+            'response' => [
+                'content' => [
+                    'name'                      => $user->getName(),
+                    'email'                     => $user->getEmail(),
+                    'contact_mobile'            => NULL,
+                    'contact_mobile_verified'   => FALSE,
+                    'account_locked'            => FALSE,
+                    'confirmed'                 => TRUE,
+                    'merchants' => [
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'id'                => $merchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $merchant->getWebsite(),
+                            'name'              => $merchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $merchant->getBillingLabelNotName(),
+                            'purpose_code'      => $merchant->getPurposeCode(),
+                            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                            'iec_code'          => $merchant->getIecCode(),
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant->getId(), $user->getId(), 'owner');
+
+        $this->startTest();
+    }
+
+    public function testUserPatchPurposeCode()
+    {
+        $iecCode = 'iec_code_x';
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'PATCH',
+                'url'       => '/merchants/purpose/code',
+                'content'   => [
+                    'purpose_code' =>  PurposeCodeList::IEC_REQUIRED[0],
+                    'iec_code'     => $iecCode,
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'success' => true,
+                ],
+                'status_code' => 200,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+
+        $updatedMerchant = DB::table(Table::MERCHANT_DETAIL)
+            ->where('merchant_id', '=', $merchantDetail['merchant_id'])
+            ->first();
+
+        self::assertEquals($iecCode, $updatedMerchant->iec_code);
+    }
+
+    public function testUserPatchPurposeCodeError()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['bank_branch_ifsc' => 'ICIC0000006']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'PATCH',
+                'url'       => '/merchants/purpose/code',
+                'content'   => [
+                    'purpose_code' => PurposeCodeList::IEC_REQUIRED[0],
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'iec code required for given purpose code',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+           'exception' => [
+                'class'               => \RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ]
+        ];
 
         $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
 

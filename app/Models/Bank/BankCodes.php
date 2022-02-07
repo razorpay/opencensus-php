@@ -502,6 +502,10 @@ class BankCodes
         '8129' => 'UTIB0SBPP02',
     ];
 
+    const IEC_REQUIRED_BANKS =  [
+        IFSC::ICIC
+    ];
+
     const ACCOUNT_NUMBER_LENGTH = 13;
 
     public static function getIfscForImpsBankCode(string $impsBankCode)
@@ -574,5 +578,21 @@ class BankCodes
         $account = str_pad($account, self::ACCOUNT_NUMBER_LENGTH, '0', STR_PAD_LEFT);
 
         return $account;
+    }
+
+    /**
+     * Checks if for a given bank ifsc code iec is required
+     * @param string|null $ifsc
+     * @return bool
+     */
+    public static function isIecRequiredBank(?string $ifsc): bool
+    {
+        $ifscBankCode = '';
+        if(empty($ifsc) === false)
+        {
+            $ifscBankCode = substr($ifsc, 0, 4);
+        }
+
+        return in_array(strtoupper($ifscBankCode), self::IEC_REQUIRED_BANKS);
     }
 }

@@ -8,8 +8,12 @@ use Hash;
 use RZP\Base;
 use RZP\Constants\Country;
 use RZP\Exception;
+use RZP\Models\Bank\BankCodes;
 use RZP\Models\Order\Status;
 use RZP\Models\Order\Entity as OrderEntity;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Bank\Name as BankName;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\User;
 use FuzzyWuzzy\Fuzz;
 use RZP\Models\Feature;
@@ -2698,6 +2702,27 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RESERVE_BALANCE_ALREADY_ADDED_FOR_GIVEN_DESC,
                 null,["description" => $description]);
         }
+    }
+
+    /**
+     * Validates if merchant IEC code is present for certain purpose codes and merchant banks
+     * @param $purposeCode
+     * @param $iecCode
+     * @param $ifsc
+     * @throws Exception\BadRequestException
+     */
+    public function validateIecCode($purposeCode, $iecCode, $ifsc)
+    {
+
+        if (BankCodes::isIecRequiredBank($ifsc) and in_array($purposeCode, PurposeCodeList::IEC_REQUIRED)
+            and empty($iecCode))
+        {
+            $message = 'iec code required for given purpose code';
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, 'iec_code', [$purposeCode], $message);
+        }
+
     }
 
     protected static $fetchMerchantsByParamsRules = [

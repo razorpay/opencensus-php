@@ -219,6 +219,7 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
     private const     MERCHANT_PRODUCT_INTERNATIONAL       = 'merchant.product_international';
     private const     MERCHANT_SIGNUP_SOURCE               = 'merchant.signup_source';
     private const     MERCHANT_PURPOSE_CODE                = 'merchant.purpose_code';
+    private const     MERCHANT_IEC_CODE                    = 'merchant.iec_code';
     private const     MERCHANT_NOTES                       = 'merchant.notes';
     private const     MERCHANT_WHITELISTED_DOMAINS         = 'merchant.whitelisted_domains';
     private const     MERCHANT_WHITELISTED_IPS_LIVE        = 'merchant.whitelisted_ips_live';
@@ -1545,6 +1546,12 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
             Role::OPERATIONS,
         ],
         self::MERCHANT_PURPOSE_CODE                    => [
+            Role::OWNER,
+            Role::ADMIN,
+            Role::MANAGER,
+            Role::OPERATIONS,
+        ],
+        self::MERCHANT_IEC_CODE                        => [
             Role::OWNER,
             Role::ADMIN,
             Role::MANAGER,

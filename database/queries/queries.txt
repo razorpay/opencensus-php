@@ -6649,3 +6649,6 @@ ALTER TABLE cards ADD COLUMN token_expiry_year CHAR(4) default NULL;
 
 ALTER TABLE merchant_business_details
     ADD COLUMN `business_parent_category` varchar(255) DEFAULT NULL;
+
+ALTER TABLE merchant_details
+   ADD COLUMN iec_code VARCHAR(20) DEFAULT NULL;

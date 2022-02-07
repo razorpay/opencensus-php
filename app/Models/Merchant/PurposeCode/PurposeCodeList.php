@@ -668,6 +668,11 @@ class PurposeCodeList
         self::P0025,
     ];
 
+    const IEC_REQUIRED = [
+        self::P0103,
+        self::P0807,
+    ];
+
     public static function getPurposeCodeDescDescription($purposeCode): string
     {
         return self::$purposeCodeDescMappings[$purposeCode];

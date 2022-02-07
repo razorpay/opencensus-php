@@ -4706,6 +4706,7 @@ class Core extends Base\Core
             'pan'             => NULL,
             'billing_address' => NULL,
             'description'     => NULL,
+            'iec_code'        => NULL,
         ];
 
         $details = $merchant->merchantDetail;
@@ -4718,6 +4719,7 @@ class Core extends Base\Core
                 'pan'               => $details->getPan(),
                 'billing_address'   => $details->getBusinessAddress(),
                 'description'       => $details->getBusinessDescription(),
+                'iec_code'          => $details->getIecCode(),
             ];
         }
 

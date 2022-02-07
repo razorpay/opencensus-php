@@ -169,6 +169,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     const FRAUD_TYPE = 'fraud_type';
 
+
+    // key used to for iec code when creating merchant's with specific purpose code
+    const IEC_CODE = 'iec_code';
+
     //merchant's business banking id generated from banking account service.
     const BAS_BUSINESS_ID = 'bas_business_id';
 
@@ -312,7 +316,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::CLIENT_APPLICATIONS,
         self::BUSINESS_SUGGESTED_PIN,
         self::BUSINESS_SUGGESTED_ADDRESS,
-        self::FRAUD_TYPE
+        self::FRAUD_TYPE,
+        self::IEC_CODE,
     ];
 
     protected $public     = [
@@ -427,6 +432,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::BUSINESS_SUGGESTED_ADDRESS,
         self::FRAUD_TYPE,
         self::BAS_BUSINESS_ID,
+        self::IEC_CODE,
     ];
 
     protected $defaults   = [
@@ -1479,4 +1485,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     {
         $this->setAttribute(self::FUND_ADDITION_VA_IDS, $fundAdditionVAIds);
     }
+
+    public function getIecCode()
+    {
+        return $this->getAttribute(self::IEC_CODE);
+    }
+
 }
