@@ -73,7 +73,7 @@ const SettlementsBanner = (props) => {
   } else if (isOnHold) {
     // We are showing this banner in if the user is put on Funds on hold
     icon = <i className="i i-triangle-alert alert-red" />;
-    title = 'Your settlements have been put on hold';
+    title = 'Your settlements are under review';
     subTitle =
       'Your settlements are currently not being processed due to some risk issues with your payments or with your razorpay account.';
     actions = (

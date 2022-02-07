@@ -111,8 +111,8 @@ class SettlementDetails extends Component {
               <span>
                 <span className="pr-5">
                   {isOnHold
-                    ? 'Your funds have been put on hold.'
-                    : 'Your funds have been put on temporary hold.'}
+                    ? 'Your settlements are under review.'
+                    : 'Your settlements have been put on temporary hold.'}
                 </span>
                 <span className="nav-link" onClick={this.onViewDetailsClick}>
                   View Details

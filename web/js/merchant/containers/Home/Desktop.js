@@ -824,13 +824,15 @@ class AnalyticsDesktop extends Component {
                     {isSettlementOnHold && (
                       <div className="text-right full-width no-margin">
                         {isOnHold
-                          ? 'Your settlements have been put on hold.'
+                          ? 'Settlements under review.'
                           : 'Your settlements have been put on Temporary hold.'}
                         <span className="pr-5">
                           <i className="i i-info-circle" />
                           <Popover theme="dark" align="bottom">
                             <PopoverBody>
-                              Your settlements are currently not being processed.
+                              {isOnHold
+                                ? 'Your settlements are currently under review and not getting processed.'
+                                : 'Your settlements are currently not being processed.'}
                             </PopoverBody>
                           </Popover>
                         </span>

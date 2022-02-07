@@ -46,14 +46,14 @@ class SettlementDetail extends Component {
     const isOnHold = this.isOnHold();
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
       if (user.activation_status === 'under_review') {
-        return 'Your Settlements are currently on Hold';
+        return 'Settlements under review';
       }
       if (!user.isSubmitted) {
         return 'Your Settlements will be processed post KYC submission';
       }
     }
     if (isOnHold) {
-      return 'Settlements on Hold';
+      return 'Settlements under review';
     }
     return 'Settlements on Temporary Hold';
   }
@@ -68,7 +68,7 @@ class SettlementDetail extends Component {
         return 'Complete KYC to enable settlements for your account.';
       }
     }
-    return 'Your settlements are currently not being processed.';
+    return 'Your settlements are currently under review and not getting processed.';
   }
 
   get onHoldSubtext() {
@@ -100,8 +100,9 @@ class SettlementDetail extends Component {
     if (isOnHold) {
       return (
         <>
-          Your settlements have been put on hold because of some risk issues with your payments or
-          with your razorpay account.
+          Your settlements are under review because of some risk issues with your payments or with
+          your Razorpay account. Please check your email for next steps and instructions or raise a
+          query in the support section choosing the settlements under review option.
         </>
       );
     }

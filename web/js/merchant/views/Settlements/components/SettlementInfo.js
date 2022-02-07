@@ -76,7 +76,7 @@ class SettlementInfo extends Component {
     } else if (isSettlementOnHold) {
       jsx = (
         <div className="settlement-detail-toggle">
-          <SettlementStatusLabel status={isOnHold ? 'on_hold' : 'on_temporary_hold'} />
+          <SettlementStatusLabel status={isOnHold ? 'under_review' : 'on_temporary_hold'} />
           <a className="nav-link" onClick={this.onViewDetailsClick}>
             View Details
           </a>
