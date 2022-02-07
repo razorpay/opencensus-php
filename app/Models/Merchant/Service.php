@@ -201,11 +201,15 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    protected $featureService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->featureService = new Feature\Service();
     }
 
     /**
@@ -4966,6 +4970,22 @@ class Service extends Base\Service
         }
     }
 
+    private function shouldSkipNotificationForClient($clientId)
+    {
+        $applicationId = (new OAuthClient\Repository)->findOrFail($clientId)[OAuthClient\Entity::APPLICATION_ID];
+
+        $shouldSkipNotification = $this->featureService->checkFeatureEnabled(Feature\Constants::APPLICATION, $applicationId, Feature\Constants::SKIP_OAUTH_NOTIFICATION)['status'];
+
+        $this->trace->info(
+            TraceCode::FEATURE_SKIP_OAUTH_NOTIFICATION,
+            [
+                'should_skip_notification_for_application_id' => $shouldSkipNotification,
+                'application_id'                              => $applicationId
+            ]);
+
+        return $shouldSkipNotification;
+    }
+
     /**
      * Sends a mail to the merchant when an action is taken
      * on oauth access to his account
@@ -4979,7 +4999,12 @@ class Service extends Base\Service
      */
     public function sendOAuthNotification(array $input, string $type): array
     {
-        if($type === 'tally_auth_otp')
+        if ($this->shouldSkipNotificationForClient($input[OAuthToken\Entity::CLIENT_ID]) === true)
+        {
+            return ['success' => true];
+        }
+
+        if($type === 'tally_auth_otp' )
         {
             return $this->sendTallyAuthOTPMail($input, $type);
         }

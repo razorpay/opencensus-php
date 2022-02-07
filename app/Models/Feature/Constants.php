@@ -1099,6 +1099,9 @@ class Constants
     // This feature will be used to control the rollout of authorization via authz enforcer
     const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
 
+    // This feature will be used to control the notification emails for oauth applications
+    const SKIP_OAUTH_NOTIFICATION = 'skip_oauth_notification';
+
     /**
      * Disable default email receipt feature at org level
      */
@@ -1544,6 +1547,7 @@ class Constants
         self::SR_SENSITIVE_BUCKET_3           => true,
         self::SR_SENSITIVE_BUCKET_4           => true,
         self::DCC_ON_OTHER_LIBRARY            => true,
+        self::SKIP_OAUTH_NOTIFICATION         => true,
         self::SKIP_PAYOUT_EMAIL               => true,
     ];
     // Entity type constants
@@ -2213,6 +2217,11 @@ class Constants
             'feature'       => self::AUTHORIZE_VIA_AUTHZ,
             'display_name'  => 'Enable authorization via authz enforcer',
             'documentation' => 'This feature will be used to control the rollout of authorization via authz enforcer',
+        ],
+        self::SKIP_OAUTH_NOTIFICATION => [
+            'feature'       => self::SKIP_OAUTH_NOTIFICATION,
+            'display_name'  => 'Enable oauth application for application',
+            'documentation' => 'This feature will be used to control the notification emails for oauth applications',
         ],
         self::SKIP_PAYOUT_EMAIL => [
             'feature'      => self::SKIP_PAYOUT_EMAIL,

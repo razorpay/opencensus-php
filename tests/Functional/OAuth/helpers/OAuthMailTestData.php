@@ -14,6 +14,19 @@ return [
         ],
     ],
 
+    'testOAuthSkipNotification' => [
+        'request' => [
+            'url' => '/oauth/notify/app_authorized',
+            'method' => 'POST',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testOAuthCompetitorAppAuthorizedMail' => [
         'request' => [
             'url' => '/oauth/notify/app_authorized',

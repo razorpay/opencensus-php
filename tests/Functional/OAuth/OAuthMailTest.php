@@ -66,6 +66,41 @@ class OAuthMailTest extends OAuthTestCase
         });
     }
 
+    public function testOAuthSkipNotification()
+    {
+        Mail::fake();
+
+        $appData = [
+            Application\Entity::ID   => '10000000000App',
+            Application\Entity::NAME => 'Test App'
+        ];
+
+        $application = $this->createOAuthApplication($appData);
+
+        $this->fixtures->create('feature', [
+            'entity_id'     => $application['id'],
+            'entity_type'   => 'application',
+            'name'          => Feature\Constants::SKIP_OAUTH_NOTIFICATION]);
+
+        $clients = $application->clients()->get()->all();
+
+        $user = $this->getDbLastEntity('user', 'test');
+
+        $merchant = $this->getDbLastEntity('merchant', 'test');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['client_id'] = $clients[0]->id;
+
+        $testData['request']['content']['user_id'] = $user->id;
+
+        $testData['request']['content']['merchant_id'] = $merchant->id;
+
+        $this->startTest();
+
+        Mail::assertNotQueued(OAuthAppAuthorizedMail::class);
+    }
+
     public function testOAuthTallyOTPMail()
     {
         Mail::fake();

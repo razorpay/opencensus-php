@@ -2941,6 +2941,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_SERVICE_REQUEST                                  = 'AUTH_SERVICE_REQUEST';
     const SEND_OAUTH_MAIL_REQUEST                               = 'SEND_OAUTH_MAIL_REQUEST';
     const SEND_TALLY_AUTH_OTP_MAIL_REQUEST                      = 'SEND_TALLY_AUTH_OTP_MAIL_REQUEST';
+    const FEATURE_SKIP_OAUTH_NOTIFICATION                       = 'FEATURE_SKIP_OAUTH_NOTIFICATION';
     const OAUTH_TOKEN_INVALID                                   = 'OAUTH_TOKEN_INVALID';
     const APP_MERCHANT_ACCESS_MAP                               = 'APP_MERCHANT_ACCESS_MAP';
     const APP_MERCHANT_ACCESS_MAP_DELETE                        = 'APP_MERCHANT_ACCESS_MAP_DELETE';
