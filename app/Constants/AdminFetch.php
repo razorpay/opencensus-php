@@ -3334,6 +3334,19 @@ class AdminFetch
                     Fetch::LABEL  => 'Merchant Id (*)',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
+                'status'          => [
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'pending',
+                        'rejected',
+                        'issued',
+                        'processing',
+                        'attempted',
+                        'processed',
+                        'cancelled',
+                        'expired',
+                    ],
+                ],
             ],
 
             Entity::PAYTM => [
