@@ -2565,6 +2565,11 @@ class Service extends Base\Service
 
         $tnc = $merchantDetail->tnc;
 
+        if ($tnc === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         $merchant = $merchantDetail->merchant;
 
         $merchantEmail = (new Merchant\Email\Service())->proxyGetSupportDetails($merchant);
