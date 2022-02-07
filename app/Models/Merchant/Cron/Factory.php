@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupStartedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\TransactionDetailsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
+use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
 
 class Factory
@@ -52,6 +53,8 @@ class Factory
                 return (new SignupStartedCronJob($input));
             case "bvs_cron":
                 return (new BvsCronJob($input));
+            case Constants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME:
+                return (new EnableM2MReferralCronJob($input));
             case "first-payment-offer-daily-notification":
                 return (new FirstPaymentOfferCronJob($input));
         }

@@ -74,6 +74,11 @@ class BaseCronJob
         return null;
     }
 
+    protected function getDefaultLastCronValue(): ?int
+    {
+        return null;
+    }
+
     public function __construct(array $args)
     {
         $this->app = App::getFacadeRoot();
@@ -259,9 +264,13 @@ class BaseCronJob
 
         $cacheValue = $this->app['cache']->get($this->lastCronTimestampCacheKey);
 
+        // if value fetched from cache is null check a default value for cron time is provided.
+        // if not provided set current time - 15 minutes as default value
         if($cacheValue === null)
         {
-            return Carbon::now()->subMinutes(15)->getTimestamp();
+            $defaultLastCronValue = $this->getDefaultLastCronValue();
+            return is_null($defaultLastCronValue) ? Carbon::now()->subMinutes(15)->getTimestamp() :
+                $defaultLastCronValue;
         }
 
         return $cacheValue;

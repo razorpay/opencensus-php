@@ -13,7 +13,6 @@ use RZP\Models\Feature\Constants;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Models\Merchant\AutoKyc\Escalations\Core as EscalationCore;
@@ -21,7 +20,8 @@ use RZP\Models\Merchant\AutoKyc\Escalations\Constants as EscalationConstant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
-
+use RZP\Models\Merchant\Cron\Core as CronJobHandler;
+use RZP\Models\Merchant\Cron\Constants as CronConstants;
 class M2MReferralsTest extends TestCase
 {
     use DbEntityFetchTrait;
@@ -127,8 +127,7 @@ class M2MReferralsTest extends TestCase
         $this->createTransaction($merchant->getId(), 'payment', 200000);
         $this->createTransaction($merchant->getId(), 'payment', 100000);
 
-        (new MerchantCore())->enableM2MReferralsCron();
-
+        (new CronJobHandler())->handleCron(CronConstants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME, []);
         $features = $this->getDbLastEntity('feature', 'live');
         self::assertNotEmpty($features);
         self::assertEquals(Constants::M2M_REFERRAL, $features->getAttribute('name'));
@@ -161,7 +160,7 @@ class M2MReferralsTest extends TestCase
         $this->createTransaction($merchant->getId(), 'payment', 300000);
         $this->createTransaction($merchant->getId(), 'payment', 200000);
         $this->createTransaction($merchant->getId(), 'payment', 100000);
-        (new MerchantCore())->enableM2MReferralsCron();
+        (new CronJobHandler())->handleCron(CronConstants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME, []);
 
         $features = $this->getDbLastEntity('feature', 'live');
         self::assertNotEmpty($features);
@@ -190,7 +189,7 @@ class M2MReferralsTest extends TestCase
         $this->createTransaction($merchant->getId(), 'payment', 200000);
         $this->createTransaction($merchant->getId(), 'payment', 100000);
 
-        (new MerchantCore())->enableM2MReferralsCron();
+        (new CronJobHandler())->handleCron(CronConstants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME, []);
 
         $features = $this->getDbLastEntity('feature', 'live');
         self::assertNull($features);
@@ -216,7 +215,7 @@ class M2MReferralsTest extends TestCase
         $this->createTransaction($merchant->getId(), 'payment', 1);
         $this->createTransaction($merchant->getId(), 'payment', 1);
 
-        (new MerchantCore())->enableM2MReferralsCron();
+        (new CronJobHandler())->handleCron(CronConstants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME, []);
 
         $features = $this->getDbLastEntity('feature', 'live');
         self::assertNull($features);
@@ -228,7 +227,7 @@ class M2MReferralsTest extends TestCase
      * merchant is  activated for min time,
      * merchant do not have min transaction count
      * m2m referral feature already not created
-     * Expectation: New M2Mreferral feature is not created in features table
+     * Expectation: New M2MReferral feature is not created in features table
      */
     public function testCreatingM2MFeatureNotEnoughTransactionCount()
     {
@@ -241,7 +240,7 @@ class M2MReferralsTest extends TestCase
 
         $this->createTransaction($merchant->getId(), 'payment', 300000);
 
-        (new MerchantCore())->enableM2MReferralsCron();
+        (new CronJobHandler())->handleCron(CronConstants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME, []);
 
         $features = $this->getDbLastEntity('feature', 'live');
         self::assertNull($features);

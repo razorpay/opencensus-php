@@ -6262,6 +6262,7 @@ class Core extends Base\Core
     }
 
     /**
+     * TODO: Remove this function and all related code
      * eg. if cron job run for each day then
      * only those merchants will be returned who have transacted in the past day +
      * merchants in activated state +

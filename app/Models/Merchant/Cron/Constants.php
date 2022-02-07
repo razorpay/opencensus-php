@@ -15,5 +15,7 @@ class Constants
     const PARTIAL_SUCCESS   = "partial_success";
     const SKIPPED           = "skipped";
 
+    const ENABLE_M2M_REFERRAL_CRON_JOB_NAME = "enable_m2m_referral";
+
     const MAX_RETRIES_ALLOWED = 5;
 }
