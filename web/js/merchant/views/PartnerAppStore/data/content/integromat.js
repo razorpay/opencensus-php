@@ -1,11 +1,8 @@
-import padImage from '../PadImage';
-
 function Data(brandColor) {
-  const PaddedImage = padImage(brandColor);
   const brandStyles = {
-    listBg: { backgroundColor: brandColor },
     brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
   };
+  const howToVideoUrl = 'https://www.youtube.com/embed/bulBZQZMBEg ';
 
   return (
     <main>
@@ -56,85 +53,24 @@ function Data(brandColor) {
             integration to work.
           </p>
           <section className="how-to-use-video">
-            <p>
-              Note: Integromat is in private launch right now. So you will have to accept the invite
-              to get early access to it.
-            </p>
-            <p>Steps to use Integromat:</p>
+            <p>Watch this quick video tutorial to start using Razorpay with Integromat.</p>
+            <iframe width="560" height="315" src={howToVideoUrl} frameBorder="0" allowFullScreen />
           </section>
-          <ol>
-            <li>
-              <div className="list-flex">
-                <p>
-                  <div className="list-counter" style={brandStyles.listBg} />
-                  <a
-                    href="https://www.integromat.com/en/apps/invite/fb21279e0381a5a245f3d0102250b268"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Click on the invite here{' '}
-                  </a>
-                  for Integromat app .
-                </p>
-              </div>
-            </li>
-            <li>
-              <div className="list-flex">
-                <p>
-                  <div className="list-counter" style={brandStyles.listBg} />
-                  Click “Add to my Inventory on the landing page”
-                </p>
-                <PaddedImage
-                  alt="Integromat add to my inventory screenshot"
-                  src="/dist/css/assets/app-store/content-assets/integromat/add-to-inventory.png"
-                />
-              </div>
-            </li>
-            <li>
-              <div className="list-flex">
-                <p>
-                  <div className="list-counter" style={brandStyles.listBg} />
-                  If you are not signed in already, please proceed with sign in. If you do have an
-                  account, create one by signing up.
-                </p>
-              </div>
-            </li>
-            <li>
-              <div className="list-flex">
-                <p>
-                  <div className="list-counter" style={brandStyles.listBg} />
-                  When you see a screen like this, click “Start using Razorpay”
-                </p>
-                <PaddedImage
-                  alt="Start using Razorpay on integromat screenshot"
-                  src="/dist/css/assets/app-store/content-assets/integromat/start-using-razorpay.png.png"
-                />
-              </div>
-            </li>
-            <li>
-              <div className="list-flex">
-                <p>
-                  <div className="list-counter" style={brandStyles.listBg} />
-                  You can start creating scenarios in Integromat by searching for Razorpay
-                </p>
-                <PaddedImage
-                  alt="Start creating scenarios"
-                  src="/dist/css/assets/app-store/content-assets/integromat/create-scenarios.png"
-                />
-              </div>
-            </li>
-          </ol>
           <section className="queries-section">
             <p>
               For any issues related to this app, please contact our support team{' '}
-              <a href="https://razorpay.com/support/" target="_blank" rel="noreferrer">
+              <a href="https://razorpay.com/support/" target="_blank" rel="noreferrer noopener">
                 here.
               </a>
             </p>
 
             <p>
               Have any feedback, please feel free to share it with us here -{' '}
-              <a href="https://razorpay.typeform.com/to/HIi7IYHN" target="_blank" rel="noreferrer">
+              <a
+                href="https://razorpay.typeform.com/to/ImLpWrDc"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 Share feedback.
               </a>
             </p>
