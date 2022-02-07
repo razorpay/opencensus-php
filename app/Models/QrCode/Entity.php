@@ -9,7 +9,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BharatQr\Tags;
+use RZP\Constants\Entity as Constants;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Order\Repository as OrderRepository;
 
 class Entity extends Base\PublicEntity
 {
@@ -122,6 +124,46 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getSourceAttribute()
+    {
+        $source = null;
+
+        if ($this->relationLoaded('source') === true)
+        {
+            $source = $this->getRelation('source');
+        }
+
+        if ($source !== null)
+        {
+            return $source;
+        }
+
+        if ($this->getEntityType() === Constants::ORDER)
+        {
+            $source = $this->source()->with('offers')->first();
+        }
+        else if ($this->getEntityId() !== null)
+        {
+            $source = $this->source()->first();
+        }
+
+        if (empty($source) === false)
+        {
+            return $source;
+        }
+
+        if ($this->getEntityType() === Constants::ORDER)
+        {
+            $order = (new OrderRepository())->findOrFailPublic($this->getEntityId());
+
+            $this->source()->associate($order);
+
+            return $order;
+        }
+
+        return null;
+    }
+
     // --------------------- GETTERS ---------------------
 
     /**
@@ -179,6 +221,16 @@ class Entity extends Base\PublicEntity
     public function getProvider()
     {
         return $this->getAttribute(self::PROVIDER);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
     public function getFormattedAmount()

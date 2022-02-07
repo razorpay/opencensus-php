@@ -15,6 +15,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Order\Repository as OrderRepository;
 
 /**
  * @property Vpa\Entity          $vpa
@@ -149,7 +150,6 @@ class Entity extends Base\PublicEntity
     protected $entity = Constants::VIRTUAL_ACCOUNT;
 
     // ----------------------- Associations ------------------------------------
-
     public function bankAccount()
     {
         return $this->belongsTo('RZP\Models\BankAccount\Entity')->withTrashed();
@@ -324,6 +324,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
     public function getSourceType()
     {
         return $this->getAttribute(self::SOURCE);
@@ -369,6 +374,47 @@ class Entity extends Base\PublicEntity
 
         return $allowedPayers;
     }
+
+    public function getEntityAttribute()
+    {
+        $entity = null;
+
+        if ($this->relationLoaded('entity') === true)
+        {
+            $entity = $this->getRelation('entity');
+        }
+
+        if ($entity !== null)
+        {
+            return $entity;
+        }
+
+        if ($this->getEntityType() === Constants::ORDER)
+        {
+            $entity = $this->entity()->with('offers')->first();
+        }
+        else if ($this->getEntityId() !== null)
+        {
+            $entity = $this->entity()->first();
+        }
+
+        if (empty($entity) === false)
+        {
+            return $entity;
+        }
+
+        if ($this->getEntityType() === Constants::ORDER)
+        {
+            $order = (new OrderRepository())->findOrFailPublic($this->getEntityId());
+
+            $this->entity()->associate($order);
+
+            return $order;
+        }
+
+        return null;
+    }
+
 
     public function getReceiverBuilder()
     {
