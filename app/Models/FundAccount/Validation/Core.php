@@ -23,10 +23,12 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundTransfer\Redaction;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Services\FTS\Constants as FtsConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 
@@ -68,10 +70,13 @@ class Core extends Base\Core
         {
             $fundAccountValidation = $this->createValidationEntity($input, $merchant);
 
-            $processor = Processor\Factory::get($fundAccountValidation);
-
-            $processor->preProcessValidation();
-
+            // Skip fts calls for validation in case of ledger failure
+            // This will be picked up from async job when ledger status is checked
+            if ($fundAccountValidation->getLedgerResponseAwaitedFlag() === false)
+            {
+                $processor = Processor\Factory::get($fundAccountValidation);
+                $processor->preProcessValidation();
+            }
         }
         catch (\Throwable $e)
         {
@@ -80,6 +85,7 @@ class Core extends Base\Core
             throw $e;
         }
 
+        // Todo: check if pushing this metric is ok in case of ledger reverse shadow failure
         (new Metric)->pushCreatedMetrics($fundAccountValidation->getFundAccountType());
 
         return $fundAccountValidation;
@@ -207,56 +213,96 @@ class Core extends Base\Core
 
         try
         {
-            $ledgerResponse = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($validation);
+            $ledgerResponse = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($validation, [], null, $feesSplit);
+            // If it is a success, dispatch to queue for transactions creation
+            try
+            {
+                Transactions::dispatch($this->mode,
+                    $validation->getId(),
+                    EntityConstant::FUND_ACCOUNT_VALIDATION,
+                    $ledgerResponse,
+                    $feesSplit);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->info(
+                    TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+                    [
+                        'fav_id'         => $validation->getId(),
+                        'entity_name'    => EntityConstant::FUND_ACCOUNT_VALIDATION,
+                        'ledger_response' => $ledgerResponse,
+                    ]);
+            }
         }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            // Timeout case
-            // This is an ambiguous situation, need to manually check if the ledger entry was created.
-            // TODO: An alert here is absolutely essential
-            // TODO: Figure out how to retry these scenarios.. Maybe more SQS?
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                null,
-                [
-                    'fav_id' => $validation->getId(),
-                ]
-            );
-
-            throw $e;
-        }
-        catch (\Throwable $e)
+        catch (BadRequestException $ex)
         {
             $validation->setStatus(Status::FAILED);
             $this->repo->saveOrFail($validation);
-
-            throw $e;
-        }
-
-        // If it is a success, dispatch to queue for transactions creation
-        try
-        {
-            Transactions::dispatch($this->mode,
-                                   $validation->getId(),
-                                   EntityConstant::FUND_ACCOUNT_VALIDATION,
-                                   $ledgerResponse,
-                                   $feesSplit);
+            throw $ex;
         }
         catch (\Throwable $ex)
         {
-            // Todo: check how to handle this failure
-            // Will probably need to give a route to retry creation
-            $this->trace->info(
-                TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
+            // the flag is used to skip fts call due to ledger failure
+            // the fts calls will be handled later when this fav request gets retried in async
+            $validation->setLedgerResponseAwaitedFlag(true);
+            // trace and ignore exception as it will be retries in async
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                null,
                 [
                     'fav_id'         => $validation->getId(),
-                    'entity_name'    => EntityConstant::FUND_ACCOUNT_VALIDATION,
-                    'ledgerResponse' => $ledgerResponse,
-                ]);
+                ]
+            );
         }
 
         return $validation;
+    }
+
+    public function processFavAfterLedgerStatusCheck($validation, $ledgerResponse, $feesSplit = null)
+    {
+        $this->trace->info(
+            TraceCode::PROCESS_FAV_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'fav_id'            => $validation->getId(),
+                'entity_name'       => EntityConstant::FUND_ACCOUNT_VALIDATION,
+                'fee_split'         => $feesSplit
+            ]);
+
+        $processor = Processor\Factory::get($validation);
+        $processor->preProcessValidation();
+
+        // Todo: how to get $feesSplit here ?
+        try
+        {
+            Transactions::dispatch($this->mode,
+                $validation->getId(),
+                EntityConstant::FUND_ACCOUNT_VALIDATION,
+                $ledgerResponse,
+                $feesSplit);
+        } catch (\Throwable $ex) {
+            // trace and ignore exception
+            $payload = [
+                'payout_id'         => $validation->getId(),
+                'entity_name'       => EntityConstant::FUND_ACCOUNT_VALIDATION,
+                'ledger_response'   => $ledgerResponse,
+            ];
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
+
+    }
+
+    public function failFavAfterLedgerStatusCheck($validation)
+    {
+        $this->trace->info(
+            TraceCode::FAIL_FAV_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'fav_id'            => $validation->getId(),
+                'entity_name'       => EntityConstant::FUND_ACCOUNT_VALIDATION,
+            ]);
+
+        $processor = Processor\Factory::get($validation);
+        $processor->markValidationAsFailed();
     }
 
     public static function shouldFavGoThroughLedgerReverseShadowFlow($validation)

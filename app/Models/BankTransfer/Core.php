@@ -13,6 +13,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\Transactions;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
@@ -191,6 +192,7 @@ class Core extends Base\Core
         }
         finally
         {
+            // Todo: below function pushes $paymentSuccess = true, check if in case of ledger async retries (txn will be eventually done from jobs) its ok to do so
             $this->postProcessBankTransferUpdation($bankTransfer, $bankTransferInput, $bankTransferRequest, $errorMessage, $paymentSuccess);
         }
 
@@ -787,5 +789,33 @@ class Core extends Base\Core
         }
 
         return $array;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function processBankTransferAfterLedgerStatusCheck($bankTransfer, $ledgerResponse)
+    {
+        $this->trace->info(
+            TraceCode::PROCESS_BANK_TRANSFER_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'bank_transfer_id'      => $bankTransfer->getId(),
+                'entity_name'           => Constants\Entity::BANK_TRANSFER,
+            ]);
+
+        $bankTransfer->setStatus(Status::PROCESSED);
+        $this->repo->saveOrFail($bankTransfer);
+
+        try {
+            Transactions::dispatch($this->mode, $bankTransfer->getId(), Constants\Entity::BANK_TRANSFER, $ledgerResponse);
+        } catch (\Throwable $ex) {
+            // trace and ignore exception
+            $payload = [
+                'bank_transfer_id'     => $bankTransfer->getId(),
+                'entity_name'          => Constants\Entity::BANK_TRANSFER,
+                'ledger_response'       => $ledgerResponse,
+            ];
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
     }
 }

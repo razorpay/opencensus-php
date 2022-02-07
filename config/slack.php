@@ -200,7 +200,10 @@ return array(
         'x-payouts-core-alerts'  => 'C01B8T2HUM7',
 
         // x alerts channel
-        'x-alerts'               => 'CJD6RKF5Z'
+        'x-alerts'               => 'CJD6RKF5Z',
+
+        // ledger alerts channel
+        'platform-ledger-alerts' => 'C01FW2MTBMZ'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

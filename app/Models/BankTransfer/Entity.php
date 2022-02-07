@@ -208,6 +208,7 @@ class Entity extends Base\PublicEntity
         self::PAYER_ACCOUNT,
     ];
 
+    // Any changes to this sign will affect LedgerStatus Job as well
     protected static $sign = 'bt';
 
     protected $entity = Constants\Entity::BANK_TRANSFER;

@@ -3,7 +3,6 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Exception;
-use RZP\Jobs\Transactions;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Models\Feature;
@@ -13,15 +12,19 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
+use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use Exception as DefaultException;
 use RZP\Constants as DefaultConstants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement\Channel as BankingChannel;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Transaction\Processor\Ledger\Adjustment as LedgerAdjustment;
 
 class Core extends Base\Core
@@ -655,12 +658,14 @@ class Core extends Base\Core
     }
 
     /**
-     * @param  Entity $adj
+     * @param Entity $adj
      *
      *
      * This function proceses txn in reverse shadow mode
      * We call ledger in sync and use ledger response to
      * create txn in api db in async
+     * @throws Exception\BadRequestException
+     * @throws BadRequestValidationFailureException
      */
     protected function processLedgerForReverseShadow(Entity $adj)
     {
@@ -671,63 +676,104 @@ class Core extends Base\Core
         $ledgerPayload = (new LedgerAdjustment)->createPayloadForJournalEntry($adj, $event);
         try {
             $ledgerResponse = (new LedgerAdjustment)->createJournalEntry($ledgerPayload);
+            $adj->setStatus(Status::PROCESSED);
+            $this->repo->saveOrFail($adj);
+            // Push txn to sqs if ledger response is successful
+            try {
+                // push to ledger transaction sqs
+                Transactions::dispatch($this->mode, $adj->getId(), DefaultConstants\Entity::ADJUSTMENT, $ledgerResponse);
+            }
+            catch (DefaultException $ex)
+            {
+                $this->trace->info(
+                    TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
+                    [
+                        'adjustment_id'             => $adj->getId(),
+                        'entity_name'               => DefaultConstants\Entity::ADJUSTMENT,
+                        'ledger_response'           => $ledgerResponse,
+                    ]);
+            }
         }
-        catch (DefaultException $ex)
+        catch (BadRequestException $ex)
         {
-            // Create api txn manually for credit case and Todo: send slack alert
+            // insufficient balance error from ledger
+            $traceCode = TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW;
             if ($adj->getAmount() >= 0)
             {
-                $tempAdj = $adj;
-                $txn = $this->repo->transaction(
-                    function () use ($tempAdj) {
-                        $adj = clone $tempAdj;
-                        $txn = (new Transaction\Core)->createFromAdjustment($adj);
-                        $this->repo->saveOrFail($txn);
-                        $adj->setStatus(Status::PROCESSED);
-                        $this->repo->saveOrFail($adj);
-                        (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
-                        return $txn;
-                    });
+                $traceCode = TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW;
             }
-            // if the adjustment is of -ve amount, it will stayed in created state
-
             $alertPayload = [
                 'adjustment_id'         => $adj->getId(),
                 'ledger_payload'        => $ledgerPayload,
-                'txn_id'                => $txn->getId(),
-                'mode'                  => $this->mode
             ];
+
             $this->trace->traceException(
                 $ex,
                 Trace::CRITICAL,
-                TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW,
+                $traceCode,
                 $alertPayload
             );
 
-            // send slack alert as ledger entry needs to be created
-            (new SlackNotification)->send(TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW, $alertPayload, $ex, 1, 'platform-ledger-alerts');
-
-            return;
+            // mark negative adj as failed in case of insufficient errors
+            if ($adj->getAmount() < 0)
+            {
+                $adj->setStatus(Status::FAILED);
+                $this->repo->saveOrFail($adj);
+            }
         }
-
-        // call to ledger is successful, so marking adjustment as processed
-        $adj->setStatus(Status::PROCESSED);
-        $this->repo->saveOrFail($adj);
-
-        // Push txn to sqs
-        try {
-            // push to ledger transaction sqs
-            Transactions::dispatch($this->mode, $adj->getId(), DefaultConstants\Entity::ADJUSTMENT, $ledgerResponse);
-        }
-        catch (DefaultException $ex)
+        catch (\Throwable $ex)
         {
-            $this->trace->info(
-                TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
+            // trace and ignore exception as it will be retries in async
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_FAILURE,
                 [
-                    'bank_transfer_id'          => $adj->getId(),
-                    'entity_name'               => DefaultConstants\Entity::ADJUSTMENT,
-                    'ledgerResponse'            => $ledgerResponse,
-                ]);
+                    'adjustment_id'         => $adj->getId(),
+                    'ledger_payload'        => $ledgerPayload,
+                ]
+            );
         }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function processAdjustmentAfterLedgerStatusCheck($adjustment, $ledgerResponse)
+    {
+        $this->trace->info(
+            TraceCode::PROCESS_ADJUSTMENT_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'adjustment_id'     => $adjustment->getId(),
+                'entity_name'       => DefaultConstants\Entity::ADJUSTMENT,
+            ]);
+
+        $adjustment->setStatus(Status::PROCESSED);
+        $this->repo->saveOrFail($adjustment);
+
+        try {
+            Transactions::dispatch($this->mode, $adjustment->getId(), DefaultConstants\Entity::ADJUSTMENT, $ledgerResponse);
+        } catch (\Throwable $ex) {
+            // trace and ignore exception
+            $payload = [
+                'adjustment_id'     => $adjustment->getId(),
+                'entity_name'       => DefaultConstants\Entity::ADJUSTMENT,
+                'ledger_response'   => $ledgerResponse,
+            ];
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
+    }
+
+    public function failAdjustmentAfterLedgerStatusCheck($adjustment)
+    {
+        $this->trace->info(
+            TraceCode::FAIL_ADJUSTMENT_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'adjustment_id' => $adjustment->getId(),
+                'entity_name'   => DefaultConstants\Entity::ADJUSTMENT,
+            ]);
+
+        $adjustment->setStatus(Status::FAILED);
+        $this->repo->saveOrFail($adjustment);
     }
 }

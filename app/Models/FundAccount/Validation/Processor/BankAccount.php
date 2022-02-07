@@ -342,7 +342,7 @@ class BankAccount extends Base
                     try
                     {
                         $response = (new Transaction\Processor\Ledger\FundAccountValidation())
-                            ->processValidationAndCreateJournalEntry($this->validation);
+                            ->processValidationAndCreateJournalEntry($this->validation, $ftsSourceAccountInformation, Attempt\Status::REVERSED);
                     }
                     catch (\Throwable $e)
                     {
@@ -352,8 +352,11 @@ class BankAccount extends Base
                         //TODO: Decide how to raise an alert and re-run the request to ledger here.
                         $this->trace->traceException(
                             $e,
-                            Logger::ALERT,
-                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                            Logger::ERROR,
+                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                            [
+                                'fav_id' => $this->validation->getId(),
+                            ]
                         );
                     }
                 }
@@ -428,7 +431,7 @@ class BankAccount extends Base
             try
             {
                 $response = (new Transaction\Processor\Ledger\FundAccountValidation())
-                    ->processValidationAndCreateJournalEntry($this->validation);
+                    ->processValidationAndCreateJournalEntry($this->validation, $ftsSourceAccountInformation);
             }
             catch (\Throwable $e)
             {
@@ -438,8 +441,11 @@ class BankAccount extends Base
                 //TODO: Decide how to raise an alert and re-run the request to ledger here.
                 $this->trace->traceException(
                     $e,
-                    Logger::ALERT,
-                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                    Logger::ERROR,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                    [
+                        'fav_id' => $this->validation->getId(),
+                    ]
                 );
             }
         }

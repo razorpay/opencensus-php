@@ -9,7 +9,6 @@ use Config;
 use Request;
 use Exception;
 use Carbon\Carbon;
-use RZP\Constants as DefaultConstants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
@@ -29,14 +28,17 @@ use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Constants as DefaultConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\FundLoadingDowntime\Notifications;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
 use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
 
@@ -252,7 +254,7 @@ class Processor extends VirtualAccount\Processor
     }
 
     /**
-     * @param  Entity $adj
+     * @param  Entity $bankTransfer
      *
      *
      * This function proceses txn in reverse shadow mode
@@ -276,66 +278,37 @@ class Processor extends VirtualAccount\Processor
         $ledgerPayload = (new LedgerFundLoading)->createPayloadForJournalEntry($bankTransfer,$terminal->getPublicId(), $terminal->getAccountType());
         try {
             $ledgerResponse = (new LedgerFundLoading)->createJournalEntry($ledgerPayload);
-        }
-        catch (Exception $ex)
-        {
-            // Create api txn manually and Todo: send slack alert
-            $tempBankTransfer = $bankTransfer;
-            $txn = $this->repo->transaction(function() use ($tempBankTransfer)
+            $bankTransfer->setStatus(Status::PROCESSED);
+            $this->repo->saveOrFail($bankTransfer);
+            // Push txn to sqs if ledger response is successful
+            try {
+                Transactions::dispatch($this->mode, $bankTransfer->getId(), DefaultConstants\Entity::BANK_TRANSFER, $ledgerResponse);
+            }
+            catch (Exception $ex)
             {
-                $bankTransfer = clone $tempBankTransfer;
-                // Creates a transaction with bank transfer entity as source, merchant's banking balance gets credited.
-                list ($txn, $feeSplit) = (new Transaction\Processor\BankTransfer($bankTransfer))->createTransaction();
-                $this->repo->saveOrFail($txn);
-                // this will be removed once we add sync and async retries
-                // for ledger response and status will be updated to proc
-                $bankTransfer->setStatus(Status::PROCESSED);
-                $this->repo->saveOrFail($bankTransfer);
-                return $txn;
-            });
-
-            $this->dispatchEventForTransactionCreated($bankTransfer, $txn);
-            $alertPayload = [
-                'bank_transfer_id'      => $bankTransfer->getId(),
-                'ledger_payload'        => $ledgerPayload,
-                'txn_id'                => $txn->getId(),
-                'mode'                  => $this->mode
-            ];
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW,
-                $alertPayload
-            );
-
-            // send slack alert as ledger entry needs to be created
-            (new SlackNotification)->send(TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW, $alertPayload, $ex, 1, 'platform-ledger-alerts');
-
-            return;
+                $this->trace->traceException(
+                    $ex,
+                    TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
+                    [
+                        'bank_transfer_id'           => $bankTransfer->getId(),
+                        'entity_name'                => DefaultConstants\Entity::BANK_TRANSFER,
+                        'ledger_response'            => $ledgerResponse,
+                    ]);
+            }
         }
-
-        // Call to ledger was successful and so marking
-        // BT as processed
-        $bankTransfer->setStatus(Status::PROCESSED);
-        $this->repo->saveOrFail($bankTransfer);
-        // Push txn to sqs
-        try {
-            // push to ledger transaction sqs
-            Transactions::dispatch($this->mode, $bankTransfer->getId(), DefaultConstants\Entity::BANK_TRANSFER, $ledgerResponse);
-        }
-        catch (Exception $ex)
+        catch (\Throwable $ex)
         {
-            // Todo: retry this ?
+            // trace and ignore exception as it will be retries in async
             $this->trace->traceException(
                 $ex,
-                TraceCode::LEDGER_TXN_PUSH_FAILED_REVERSE_SHADOW,
+                Trace::ERROR,
+                TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                 [
-                    'bank_transfer_id'          => $bankTransfer->getId(),
-                    'entity_name'               => DefaultConstants\Entity::BANK_TRANSFER,
-                    'ledgerResponse'            => $ledgerResponse,
-                ]);
+                    'bank_transfer_id'      => $bankTransfer->getId(),
+                    'ledger_request'        => $ledgerPayload,
+                ]
+            );
         }
-
     }
 
     protected function sendEventForTransactionCreated(Entity $bankTransfer)

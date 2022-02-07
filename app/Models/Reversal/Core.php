@@ -26,6 +26,7 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
@@ -316,23 +317,6 @@ class Core extends Base\Core
                 {
                     $response = (new Ledger\FundAccountValidation())->processValidationAndCreateJournalEntry($fav);
                 }
-                catch (Exception\GatewayTimeoutException $e)
-                {
-                    // Timeout case
-                    // This is an ambiguous situation, need to manually check if the ledger entry was created.
-                    // TODO: An alert here is absolutely essential
-                    $this->trace->traceException(
-                        $e,
-                        Trace::CRITICAL,
-                        null,
-                        [
-                            'fav_id' => $fav->getId(),
-                        ]
-                    );
-
-                    // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
-                    // entry is eventually created
-                }
                 catch (\Throwable $e)
                 {
                     // If an exception is caught here, we ignore it.
@@ -341,8 +325,11 @@ class Core extends Base\Core
                     // create an entry in ledger asynchronously/manually later.
                     $this->trace->traceException(
                         $e,
-                        Logger::ALERT,
-                        TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                        Logger::ERROR,
+                        TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                        [
+                            'fav_id' => $fav->getId(),
+                        ]
                     );
                 }
 
@@ -392,23 +379,6 @@ class Core extends Base\Core
                         ]);
                 }
             }
-            catch (Exception\GatewayTimeoutException $e)
-            {
-                // Timeout case
-                // This is an ambiguous situation, need to manually check if the ledger entry was created.
-                // TODO: An alert here is absolutely essential
-                $this->trace->traceException(
-                    $e,
-                    Trace::CRITICAL,
-                    null,
-                    [
-                        'fav_id' => $fav->getId(),
-                    ]
-                );
-
-                // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
-                // entry is eventually created
-            }
             catch (\Throwable $e)
             {
                 // If an exception is caught here, we ignore it.
@@ -417,8 +387,11 @@ class Core extends Base\Core
                 // create an entry in ledger asynchronously/manually later.
                 $this->trace->traceException(
                     $e,
-                    Logger::ALERT,
-                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                    Logger::ERROR,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                    [
+                        'fav_id' => $fav->getId(),
+                    ]
                 );
             }
 
@@ -455,6 +428,27 @@ class Core extends Base\Core
             ]);
 
         return;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function pushFavReversalToLedgerTxnQueue($reversal, $ledgerResponse)
+    {
+        try
+        {
+            Transactions::dispatch($this->mode, $reversal->getId(), E::REVERSAL, $ledgerResponse);
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception
+            $payload = [
+                'reversal_id'    => $reversal->getId(),
+                'entity_name'    => \RZP\Constants\Entity::REVERSAL,
+                'ledgerResponse' => $ledgerResponse,
+            ];
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
     }
 
     /**

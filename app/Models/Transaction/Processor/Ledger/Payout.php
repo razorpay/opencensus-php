@@ -4,16 +4,16 @@ namespace RZP\Models\Transaction\Processor\Ledger;
 
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payout\Status;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Status;
 use RZP\Models\Merchant\Credits;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Transaction\Entity as TransactionEntity;
@@ -252,11 +252,11 @@ class Payout extends Base
      * @throws BadRequestException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null)
     {
         try
         {
-            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount);
+            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
         }
         catch (BadRequestException $e)
         {

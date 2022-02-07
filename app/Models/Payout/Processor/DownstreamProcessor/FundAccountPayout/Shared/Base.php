@@ -4,15 +4,12 @@ namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Shar
 
 use Mail;
 
-use Carbon\Carbon;
 use RZP\Constants;
-use RZP\Mail\Banking;
-use RZP\Models\Admin;
+use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Pricing;
-use RZP\Models\Feature;
 use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
 use RZP\Models\Payout\Mode;
@@ -178,10 +175,6 @@ class Base extends FundAccountPayout\Base
      *
      * @return Entity
      * @throws BadRequestException
-     * @throws GatewayTimeoutException
-     * @throws LogicException
-     * @throws \RZP\Exception\InvalidArgumentException
-     * @throws \Throwable
      */
     public function processPayoutThroughLedger(Entity $payout, PublicEntity $ftaAccount)
     {
@@ -221,103 +214,111 @@ class Base extends FundAccountPayout\Base
                         'ledgerResponse' => $ledgerResponse,
                     ]);
             }
-
-            return $payout;
-        }
-        catch (GatewayTimeoutException $e)
-        {
-            // Timeout case
-            // This is an ambiguous situation, need to manually check if the ledger entry was created.
-            // TODO: An alert here is absolutely essential
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                null,
-                [
-                    'payout_id' => $payout->getId(),
-                ]
-            );
-
-            throw $e;
         }
         catch (BadRequestException $ex)
         {
-            $insufficientFundsErrorCode = ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING;
-
-            if ($ex->getError()->getInternalErrorCode() === $insufficientFundsErrorCode)
-            {
-                $shouldUnsetFeeTypeAndExpectedFeeType =
-                    (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($payout,
-                                                                                 CounterHelper::INSUFFICIENT_BALANCE);
-
-                if ($shouldUnsetFeeTypeAndExpectedFeeType === true)
-                {
-                    $payout->setFeeType(null);
-
-                    $payout->setExpectedFeeType(null);
-                }
-
-                // since the banking balance of merchant was not sufficient, the payout went to queued state
-                // we don't want to have a payout in the system which is in queued state and has fees and tax
-                // set, so rolling back the changes.
-
-                $payout->setFees(0);
-
-                $payout->setTax(0);
-
-                unset($payout[Entity::PRICING_RULE_ID]);
-
-                // we need to reverse the credits consumed by the payouts
-                // although the flow shouldn't reach here right now in partial reverse shadow
-                // keeping this for safety
-                if ($payout->getFeeType() === CreditType::REWARD_FEE)
-                {
-                    $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_QUEUED_PAYOUT,
-                                       [
-                                           'payout_id' => $payout->getId()
-                                       ]);
-
-                    (new Credits\Transaction\Core)->reverseCreditsForSource(
-                        $payout->getId(),
-                        Constants\Entity::PAYOUT,
-                        $payout);
-
-                    unset($payout[Entity::FEE_TYPE]);
-                }
-
-                if ($payout->toBeQueued() === false)
-                {
-                    $payout->setStatus(Status::FAILED);
-
-                    $payout->setFailureReason('Insufficient balance to process payout');
-
-                    $payout->setStatusCode($insufficientFundsErrorCode);
-
-                    $this->repo->saveOrFail($payout);
-
-                    $this->trace->info(
-                        TraceCode::PAYOUT_FAILED_IN_LEDGER_FLOW,
-                        [
-                            'payout_id'      => $payout->getId(),
-                            'transaction_id' => $payout->getTransactionId(),
-                            'payout_status'  => $payout->getStatus(),
-                            'failure_reason' => $payout->getFailureReason(),
-                        ]);
-
-                    throw $ex;
-                }
-
-                $payout->setStatus(Status::QUEUED);
-
-                $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
-
-                $this->repo->saveOrFail($payout);
-            }
-            else
+            $this->failPayoutPostLedgerFailure($payout, $ex->getError()->getInternalErrorCode());
+            if ($payout->toBeQueued() === false)
             {
                 throw $ex;
             }
         }
+        catch (\Throwable $ex)
+        {
+            // the flag is used to skip fts call due to ledger failure
+            // the fts calls will be handled later when this fav request gets retried in async
+            $payout->setLedgerResponseAwaitedFlag(true);
+            // trace and ignore exception as it will be retries in async
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_FAILURE,
+                [
+                    'payout_id' => $payout->getId(),
+                ]
+            );
+        }
+
+        return $payout;
+    }
+
+    /**
+     * Don't call this method if the payout is before created state.
+     * @param $payout
+     * @param $errorCode
+     *
+     * This function marks the payout as failed as per the failure received from
+     * ledger
+     * 1. We reverse the reward credits for reward based payouts
+     * 2. We reverse the free payout if applicable
+     * 3. We mark the payout as failed if payout is not to be queued, else
+     *  we mark the payout as queued
+     *
+     */
+    public function failPayoutPostLedgerFailure($payout, string $errorCode = null)
+    {
+        // we need to reverse the credits consumed by the payouts
+        // although the flow shouldn't reach here right now in partial reverse shadow
+        // keeping this for safety
+        if ($payout->getFeeType() === CreditType::REWARD_FEE)
+        {
+            $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_PAYOUT,
+                [
+                    'payout_id' => $payout->getId()
+                ]);
+
+            (new Credits\Transaction\Core)->reverseCreditsForSource(
+                $payout->getId(),
+                Constants\Entity::PAYOUT,
+                $payout);
+        }
+
+        if ($errorCode === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+        {
+            // reverse free payout consumed in case payout fails due to insufficient balance error
+            (new CounterHelper)->decreaseFreePayoutsConsumedIfApplicable($payout, CounterHelper::INSUFFICIENT_BALANCE);
+
+            if ($payout->toBeQueued() === false)
+            {
+                $payout->setStatus(Status::FAILED);
+                $payout->setFailureReason('Insufficient balance to process payout');
+                $payout->setStatusCode($errorCode);
+                $this->trace->info(
+                    TraceCode::PAYOUT_FAILED_IN_LEDGER_FLOW,
+                    [
+                        'payout_id'      => $payout->getId(),
+                        'transaction_id' => $payout->getTransactionId(),
+                        'payout_status'  => $payout->getStatus(),
+                        'failure_reason' => $payout->getFailureReason(),
+                    ]);
+            }
+            else
+            {
+                // payout to be queued
+                // since the banking balance of merchant was not sufficient, the payout went to queued state
+                // we don't want to have a payout in the system which is in queued state and has fees and tax
+                // set, so rolling back the changes.
+                $payout->setFees(0);
+                $payout->setTax(0);
+                $payout->setFeeType(null);
+                $payout->setExpectedFeeType(null);
+                unset($payout[Entity::PRICING_RULE_ID]);
+                $payout->setStatus(Status::QUEUED);
+                $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
+            }
+        }
+        else
+        {
+            // reverse free payout consumed in case payout fails due to transaction creation error from ledger
+            if ($payout->getFeeType() === Entity::FREE_PAYOUT) {
+                (new CounterHelper)->decreaseFreePayoutsConsumedInCaseOfTransactionFailure($payout->getBalanceId());
+            }
+            $payout->setStatus(Status::FAILED);
+            $payout->setFailureReason('Payout failed. Contact support for help.');
+            $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR);
+        }
+
+        $this->repo->saveOrFail($payout);
     }
 
     public function createTransactionForLedgerReverseShadow($payout, $ledgerResponse)

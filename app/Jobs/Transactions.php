@@ -66,6 +66,7 @@ class Transactions extends Job
                 'entityId'          => $this->entityId,
                 'entityName'        => $this->entityName,
                 'ledgerResponse'    => $this->ledgerResponse,
+                'feeSplit'          => $this->feeSplit
             ];
 
             $this->trace->info(

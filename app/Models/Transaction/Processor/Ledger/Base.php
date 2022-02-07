@@ -5,13 +5,14 @@ namespace RZP\Models\Transaction\Processor\Ledger;
 use App;
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
+use RZP\Jobs\LedgerStatus;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
-use RZP\Services\Ledger as LedgerService;
 use RZP\Exception\GatewayTimeoutException;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends Core
@@ -80,6 +81,8 @@ class Base extends Core
     // Ledger retry
     const DEFAULT_MAX_RETRY_COUNT = 3;
 
+    const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED, FundAccountValidation::FAV_INITIATED, Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
+
     public static function getMerchantBalanceFromLedgerResponse(array $ledgerResponse)
     {
         foreach($ledgerResponse[self::LEDGER_ENTRY] as $ledgerEntry)
@@ -132,6 +135,52 @@ class Base extends Core
     }
 
     /**
+     * @param array $ledgerRequest
+     * @param array $feeSplit
+     * This function pushes the payload to sqs which will be used by api worker
+     * for status checks on ledger
+     */
+    public function pushToLedgerStatusSQS(array $ledgerRequest, PublicCollection $feeSplit = null)
+    {
+        $this->trace->info(TraceCode::LEDGER_STATUS_QUEUE_PUSH_STARTED,
+            [
+                'ledgerRequest' => $ledgerRequest,
+                'feeSplit'      => $feeSplit
+            ]);
+
+        try
+        {
+            $feeSplit !== null ? LedgerStatus::dispatch($this->mode, $ledgerRequest, $feeSplit->toArray()) : LedgerStatus::dispatch($this->mode, $ledgerRequest, $feeSplit);
+        }
+        catch (\Throwable $e)
+        {
+            // Add sumo alert on this
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::LEDGER_STATUS_QUEUE_PUSH_FAILED,
+                $ledgerRequest);
+        }
+    }
+
+    /**
+     * This function is used from job to call the Ledger service for any transactor event.
+     * This call shall tell ledger to create a new journal entry, ledger entry and adjust the balance/Chart of Accounts
+     * Please extend this function in child classes if exceptions are to be handled in a custom way.
+     *
+     * @param array $payload
+     *
+     *
+     * @throws \Throwable
+     */
+    public function createJournalEntryFromJob(array $payload)
+    {
+        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_FROM_JOB, $payload);
+        $ledgerService = $this->app['ledger'];
+        $ledgerService->setIdempotencyKey(Uuid::uuid1());
+        return $ledgerService->createJournal($payload, true);
+    }
+    /**
      * This function is used to call the Ledger service for any transactor event.
      * This call shall tell ledger to create a new journal entry, ledger entry and adjust the balance/Chart of Accounts
      * Please extend this function in child classes if exceptions are to be handled in a custom way.
@@ -144,7 +193,7 @@ class Base extends Core
      * @throws \RZP\Exception\GatewayTimeoutException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null)
     {
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST, $payload);
         try
@@ -156,43 +205,107 @@ class Base extends Core
                 $ledgerService->setIdempotencyKey(Uuid::uuid1());
             }
             $response = $ledgerService->createJournal($payload, true);
-        }
-        catch (\Requests_Exception $re)
-        {
-            // This is an ambiguous situation, retry the request
-            // TODO: An alert here is absolutely essential
-            $this->trace->traceException($re, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_TIMEOUT,
-            [
-                'retries' => $retryCount
-            ]);
 
-            if ($retryCount < $maxRetryCount)
-            {
-                $retryCount++;
-                return $this->createJournalEntry($payload, $maxRetryCount, $retryCount);
-            } else {
-                throw new GatewayTimeoutException($re->getMessage(), $re);
-            }
+            // For testing retries through LedgerStatus Job, uncomment this
+//            $retryCount = 10; // to skip retry and go to async job
+//            throw new \Requests_Exception(null, "Forced exception for testing");
         }
         catch (\RZP\Exception\RuntimeException $e)
         {
             $exceptionData = $e->getData();
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR,
+                [
+                    'retries'           => $retryCount,
+                    'ledger_request'    => $payload
+                ]);
 
             // If it's an insufficient balance case, convert to a new BadRequestException
             if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false)
             {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
-
                 throw new BadRequestException(
                     Errorcode::BAD_REQUEST_INSUFFICIENT_BALANCE,
                     null,
                     $exceptionData
                 );
             }
-            // If it's a validation failure, convert to a new BadRequestValidationFailureException
-            else if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            else
             {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR);
+                // Todo: what all error codes can create Journal throw from ledger
+                if ($retryCount < $maxRetryCount)
+                {
+                    $retryCount++;
+                    return $this->createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
+                }
+                else
+                {
+                    // retries exhausted - push for async retries
+                    $this->pushToLedgerStatusSQS($payload, $feeSplit);
+                    throw $e;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            // This is an ambiguous situation, retry the request
+            // TODO: An alert here is absolutely essential
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_TIMEOUT,
+                [
+                    'ledger_request'    => $payload,
+                    'retries'           => $retryCount,
+                ]);
+
+            if ($retryCount < $maxRetryCount)
+            {
+                $retryCount++;
+                return $this->createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
+            }
+            else
+            {
+                // retries exhausted - push for async retries
+                $this->pushToLedgerStatusSQS($payload, $feeSplit);
+                throw $ex;
+            }
+        }
+
+        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $response);
+
+        return $response;
+    }
+
+    /**
+     * This function is used to call the Ledger service for any transactor event.
+     * This call shall tell ledger to fetch an existing journal entry by transactor,
+     * Please extend this function in child classes if exceptions are to be handled in a custom way.
+     *
+     * @param array $payload
+     *
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\GatewayTimeoutException
+     * @throws \Throwable
+     */
+    public function fetchJournalByTransactor(array $payload)
+    {
+        $this->trace->info(TraceCode::LEDGER_FETCH_BY_TRANSACTOR_REQUEST, $payload);
+        try
+        {
+            $ledgerService = $this->app['ledger'];
+            $response = $ledgerService->fetchByTransactor($payload, true);
+        }
+        catch (\Requests_Exception $re)
+        {
+            // This is an ambiguous situation, retry the request
+            // TODO: An alert here is absolutely essential
+            $this->trace->traceException($re, Trace::CRITICAL, TraceCode::LEDGER_FETCH_BY_TRANSACTOR_REQUEST_TIMEOUT);
+            throw new GatewayTimeoutException($re->getMessage(), $re);
+        }
+        catch (\RZP\Exception\RuntimeException $e)
+        {
+            $exceptionData = $e->getData();
+            // If it's a validation failure, convert to a new BadRequestValidationFailureException
+            if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_FETCH_BY_TRANSACTOR_REQUEST_ERROR);
 
                 throw new BadRequestValidationFailureException(
                     Errorcode::BAD_REQUEST_VALIDATION_FAILURE,
@@ -202,22 +315,12 @@ class Base extends Core
             }
             else
             {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR,
-                [
-                    'retries' => $retryCount
-                ]);
-                // retry in sync for 5xx errors
-                if (($exceptionData['status_code'] >= 500) && ($retryCount < $maxRetryCount))
-                {
-                    $retryCount++;
-                    return $this->createJournalEntry($payload, $maxRetryCount, $retryCount);
-                } else {
-                    throw $e;
-                }
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::LEDGER_FETCH_BY_TRANSACTOR_REQUEST_ERROR);
+                throw $e;
             }
         }
 
-        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE, $response);
+        $this->trace->info(TraceCode::LEDGER_FETCH_BY_TRANSACTOR_RESPONSE, $response);
 
         return $response;
     }

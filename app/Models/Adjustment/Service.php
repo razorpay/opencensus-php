@@ -38,6 +38,7 @@ class Service extends Base\Service
 
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
 
+        // Todo: need to check if we need to push to slack channel before final state of adj ?
         $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
 
         return $adj->toArrayPublic();

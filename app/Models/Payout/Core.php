@@ -5,9 +5,6 @@ namespace RZP\Models\Payout;
 use App;
 use Mail;
 use Carbon\Carbon;
-use Razorpay\Trace\Logger as Trace;
-
-use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -15,6 +12,7 @@ use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Models\State;
 use DeepCopy\DeepCopy;
+use RZP\Diag\EventCode;
 use RZP\Models\Counter;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -26,9 +24,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\External;
 use RZP\Models\Workflow;
-use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
-use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
@@ -50,20 +46,25 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
 use RZP\Jobs\OnHoldPayoutsProcess;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Jobs\ScheduledPayoutsProcess;
+use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\PushNotifications\Payout\PendingApprovals as PendingApprovalsPN;
@@ -2289,11 +2290,13 @@ class Core extends Base\Core
             {
                 //There's no change to merchant balance here
                 //Thus, we wont disrupt the flow by throwing an exception here.
-                //TODO: Decide how to raise an alert and re-run the request to ledger here.
                 $this->trace->traceException(
                     $e,
-                    Trace::ALERT,
-                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                    Trace::ERROR,
+                    TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                    [
+                        'payout_id'     =>  $payout->getId()
+                    ]
                 );
             }
         }
@@ -2792,6 +2795,12 @@ class Core extends Base\Core
         $reversal = null;
 
         /*
+         * Cloning a payout to be used in case we send some additional events to ledger
+         * cloning is done here before payout gets marked as REVERSED because
+         */
+        $clonedPayout = clone $payout;
+
+        /*
          * If fta status is Status::REVERSED, we have to send reversed event to ledger,
          * so we first send a processed event to make sure correct ledger entries are recorded
          */
@@ -2806,8 +2815,6 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::PAYOUT_BEING_REVERSED_WITHOUT_PROCESSED_STATE
                 );
-
-                $clonedPayout = clone $payout;
 
                 $clonedPayout->setStatus(Status::PROCESSED);
 
@@ -2828,31 +2835,18 @@ class Core extends Base\Core
                             null,
                             $ftsSourceAccountInformation
                         );
-                    } catch (Exception\GatewayTimeoutException $e) {
-                        // Timeout case
-                        // This is an ambiguous situation, need to manually check if the ledger entry was created.
-                        // TODO: An alert here is absolutely essential
+                    } catch (\Throwable $e) {
+                        // trace and ignore exception as it will be retries in async
                         $this->trace->traceException(
                             $e,
-                            Trace::CRITICAL,
-                            null,
+                            Trace::ERROR,
+                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                             [
-                                'payout_id' => $payout->getId(),
+                                'payout_id'     =>  $payout->getId()
                             ]
                         );
-
                         // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
                         // entry is eventually created
-                    } catch (\Throwable $e) {
-                        // If an exception is caught here, we ignore it.
-                        // TODO: set an alert for exceptions caught in ledger calls
-                        // If that exception is found to be a part of this reversal flow, we will make sure that we
-                        // create an entry in ledger asynchronously/manually later.
-                        $this->trace->traceException(
-                            $e,
-                            Trace::ALERT,
-                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
-                        );
                     }
                 }
             }
@@ -2891,41 +2885,31 @@ class Core extends Base\Core
                             $this->trace->info(
                                 TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED,
                                 [
-                                    'bank_transfer_id' => $reversal->getId(),
-                                    'entity_name' => Constants\Entity::REVERSAL,
-                                    'ledgerResponse' => $response,
+                                    'reversal_id'       => $reversal->getId(),
+                                    'entity_name'       => Constants\Entity::REVERSAL,
+                                    'ledger_response'   => $response,
                                 ]);
                         }
-                    } catch (Exception\GatewayTimeoutException $e) {
-                        // Timeout case
-                        // This is an ambiguous situation, need to manually check if the ledger entry was created.
-                        // TODO: An alert here is absolutely essential
-                        $this->trace->traceException(
-                            $e,
-                            Trace::CRITICAL,
-                            null,
-                            [
-                                'payout_id' => $payout->getId(),
-                            ]
-                        );
-
-                        // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
-                        // entry is eventually created
-                    } catch (\Throwable $e) {
+                    }
+                    catch (\Throwable $e)
+                    {
                         // If an exception is caught here, we ignore it.
                         // TODO: set an alert for exceptions caught in ledger calls
                         // If that exception is found to be a part of this reversal flow, we will make sure that we
                         // create an entry in ledger asynchronously/manually later.
                         $this->trace->traceException(
                             $e,
-                            Trace::ALERT,
-                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                            Trace::ERROR,
+                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                            [
+                                'payout_id'         =>  $payout->getId(),
+                                'reversal_id'       =>  $reversal->getId()
+                            ]
                         );
                     }
                 }
                 else {
-                    // failed event for ledger
-                    $clonedPayout = clone $payout;
+                    // failed event for ledger using $clonedPayout
                     $clonedPayout->setStatus(Status::FAILED);
                     try {
                         $response = (new PayoutsLedgerProcessor())->processPayoutAndCreateJournalEntry(
@@ -2946,30 +2930,21 @@ class Core extends Base\Core
                                     'ledgerResponse' => $response,
                                 ]);
                         }
-                    } catch (Exception\GatewayTimeoutException $e) {
-                        // Timeout case
-                        // This is an ambiguous situation, need to manually check if the ledger entry was created.
-                        $this->trace->traceException(
-                            $e,
-                            Trace::CRITICAL,
-                            null,
-                            [
-                                'payout_id'   => $clonedPayout->getId(),
-                                'reversal_id' => $reversal->getId(),
-                            ]
-                        );
-
-                        // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
-                        // entry is eventually created
-                    } catch (\Throwable $e) {
+                    }
+                    catch (\Throwable $e)
+                    {
                         // If an exception is caught here, we ignore it.
                         // TODO: set an alert for exceptions caught in ledger calls
                         // If that exception is found to be a part of this reversal flow, we will make sure that we
                         // create an entry in ledger asynchronously/manually later.
                         $this->trace->traceException(
                             $e,
-                            Trace::ALERT,
-                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW
+                            Trace::ERROR,
+                            TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
+                            [
+                                'payout_id'         =>  $clonedPayout->getId(),
+                                'reversal_id'       =>  $reversal->getId()
+                            ]
                         );
                     }
                 }
@@ -3011,8 +2986,7 @@ class Core extends Base\Core
         }
         else
         {
-            // failed event for ledger
-            $clonedPayout = clone $payout;
+            // failed event for ledger using $clonedPayout
             $clonedPayout->setStatus(Status::FAILED);
             $this->processLedgerPayout($clonedPayout, $reversal);
         }
@@ -4850,6 +4824,88 @@ class Core extends Base\Core
             'entity' => $payout->getPublicId(),
             'txn'    => $txn->getPublicId(),
         ];
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function processPayoutAfterLedgerStatusCheck($payout, $ledgerResponse)
+    {
+
+        $this->trace->info(
+            TraceCode::PROCESS_PAYOUT_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'payout_id'         => $payout->getId(),
+                'entity_name'       => EntityConstant::PAYOUT,
+            ]);
+
+        $downstreamProcessor = new DownstreamProcessor('fund_account_payout',
+            $payout,
+            $this->mode,
+            $payout->fundAccount->account);
+
+        $downstreamProcessor->processCreateFundTransferAttempt();
+
+        try {
+            Transactions::dispatch($this->mode,
+                $payout->getId(),
+                EntityConstant::PAYOUT,
+                $ledgerResponse);
+        } catch (\Throwable $ex) {
+            // trace and ignore exception
+            $payload = [
+                'payout_id'         => $payout->getId(),
+                'entity_name'       => EntityConstant::PAYOUT,
+                'ledger_response'   => $ledgerResponse,
+            ];
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
+
+    }
+
+    public function failPayoutAfterLedgerStatusCheck($payout)
+    {
+        $this->trace->info(
+            TraceCode::FAIL_PAYOUT_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'payout_id'         => $payout->getId(),
+                'entity_name'       => EntityConstant::PAYOUT,
+            ]);
+
+        $downstreamProcessor = new DownstreamProcessor('fund_account_payout',
+            $payout,
+            $this->mode,
+            $payout->fundAccount->account);
+
+        $subProcessor = $downstreamProcessor->getSubProcessorClass();
+
+        // mark payout as failed
+        $subProcessor->failPayoutPostLedgerFailure($payout);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function pushPayoutReversalToLedgerTxnQueue($reversal, $ledgerResponse)
+    {
+        $this->trace->info(
+            TraceCode::PROCESS_PAYOUT_REVERSAL_AFTER_LEDGER_STATUS_SUCCESS,
+            [
+                'reversal_id'       => $reversal->getId(),
+                'entity_name'       => EntityConstant::REVERSAL,
+            ]);
+
+        try {
+            Transactions::dispatch($this->mode, $reversal->getId(), Constants\Entity::REVERSAL, $ledgerResponse);
+        } catch (\Throwable $ex) {
+            // trace and ignore exception
+            $payload = [
+                'reversal_id'       => $reversal->getId(),
+                'entity_name'       => Constants\Entity::REVERSAL,
+                'ledger_response'   => $ledgerResponse,
+            ];
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
     }
 
     public function trackPayoutEvent(array $eventCode, $payout = null, $error = null)

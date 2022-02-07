@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
-use RZP\Error\ErrorCode;
-use Razorpay\Trace\Logger as Trace;
-
 use Ramsey\Uuid\Uuid;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Status;
@@ -178,11 +178,11 @@ class FundAccountValidation extends Base
      * @throws BadRequestException
      * @throws \Throwable
      */
-    public function processValidationAndCreateJournalEntry(Entity $validation, array $ftsSourceAccountInformation = []): array
+    public function processValidationAndCreateJournalEntry(Entity $validation, array $ftsSourceAccountInformation = [], string $status = null, PublicCollection $feeSplit = null): array
     {
-        $payload = $this->createLedgerPayloadFromEntity($validation, $ftsSourceAccountInformation);
+        $payload = $this->createLedgerPayloadFromEntity($validation, $ftsSourceAccountInformation, $status);
 
-        return $this->createJournalEntry($payload);
+        return $this->createJournalEntry($payload, self::DEFAULT_MAX_RETRY_COUNT, 0, $feeSplit);
     }
 
     /**
@@ -191,9 +191,14 @@ class FundAccountValidation extends Base
      *
      * @return array
      */
-    protected function createLedgerPayloadFromEntity(Entity $validation, array $ftsSourceAccountInformation = null): array
+    protected function createLedgerPayloadFromEntity(Entity $validation, array $ftsSourceAccountInformation = null, string $favStatus = null): array
     {
-        $status = Status::getLedgerEventFromFavStatus($validation->getStatus());
+        if ($favStatus === null)
+        {
+            $favStatus = $validation->getStatus();
+        }
+
+        $status = Status::getLedgerEventFromFavStatus($favStatus);
 
         $notes = [
             self::BALANCE_ID => BalanceEntity::getSignedIdOrNull($validation->getBalanceId()),
@@ -247,11 +252,11 @@ class FundAccountValidation extends Base
      * @throws BadRequestException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null)
     {
         try
         {
-            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount);
+            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
         }
         catch (BadRequestException $e)
         {

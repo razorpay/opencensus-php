@@ -48,6 +48,10 @@ return [
         'test'       =>  env('AWS_LEDGER_TRANSACTIONS_TEST_QUEUE'),
         'live'       =>  env('AWS_LEDGER_TRANSACTIONS_LIVE_QUEUE'),
     ],
+    'ledger_status' => [
+        'test'       =>  env('AWS_LEDGER_STATUS_TEST_QUEUE'),
+        'live'       =>  env('AWS_LEDGER_STATUS_LIVE_QUEUE'),
+    ],
     'batch_payouts_process' => [
         'test'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_LIVE_QUEUE'),

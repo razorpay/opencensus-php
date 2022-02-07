@@ -59,9 +59,17 @@ class Entity extends Base\PublicEntity
 
     const PUBLIC_ENTITY_NAME = 'fund_account.validation';
 
+    // Any changes to this sign will affect LedgerStatus Job as well
     protected static $sign = 'fav';
 
     protected $generateIdOnCreate = true;
+
+    /*
+    This flag is set to true when ledger response is awaited due to some failure on ledger
+    In such cases this can be utilized to skip fts calls which will be handled later when ledger
+    status is checked in async
+    */
+    protected $ledgerResponseAwaitedFlag = false;
 
     protected $fillable = [
         self::AMOUNT,
@@ -162,6 +170,12 @@ class Entity extends Base\PublicEntity
     public function setAmount(int $amount = null)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setledgerResponseAwaitedFlag(bool $flag)
+    {
+        $this->ledgerResponseAwaitedFlag = $flag;
+        return $this;
     }
 
     public function setCurrency(string $currency = null)
@@ -277,6 +291,11 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------- Getters --------------
+
+    public function getLedgerResponseAwaitedFlag()
+    {
+        return $this->ledgerResponseAwaitedFlag;
+    }
 
     public function getAmount()
     {

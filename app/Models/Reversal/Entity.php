@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
     // Relations
     const TRANSACTION = 'transaction';
 
+    // Any changes to this sign will affect LedgerStatus Job as well
     protected static $sign = 'rvrsl';
 
     protected $entity = 'reversal';

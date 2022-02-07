@@ -35,6 +35,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_BALANCE_ID      = 'source_balance_id';
     const DESTINATION_BALANCE_ID = 'destination_balance_id';
 
+    // Any changes to this sign will affect LedgerStatus Job as well
     protected static $sign = 'adj';
 
     protected $entity = 'adjustment';
