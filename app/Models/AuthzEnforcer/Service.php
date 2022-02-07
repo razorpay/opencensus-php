@@ -14,7 +14,7 @@ class Service extends Base\Service
     /**
      * @var \Illuminate\Contracts\Foundation\Application|mixed
      */
-    private $authzEnforcerClient;
+    private $authzXPlatformEnforcerClient;
     /**
      * @var mixed
      */
@@ -26,8 +26,8 @@ class Service extends Base\Service
     public function __construct()
     {
         parent::__construct();
-        $this->authzEnforcerClient  = app('authzEnforcer');
-        $this->config      = app('config')->get('applications.authzEnforcer');
+        $this->authzXPlatformEnforcerClient  = app('authzXPlatformEnforcer');
+        $this->config      = app('config')->get('applications.authzXPlatformEnforcer');
     }
 
     public function enforcerAPIEnforce($resourceAndAction, $role, $subject, $org): V1EnforceResponse
@@ -43,7 +43,7 @@ class Service extends Base\Service
 
         $startTimeMs = round(microtime(true) * 1000);
 
-        $res = $this->authzEnforcerClient->enforcerAPIEnforce($payload);
+        $res = $this->authzXPlatformEnforcerClient->enforcerAPIEnforce($payload);
 
         $endTimeMs = round(microtime(true) * 1000);
 

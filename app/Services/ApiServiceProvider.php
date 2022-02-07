@@ -626,7 +626,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerAuthzClient();
 
-        $this->registerAuthzEnforcerClient();
+        $this->registerAuthzXPlatformEnforcerClient();
     }
 
     protected function registerCacheManager()
@@ -1218,11 +1218,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
-    protected function registerAuthzEnforcerClient()
+    protected function registerAuthzXPlatformEnforcerClient()
     {
-        $this->app->singleton('authzEnforcer', function($app)
+        $this->app->singleton('authzXPlatformEnforcer', function($app)
         {
-            $config = $app['config']->get('applications.authzEnforcer');
+            $config = $app['config']->get('applications.authzXPlatformEnforcer');
             $mock = $config['mock'];
             if ($mock === true) {
                 return new Mock\AuthzEnforcerClient();

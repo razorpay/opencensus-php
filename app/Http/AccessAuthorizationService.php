@@ -9,7 +9,7 @@ class AccessAuthorizationService
     private static $routeNameResourceAndActionMap;
 
     const RAZORPAYX_SYSTEM_SUBJECT = 'RAZORPAYX';
-    const RAZORPAYX_ORG_NAME = 'razorpay';
+    const RAZORPAYX_ORG_NAME = 'razorpayx';
 
     private static function init()
     {

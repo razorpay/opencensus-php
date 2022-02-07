@@ -88,7 +88,7 @@ class AuthzEnforcerClient
 
         $this->app = $app;
 
-        $this->config = $app['config']->get('applications.authzEnforcer');
+        $this->config = $app['config']->get('applications.authzXPlatformEnforcer');
 
         $this->trace = $app['trace'];
 

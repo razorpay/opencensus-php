@@ -1204,13 +1204,13 @@ return [
         'mock_url' => env('AUTHZ_BASE_MOCK_URL')
     ],
 
-    'authzEnforcer' => [
+    'authzXPlatformEnforcer' => [
         'auth' => [
-            'username' => env('AUTHZ_ENFORCER_USER'),
-            'password' => env('AUTHZ_ENFORCER_SECRET'),
+            'username' => env('AUTHZ_XPLATFORM_ENFORCER_USER'),
+            'password' => env('AUTHZ_XPLATFORM_ENFORCER_SECRET'),
         ],
-        'mock'     => env('AUTHZ_ENFORCER_MOCK', true),
-        'url'      => env('AUTHZ_ENFORCER_BASE_URL'),
-        'mock_url' => env('AUTHZ_ENFORCER_BASE_MOCK_URL')
+        'mock'     => env('AUTHZ_XPLATFORM_ENFORCER_MOCK', true),
+        'url'      => env('AUTHZ_XPLATFORM_ENFORCER_BASE_URL'),
+        'mock_url' => env('AUTHZ_XPLATFORM_ENFORCER_BASE_MOCK_URL')
     ]
 ];
