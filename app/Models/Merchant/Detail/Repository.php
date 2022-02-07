@@ -352,21 +352,37 @@ class Repository extends Base\Repository
 
     public function filterL1NotSubmittedMerchantIds(int $from, int $to): array
     {
+        $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
+
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
+            ->where($merchantOrgIdColumn,  '=' ,Org\Entity::RAZORPAY_ORG_ID)
+            ->where($merchantBusinessBankingIdColumn, '=', false)
             ->get()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
 
-    public function filterL2BankDetailsNotSubmittedMerchantIds(int $from, int $to): array
+    public function filterL2BankDetailsNotSubmittedMerchantIds(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID): array
     {
+        $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
+
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
+            ->where($merchantOrgIdColumn, '=' , $org)
+            ->where($merchantBusinessBankingIdColumn, '=', false)
             ->where(function($query)
             {
                 $query->whereNull(Entity::BANK_ACCOUNT_NUMBER)
@@ -377,26 +393,20 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
-    public function filterL2AadharDetailsNotSubmittedMerchantIds(int $from, int $to): array
+    public function filterL1MilestoneSubmittedMerchantsOfOrg(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID): array
     {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->select(Entity::MERCHANT_ID)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
-            ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
-            ->WhereNotNull(Entity::BANK_BRANCH_IFSC)
-            ->WhereNotNull(Entity::BANK_ACCOUNT_NUMBER)
-            ->WhereNotNull(Entity::BANK_ACCOUNT_NAME)
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
-    }
+        $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
 
-    public function filterL1MilestoneSubmittedMerchants(int $from, int $to): array
-    {
         return $this->newQuery()
+            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
             ->select(Entity::MERCHANT_ID)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', 'L1')
+            ->where($merchantOrgIdColumn, '=' ,$org)
+            ->where($merchantBusinessBankingIdColumn, '=', false)
             ->get()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();

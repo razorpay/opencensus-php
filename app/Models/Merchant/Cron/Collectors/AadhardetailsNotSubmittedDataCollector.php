@@ -11,7 +11,7 @@ class AadhardetailsNotSubmittedDataCollector extends TimeBoundDbDataCollector
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
         // fetch all merchants who've submitted L1
-        $l1SubmittedMerchants = $this->repo->merchant_detail->filterL1MilestoneSubmittedMerchants($startTime, $endTime);
+        $l1SubmittedMerchants = $this->repo->merchant_detail->filterL1MilestoneSubmittedMerchantsOfOrg($startTime, $endTime);
 
         // fetch all merchants who've submitted the documents
         $documentSubmittedMerchants = $this->repo->merchant_document->filterMerchantIdsWithUploadedDocuments(

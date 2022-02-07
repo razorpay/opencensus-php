@@ -471,6 +471,8 @@ class Repository extends Base\Repository
             ->whereBetween(Entity::ACTIVATED_AT,[$from, $to])
             ->where(Detail\Entity::ACTIVATION_STATUS, '=', Detail\Status::INSTANTLY_ACTIVATED)
             ->whereNull(Entity::SUSPENDED_AT)
+            ->where(Entity::BUSINESS_BANKING, '=', false)
+            ->where(Entity::ORG_ID, '=', Org\Entity::RAZORPAY_ORG_ID)
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
