@@ -43,19 +43,19 @@ class Terminal extends Payment
 
     protected function getPricingRule($rules, $method)
     {
-        $rules = $this->getRelevantPricingRuleForIssuer($rules);
+        $rules = $this->getRelevantPricingRuleForGateway($rules);
 
         $rule = $this->getRelevantPricingRuleForMethod($rules, $method);
 
         return $rule;
     }
 
-    protected function getRelevantPricingRuleForIssuer($rules)
+    protected function getRelevantPricingRuleForGateway($rules)
     {
-        $issuer = $this->entity->getIssuer();
+        $issuer = $this->entity->getGateway();
 
         $filters = [
-            [Pricing\Entity::PAYMENT_ISSUER, $issuer, true, null]
+            [Pricing\Entity::GATEWAY, $issuer, true, null]
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters);

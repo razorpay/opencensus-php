@@ -89,7 +89,7 @@ class Service extends Base\Service
         foreach ($terminals as $terminal)
         {
             // For buy pricing cost, gateway of terminal is the payment issuer.
-            $payment->setIssuer($terminal['gateway']);
+            $payment->setGateway($terminal['gateway']);
 
             try
             {
