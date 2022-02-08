@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
@@ -25,10 +25,10 @@ import {
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import lazy from 'merchant/routes/LazyLoader';
 import DocsLink from 'merchant/components/DocsLink';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ReserveBalance from 'merchant/views/Account/Balances/ReserveBalance';
 import HeaderAction from 'common/ui/HeaderAction';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
+import Loader from 'common/ui/Loader';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -135,7 +135,7 @@ class AddFundsContainer extends Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <SuspenseWithLoader>
+        <Suspense fallback={<Loader />}>
           {type === 'current' ? (
             <AddFundsForm
               type={type}
@@ -154,7 +154,7 @@ class AddFundsContainer extends Component {
               user={this.props.user}
             />
           )}
-        </SuspenseWithLoader>
+        </Suspense>
       ),
     });
 
@@ -216,9 +216,9 @@ class AddFundsContainer extends Component {
     this.props.openModal({
       size: 'large',
       component: (
-        <SuspenseWithLoader>
+        <Suspense fallback={<Loader />}>
           <ManageBalanceAlert />
-        </SuspenseWithLoader>
+        </Suspense>
       ),
     });
 

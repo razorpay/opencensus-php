@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
 import Amount from 'common/ui/Amount';
 import { openModal as openModalReducer } from 'merchant_common/reducers/modals';
@@ -11,15 +11,20 @@ import {
   REFUND_CREDITS_ADDED,
   REFUND_CREDITS_FAILED,
 } from '../ga';
-import ViewCreditHistoryTable from './ViewCreditHistoryTable';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchantLA/reducers/credits';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import lazy from 'merchant/routes/LazyLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import Loader from 'common/ui/Loader';
+
+const ViewCreditHistoryTable = lazy(() =>
+  import(
+    /* webpackChunkName: 'ViewCreditHistoryTable' */ 'merchant/views/Account/Credits/components/ViewCreditHistoryTable'
+  ),
+);
 
 const AddCredits = lazy(() =>
   import(
@@ -89,16 +94,27 @@ function CreditDetails({
     openModal({
       size: 'small',
       component: (
-        <SuspenseWithLoader>
+        <Suspense fallback={<Loader />}>
           <AddCredits
             type={type}
             addHandler={addCredits}
             user={user}
             statusHandler={statusHandler}
           />
-        </SuspenseWithLoader>
+        </Suspense>
       ),
     });
+  };
+
+  const isSelfServeEnabled = (creditType) => {
+    switch (creditType) {
+      case 'fee':
+        return user.isFeeCreditSelfServeEnabled;
+      case 'refund':
+        return user.isRefundCreditSelfServeEnabled;
+      default:
+        return false;
+    }
   };
 
   return (
@@ -113,26 +129,24 @@ function CreditDetails({
           </div>
         </div>
         <div class="balances-add-funds">
-          {user.isSelfServeCreditsEnabled &&
-            [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
-              <div>
-                <button
-                  class="btn btn-outline"
-                  disabled={mode !== 'live'}
-                  onClick={() => addCreditsHandler(type)}
-                >
-                  Add {title}
-                </button>
-                {mode !== 'live' ? (
-                  <Popover align="bottom" theme="dark">
-                    <PopoverBody>
-                      You cannot add {type} credits in test mode. Switch to live mode to add
-                      credits.
-                    </PopoverBody>
-                  </Popover>
-                ) : null}
-              </div>
-            )}
+          {isSelfServeEnabled(type) && [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
+            <div>
+              <button
+                class="btn btn-outline"
+                disabled={mode !== 'live'}
+                onClick={() => addCreditsHandler(type)}
+              >
+                Add {title}
+              </button>
+              {mode !== 'live' ? (
+                <Popover align="bottom" theme="dark">
+                  <PopoverBody>
+                    You cannot add {type} credits in test mode. Switch to live mode to add credits.
+                  </PopoverBody>
+                </Popover>
+              ) : null}
+            </div>
+          )}
         </div>
       </div>
 
@@ -146,7 +160,11 @@ function CreditDetails({
             onClick={() => {
               openModal({
                 size: 'large',
-                component: <ViewCreditHistoryTable creditItems={creditItems} title={title} />,
+                component: (
+                  <Suspense fallback={<Loader />}>
+                    <ViewCreditHistoryTable creditItems={creditItems} title={title} />
+                  </Suspense>
+                ),
               });
               analyticsTrack(clickHistoryCreditsGA(title));
             }}

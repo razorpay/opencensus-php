@@ -49,7 +49,7 @@ function ReserveBalance({
               <Amount value={Math.abs(balance)} currency="INR" />
             </div>
           </div>
-          {!user.isOrgAxis && !user.isSelfServeCreditsEnabled && (
+          {!user.isOrgAxis && !user.isReserveBalanceSelfServeEnabled && (
             <div class="balances-add-funds">
               {ticketGenerated || ticketStatusData.ticket_status === 'Processing' ? (
                 <button class="btn btn-primary">Processing...</button>
@@ -63,7 +63,7 @@ function ReserveBalance({
             </div>
           )}
           {!user.isOrgAxis &&
-            user.isSelfServeCreditsEnabled &&
+            user.isReserveBalanceSelfServeEnabled &&
             [rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
               <div class="balances-add-funds">
                 <div>
@@ -94,7 +94,8 @@ function ReserveBalance({
       </div>
 
       {ticketGenerated ||
-      (ticketStatusData.ticket_status === 'Processing' && !user.isSelfServeCreditsEnabled) ? (
+      (ticketStatusData.ticket_status === 'Processing' &&
+        !user.isReserveBalanceSelfServeEnabled) ? (
         <div class="processing-note">
           <p>Your request is being processed. Please check your registered email for an update.</p>
         </div>

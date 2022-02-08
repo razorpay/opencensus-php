@@ -840,8 +840,16 @@ export default class User {
     return this.getExpStatus('capture_settings_revamp');
   }
 
-  get isSelfServeCreditsEnabled() {
-    return this.getExpStatus('self_serve_credits');
+  get isFeeCreditSelfServeEnabled() {
+    return this.getExpStatus('fee_credit_self_serve');
+  }
+
+  get isRefundCreditSelfServeEnabled() {
+    return this.getExpStatus('refund_credit_self_serve');
+  }
+
+  get isReserveBalanceSelfServeEnabled() {
+    return this.getExpStatus('reserve_bal_self_serve');
   }
 
   get isFtxEnabled() {

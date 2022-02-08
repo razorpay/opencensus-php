@@ -152,7 +152,6 @@ class Service extends Base\Service
             'show_csat_survey',
             'rx_mobile_app_announcement',
             'rx_tally_payouts_enabled',
-            'self_serve_credits',
             'rx_shopify_pl',
             'enable_may_dashboard_notification_retention_1',
             'enable_may_dashboard_notification_retention_2',
@@ -239,6 +238,9 @@ class Service extends Base\Service
             'capital_xca_pay_now',
             'pp_shiprocket',
             'rx_ca_sales_led_welcome_screen',
+            'fee_credit_self_serve',
+            'refund_credit_self_serve',
+            'reserve_bal_self_serve',
             'disable_msme_upload'
         ];
 
