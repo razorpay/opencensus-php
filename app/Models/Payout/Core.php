@@ -2322,6 +2322,12 @@ class Core extends Base\Core
             return;
         }
 
+        // Skip ledger shadow mode for high TPS merchant
+        if ($payout->merchant->isFeatureEnabled(FeatureConstants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
+        {
+            return;
+        }
+
         // return if reverse shadow is enabled
         if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
         {
@@ -2359,6 +2365,12 @@ class Core extends Base\Core
 
     public static function shouldPayoutGoThroughLedgerReverseShadowFlow($payout)
     {
+        // Skip ledger reverse shadow mode for high TPS merchant
+        if ($payout->merchant->isFeatureEnabled(FeatureConstants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
+        {
+            return false;
+        }
+
         if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true) and
             ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
             ($payout->getFeeType() !== Entity::FREE_PAYOUT) and
