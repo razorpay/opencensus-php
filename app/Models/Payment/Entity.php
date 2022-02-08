@@ -2280,6 +2280,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->getAttribute(self::WALLET) === Payment\Processor\CardlessEmi::WALNUT369));
     }
 
+    public function isWalletPaypal()
+    {
+        return  (($this->getAttribute(self::METHOD) === Payment\Method::WALLET) and
+                 ($this->getAttribute(self::WALLET) === Payment\Processor\Wallet::PAYPAL));
+    }
 
     public function isEmi()
     {
@@ -3951,7 +3956,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
         }
 
-        if ($this->getGateway() === Gateway::WALLET_PAYPAL)
+        if(($this->getGateway() === Gateway::WALLET_PAYPAL) or
+            ($this->isWalletPaypal() === true))
         {
             $data['amount'] = $this->getGatewayAmount();
             $data['currency'] = $this->getGatewayCurrency();
