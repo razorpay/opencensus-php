@@ -22,6 +22,17 @@ return [
         ],
     ],
 
+    'testIciciDisableAccountStatementFetch' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testIciciAccountStatementWithVariousRegex' => [
         'request'  => [
             'method'  => 'POST',

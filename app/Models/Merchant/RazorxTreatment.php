@@ -449,6 +449,9 @@ final class RazorxTreatment
     //Experiment flag for sending events to segment
     const SEND_EVENTS_TO_SEGMENT = 'send_events_to_segment';
 
+    //Experiment to disable statement fetch for merchants
+    const DISABLE_STATEMENT_FETCH = 'disable_statement_fetch';
+
     // Experiment flag to fetch settlement amount from new settlement service
     const FETCH_SETTLEMENT_AMOUNT_FROM_NSS = 'fetch_settlement_amount_from_nss';
 

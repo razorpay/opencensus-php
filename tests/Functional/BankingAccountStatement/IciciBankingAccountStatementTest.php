@@ -16,6 +16,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Constants\Entity as EntityConstants;
@@ -651,6 +652,21 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
+    public function testIciciDisableAccountStatementFetch()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_STATEMENT_FETCH    => 'on']);
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEmpty($response['accounts_processed']);
     }
 
     public function testIciciAccountStatementWithVariousRegex()

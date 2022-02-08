@@ -2186,6 +2186,11 @@ class Core extends Base\Core
 
         foreach ($bankingAccountDetails as $bankingAccountDetail)
         {
+            if ($this->checkIfBlackListedMerchant($bankingAccountDetail->merchant->getId()) === true)
+            {
+                continue;
+            }
+
             $gatewayBalance = $bankingAccountDetail->getGatewayBalance();
 
             $statementClosingBalance = $bankingAccountDetail->getStatementClosingBalance();
@@ -2264,6 +2269,22 @@ class Core extends Base\Core
         }
 
         return ['accounts_processed' => $accountNumbersDispatched];
+    }
+
+    public function checkIfBlackListedMerchant($merchantId)
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::DISABLE_STATEMENT_FETCH,
+            $this->mode
+        );
+
+        if ($variant === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // Adding a delay in dispatch and default is 0 min delay.
