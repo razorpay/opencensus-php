@@ -5,12 +5,14 @@ namespace RZP\Models\Merchant\Escalations;
 
 use App;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\lib\ConditionParser\Parser;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Feature\Constants as FeatureConstants;
+
 class Handler
 {
     /**
@@ -112,6 +114,12 @@ class Handler
             else if(is_array($value) === true)
             {
                 return in_array($merchantDetails->getAttribute($key), $value, true);
+            }
+            else if ($key === FeatureConstants::FEATURE)
+            {
+                $merchant = $merchantDetails->merchant;
+
+                return $merchant->isFeatureEnabled($value) === true;
             }
             else
             {

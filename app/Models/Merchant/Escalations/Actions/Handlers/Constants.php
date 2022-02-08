@@ -29,4 +29,6 @@ class Constants
             self::LEVEL => 4
         ]
     ];
+
+    const HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH = 'GMV hard limit for no-doc onboarding breached for the merchant.';
 }

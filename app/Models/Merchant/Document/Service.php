@@ -215,6 +215,13 @@ class Service extends Base\Service
             $ncAcknowledgementPayload = [$documentType => "uploaded"];
 
             $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($ncAcknowledgementPayload, $merchant);
+
+            $noDocGmvLimitExhausted = $accountV2Core->isNoDocOnboardingGmvLimitExhausted($merchant->getId());
+
+            if ($noDocGmvLimitExhausted === true)
+            {
+                (new NeedsClarification\Core())->updateNCFieldsAcknowledgedIfApplicableForNoDoc($merchant, $merchantDetails);
+            }
         }
 
         AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$merchant, $merchantDetails);

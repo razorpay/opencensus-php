@@ -18,6 +18,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
 
 class Core extends Merchant\Core
 {
@@ -142,11 +143,11 @@ class Core extends Merchant\Core
         {
             if ($this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
             {
+                $this->addNoDocOnboardingFeature($subMerchantId);
+
                 $this->trace->info(TraceCode::NO_DOC_ONBOARDING_ENABLED_FOR_SUBMERCHANT,[
                     'merchant_id'   => $subMerchantId,
                 ]);
-
-                $this->addSubmerchantNoDocOnboardingFeature($subMerchantId);
             }
             else
             {
@@ -184,17 +185,52 @@ class Core extends Merchant\Core
         return $subMerchant;
     }
 
-    private function addSubmerchantNoDocOnboardingFeature(string $submerchantId)
+    /**
+     * Add no_doc_onboarding feature to sub-merchant which will enable it to onboard
+     * without any documents. This will activate the sub-merchant with a certain GMV limit.
+     *
+     * @param string $subMerchantId
+     *
+     * @return void
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    private function addNoDocOnboardingFeature(string $subMerchantId)
     {
         $featureName = Feature\Constants::NO_DOC_ONBOARDING;
 
         $featureParams = [
-            Feature\Entity::ENTITY_ID   => $submerchantId,
+            Feature\Entity::ENTITY_ID   => $subMerchantId,
             Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Feature\Entity::NAME        => $featureName,
         ];
 
         (new Feature\Core())->create($featureParams, true);
+    }
+
+    public function removeNoDocOnboardingFeature(string $subMerchantId)
+    {
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(Merchant\Constants::MERCHANT,
+            $subMerchantId, Feature\Constants::NO_DOC_ONBOARDING);
+
+        (new Feature\Core())->delete($feature, true);
+    }
+
+    /**
+     * Add no_doc_limit_breached tag to the sub-merchant when no-doc onboarding GMV limit is breached.
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return void
+     */
+    public function addNoDocLimitBreachedTag(Merchant\Entity $subMerchant)
+    {
+        $existingTags = $subMerchant->tagNames();
+
+        if (in_array(Constants::NO_DOC_LIMIT_BREACHED, array_map('strtolower', $existingTags)) === false)
+        {
+            (new Merchant\Core())->appendTag($subMerchant, Constants::NO_DOC_LIMIT_BREACHED);
+        }
     }
 
     public function updateNCFieldsAcknowledgedIfApplicable(array $input, Merchant\Entity $subMerchant)
@@ -289,5 +325,45 @@ class Core extends Merchant\Core
     {
         (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
         (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
+    }
+
+    /**
+     * This function checks if a sub-merchant has exhausted the GMV limit for no-doc onboarding
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    public function isNoDocOnboardingGmvLimitExhausted(string $merchantId): bool
+    {
+        $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchantId,
+            EscalationConstants::HARD_LIMIT_NO_DOC, EscalationConstants::HARD_LIMIT_KYC_PENDING_THRESHOLD);
+
+        if (empty($escalations) === false)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * This function checks if a sub-merchant has no-doc onboarding feature enabled and
+     * has exhausted the GMV limit for no-doc onboarding
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    public function isNoDocEnabledAndGmvLimitExhausted(Merchant\Entity $merchant): bool
+    {
+        $isNoDocGmvLimitExhausted = $this->isNoDocOnboardingGmvLimitExhausted($merchant->getId());
+
+        if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocGmvLimitExhausted === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

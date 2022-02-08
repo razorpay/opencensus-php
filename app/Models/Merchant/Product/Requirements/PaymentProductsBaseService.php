@@ -12,10 +12,12 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Document;
+use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
 
@@ -67,7 +69,7 @@ class PaymentProductsBaseService extends Base\Service
      * @param Product\Entity  $merchantProduct
      *
      * @return array
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
     public function fetchRequirements(Merchant\Entity $merchant, Product\Entity $merchantProduct)
     {
@@ -173,11 +175,11 @@ class PaymentProductsBaseService extends Base\Service
      *   }]
      *
      * @param Merchant\Entity $merchant
-     * @param Detail\Entity   $merchantDetails
-     * @param Entity          $merchantProduct
+     * @param Detail\Entity $merchantDetails
+     * @param Product\Entity $merchantProduct
      *
      * @return array
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
     public function getRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Product\Entity $merchantProduct): array
     {
@@ -206,19 +208,31 @@ class PaymentProductsBaseService extends Base\Service
             {
                 $allRequiredFields = $verificationResponse['verification']['required_fields'];
 
-                $requirementsByType = $this->getRequiredFieldsByTypeFromPendingVerificationFields($allRequiredFields);
+                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements($allRequiredFields, $merchant, false, []);
 
-                $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, $requirementsByType[Constants::DOCUMENT_FIELDS], false, []);
+                $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
+            }
+        }
+        else if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
+        {
+            $isNoDocEnabledAndGmvLimitExhausted = (new AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
 
-                $fieldRequirements = $this->getFieldRequirements($merchantDetails, $requirementsByType[Constants::FIELDS], []);
+            if ($isNoDocEnabledAndGmvLimitExhausted === true)
+            {
+                $verificationResponse = $this->merchantDetailCore->setVerificationDetails($merchantDetails, $merchant, $verificationResponse, true);
+
+                $allRequiredFields = $verificationResponse['verification']['required_fields'];
+
+                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements($allRequiredFields, $merchant, true, []);
 
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
 
+                foreach ($requirements as & $requirement)
+                {
+                    $requirement[Constants::DESCRIPTION] = Detail\NeedsClarificationReasonsList::GMV_LIMIT_BREACHED_FOR_NO_DOC_ONBOARDING;
+                }
             }
-        }
-        else
-        {
-            if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
+            else
             {
                 $nonAcknowledgedNCFields = $this->clarificationCore->getNonAcknowledgedNCFields($merchant, $merchantDetails);
 
@@ -226,13 +240,7 @@ class PaymentProductsBaseService extends Base\Service
 
                 $ncFields = $clarificationReasons[Constants::FIELDS] ?? [];
 
-                $ncFieldDetails = $this->getRequiredFieldsByTypeFromPendingVerificationFields(array_keys($ncFields));
-
-                $ncFieldDetails = $ncFieldDetails[Constants::FIELDS] ?? [];
-
-                $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, [], true, $clarificationReasons);
-
-                $fieldRequirements = $this->getFieldRequirements($merchantDetails, $ncFieldDetails, $clarificationReasons);
+                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements(array_keys($ncFields), $merchant, true, $clarificationReasons);
 
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
             }
@@ -344,6 +352,39 @@ class PaymentProductsBaseService extends Base\Service
     }
 
     /**
+     * This function fetches document field and non-document field requirements
+     *
+     * @param array $requiredFields
+     * @param Merchant\Entity $merchant
+     * @param bool $isSubmitted
+     * @param array $clarificationReasons
+     *
+     * @return array
+     * @throws LogicException
+     */
+    private function getDocAndNonDocFieldRequirements(array $requiredFields, Merchant\Entity $merchant, bool $isSubmitted, array $clarificationReasons): array
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $requirementsByType = $this->getRequiredFieldsByTypeFromPendingVerificationFields($requiredFields);
+
+        $requirementsByTypeDocument = $requirementsByType[Constants::DOCUMENT_FIELDS] ?? [];
+
+        if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION and $merchant->isNoDocOnboardingEnabled() === false)
+        {
+            $requirementsByTypeDocument = [];
+        }
+
+        $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, $requirementsByTypeDocument, $isSubmitted, $clarificationReasons);
+
+        $requirementsByTypeField = $requirementsByType[Constants::FIELDS] ?? [];
+
+        $fieldRequirements = $this->getFieldRequirements($merchantDetails, $requirementsByTypeField, $clarificationReasons);
+
+        return [$documentFieldRequirements, $fieldRequirements];
+    }
+
+    /**
      * This function is a driver function to evaluate documents required for the account
      *
      * @param Merchant\Entity $merchant
@@ -353,7 +394,7 @@ class PaymentProductsBaseService extends Base\Service
      * @param array           $clarificationReasons
      *
      * @return array
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
     private function getDocumentFieldRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, array $fields, bool $submitted, array $clarificationReasons): array
     {
@@ -363,7 +404,16 @@ class PaymentProductsBaseService extends Base\Service
 
         $documentRequirementsFromSubmittedDocuments = [];
 
-        if ($submitted === false)
+        $isNoDocEnabledAndGmvLimitExhausted = (new AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
+
+        $getDocReqAfterNoDocLimitBreach = false;
+
+        if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION and $isNoDocEnabledAndGmvLimitExhausted === true)
+        {
+            $getDocReqAfterNoDocLimitBreach = true;
+        }
+
+        if ($submitted === false or $getDocReqAfterNoDocLimitBreach === true)
         {
             $documentByType = $this->documentCore->documentResponse($merchant);
 
@@ -599,7 +649,6 @@ class PaymentProductsBaseService extends Base\Service
                 $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
 
                 $requirements[] = $requirement;
-
             }
             else
             {

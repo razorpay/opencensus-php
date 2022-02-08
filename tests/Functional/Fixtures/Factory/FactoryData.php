@@ -117,6 +117,13 @@ final class FactoryData
                                                          ]
         );
 
+        $factory(\RZP\Models\Merchant\Product\Entity::class, [
+                'id'                       => $faker->uniqueid,
+                'product_name'             => 'payment_gateway',
+                'created_at'               => $faker->timestamp,
+                'updated_at'               => $faker->timestamp,
+            ]
+        );
 
         $factory(\RZP\Models\Merchant\FreshdeskTicket\Entity::class, [
                                                                        'id'            => $faker->uniqueid,

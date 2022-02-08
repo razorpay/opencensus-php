@@ -335,6 +335,13 @@ class ValidationFields
         return [$requiredFields, $selectiveRequiredFields, $optionalFields];
     }
 
+    /**
+     * Get validation fields corresponding to the feature 'no_doc_onboarding' enabled for the merchant
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return array
+     */
     public static function getValidationFieldsForNoDocOnboarding(Entity $merchantDetails): array
     {
             $requiredFields = self::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType());

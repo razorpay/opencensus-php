@@ -5,15 +5,17 @@ namespace RZP\Models\Merchant\Escalations;
 
 
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Notifications\Onboarding\Events;
+
 use RZP\Models\Merchant\Detail\Entity as DEntity;
-use RZP\Models\Merchant\Entity as MEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Constants as DConstants;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\EscalationHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\FundsOnHoldHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\CommunicationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\DisablePaymentsHandler;
-use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
-use RZP\Models\Merchant\Escalations\Actions\Handlers\FundsOnHoldHandler;
-use RZP\Models\Merchant\Escalations\Actions\Handlers\EscalationHandler;
-use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\NoDocLimitHandler;
 
 class Constants
 {
@@ -55,6 +57,10 @@ class Constants
     const OPEN_STATUS_CONDITION     = [
         DEntity::ACTIVATION_STATUS => Status::OPEN_STATUSES
     ];
+
+    // hard limit for sub-merchant no-doc onboarding
+    const HARD_LIMIT_KYC_PENDING_THRESHOLD          = 5000000;
+    const HARD_LIMIT_NO_DOC                         = 'hard_limit_no_doc';
 
     const PAYMENTS_ESCALATION_MATRIX = [
         0          => [
@@ -213,6 +219,27 @@ class Constants
                 ],
                 self::ENABLE      => false
             ],
+        ],
+        5000000 => [
+            [
+                self::DESCRIPTION => "hard limit breach on activated kyc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER   => NoDocLimitHandler::class,
+                        self::PARAMS    => [
+                            self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
+                            Entity::THRESHOLD => 5000000
+                        ]
+                    ]
+                ],
+                self::ENABLE    => false
+            ]
         ],
         10000000 => [
             [

@@ -78,7 +78,12 @@ class Constants
     const CREATED_AT         = 'created_at';
     const OWNER_INFO         = 'owner_info';
     const CONTACT_INFO       = 'contact_info';
+
+    // feature flags
     const NO_DOC_ONBOARDING  = 'no_doc_onboarding';
+
+    // tags
+    const NO_DOC_LIMIT_BREACHED = 'no_doc_limit_breached';
 
     // external ids
     const EXTERNAL_ID       = 'external_id';

@@ -1004,7 +1004,6 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
     }
 
-
     /**
      * Get the non-pureplatform partner if it exists
      *

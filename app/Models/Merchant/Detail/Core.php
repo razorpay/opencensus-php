@@ -2784,12 +2784,17 @@ class Core extends Base\Core
     {
         // @todo: Activation flow will define its own validation fields
 
-       // If no doc onboarding feature is enabled will pick only required validation fields.
+       // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick only the specified validation fields.
        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
        {
-            [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
+           $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->getMerchantId());
 
-            return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
+           if ($isGmvLimitExhausted === false)
+           {
+               [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
+
+               return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
+           }
         }
 
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
@@ -3822,13 +3827,12 @@ class Core extends Base\Core
      * $requiredDocumentField : document1,document2
      * $documentGroup         :   ["document_type6","document_type7"]
      *
+     * @param Merchant\Entity $merchant
      * @param $validationDocumentFields
      * @param $documentsResponse
      * @param $requiredFields
      */
-    protected function calculateRequiredDocumentFields($validationDocumentFields,
-                                                       $documentsResponse,
-                                                       &$requiredFields): void
+    protected function calculateRequiredDocumentFields(Merchant\Entity $merchant, $validationDocumentFields, $documentsResponse, &$requiredFields): void
     {
         foreach ($validationDocumentFields as $requiredDocumentField => $documentGroups)
         {
@@ -3848,7 +3852,19 @@ class Core extends Base\Core
 
             if ($isFieldPresent === false)
             {
-                $requiredFields = array_merge($requiredFields, $documentGroups[0]);
+                $isNoDocEnabledAndGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
+
+                if ($isNoDocEnabledAndGmvLimitExhausted === true)
+                {
+                    foreach ($documentGroups as $documentGroup)
+                    {
+                        $requiredFields = array_merge($requiredFields, $documentGroup);
+                    }
+                }
+                else
+                {
+                    $requiredFields = array_merge($requiredFields, $documentGroups[0]);
+                }
             }
         }
     }
@@ -4389,6 +4405,7 @@ class Core extends Base\Core
         if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
         {
             $this->calculateRequiredDocumentFields(
+                $merchant,
                 $validationSelectiveRequiredFields,
                 $documentsResponse,
                 $requiredFields);

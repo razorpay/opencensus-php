@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
@@ -403,7 +404,7 @@ class Core extends Base\Core
         return $latestReasons;
     }
 
-    public function updateNCFieldAcknowledged(string $field, DetailEntity $merchantDetails): bool
+    public function updateNCFieldAcknowledged(string $field, DetailEntity $merchantDetails, bool $checkNoDocReasonCode = false): bool
     {
         $kycClarificationReasons = $merchantDetails->getKycClarificationReasons();
 
@@ -438,6 +439,18 @@ class Core extends Base\Core
 
         $latestReasonIndex = count($fieldNCReasons) - 1;
 
+        if ($checkNoDocReasonCode === true)
+        {
+            $reasonCode = $reasons[$field][$latestReasonIndex][Constants::REASON_CODE] ?? null;
+
+            $alreadyAcknowledged = $reasons[$field][$latestReasonIndex][Constants::ACKNOWLEDGED] ?? null;
+
+            if ($reasonCode !== NeedsClarificationReasonsList::NO_DOC_LIMIT_BREACH or $alreadyAcknowledged === true)
+            {
+                return false;
+            }
+        }
+
         $reasons[$field][$latestReasonIndex][Constants::ACKNOWLEDGED] = true;
 
         $kycClarificationReasons[$updateKey] = $reasons;
@@ -455,5 +468,66 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_ACKNOWLEDGED_NC_FIELD, $tracePayload);
 
         return true;
+    }
+
+    public function composeNeedsClarificationForNoDocLimitBreach(Merchant\Entity $merchant): array
+    {
+        $verificationResponse = (new MerchantDetailCore())->setVerificationDetails($merchant->merchantDetail, $merchant, [], true);
+
+        $requiredFields = $verificationResponse['verification']['required_fields'] ?? [];
+
+        $kycClarificationReasons = [];
+
+        $clarificationReasons = [];
+
+        $baseReasons = [
+            Constants::REASON_TYPE => MerchantConstant::PREDEFINED_REASON_TYPE,
+            Constants::REASON_CODE => NeedsClarificationReasonsList::NO_DOC_LIMIT_BREACH,
+            Constants::FIELD_VALUE => null
+        ];
+
+        foreach ($requiredFields as $requiredField)
+        {
+            $clarificationReasons[$requiredField] = [$baseReasons];
+        }
+
+        $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] = $clarificationReasons;
+
+        return [
+            DetailEntity::KYC_CLARIFICATION_REASONS => $kycClarificationReasons
+        ];
+    }
+
+    public function updateNCFieldsAcknowledgedIfApplicableForNoDoc(Merchant\Entity $merchant, DetailEntity $merchantDetail)
+    {
+        [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = (new MerchantDetailCore())->getValidationFields($merchantDetail, true);
+
+        $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use($merchant) {
+            return (new Merchant\Document\Core())->documentResponse($merchant);
+        });
+
+        foreach ($validationSelectiveRequiredFields as $requiredDocumentField => $documentGroups)
+        {
+            $isFieldPresent = array_reduce($documentGroups, function($isFieldPresent, $documentGroup) use ($documentsResponse)
+            {
+                $isDocumentGroupFilled = count(array_diff($documentGroup, array_keys($documentsResponse))) === 0;
+
+                $isFieldPresent = ($isFieldPresent or $isDocumentGroupFilled);
+
+                return $isFieldPresent;
+
+            }, false);
+
+            if ($isFieldPresent === true)
+            {
+                foreach ($documentGroups as $documentGroup)
+                {
+                    foreach ($documentGroup as $groupField)
+                    {
+                        $this->updateNCFieldAcknowledged($groupField, $merchantDetail, true);
+                    }
+                }
+            }
+        }
     }
 }

@@ -10,7 +10,6 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Store;
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\Segment as SegmentAnalytics;
@@ -606,5 +605,176 @@ class Core extends Base\Core
         }
 
         return [$from, $to];
+    }
+
+    public function sendOnboardingVerifyEmailNotification($input)
+    {
+        //EMAIL_NOT_VERIFIED_IN_1_DAY
+        list($from, $to) = $this->getTimeWindowForCron($input, Constants::EMAIL_NOT_VERIFIED_IN_1_DAY_CACHE_KEY,1);
+
+        $userIdList = $this->repo->user->filterEmailNotVerifiedUserIds($from, $to);
+
+        $merchantIdList = array_unique($this->repo->merchant_user->fetchMerchantIdsForUserIdsAndRole($userIdList));
+
+        $this->trace->info(TraceCode::SEND_NOTIFICATION, [
+            'merchants_count' => count($merchantIdList),
+            'type'            => 'sendNotification',
+            'to'              => $to,
+            'from'            => $from,
+            'event'           => Events::ONBOARDING_VERIFY_EMAIL
+        ]);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(TraceCode::SEND_NOTIFICATION_ATTEMPT_SKIPPED, [
+                'merchants_count' => count($merchantIdList),
+                'type'            => 'sendNotification',
+                'reason'          => 'no merchants found',
+                'event'           => Events::ONBOARDING_VERIFY_EMAIL
+            ]);
+
+            return;
+        }
+        foreach ($merchantIdList as $merchantId)
+        {
+            $args = [
+                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+            ];
+
+            (new OnboardingNotificationHandler($args))
+                ->sendEventNotificationForMerchant($merchantId, Events::ONBOARDING_VERIFY_EMAIL);
+
+        }
+    }
+
+    public function sendNotificationsToInstantlyActivatedButNotTransactedMerchants($input)
+    {
+        $lastCronTime = $this->getLastCronTime(Constants::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED_IN_1_HOUR);
+
+        $this->updateLastCronTime(Constants::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED_IN_1_HOUR);
+
+        $to = Carbon::now()->getTimestamp();
+
+        $merchantIdList = $this->repo->merchant->fetchAllInstantlyActivatedMerchants($lastCronTime, $to);
+
+        $transactedMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
+            $merchantIdList, $lastCronTime);
+
+        $merchantList =  array_diff($merchantIdList, $transactedMerchants);
+
+        $this->sendNotificationUtility(
+            $merchantList,
+            Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED
+        );
+    }
+
+    public function sendSignupStartedNotification($input)
+    {
+        $lastCronTime = $this->getLastCronTime(Constants::SIGNUP_STARTED_NOTIFY_TIMESTAMP_CACHE_KEY);
+
+        $this->updateLastCronTime(Constants::SIGNUP_STARTED_NOTIFY_TIMESTAMP_CACHE_KEY);
+
+        $to = Carbon::now()->getTimestamp();
+
+        $merchantIdList = $this->repo->merchant->fetchMerchantsCreatedBetween($lastCronTime, $to);
+
+        $this->sendNotificationUtility(
+            $merchantIdList,
+            Events::SIGNUP_STARTED_NOTIFY
+        );
+    }
+
+    private function triggerNoDocLimitEscalation(Base\PublicCollection $merchants, array $merchantsGmvList, string $milestone, $threshold)
+    {
+        $merchantsGmvMap = collect($merchantsGmvList)->mapToDictionary(function($item, $key) {
+            return [$item[DetailEntity::MERCHANT_ID] => $item[MConstants::TOTAL]];
+        });
+
+        foreach ($merchants as $merchant)
+        {
+            try
+            {
+                $merchantId = $merchant->getId();
+
+                $amount = $merchantsGmvMap[$merchantId][0];
+
+                $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchant->getId());
+
+                $escalationConfig = $this->getEscalationConfigForThresholdAndMilestone($merchantDetails, $threshold, $milestone);
+
+                if (empty($escalationConfig) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::NO_DOC_ONBOARDING_ESCALATION_CONFIG_NOT_FOUND,
+                        [
+                            'merchant_id'   => $merchant->getId(),
+                            'milestone'     => $milestone,
+                            'threshold'     => $threshold
+                        ]
+                    );
+
+                    return;
+                }
+
+                (new Handler)->triggerEscalation($merchantId, $amount, $threshold, $escalationConfig, Constants::PAYMENT_BREACH);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(
+                    TraceCode::NO_DOC_ONBOARDING_ESCALATION_FAILURE,
+                    [
+                        'reason'        => 'something went wrong while handling no-doc onboarding escalation',
+                        'trace'         => $e->getMessage(),
+                        'merchant_id'   => $merchant->getId(),
+                        'milestone'     => $milestone,
+                        'threshold'     => $threshold
+                    ]
+                );
+            }
+        }
+    }
+
+    public function handleNoDocLimitBreach()
+    {
+        $threshold = Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD;
+
+        $milestone = Constants::HARD_LIMIT_NO_DOC;
+
+        $merchantIds = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus([DetailStatus::ACTIVATED_KYC_PENDING]);
+
+        $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold($merchantIds, MConstants::PAYMENT, $threshold);
+
+        $merchantIdList = array_map(function($element) {
+            return $element[Entity::MERCHANT_ID];
+        }, $merchantsGmvList);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->trace->info(
+                TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                [
+                    'threshold' => $threshold,
+                    'milestone' => $milestone,
+                    'reason'    => 'no merchants found',
+                ]
+            );
+
+            return;
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::NO_DOC_ONBOARDING_ESCALATION_MERCHANTS,
+                [
+                    'merchant_ids'  => $merchantIdList,
+                    'threshold'     => $threshold,
+                    'milestone'     => $milestone,
+                ]
+            );
+        }
+
+        $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
+
+        $this->triggerNoDocLimitEscalation($merchants, $merchantsGmvList, $milestone, $threshold);
     }
 }
