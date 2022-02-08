@@ -861,7 +861,7 @@ class BankingAccountServiceTest extends TestCase
         $this->fixtures->edit('banking_account_activation_detail',
                               $baad1->getId(),
                               [
-                                  'created_at' => Carbon::now()->subDays(2)->getTimestamp(),
+                                  'created_at' => Carbon::now()->subHours(6)->getTimestamp(),
                               ]);
 
         $this->fixtures->edit('banking_account_activation_detail',
@@ -924,7 +924,7 @@ class BankingAccountServiceTest extends TestCase
         $this->fixtures->edit('banking_account_activation_detail',
                               $baad1->getId(),
                               [
-                                  'created_at' => Carbon::now()->subHours(5)->getTimestamp(),
+                                  'created_at' => Carbon::now()->subHours(3)->getTimestamp(),
                               ]);
 
         //only one application since $baad2 application is fully submitted
