@@ -6099,7 +6099,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'contact_mobile'        => '9012345678',
+            'contact_mobile'        => '+91 9012345678',
         ];
 
         $testData['request']['content'] = $content;
@@ -6259,6 +6259,13 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testUserRegisterSendSignupOtpUnsupportedCountryCode()
+    {
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();

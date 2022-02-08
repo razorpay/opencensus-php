@@ -444,7 +444,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifySignupOtpValidators = [
-        'captcha_only'
+        'captcha_only',
+        'country_code'
+    ];
+
+    protected static $signupOtpValidators = [
+        'country_code'
     ];
 
     /**
@@ -676,6 +681,26 @@ class Validator extends Base\Validator
                         $app['diag']->trackOnboardingEvent($verificationSuccessEventCode, null, null, $payload);
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * @param array $input
+     * @throws BadRequestValidationFailureException
+     * @throws NumberParseException
+     */
+    protected function validateCountryCode(array $input)
+    {
+        if (isset($input[Entity::CONTACT_MOBILE]) === true)
+        {
+            $phoneNumber = $input[Entity::CONTACT_MOBILE];
+            $parsedPhoneNumber = new PhoneBook($phoneNumber);
+            $countryCode = $parsedPhoneNumber->getRegionCodeForNumber();
+
+            if (!in_array($countryCode, Constants::SUPPORTED_COUNTRY_CODES_SIGNUP))
+            {
+                throw new BadRequestValidationFailureException('Unsupported Country Code.');
             }
         }
     }

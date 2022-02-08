@@ -4015,6 +4015,29 @@ return [
         ]
     ],
 
+    'testUserRegisterSendSignupOtpUnsupportedCountryCode' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile' => '+2126087981231'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Unsupported Country Code.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUserRegisterSendSignupOtpViaSmsMobileExists' => [
         'request' => [
             'url'     => '/users/register/otp',

@@ -353,4 +353,9 @@ class Constants
     const RAS_SIGN_UP_CATEGORY      = 'sign_up_checker';
     const RAS_SIGN_UP_SOURCE        = 'sign_up_service';
     const RAS_SIGN_UP_EVENT_TYPE    = 'sign_up_success';
+
+    // Country Code for Indian mobile numbers
+    const SUPPORTED_COUNTRY_CODES_SIGNUP    = [
+        'IN'
+    ];
 }
