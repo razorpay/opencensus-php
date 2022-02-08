@@ -1451,20 +1451,6 @@ class Core extends Base\Core
             if ($bankingAccountStatusChanged === true)
             {
                 $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-
-                $currentBankingAccountStatus = $bankingAccount->getStatus();
-
-                if($currentBankingAccountStatus === Status::ACTIVATED){
-                    $merchant = $bankingAccount->merchant;
-                    if(empty($merchant) === false){
-                        $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
-                    } else{
-                        $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
-                            [
-                                'event_name'  => SegmentEvent::CA_ACTIVATED,
-                            ]);
-                    }
-                }
             }
             if ($bankingAccountSubStatusChanged === true)
             {
@@ -1487,6 +1473,17 @@ class Core extends Base\Core
             $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
 
             $this->app['x-segment']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE);
+
+            if($currentBankingAccountStatus == Status::ACTIVATED){
+                if(empty($merchant) === false){
+                    $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
+                } else{
+                    $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
+                        [
+                            'event_name'  => SegmentEvent::CA_ACTIVATED,
+                        ]);
+                }
+            }
         }
     }
 

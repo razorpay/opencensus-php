@@ -2247,14 +2247,16 @@ class Core extends Base\Core
             (new Notifications\Factory)->getNotifier(Notifications\Type::PAYOUT_PROCESSED_CONTACT_COMMUNICATION,
                                                      $payout)->notify();
 
-            $merchantId = $payout->getMerchantId();
+            $merchant = $payout->merchant;
 
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-            if(empty($merchant) === false){
-                if($payout->isBalanceAccountTypeDirect() === true) {
+            if(empty($merchant) === false)
+            {
+                if($payout->isBalanceAccountTypeDirect() === true)
+                {
                     $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
-                } else if($payout->isBalanceAccountTypeShared() === true){
+                }
+                else if($payout->isBalanceAccountTypeShared() === true)
+                {
                     $this->app['x-segment']->sendEventToSegment(SegmentEvent::VA_PAYOUT_PROCESSED, $merchant);
                 }
             }
