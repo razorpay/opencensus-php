@@ -1,5 +1,5 @@
 <?php
-
+// TODO: Will be removed once FriendBuySendPurchaseEvent cron job is deployed to production.
 
 namespace RZP\Models\Merchant\Onboarding\Cron;
 

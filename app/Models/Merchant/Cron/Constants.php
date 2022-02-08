@@ -18,4 +18,6 @@ class Constants
     const ENABLE_M2M_REFERRAL_CRON_JOB_NAME = "enable_m2m_referral";
 
     const MAX_RETRIES_ALLOWED = 5;
+
+    const FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME = "friend-buy-send-purchase-events-cron";
 }

@@ -28,12 +28,13 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Models\Merchant\M2MReferral\Constants as M2MConstants;
 use RZP\Models\Merchant\M2MReferral\FriendBuy\FriendBuyClient;
-use RZP\Models\Merchant\Onboarding\Cron\FriendBuySendPurchaseEvents;
 use RZP\Models\Merchant\M2MReferral\FriendBuy\Constants as FBConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\M2MReferral\Status as M2MEntityStatus;
 use RZP\Models\Merchant\M2MReferral\Entity as M2MReferralEntity;
+use RZP\Models\Merchant\Cron\Core as CronJobHandler;
+use RZP\Models\Merchant\Cron\Constants as CronConstants;
 use function GuzzleHttp\json_decode;
 
 class M2MReferralTest extends TestCase
@@ -85,9 +86,9 @@ class M2MReferralTest extends TestCase
         config(['services.druid.mock' => true]);
 
         $druidService = $this->getMockBuilder(MockDruidService::class)
-                             ->setConstructorArgs([$this->app])
-                             ->setMethods(['getDataFromDruid'])
-                             ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getDataFromDruid'])
+            ->getMock();
 
         $this->app->instance('druid.service', $druidService);
 
@@ -97,52 +98,52 @@ class M2MReferralTest extends TestCase
         ];
 
         $druidService->method('getDataFromDruid')
-                     ->willReturn([null, [$dataFromDruid]]);
+            ->willReturn([null, [$dataFromDruid]]);
     }
 
     protected function mockHubSpotClient($methodName, $times = 1)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
-                            ->setConstructorArgs([$this->app])
-                            ->setMethods([$methodName])
-                            ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods([$methodName])
+            ->getMock();
 
         $this->app->instance('hubspot', $hubSpotMock);
 
         $hubSpotMock->expects($this->exactly($times))
-                    ->method($methodName);
+            ->method($methodName);
     }
 
     protected function enableRazorXTreatmentForRazorX()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function($mid, $feature, $mode) {
-                                  if ($feature === RazorxTreatment::SHOW_FRIENDBUY_WIDGET)
-                                  {
-                                      return 'on';
-                                  }
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::SHOW_FRIENDBUY_WIDGET)
+                    {
+                        return 'on';
+                    }
 
-                                  return 'off';
-                              }));
+                    return 'off';
+                }));
     }
 
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)
-                       ->setMethods(['isRazorxExperimentEnable'])
-                       ->getMock();
+            ->setMethods(['isRazorxExperimentEnable'])
+            ->getMock();
 
         $mockMC->expects($this->any())
-               ->method('isRazorxExperimentEnable')
-               ->willReturn(true);
+            ->method('isRazorxExperimentEnable')
+            ->willReturn(true);
 
         return [
             "merchantCoreMock" => $mockMC
@@ -323,7 +324,7 @@ class M2MReferralTest extends TestCase
 
         $transaction = $this->createPayment($m2mReferral->getAttribute('merchant_id'),1000);
 
-        (new FriendBuySendPurchaseEvents())->execute(null);
+        (new CronJobHandler())->handleCron(CronConstants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME, []);
         $m2mReferral = $this->getDbLastEntity('m2m_referral');
         $this->assertEquals(M2MEntityStatus::SIGNUP_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
         $data = [
@@ -336,7 +337,8 @@ class M2MReferralTest extends TestCase
         $transaction = $this->createPayment($m2mReferral->getAttribute('merchant_id'),1000);
 
 
-        (new FriendBuySendPurchaseEvents())->execute(null);
+        (new CronJobHandler())->handleCron(CronConstants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME, []);
+
         $m2mReferral = $this->getDbLastEntity('m2m_referral');
         $this->assertEquals(M2MEntityStatus::MTU_EVENT_SENT, $m2mReferral->getAttribute(M2MReferralEntity::STATUS));
         $data = [

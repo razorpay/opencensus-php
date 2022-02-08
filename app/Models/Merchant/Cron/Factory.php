@@ -17,11 +17,15 @@ use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupStartedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\TransactionDetailsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
+use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
 
 class Factory
 {
+    /**
+     * @throws BadRequestValidationFailureException
+     */
     public static function getCronProcessor(string $cronType, array $input)
     {
         $input[Constants::CRON_NAME] = $cronType;
@@ -53,6 +57,8 @@ class Factory
                 return (new SignupStartedCronJob($input));
             case "bvs_cron":
                 return (new BvsCronJob($input));
+            case Constants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME:
+                return (new FriendBuySendPurchaseEventsCronJob($input));
             case Constants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME:
                 return (new EnableM2MReferralCronJob($input));
             case "first-payment-offer-daily-notification":
