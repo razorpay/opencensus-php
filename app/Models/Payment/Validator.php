@@ -390,6 +390,24 @@ class Validator extends Base\Validator
         'meta.version'                  => 'required',
     ];
 
+    protected static $authorizeFailedUpiPaymentRules = [
+        'payment'                       => 'required|array',
+        'payment.method'                => 'required|string|in:upi',
+        'payment.id'                    => 'required|string|size:14',
+        'payment.amount'                => 'required|integer',
+        'upi'                           => 'required|array',
+        'upi.npci_reference_id'         => 'required',
+        'upi.gateway_payment_id'        => 'sometimes',
+        'upi.merchant_reference'        => 'required',
+        'upi.npci_txn_id'               => 'sometimes',
+        'upi.vpa'                       => 'required',
+        'upi.gateway'                   => 'required|string|in:upi_sbi',
+        'meta'                          => 'required|array',
+        'meta.force_auth_payment'       => 'required|boolean',
+        'meta.art_request_id'           => 'required',
+        'meta.version'                  => 'required',
+    ];
+
     protected function validateRange(array $input)
     {
         //Only query for last 7 days

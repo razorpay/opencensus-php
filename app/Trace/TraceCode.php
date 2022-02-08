@@ -76,6 +76,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_ALREADY_CAPTURED                              = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_DCC_PROCESSED                                 = 'PAYMENT_DCC_PROCESSED';
     const PAYMENTS_UPDATE_REFUND_AT                             = 'PAYMENTS_UPDATE_REFUND_AT';
+    const PAYMENT_VERIFY_RESPONSE                               = 'PAYMENT_VERIFY_RESPONSE';
+    const ART_PAYMENT_FORCE_AUTHORIZE_FAILED                    = 'ART_PAYMENT_FORCE_AUTHORIZE_FAILED';
+    const ART_PAYMENT_CREATE_TRANSACTION_FAILED                 = 'ART_PAYMENT_CREATE_TRANSACTION_FAILED';
 
     // Activation Emails
     const INSTANT_ACTIVATION_NOTIFICATION                      =  'INSTANT_ACTIVATION_NOTIFICATION';

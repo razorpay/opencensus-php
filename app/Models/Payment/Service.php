@@ -52,6 +52,7 @@ use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\CardMandate\CardMandateNotification;
+use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -4529,6 +4530,193 @@ class Service extends Base\Service
 
             throw $ex;
         }
+    }
+
+    /**
+     * Authorizes failed payment based on ART input
+     * [force_authorize_failed,verify_authorize_failed]
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     */
+    public function authorizeFailedUpiPayment(array $input)
+    {
+        (new Payment\Validator)->validateInput('authorize_failed_upi_payment', $input);
+
+        $paymentId = $input['payment']['id'];
+
+        $gateway = $input['upi']['gateway'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        if (($input['meta']['force_auth_payment'] === true) and
+            ($this->isForceAuthAllowed($gateway) ===true))
+        {
+            return $this->forceAuthorizeUpiPayment($payment, $input);
+        }
+        else
+        {
+            return $this->verifyAuthorizeFailedPayment($payment, $input);
+        }
+
+    }
+
+    /**
+     * Force authorize failed payment
+     * @param Entity $payment
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function forceAuthorizeUpiPayment(Payment\Entity $payment, array $input = [])
+    {
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        $input['acquirer'] = $this->getAcquirerData($input);
+
+        $this->repo->transaction(function () use ($payment, $input, $merchant)
+        {
+            $processor = $this->getNewProcessor($merchant);
+
+            $response = $processor->forceAuthorizeFailedPayment($payment, $input);
+
+            if ((empty($response['status']) === false) and
+                ($response['status'] !== Payment\Status::FAILED))
+            {
+                $this->verifyPaymentTransaction($payment->getId());
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::ART_PAYMENT_FORCE_AUTHORIZE_FAILED,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'amount'     => $payment->getAmount(),
+                        'gateway'    => $payment->getGateway(),
+                    ]);
+            }
+        });
+
+        return [
+            'success'        => ($payment->getStatus() === Payment\Status::AUTHORIZED),
+            'payment_Id'     => $payment->getId(),
+            'amount'         => $payment->getAmount(),
+            'status'         => $payment->getStatus(),
+            'rrn'            => $payment->getReference16(),
+            'art_request_id' => $input['meta']['art_request_id'],
+        ];
+    }
+
+    /**
+     * Authorize failed payment by verifying it at gateway
+     * @param Entity $payment
+     * @param array $input
+     * @return array
+     * @throws \Exception
+     */
+    protected function verifyAuthorizeFailedPayment(Payment\Entity $payment, array $input = [])
+    {
+        try
+        {
+            // Try to make it authorized
+            $verifyResponse = $this->verifyPayment($payment);
+
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_RESPONSE,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'amount'        => $payment->getAmount(),
+                    'gateway'       => $payment->getGateway(),
+                    'verify_status' => $verifyResponse,
+                ]);
+
+            if ($verifyResponse === VerifyResult::AUTHORIZED)
+            {
+                $this->verifyPaymentTransaction($payment->getId());
+            }
+
+            return [
+                'success'        => ($payment->getStatus() === Payment\Status::AUTHORIZED),
+                'payment_Id'     => $payment->getId(),
+                'amount'         => $payment->getAmount(),
+                'status'         => $payment->getStatus(),
+                'rrn'            => $payment->getReference16(),
+                'art_request_id' => $input['meta']['art_request_id'],
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_FAILED,
+                [
+                    'message'    => sprintf('Verification/Authorization threw an exception. -> %s', $ex->getMessage()),
+                    'payment_id' => $payment->getId(),
+                    'amount'     => $payment->getAmount(),
+                    'gateway'    => $payment->getGateway(),
+                ]);
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * @param string $paymentId
+     * @throws \Throwable
+     */
+    protected function verifyPaymentTransaction(string $paymentId)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        if ($payment->hasTransaction() === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->repo->transaction(function () use ($payment)
+            {
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                $this->repo->saveOrFail($txn);
+                // This is required to save the association of the transaction with the payment.
+                $this->repo->saveOrFail($payment);
+            });
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(
+                TraceCode::ART_PAYMENT_CREATE_TRANSACTION_FAILED,
+                [
+                    'message' => $ex->getMessage(),
+                    'payment_id' => $payment->getId(),
+                    'gateway' => $payment->getGateway(),
+                ]);
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * Adding acquirer data to be set in payment entity during force authorize
+     * @param array $input
+     * @return array[]
+     */
+    protected function getAcquirerData(array $input)
+    {
+        return [
+                Payment\Entity::VPA         => $input['upi']['vpa'],
+                Payment\Entity::REFERENCE16 => $input['upi']['npci_reference_id'],
+        ];
+    }
+
+    protected function isForceAuthAllowed(string $gateway)
+    {
+        if ((in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true))
+        {
+            return true;
+        }
+        return false;
     }
 
     /*

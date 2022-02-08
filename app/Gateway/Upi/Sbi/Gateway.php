@@ -648,9 +648,21 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        $npciReferenceId = null;
+
+        if ((empty($input['gateway']['meta']['version']) === false) and
+            ($input['gateway']['meta']['version'] === 'api_v2'))
+        {
+            $npciReferenceId = $input['gateway']['upi']['npci_reference_id'];
+        }
+        else
+        {
+            $npciReferenceId = $input['gateway']['reference_number'];
+        }
+
         $attributes = [
             Base\Entity::STATUS_CODE        => Status::SUCCESS,
-            Base\Entity::NPCI_REFERENCE_ID  => $input['gateway']['reference_number'],
+            Base\Entity::NPCI_REFERENCE_ID  => $npciReferenceId,
         ];
 
         $gatewayPayment->fill($attributes);

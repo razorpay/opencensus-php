@@ -1441,6 +1441,200 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertFalse($response['success']);
     }
 
+    /**
+     * Authorize the failed payment by force authorizing it
+     */
+    public function testAuthorizeFailedPayment()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertSame(Payment\Status::CREATED, $payment['status']);
+
+        $callbackContent = $this->mockServer()->getAsyncCallbackContent($upiEntity);
+
+        $callbackResponse = $this->makeS2SCallbackAndGetContent($callbackContent);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $callbackResponse);
+        $this->assertEquals('SUCCESS', $callbackResponse['status']);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'              => 'failed',
+                'authorized_At'       => null,
+                'error_code'          => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'   => 'Payment was not completed on time.',
+            ]);
+
+        $this->fixtures->edit('upi', $upiEntity['id'], [Upi::STATUS_CODE => '']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertNotEquals('S', $upiEntity['status_code']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = $payment['id'];
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertEquals('123456789013', $upiEntity['npci_reference_id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals('123456789013', $updatedPayment['reference16']);
+
+        $this->assertEquals('razor.pay@sbi', $updatedPayment['vpa']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+    }
+
+    /**
+     * Validate negative case of authorizing succesfulpayment
+     */
+    public function testForceAuthorizeSucessfulPayment()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertSame(Payment\Status::CREATED, $payment['status']);
+
+        $callbackContent = $this->mockServer()->getAsyncCallbackContent($upiEntity);
+
+        $callbackResponse = $this->makeS2SCallbackAndGetContent($callbackContent);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $callbackResponse);
+
+        $this->assertEquals('SUCCESS', $callbackResponse['status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = $payment['id'];
+
+        $content['meta']['force_auth_payment'] = true;
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/upi/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    public function testForceAuthorizePaymentValidationFailure()
+    {
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        // Unsetting the npci_reference_id to mimic validation failure
+        unset($content['upi']['npci_reference_id']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/upi/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+    /**
+     * Authorize the failed payment by verifying at gateway
+     */
+    public function testVerifyAuthorizeFailedPayment()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertSame(Payment\Status::CREATED, $payment['status']);
+
+        $callbackContent = $this->mockServer()->getAsyncCallbackContent($upiEntity);
+
+        $callbackResponse = $this->makeS2SCallbackAndGetContent($callbackContent);
+
+        // We should have gotten a successful response
+        $this->assertArrayHasKey('status', $callbackResponse);
+        $this->assertEquals('SUCCESS', $callbackResponse['status']);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'              => 'failed',
+                'authorized_At'       => null,
+                'error_code'          => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'   => 'Payment was not completed on time.',
+            ]);
+
+        $this->fixtures->edit('upi', $upiEntity['id'], [Upi::STATUS_CODE => '']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $upiEntity = $this->getDbLastEntityToArray(Entity::UPI);
+
+        $this->assertNotEquals('S', $upiEntity['status_code']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = $payment['id'];
+
+        $content['meta']['force_auth_payment'] = false;
+
+        $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('123456789012', $upiEntity['npci_reference_id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        // asset the late authorized flag for authorizing via verify
+        $this->assertTrue($updatedPayment['late_authorized']);
+
+        $this->assertNotEmpty($updatedPayment['transaction_id']);
+    }
+
     protected function makeDataCorrectionRequest($count, $filter = [])
     {
         $request = [
@@ -1645,6 +1839,19 @@ class UpiSbiGatewayTest extends TestCase
             'url' => '/payments/create/upi/unexpected',
             'method' => 'POST',
             'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function makeAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/upi/failed',
+            'method'   => 'POST',
+            'content'  => $content,
         ];
 
         $this->ba->appAuth();

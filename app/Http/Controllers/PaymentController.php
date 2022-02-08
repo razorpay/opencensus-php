@@ -654,4 +654,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($success);
     }
+
+    public function postAuthorizeFailedUpiPayment()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->authorizeFailedUpiPayment($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -203,6 +203,7 @@ class Route
         'payment_edit'                             => ['patch',    'payments/{id}',                                  'PaymentController@update'                                          ],
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_by_id_internal'             => ['get',      'payments_internal/{id}',                         'PaymentController@getPaymentById'                              ],
+        'payment_upi_authorize_failed'             => ['post',     'payments/authorize/upi/failed',                  'PaymentController@postAuthorizeFailedUpiPayment'                   ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                 'PaymentController@getPaymentwithSubscription'                       ],
 
@@ -4459,6 +4460,8 @@ class Route
 
         // payments card es sync cron
         'payments_card_es_sync_cron',
+
+        'payment_upi_authorize_failed',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12032,6 +12035,7 @@ class Route
 
         'recon' => [
             'payment_create_upi_unexpected',
+            'payment_upi_authorize_failed',
         ]
     ];
 

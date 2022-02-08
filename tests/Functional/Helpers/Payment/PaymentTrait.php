@@ -2004,6 +2004,28 @@ trait PaymentTrait
         ];
     }
 
+    protected function getDefaultUpiAuthorizeFailedPaymentArray()
+    {
+        return [
+            'upi' => [
+                'npci_reference_id'     => '123456789013',
+                'gateway_payment_id'    => '4531245576',
+                'npci_txn_id'           => 'AXId27bf16312dc428ab7a305ea57e20393',
+                'merchant_reference'    => 'IShcnbF6tsOy',
+                'vpa'                   => 'razor.pay@sbi',
+                'gateway'               => 'upi_sbi',
+            ],
+            'payment' => [
+                'method'    => 'upi',
+                'amount'    => 50000,
+            ],
+            'meta' => [
+                'art_request_id' => '123423454',
+                'version'        => 'api_v2',
+            ]
+        ];
+    }
+
     protected function sendRequest($request, &$callback = null)
     {
         $this->checkAndSetUrl($request);
