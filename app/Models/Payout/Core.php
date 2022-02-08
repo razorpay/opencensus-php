@@ -2283,7 +2283,7 @@ class Core extends Base\Core
         {
             try
             {
-                $response = (new PayoutsLedgerProcessor())
+                $response = (new PayoutsLedgerProcessor($payout))
                     ->processPayoutAndCreateJournalEntry($payout, null, $ftsSourceAccountInformation);
             }
             catch (\Throwable $e)
@@ -2372,7 +2372,6 @@ class Core extends Base\Core
         }
 
         if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true) and
-            ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
             ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED) and
             ($payout->getIsPayoutService() === false))
@@ -2841,7 +2840,7 @@ class Core extends Base\Core
                 // thus making another call in sync mode
                 if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($clonedPayout) === true) {
                     try {
-                        $response = (new PayoutsLedgerProcessor())->processPayoutAndCreateJournalEntry(
+                        $response = (new PayoutsLedgerProcessor($clonedPayout))->processPayoutAndCreateJournalEntry(
                             $clonedPayout,
                             null,
                             $ftsSourceAccountInformation
@@ -2883,7 +2882,7 @@ class Core extends Base\Core
                  */
                 if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED)) {
                     try {
-                        $response = (new PayoutsLedgerProcessor())->processPayoutAndCreateJournalEntry(
+                        $response = (new PayoutsLedgerProcessor($payout))->processPayoutAndCreateJournalEntry(
                             $payout,
                             $reversal,
                             $ftsSourceAccountInformation
@@ -2923,7 +2922,7 @@ class Core extends Base\Core
                     // failed event for ledger using $clonedPayout
                     $clonedPayout->setStatus(Status::FAILED);
                     try {
-                        $response = (new PayoutsLedgerProcessor())->processPayoutAndCreateJournalEntry(
+                        $response = (new PayoutsLedgerProcessor($clonedPayout))->processPayoutAndCreateJournalEntry(
                             $clonedPayout,
                             $reversal
                         );

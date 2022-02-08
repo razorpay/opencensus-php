@@ -187,7 +187,7 @@ class Base extends FundAccountPayout\Base
 
         try
         {
-            $ledgerResponse = (new Ledger\Payout())->processPayoutAndCreateJournalEntry($payout);
+            $ledgerResponse = (new Ledger\Payout($payout))->processPayoutAndCreateJournalEntry($payout);
 
             if ($payout->getIsPayoutService() === false)
             {

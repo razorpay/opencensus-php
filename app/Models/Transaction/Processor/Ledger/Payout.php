@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction\Processor\Ledger;
 
+use RZP\Constants;
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -21,6 +22,18 @@ use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Payout extends Base
 {
+    /**
+     * @var \RZP\Models\Payout\Entity
+     */
+    public $payout;
+
+    public function __construct($payout = null)
+    {
+        parent::__construct();
+
+        $this->payout = $payout;
+    }
+
     // Events
     const PAYOUT_INITIATED = "payout_initiated";
     const PAYOUT_PROCESSED = "payout_processed";
@@ -230,8 +243,6 @@ class Payout extends Base
 
         $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
 
-        // Keeping this here for future safety
-        // Ideally, this won't execute in partial reverse shadow
         $this->updatePayloadForFeeCredits($payload, $payout);
 
         $this->trace->info(
@@ -263,6 +274,36 @@ class Payout extends Base
             // If it's an insufficient balance case, throw a new exception with a new error code
             if ($e->getCode() === ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE)
             {
+                // Check if this payout was a reward fee based payout.
+                // If yes, it can mean 2 things
+                // 1. There actually was not enough real (non-reward) merchant balance to do the payout.
+                // 2. There's not enough reward balance on ledger. Which means API and ledger are not in sync.
+                // We shall trace this for case 2. And retry without reward fee for now
+                // TODO: Ask ledger microservice team if there's a way to distinguish between case 1 and 2
+                // TODO: Ask if this case will be handled in async retries
+                if (isset($payload[self::ADDITIONAL_PARAMS][self::FEE_ACCOUNTING]) === true and
+                    $payload[self::ADDITIONAL_PARAMS][self::FEE_ACCOUNTING] === self::REWARD)
+                {
+                    unset($payload[self::ADDITIONAL_PARAMS][self::FEE_ACCOUNTING]);
+
+                    $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_LEDGER_PAYOUT_FOR_INSUFFICIENT_BALANCE,
+                                       [
+                                           'payout_id'      => $this->payout->getId(),
+                                           'exception_data' => $e->getData(),
+                                       ]);
+
+                    (new Credits\Transaction\Core)->reverseCreditsForSource(
+                        $this->payout->getId(),
+                        Constants\Entity::PAYOUT,
+                        $this->payout);
+
+                    unset($this->payout[Entity::FEE_TYPE]);
+
+                    $this->repo->saveOrFail($this->payout);
+
+                    return $this->createJournalEntry($payload);
+                }
+
                 throw new BadRequestException(
                     Errorcode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
                     null,

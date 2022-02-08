@@ -683,13 +683,6 @@ class Core extends Base\Core
      */
     protected function shouldHandleRewardForReversalsForSource(Reversal\Entity $reversal)
     {
-        // shouldHandleRewardForReversalsForSource is only called by payouts
-        // hence no check on entity type necessary.
-        if (Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($reversal->entity) === true)
-        {
-            return false;
-        }
-
         // this checks if rewards were used for the payout
         if (($reversal->getEntityType() === E::PAYOUT) and
             ($reversal->entity->getFeeType() === Transaction\CreditType::REWARD_FEE))

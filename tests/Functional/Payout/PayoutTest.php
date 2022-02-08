@@ -17415,8 +17415,22 @@ class PayoutTest extends OAuthTestCase
 
         $this->liveSetUp();
 
+        $balance = $this->bankingBalance;
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
+
+        $counter1 = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ],
+                                        'live')->first();
+
+        //$freePayoutsCountBefore = $counter1->getFreePayoutsConsumed();
+
         // keeping 1 free payout available to be consumed
-        $counter1 = $this->getDbEntity('counter', ['balance_id' => $this->bankingBalance->getId()], 'live');
         $this->fixtures->on('live')->edit('counter', $counter1->getId(), ['free_payouts_consumed' => 299]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
@@ -18176,5 +18190,159 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('failed', $payout->getStatus());
+    }
+
+    public function testProcessingOfFreePayoutsInLedgerReverseShadowModeInLiveMode()
+    {
+        $this->testFreePayoutsOnLedgerReverseShadowInLiveMode();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $this->bankingBalance->getId(),
+                                        ],
+                                        'live')->first();
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'processed',
+            'failure_reason' => '',
+            'bank_status_code' => 'SUCCESS'
+        ]);
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore, $freePayoutsCountAfter);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
+    public function testReversalOfFreePayoutsInLedgerReverseShadowModeInLiveMode()
+    {
+        $this->testFreePayoutsOnLedgerReverseShadowInLiveMode();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $this->bankingBalance->getId(),
+                                        ],
+                                        'live')->first();
+
+        $freePayoutsCountBefore = $counter->getFreePayoutsConsumed();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status' => 'failed',
+            'failure_reason' => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $counter->reload();
+
+        $freePayoutsCountAfter = $counter->getFreePayoutsConsumed();
+
+        // Assert that zero free payout has been consumed
+        $this->assertEquals($freePayoutsCountBefore - 1, $freePayoutsCountAfter);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+    }
+
+    public function testPayoutReversalWithRewardsInLedgerReverseShadowMode()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testPayoutReversalWithRewards'];
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->edit('card', '100000000lcard', ['last4' => '1112']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 1500 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $balance = $this->getLastEntity('balance', true);
+
+        $balanceBefore = $balance['balance'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNull($payout['user_id']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals(900, $payout['fees']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(900, $txn['fee']);
+        $this->assertEquals('reward_fee', $txn['credit_type']);
+        $this->assertEquals(900, $txn['fee_credits']);
+
+
+        $balance = $this->getLastEntity('balance', true);
+        $this->assertEquals('shared', $balance['account_type']);
+
+        $this->assertEquals($balanceBefore - 2000000, $balance['balance']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(900, $creditEntity['used']);
+
+        $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
+        $this->assertEquals('payout', $creditTxnEntity['entity_type']);
+        $this->assertEquals($payout['id'], 'pout_' . $creditTxnEntity['entity_id']);
+        $this->assertEquals(900, $creditTxnEntity['credits_used']);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'        => 'failed',
+            'failure_reason'    => '',
+            'bank_status_code'  => 'YB_NS_E10282323'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                            'Payout failed. Contact support for help.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
+
+        //get reversal and check posted_at in reversal txn
+        $payoutReversal = $this->getDbLastEntity('reversal');
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNotNull($txn['posted_at']);
+
+        $creditEntity = $this->getLastEntity('credits', true);
+        $this->assertEquals(0, $creditEntity['used']);
+
+        $creditTxnEntity = $this->getLastEntity('credit_transaction', true);
+        $this->assertEquals('reversal', $creditTxnEntity['entity_type']);
+        $this->assertEquals(-900, $creditTxnEntity['credits_used']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+        $this->assertEquals(2000000, $reversal['amount']);
     }
 }
