@@ -2,8 +2,8 @@
 $payment_page_data          = $data['payment_link'];
 $is_test_mode               = $data['is_test_mode'] ?? false;
 $has_udf                    = (empty($udf_schema) === false);
-$description_meta_text      = ($payment_page_data['description'] and json_decode($payment_page_data['description'], true)['metaText']) ? json_decode($payment_page_data['description'], true)['metaText'] : null;
-$meta_description           = $description_meta_text ? $description_meta_text : 'Payment request by '. $data['merchant']['name'];
+$meta_title                 = 'Payment request from ' . $data['merchant']['name'];
+$meta_description           = 'Use this link to enter the amount and pay securely via Razorpay: ' . $data['payment_link']['handle_url'];
 $dark_theme_color           = '#383838';
 $light_theme_color          = '#efefef';
 $is_error_view              = isset($request_params['error']['description']);
@@ -22,14 +22,14 @@ $is_performance_optimized   = $data['view_preferences']['page_load_optimization_
     @include('hostedpage.partials.robot')
     <meta name="description" content="{{{ $meta_description }}}">
 
-    <meta property="og:title" content="Pay for {{{ $payment_page_data['title'] }}} by {{{ $data['merchant']['name'] }}}">
+    <meta property="og:title" content="{{{ $meta_title }}}">
     <meta property="og:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}">
     <meta property="og:image:width" content="276px">
     <meta property="og:image:height" content="276px">
     <meta property="og:description" content="{{{ $meta_description }}}">
 
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Pay for {{{ $payment_page_data['title'] }}} by {{{ $data['merchant']['name'] }}}" />
+    <meta name="twitter:title" content="{{{ $meta_title }}}" />
     <meta name="twitter:description" content="{{{ $meta_description }}}" />
     <meta name="twitter:image" content="{{isset($data['merchant']['image']) ?  $data['merchant']['image'] : 'https://cdn.razorpay.com/static/assets/logo/rzp.png'}}" />
 
