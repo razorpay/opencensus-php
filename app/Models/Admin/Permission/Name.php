@@ -869,6 +869,8 @@ class Name
     // Permission to allow use of master DB instead of slave
     const USE_MASTER_DB_CONNECTION              = 'use_master_db_connection';
 
+    const MANAGE_CAMPAIGNHQ_OPERATIONS          = 'manage_campaignhq_operations';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

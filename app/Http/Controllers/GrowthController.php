@@ -17,38 +17,56 @@ class GrowthController extends Controller
         parent::__construct();
     }
 
-    public function getAssetDetails(){
+    public function handleAdminRequests($path = null)
+    {
         $parameters = Request::all();
         $response = [];
 
         try {
-            if (empty($parameters) === false)
-            {
+            if (empty($parameters) === false) {
+
+                $response = $this->app->growthService->sendAdminRequest($parameters, $path, Request::method());
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
+
+    public function getAssetDetails()
+    {
+        $parameters = Request::all();
+        $response = [];
+
+        try {
+            if (empty($parameters) === false) {
 
                 $response = $this->app->growthService->getAssetDetails($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
-        } catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the getAssetDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
 
         return $response;
     }
 
-    public function getPublicAssetDetails(){
+    public function getPublicAssetDetails()
+    {
         $parameters = Request::all();
         $response = [];
         try {
-            if (empty($parameters) === false)
-            {
+            if (empty($parameters) === false) {
                 $response = $this->app->growthService->getPublicAssetDetails($parameters);
                 $response = ApiResponse::json($response);
             }
-        } catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the getPublicAssetDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
         return $response;
@@ -61,16 +79,14 @@ class GrowthController extends Controller
         $response = [];
 
         try {
-            if (empty($parameters) === false)
-            {
+            if (empty($parameters) === false) {
 
                 $response = $this->app->growthService->editTemplateAndEnableDowntimeNotificationForXDashboard($parameters);
 
                 $response = ApiResponse::json($response);
 
             }
-        } catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
 
@@ -83,8 +99,7 @@ class GrowthController extends Controller
             $response = $this->app->growthService->filterAndSyncEventsFromPinot();
             $response = ApiResponse::json($response);
 
-        } catch (\Throwable $e)
-        {
+        } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
 
         }

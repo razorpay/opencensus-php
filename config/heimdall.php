@@ -1070,6 +1070,10 @@ return [
             Permission::ENABLE_DOWNTIME_NOTIFICATION_X_DASHBOARD => [
                 'description' => 'To be used by X Ops Team to create notifications on X Dashboard',
                 'assignable'  => true,
+            ],
+            Permission::MANAGE_CAMPAIGNHQ_OPERATIONS => [
+                'description' => 'Allows managing Campaigns on CampaignHQ Dashboard',
+                'assignable'  => true,
             ]
         ],
 

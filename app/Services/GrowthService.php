@@ -18,18 +18,18 @@ class GrowthService extends Base\Service
 {
     const CONTENT_TYPE_JSON = 'application/json';
 
-    const GET_ASSET_URL              = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
-    const GET_PUBLIC_ASSET_URL       = 'twirp/rzp.growth.asset.v1.AssetAPI/GetPublic';
+    const GET_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
+    const GET_PUBLIC_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/GetPublic';
 
-    const EDIT_TEMPLATE_URL          = 'twirp/rzp.growth.template.v1.TemplateAPI/Update';
+    const EDIT_TEMPLATE_URL = 'twirp/rzp.growth.template.v1.TemplateAPI/Update';
 
-    const GET_SUBCAMPAIGN_URL        = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Get';
+    const GET_SUBCAMPAIGN_URL = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Get';
 
-    const SUBCAMPAIGN_ACTION_URL     = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Action';
+    const SUBCAMPAIGN_ACTION_URL = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Action';
 
-    const FILTER_AND_SYNC_URL        = '/twirp/rzp.growth.counting.v1.CountingAPI/FilterAndSync';
+    const FILTER_AND_SYNC_URL = '/twirp/rzp.growth.counting.v1.CountingAPI/FilterAndSync';
 
-    const ACTIVATED                  = 'ACTIVATED';
+    const ACTIVATED = 'ACTIVATED';
 
     // Tells the client what the content type of the returned content actually is
     const CONTENT_TYPE = 'Content-Type';
@@ -41,6 +41,10 @@ class GrowthService extends Base\Service
     const ACCESS_CONTROL_ALLOW_HEADERS = 'Access-Control-Allow-Headers';
 
     const X_PASSPORT_JWT_V1 = 'X-Passport-JWT-V1';
+
+    // Admin email parameter to be sent in all admin requests
+    const ADMIN_EMAIL_PARAM_NAME = 'admin_email';
+    const ADMIN_EMAIL_PARAM_HEADER = 'X-Admin-Email';
 
     /**
      * @var string
@@ -72,16 +76,16 @@ class GrowthService extends Base\Service
 
     public function __construct()
     {
-        $app                  = App::getFacadeRoot();
-        $this->trace          = $app['trace'];
-        $this->env            = $app['env'];
-        $growthConfig         = $app['config']['applications.growth'];
-        $this->baseUrl        = $growthConfig['url'];
-        $this->key            = $growthConfig['username'];
-        $this->secret         = $growthConfig['secret'];
-        $this->skipPassport   = $growthConfig['skip_jwt_passport'];
+        $app = App::getFacadeRoot();
+        $this->trace = $app['trace'];
+        $this->env = $app['env'];
+        $growthConfig = $app['config']['applications.growth'];
+        $this->baseUrl = $growthConfig['url'];
+        $this->key = $growthConfig['username'];
+        $this->secret = $growthConfig['secret'];
+        $this->skipPassport = $growthConfig['skip_jwt_passport'];
         $this->requestTimeout = $growthConfig['request_timeout'];
-        $this->auth           = $app['basicauth'];
+        $this->auth = $app['basicauth'];
     }
 
     public function getAssetDetails($parameters)
@@ -100,12 +104,11 @@ class GrowthService extends Base\Service
 
         $this->sendRequest($templateParameters, self::EDIT_TEMPLATE_URL, Requests::POST);
 
-        $subCampaignGetParams = [ "sub_campaign_id"  => $parameters['subcampaign']["sub_campaign_id"]];
+        $subCampaignGetParams = ["sub_campaign_id" => $parameters['subcampaign']["sub_campaign_id"]];
 
         $subCampaignGetResponse = $this->sendRequest($subCampaignGetParams, self::GET_SUBCAMPAIGN_URL, Requests::POST);
 
-        if($subCampaignGetResponse["response"]["sub_campaign"]["status"] != self::ACTIVATED)
-        {
+        if ($subCampaignGetResponse["response"]["sub_campaign"]["status"] != self::ACTIVATED) {
             $subCampaignActionParams = $parameters['subcampaign'];
 
             $this->sendRequest($subCampaignActionParams, self::SUBCAMPAIGN_ACTION_URL, Requests::POST);
@@ -119,13 +122,26 @@ class GrowthService extends Base\Service
         return $this->sendRequest([], self::FILTER_AND_SYNC_URL, Requests::POST);
     }
 
+    /**
+     * @throws Exception\InvalidPermissionException
+     * @throws Exception\ServerErrorException
+     */
+    public function sendAdminRequest($parameters, $path, $method): array
+    {
+        $admin = $this->auth->getAdmin();
+        if ($admin === null) {
+            throw new Exception\InvalidPermissionException('admin authorization required');
+        }
+        $adminEmail = $admin->getEmail() ?? '';
+        $parameters[self::ADMIN_EMAIL_PARAM_NAME] = $adminEmail;
+        return $this->sendRequest($parameters, $path, $method);
+    }
 
     public function sendRequest($parameters, $path, $method)
     {
         $requestParams = $this->getRequestParams($parameters, $path, $method);
 
-        try
-        {
+        try {
             $response = Requests::request(
                 $requestParams['url'],
                 $requestParams['headers'],
@@ -134,9 +150,7 @@ class GrowthService extends Base\Service
                 $requestParams['options']);
 
             return $this->parseAndReturnResponse($response);
-        }
-        catch (Throwable $e)
-        {
+        } catch (Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }
     }
@@ -152,6 +166,7 @@ class GrowthService extends Base\Service
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
+        $headers[self::ADMIN_EMAIL_PARAM_HEADER] = $parameters[self::ADMIN_EMAIL_PARAM_NAME] ?? '';
         $options = [
             'timeout' => $this->requestTimeout,
         ];
@@ -182,8 +197,7 @@ class GrowthService extends Base\Service
 
         $res = json_decode($res->body, true);
 
-        if (json_last_error() !== JSON_ERROR_NONE)
-        {
+        if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception\RuntimeException('Malformed json response');
         }
 

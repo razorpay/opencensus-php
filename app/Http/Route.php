@@ -2257,6 +2257,7 @@ class Route
         'growth_get_public_asset_details'                   => ['post',     'growth/public/assets',                                  'GrowthController@getPublicAssetDetails'                                  ],
         'growth_downtime_for_x'                             => ['post',     'growth/assets/enable_downtime_for_x',                     'GrowthController@enableDowntimeNotificationForXDashboard' ],
         'growth_filter_and_sync_cron'                       => ['post',     'growth/assets/sync',                             'GrowthController@filterAndSyncEventsFromPinot'            ],
+        'growth_admin'                                      => ['post',     'growth/admin/{path?}',                                  'GrowthController@handleAdminRequests'                       ],
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -5273,6 +5274,7 @@ class Route
         'admin_trigger_2fa_otp',
         'admin_account_lock_unlock',
         'workflow_needs_merchant_clarification',
+        'growth_admin',
         'merchant_update_fraud_type',
         'admin_merchant_post_preferences',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
@@ -6894,6 +6896,7 @@ class Route
         'db_meta_query'                            => Permission::DB_META_QUERY,
         'oauth_sync_merchant_map'                  => Permission::OAUTH_SYNC_MERCHANT_MAP,
         'nodal_beneficiary_update'                 => Permission::SETTLEMENT_BULK_UPDATE,
+        'growth_admin'                             => Permission::MANAGE_CAMPAIGNHQ_OPERATIONS,
         'razorx_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'splitz_route'                             => Permission::MANAGE_RAZORX_OPERATIONS,
         'invoice_cancel_by_batch_admin'            => Permission::CANCEL_BATCH,
@@ -9197,6 +9200,7 @@ class Route
             'admin_account_lock_unlock',
             'setl_merchant_dashboard_config_get',
             'workflow_needs_merchant_clarification',
+            'growth_admin',
             'splitz_evaluate_bulk_proxy',
             'merchant_update_fraud_type',
             'admin_merchant_post_preferences',
@@ -11098,6 +11102,9 @@ class Route
             // Payment Fraud
             'get_fraud_attributes',
             'save_payment_fraud',
+
+            // Growth Assets
+            'growth_get_asset_details'
         ],
 
         //
