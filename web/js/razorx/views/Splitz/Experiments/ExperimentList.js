@@ -13,11 +13,8 @@ import { splitzFetch } from 'razorx/helpers/fetch';
 export default class ExperimentList extends React.Component {
   state = {
     isFetchingProjects: true,
-    isFetchingEnvironments: false,
-    environments: [],
     projects: [],
     selectedProject: null,
-    selectedEnvironment: null,
   };
 
   resetFilters = (e) => {
@@ -26,7 +23,6 @@ export default class ExperimentList extends React.Component {
 
     this.setState({
       selectedProject: null,
-      selectedEnvironment: null,
     });
 
     // Clear filters in UI form
@@ -37,10 +33,9 @@ export default class ExperimentList extends React.Component {
   };
 
   filterList = () => {
-    const { selectedProject, selectedEnvironment } = this.state;
+    const { selectedProject } = this.state;
     this.props.collection.applyFilters({
       projectId: selectedProject ? selectedProject.id : '',
-      environment_id: selectedEnvironment ? selectedEnvironment.id : '',
     });
   };
 
@@ -81,8 +76,6 @@ export default class ExperimentList extends React.Component {
       this.setState(
         {
           selectedProject: null,
-          environments: [],
-          selectedEnvironment: null,
         },
         () => this.filterList(),
       );
@@ -92,51 +85,13 @@ export default class ExperimentList extends React.Component {
     this.setState(
       {
         selectedProject: project,
-        isFetchingEnvironments: true,
-        environments: [],
-        selectedEnvironment: null,
       },
       () => this.filterList(),
     );
-
-    Promise.all([
-      splitzFetch({
-        url: 'environment.v1.EnvironmentAPI/List',
-        data: {
-          projectID: project.id,
-          limit: 100,
-          offset: 0,
-        },
-      }),
-    ])
-      .then((allResponses) => {
-        const envRes = allResponses[0];
-
-        this.setState({
-          isFetchingEnvironments: false,
-          environments: envRes.environments || [],
-        });
-      })
-      .catch(() => {
-        this.setState({
-          isFetchingEnvironments: false,
-        });
-      });
-  };
-
-  handleSelectEnvironment = ({ option }) => {
-    this.setState({ selectedEnvironment: option }, () => this.filterList());
   };
 
   render() {
-    const {
-      isFetchingProjects,
-      isFetchingEnvironments,
-      projects,
-      environments,
-      selectedProject,
-      selectedEnvironment,
-    } = this.state;
+    const { isFetchingProjects, projects, selectedProject } = this.state;
 
     return (
       <div className="list-container">
@@ -158,27 +113,6 @@ export default class ExperimentList extends React.Component {
             onChange={this.handleSelectProject}
             style={{ width: '250px' }}
           />
-          <SearchableSelectField
-            disabled={isFetchingEnvironments || !selectedProject}
-            name="environment_id"
-            optionComponent={({ option }) => (
-              <div>
-                {option.name} - {option.id}
-              </div>
-            )}
-            placeholder="Select a environment"
-            searchIndices={['id', 'name']}
-            label="Select Environment"
-            trackBy="id"
-            options={
-              environments.length
-                ? environments
-                : [{ name: 'No environments found for selected project' }]
-            }
-            selected={selectedEnvironment}
-            onChange={this.handleSelectEnvironment}
-            style={{ width: '250px' }}
-          />
           <button className="btn btn--primary field">Search</button>
           <button type="button" className="btn btn--link field" onClick={this.resetFilters}>
             Clear
@@ -191,7 +125,6 @@ export default class ExperimentList extends React.Component {
               ['ID', (item) => item.id],
               ['Name', (item) => item.name],
               ['Status', (item) => statusPill(item.status)],
-              ['Environment', (item) => item.environment_id],
               [
                 'Project ID',
                 (item) => (

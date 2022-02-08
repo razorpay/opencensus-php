@@ -56,9 +56,7 @@ export default class AddEditExperiment extends React.Component {
       isSaving: false,
       isFetchingProjects: true,
       isFetchingSegments: true,
-      isFetchingEnvironments: false,
       isFetchingGroups: false,
-      environments: [],
       groups: [],
       projects: [],
       segments: [],
@@ -67,7 +65,6 @@ export default class AddEditExperiment extends React.Component {
       variants,
       selectedType,
       selectedProject: null,
-      selectedEnvironment: null,
       selectedGroup: null,
     };
   }
@@ -88,7 +85,6 @@ export default class AddEditExperiment extends React.Component {
         type: form.type,
         sampling_percentage: Number(form.samplingPercentage),
         project_id: this.state.selectedProject.id,
-        environment_id: this.state.selectedEnvironment.id,
         exclusion_group: this.state.selectedGroup
           ? {
               entity_id: this.state.selectedGroup.id,
@@ -144,14 +140,6 @@ export default class AddEditExperiment extends React.Component {
       return 'Please select a project';
     }
 
-    if (
-      !this.state.selectedEnvironment ||
-      !this.state.selectedEnvironment.id ||
-      this.state.selectedEnvironment.name.includes('No environments found')
-    ) {
-      return 'Please select an environment';
-    }
-
     if (form.trafficAllocation && form.trafficAllocation % 5 !== 0) {
       return 'Traffic allocation should be in multiple of 5';
     }
@@ -175,27 +163,11 @@ export default class AddEditExperiment extends React.Component {
     return false;
   }
 
-  onChangeEnumList = (enumList = []) => {
-    let trimmedEnums = enumList.concat();
-
-    trimmedEnums = trimmedEnums.reduce((r, o) => {
-      if (o) {
-        r.push(o);
-      }
-
-      return r;
-    }, []);
-
-    this.setState({ environments: trimmedEnums });
-  };
-
   handleSelectProject = ({ option: project }) => {
     if (!project) {
       this.setState({
         selectedProject: null,
-        environments: [],
         groups: [],
-        selectedEnvironment: null,
         selectedGroup: null,
       });
       return;
@@ -203,51 +175,26 @@ export default class AddEditExperiment extends React.Component {
 
     this.setState({
       selectedProject: project,
-      isFetchingEnvironments: true,
       isFetchingGroups: true,
-      environments: [],
       groups: [],
-      selectedEnvironment: null,
       selectedGroup: null,
     });
 
-    Promise.all([
-      splitzFetch({
-        url: 'environment.v1.EnvironmentAPI/List',
-        data: {
-          projectID: project.id,
-          limit: 100,
-          offset: 0,
-        },
-      }),
-      splitzFetch({
-        url: 'exclusion_group.v1.ExclusionGroupAPI/List',
-        data: {
-          project_id: project.id,
-          limit: 100,
-          offset: 0,
-        },
-      }),
-    ])
-      .then((allResponses) => {
-        const envRes = allResponses[0];
-        const groupRes = allResponses[1];
-
+    splitzFetch({
+      url: 'exclusion_group.v1.ExclusionGroupAPI/List',
+      data: {
+        project_id: project.id,
+        limit: 100,
+        offset: 0,
+      },
+    })
+      .then((groupRes) => {
         this.setState({
-          isFetchingEnvironments: false,
           isFetchingGroups: false,
-          environments: envRes.environments || [],
           groups: groupRes.items || [],
         });
 
         if (this.props.isEdit) {
-          const currentEnv = envRes.environments.find(
-            (env) => env.id === this.props.data.environment_id,
-          );
-          this.handleSelectEnvironment({
-            option: currentEnv,
-          });
-
           if (this.props.data.exclusion_group) {
             const currentGroup = groupRes.items.find(
               (group) => group.id === this.props.data.exclusion_group.entity_id,
@@ -260,14 +207,9 @@ export default class AddEditExperiment extends React.Component {
       })
       .catch(() => {
         this.setState({
-          isFetchingEnvironments: false,
           isFetchingGroups: false,
         });
       });
-  };
-
-  handleSelectEnvironment = ({ option }) => {
-    this.setState({ selectedEnvironment: option });
   };
 
   handleSelectGroup = ({ option }) => {
@@ -333,27 +275,19 @@ export default class AddEditExperiment extends React.Component {
     const {
       isSaving,
       isFetchingProjects,
-      isFetchingEnvironments,
       isFetchingGroups,
       isFetchingSegments,
       projects,
-      environments,
       groups,
       selectedType,
       selectedProject,
-      selectedEnvironment,
       selectedGroup,
       ruleCondition,
       rules,
       variants,
       segments,
     } = this.state;
-    const isLoading =
-      isSaving ||
-      isFetchingProjects ||
-      isFetchingEnvironments ||
-      isFetchingGroups ||
-      isFetchingSegments;
+    const isLoading = isSaving || isFetchingProjects || isFetchingGroups || isFetchingSegments;
 
     const header = isEdit ? `Edit Experiment – ${data.id}` : 'Create Experiment';
 
@@ -454,26 +388,6 @@ export default class AddEditExperiment extends React.Component {
               options={projects || []}
               selected={selectedProject}
               onChange={this.handleSelectProject}
-            />
-            <SearchableSelectField
-              required
-              name="environment_id"
-              optionComponent={({ option }) => (
-                <div>
-                  {option.name} - {option.id}
-                </div>
-              )}
-              placeholder="Select a environment"
-              searchIndices={['id', 'name']}
-              label="Environment"
-              trackBy="id"
-              options={
-                environments.length
-                  ? environments
-                  : [{ name: 'No environments found for selected project' }]
-              }
-              selected={selectedEnvironment}
-              onChange={this.handleSelectEnvironment}
             />
             <SearchableSelectField
               name="exclusion_group"

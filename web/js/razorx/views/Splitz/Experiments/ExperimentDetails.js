@@ -15,11 +15,9 @@ import { statusPill } from 'razorx/helpers/data';
 export default class ExperimentDetails extends React.Component {
   state = {
     isFetchingExperiment: false,
-    isFetchingEnvironment: false,
     isFetchingProject: false,
     isFetchingExclusionGroup: false,
     data: null, // experiment
-    environment: null,
     project: null,
     exclusionGroup: null,
   };
@@ -41,11 +39,9 @@ export default class ExperimentDetails extends React.Component {
 
     this.setState({
       isFetchingExperiment: true,
-      isFetchingEnvironment: true,
       isFetchingProject: true,
       isFetchingExclusionGroup: true,
       data: null,
-      environment: null,
       project: null,
       exclusionGroup: null,
     });
@@ -65,12 +61,6 @@ export default class ExperimentDetails extends React.Component {
         return Promise.all(
           [
             splitzFetch({
-              url: 'environment.v1.EnvironmentAPI/Get',
-              data: {
-                environmentID: res.experiment.environment_id,
-              },
-            }),
-            splitzFetch({
               url: 'project.v1.ProjectAPI/Get',
               data: {
                 projectId: this.state.data.project_id,
@@ -88,14 +78,11 @@ export default class ExperimentDetails extends React.Component {
         );
       })
       .then((allResponses) => {
-        const environmentRes = allResponses[0];
-        const projectRes = allResponses[1];
-        const exclusionGroupRes = allResponses[2];
+        const projectRes = allResponses[0];
+        const exclusionGroupRes = allResponses[1];
         this.setState({
-          isFetchingEnvironment: false,
           isFetchingProject: false,
           isFetchingExclusionGroup: false,
-          environment: environmentRes.environment,
           project: projectRes.project,
           exclusionGroup: exclusionGroupRes ? exclusionGroupRes.group : null,
         });
@@ -105,7 +92,6 @@ export default class ExperimentDetails extends React.Component {
         this.setState({
           isFetchingExperiment: false,
           isFetchingProject: false,
-          isFetchingEnvironment: false,
           isFetchingExclusionGroup: false,
         });
       });
@@ -198,21 +184,15 @@ export default class ExperimentDetails extends React.Component {
   render() {
     const {
       isFetchingExperiment,
-      isFetchingEnvironment,
       isFetchingProject,
       isFetchingExclusionGroup,
       data,
-      environment,
       project,
       exclusionGroup,
     } = this.state;
     const { experimentId } = this.props;
 
-    const isFetching =
-      isFetchingExperiment ||
-      isFetchingEnvironment ||
-      isFetchingProject ||
-      isFetchingExclusionGroup;
+    const isFetching = isFetchingExperiment || isFetchingProject || isFetchingExclusionGroup;
     let content;
 
     const type = {
@@ -224,7 +204,7 @@ export default class ExperimentDetails extends React.Component {
       content = null;
     } else if (isFetching) {
       content = <div className="spinner center" />;
-    } else if (!isFetching && (!data || !environment || !project)) {
+    } else if (!isFetching && (!data || !project)) {
       content = (
         <div className="page-center empty-entity">
           <i className="i-layers" />
@@ -341,18 +321,6 @@ export default class ExperimentDetails extends React.Component {
               <Link class="link" to={`/splitz/projects/${project.id}`}>
                 View Project
               </Link>
-            </div>
-            <div className="flex-row-item">
-              <div className="label">
-                Environment
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              </div>
-              <span className="square-pills label-semi-muted">{environment.name}</span>
-              <div className="sub-description column">
-                <div>
-                  <b>ID: </b> {environment.id}
-                </div>
-              </div>
             </div>
           </div>
           <br />

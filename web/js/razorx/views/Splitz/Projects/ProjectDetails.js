@@ -11,10 +11,8 @@ import ExperimentsModal from 'razorx/views/Experiments/Modal';
 export default class ProjectDetails extends React.Component {
   state = {
     isFetchingProject: false,
-    isFetchingEnvironments: false,
     isFetchingExperiments: false,
     data: null,
-    environments: null,
     experiments: null,
   };
 
@@ -35,10 +33,8 @@ export default class ProjectDetails extends React.Component {
 
     this.setState({
       isFetchingProject: true,
-      isFetchingEnvironments: true,
       isFetchingExperiments: true,
       data: null,
-      environments: null,
       experiments: null,
     });
 
@@ -62,29 +58,6 @@ export default class ProjectDetails extends React.Component {
       .catch(() => {
         this.setState({
           isFetchingProject: false,
-        });
-      });
-
-    splitzFetch({
-      url: 'environment.v1.EnvironmentAPI/List',
-      data: {
-        projectID: projectId,
-      },
-    })
-      .then((resp) => {
-        this.setState({
-          isFetchingEnvironments: false,
-        });
-
-        if (resp) {
-          this.setState({
-            environments: resp.environments,
-          });
-        }
-      })
-      .catch(() => {
-        this.setState({
-          isFetchingEnvironments: false,
         });
       });
 
@@ -127,7 +100,6 @@ export default class ProjectDetails extends React.Component {
       <AddEditProject
         collection={this.props.collection}
         data={this.state.data}
-        environments={this.state.environments}
         onEdit={this.onEdit}
         isEdit
       />,
@@ -137,17 +109,10 @@ export default class ProjectDetails extends React.Component {
   onEdit = () => this.fetch(this.props.projectId);
 
   render() {
-    const {
-      isFetchingProject,
-      isFetchingEnvironments,
-      isFetchingExperiments,
-      data,
-      environments,
-      experiments,
-    } = this.state;
+    const { isFetchingProject, isFetchingExperiments, data, experiments } = this.state;
     const { projectId } = this.props;
 
-    const isFetching = isFetchingProject || isFetchingEnvironments || isFetchingExperiments;
+    const isFetching = isFetchingProject || isFetchingExperiments;
     let content;
 
     if (!projectId) {
@@ -187,20 +152,6 @@ export default class ProjectDetails extends React.Component {
               </div>
             </div>
           </div>
-          <br />
-          <div>
-            <div className="label">Environments</div>
-            {environments && environments.length > 0 ? (
-              environments.map((env) => (
-                <div key={env.id}>
-                  <span className="square-pills">{env.name}</span>
-                </div>
-              ))
-            ) : (
-              <div>No environments created for project</div>
-            )}
-          </div>
-
           <br />
 
           <div className="label">Experiments</div>
