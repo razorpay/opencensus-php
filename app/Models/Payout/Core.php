@@ -2373,7 +2373,6 @@ class Core extends Base\Core
 
         if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === true) and
             ($payout->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
-            ($payout->getFeeType() !== Entity::FREE_PAYOUT) and
             ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
             ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED) and
             ($payout->getIsPayoutService() === false))
