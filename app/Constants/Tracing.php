@@ -263,6 +263,30 @@ class Tracing
             // Partner routes
             'merchant_bulk_onboarding_admin',
 
+            // used by frontend-graphql
+            'banking_accounts_list',
+            'contact_list',
+            'contact_create',
+            'contact_get',
+            'contact_update',
+            'contact_types_get',
+            'contact_types_post',
+            'payout_fetch_by_id',
+            'fund_account_list',
+            'fund_account_get',
+            'payout_fetch_multiple',
+            'payouts_summary',
+            'user_otp_create',
+            'payout_reject',
+            'payout_approve',
+            'payout_approve_bulk',
+            'payout_reject_bulk',
+            'transaction_statement_fetch',
+            'transaction_statement_fetch_multiple',
+            'payout_purpose_get',
+            'payout_purpose_post',
+            'fund_account_create',
+            'payout_links_fetch_multiple',
             'payment_refund'
         ]);
     }
