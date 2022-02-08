@@ -148,7 +148,7 @@ class UfhService
                     $this->merchantId, RazorxTreatment::PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP);
 
                 $isExperimentEnabled |= (new MerchantCore())->isRazorxExperimentEnable(
-                    $this->merchantId, RazorxTreatment::QR_CODE_CLOUDFRONT_ONBOARDING);
+                    $this->merchantId, RazorxTreatment::QR_CODE_UFH_CLOUDFRONT_ONBOARDING);
 
                 if($isExperimentEnabled == true) {
                     $clientUsername = $this->clientType;

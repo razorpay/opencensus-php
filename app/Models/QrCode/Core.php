@@ -222,7 +222,7 @@ class Core extends Base\Core
 
     private function isUfhExperimentEnabled($qrCode)
     {
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), RazorxTreatment::QR_CODE_CLOUDFRONT_ONBOARDING, $this->mode);
+        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), RazorxTreatment::QR_CODE_UFH_CLOUDFRONT_ONBOARDING, $this->mode);
 
         if ($variant !== 'on')
         {
