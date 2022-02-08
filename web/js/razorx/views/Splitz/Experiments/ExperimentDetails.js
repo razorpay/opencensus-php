@@ -200,6 +200,11 @@ export default class ExperimentDetails extends React.Component {
       split: 'A/B',
     };
 
+    const evaluationStrategies = {
+      default_strategy: 'Default(Audience after Sampling)',
+      sampling_on_audience: 'Sampling after Audience',
+    };
+
     if (!experimentId) {
       content = null;
     } else if (isFetching) {
@@ -321,6 +326,14 @@ export default class ExperimentDetails extends React.Component {
               <Link class="link" to={`/splitz/projects/${project.id}`}>
                 View Project
               </Link>
+            </div>
+            <div className="flex-row-item">
+              <div className="label">Evaluation Order</div>
+              <span className="square-pills label-semi-muted">
+                {data.evaluation_strategy
+                  ? evaluationStrategies[data.evaluation_strategy]
+                  : evaluationStrategies.default_strategy}
+              </span>
             </div>
           </div>
           <br />

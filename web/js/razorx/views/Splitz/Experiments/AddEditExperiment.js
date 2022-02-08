@@ -83,6 +83,7 @@ export default class AddEditExperiment extends React.Component {
         name: form.name,
         description: form.description,
         type: form.type,
+        evaluation_strategy: form.evaluationStrategy,
         sampling_percentage: Number(form.samplingPercentage),
         project_id: this.state.selectedProject.id,
         exclusion_group: this.state.selectedGroup
@@ -291,6 +292,21 @@ export default class AddEditExperiment extends React.Component {
 
     const header = isEdit ? `Edit Experiment – ${data.id}` : 'Create Experiment';
 
+    const evaluationStrategyOptions = [
+      {
+        label: 'Default(Audience after Sampling)',
+        value: 'default_strategy',
+      },
+      {
+        label: 'Sampling after Audience',
+        value: 'sampling_on_audience',
+      },
+    ].map((op) => (
+      <option key={op.value} value={op.value}>
+        {op.label}
+      </option>
+    ));
+
     return (
       <ModalContent class="modal-features modal-json-edit" header={header}>
         <Form
@@ -364,6 +380,14 @@ export default class AddEditExperiment extends React.Component {
                   {op.label}
                 </option>
               ))}
+            </SelectField>
+            <SelectField
+              name="evaluationStrategy"
+              label="Evaluation Order"
+              defaultValue={isEdit ? data.evaluation_strategy : 'default_strategy'}
+              required
+            >
+              {evaluationStrategyOptions}
             </SelectField>
             <Field
               type="number"
