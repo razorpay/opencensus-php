@@ -8,12 +8,40 @@ function Data(brandColor) {
     <main>
       <div className="description">
         <p>
-          Razorpay app for Slack will notify you on Payment downtimes as and when they happen in any
-          channel you prefer.
+          Razorpay Slack app comes in super handy to receive your Payments and Banking alerts or
+          perform actions right within your Slack channels
         </p>
         <p>
-          Just connect your slack account with your Razorpay merchant account and subscribe to
-          downtime alerts using - <b>/razorpay</b> commands
+          If you are a <b>Payments</b> user, you can use this app to:
+        </p>
+        <ol>
+          <li>
+            Receive Razorpay payment success and failed on Slack channels for Payment Gateway,
+            Payment Links and Payment Pages
+          </li>
+          <li>
+            Receive Payment downtimes and resolution updates in Slack channels so you and your team
+            can monitor them real time
+          </li>
+          <li>Create Payment Links without leaving Slack</li>
+        </ol>
+        <p>
+          If you are a <b>Banking</b> user, you can use this app to:
+        </p>
+        <ol>
+          <li>Get alerts on pending Payouts</li>
+          <li>Approve and reject pending payouts</li>
+          <li>View account balance</li>
+        </ol>
+        <p>
+          To view the list of all Razorpay Slack app commands, check out our{' '}
+          <a
+            href="https://razorpay.com/docs/app-store/slack/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            documentaion
+          </a>
         </p>
       </div>
       <div className="how-to-use-razorpay">
