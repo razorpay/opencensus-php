@@ -357,7 +357,20 @@ class Entity extends Base\PublicEntity
 
         if ($this->hasBankAccount2() === true)
         {
-            $receivers[] = $this->bankAccount2->toArrayPublic();
+            $bankAccount2 = $this->bankAccount2->toArrayPublic();
+
+            $ifsc = $bankAccount2[BankAccount\Entity::IFSC];
+
+            $bankAccount2Array[] = $bankAccount2;
+
+            if ($ifsc === Provider::IFSC[Provider::RBL])
+            {
+                $receivers = array_merge($bankAccount2Array, $receivers);
+            }
+            else
+            {
+                $receivers = array_merge($receivers, $bankAccount2Array);
+            }
         }
 
         return $receivers;
