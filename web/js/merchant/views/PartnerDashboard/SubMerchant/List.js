@@ -194,7 +194,7 @@ export default class SubMerchantsList extends Component {
                   <>
                     <ShowWhen
                       additionalCondition={(currentUser) =>
-                        currentUser.isPartner() && currentUser.isPartner('reseller')
+                        currentUser.isPartner() && currentUser.isPartner('reseller', 'aggregator')
                       }
                     >
                       <button class="btn btn-link" onClick={this.handleShareReferralLink}>
