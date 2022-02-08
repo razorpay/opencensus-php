@@ -47,7 +47,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_TERMS   = 'payment_terms';
     const TDS_CATEGORY    = 'tds_category';
     const VENDOR          = 'vendor';
-
+    const PAN             = 'pan';
     const GST_IN          = "gstin";
     const EXPENSE_ID      = "expense_id";
     const RESPONSE_CODE   = 'response_code';

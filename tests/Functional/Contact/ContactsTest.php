@@ -162,7 +162,7 @@ class ContactsTest extends TestCase
                     'entity' => 'collection',
                     'count' => 1,
                     'items' => [
-                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1]
+                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '1234', 'pan' => 'ABCD']
                     ]
                 ]
             );
@@ -461,7 +461,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1]);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '1234', 'pan' => 'ABCD']);
 
         $this->startTest();
     }
@@ -526,7 +526,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 0, 'tds_category' => 1]);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 0, 'tds_category' => 1, 'gstin' => 'test_gstin', 'pan' => 'test_pan']);
 
         $this->startTest();
     }
@@ -544,7 +544,43 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 0]);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 0, 'gstin' => 'test_gstin', 'pan' => 'test_pan']);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorWithoutGstin()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => null, 'pan' => 'test_pan']);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithTypeVendorWithoutPan()
+    {
+        $this->ba->proxyAuth();
+
+        $vendorPaymentServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createVendor'])
+            ->getMock();
+
+        $this->app->instance('vendor-payment', $vendorPaymentServiceMock);
+
+        $vendorPaymentServiceMock->expects($this->once())
+            ->method('createVendor')
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => 'test_gstin', 'pan' => null]);
 
         $this->startTest();
     }

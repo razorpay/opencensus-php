@@ -651,11 +651,6 @@ class Core extends Base\Core
             {
                 $contact->setExpenseId($vendor[Entity::EXPENSE_ID]);
             }
-
-            if (isset($vendor[Entity::GST_IN]))
-            {
-                $contact->setGstIn($vendor[Entity::GST_IN]);
-            }
         }
 
         return $contact;
@@ -674,6 +669,16 @@ class Core extends Base\Core
             if (isset($input[Entity::TDS_CATEGORY]))
             {
                 $createParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
+            }
+
+            if (isset($input[Entity::GST_IN]))
+            {
+                $createParams[Entity::GST_IN] = $input[Entity::GST_IN];
+            }
+
+            if (isset($input[Entity::PAN]))
+            {
+                $createParams[Entity::PAN] = $input[Entity::PAN];
             }
 
             if (empty($createParams))
@@ -715,6 +720,16 @@ class Core extends Base\Core
             if (isset($input[Entity::TDS_CATEGORY]))
             {
                 $updateParams[Entity::TDS_CATEGORY] = $input[Entity::TDS_CATEGORY];
+            }
+
+            if (isset($input[Entity::GST_IN]))
+            {
+                $updateParams[Entity::GST_IN] = $input[Entity::GST_IN];
+            }
+
+            if (isset($input[Entity::PAN]))
+            {
+                $updateParams[Entity::PAN] = $input[Entity::PAN];
             }
 
             if (empty($updateParams)) {

@@ -45,7 +45,6 @@ return [
                 'type'          => 'vendor',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
-                'gstin'         => 'test_gstin',
                 'expense_id'    => '1',
                 'vendor'        => [
                     'payment_terms'        => 10,
@@ -536,6 +535,8 @@ return [
                 'contact'       => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
+                'gstin'        => '1234',
+                'pan'          => 'ABCD',
                 'notes'         => [
                     'test1' => 'One',
                 ],
@@ -569,6 +570,9 @@ return [
                 'contact'      => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
+                'gstin'        => '1234',
+                'pan'          => 'ABCD',
+
                 'notes'        => [
                     'test1' => 'One',
                 ],
@@ -646,6 +650,8 @@ return [
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
                 'tds_category'  => 1,
+                'gstin'        => '1234',
+                'pan'          => 'ABCD',
                 'notes'        => [
                     'test1' => 'One',
                 ],
@@ -663,6 +669,14 @@ return [
                 'contact'      => '9123456789',
                 'payment_terms' => 0,
                 'tds_category'  => 1,
+                'vendor'        => [
+                    'payment_terms'        => 0,
+                    'tds_category'         => 1,
+                    'gstin'                => 'test_gstin',
+                    'pan'                  => 'test_pan',
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_xyz'
+                ],
                 'notes'        => [
                     'test1' => 'One',
                 ],
@@ -670,6 +684,7 @@ return [
             'status_code' => '201'
         ],
     ],
+
 
     'testCreateContactWithTypeVendorWithoutTdsCategory' => [
         'request'  => [
@@ -679,7 +694,9 @@ return [
                 'reference_id' => '#123abc',
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
-                'payment_terms' => 10,
+                'payment_terms'=> 10,
+                'gstin'        => '1234',
+                'pan'          => 'ABCD',
                 'notes'        => [
                     'test1' => 'One',
                 ],
@@ -697,6 +714,103 @@ return [
                 'contact'      => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 0,
+                'vendor'        => [
+                    'payment_terms'        => 10,
+                    'gstin'                => 'test_gstin',
+                    'pan'                  => 'test_pan',
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_xyz'
+                ],
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+
+    'testCreateContactWithTypeVendorWithoutGstin' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'pan'          => 'ABCD',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'vendor'        => [
+                    'payment_terms'        => 10,
+                    'tds_category'         => 1,
+                    'gstin'                => null,
+                    'pan'                  => 'test_pan',
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_xyz'
+                ],
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+
+    'testCreateContactWithTypeVendorWithoutPan' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'gstin'        => '1234',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'vendor',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'payment_terms' => 10,
+                'tds_category'  => 1,
+                'vendor'        => [
+                    'payment_terms'        => 10,
+                    'tds_category'         => 1,
+                    'gstin'                => 'test_gstin',
+                    'pan'                  => null,
+                    'id'                   => '1',
+                    'contact_id'           => 'cont_xyz'
+                ],
                 'notes'        => [
                     'test1' => 'One',
                 ],
