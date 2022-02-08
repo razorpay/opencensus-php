@@ -9153,13 +9153,6 @@ trait Authorize
             return false;
         }
 
-        //TODO enable dcc on custom, embedded & direct based on temporary feature flag.
-        if($this->isDCCEnabledLibraryOnFeatureFlag($library) and
-            $payment->merchant->isDCCEnabledOnOtherLibraries() === false)
-        {
-            return false;
-        }
-
         return true;
     }
     /**
@@ -9224,6 +9217,7 @@ trait Authorize
     }
 
     /**
+     * To be removed.
      * @param $library
      * @return bool
      */
@@ -10198,13 +10192,13 @@ trait Authorize
             }
         }
     }
-    
-    /**  
+
+    /**
      * Validating Libraries for Emerchantpay Payments
      * This validation will be removed once address and name collection screen
      * is rolled out for all libraries
-     *  
-     * @param Payment\Entity 
+     *
+     * @param Payment\Entity
      * @throws Exception\BadRequestException
      */
 

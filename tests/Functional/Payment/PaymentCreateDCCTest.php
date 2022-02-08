@@ -1192,10 +1192,8 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testPaymentCreateWithDCCDirectLibrary()
     {
-        $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
         $payment = $this->payment;
         //setMetadataForPublicAuthPayment will take care of setting library to direct
-        $this->mockRazorxWith(RazorxTreatment::DCC_ON_INTERNATIONAL);
         $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
 
         $this->assertTrue($this->redirectToDCCInfo);
@@ -1219,7 +1217,6 @@ class PaymentCreateDCCTest extends TestCase
 
     public function testPaymentCreateWithDCCDirectLibraryWithMetadata()
     {
-        $this->fixtures->merchant->addFeatures([Constants::DCC_ON_OTHER_LIBRARY]);
         $payment = $this->payment;
         $payment['meta']['action_type'] = 'authenticate';
         $payment['meta']['reference_id'] = 'G3oNMjSDsXfRp';
