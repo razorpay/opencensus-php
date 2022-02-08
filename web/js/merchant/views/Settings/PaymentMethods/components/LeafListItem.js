@@ -234,7 +234,7 @@ class LeafListItem extends React.Component {
   };
 
   render() {
-    const { instrument, intermediateInstrument, instrumentsTat, user } = this.props;
+    const { instrument, intermediateInstrument, instrumentsTat } = this.props;
     const ctaClass = {
       Request: 'btn btn-primary',
       account_linkable: 'btn btn-primary',
@@ -329,15 +329,11 @@ class LeafListItem extends React.Component {
               ) : null} */}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
-            {[REJECTED, ACTION_REQUIRED].includes(instrument.status) &&
-              !user.isSmartDashboardActive && (
-                <button
-                  className="btn btn-link"
-                  onClick={() => this.handleRaiseRequest(instrument)}
-                >
-                  Raise Request
-                </button>
-              )}
+            {instrument.status === REJECTED && (
+              <button className="btn btn-link" onClick={() => this.handleRaiseRequest(instrument)}>
+                Raise Request
+              </button>
+            )}
             {instrument.status === REQUESTED && (
               <button className="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                 Cancel

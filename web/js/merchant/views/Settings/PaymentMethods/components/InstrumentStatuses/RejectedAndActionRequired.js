@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { ACTION_REQUIRED, REJECTED } from '../../constants';
+import { ACTION_REQUIRED } from '../../constants';
 import Clarifications from '../Modals/Clarifications';
 
 const RejectedAndActionRequired = (props) => {
@@ -27,10 +27,6 @@ const RejectedAndActionRequired = (props) => {
     });
   };
 
-  const hasComment =
-    !isSmartDashboardActive ||
-    (isSmartDashboardActive && [ACTION_REQUIRED, REJECTED].includes(status) && comment);
-
   return (
     <div className="comment" title={comment}>
       <img
@@ -40,15 +36,15 @@ const RejectedAndActionRequired = (props) => {
         width="15px"
       />
       <p>
-        {hasComment ? (
-          comment || 'No comments Available'
-        ) : (
+        {isSmartDashboardActive && status === ACTION_REQUIRED ? (
           <>
             <span>We need more information to proceed further with the application,</span>{' '}
             <a onClick={() => handleUpdateForm(merchant_instrument_request_id)}>
               update Request Form.
             </a>
           </>
+        ) : (
+          comment
         )}
       </p>
     </div>

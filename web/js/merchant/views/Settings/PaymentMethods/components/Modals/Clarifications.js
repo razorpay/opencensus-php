@@ -80,7 +80,7 @@ const ClarificationInput = (props) => {
                 disabled={answer?.length}
                 name={iirDiscrepancyId}
                 id="clarification-textarea"
-                placeholder="Sample text or whatever the merchant wants to add here ."
+                placeholder="Please enter your response to the clarification raised"
                 onChange={onTextChange}
                 value={discrepancyAnswer}
                 maxLength="500"
