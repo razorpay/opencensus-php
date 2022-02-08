@@ -11,6 +11,7 @@ import {
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import PLFeaturesModal from '../../../merchant/components/Announcements/CatalystCampaignBanner/PLFeaturesModal';
 import { sendDataToSalesForce } from '../../utils/common-api';
+import CatalystCampaign from '../GrowthCustomizeModal/CatalystCampaign';
 import ExclusiveOffer from '../ExclusiveOffer';
 
 const getClickHandler = (id = '') => {
@@ -31,6 +32,12 @@ const getClickHandler = (id = '') => {
     openModal({
       component: <PLFeaturesModal closeModal={closeModal} />,
       className: 'PL_Catalyst_Banner--Modal',
+    });
+  };
+  const handlePaymentCatalystCta1 = (imageID = '') => {
+    openModal({
+      component: <CatalystCampaign imageID={imageID} />,
+      className: 'PP_cross_sell_Catalyst_Banner',
     });
   };
 
@@ -64,6 +71,10 @@ const getClickHandler = (id = '') => {
       return showGSExclusiveOfferModal;
     case 'JAN22-ICICI-CONNECTEDBANKING-DB':
       return handleConnectedBankingFlow;
+    case 'JAN22-CATALYST-PP-EL-CTA1':
+    case 'JAN22-CATALYST-PP-ED-CTA1':
+    case 'JAN22-CATALYST-PP-EC-CTA1':
+      return () => handlePaymentCatalystCta1(id);
     default:
       return undefined;
   }
