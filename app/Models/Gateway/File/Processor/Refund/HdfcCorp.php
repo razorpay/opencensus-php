@@ -59,7 +59,7 @@ class HdfcCorp extends Base
                 'Merchant Name'         => $row['merchant']['name'],
                 'Txn Date'              => $paymentDate,
                 'Refund Date'           => $refundDate,
-                'Bank Merchant Code'    => 'XXXXXXXX',
+                'Bank Merchant Code'    => $row['terminal']['gateway_merchant_id'],
                 'Bank Ref No.'          => $row['gateway']['bank_transaction_id'],
                 'PGI Reference No.'     => $row['payment']['id'],
                 'Txn Amount (Rs Ps)'    => $this->getFormattedAmount($row['payment']['amount']),
