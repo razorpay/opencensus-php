@@ -373,12 +373,14 @@ class Stork
         }
 
         $this->init($mode);
+
         $requestPayload = [];
 
         try {
             $text = (new TemplateEngine)->render($template, $input['params']);
 
             $context = json_decode('{}');
+
             if (isset($input['template_name']) === true)
             {
                 $context = json_decode(json_encode(['template' => $input['template_name']]));
@@ -393,11 +395,19 @@ class Stork
                     'whatsapp_channels' => [
                         [
                             'destination' => $receiver,
-                            'text' => $text
+                            'text'        => $text
                         ]
                     ]
                 ]
             ];
+
+            if ((isset($input['is_cta_template']) === true) and
+                (isset($input['button_url_param']) === true))
+            {
+                $requestPayload['message']['whatsapp_channels']['is_cta_template'] = $input['is_cta_template'];
+
+                $requestPayload['message']['whatsapp_channels']['button_url_param'] = $input['button_url_param'];
+            }
 
             $this->traceWhatsAppRequest($requestPayload);
 
@@ -412,6 +422,7 @@ class Stork
             );
         }
     }
+
     /**
      * @param  string $path
      * @param  array  $payload

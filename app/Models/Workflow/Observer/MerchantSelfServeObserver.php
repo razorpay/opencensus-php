@@ -57,6 +57,8 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => DashboardEvents::GSTIN_ADD_REJECTION_REASON,
 
         PermissionName::EDIT_MERCHANT_BANK_DETAIL      => DashboardEvents::BANK_ACCOUNT_CHANGE_REJECTION_REASON,
+
+        PermissionName::ADD_ADDITIONAL_WEBSITE         => DashboardEvents::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON,
     ];
 
     public function __construct($input)
@@ -96,15 +98,24 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
             $merchant             = $this->getMerchant();
 
+            $event = self::PERMISSION_VS_EVENTS[$this->permissionName];
+
             $args = [
                 Merchant\Constants::MERCHANT     => $merchant,
-                DashboardEvents::EVENT           => self::PERMISSION_VS_EVENTS[$this->permissionName],
+                DashboardEvents::EVENT           => $event,
                 Merchant\Constants::PARAMS       => [
                     DashboardConstants::MERCHANT_NAME     => $merchant[Merchant\Entity::NAME],
                     DashboardConstants::MESSAGE_BODY      => $rejectionReason[Constants::MESSAGE_BODY],
                     DashboardConstants::MESSAGE_SUBJECT   => $rejectionReason[Constants::MESSAGE_SUBJECT],
                 ]
             ];
+
+            if (array_key_exists($event, DashboardConstants::CTA_TEMPLATES_VS_BUTTON_URL) === true)
+            {
+                $args[DashboardConstants::IS_CTA_TEMPLATE]  = true;
+
+                $args[DashboardConstants::BUTTON_URL_PARAM] = DashboardConstants::CTA_TEMPLATES_VS_BUTTON_URL[$event];
+            }
 
             (new DashboardNotificationHandler($args))->send();
 

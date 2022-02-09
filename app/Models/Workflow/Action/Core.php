@@ -1121,6 +1121,13 @@ class Core extends Base\Core
             MerchantNotificationsConstants::PARAMS  => $params
         ];
 
+        if (array_key_exists($event, MerchantNotificationsConstants::CTA_TEMPLATES_VS_BUTTON_URL) === true)
+        {
+            $args[MerchantNotificationsConstants::IS_CTA_TEMPLATE]  = true;
+
+            $args[MerchantNotificationsConstants::BUTTON_URL_PARAM] = MerchantNotificationsConstants::CTA_TEMPLATES_VS_BUTTON_URL[$event];
+        }
+
         (new DashboardNotificationHandler($args))->send();
     }
 

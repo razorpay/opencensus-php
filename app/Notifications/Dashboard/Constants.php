@@ -44,6 +44,10 @@ class Constants
 
     const DELIVERY_CALLBACK_REQUESTED              = 'deliveryCallbackRequested';
 
+    const IS_CTA_TEMPLATE                          = 'is_cta_template';
+
+    const BUTTON_URL_PARAM                         = 'button_url_param';
+
     const PREVIOUS_BUSINESS_WEBSITE                = 'previous_business_website';
 
     const UPDATED_BUSINESS_WEBSITE                 = 'updated_business_website';
@@ -84,6 +88,8 @@ class Constants
 
     const FEATURE                                  = 'feature';
 
+    const ADDITIONAL_WEBSITE                       = 'additional_website';
+
     const WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT = [
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL   => Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW,
         PermissionName::UPDATE_MERCHANT_WEBSITE        => Events::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW,
@@ -91,14 +97,21 @@ class Constants
         PermissionName::EDIT_MERCHANT_BANK_DETAIL      => Events::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW,
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => Events::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW,
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => Events::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW,
+        PermissionName::ADD_ADDITIONAL_WEBSITE         => Events::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW,
     ];
 
-    const EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK   = [
+    const EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK = [
         Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW               => 'https://dashboard.razorpay.com/app/profile/clarification_add_website',
         Events::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW            => 'https://dashboard.razorpay.com/app/profile/clarification_update_website',
         Events::NEED_CLARIFICATION_FOR_TRANSACTION_LIMIT_UPDATE_WORKFLOW  => 'https://dashboard.razorpay.com/app/profile/clarification_increase_transaction_limit',
         Events::NEED_CLARIFICATION_FOR_BANK_ACCOUNT_UPDATE_WORKFLOW       => 'https://dashboard.razorpay.com/app/profile/clarification_update_bank_account',
         Events::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => 'https://dashboard.razorpay.com/app/profile/clarification_update_gstin',
         Events::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'https://dashboard.razorpay.com/app/profile/clarification_update_gstin',
+        Events::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'https://dashboard.razorpay.com/app/profile/clarification_additional_website'
+    ];
+
+    const CTA_TEMPLATES_VS_BUTTON_URL = [
+        Events::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => '/app/profile/rejection_additional_website',
+        Events::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => '/app/profile/clarification_additional_website',
     ];
 }

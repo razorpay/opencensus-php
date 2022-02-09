@@ -6,25 +6,27 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 class Constants
 {
-    const SCHEDULED_SETTLEMENT                  =   'schedule_assign';
-    const MERCHANT_ACTION                       =   'merchant_actions';
-    const EDIT_PAYMENT_METHOD                   =   'merchant_put_payment_methods';
-    const EMAIL_CHANGE                          =   'merchant_edit_email';
-    const MERCHANT_ACTIVATION_STATUS            =   'merchant_activation_status';
+    const SCHEDULED_SETTLEMENT                  = 'schedule_assign';
+    const MERCHANT_ACTION                       = 'merchant_actions';
+    const EDIT_PAYMENT_METHOD                   = 'merchant_put_payment_methods';
+    const EMAIL_CHANGE                          = 'merchant_edit_email';
+    const MERCHANT_ACTIVATION_STATUS            = 'merchant_activation_status';
 
-    const MERCHANT_SAVE_BUSINESS_WEBSITE        =   'merchant_save_business_website';
+    const MERCHANT_SAVE_BUSINESS_WEBSITE        = 'merchant_save_business_website';
 
-    const MERCHANT_ACTIVATION_UPDATE_WEBSITE    =  'merchant_activation_update_website';
+    const MERCHANT_ACTIVATION_UPDATE_WEBSITE    = 'merchant_activation_update_website';
 
-    const INCREASE_TRANSACTION_LIMIT_SELF_SERVE =   'increase_transaction_limit_self_serve';
+    const INCREASE_TRANSACTION_LIMIT_SELF_SERVE = 'increase_transaction_limit_self_serve';
 
-    const MERCHANT_GSTIN_SELF_SERVE_UPDATE      =   'merchant_gstin_self_serve_update';
+    const MERCHANT_GSTIN_SELF_SERVE_UPDATE      = 'merchant_gstin_self_serve_update';
 
     const MERCHANT_BANK_ACCOUNT_UPDATE          = 'merchant_bank_account_update';
 
-    const APPROVED_TRANSACTION_LIMIT            =   'approved_transaction_limit';
+    const ADD_ADDITIONAL_WEBSITE_SELF_SERVE     = 'add_additional_website_self_serve';
 
-    const APPROVE                               =   'approve';
+    const APPROVED_TRANSACTION_LIMIT            = 'approved_transaction_limit';
+
+    const APPROVE                               = 'approve';
 
     const WORKFLOW_VS_OBSERVER= [
 
@@ -47,6 +49,8 @@ class Constants
         self::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => MerchantSelfServeObserver::class,
 
         self::MERCHANT_BANK_ACCOUNT_UPDATE          => MerchantSelfServeObserver::class,
+
+        self::ADD_ADDITIONAL_WEBSITE_SELF_SERVE     => MerchantSelfServeObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [
@@ -75,5 +79,4 @@ class Constants
     const REJECTION_REASON_MESSAGE           = 'rejection_reason_message';
 
     const SHOW_REJECTION_REASON_ON_DASHBOARD = 'show_on_dashboard';
-
 }

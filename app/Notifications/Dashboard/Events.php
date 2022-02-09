@@ -61,6 +61,12 @@ class Events
 
     const FEATURE_UPDATE_NOTIFICATION                                   = 'FEATURE_UPDATE_NOTIFICATION';
 
+    const ADD_ADDITIONAL_WEBSITE_SUCCESS                                = 'ADD_ADDITIONAL_WEBSITE_SUCCESS';
+
+    const ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                       = 'ADD_ADDITIONAL_WEBSITE_REJECTION_REASON';
+
+    const NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW        = 'NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW';
+
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
         self::MERCHANT_BUSINESS_WEBSITE_ADD                             => 'sms.dashboard.merchant_business_website_add',
@@ -87,6 +93,9 @@ class Events
         self::GSTIN_ADD_REJECTION_REASON                                => 'sms.dashboard.merchant_add_gstin_rejection',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'sms.dashboard.merchant_add_gstin_needs_clarification_V1',
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'sms.dashboard.bank_account_rejection',
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'sms.dashboard.merchant_additional_website_successful',
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'sms.dashboard.merchant_additional_website_rejection',
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'sms.dashboard.merchant_additional_website_clarification',
     ];
 
     /**
@@ -118,6 +127,9 @@ class Events
         self::GSTIN_ADD_REJECTION_REASON                                => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Constants::MERCHANT_NAME],
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Constants::MERCHANT_NAME],
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Constants::MERCHANT_NAME, Constants::ADDITIONAL_WEBSITE],
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Constants::MERCHANT_NAME],
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs whatsapp templates mapping
@@ -146,6 +158,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'whatsapp.merchant.dashboard.merchant_add_gstin_needs_clarification',
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'whatsapp.merchant.dashboard.bank_account_rejection',
         self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => 'whatsapp.merchant.dashboard.merchant_add_gstin_auto_update4',
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'whatsapp.merchant.dashboard.merchant_additional_website_successful',
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'whatsapp.merchant.dashboard.merchant_additional_website_rejection',
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'whatsapp.merchant.dashboard.merchant_additional_website_clarification',
     ];
 
     /**
@@ -176,6 +191,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Constants::MERCHANT_NAME],
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Constants::MERCHANT_NAME],
         self::GSTIN_ADDED_ON_BVS_VALIDATION_SUCCESS                     => [Constants::GSTIN, Constants::BUSINESS_REGISTERED_ADDRESS, Constants::BUSINESS_REGISTERED_PIN, Constants::BUSINESS_REGISTERED_CITY, Constants::BUSINESS_REGISTERED_STATE],
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Constants::MERCHANT_NAME, Constants::ADDITIONAL_WEBSITE],
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Constants::MERCHANT_NAME],
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs email templates mapping
@@ -205,6 +223,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => 'emails.merchant.needs_clarification_on_workflow',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => 'emails.merchant.needs_clarification_on_workflow',
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => 'emails.merchant.rejection_reason_notification',
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'emails.merchant.add_additional_website_success',
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'emails.merchant.rejection_reason_notification',
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'emails.merchant.needs_clarification_on_workflow',
     ];
 
     // Event vs email Tags mapping
@@ -234,6 +255,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_UPDATE_WORKFLOW,
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => MailTags::MERCHANT_CLARIFICATION_ON_GSTIN_ADD_WORKFLOW,
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => MailTags::MERCHANT_BANK_ACCOUNT_UPDATE_REJECTION_REASON,
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => MailTags::MERCHANT_ADD_ADDITIONAL_WEBSITE_SUCCESS,
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => MailTags::MERCHANT_ADD_ADDITIONAL_WEBSITE_REJECTION_REASON,
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => MailTags::MERCHANT_CLARIFICATION_ON_ADDITIONAL_WEBSITE_WORKFLOW,
     ];
 
     // Event vs email subject mapping
@@ -245,8 +269,8 @@ class Events
         self::BANK_ACCOUNT_CHANGE_SUCCESSFUL                            => 'Razorpay | Bank account change successful for %s(MID: %s)',
         self::INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE                => 'Razorpay | Transaction Limit updated successfully for %s(MID: %s)',
         self::GSTIN_UPDATED_ON_BVS_VALIDATION_SUCCESS                   => 'Razorpay | Gstin updated for %s(MID: %s)',
-        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => 'Mobile Number for your Razorpay account is updated',
         self::GSTIN_UPDATED_ON_WORKFLOW_APPROVE                         => 'Razorpay | Gstin updated for %s(MID: %s)',
+        self::UPDATE_MERCHANT_CONTACT_FROM_ADMIN                        => 'Mobile Number for your Razorpay account is updated',
         self::BUSINESS_WEBSITE_ADD_REJECTION_REASON                     => '%s',
         self::FEATURE_UPDATE_NOTIFICATION                               => '%s',
         self::BUSINESS_WEBSITE_UPDATE_REJECTION_REASON                  => '%s',
@@ -263,6 +287,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => '%s',
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => '%s',
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => '%s',
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'Razorpay | Additional Website added successfully for %s(MID: %s)',
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => '%s',
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => '%s',
     ];
 
     // Event vs recipients role mapping
@@ -292,6 +319,9 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW              => [UserRole::OWNER],
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [UserRole::OWNER],
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [UserRole::OWNER],
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [UserRole::OWNER],
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [UserRole::OWNER],
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -321,5 +351,8 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Channel::EMAIL, Channel::SMS],
+        self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
     ];
 }

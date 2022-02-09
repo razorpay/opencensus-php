@@ -250,6 +250,8 @@ class MailTags
 
     const INCREASE_TRANSACTION_LIMIT_REQUEST_APPROVE    = 'increase_transaction_limit_request_approve';
 
+    const MERCHANT_ADD_ADDITIONAL_WEBSITE_SUCCESS       = 'merchant_add_additional_website_success';
+
     const UPDATE_REJECTION_REASON                       = 'update_rejection_reason';
 
     // Mail tags for needs clarification on workflow
@@ -259,6 +261,7 @@ class MailTags
     const MERCHANT_CLARIFICATION_ON_WEBSITE_ADD_WORKFLOW         =  'merchant_clarification_on_website_add_workflow';
     const MERCHANT_CLARIFICATION_ON_GSTIN_UPDATE_WORKFLOW        =  'merchant_clarification_on_gstin_update_workflow';
     const MERCHANT_CLARIFICATION_ON_GSTIN_ADD_WORKFLOW           =  'merchant_clarification_on_gstin_add_workflow';
+    const MERCHANT_CLARIFICATION_ON_ADDITIONAL_WEBSITE_WORKFLOW  =  'merchant_clarification_on_additional_website_workflow';
 
     const GSTIN_UPDATED_VALIDATION_SUCCESS              = 'gstin_updated_validation_success';
     const GSTIN_UPDATED_WORKFLOW_APPROVE                = 'gstin_updated_workflow_approve';
@@ -278,6 +281,8 @@ class MailTags
     const MERCHANT_GSTIN_ADD_REJECTION_REASON                    = 'merchant_gstin_add_rejection_reason';
 
     const MERCHANT_BANK_ACCOUNT_UPDATE_REJECTION_REASON          = 'merchant_bank_account_update_rejection_reason';
+
+    const MERCHANT_ADD_ADDITIONAL_WEBSITE_REJECTION_REASON       = 'merchant_add_additional_website_rejection_reason';
 
     /**
      * Razorpay Trusted Business/Badge Constants

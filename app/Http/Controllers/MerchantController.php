@@ -2676,7 +2676,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_DETAIL)->putAddAdditionalWebsiteSelfServePostWorkflowApproval($input);
+        $response = $this->service(E::MERCHANT_DETAIL)->putAddAdditionalWebsiteSelfServePostWorkflowApproval($input, true);
 
         return ApiResponse::json($response);
     }

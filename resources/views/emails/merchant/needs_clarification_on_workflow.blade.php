@@ -10,7 +10,7 @@
     <p>
         {{$messageBody}}
     </p>
-    please <a href="{{$workflow_clarification_submit_link}}" target="_blank">click here to respond</a>. <br/>
+    Please <a href="{{$workflow_clarification_submit_link}}" target="_blank">click here to respond</a>. <br/>
     <p>
         Thanks & Regards,<br>
         Team Razorpay

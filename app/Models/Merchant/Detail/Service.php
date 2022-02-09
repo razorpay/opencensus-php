@@ -1647,20 +1647,36 @@ class Service extends Base\Service
     /**
      * @param $merchantId
      * @param $input
+     * @param bool $isSelfServe
      *
      * @return mixed
      * @throws Throwable
      */
-    Public function putAdditionalWebsite($merchantId, $input)
+    public function putAdditionalWebsite($merchantId, $input, $isSelfServe = false)
     {
         $core = new Core();
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $merchantName =  $merchant->getName();
+
         $merchantDetails = $core->getMerchantDetails($merchant);
 
         $response = $core->addAdditionalWebsiteDetails($merchantDetails, $input);
 
+        if ($isSelfServe === true)
+        {
+            $args = [
+                Constants::MERCHANT         => $merchant,
+                DashboardEvents::EVENT      => DashboardEvents::ADD_ADDITIONAL_WEBSITE_SUCCESS,
+                Constants::PARAMS           => [
+                    DashboardNotificationConstants::MERCHANT_NAME      => $merchantName,
+                    DashboardNotificationConstants::ADDITIONAL_WEBSITE => $input[Entity::ADDITIONAL_WEBSITE]
+                ]
+            ];
+
+            (new DashboardNotificationHandler($args))->send();
+        }
         return $response;
     }
 
@@ -2784,7 +2800,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function putAddAdditionalWebsiteSelfServePostWorkflowApproval(array $input)
+    public function putAddAdditionalWebsiteSelfServePostWorkflowApproval(array $input, bool $isSelfServe)
     {
         $merchantId = $input[Constants::MERCHANT_ID];
 
@@ -2792,7 +2808,7 @@ class Service extends Base\Service
 
         $additionalWebsite = [Entity::ADDITIONAL_WEBSITE => $newUrl];
 
-        $response = $this->putAdditionalWebsite($merchantId, $additionalWebsite);
+        $response = $this->putAdditionalWebsite($merchantId, $additionalWebsite, $isSelfServe);
 
         return $response;
     }
@@ -2822,8 +2838,8 @@ class Service extends Base\Service
         }
 
         $this->trace->info(TraceCode::GET_AGENT_APPROVED_TRANSACTION_LIMIT, [
-            DifferEntity::ACTION_ID                                  => $actionEntity->getId(),
-            DifferEntity::WORKFLOW_OBSERVER_DATA                     => $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [],
+            DifferEntity::ACTION_ID               => $actionEntity->getId(),
+            DifferEntity::WORKFLOW_OBSERVER_DATA  => $differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [],
         ]);
 
         if(isset($differEntity[DifferEntity::WORKFLOW_OBSERVER_DATA][WorkflowObserver\Constants::APPROVED_TRANSACTION_LIMIT]) == true)

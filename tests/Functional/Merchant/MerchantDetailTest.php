@@ -5540,8 +5540,6 @@ You can now start accepting payments from https://www.example.com.
 
     public function testBusinessWebsiteEncryption()
     {
-        Mail::fake();
-
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
@@ -5557,8 +5555,6 @@ You can now start accepting payments from https://www.example.com.
 
     public function testBusinessWebsiteEncryptionCommentNotFound()
     {
-        Mail::fake();
-
         $merchantId = $this->saveBusinessWebsiteMakerFlow(['business_website'=> 'https://www.sample.com', 'activation_status' => 'activated'], PermissionName::UPDATE_MERCHANT_WEBSITE , false);
 
         [$merchantId, $workflowActionId] = $this->validateBusinessWebsiteWorkflow($merchantId, PermissionName::UPDATE_MERCHANT_WEBSITE);
@@ -5719,9 +5715,36 @@ You can now start accepting payments from https://www.example.com.
                   });
     }
 
+    protected function mockStorkForAddAdditionalWebsiteSelfServe()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'additional_website' => 'https://www.example.com',
+            'merchant_name'      => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_additional_website_successful', '1234567890', $expectedStorkParametersForTemplate);
+
+        //will uncomment once the templates are approved
+
+//        $this->expectStorkWhatsappRequest($storkMock,
+//                                          'Hi Test name,
+//We have successfully added the https://www.example.com to your Razorpay account. You can now start accepting payments from it.
+//We look forward to transacting with you!
+//-Team Razorpay',
+//                                          '1234567890'
+//        );
+    }
+
     public function testAddAdditionalWebsiteSelfServeWorkflowApprove()
     {
+        Mail::fake();
+
         $predefinedMerchant = [
+            'name'                  => 'Test name',
             'has_key_access'        => true,
             'whitelisted_domains'   => ['sample.com', 'abc.com']
         ];
@@ -5735,6 +5758,8 @@ You can now start accepting payments from https://www.example.com.
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
         $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this-> mockStorkForAddAdditionalWebsiteSelfServe();
 
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
 
@@ -5759,6 +5784,102 @@ You can now start accepting payments from https://www.example.com.
         $merchant = $this->getDbEntityById('merchant', $merchantId);
 
         $this->assertContains('example.com', $merchant->getWhitelistedDomains());
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('https://www.example.com', $data['additional_website']);
+
+            $this->assertEquals('emails.merchant.add_additional_website_success', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
+    }
+
+    protected function mockStorkForAdditionalWebsiteSelfServeWorkflowNeedClarification()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'merchant_name'  => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_additional_website_clarification', '1234567890', $expectedStorkParametersForTemplate);
+
+        $this->expectStorkWhatsappRequest($storkMock,
+                                          'Hi Test name, we need a few more details to process the request on adding website/app to your Razorpay account.
+            -Team Razorpay',
+                                          '1234567890'
+        );
+    }
+
+    public function testAddAdditionalWebsiteSelfServeWorkflowNeedsClarification()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testAddAdditionalWebsiteSelfServeWorkflowApprove'];
+
+        $predefinedMerchant = [
+            'name'                  => 'Test name',
+            'has_key_access'        => true,
+            'whitelisted_domains'   => ['sample.com', 'abc.com']
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_website'      => 'https://www.businesssample.com',
+            'additional_websites'   => ['https://www.sample.com', 'https://www.abc.com'],
+            'activation_status'     => 'activated'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockStorkForAdditionalWebsiteSelfServeWorkflowNeedClarification();
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        (new PermissionRepository)->findByOrgIdAndPermission(
+            Org::RZP_ORG, PermissionName::ADD_ADDITIONAL_WEBSITE
+        );
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $this->esClient->indices()->refresh();
+
+        $testData = $this->testData['testNeedClarificationOnWorkflow'];
+
+        $testData['request']['url'] = '/merchant/' . $workflowAction['id'] . '/need_clarification';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/' . $workflowAction['id'] . '/details',
+            'content' => []
+        ];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $this->assertEquals('awaiting-customer-response', $res['tagged'][0]);
+
+        $this->assertWorkflowNeedsClarificationMailQueued('https://dashboard.razorpay.com/app/profile/clarification_additional_website');
+
     }
 
     public function testAddAdditionalWebsiteSelfServeMerchantActivationFailure()
@@ -5876,9 +5997,124 @@ You can now start accepting payments from https://www.example.com.
         $this->startTest();
     }
 
+    protected function mockStorkForAddAdditionalWebsiteRejectionReason()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_additional_website_rejection', '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi Test name, Your request for adding your website/app to Razorpay account has been rejected.
+            -Team Razorpay',
+            '1234567890'
+        );
+    }
+
+    public function testAddAdditionalWebsiteSelfServeWorkflowReject()
+    {
+        Mail::fake();
+
+        $predefinedMerchant = [
+            'name'                  => 'Test name',
+            'has_key_access'        => true,
+            'whitelisted_domains'   => ['sample.com', 'abc.com']
+        ];
+
+        $predefinedMerchantDetails = [
+            'business_website'      => 'https://www.businesssample.com',
+            'additional_websites'   => ['https://www.sample.com', 'https://www.abc.com'],
+            'activation_status'     => 'activated'
+        ];
+
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
+
+        $this->mockStorkForAddAdditionalWebsiteRejectionReason();
+
+        $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $testData = $this->testData['testAddAdditionalWebsiteSelfServeWorkflowApprove'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
+
+        $this->startTest();
+
+        (new PermissionRepository)->findByOrgIdAndPermission(
+            Org::RZP_ORG, PermissionName::ADD_ADDITIONAL_WEBSITE
+        );
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->assertNotEmpty($workflowAction);
+
+        $this->esClient->indices()->refresh();
+
+        $this->rejectWorkFlowWithRejectionReason($workflowAction['id']);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNotContains('https://www.example.com' , $merchantDetails->getAdditionalWebsites());
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertNotContains('example.com', $merchant->getWhitelistedDomains());
+
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            if ($mail->view === 'emails.merchant.add_additional_website_success')
+            {
+                return true;
+            }
+
+            return false;
+        });
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            if ($mail->view === 'emails.merchant.rejection_reason_notification')
+            {
+                $data = $mail->viewData;
+
+                $this->assertEquals('Test body', $data['messageBody']);
+
+                return true;
+            }
+        });
+    }
+
+    protected function mockStorkForAdditionalApp()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedStorkParametersForTemplate = [
+            'additional_website' => 'https://play.google.com/store/apps/details?id=com.abc.app.test',
+            'merchant_name'      => 'Test name'
+        ];
+
+        $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_additional_website_successful', '1234567890', $expectedStorkParametersForTemplate);
+
+        //will uncomment once the templates are approved
+
+//        $this->expectStorkWhatsappRequest($storkMock,
+//                                          'Hi Test name,
+//We have successfully added the https://play.google.com/store/apps/details?id=com.abc.app.test to your Razorpay account. You can now start accepting payments from it.
+//We look forward to transacting with you!
+//-Team Razorpay',
+//                                          '1234567890'
+//        );
+    }
+
     public function testAddAdditionalApp()
     {
+        Mail::fake();
+
         $predefinedMerchant = [
+            'name'                  => 'Test name',
             'has_key_access'        => true,
         ];
 
@@ -5894,6 +6130,8 @@ You can now start accepting payments from https://www.example.com.
         [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails($predefinedMerchant, $predefinedMerchantDetails);
 
         $this->setupWorkflow('website_domain_whitelist', PermissionName::ADD_ADDITIONAL_WEBSITE);
+
+        $this-> mockStorkForAdditionalApp();
 
         $this->ba->proxyAuth('rzp_test_'.$merchantId, $userId);
 
@@ -5914,6 +6152,21 @@ You can now start accepting payments from https://www.example.com.
         $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
 
         $this->assertContains('https://play.google.com/store/apps/details?id=com.abc.app.test', $merchantDetails->getAdditionalWebsites());
+
+        $user = $this->getDbLastEntity('user');
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($user)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('https://play.google.com/store/apps/details?id=com.abc.app.test', $data['additional_website']);
+
+            $this->assertEquals('emails.merchant.add_additional_website_success', $mail->view);
+
+            $mail->hasTo($user['email']);
+
+            return true;
+        });
     }
 
     public function testSubmitMerchantWorkflowClarification()
@@ -6687,10 +6940,9 @@ You can now start accepting payments from https://www.example.com.
 
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi Test name, we need a few more details to process the request on adding your GSTIN to Razorpay account. Please click https://dashboard.razorpay.com/app/profile/clarification_update_gstin to share the details.
--Team Razorpay',
+            -Team Razorpay',
             '1234567890'
         );
     }
-
 }
 

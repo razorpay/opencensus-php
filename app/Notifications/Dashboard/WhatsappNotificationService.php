@@ -89,6 +89,13 @@ class WhatsappNotificationService extends BaseNotificationService
 
         $payload[Constants::PARAMS] = array_only($payload[Constants::PARAMS], $allowedKeys);
 
+        if (isset($this->args[Constants::IS_CTA_TEMPLATE]) === true)
+        {
+            $payload[Constants::IS_CTA_TEMPLATE] = true;
+
+            $payload[Constants::BUTTON_URL_PARAM] = $this->args[Constants::BUTTON_URL_PARAM];
+        }
+
         return $payload;
     }
 
