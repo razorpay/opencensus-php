@@ -49,6 +49,13 @@ class GraphRequestAuthCheck
         if (empty($user) === true)
         {
             $input = Request::all();
+
+            if($input == null || !isset($input['query']))
+            {
+                return Response::json(
+                    $this->getErrorResponseForInvalidQuery(),400);
+            } 
+
             if ($this->isValidQuerySelector($input['query']) === false)
             {
                 // If user session does not exist
@@ -131,6 +138,19 @@ class GraphRequestAuthCheck
                         'status'        => 401,
                         'statusText'    => 'Unauthorized',
                     ]
+                ]
+            ],
+
+            'data'      => null,
+        ];
+    }
+    
+    private function getErrorResponseForInvalidQuery()
+    {
+        return [
+            'errors'    => [
+                [
+                    'message'   => 'Invalid query request',
                 ]
             ],
 
