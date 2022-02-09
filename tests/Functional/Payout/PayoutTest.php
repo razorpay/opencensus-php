@@ -208,6 +208,67 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testCreatePayoutWithPayoutLimitFeatureFlagEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INCREASE_PAYOUT_LIMIT]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => 100000000000]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+        $this->assertEquals($payout['amount'], 49000000000);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7e4oKCgaubd",
+            'percentage'      => null,
+            'amount'          => 1500,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
+    public function testCreatePayoutWithPayoutLimitExceededFeatureFlagEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INCREASE_PAYOUT_LIMIT]);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => 100000000000]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     // In testcases the values in request payload gets converted to string. Hence we can write testcase to test amount with
     // upto certain decimal places. We need to test more decimal places and bool values for amount on stage env or local.
     public function testCreatePayoutWithDecimalAmount()

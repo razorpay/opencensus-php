@@ -1121,6 +1121,11 @@ class Constants
     const SKIP_OAUTH_NOTIFICATION = 'skip_oauth_notification';
 
     /**
+     * This feature flag increase the limit of payout amount
+     */
+    const INCREASE_PAYOUT_LIMIT = 'increase_payout_limit';
+
+    /**
      * Disable default email receipt feature at org level
      */
     const ORG_DISABLE_DEF_EMAIL_RECEIPT = 'disable_def_email_receipt';
@@ -1567,6 +1572,7 @@ class Constants
         self::SR_SENSITIVE_BUCKET_2           => true,
         self::SR_SENSITIVE_BUCKET_3           => true,
         self::SR_SENSITIVE_BUCKET_4           => true,
+        self::INCREASE_PAYOUT_LIMIT           => true,
         self::DCC_ON_OTHER_LIBRARY            => true,
         self::SKIP_OAUTH_NOTIFICATION         => true,
         self::SKIP_PAYOUT_EMAIL               => true,

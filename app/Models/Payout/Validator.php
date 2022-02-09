@@ -1163,6 +1163,10 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
         if (isset($input[Entity::AMOUNT]) === true)
         {
             $maxPayoutAmountLimit = Entity::MAX_PAYOUT_LIMIT;
@@ -1170,6 +1174,12 @@ class Validator extends Base\Validator
             if ((new Service)->isSettlementsApp() === true)
             {
                 $maxPayoutAmountLimit = Entity::MAX_SETTLEMENT_PAYOUT_LIMIT;
+            }
+
+            if ((empty($merchant) === false) and
+                ($merchant->isFeatureEnabled(Features::INCREASE_PAYOUT_LIMIT) === true))
+            {
+                $maxPayoutAmountLimit = Entity::MAX_INCREASED_PAYOUT_LIMIT;
             }
 
             if ($input[Entity::AMOUNT] > $maxPayoutAmountLimit)
