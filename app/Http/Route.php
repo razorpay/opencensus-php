@@ -3311,6 +3311,23 @@ class Route
         'shipping_method_provider_patch'                  => ['put',      '1cc/shipping_method_providers/{id}',                         'ShippingMethodProviderController@update'                           ],
         'shipping_method_provider_delete'                 => ['delete',   '1cc/shipping_method_providers/{id}',                         'ShippingMethodProviderController@delete'                           ],
 
+
+        //relay routes
+        'relay_get_apps'                => ['get',                  'relay/apps',                                           'RelayController@getApps'],
+        'relay_get_app_by_id'           => ['get',                  'relay/apps/{app_id}',                                  'RelayController@getAppByID'],
+        'relay_create_app'              => ['post',                 'relay/apps',                                           'RelayController@createApp'],
+        'relay_update_apps'             => ['patch',                'relay/apps/{app_id}',                                  'RelayController@updateApps'],
+        'relay_delete_apps'             => ['delete',               'relay/apps/{app_id}',                                  'RelayController@deleteApps'],
+
+        'relay_get_props'               => ['get',                  'relay/apps/{app_id}/props',                            'RelayController@getProps'],
+        'relay_create_props'            => ['post',                 'relay/apps/{app_id}/props',                            'RelayController@createProps'],
+        'relay_delete_props'            => ['delete',               'relay/apps/{app_id}/props/{prop_id}',                  'RelayController@deleteProps'],
+        'relay_update_props'            => ['put',                  'relay/apps/{app_id}/props/{prop_id}',                  'RelayController@updateProps'],
+        'relay_get_pending_props'       => ['get',                  'relay/apps/{app_id}/props/pending',                    'RelayController@getPendingProps'],
+        'relay_create_bulk_props'       => ['post',                 'relay/apps/{app_id}/props/bulk',                       'RelayController@createBulkProps'],
+
+        'relay_props_action'            => ['post',                  'relay/props/action',                                  'RelayController@propsAction'],
+
     ];
 
     public static $public = [
@@ -6003,6 +6020,20 @@ class Route
         'fts_dashboard_test_transactions_trigger',
         'fts_dashboard_channel_health_stats',
 
+//        //relay routes
+        'relay_get_apps',
+        'relay_get_app_by_id',
+        'relay_create_app',
+        'relay_update_apps',
+        'relay_delete_apps',
+        'relay_get_props',
+        'relay_create_props',
+        'relay_delete_props',
+        'relay_update_props',
+        'relay_get_pending_props',
+        'relay_props_action',
+        'relay_create_bulk_props',
+
         //dashboard pvt testing with mozart
         'mozart_gateway_action',
 
@@ -7154,6 +7185,20 @@ class Route
         'fts_dashboard_merchant_configurations_create'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_merchant_configurations_delete'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_ROUTING_RULES_UPDATE,
+
+        //relay permissions
+        'relay_get_apps'                                    => Permission::RELAY_READ_PERMISSION,
+        'relay_get_app_by_id'                               => Permission::RELAY_READ_PERMISSION,
+        'relay_create_app'                                  => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_update_apps'                                 => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_delete_apps'                                 => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_get_props'                                   => Permission::RELAY_READ_PERMISSION,
+        'relay_create_props'                                => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_delete_props'                                => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_update_props'                                => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_get_pending_props'                           => Permission::RELAY_READ_PERMISSION,
+        'relay_props_action'                                => Permission::RELAY_READ_WRITE_PERMISSION,
+        'relay_create_bulk_props'                           => Permission::RELAY_READ_WRITE_PERMISSION,
 
         'reports_monthly_banking_invoice_admin'     => Permission::VIEW_MERCHANT_REPORT,
 
@@ -11105,6 +11150,21 @@ class Route
             // Payment Fraud
             'get_fraud_attributes',
             'save_payment_fraud',
+
+            //relay routes
+            'relay_get_apps',
+            'relay_get_app_by_id',
+            'relay_create_app',
+            'relay_update_apps',
+            'relay_delete_apps',
+            'relay_get_props',
+            'relay_create_props',
+            'relay_delete_props',
+            'relay_update_props',
+            'relay_get_pending_props',
+            'relay_props_action',
+            'relay_create_bulk_props',
+
 
             // Growth Assets
             'growth_get_asset_details'

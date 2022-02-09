@@ -6277,6 +6277,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MTU_COUPON_APPLY_FAILURE                          = 'MTU_COUPON_APPLY_FAILURE';
 
+    //Relay traces
+    const RELAY_REQUEST         = "RELAY_REQUEST";
+    const RELAY_RESPONSE        = "RELAY_RESPONSE";
+    const RELAY_REQUEST_FAILED  = "RELAY_REQUEST_FAILED";
+
     const AUTHZ_ENFORCEMENT_REQUEST                         = 'AUTHZ_ENFORCEMENT_REQUEST';
     const AUTHZ_ENFORCEMENT_RESPONSE                        = 'AUTHZ_ENFORCEMENT_RESPONSE';
     const TIME_TAKEN_TO_UPDATE_TXN_IN_FTA_UPDATE_FTS_WEBHOOK = 'TIME_TAKEN_TO_UPDATE_TXN_IN_FTA_UPDATE_FTS_WEBHOOK';

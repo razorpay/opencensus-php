@@ -869,6 +869,10 @@ class Name
     // Permission to allow use of master DB instead of slave
     const USE_MASTER_DB_CONNECTION              = 'use_master_db_connection';
 
+    //relay permissions
+    const RELAY_READ_PERMISSION = 'relay_permission_read';
+    const RELAY_READ_WRITE_PERMISSION = 'relay_permission_read_write';
+
     const MANAGE_CAMPAIGNHQ_OPERATIONS          = 'manage_campaignhq_operations';
 
     public static $actionMap = [

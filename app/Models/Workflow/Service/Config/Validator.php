@@ -19,9 +19,9 @@ class Validator extends Base\Validator
         Entity::TYPE                 => 'required|string|max:20',
         Entity::NAME                 => 'required|string|max:255',
         Entity::ENABLED              => 'required',
-        Entity::SERVICE              => 'required|string|in:rx_live,rx_test,growth',
+        Entity::SERVICE              => 'required|string|in:rx_live,rx_test,growth,relay',
         Entity::OWNER_ID             => 'required|string|max:14',
-        Entity::OWNER_TYPE           => 'required|string|in:merchant',
+        Entity::OWNER_TYPE           => 'required|string|in:merchant,user',
         Entity::ORG_ID               => 'required|string|max:14',
         Entity::CONTEXT              => 'sometimes|array',
     ];
@@ -30,7 +30,7 @@ class Validator extends Base\Validator
         Entity::ID                   => 'required|string|max:14',
         Entity::NAME                 => 'required|string|max:255',
         Entity::ENABLED              => 'required',
-        Entity::SERVICE              => 'required|string|in:rx_live,rx_test,growth',
+        Entity::SERVICE              => 'required|string|in:rx_live,rx_test,growth,relay',
         Entity::OWNER_ID             => 'required|string|max:14',
         Entity::OWNER_TYPE           => 'required|string|max:20',
     ];

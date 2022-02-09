@@ -626,6 +626,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerAuthzClient();
 
+        $this->registerRelayService();
+
         $this->registerAuthzXPlatformEnforcerClient();
     }
 
@@ -1491,6 +1493,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE, function($app)
         {
             return new PayoutService\QueuedInitiate($app);
+        });
+    }
+
+    protected function registerRelayService()
+    {
+        $this->app->singleton('relay', function($app)
+        {
+            return new Relay\Config($app);
         });
     }
 

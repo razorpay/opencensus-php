@@ -885,6 +885,21 @@ return [
         ],
     ],
 
+    'relay' => [
+        'mock'   => env('RELAY_MOCK', false),
+        'secret' => env('APP_RELAY_SECRET'),
+        'test'   => [
+            'url'                   => env('RELAY_URL_TEST'),
+            'key'                   => env('RELAY_KEY_TEST'),
+            'secret'                => env('RELAY_SECRET_TEST'),
+        ],
+        'live'   => [
+            'url'                   => env('RELAY_URL_LIVE'),
+            'key'                   => env('RELAY_KEY_LIVE'),
+            'secret'                => env('RELAY_SECRET_LIVE'),
+        ],
+    ],
+
     'batch' => [
         'secret'            => env('BATCH_API_SECRET'),
         'mock'              => env('BATCH_MOCK',false),
