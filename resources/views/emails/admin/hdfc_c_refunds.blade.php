@@ -30,10 +30,10 @@
 
                             <p>   Note : Please confirm UTR NO once transferred the amount in Nodal Account </p>
 
-                            <p>Bank Name:        {{{$accountDetails['bankName']}}}</p>
-                            <p>Beneficiary Name: {{{$accountDetails['accountNumber']}}}</p>
-                            <p>Account Number:   {{{$accountDetails['accountName']}}}</p>
-                            <P>IFSC Code:        {{{$accountDetails['ifsc']}}} </P>
+                            <p>Bank Name:        {{{$account['bank']}}}</p>
+                            <p>Beneficiary Name: {{{$account['accountNumber']}}}</p>
+                            <p>Account Number:   {{{$account['accountName']}}}</p>
+                            <P>IFSC Code:        {{{$account['ifsc']}}} </P>
                         </td>
                     </tr></table>
             </div>
