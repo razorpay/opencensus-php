@@ -43,6 +43,15 @@ const config = {
   },
 };
 
+const UnanswerableClarifications = ({ discrepancy_comment }) => (
+  <div className="clarification-input" key={discrepancy_comment}>
+    <i className="i i-info-circle" />
+    <div className="input-container">
+      <p className="input-label">{discrepancy_comment}</p>
+    </div>
+  </div>
+);
+
 const ClarificationInput = (props) => {
   const {
     iirDiscrepancyId,
@@ -116,7 +125,6 @@ const Clarifications = (props) => {
   const [isDisabled, setIsDisabled] = useState(false);
   const [files, setFiles] = useState({});
   const [clarifications, setClarifications] = useState(false);
-
   const {
     onCloseClick,
     mirId,
@@ -125,9 +133,7 @@ const Clarifications = (props) => {
     loading,
     status,
   } = props;
-
   const lastTab = filteredTabs.length - 1;
-
   async function fetchIirDiscrepancies() {
     await props.getIirDiscrepancies(mirId);
   }
@@ -273,49 +279,68 @@ const Clarifications = (props) => {
       </div>
       <div className="form-container">
         <ModalHeader title={config[status].header} onCloseClick={onCloseClick} />
-        {!loading && clarifications && clarifications.length > 0 ? (
-          <form>
-            <div className="form">
-              {filteredClarifications.map(
-                ({ discrepancy_comment, iir_discrepancy_id, iir_discrepancy_answer }) => {
-                  return (
-                    <ClarificationInput
-                      answer={iir_discrepancy_answer?.answer_field_value}
-                      iirDiscrepancyId={iir_discrepancy_id}
-                      handleFileChange={(file, _) => handleFileChange(file, iir_discrepancy_id)}
-                      label={discrepancy_comment}
-                      key={iir_discrepancy_id}
-                      fileUpload={true}
-                      onTextChange={onTextChange}
-                      formFields={formFields}
-                      setFiles={setFiles}
-                      files={files}
-                      status={status}
-                    />
-                  );
-                },
-              )}
-            </div>
 
-            {status === ACTION_REQUIRED && (
-              <div className="footer">
-                <button
-                  type="submit"
-                  className="Button--primary Button"
-                  onClick={onSubmitDiscrepancyForm}
-                  disabled={isDisabled}
-                >
-                  {selectedTab === filteredTabs[lastTab] ? (
-                    <span>
-                      Submit Form <i className="i i-chevron-right" />
-                    </span>
-                  ) : (
-                    <span>Next</span>
-                  )}
-                </button>
+        {!loading && clarifications && clarifications.length > 0 ? (
+          <div className="form">
+            {filteredClarifications.map(({ discrepancy_comment, answerable }) => {
+              if (answerable) return null;
+              return (
+                <UnanswerableClarifications
+                  discrepancy_comment={discrepancy_comment}
+                  key={discrepancy_comment}
+                />
+              );
+            })}
+
+            <form>
+              <div>
+                {filteredClarifications.map(
+                  ({
+                    discrepancy_comment,
+                    iir_discrepancy_id,
+                    iir_discrepancy_answer,
+                    answerable,
+                  }) => {
+                    if (!answerable) return null;
+                    return (
+                      <ClarificationInput
+                        answer={iir_discrepancy_answer?.answer_field_value}
+                        iirDiscrepancyId={iir_discrepancy_id}
+                        handleFileChange={(file, _) => handleFileChange(file, iir_discrepancy_id)}
+                        label={discrepancy_comment}
+                        key={iir_discrepancy_id}
+                        fileUpload={true}
+                        onTextChange={onTextChange}
+                        formFields={formFields}
+                        setFiles={setFiles}
+                        files={files}
+                        status={status}
+                      />
+                    );
+                  },
+                )}
               </div>
-            )}
-          </form>
+
+              {status === ACTION_REQUIRED && (
+                <div className="footer">
+                  <button
+                    type="submit"
+                    className="Button--primary Button"
+                    onClick={onSubmitDiscrepancyForm}
+                    disabled={isDisabled}
+                  >
+                    {selectedTab === filteredTabs[lastTab] ? (
+                      <span>
+                        Submit Form <i className="i i-chevron-right" />
+                      </span>
+                    ) : (
+                      <span>Next</span>
+                    )}
+                  </button>
+                </div>
+              )}
+            </form>
+          </div>
         ) : (
           <Spinner />
         )}
