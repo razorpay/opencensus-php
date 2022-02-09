@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingHdfcC;
+namespace RZP\Reconciliator\NetbankingHdfcCorp;
 
 class Constants
 {

@@ -223,7 +223,7 @@ return [
 
     ],
 
-    'testHdfcCSuccessRecon' => [
+    'testHdfcCorpSuccessRecon' => [
         'merchant_code'         => 'RAZORPAY',
         'client_code'           => 'RAZORPAY',
         'currency_code'         => 'INR',

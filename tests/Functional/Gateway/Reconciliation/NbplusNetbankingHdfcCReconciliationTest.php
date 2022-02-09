@@ -14,10 +14,10 @@ use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
-use RZP\Reconciliator\NetbankingHdfcC\Constants as HDFC_Constants;
+use RZP\Reconciliator\NetbankingHdfcCorp\Constants as HDFC_Constants;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingHdfcCReconciliationTest extends StaticCallbackNbplusGatewayTest
+class NbplusNetbankingHdfcCorpReconciliationTest extends StaticCallbackNbplusGatewayTest
 {
     use ReconTrait;
 
@@ -41,7 +41,7 @@ class NbplusNetbankingHdfcCReconciliationTest extends StaticCallbackNbplusGatewa
 
     }
 
-    public function testHdfcCSuccessRecon()
+    public function testHdfcCorpSuccessRecon()
     {
         $this->doAuthAndCapturePayment($this->payment);
 
@@ -60,7 +60,7 @@ class NbplusNetbankingHdfcCReconciliationTest extends StaticCallbackNbplusGatewa
 
         $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, "text/plain");
 
-        $this->reconcile($uploadedFile, Base::NETBANKING_HDFC_C);
+        $this->reconcile($uploadedFile, Base::NETBANKING_HDFC_CORP);
 
         $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
 

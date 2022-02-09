@@ -6,10 +6,9 @@ use Carbon\Carbon;
 
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
-use RZP\Reconciliator\NetbankingHdfcC\Constants;
+use RZP\Reconciliator\NetbankingHdfcCorp\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class HdfcCorp extends Base

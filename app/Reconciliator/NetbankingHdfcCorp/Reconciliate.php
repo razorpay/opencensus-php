@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingHdfcC;
+namespace RZP\Reconciliator\NetbankingHdfcCorp;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;

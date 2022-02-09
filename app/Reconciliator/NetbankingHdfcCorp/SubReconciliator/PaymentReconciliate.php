@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingHdfcC\SubReconciliator;
+namespace RZP\Reconciliator\NetbankingHdfcCorp\SubReconciliator;
 
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
-use RZP\Reconciliator\NetbankingHdfcC\Constants;
+use RZP\Reconciliator\NetbankingHdfcCorp\Constants;
 
 class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
