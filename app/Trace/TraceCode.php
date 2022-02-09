@@ -134,6 +134,9 @@ class TraceCode
     // Graph Request Trace codes
     const GRAPH_REQUEST_AUTH_VALIDATION_TIME          = 'GRAPH_REQUEST_AUTH_VALIDATION_TIME';
 
+    const FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN     = 'FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN';
+    const FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT     = 'FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

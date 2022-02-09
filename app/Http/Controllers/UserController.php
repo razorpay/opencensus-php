@@ -138,12 +138,14 @@ class UserController extends Controller
                 $data['is_pl_customer_name_field_enabled'] = null;
             }
 
-            // If a user accesses PG dashboard using X demo account, then we logout and redirect to signin
+            // If a user accesses PG dashboard using X demo account, then we log out and redirect to sign-in
             // Since this is a PG dashboard route, no need to check product origin explicitly
-            if (in_array($currentMerchantId,MerchantConstants::X_DEMO_MERCHANT_IDS,true)){
+            if (in_array($currentMerchantId,MerchantConstants::X_DEMO_MERCHANT_IDS,true))
+            {
                 $this->getLogout();
                 $data['isAuthenticated'] = false;
                 $data['isConfirmed'] = false;
+                $data['isMobileConfirmed'] = false;
             }
 
             return view('merchant.index', $data);
@@ -865,6 +867,16 @@ class UserController extends Controller
             ]);
 
         $user->logout();
+
+        $currentMerchantId = Session::get('current_merchant_id','');
+
+        if (in_array($currentMerchantId, MerchantConstants::X_DEMO_MERCHANT_IDS, true))
+        {
+            // Clearing all session data as session keys like current_merchant_id are persisted even after logout
+            $this->trace->info(TraceCode::FORCE_SESSION_CLEAR_AFTER_X_DEMO_LOGOUT, []);
+
+            Session::flush();
+        }
 
         Session::forget(User\Constants::OAUTH_LOGIN);
 

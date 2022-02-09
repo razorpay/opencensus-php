@@ -4,6 +4,7 @@ namespace App\User;
 
 use App\Http\Headers;
 use Auth;
+use Trace;
 use Cookie;
 use Session;
 use Request;
@@ -416,6 +417,23 @@ class Service extends Base\Service
      */
     public function demoLogin()
     {
+        /*
+         * current_merchant_id does not change to new one if already exists
+         * It needs to overwritten or cleared
+         * Check app/User/Helper.php getCurrentMerchant()
+         */
+        $currentMerchantId = Session::get('current_merchant_id','');
+
+        if (!empty($currentMerchantId))
+        {
+            // Clearing all session data as session keys like current_merchant_id are persisted even after logout
+            $this->trace->info(TraceCode::FORCE_SESSION_CLEAR_BEFORE_X_DEMO_LOGIN, [
+                'current_merchant_id'   => $currentMerchantId
+            ]);
+
+            Session::forget('current_merchant_id');
+        }
+
         $input = array(
             "email"    => Constants::BANKING_DEMO_USER_EMAIL,
             "password" => $this->app['config']['app.banking_demo_user_password'],
