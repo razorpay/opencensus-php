@@ -81,11 +81,7 @@ const DownloadFIRCForm = (props) => {
 
   return (
     <Form>
-      <ModalHeader
-        title="Download FIRC"
-        extraClass="purpose-code-modal-heading"
-        onCloseClick={closeModalProp}
-      />
+      <ModalHeader title="Download FIRC" onCloseClick={closeModalProp} />
       <div className="firc-form-container">
         <div className="dropdown-container">
           <div>
@@ -115,7 +111,7 @@ const DownloadFIRCForm = (props) => {
         </div>
 
         {loading && (
-          <div class="spinner-container">
+          <div className="spinner-container">
             <Spinner />
           </div>
         )}

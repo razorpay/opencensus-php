@@ -1,6 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
-import store from 'merchant/store';
+import store, { getUser } from 'merchant/store';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
@@ -13,6 +13,8 @@ const STORE_TICKET_DETAILS = 'STORE_TICKET_DETAILS';
 const GET_TICKET_STATUS = 'GET_TICKET_STATUS';
 const CHECK_PASSWORD = 'CHECK_PASSWORD';
 const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
+const GET_FIRC_DETAILS = 'GET_FIRC_DETAILS';
+const SAVE_FIRC_DETAILS = 'SAVE_FIRC_DETAILS';
 
 export const fetchBankAccount = () => {
   if (!window.rzp_user) {
@@ -282,22 +284,28 @@ export const getPurposeCodes = () => {
   });
 };
 
-export const fetchPurposeCode = (userEmail) => {
-  return merchantFetch({
-    url: `users/purpose/code`,
-    method: 'get',
-    data: {
-      email: userEmail,
-    },
-  });
+export const fetchPurposeCode = () => {
+  const user = getUser();
+  return {
+    type: GET_FIRC_DETAILS,
+    payload: merchantFetch({
+      url: `users/purpose/code`,
+      method: 'get',
+      data: {
+        email: user.email,
+      },
+    }),
+  };
 };
 
-export const updatePurposeCode = (data) => {
-  return merchantFetch({
+export const updatePurposeCode = (data) => async (dispatch) => {
+  const res = await merchantFetch({
     url: 'merchants/purpose/code',
     method: 'patch',
     data,
   });
+  dispatch({ type: SAVE_FIRC_DETAILS, payload: data });
+  return res;
 };
 
 const initialState = {
@@ -322,6 +330,11 @@ const initialState = {
     error: null,
   },
   check_password: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  fircDetails: {
     loading: true,
     data: {},
     error: null,
@@ -399,6 +412,36 @@ export default (state = initialState, action) => {
         loading: false,
         error: action.payload.errors,
         data: initialState.check_password.data,
+      });
+
+    case `${GET_FIRC_DETAILS}::PENDING`:
+      return merge(state, {
+        fircDetails: {
+          loading: true,
+          ...state.fircDetails,
+        },
+      });
+
+    case `${GET_FIRC_DETAILS}::SUCCESS`:
+      return set(state, 'fircDetails', {
+        data: action.payload.data?.merchants[0],
+        loading: false,
+        error: null,
+      });
+
+    case `${GET_FIRC_DETAILS}::ERROR`:
+      return merge(state, {
+        fircDetails: {
+          loading: false,
+          error: action.payload.errors,
+        },
+      });
+
+    case SAVE_FIRC_DETAILS:
+      return merge(state, {
+        fircDetails: {
+          data: action.payload,
+        },
       });
 
     case INVALID_MERCHANT_CALL:

@@ -41,7 +41,6 @@ import {
   RR_UPDATE_GSTIN,
   UPDATE_GSTIN,
 } from 'merchant/views/Account/Profile/deeplink-constants';
-import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { compose, bindActionCreators } from 'redux';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import {
@@ -54,9 +53,9 @@ import { isWorkflowInClarification } from 'merchant/views/Account/Profile/compon
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
-const PurposeCodeAndFIRC = lazy(() =>
+const FIRCSection = lazy(() =>
   import(
-    /* webpackChunkName: "PurposeCodeAndFIRC" */ 'merchant/views/Account/Profile/components/PurposeCodeAndFIRC'
+    /* webpackChunkName: "FIRCSection" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
   ),
 );
 class Profile extends Component {
@@ -521,14 +520,6 @@ class Profile extends Component {
     });
   };
 
-  editPurposeCodeHandler = () => {
-    this.raiseTicket();
-  };
-
-  raiseTicket = () => {
-    CreateTicketEmitter.emit('create-ticket', 'tickets');
-  };
-
   render() {
     const { user, profile, settlement_amount } = this.props;
     const { bankAccount } = profile;
@@ -621,7 +612,7 @@ class Profile extends Component {
           {user.international && (
             <SuspenseWithLoader>
               <IntoView hashedWith={VIEW_FIRC}>
-                <PurposeCodeAndFIRC onEditClick={this.editPurposeCodeHandler} user={user} />
+                <FIRCSection user={user} />
               </IntoView>
             </SuspenseWithLoader>
           )}

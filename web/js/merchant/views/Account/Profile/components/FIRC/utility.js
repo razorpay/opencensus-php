@@ -13,6 +13,14 @@ export const MONTHS = [
   { label: 'December', value: '12' },
 ];
 
+export const MODAL_HEADING = {
+  1: 'Select Purpose Code',
+  2: 'Enter IEC Code',
+  3: 'Confirmation',
+};
+
+export const SPECIAL_PURPOSE_CODES = ['P0103', 'P0807'];
+
 export const getDataFromAPI = (response) => {
   const success = response.success;
   if (success) {
@@ -35,4 +43,30 @@ export const downloadFile = (response) => {
   const data = getDataFromAPI(response);
   const signed_url = data.signed_url;
   window.open(signed_url, '_blank');
+};
+
+export function inputFormatToAlpha(str = '') {
+  let res = '';
+  if (typeof str === 'string' && str !== '') {
+    res = str.replace(/[^0-9A-Z]+/gi, '');
+    res = res.toUpperCase();
+  }
+  return res;
+}
+
+export const computeSearch = (source, str) => {
+  const res = [];
+
+  if (str.trim() !== '') {
+    str = str.toLowerCase();
+    source.forEach(({ codes }) => {
+      codes.forEach((code) => {
+        const purposeCodeExist = code.purposeCode.toLowerCase().includes(str);
+        const descriptionExist = code.description.toLowerCase().includes(str);
+        if (purposeCodeExist || descriptionExist) res.push(code);
+      });
+    });
+  }
+
+  return res;
 };
