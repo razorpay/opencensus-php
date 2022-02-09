@@ -42,7 +42,10 @@ class Wallet extends Service
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
         }
 
-        $input['merchant']['features'] = $input[Entity::MERCHANT]->getEnabledFeatures();
+        if (isset($input[Entity::MERCHANT]) && is_null($input[Entity::MERCHANT]) === false)
+        {
+            $input['merchant']['features'] = $input[Entity::MERCHANT]->features;
+        }
 
         foreach ($input as $key => $data)
         {
