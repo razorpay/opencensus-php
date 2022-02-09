@@ -452,9 +452,6 @@ final class RazorxTreatment
     //Experiment to disable statement fetch for merchants
     const DISABLE_STATEMENT_FETCH = 'disable_statement_fetch';
 
-    // Experiment flag to fetch settlement amount from new settlement service
-    const FETCH_SETTLEMENT_AMOUNT_FROM_NSS = 'fetch_settlement_amount_from_nss';
-
     // Experiment to block pan details in html code
     const BLOCK_PAN_DETAIL_IN_AUTHLINK_HTML = 'block_pan_detail_in_authlink_html';
 }

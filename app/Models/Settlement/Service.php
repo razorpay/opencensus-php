@@ -70,8 +70,7 @@ class Service extends Base\Service
 
         $isNewService = (new Bucket\Core())->shouldProcessViaNewService($this->merchant->getId(), $balance);
 
-        if(($isNewService === true)
-            and ($this->shouldFetchSettlementAmountFromNSS($this->merchant->getId(), $this->mode) === true))
+        if($isNewService === true)
         {
                 $requestParams = [
                     'merchant_id' => $this->merchant->getId(),
@@ -1658,17 +1657,5 @@ class Service extends Base\Service
     public function settlementsInitiate($input)
     {
         return app('settlements_dashboard')->settlementsInitiate($input);
-    }
-
-    public function shouldFetchSettlementAmountFromNSS($merchantID, $mode)
-    {
-        $variant = $this->app
-                        ->razorx
-                        ->getTreatment(
-                            $merchantID,
-                            Merchant\RazorxTreatment::FETCH_SETTLEMENT_AMOUNT_FROM_NSS,
-                            $mode);
-
-        return $variant === 'on';
     }
 }
