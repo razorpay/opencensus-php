@@ -415,6 +415,8 @@ class UserRolePermissionsMap
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::GET_SIGNED_URL,
 
+                 //View tax payments
+                 Permission::VIEW_TAX_PAYMENTS,
                  Permission::VIEW_TRANSACTION_STATEMENT,
              ],
 

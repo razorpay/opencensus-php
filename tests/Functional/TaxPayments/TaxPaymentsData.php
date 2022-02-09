@@ -986,4 +986,59 @@ return [
             'content' => []
         ]
     ],
+    'testTaxPaymentSettingGetCallsServiceMethodsForCARole'                         => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/settings',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testListTaxPaymentCallsServiceMethodForCARole'                         => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testTaxPaymentEditTPCallsServiceMethodForCARole'                         => [
+        'request'  => [
+            'method' => 'PATCH',
+            'url'    => '/tax-payments/txpy_1234',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testGetTaxPaymentCallsServiceMethodForCARole'                                 => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/txpy_1234',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

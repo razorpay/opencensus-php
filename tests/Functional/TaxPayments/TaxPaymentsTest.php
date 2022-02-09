@@ -12,6 +12,7 @@ use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Settings\Module;
 use RZP\Models\Settings\Accessor;
+use RZP\Models\User\BankingRole;
 use RZP\Models\User\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -806,5 +807,109 @@ class TaxPaymentsTest extends TestCase
         $this->startTest();
 
         $tpMock->shouldHaveReceived('fetchPendingGstPayments');
+    }
+
+    public function testTaxPaymentSettingGetCallsServiceMethodsForCARole()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::CHARTERED_ACCOUNTANT,
+            'product'     => 'banking',
+        ];
+
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('getAllSettings')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getAllSettings');
+    }
+
+    public function testListTaxPaymentCallsServiceMethodForCARole()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::CHARTERED_ACCOUNTANT,
+            'product'     => 'banking',
+        ];
+
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('listTaxPayments')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('listTaxPayments');
+    }
+
+    public function testTaxPaymentEditTPCallsServiceMethodForCARole()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::CHARTERED_ACCOUNTANT,
+            'product'     => 'banking',
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $this->mockRazorxTreatment();
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+    }
+
+    public function testGetTaxPaymentCallsServiceMethodForCARole()
+    {
+        $user = $this->fixtures->create('user', ['id' => '20000000000006']);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => BankingRole::CHARTERED_ACCOUNTANT,
+            'product'     => 'banking',
+        ];
+
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('getTaxPayment')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getTaxPayment');
     }
 }
