@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {
   STATUSES,
   CASH_ADVANCE_CAROUSEL_VIEW_RULES,
@@ -12,11 +13,18 @@ const ruleValidators = {
   [CASH_ADVANCE_CAROUSEL_VIEW_RULES.NO_WITHDRAWALS]({ view, withdrawals }) {
     return view === CASH_ADVANCE_SECTIONS.WITHDRAWALS && withdrawals.length === 0;
   },
-  [CASH_ADVANCE_CAROUSEL_VIEW_RULES.FIRST_PROCESSED_WITHDRAWAL]({ view, withdrawals }) {
+  [CASH_ADVANCE_CAROUSEL_VIEW_RULES.FIRST_INITIATED_WITHDRAWAL]({ view, withdrawals }) {
     return (
       view === CASH_ADVANCE_SECTIONS.WITHDRAWALS &&
       withdrawals.length === 1 &&
       withdrawals[0].status === STATUSES.INITIATED
+    );
+  },
+  [CASH_ADVANCE_CAROUSEL_VIEW_RULES.FIRST_PROCESSED_WITHDRAWAL]({ view, withdrawals }) {
+    return (
+      view === CASH_ADVANCE_SECTIONS.WITHDRAWALS &&
+      withdrawals.length === 1 &&
+      withdrawals[0].status === STATUSES.PROCESSED
     );
   },
   [CASH_ADVANCE_CAROUSEL_VIEW_RULES.FIRST_NON_REPAID_DISBURSED_WITHDRAWAL]({
