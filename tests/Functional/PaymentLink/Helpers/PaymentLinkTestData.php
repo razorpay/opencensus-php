@@ -3134,7 +3134,7 @@ return [
         ],
     ],
 
-    'testOnPaymentPageCreateDedupeCallIsDispatchedInLiveModeAndExperimentOn' => [
+    'testOnPaymentPageCreateDedupeCallIsDispatchedInLiveMode' => [
         'request'  => [
             'url'     => '/payment_pages',
             'method'  => 'post',
@@ -3172,7 +3172,7 @@ return [
         ],
     ],
 
-    'testOnPaymentPageCreateDedupeCallIsNotDispatchedInLiveModeAndExperimentOff' => [
+    'testOnPaymentPageCreateDedupeCallIsNotDispatchedInTestMode' => [
         'request'  => [
             'url'     => '/payment_pages',
             'method'  => 'post',

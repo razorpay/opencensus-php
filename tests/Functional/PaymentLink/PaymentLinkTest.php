@@ -2127,13 +2127,9 @@ class PaymentLinkTest extends TestCase
      * @group nocode_pp_create_dedupe
      * @return void
      */
-    public function testOnPaymentPageCreateDedupeCallIsDispatchedInLiveModeAndExperimentOn()
+    public function testOnPaymentPageCreateDedupeCallIsDispatchedInLiveMode()
     {
         $this->ba->proxyAuthLive();
-
-        $this->mockRazorxExperiments([
-            PaymentLink\Core::RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE => 'on'
-        ]);
 
         Bus::fake();
 
@@ -2146,9 +2142,9 @@ class PaymentLinkTest extends TestCase
      * @group nocode_pp_create_dedupe
      * @return void
      */
-    public function testOnPaymentPageCreateDedupeCallIsNotDispatchedInLiveModeAndExperimentOff()
+    public function testOnPaymentPageCreateDedupeCallIsNotDispatchedInTestMode()
     {
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuthTest();
 
         Bus::fake();
 

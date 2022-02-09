@@ -48,6 +48,8 @@ class PaymentPageProcessor extends Job
 
     protected $service;
 
+    protected $context;
+
     /**
      * Params should have payment key with payment object during payment capture event
      *
@@ -71,7 +73,7 @@ class PaymentPageProcessor extends Job
     {
         parent::handle();
 
-        $context = [
+        $this->context = [
             'mode'  => $this->mode,
             'event' => $this->event
         ];
@@ -80,29 +82,46 @@ class PaymentPageProcessor extends Job
         $timeTakenToPickJobInMilliSecs  =  millitime() - $this->params->get('start_time');
 
         $this->trace->histogram(PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB,
-            $timeTakenToPickJobInMilliSecs, $context);
+            $timeTakenToPickJobInMilliSecs, $this->context);
 
         $handler = "handle" . Str::studly(Str::lower($this->event));
 
         if (! method_exists($this, $handler))
         {
-            $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_INVALID_EVENT, $context);
+            $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_INVALID_EVENT, $this->context);
             return;
         }
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_START, $context);
+        $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_START, $this->context);
+
+        $start = millitime();
 
         $this->$handler();
 
-        $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_COUNT_TOTAL, $context);
+        // this is the time taken to complete the task only
+        $jobCompleteDelay = millitime() - $start;
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_COMPLETED, $context);
+        $this->trace->histogram(
+            PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_COMPLETE_TASK,
+            $jobCompleteDelay,
+            $this->context
+        );
 
-        // total time taken to create PH since job was pushed to queue
-        $totalTimeTakenToCreatePH = millitime() - $this->params->get('start_time');
+        $this->trace->histogram(
+            PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB,
+            $timeTakenToPickJobInMilliSecs,
+            $this->context
+        );
+
+        $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_COUNT_TOTAL, $this->context);
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_COMPLETED, $this->context);
+
+        // total time taken since job was pushed to queue
+        $totalTimeTaken = millitime() - $this->params->get('start_time');
 
         $this->trace->histogram(PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TOTAL_TIME_TO_COMPLETE_JOB,
-            $totalTimeTakenToCreatePH, $context);
+            $totalTimeTaken, $this->context);
     }
 
     protected function handlePaymentCaptureEvent()
@@ -120,6 +139,8 @@ class PaymentPageProcessor extends Job
                 ]);
 
             $this->core->postPaymentCaptureAttemptProcessing($this->payment, true);
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
         }
         catch (\Throwable $e)
         {
@@ -132,6 +153,7 @@ class PaymentPageProcessor extends Job
                     'payment_link'   => $paymentLink->getId(),
                 ]
             );
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
         }
 
         $this->delete();
@@ -159,10 +181,14 @@ class PaymentPageProcessor extends Job
             $this->trace->info(TraceCode::PAYMENT_LINK_REFUND_PROCESS_QUEUE, $context);
 
             $this->core->postPaymentRefundUpdatePaymentPage($refund);
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, null, null, $context);
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
         }
 
         $this->delete();
@@ -192,12 +218,15 @@ class PaymentPageProcessor extends Job
             ];
 
             $this->trace->info(TraceCode::PAYMENT_HANDLE_CREATION_QUEUE_COMPLETED, $context);
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
         }
         catch(\Throwable $e)
         {
             $this->trace->traceException($e, null, null, [
                 'params'    => $this->params->toArray(),
             ]);
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
         }
 
         $this->delete();
@@ -215,6 +244,8 @@ class PaymentPageProcessor extends Job
 
             $this->delete();
 
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
+
             return;
         }
 
@@ -225,12 +256,15 @@ class PaymentPageProcessor extends Job
             (new PaymentLink\Core)->doDedupeAndRiskActions($entity);
 
             $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_DEDUPE_QUEUE_COMPLETED, $this->params->toArray());
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, null, null, [
                 'params'    => $this->params->toArray(),
             ]);
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
         }
 
         $this->delete();

@@ -26,4 +26,7 @@ final class Metric
     const PAYMENT_PAGE_PROCESSOR_COUNT_TOTAL                      = 'payment_page_processor_count_total';
     const PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB           = 'payment_page_processor_time_taken_to_pick_job';
     const PAYMENT_PAGE_PROCESSOR_TOTAL_TIME_TO_COMPLETE_JOB       = 'payment_page_processor_total_time_to_complete_job';
+    const PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_COMPLETE_TASK      = 'payment_page_processor_time_taken_to_complete_task';
+    const PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL          = 'payment_page_processor_job_success_count_total';
+    const PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL             = 'payment_page_processor_job_fail_count_total';
 }

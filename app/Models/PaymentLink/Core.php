@@ -2329,23 +2329,6 @@ class Core extends Base\Core
             return;
         }
 
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            self::RAZORX_ASYNC_PAYMENT_PAGE_CREATE_DEDUPE,
-            $this->mode
-        );
-
-        /**
-         * We want only the enabled merchants to go through the async flow,
-         * else by default the dedupe call will be sync, till we ramp it up to 100%
-         */
-        if ($variant !== 'on')
-        {
-            $this->doDedupeAndRiskActions($paymentLink);
-
-            return;
-        }
-
         $request = [
             'event'             => PaymentPageProcessor::PAYMENT_PAGE_CREATE_DEDUPE,
             'payment_page_id'   => $paymentLink->getId(),
