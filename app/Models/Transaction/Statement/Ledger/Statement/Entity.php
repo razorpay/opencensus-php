@@ -101,6 +101,15 @@ class Entity extends LedgerEntry\Entity
         return $this->morphTo('source', Journal\Entity::TRANSACTOR_TYPE, Journal\Entity::TRANSACTOR_INTERNAL_ID);
     }
 
+    /***
+     * Public id for ledger statement is Journal Id
+     *
+     */
+    public function getId()
+    {
+        return $this->getAttribute(self::JOURNAL_ID);
+    }
+
     // Public setters
 
     /**

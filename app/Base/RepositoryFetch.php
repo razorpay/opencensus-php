@@ -201,7 +201,7 @@ trait RepositoryFetch
 
         if (count($esParams) > 0)
         {
-            $esSearchResult = $this->runEsFetch($esParams, $merchantId, $expands);
+            $esSearchResult = $this->runEsFetch($esParams, $merchantId, $expands, $connectionType);
 
             $endTimeMs = round(microtime(true) * 1000);
 
@@ -452,7 +452,8 @@ trait RepositoryFetch
     protected function runEsFetch(
         array $params,
         string $merchantId = null,
-        array $expands): PublicCollection
+        array $expands,
+        string $connectionType = null): PublicCollection
     {
         $startTimeMs = round(microtime(true) * 1000);
         $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
@@ -494,8 +495,21 @@ trait RepositoryFetch
         // This is order of ids from es, sorted by _score first then created_at.
         $order = array_flip($ids);
 
-        $entities = $this->newQuery()
-                         ->with($expands)
+        $query = $this->newQuery();
+
+        if ((is_null($connectionType) === false) and
+            ($this->app['env'] !== Environment::TESTING))
+        {
+            $connection = $this->getConnectionFromType($connectionType);
+
+            $query = $this->newQueryWithConnection($connection);
+        }
+
+        $query = $query->with($expands);
+
+        $this->addCommonQueryParamMerchantId($query, $merchantId);
+
+        $entities = $query
                          ->findMany($ids, ['*'])
                          // MySQL gives results in ascending order of id. Sorting again to keep correct ES's order.
                          ->sort(
