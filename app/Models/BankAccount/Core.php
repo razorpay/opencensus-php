@@ -616,11 +616,6 @@ class Core extends Base\Core
             return;
         }
 
-        if( preg_match(fundAccountValidator::NAME_REGEX, trim($ba->getBeneficiaryName())) == 0 )
-        {
-            throw new Exception\LogicException(SettlementServiceMigration::REGEX_MATCH_FAILURE_FOR_MERCHANT);
-        }
-
         app('settlements_api')->migrateBankAccount($ba, $mode, $via);
 
         $this->trace->info(

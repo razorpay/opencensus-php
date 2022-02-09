@@ -274,24 +274,133 @@ class Base
 
     /**
      * this method returns the bank account request
-     * @param $ba
-     * @param $via
-     * @return array
+     *
+     * @param       $attributeValue
+     * @param       $pattern
+     *
+     * @param       $replacementCharacter
+     * @param mixed ...$attributeLengthRange : array comprised of three values at max. [Max length of param, minimum length , dummy value in case attribute is smaller than minimum length allowed]
+     *
+     * @return string
      */
+
+    public function getBAAttributeAppropriateToNSS($attributeValue, $pattern,$replacementCharacter, ...$attributeLengthRange)
+    {
+        //if length smaller than minimum threshold, replace it with dummy
+        if ((count($attributeLengthRange) === 3) && (strlen($attributeValue) < $attributeLengthRange[1]))
+        {
+            $attributeValue= $attributeLengthRange[2];
+            return  $attributeValue;
+        }
+
+        //if length exceeds threshold, trim blindly to that length
+        if ((count($attributeLengthRange) >= 1) && (strlen($attributeValue) > $attributeLengthRange[0]))
+        {
+            $attributeValue=substr($attributeValue, 0, $attributeLengthRange[0]);
+        }
+
+        // if invalid characters or regex fails, remove failing characters
+        //need to make sure, length checkers are added before rgex check; since attributes like bene names have complex regex's where ordering exists wrt to characters of different kinds.
+        $attributeValue=preg_replace($pattern,$replacementCharacter,'/'.preg_quote($attributeValue).'/');
+
+        //if length exceeds threshold, trim blindly to that length
+        //this will not happen in case of bene names, bene mobile.
+        //need to check this again, because preg_quote might increase length if replacement character is not ''. Could happen in case of bene city. Post regex fixing the trimming hence will not create problems.
+        if ((count($attributeLengthRange) >= 1) && (strlen($attributeValue) > $attributeLengthRange[0]))
+        {
+            $attributeValue=substr($attributeValue, 0, $attributeLengthRange[0]);
+        }
+
+        return $attributeValue;
+    }
+
+    public function stringPadInMiddle($attribute,$minLength,$character)
+    {
+        // if length is lesser than 2
+        while (strlen($attribute)<=1)
+        {
+            // we can throw exception as well,but might cause migration fails. Post data fix , all such merchants will be put on Hold.
+           $attribute=$attribute.'0';
+        }
+
+        //if length is at-least 2, but less than minimum length. So insert characters in the middle of string till length becomes appropriate.
+        //similar to what we do currently
+        while (strlen($attribute)<$minLength)
+        {
+            $attribute = substr_replace($attribute, $character, strlen($attribute)/2, 0);
+        }
+
+        return $attribute;
+    }
+
+    public function replaceWithDummyForBAAttribute($attribute,$minLength,$maxLength,$pattern,$dummyValue)
+    {
+        if (strlen($attribute)<$minLength || strlen($attribute)>$maxLength )
+        {
+            return $dummyValue;
+        }
+        if (($pattern!=null) && (preg_match($pattern,$attribute)!=1))
+        {
+            return $dummyValue;
+        }
+        return $attribute;
+    }
+
+    public function getAppropriateBeneNameOfMerchant($beneName)
+    {
+        //regex : over length , and second : can begin with alphanumeric and end with alphanumeric or '.' Special characters only allowed at the middle.
+        // all valid characters which can be present in bene name
+        $pattern            ='/[^a-zA-Z0-9-_.&,()\' ]/';
+
+        //only valid characters, should be allowed. So invalid characters are removed, and length trimmed to max 40
+        $beneName           = $this->getBAAttributeAppropriateToNSS($beneName,$pattern,'',40);
+
+        $beneName           = ltrim($beneName,'-_.&,()\' ');
+
+        //bene name can terminate with '.'
+        $beneName           = rtrim($beneName,'-_&,()\' ');
+
+        $beneName           = (strlen($beneName)<4)?$this->stringPadInMiddle($beneName, 4, ' '):$beneName;
+
+        return $beneName;
+    }
+
     public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout')
     {
+        $beneCityPattern    = '/[^a-zA-Z0-9 _-]/';
+
+        $beneMobilePattern  = '/[^a-zA-Z0-9]/';
+
+        $dummyBeneMobile    = '9999999999';
+
+        //TODO : Fix at NSS-OSS , Name-Contact length checker of 40 characters. Should be 50
+        $beneName           = trim($ba->getBeneficiaryName());
+
+        $beneName           = $this->getAppropriateBeneNameOfMerchant($beneName);
+
+        // in case there are characters like '+' , '-' replacing and removing such characters.If length inappropriate, replace with dummy mobile
+        $beneMobile         = strval($ba->getBeneficiaryMobile())??'';
+
+        $beneMobile         = $this->getBAAttributeAppropriateToNSS($beneMobile,$beneMobilePattern,'');
+
+        $beneMobile         = $this->replaceWithDummyForBAAttribute($beneMobile,10,32,null,$dummyBeneMobile);
+
+        $beneCity           = $ba->getBeneficiaryCity() ?? ' ';
+
+        $beneCity           = $this->getBAAttributeAppropriateToNSS($beneCity,  $beneCityPattern,' ',30);
+
         return [
             'merchant_id'         => $ba->getMerchantId(),
             'account_number'      => $ba->getAccountNumber(),
             'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
             'ifsc_code'           => $ba->getIfscCode(),
-            'beneficiary_name'    => trim($ba->getBeneficiaryName()),
+            'beneficiary_name'    => $beneName,
             'beneficiary_address' => $ba->getBeneficiaryAddress1() ?? '',
-            'beneficiary_city'    => $ba->getBeneficiaryCity() ?? '',
+            'beneficiary_city'    => $beneCity,
             'beneficiary_state'   => $ba->getBeneficiaryState() ?? '',
             'beneficiary_country' => $ba->getBeneficiaryCountry() ?? '',
             'beneficiary_email'   => $ba->getBeneficiaryEmail() ?? '',
-            'beneficiary_mobile'  => strval($ba->getBeneficiaryMobile()) ?? '',
+            'beneficiary_mobile'  => $beneMobile,
             'accepted_currency'   => Currency::INR,
             'extra_info'          => [
                 'via' => $via

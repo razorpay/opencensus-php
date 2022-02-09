@@ -34,6 +34,7 @@
                             <p>Beneficiary Name: {{{$account['accountNumber']}}}</p>
                             <p>Account Number:   {{{$account['accountName']}}}</p>
                             <P>IFSC Code:        {{{$account['ifsc']}}} </P>
+
                         </td>
                     </tr></table>
             </div>

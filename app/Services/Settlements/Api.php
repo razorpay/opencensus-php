@@ -3,6 +3,7 @@
 namespace RZP\Services\Settlements;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\RuntimeException;
 
@@ -101,6 +102,14 @@ class Api extends Base
         }
 
         $req = $this->getBankAccountCreateRequestForSettlementService($input, $via);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BANK_ACCOUNT_REQUEST,
+            [
+                'merchant_id' => $input->getMerchantId(),
+                'mode'        => $mode,
+                'request_data'=> $req
+            ]);
 
         (new Validator)->validateInput('create_bank_account', $req);
 
