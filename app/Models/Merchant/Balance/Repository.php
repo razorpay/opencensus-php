@@ -363,6 +363,23 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function getBalancesForBalanceIds(array $balanceIdList)
+    {
+        $idColumn = $this->dbColumn(Entity::ID);
+        $balanceColumn = $this->dbColumn(Entity::BALANCE);
+        $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
+
+        $sixHourEarlierTimeStamp = Carbon::now(Timezone::IST)->subHours(6)->getTimestamp();
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($idColumn, $balanceColumn)
+            ->whereIn($idColumn, $balanceIdList)
+            ->where($updatedAtColumn, '>=', $sixHourEarlierTimeStamp)
+            ->get()
+            ->pluck(Entity::BALANCE, Entity::ID)
+            ->toArray();
+    }
+
     public function getBalanceSumFromSubBalances(array $balanceIdList)
     {
         $idColumn = $this->dbColumn(Entity::ID);

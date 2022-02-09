@@ -93,6 +93,27 @@ class BalanceTest extends TestCase
         }
     }
 
+    public function testGetBalancesForBalanceIds()
+    {
+
+        $payoutsServiceConfig = \Config::get('applications.payouts_service');
+        $pwd = $payoutsServiceConfig['secret'];
+
+        $input = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => '10000000000000',
+            Balance::TYPE        => Type::BANKING,
+            Balance::BALANCE     => 100000,
+        ]);
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_ids'] = [$input['id']];
+
+        $response = $this->startTest();
+
+        $this->assertEquals(100000, array_values($response['balances'])[0]);
+    }
+
     public function testCreateCapitalBalance()
     {
         $collectionsServiceConfig = \Config::get('applications.capital_collections_client');

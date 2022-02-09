@@ -1971,8 +1971,7 @@ class Core extends Base\Core
                 }
 
                 $payoutServiceInput = [
-                                        Entity::BALANCE_IDS => array_keys($balancesList),
-                                        Entity::BALANCES => array_values($balancesList)
+                                        Entity::BALANCE_IDS => []
                     ];
 
                 $this->trace->info(

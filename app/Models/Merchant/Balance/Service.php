@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance;
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Models\Counter;
+use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
@@ -64,6 +65,29 @@ class Service extends Base\Service
         ])->validate($input);
 
         return $this->repo->balance->findMany($input['ids'])->toArrayPublic();
+    }
+
+    public function fetchBalancesForBalanceIds(array $input): array
+    {
+
+        (new JitValidator)->rules([
+            'balance_ids'   => 'required|array',
+            'balance_ids.*' => 'required|string|size:14',
+        ])->validate($input);
+
+        $balanceIds = $input['balance_ids'];
+
+        $balances = $this->repo->balance->getBalancesForBalanceIds($balanceIds);
+
+        $response = [
+            Payout\Entity::BALANCES => $balances
+        ];
+        $traceData = [
+            'response'                     => $response
+        ];
+        $this->trace->info(TraceCode::BALANCES_FOR_BALANCE_IDS, $traceData);
+
+        return $response;
     }
 
     public function updateFreePayout($id, $input)

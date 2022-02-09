@@ -440,6 +440,7 @@ class Route
         'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceByIdAndParams'                       ],
         'merchant_balance_fetch_by_id'             => ['get',      'balance/{id}',                                   'BalanceController@fetchBalanceById'                                ],
         'internal_balance_fetch_multiple_by_ids'   => ['get',      'internal_balances_multiple',                     'BalanceController@fetchBalanceMultiple'                            ],
+        'internal_balances_queued'                 => ['get',      'internal_balances_queued',                       'BalanceController@fetchBalancesForBalanceIds'                     ],
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -4364,6 +4365,7 @@ class Route
         'bulk_payout_purpose_post',
         'create_payment_payout_service_axis_cc',
         'update_payout_payout_service',
+        'internal_balances_queued',
 
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
@@ -12046,6 +12048,7 @@ class Route
             'update_payout_payout_service',
             'user_fetch_internal',
             'fetch_actor_info_internal',
+            'internal_balances_queued',
         ],
 
         'ledger' => [

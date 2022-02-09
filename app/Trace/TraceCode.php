@@ -973,6 +973,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const LOCKED_BALANCE_UPDATE_REQUEST                         = 'LOCKED_BALANCE_UPDATE_REQUEST';
     const LOCKED_BALANCE_UPDATE_RESPONSE                        = 'LOCKED_BALANCE_UPDATE_RESPONSE';
+    const BALANCES_FOR_BALANCE_IDS                              = 'BALANCES_FOR_BALANCE_IDS';
 
     const MAILER_SET_DRIVER                                     = 'MAILER_SET_DRIVER';
     const MAILER_INVALID_DRIVER                                 = 'MAILER_INVALID_DRIVER';

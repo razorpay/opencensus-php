@@ -2996,6 +2996,7 @@ class Base extends BaseCore
                         Entity::FEE_TYPE        => $payout->getFeeType(),
                         Entity::PRICING_RULE_ID => $payout->getPricingRuleId(),
                         Entity::QUEUED_REASON   => $payout->getQueuedReason(),
+                        Entity::QUEUED_AT       => $payout->getQueuedAt(),
                         Entity::STATUS_CODE     => $payout->getStatusCode()
                     ];
 

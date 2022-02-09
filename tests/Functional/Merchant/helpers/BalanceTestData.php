@@ -396,4 +396,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
         ],
     ],
+
+    'testGetBalancesForBalanceIds' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/internal_balances_queued',
+            'content' => [
+                'balance_ids' => [
+
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'balances' => [
+
+                ]
+            ],
+        ],
+    ],
 ];
