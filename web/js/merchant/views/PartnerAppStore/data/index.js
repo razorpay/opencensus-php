@@ -2,7 +2,7 @@ export const partnerProducts = {
   integromat: {
     slug: 'integromat',
     title: 'Integromat',
-    url: 'https://www.integromat.com/en/apps/invite/fb21279e0381a5a245f3d0102250b268',
+    url: 'https://www.integromat.com/en/integrations/razorpay',
     category: 'Workflow Automation',
     description:
       'With the Integromat app, users can integrate Razorpay with other web apps by moving the data automatically using triggers and actions.',
