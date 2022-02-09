@@ -534,7 +534,7 @@ class Entity extends Base\PublicEntity
         return $calculator->calculateDiscountedAmount($amount, $percentDiscount);
     }
 
-    protected function getDiscount(int $amount, $percentDiscount = null)
+    public function getDiscount(int $amount, $percentDiscount = null)
     {
         $calculator = new Calculator($this);
 

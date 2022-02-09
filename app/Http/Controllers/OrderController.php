@@ -28,6 +28,15 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchOrderByIdWithOffer($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchWithOffer($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchOrderById($id)
     {
         $input = Request::all();

@@ -2585,6 +2585,17 @@ class OrderTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetch1ccOrderById(string $publicOrderId)
+    {
+        $request = [
+            'url'       => "/1cc/orders/$publicOrderId",
+            'method'    => 'GET',
+        ];
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function testCreateOrderWithConvenienceFeeConfigEmpty()
     {
         $data = $this->testData[__FUNCTION__];
@@ -2645,5 +2656,29 @@ class OrderTest extends TestCase
         $config = $this->getDbEntityById('config', $orderEntity['reference7']);
 
         $this->assertEquals('{"label": "Convenience Fee", "rules": {"netbanking": {"fee": {"payee": "customer", "flat_value": 20}}}}', $config->getConfig());
+    }
+
+    public function testFetch1ccOrderWithOffer()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"],
+                                                             'error_message' => 'Payment Method is not available for this Offer']);
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $order = $this->startTest();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $this->doAuthPayment($payment);
+
+        $response = $this->fetch1ccOrderById($order['id']);
+
+        $this->assertEquals($offer->getPublicId(), $response['offer']['id']);
     }
 }

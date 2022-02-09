@@ -453,6 +453,52 @@ class Service extends Base\Service
         return $orders->toArrayPublic();
     }
 
+    public function fetchWithOffer($id, $input)
+    {
+        // Magic Checkout (1CC) specific route for dashboard to fetch orders along with offers that were applied.
+        $this->checkRouteIsAccessibleWithExpand($input);
+
+        $order = $this->repo->order->findByPublicId($id);
+
+        $orderArray = $order->toArrayPublic();
+
+        $orderId = $order->getId();
+
+        $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
+
+        $orderArray['offer'] = null;
+
+        if (empty($payments) === false)
+        {
+            $successfulPayment = array_first($payments, function ($payment, $key)
+            {
+                return in_array($payment->getStatus(), [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED, Payment\Status::PENDING, Payment\Status::REFUNDED]);
+            });
+
+            if ($successfulPayment !== null)
+            {
+                $offer = $successfulPayment->getOffer();
+                if (empty($offer) === false)
+                {
+                    $discount = $offer->getDiscount($order['amount'], $offer->getPercentRate());
+                    if ($offer->getMaxCashback() !== null)
+                    {
+                        $discount = min($discount, $offer->getMaxCashback());
+                    }
+                    $orderArray['offer'] = [
+                        'id'       => $offer->getPublicId(),
+                        'name'     => $offer->getName(),
+                        'type'     => $offer->getOfferType(),
+                        'discount' => $discount,
+                    ];
+                }
+            }
+        }
+
+
+        return $orderArray;
+    }
+
     public function fetchPaymentsFor(string $id, array $input): array
     {
         $input[Payment\Entity::ORDER_ID] = $id;

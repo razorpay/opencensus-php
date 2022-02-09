@@ -2400,4 +2400,25 @@ return [
             ],
         ],
     ],
+
+    'testFetch1ccOrderWithOffer' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null,
+            ],
+        ],
+    ],
 ];

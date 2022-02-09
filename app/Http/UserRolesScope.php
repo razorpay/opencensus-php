@@ -52,9 +52,10 @@ class UserRolesScope
             'payment_fetch_refund_by_id' => Role::allExceptPaymentLinkRoles(),
 
             // order routes
-            'order_fetch'       => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
-            'order_fetch_by_id' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
-            'order_payments'    => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'order_fetch'           => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'order_fetch_by_id'     => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'order_fetch_by_id_1cc' => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
+            'order_payments'        => array_merge(Role::allExceptPaymentLinkRoles(), Role::RBL_ROLES),
 
             // invitation routes
             'invitation_create' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
