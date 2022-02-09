@@ -240,6 +240,12 @@ class Entity extends Base\PublicEntity
     {
         $current = (int) $this->getUsedCount();
 
+        if (($current === 1) and
+            ($this->getStatus() === Status::CREATED))
+        {
+            return $this;
+        }
+
         return $this->setAttribute(self::USED_COUNT, ($current + 1));
     }
 

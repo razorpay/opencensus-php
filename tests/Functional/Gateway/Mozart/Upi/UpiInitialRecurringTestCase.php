@@ -1120,6 +1120,149 @@ class UpiInitialRecurringTestCase extends TestCase
         $response = $this->verifyPayment($payment->getPublicId());
     }
 
+    public function testSequenceNumberOnFirstDebitRetry()
+    {
+        // Hit Order Create API
+        // Hit Payment Create API, where the auth_init fails
+        $this->testRecurringTpvMandateCreateFailed();
+
+        // To ensure no failure response is sent
+        $this->mockServerContentFunction(function (& $content, $action) {});
+
+        // Now retry hitting the Payment Create API with the same order id
+        $this->doAuthPayment($this->payment);
+
+        $orderId = $this->payment['order_id'];
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::USED_COUNT      => 1,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW    => 'collect',
+            ],
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'collect',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'create',
+                'ano'       => 1,
+                'sno'       => 1,
+            ]
+        ], $upi->toArray());
+
+        $sno = -1;
+        // To ensure sequence number is sent as 1 for First Debit
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $sno)
+        {
+            if ($action === 'pay_init')
+            {
+                $sno = $content[Base\Entity::UPI][Base\Entity::GATEWAY_DATA][Base\Constants::SEQUENCE];
+            }
+        });
+
+        $this->mandateCreateCallback($payment);
+
+        $this->assertEquals($sno, 1, 'Sequence Number was not sent as 1 to the gateway');
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $token->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'monthly',
+            Entity::RECURRING_VALUE => 31,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::STATUS          => Status::CONFIRMED,
+            Entity::USED_COUNT      => 1,
+            Entity::GATEWAY_DATA    => [
+                Entity::FLOW        => 'collect',
+                Entity::VPA         => $this->payment['vpa'],
+            ]
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION      => 'authorize',
+            Base\Entity::TYPE        => 'collect',
+            Base\Entity::PAYMENT_ID  => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'execte',
+                'ano'       => 1,
+                'sno'       => 1,
+                'ext'       => null,
+            ],
+        ], $upi->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->firstDebitCallback($payment);
+
+        $payment->reload();
+
+        $token->reload();
+
+        $upi->reload();
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            MetaData::INTERNAL_STATUS   => 'authorized',
+            MetaData::MODE              => 'initial',
+        ], $upiMetadata->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING        => true,
+            Token\Entity::RECURRING_STATUS => 'confirmed'
+        ], $token->toArray());
+
+        $this->assertNotNull($upiMandate[Entity::UMN]);
+        $this->assertNotNull($upiMandate[Entity::RRN]);
+        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
+
+        $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
+    }
+
     public function testRecurringMandateCreateOnDark()
     {
         // First set the config to mozart so that gateway data is created correctly

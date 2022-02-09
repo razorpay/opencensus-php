@@ -37,4 +37,11 @@ class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
     {
         $this->markTestSkipped();
     }
+
+    // Skipping for now since mindgate is not set up completely
+    // TODO: Revisit this test case during Mindgate recurring implementation
+    public function testSequenceNumberOnFirstDebitRetry()
+    {
+        $this->markTestSkipped();
+    }
 }
