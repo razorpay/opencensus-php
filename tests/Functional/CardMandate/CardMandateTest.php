@@ -782,6 +782,68 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
+    public function testSubscriptionRegistrationTokenizedInitialCardMandatePaymentAmountGreaterThanMaxAmount()
+    {
+        $this->mockCheckBin();
+
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $paymentInp = $this->paymentInput;
+
+        $paymentInp['_']['library'] = 'razorpayjs';
+
+        $paymentInp['save'] = 1;
+
+        $paymentInp['amount'] = 800000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => 400000, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 800000, 'payment_capture' => 1]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $paymentInp['order_id'] = $order->getPublicId();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInp,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals($subr['max_amount'], $token->getMaxAmount());
+        $this->assertEquals($subr['expire_at'], $token->getExpiredAt());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['vault'], 'visa');
+    }
+
     public function testCreateCardMandatePaymentWithFailedToken()
     {
         $this->mandateConfirm = 'false';
@@ -1084,6 +1146,194 @@ class CardMandateTest extends TestCase
         $tokenId = $paymentEntity[Payment::TOKEN_ID];
 
         $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 900000, // Amount greater than Token Max Amount
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+        $paymentInput[Payment::AMOUNT] = $order['amount'];
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
+        $this->assertNotEmpty($cardMandateNotification->notified_at);
+
+        $this->mockPostDebitNotification();
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->notification_id;
+
+        $this->mockValidatePayment();
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment->getStatus());
+    }
+
+    public function testSubscriptionRegistrationAutoTokenizedCardMandatePaymentAmountGreaterThanMaxAmountWithAFA()
+    {
+        $this->testSubscriptionRegistrationInitialCardMandatePaymentAmountGreaterThanMaxAmount();
+
+        $this->mockCreatePreDebitNotification(true, true);
+
+        $this->allowAllTerminalRazorx();
+
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'recurring_non_3ds' => '1',
+            ]
+        ]);
+
+        $this->mockCardVaultWithCryptogram();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function(string $method, string $url, array $input) use ($terminal)
+            {
+                $input = $input['input'];
+
+                switch ($url)
+                {
+                    case 'action/authorize':
+
+                        $payment = $input['payment'];
+
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+
+                        $content = [
+                            'Message' => [
+                                'PAReq' => [
+                                    'Merchant' => [
+                                        'acqBIN' => '11111111111',
+                                        'merID'  => '12AB,cd/34-EF  -g,5/H-67'
+                                    ],
+                                    'CH' => [
+                                        'acctID' => 'NTU2NzYzMDAwMDAwMjAwNA==',
+                                    ],
+                                    'Purchase' => [
+                                        'xid'    => base64_encode(str_pad($payment['id'], 20, '0', STR_PAD_LEFT)),
+                                        'date'    => \Carbon\Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s'),
+                                        'amount' => '500.00',
+                                        'purchAmount' => '50000',
+                                        'currency' => '356',
+                                        'exponent' => 2,
+                                    ]
+                                ]
+                            ],
+                        ];
+
+                        $content['Message']['@attributes']['id'] = $payment['id'];
+
+                        $xml = \Lib\Formatters\Xml::create('ThreeDSecure', $content);
+
+                        $xml = zlib_encode($xml, 15);
+                        $xml = base64_encode($xml);
+
+                        return [
+                            'data' => [
+                                'content' => [
+                                    'TermUrl' => $input['callbackUrl'],
+                                    'PaReq' => $xml,
+                                    'MD' => $payment['id'],
+                                ],
+                                'method' => 'post',
+                                'url' =>  'https://api.razorpay.com/v1/gateway/acs/mpi_blade',
+                            ],
+                            'payment' => [
+                                'terminal_id' => $terminal->getId(),
+                                'auth_type' => null,
+                                'authentication_gateway' => 'mpi_blade'
+                            ],
+                        ];
+                    case 'action/callback':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+                        return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    case 'action/capture':
+                        return [
+                            'data' => [
+                                'status' => 'captured',
+                            ],
+                        ];
+
+                    case 'action/pay':
+                        $this->assertEquals('test', $input['card']['cryptogram_value']);
+                        $this->assertTrue($input['card']['tokenised']);
+                        $this->assertEquals('Razorpay', $input['card']['token_provider']);
+                        return [
+                            'data' => [
+                                'acquirer' => [
+                                    'reference2' => 'test'
+                                ],
+                                'two_factor_auth' => 'Y'
+                            ],
+                            'payment' => [
+                                'auth_type' => "3ds",
+                            ],
+                        ];
+
+                    default:
+                        return null;
+                }
+            });
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+
+        $card = $token->card;
+        $card->setVault('visa');
+
+        $token->setStatus('active');
+
+        $token->saveOrFail();
+        $card->saveOrFail();
+
+        $paymentInput = $this->getDefaultTokenPanPaymentArray();
+        $paymentInput['recurring'] = true;
+        $paymentInput['customer_id'] = 'cust_100000customer';
+
         unset($paymentInput[Payment::CARD]);
         unset($paymentInput[Payment::BANK]);
 
@@ -1649,6 +1899,5 @@ class CardMandateTest extends TestCase
         $this->assertEquals('mandate_cancelled', $cardMandate->getStatus());
 
     }
-
 }
 

@@ -120,6 +120,62 @@ return [
         ],
     ],
 
+    'testCardRecurringAutoPaymentIfTokenStatusIsDeactivated' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "customer_id" => "cust_id",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/recurring',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_NON_ACTIVATED_TOKEN_PASSED_IN_RECURRING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NON_ACTIVATED_TOKEN_PASSED_IN_RECURRING,
+        ],
+    ],
+
+    'testCardRecurringAutoPaymentIfTokenStatusIsSuspended' => [
+        'request' => [
+            'content' => [
+                "amount"      => 10000,
+                "currency"    => "INR",
+                "customer_id" => "cust_id",
+                "recurring"   => true,
+                "contact"     => "9483159238",
+                "email"       => "r@g.c",
+                "token"       => 'token_id',
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/recurring',
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_NON_ACTIVATED_TOKEN_PASSED_IN_RECURRING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NON_ACTIVATED_TOKEN_PASSED_IN_RECURRING,
+        ],
+    ],
+
     'testRecurringInternationalPaymentWhenNotAllowed' => [
         'response' => [
             'content' => [

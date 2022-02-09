@@ -282,4 +282,40 @@ return [
             'content' => [],
         ],
     ],
+    'testSubscriptionRegistrationAutoTokenizedCardMandatePaymentAmountGreaterThanMaxAmountWithAFA' => [
+        'request' => [
+            'content' => [
+                "entity" => "event",
+                "event"=> "notification.2fa_approved",
+                "contains"=> [
+                    "mandate.notification"
+                ],
+                "payload"=> [
+                    "mandate.notification"=> [
+                        "entity"=> [
+                            "id"=> "Hs76F3W7cORX0P",
+                            "entity"=> "mandate.notification",
+                            "status"=> "delivered",
+                            "delivered_at"=> 1630693800,
+                            "afa_required"=> true,
+                            "afa_status"=> "approved",
+                            "afa_completed_at"=> 1630693800,
+                            "amount" => 5000,
+                            "currency" => "INR",
+                            "purpose" => "test",
+                            "notes" => [
+                                "key" => "value",
+                            ],
+                        ]
+                    ]
+                ],
+                "created_at" => 1620712957,
+            ],
+            'method'    => 'POST',
+            'url'       => '/mandate_hq/callback',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];
