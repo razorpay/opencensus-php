@@ -568,8 +568,7 @@ class Processor
         {
             $orderPayLoad = [
                 "amount"          =>  $input['amount'],
-                "currency"        => $input['currency'],
-                "payment_capture" => false,
+                "currency"        => $input['currency']
             ];
 
             $this->order = (new Order\Service())->createOrder($orderPayLoad);
