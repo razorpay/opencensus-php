@@ -150,7 +150,7 @@ class ApiDetails
             [
                 $this->getRequestUrl(),
                 $this->getRequestMethod(),
-                array_keys($this->getRequestData())
+                $this->arrayKeysRecursiveAndUnique($this->getRequestData())
             ]);
 
         sort($hashData);
@@ -158,4 +158,22 @@ class ApiDetails
         return substr(md5(json_encode($hashData, true)), 0, 8);
     }
 
+    private function arrayKeysRecursiveAndUnique(array $array): array
+    {
+        $index = [];
+
+        foreach ($array as $key => $value)
+        {
+            if (is_array($value) === true)
+            {
+                $index[$key] = $this->arrayKeysRecursiveAndUnique($value);
+            }
+            else
+            {
+                $index[] = $key;
+            }
+        }
+
+        return array_unique($index, SORT_REGULAR);
+    }
 }
