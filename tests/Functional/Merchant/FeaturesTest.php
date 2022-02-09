@@ -1175,6 +1175,69 @@ class FeaturesTest extends OAuthTestCase
     }
 
     /**
+     * This function tests updating of merchant feature disable_loc_post_dpd.
+     */
+    public function testAddMerchantDisableLocPostDpdFeatureInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_loc_post_dpd.
+     */
+    public function testFailureAddMerchantDisableLocPostDpdFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_loans_post_dpd.
+     */
+    public function testFailureAddMerchantDisableLoansPostDpdFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_cards_post_dpd.
+     */
+    public function testFailureAddMerchantDisableCardsPostDpdFeatureAdminAuth()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_loans_post_dpd.
+     */
+    public function testAddMerchantDisableLoansPostDpdFeatureInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of merchant feature disable_cards_post_dpd.
+     */
+    public function testAddMerchantDisableCardsPostDpdFeatureInternalAuth()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->startTest();
+    }
+
+    /**
      * This function tests getting the features using internal auth
      */
     public function testGetMultipleFeaturesInternalAuth()
@@ -1269,7 +1332,124 @@ class FeaturesTest extends OAuthTestCase
 
     }
 
-  /**
+    /**
+     * Add Disable loc post dpd feature to live and sync it to test
+     * Delete the feature from the live database via internal auth
+     * Verify - Any feature deleted from live should not be deleted from test
+     */
+    public function testDeleteDisableLocPostDpdUsingInternalAuth()
+    {
+
+        $this->testAddMerchantDisableLocPostDpdFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_LOC_POST_DPD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_LOC_POST_DPD]);
+
+        $this->deleteFeatureInternal(Mode::LIVE, true,Constants::DISABLE_LOC_POST_DPD);
+
+        $this->verifyFeatureAbsence(Mode::LIVE,[Constants::DISABLE_LOC_POST_DPD]);
+
+        $this->verifyFeatureAbsence(Mode::TEST,[Constants::DISABLE_LOC_POST_DPD]);
+    }
+
+    /**
+     * Add Disable loans post dpd feature to live and sync it to test
+     * Delete the feature from the live database via internal auth
+     * Verify - Any feature deleted from live should not be deleted from test
+     */
+    public function testDeleteDisableLoansPostDpdUsingInternalAuth()
+    {
+
+        $this->testAddMerchantDisableLoansPostDpdFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_LOANS_POST_DPD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_LOANS_POST_DPD]);
+
+        $this->deleteFeatureInternal(Mode::LIVE, true,Constants::DISABLE_LOANS_POST_DPD);
+
+        $this->verifyFeatureAbsence(Mode::LIVE,[Constants::DISABLE_LOANS_POST_DPD]);
+
+        $this->verifyFeatureAbsence(Mode::TEST,[Constants::DISABLE_LOANS_POST_DPD]);
+    }
+
+    /**
+     * Add Disable cards post dpd feature to live and sync it to test
+     * Delete the feature from the live database via internal auth
+     * Verify - Any feature deleted from live should not be deleted from test
+     */
+    public function testDeleteDisableCardsPostDpdUsingInternalAuth()
+    {
+
+        $this->testAddMerchantDisableCardsPostDpdFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_CARDS_POST_DPD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_CARDS_POST_DPD]);
+
+        $this->deleteFeatureInternal(Mode::LIVE, true,Constants::DISABLE_CARDS_POST_DPD);
+
+        $this->verifyFeatureAbsence(Mode::LIVE,[Constants::DISABLE_CARDS_POST_DPD]);
+
+        $this->verifyFeatureAbsence(Mode::TEST,[Constants::DISABLE_CARDS_POST_DPD]);
+    }
+
+    /**
+     * Add Disable loc post dpd feature to live and sync it to test
+     * Fails deleting the feature from the live database via admin auth
+     */
+    public function testFailureDeleteDisableLocPostDpdUsingAdminAuth()
+    {
+
+        $this->testAddMerchantDisableLocPostDpdFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_LOC_POST_DPD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_LOC_POST_DPD]);
+
+        $this->deleteFeatureFailure(Mode::LIVE, true,Constants::DISABLE_LOC_POST_DPD);
+
+
+    }
+
+    /**
+     * Add Disable loans post dpd feature to live and sync it to test
+     * Fails deleting the feature from the live database via admin auth
+     */
+    public function testFailureDeleteDisableLoansPostDpdUsingAdminAuth()
+    {
+
+        $this->testAddMerchantDisableLoansPostDpdFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_LOANS_POST_DPD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_LOANS_POST_DPD]);
+
+        $this->deleteFeatureFailure(Mode::LIVE, true,Constants::DISABLE_LOANS_POST_DPD);
+
+
+    }
+
+    /**
+     * Add Disable cards post dpd feature to live and sync it to test
+     * Fails deleting the feature from the live database via admin auth
+     */
+    public function testFailureDeleteDisableCardsPostDpdUsingAdminAuth()
+    {
+
+        $this->testAddMerchantDisableCardsPostDpdFeatureInternalAuth();
+
+        $this->verifyFeaturePresence(Mode::TEST,[Constants::DISABLE_CARDS_POST_DPD]);
+
+        $this->verifyFeaturePresence(Mode::LIVE,[Constants::DISABLE_CARDS_POST_DPD]);
+
+        $this->deleteFeatureFailure(Mode::LIVE, true,Constants::DISABLE_CARDS_POST_DPD);
+
+
+    }
+
+    /**
      * Deletes a feature via internal auth
      * the params received
      *

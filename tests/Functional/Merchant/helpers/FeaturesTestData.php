@@ -989,6 +989,81 @@ return [
                       'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
             ],
     ],
+    'testFailureAddMerchantDisableCardsPostDpdFeatureAdminAuth'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_cards_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+    'testFailureAddMerchantDisableLoansPostDpdFeatureAdminAuth'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_loans_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+    'testFailureAddMerchantDisableLocPostDpdFeatureAdminAuth'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_loc_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
     'testAddMerchantDisableOnDemandForLoanFeatureInternalAuth'=>[
         'request'  => [
             'url'     => '/internal/features',
@@ -1025,6 +1100,69 @@ return [
             'content' => [
                 [
                     'name' => 'disable_ondemand_for_card',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+    'testAddMerchantDisableLoansPostDpdFeatureInternalAuth'=>[
+        'request'  => [
+            'url'     => '/internal/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_loans_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'disable_loans_post_dpd',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+    'testAddMerchantDisableCardsPostDpdFeatureInternalAuth'=>[
+        'request'  => [
+            'url'     => '/internal/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_cards_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'disable_cards_post_dpd',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+    'testAddMerchantDisableLocPostDpdFeatureInternalAuth'=>[
+        'request'  => [
+            'url'     => '/internal/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['disable_loc_post_dpd'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'should_sync' => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'disable_loc_post_dpd',
                     'entity_id' => '10000000000000',
                     'entity_type' => 'merchant',
                 ]

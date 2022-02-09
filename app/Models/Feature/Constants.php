@@ -494,23 +494,41 @@ class Constants
      */
     const LOC_STAGE_2 = 'loc_stage_2';
 
-    /*
+    /**
      *  Disables ondemand since LOC is in DPD
      * Controlled by collection service
      */
     const DISABLE_ONDEMAND_FOR_LOC = 'disable_ondemand_for_loc';
 
-    /*
+    /**
      *  Disables ondemand since Loans is in DPD
      * Controlled by collection service
      */
     const DISABLE_ONDEMAND_FOR_LOAN = 'disable_ondemand_for_loan';
 
-    /*
+    /**
      *  Disables ondemand since Cards is in DPD
      * Controlled by collection service
      */
     const DISABLE_ONDEMAND_FOR_CARD = 'disable_ondemand_for_card';
+
+    /**
+     * Disables cards post dpd since merchant did not repay
+     * Controlled by collections service
+     */
+    const DISABLE_CARDS_POST_DPD = "disable_cards_post_dpd";
+
+    /**
+     * Disables loans post dpd since merchant did not repay
+     * Controlled by collections service
+     */
+    const DISABLE_LOANS_POST_DPD = "disable_loans_post_dpd";
+
+    /**
+     * Disables loc post dpd since merchant did not repay
+     * Controlled by collections service
+     */
+    const DISABLE_LOC_POST_DPD = "disable_loc_post_dpd";
 
     /**
      * Flag to use settlement/ondemand route for ondemand settlement .
@@ -1386,6 +1404,9 @@ class Constants
         self::DISABLE_ONDEMAND_FOR_CARD       => true,
         self::DISABLE_ONDEMAND_FOR_LOAN       => true,
         self::DISABLE_ONDEMAND_FOR_LOC        => true,
+        self::DISABLE_CARDS_POST_DPD          => true,
+        self::DISABLE_LOANS_POST_DPD          => true,
+        self::DISABLE_LOC_POST_DPD            => true,
         self::LOC_STAGE_1                     => true,
         self::LOC_STAGE_2                     => true,
         self::NPS_SURVEY_PAYMENT_PAGES        => true,
@@ -2146,6 +2167,21 @@ class Constants
         self::DISABLE_ONDEMAND_FOR_LOC  =>  [
             'feature'       =>  self::DISABLE_ONDEMAND_FOR_LOC,
             'display_name'  =>  'Disable ondemand for loc',
+            'documentation' =>  '',
+        ],
+        self::DISABLE_CARDS_POST_DPD  =>  [
+            'feature'       =>  self::DISABLE_CARDS_POST_DPD,
+            'display_name'  =>  'Disable cards post dpd',
+            'documentation' =>  '',
+        ],
+        self::DISABLE_LOANS_POST_DPD  =>  [
+            'feature'       =>  self::DISABLE_LOANS_POST_DPD,
+            'display_name'  =>  'Disable loans post dpd',
+            'documentation' =>  '',
+        ],
+        self::DISABLE_LOC_POST_DPD  =>  [
+            'feature'       =>  self::DISABLE_LOC_POST_DPD,
+            'display_name'  =>  'Disable loc post dpd',
             'documentation' =>  '',
         ],
         self::HIGH_TPS_COMPOSITE_PAYOUT => [
