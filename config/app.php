@@ -366,5 +366,7 @@ return array(
 
     'rtb_splitz_experiment_id' => env('RTB_SPLITZ_EXPERIMENT_ID'),
 
+    '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
+
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
 );

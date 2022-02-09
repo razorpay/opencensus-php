@@ -140,6 +140,8 @@ class Checkout
 
         $this->fillRTBDetails($merchant, $data);
 
+        $this->fill1ccExperimentDetails($merchant, $data);
+
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
         return $data;
@@ -168,6 +170,29 @@ class Checkout
         );
 
         $data['show_donation'] = $featureEnabled === true && $covidRazorX === 'on';
+    }
+
+    protected function fill1ccExperimentDetails(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => $merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['1cc_experiment'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Exception $e)
+        {
+            $data['1cc_experiment'] = [];
+        }
     }
 
     protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)
