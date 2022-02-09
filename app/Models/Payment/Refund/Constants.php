@@ -86,6 +86,7 @@ class Constants
      */
     const RAZORX_VARIANT_ON                                  = 'on';
     const RAZORX_KEY_REFUND_ROUTE_VIA_FTA_SUFFIX             = 'refund_route_via_fta';
+    const RAZORX_KEY_REFUNDS_TOKENISATION_IR_RAMP            = 'refunds_tokenisation_ir_ramp';
     const RAZORX_KEY_TERMINAL_REFUNDS_ROUTE_VIA_FTA_SUFFIX   = 'terminal_refunds_route_via_fta';
     const RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL = 'skip_payment_entity_update_for_reversal';
 

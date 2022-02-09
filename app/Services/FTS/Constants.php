@@ -204,6 +204,8 @@ final class Constants
 
     const BENEFICIARY_BANK_NAME          = "beneficiary_bank_name";
 
+    const TOKENISED                      = 'tokenised';
+
     public static function getProducts(): array
     {
         return [

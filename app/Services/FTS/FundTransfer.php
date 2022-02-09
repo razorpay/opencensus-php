@@ -507,6 +507,16 @@ class FundTransfer extends Base
                 ],
         ];
 
+        if ($this->fta->getSourceType() === Constants::REFUND)
+        {
+            // ToDo : add isTokenPan() check when flow supports IR on token pan payments
+            // Ref : https://razorpay.slack.com/archives/C01CDL71EEM/p1643688960600149
+            if ($this->fta->card->isNetworkTokenisedCard() === true)
+            {
+                $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = true;
+            }
+        }
+
         return $request;
     }
 

@@ -7400,4 +7400,124 @@ class RefundTest extends TestCase
 
         $this->assertSame('refunded', $payment['status']);
     }
+
+    public function testM2PTokenisationFlowForRZPTokens()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->fixtures->iin->edit($card['iin'], ['type' => 'debit', 'issuer' => 'SBIN']);
+
+        $iin = $this->getDbEntityById('iin', $card['iin']);
+
+        $this->assertEquals($iin['type'], 'debit');
+
+        $this->assertEquals($iin['issuer'], 'SBIN');
+
+        $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
+
+        $tokenisedCard = $this->fixtures->create('card', [
+            'merchant_id' =>'10000000000000',
+            'name' =>'refunds',
+            'expiry_month' =>12,
+            'expiry_year' =>2030,
+            'iin' =>'401200',
+            'last4' =>'3335',
+            'length' =>'16',
+            'network' =>'Visa',
+            'type' =>'debit',
+            'sub_type' =>'consumer',
+            'category' =>'STANDARD',
+            'issuer' =>'SBIN',
+            'international' =>FALSE,
+            'emi' =>TRUE,
+            'vault' =>'visa',
+            'vault_token' =>'10000000000004',
+            'global_fingerprint' =>'==QNzMzM0QDOzATMwAjMxADN',
+            'trivia' => "1",
+            'country' =>'IN',
+            'global_card_id' => NULL,
+            'created_at' =>1614256967,
+            'updated_at' =>1614256967,
+        ]);
+
+        $token = $this->fixtures->create('token', ['method' => 'card', 'recurring' => false, 'card_id' => $tokenisedCard['id']]);
+
+        $this->fixtures->payment->edit($payment['id'], ['token_id' => $token['id']]);
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingV2Plan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        $scroogeResponse = [
+            'mode' => 'IMPS',
+            'gateway_refund_support' => true,
+            'instant_refund_support' => true,
+            'payment_age_limit_for_gateway_refund' => null
+        ];
+
+        $scroogeMock = $this->getMockBuilder(Scrooge::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['fetchRefundCreateData'])
+            ->getMock();
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->app->scrooge->method('fetchRefundCreateData')
+            ->willReturn($scroogeResponse);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'refunds_tokenisation_ir_ramp')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        // Adding specific amount to refund - this is meant to test successful instant refunds on scrooge -
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'          => 'optimum',
+                'is_fta'         => true,
+                'mode_requested' => 'CT',
+                'fta_data'       => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals('optimum', $refund['speed_decisioned']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('created', $fta['status']);
+        $this->assertEquals($tokenisedCard['id'], $fta['card_id']);
+    }
 }

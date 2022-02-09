@@ -3215,12 +3215,36 @@ trait Refund
 
         return $this->repo->transaction(function () use ($input, $payment, $fundTransferAttemptInput)
         {
-            $fta = (new FundTransferAttempt\Core)->createWithCard($this->refund,
-                                                                  $payment->card,
+            $card = $payment->card;
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            if ((is_null($token) === false) and ($token->hasCard() === true))
+            {
+                // ToDo : Add trivia and token status checks when params are properly populated
+                // Enabling tokenisation flow only for visa network, debit cards and CT mode in this phase
+                if (($token->card->getVault() === 'visa') and
+                    ($token->card->getType() === Type::DEBIT) and
+                    ($fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] === 'CT'))
+                {
+                    // check for experiment
+                    $variant = $this->app->razorx->getTreatment(
+                        $payment->getMerchantId(),
+                        RefundConstants::RAZORX_KEY_REFUNDS_TOKENISATION_IR_RAMP,
+                        $this->mode
+                    );
+
+                    if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+                    {
+                        $card = $token->card;
+                    }
+                }
+            }
+
+            return (new FundTransferAttempt\Core)->createWithCard($this->refund,
+                                                                  $card,
                                                                   $fundTransferAttemptInput,
                                                                   true);
-
-            return $fta;
         });
     }
 
