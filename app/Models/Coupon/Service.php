@@ -100,7 +100,7 @@ class Service extends Base\Service
         {
             (new Validator)->validateInput('apply', $input);
 
-            return $this->core()->validateAndGetDetails($merchant, $input);
+            return $this->core()->validateAndGetDetails($merchant, $input,false);
         }
         catch (Throwable $exception)
         {
@@ -131,7 +131,7 @@ class Service extends Base\Service
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
         }
 
-        $result = $this->core()->apply($merchant, $input);
+        $result = $this->core()->apply($merchant, $input,false);
 
         return $result;
     }

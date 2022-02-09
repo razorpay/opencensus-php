@@ -389,7 +389,7 @@ class Core extends Base\Core
         {
             (new Coupon\Core())->apply($merchant, [
                 Coupon\Entity::CODE => Coupon\Constants::MTU_COUPON
-            ]);
+            ],true);
 
             (new Merchant\Store\Core)->updateMerchantStore($merchant->getMerchantId(), [
                 Store\Constants::NAMESPACE                       => Store\ConfigKey::ONBOARDING_NAMESPACE,

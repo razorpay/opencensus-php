@@ -1996,6 +1996,28 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    public function testPutPreSignupDetailsWithSystemCouponCode()
+    {
+        $this->ba->adminAuth();
+
+        $couponAttributes = [
+            'entity_id'   => 'HenDpL3bx1eJJX',
+            'entity_type' => 'promotion',
+            'merchant_id' => '100000Razorpay',
+            'code' => 'OFFERMTU2',
+        ];
+
+        $coupon = $this->fixtures->on('live')->create('coupon', $couponAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testPutPreSignupDetailsWithPartnerCouponCodeForBanking()
     {
         $this->ba->adminAuth();

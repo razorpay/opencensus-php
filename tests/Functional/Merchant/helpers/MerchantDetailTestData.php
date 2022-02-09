@@ -1397,6 +1397,31 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsWithSystemCouponCode' => [
+        'request'   => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'coupon_code'   => 'OFFERMTU',
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_COUPON_CODE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+        ],
+    ],
+
     'testPutPreSignupDetailsWithPartnerCouponCodeForBanking' => [
         'request' => [
             'content' => [

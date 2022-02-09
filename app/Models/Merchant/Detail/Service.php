@@ -440,7 +440,7 @@ class Service extends Base\Service
         ];
 
         // validates coupon code and merchant promotion
-        $coupon = (new Coupon\Core())->validateAndGetDetails($merchant, $couponInput);
+        $coupon = (new Coupon\Core())->validateAndGetDetails($merchant, $couponInput,false);
 
         $promotion = $coupon->source;
 
@@ -482,7 +482,7 @@ class Service extends Base\Service
                 //expire existing credits
                 $this->expireRemainingCredits($merchant);
 
-                (new Coupon\Core())->applyCouponCode($merchant, $coupon);
+                (new Coupon\Core())->applyCouponCode($merchant, $coupon,false);
 
                 return [
                     'applied' => true,
@@ -1456,7 +1456,7 @@ class Service extends Base\Service
             Coupon\Entity::CODE => $input[Entity::COUPON_CODE],
         ];
 
-        (new Coupon\Core)->apply($merchant, $couponInput);
+        (new Coupon\Core)->apply($merchant, $couponInput,false);
 
         $this->trace->count(Merchant\Metric::SIGNUP_COUPON_TOTAL);
 

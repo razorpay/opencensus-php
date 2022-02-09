@@ -77,9 +77,25 @@ class Core extends Base\Core
      * @return mixed|Entity
      * @throws Exception\BadRequestException
      */
-    public function validateAndGetDetails(Merchant\Entity $merchant, array $input): Entity
+    public function validateAndGetDetails(Merchant\Entity $merchant, array $input, bool $isSystemCall): Entity
     {
         $coupon = $this->getCouponByCode($merchant, $input);
+
+        $couponCode = $input[Entity::CODE];
+        $config = Constants::COUPON_CONFIG['default'];
+
+        if (isset(Constants::COUPON_CONFIG[$couponCode]) === true)
+        {
+            $config = Constants::COUPON_CONFIG[$couponCode];
+        }
+        //    Grow-1299 make internal coupons non redeemable from controllers
+        if ($config[Constants::IS_SYSTEM_COUPON] and !$isSystemCall)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+                null,
+                $input);
+        }
 
         $this->validateMerchantPromotion($merchant, $coupon);
 
@@ -110,7 +126,7 @@ class Core extends Base\Core
         return $coupon;
     }
 
-    public function apply(Merchant\Entity $merchant, array $input): array
+    public function apply(Merchant\Entity $merchant, array $input, bool $isSystemCall = false): array
     {
         $couponCode = $input[Entity::CODE] ?? '';
 
@@ -120,7 +136,7 @@ class Core extends Base\Core
         {
             $config = Constants::COUPON_CONFIG[$couponCode];
 
-            $exptName = $config[Constants::EXPERIMENT_NAME]??null;
+            $exptName = $config[Constants::EXPERIMENT_NAME] ?? null;
 
             if (empty($exptName) === false and
                 (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(), $exptName) === false)
@@ -138,14 +154,15 @@ class Core extends Base\Core
 
         try
         {
-            $coupon = $this->validateAndGetDetails($merchant, $input);
+
+            $coupon = $this->validateAndGetDetails($merchant, $input,$isSystemCall);
 
             $this->applyMerchantPromotion($merchant, $coupon);
         }
         catch (\Throwable $exception)
         {
-            $this->app['diag']->trackOnboardingEvent($config[Constants::FAILED_EVENT_CODE], $merchant, $exception, $input);
-
+            $this->app['diag']->trackOnboardingEvent($config[Constants::FAILED_EVENT_CODE], $merchant,
+                $exception, $input);
             throw $exception;
         }
 
@@ -172,13 +189,12 @@ class Core extends Base\Core
             $this->app['segment-analytics']->pushIdentifyEvent($merchant, $segmentProperties);
         }
 
-
         return [
             'message' => self::SUCCESS_MESSAGE
         ];
     }
 
-    public function applyCouponCode(Merchant\Entity $merchant, Entity $coupon)
+    public function applyCouponCode(Merchant\Entity $merchant, Entity $coupon, bool $isSystemCall = false)
     {
         $promotion = $coupon->source;
 
@@ -186,6 +202,32 @@ class Core extends Base\Core
 
         try
         {
+            $couponCode = $coupon-> getCode();
+            //
+            $this->trace->debug(
+                TraceCode::DEBUG_LOGGING,
+                [
+                    'message'             => 'himgang:couponCode received',
+                    'error'               => $couponCode,
+                ]);
+
+            if (isset(Constants::COUPON_CONFIG[$couponCode]) === true)
+            {
+                $config = Constants::COUPON_CONFIG[$couponCode];
+            }
+            else
+            {
+                $config = Constants::COUPON_CONFIG['default'];
+            }
+
+            //    Grow-1299 make internal coupons non redeemable from controllers
+            if ($config[Constants::IS_SYSTEM_COUPON] and !$isSystemCall)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
+                    null,
+                    $coupon);
+            }
             $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
             {
                 $this->createAndActivateMerchantPromotion($merchant, $promotion);
@@ -399,11 +441,11 @@ class Core extends Base\Core
             $product = $promotion->getProduct() ?? Product::PRIMARY;
 
             $data = [
-                'status'       => 'success',
-                'merchant_id'  => $merchant->getId(),
-                'partner_id'   => $partner->getId(),
-                'source'       => PartnerConstants::COUPON,
-                'product_group'=> $product
+                'status'        => 'success',
+                'merchant_id'   => $merchant->getId(),
+                'partner_id'    => $partner->getId(),
+                'source'        => PartnerConstants::COUPON,
+                'product_group' => $product
             ];
 
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,

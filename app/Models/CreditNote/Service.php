@@ -28,7 +28,7 @@ class Service extends Base\Service
 
         $creditnote->getValidator()->validateInput('apply', $input);
 
-        $creditnote = $this->core()->apply($creditnote, $this->merchant, $input);
+        $creditnote = $this->core()->apply($creditnote, $this->merchant, $input,true);
 
         $this->trace->info(TraceCode::CREDITNOTE_APPLIED, $creditnote->toArrayPublic());
 

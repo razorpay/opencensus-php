@@ -327,7 +327,7 @@ class Service extends Base\Service
                 CouponEntity::CODE                  => CouponConstants::M2M_FRIEND,
                 FriendBuy\Constants::RECIPIENT_TYPE => Constants::REFEREE];
 
-            (new CouponCore)->apply($merchant, $couponInput);
+            (new CouponCore)->apply($merchant, $couponInput,true);
 
             $input = [
                 Entity::STATUS => STATUS::REWARDED
@@ -402,7 +402,7 @@ class Service extends Base\Service
                 CouponEntity::CODE                  => $couponCode,
                 FriendBuy\Constants::RECIPIENT_TYPE => Constants::REFERRER];
 
-            (new CouponCore)->apply($referrer, $couponInput);
+            (new CouponCore)->apply($referrer, $couponInput,true);
 
             //save status
             $input = [
