@@ -46,13 +46,7 @@ class Service extends Base\Service
 
         // Todo:  Temporary dummy data, to be replaced after Druid integration
 
-        $filters = Entity::getFiltersForReportType($type);
-
-        $fields = Field::getFieldsForReportType($type);
-
-        $reportData = array_fill_keys($fields, null);
-
-        $data = $this->core->generateReportData($type, $filters);
+        $reportData = $this->core->generateReportData($type, $input);
 
         return [
             'count' => count($reportData),

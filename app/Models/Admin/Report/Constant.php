@@ -14,7 +14,6 @@ class Constant
     const FIELD_MERCHANT_SUB_CATEGORY = 'merchant_sub_category';
     const FIELD_MERCHANT_STATUS = 'merchant_status';
 
-
     // Payment Methods
     const FIELD_METHOD = 'method'; //
     const FIELD_PAYMENT_METHOD = 'payment_method';//
@@ -56,7 +55,6 @@ class Constant
 
     const FIELD_SUCCESS_RATE = 'success_rate';
 
-
     // Errors
     const FIELD_ERROR_CODE = 'error_code';
     const FIELD_ERROR_SOURCE = 'error_source';
@@ -67,7 +65,6 @@ class Constant
     // Other Fields
     const FIELD_RANK = 'rank';//
     const FIELD_DATE = 'date';
-
 
     const DEFAULTS             = 'defaults';
     const EXPAND               = 'expand';
@@ -90,19 +87,24 @@ class Constant
     const TYPE_DATE            = 'date';
 
     const DOWNLOAD = 'download';
+
     ///////////////////  Report Types  ///////////////////
     const REPORT_TYPE_SUMMARY  = 'summary';
     const REPORT_TYPE_DETAIL   = 'detail';
 
     const REPORT_TYPE_SUMMARY_MERCHANT  = 'summary_merchant';
+
     const REPORT_TYPE_SUMMARY_PAYMENT   = 'summary_payment';
 
     const REPORT_TYPE_DETAILED_MERCHANT = 'detailed_merchant';
     const REPORT_TYPE_SINGLE_MERCHANT_DETAIL = 'single_merchant_detail_download';
+
     const REPORT_TYPE_DETAILED_TRANSACTION = 'detailed_transaction';
+
     const REPORT_TYPE_DETAILED_FAILURE = 'detailed_failure';
     const REPORT_TYPE_DETAILED_FAILURE_DETAIL = 'detailed_failure_detail';
     const REPORT_TYPE_DETAILED_FAILURE_DETAIL_DOWNLOAD = 'detailed_failure_detail_download';
+
     //////////////////////////////////////////////////////
 
     /// Fact file key name

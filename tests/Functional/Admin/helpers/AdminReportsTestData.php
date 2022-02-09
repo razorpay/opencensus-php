@@ -18,7 +18,7 @@ return [
     ],
     'testGetReportsData' => [
         'request'  => [
-            'url'     => '/admin/reports/detailed_transaction',
+            'url'     => '/admin/reports/detailed_merchant?count=30&skip=5&partner_id=DE7Wb69knrM6U9',
             'method'  => 'get',
         ],
         'response' => [
