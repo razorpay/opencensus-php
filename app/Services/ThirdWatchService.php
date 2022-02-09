@@ -9,6 +9,7 @@ use RZP\Models\Address;
 use RZP\Models\Address\Entity;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
+use RZP\Models\Order\OrderMeta\Order1cc;
 
 /**
  * Used by 1cc
@@ -100,6 +101,83 @@ class ThirdWatchService
             if (empty($response) === true)
             {
                 return ['cod' => false ];
+            }
+
+            return $response;
+        }
+        finally
+        {
+            $this->trace->histogram(
+                TraceCode::TW_ADDRESS_COD_VALIDITY_TOTAL_DURATION,
+                $this->getCurrentTimeInMillis() - $serviceStart
+            );
+        }
+    }
+
+    /**
+     * Check cod eligibility
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * TODO : Once 1cc/check_cod_eligibility api is live then we can remove tw/address/check_cod_eligibility.
+     */
+    public function checkCodEligibility(array $input): array
+    {
+        $serviceStart = $this->getCurrentTimeInMillis();
+
+        try
+        {
+            if (!isset($input['address']) || !isset($input['order_id']) || !isset($input['device']))
+            {
+                throw new Exception\BadRequestValidationFailureException();
+            }
+
+            // Rzp order id
+            $orderId = $input['order_id'];
+
+            $address = $input['address'];
+
+            (new Address\Validator())->setStrictFalse()->validateInput('codServiceabilityCheck', $address);
+
+            $input['device']['ip'] = $this->app['request']->ip();
+
+            (new Order1cc\Validator())->validateDevice('customerDeviceDetails', $input['device']);
+
+            // set unique id for caching if not present
+            $this->getAddressId($orderId, $address);
+
+            //TODO : Need to replace kafka logic by sending http request once rto prediction service is live.
+            $key = $this->getCacheKey($address);
+            $cacheResponse = $this->cache->get($key);
+
+            if (empty($cacheResponse) === false)
+            {
+                $this->trace->count(
+                    TraceCode::TW_ADDRESS_COD_VALIDITY_CACHE_GET_TOTAL,
+                    [self::CACHE_RESULT_TAG_KEY => self::CACHE_RESULT_TAG_VALUE_HIT]
+                );
+
+                return ['cod' => $cacheResponse['label'] === 'green'];
+            }
+
+            $this->trace->count(
+                TraceCode::TW_ADDRESS_COD_VALIDITY_CACHE_GET_TOTAL,
+                [self::CACHE_RESULT_TAG_KEY => self::CACHE_RESULT_TAG_VALUE_MISS]
+            );
+
+            $this->enrichAddressForTW($orderId, $address);
+            $kafkaResult = (new ThirdWatchClient())->sendAddressToKafka($key, $address);
+
+            if ($kafkaResult === false)
+            {
+                return ['cod' => false];
+            }
+
+            $response = $this->pollCacheForThirdWatchResponse($key);
+
+            if (empty($response) === true)
+            {
+                return ['cod' => false];
             }
 
             return $response;

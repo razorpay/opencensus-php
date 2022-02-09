@@ -181,7 +181,16 @@ class OrderController extends Controller
     {
         $input = Request::all();
 
+        if(isset($input['customer_details']['device']['id']))
+        {
+            $input['customer_details']['device']['user_agent'] = Request::header('X-User-Agent') ??
+                Request::header('User-Agent') ?? null;
+
+            $input['customer_details']['device']['ip'] = $this->app['request']->ip();
+        }
+
         (new OrderMeta\Service())->updateCustomerDetailsFor1CCOrder($orderId, $input);
+
         return ApiResponse::json([], 200);
     }
 

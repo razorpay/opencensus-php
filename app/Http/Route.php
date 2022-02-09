@@ -3264,6 +3264,7 @@ class Route
 
        // 1 click checkout
        'third_watch_address_check'               => ['post',       'tw/address/check_cod_eligibility',                      'ThirdWatchController@checkAddressServiceability'   ],
+       '1cc_cod_check'                           => ['post',       '1cc/check_cod_eligibility',                             'ThirdWatchController@checkCodEligibility'   ],
        'third_watch_address_cod_score'           => ['post',       'tw/address/cod_score',                                  'ThirdWatchController@saveCodScoreForAddress'                  ],
 
         // Risk Actions
@@ -3449,6 +3450,7 @@ class Route
         '1cc_country_pincode_get',
         '1cc_location_autosuggest',
         'third_watch_address_check',
+        '1cc_cod_check',
         'banking_axis_invitations_send',
         'states_by_country',
         'country_fetch',

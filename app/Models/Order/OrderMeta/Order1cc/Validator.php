@@ -4,6 +4,7 @@ namespace RZP\Models\Order\OrderMeta\Order1cc;
 
 use RZP\Base;
 use RZP\Models\Address;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -62,6 +63,11 @@ class Validator extends Base\Validator
         Fields::CUSTOMER_DETAILS_EMAIL            => 'sometimes|email',
         Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS => 'sometimes|array|custom',
         Fields::CUSTOMER_DETAILS_BILLING_ADDRESS  => 'sometimes|array|custom',
+        Fields::CUSTOMER_DETAILS_DEVICE           => 'sometimes|array|custom',
+    ];
+
+    protected static $customerDeviceDetailsRules = [
+        Fields::CUSTOMER_DETAILS_DEVICE_ID          => 'required|regex:/^\d{1}\.[a-zA-Z0-9]{16}\.\d{13}\.\d{8}$/',
     ];
 
     protected function validateShippingAddress($attribute, $value)
@@ -87,6 +93,22 @@ class Validator extends Base\Validator
         foreach ($value as $promo)
         {
             $this->validateInput('promotion', $promo);
+        }
+    }
+
+    public function validateDevice($attribute, $value)
+    {
+        $device['id'] = $value['id'];
+        $this->validateInput("customerDeviceDetails", $device);
+
+        if(!isset($value['ip']))
+        {
+            $this->getTrace()->error(TraceCode::RTO_1CC_DEVICE_IP_NOT_FOUND, $value);
+        }
+
+        if(!isset($value['user_agent']))
+        {
+            $this->getTrace()->error(TraceCode::RTO_1CC_DEVICE_USER_AGENT_NOT_FOUND, $value);
         }
     }
 

@@ -49,6 +49,8 @@ class Fields
     const CUSTOMER_DETAILS_EMAIL            = 'email';
     const CUSTOMER_DETAILS_SHIPPING_ADDRESS = 'shipping_address';
     const CUSTOMER_DETAILS_BILLING_ADDRESS  = 'billing_address';
+    const CUSTOMER_DETAILS_DEVICE           = 'device';
+    const CUSTOMER_DETAILS_DEVICE_ID        = 'id';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 

@@ -58,6 +58,9 @@ return [
                         'state'   => 'Rajasthan',
                         'country' => 'in',
                     ],
+                    'device'    => [
+                        'id' => '1.qmn12gchei984loz.1643739530086.12345678',
+                    ],
                 ],
             ],
         ],
@@ -80,6 +83,9 @@ return [
                         'city'    => 'Ajmer',
                         'state'   => 'Rajasthan',
                         'country' => 'in',
+                    ],
+                    'device'    => [
+                        'id' => '1.qmn12gchei984loz.1643739530086.12345678',
                     ],
                 ],
             ],
@@ -111,6 +117,9 @@ return [
                         'city'    => 'Ajmer',
                         'state'   => 'Rajasthan',
                         'country' => 'in',
+                    ],
+                    'device'    => [
+                        'id' => '1.qmn12gchei984loz.1643739530086.12345678',
                     ],
                 ],
             ],
@@ -145,6 +154,9 @@ return [
                         'state'   => 'Rajasthan',
                         'country' => 'in',
                     ],
+                    'device'    => [
+                        'id' => '1.qmn12gchei984loz.1643739530086.12345678',
+                    ],
                 ],
             ],
         ],
@@ -176,6 +188,9 @@ return [
                         'state'   => 'Rajasthan',
                         'country' => 'in',
                     ],
+                    'device'    => [
+                        'id' => '1.qmn12gchei984loz.1643739530086.12345678',
+                    ],
                 ],
             ],
         ],
@@ -206,6 +221,9 @@ return [
                         'city'    => 'Ajmer',
                         'state'   => 'Rajasthan',
                         'country' => 'in',
+                    ],
+                    'device'    => [
+                        'id' => '1.qmn12gchei984loz.1643739530086.12345678',
                     ],
                 ],
             ],
