@@ -62,8 +62,17 @@ class GenerateOpenApiSpecifications
 
             $additionalApiDetails = [];
 
+            $count = 0;
+
             foreach ($apis as $apiDataUniqueIdentifier => $apiDetails)
             {
+                if($count >= Constants::INPUT_SET_API_LIMIT)
+                {
+                    break;
+                }
+
+                $count += 1;
+
                 $apiDetailObj = unserialize($apiDetails);
 
                 if ($primaryApiDetails === null)

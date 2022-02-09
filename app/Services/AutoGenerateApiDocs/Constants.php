@@ -22,5 +22,7 @@ class Constants
 
     const CONTENT_TYPE_APPLICATION_JSON        = 'application/json';
 
+    const INPUT_SET_API_LIMIT                  = 3;
+
     const COMBINED_API_DETAILS_FILE_PATH = Constants::FILES_DIR.Constants::COMBINED_API_DETAILS_FILE_NAME;
 }
