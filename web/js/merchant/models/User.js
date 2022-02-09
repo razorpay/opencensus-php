@@ -1020,6 +1020,10 @@ export default class User {
     return true;
   }
 
+  get missedOrderPLBanner() {
+    return this.getExpStatus('missed_order_pl_banner');
+  }
+
   get isPaymentsExtraRefundDetailsEnabled() {
     return this.getExpStatus('payments_extra_refund_details');
   }

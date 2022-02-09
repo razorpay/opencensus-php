@@ -22,7 +22,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import { getMobileOperatingSystem } from 'common/utils/rzp-utils';
 import { getItem, setItem } from 'common/utils/localStorage';
-
+import { DocLink } from 'merchant/components/DocsLink';
 import OnBoarding, {
   getIsPaymentLinksEnabled,
   getIsAllowedResetPaymentLinksOnBoarding,
@@ -195,6 +195,25 @@ class PaymentLinksContainer extends React.Component {
               >
                 Watch video
               </a>
+            </AnnouncementBanner>
+          </ShowWhen>
+          <ShowWhen additionalCondition={(user) => user.missedOrderPLBanner}>
+            <AnnouncementBanner
+              title="Introducing Retry Links"
+              theme="primary"
+              card_id="missed-order-payment-links"
+              canBeClosed={true}
+              bannerKey={`missed-order-payment-links-${user.current}`}
+            >
+              Convert customers who drop-off because of a failed payment. Available from Feb 9,2022{' '}
+              <DocLink
+                class="btn btn-link"
+                href="https://razorpay.com/docs/payments/payment-links/announcements/retry-link/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Know more
+              </DocLink>
             </AnnouncementBanner>
           </ShowWhen>
           <ShowWhen
