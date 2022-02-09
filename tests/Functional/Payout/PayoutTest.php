@@ -18405,5 +18405,7 @@ class PayoutTest extends OAuthTestCase
 
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals(2000000, $reversal['amount']);
+
+        $this->assertEquals(substr($txn['id'], strlen('txn_')), $reversal['transaction_id']);
     }
 }

@@ -1347,6 +1347,7 @@ class FundAccountValidationTest extends TestCase
         $reversal = $this->getLastEntity('reversal', true);
         $this->assertEquals($reversal['id'], $txn['entity_id']);
         $this->assertEquals('reversal', $txn['type']);
+        $this->assertEquals(substr($txn['id'], strlen('txn_')), $reversal['transaction_id']);
         // these are na for prepaid.
         $this->assertEquals('na', $txn['fee_bearer']);
         $this->assertEquals('na', $txn['fee_model']);

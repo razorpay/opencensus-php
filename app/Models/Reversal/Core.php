@@ -972,6 +972,10 @@ class Core extends Base\Core
 
                     list($txn, $feeSplit) = (new Transaction\Processor\Reversal($reversal))->createTransactionForLedger($txnId, $newBalance);
 
+                    $reversal->transaction()->associate($txn);
+
+                    $this->repo->saveOrFail($reversal);
+
                     if ($feeSplit !== null)
                     {
                         $this->repo->saveOrFail($txn);
