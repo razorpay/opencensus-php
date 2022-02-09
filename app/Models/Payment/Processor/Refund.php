@@ -3225,7 +3225,7 @@ trait Refund
                 // Enabling tokenisation flow only for visa network, debit cards and CT mode in this phase
                 if (($token->card->getVault() === 'visa') and
                     ($token->card->getType() === Type::DEBIT) and
-                    ($fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] === 'CT'))
+                    ($fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] === FundTransfer\Mode::CT))
                 {
                     // check for experiment
                     $variant = $this->app->razorx->getTreatment(
@@ -3237,6 +3237,16 @@ trait Refund
                     if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
                     {
                         $card = $token->card;
+
+                        $this->trace->info(
+                            TraceCode::REFUND_FTA_VIA_TOKENISED_FLOW,
+                            [
+                                Payment\Entity::CARD_ID            => $card->getId(),
+                                Payment\Entity::TOKEN_ID           => $token->getId(),
+                                Payment\Refund\Entity::PAYMENT_ID  => $payment->getId(),
+                                Payment\Refund\Entity::MERCHANT_ID => $payment->getMerchantId(),
+                            ]
+                        );
                     }
                 }
             }
