@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Escalations\Actions\Handlers\NoDocLimitHandler;
 
 class Constants
 {
+    const SIGNUP_ATTRIBUTION_CRON_CACHE_KEY                 = 'signup_attribution_cron_timestamp';
     const WEB_ATTRIBUTION_FIRST_TOUCH_CRON_CACHE_KEY        = 'web_attribution_first_touch_cron_timestamp';
     const WEB_ATTRIBUTION_CRON_CACHE_KEY                    = 'web_attribution_cron_timestamp';
     const TRANSACTION_CRON_CACHE_KEY                        = 'onboarding_transaction_cron_timestamp';

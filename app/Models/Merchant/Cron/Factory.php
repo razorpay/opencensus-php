@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1DayCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1HourCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
+use RZP\Models\Merchant\Cron\Jobs\SignupAttributedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupStartedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\TransactionDetailsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
@@ -58,6 +59,8 @@ class Factory
                 return (new SignupStartedCronJob($input));
             case "bvs_cron":
                 return (new BvsCronJob($input));
+            case "signup_attributed_cron":
+                return (new SignupAttributedCronJob($input));
             case Constants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME:
                 return (new FriendBuySendPurchaseEventsCronJob($input));
             case Constants::ENABLE_M2M_REFERRAL_CRON_JOB_NAME:

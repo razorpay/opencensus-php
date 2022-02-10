@@ -15,4 +15,13 @@ class Repository extends Base\Repository
             ->where(Entity::APPSFLYER_ID, '=', $appsflyerId)
             ->first();
     }
+
+    public function fetchAppAttributionForMerchantsCreatedBetween($startTime, $endTime)
+    {
+        return $this->newQuery()
+            ->whereBetween(Entity::CREATED_AT, [$startTime, $endTime])
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
+    }
 }

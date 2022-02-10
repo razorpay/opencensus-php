@@ -47,6 +47,8 @@ class EventCode
 
     const PAYMENTS_ENABLED           = 'Payments Enabled';
 
+    const SIGNUP_ATTRIBUTED         = 'Sign Up Attributed';
+
     const SIGNUP_SUCCESS            = 'Signup Success';
 
     const SIGNUP_EMAIL_SEND_VERIFICATION_SUCCESS = 'Signup Email Send Verification Success';
