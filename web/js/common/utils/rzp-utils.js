@@ -294,6 +294,13 @@ export const without = (source, keys) => {
   }, {});
 };
 
+export const truncatedString = (string, length = 24) => {
+  if (string?.length > length) {
+    return `${string?.substring(0, length)}...`;
+  }
+  return string;
+};
+
 export const pickProps = (source, keys) => {
   keys = makeArray(keys);
   return Object.keys(source).reduce(
