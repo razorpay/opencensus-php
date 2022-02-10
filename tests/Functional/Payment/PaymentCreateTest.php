@@ -6764,8 +6764,8 @@ class PaymentCreateTest extends TestCase
             'primary'       => true
         ];
         $customer = [
-            'contact'           =>'+919954246991',
-            'email'             =>'nikitesh.soneji@razorpay.com',
+            'contact'           =>'+9191111111111',
+            'email'             =>'john.doe@razorpay.com',
             'shipping_address'  =>$shipping_address,
             'billing_address'   =>$billing_address
 

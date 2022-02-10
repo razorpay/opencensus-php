@@ -437,6 +437,11 @@ return [
         'test'       => env('AWS_FIRS_DOCUMENT_TEST_QUEUE'),
         'live'       => env('AWS_FIRS_DOCUMENT_LIVE_QUEUE'),
     ],
+
+    'one_cc_shopify_create_order' => [
+        'test'       => env('AWS_ONE_CC_SHOPIFY_CREATE_ORDER_TEST_QUEUE'),
+        'live'       => env('AWS_ONE_CC_SHOPIFY_CREATE_ORDER_LIVE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

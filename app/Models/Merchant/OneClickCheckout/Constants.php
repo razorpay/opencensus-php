@@ -16,6 +16,8 @@ class Constants
     const SHOPIFY           = 'shopify';
     const MAGENTO           = 'magento';
 
+    const SHOPIFY_TEMP_RECEIPT = 'Order Pending';
+
     // common auth keys
     const API_KEY        = 'api_key';
     const API_SECRET     = 'api_secret';

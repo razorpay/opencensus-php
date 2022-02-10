@@ -49,7 +49,7 @@ return [
             'method'                 => 'PATCH',
             'content'                => [
                 'customer_details' => [
-                    'contact'          => '+919954246991',
+                    'contact'          => '+9191111111111',
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
@@ -75,7 +75,7 @@ return [
             'method'                 => 'PATCH',
             'content'                => [
                 'customer_details' => [
-                    'contact'          => '+919954246991',
+                    'contact'          => '+9191111111111',
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
@@ -109,7 +109,7 @@ return [
             'method'                 => 'PATCH',
             'content'                => [
                 'customer_details' => [
-                    'contact'          => '+919954246991',
+                    'contact'          => '+9191111111111',
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
@@ -145,7 +145,7 @@ return [
             'method'                 => 'PATCH',
             'content'                => [
                 'customer_details' => [
-                    'contact'          => '+919954246991',
+                    'contact'          => '+9191111111111',
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
@@ -179,7 +179,7 @@ return [
             'method'                 => 'PATCH',
             'content'                => [
                 'customer_details' => [
-                    'contact'          => '+919954246991',
+                    'contact'          => '+9191111111111',
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
@@ -213,7 +213,7 @@ return [
             'method'                 => 'PATCH',
             'content'                => [
                 'customer_details' => [
-                    'contact'          => '+919954246991',
+                    'contact'          => '+9191111111111',
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',

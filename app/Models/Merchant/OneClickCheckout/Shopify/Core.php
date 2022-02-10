@@ -8,10 +8,11 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
-use RZP\Services\CredcaseSigner;
 use RZP\Models\Base;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Models\Payment\Method as PaymentMethod;
+use RZP\Models\Payment\Status as PaymentStatus;
 
 class Core extends Base\Core
 {
@@ -370,7 +371,8 @@ class Core extends Base\Core
         $codFee = null;
         $hasCod = false;
 
-        foreach ($rates as $rate) {
+        foreach ($rates as $rate)
+        {
             $handle = $rate['handle'];
             $title = $rate['title'];
             $priceV2 = $rate['priceV2'];
@@ -387,6 +389,7 @@ class Core extends Base\Core
                 $bestRate = $amount;
             }
         }
+
         if (isset($codRate) === true)
         {
             $codFee = (new Utils)->formatNumber($codRate - $bestRate);
@@ -428,33 +431,39 @@ class Core extends Base\Core
 
         if ($hmac !== $input['signature'])
         {
-          $this->trace->info(
-              TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
-              [
-                  'query'     => $query,
-                  'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
-                  'hmac'      => $hmac,
-                  'signature' => $input['signature']
-              ]
-          );
-          throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
+                [
+                    'query'     => $query,
+                    'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
+                    'hmac'      => $hmac,
+                    'signature' => $input['signature']
+                ]
+            );
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
         return;
     }
 
-    public function canShopifyOrderBePlaced(string $orderId)
+    public function canShopifyOrderBePlaced($order, $fromShopifyApi)
     {
+        $receipt = $order->getReceipt();
+
+        $orderId = $order->getId();
+
         $key = $this->getCacheKeyForPlacedOrders($orderId);
 
         $this->cache = $this->app['cache'];
 
-        if (empty($this->cache->get($key)) === false)
+        if (empty($this->cache->get($key)) === false or $receipt !== (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT)
         {
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
-                  'error' => 'Order has already been placed for this payment',
-                  'order_id' => $orderId
+                    'type'             => 'duplicate_order_received',
+                    'error'            => 'Order has already been placed for this payment',
+                    'order_id'         => $orderId,
+                    'from_shopify_api' => $fromShopifyApi,
                 ]
             );
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
@@ -489,7 +498,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
-                  'error' => $e->getMessage()
+                    'error' => $e->getMessage()
                 ]
             );
             throw new Exception\ServerErrorException(
@@ -736,5 +745,27 @@ class Core extends Base\Core
     protected function getCacheKeyForPlacedOrders(string $orderId): string
     {
         return 'MAGIC_CHECKOUT:' . $orderId;
+    }
+
+    public function isPaymentAndOrderValid($order, $payment)
+    {
+        $method = $payment->getMethod();
+
+        $status = $payment->getStatus();
+
+        if ($payment->toArrayPublic()['order_id'] !== $order->getPublicId())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        if (
+            ($method === PaymentMethod::COD and $payment->getStatus() === PaymentStatus::PENDING) or
+            ($method !== PaymentMethod::COD and in_array($status, [PaymentStatus::CAPTURED, PaymentStatus::AUTHORIZED]))
+        )
+        {
+            return true;
+        }
+
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
     }
 }

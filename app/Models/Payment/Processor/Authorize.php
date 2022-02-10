@@ -86,6 +86,7 @@ use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Order as Order;
 use RZP\Models\Payment\PaymentMeta;
+use RZP\Jobs\OneCCShopifyCreateOrder;
 
 trait Authorize
 {
@@ -6448,6 +6449,8 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
+        $this->dispatchOrderFor1ccShopify($payment);
+
         $this->postPaymentAuthorizeSubscriptionProcessing($payment);
 
         $this->postPaymentAuthorizePaymentLinkProcessing($payment);
@@ -10718,4 +10721,89 @@ trait Authorize
 
                 }
     }
+
+    /**
+     * Dispatch an SQS job that attempts to create an order in Shopify for those that
+     * failed due to network issues at the customer end
+     * @param Payment\Entity $payment
+     */
+    protected function dispatchOrderFor1ccShopify(Payment\Entity $payment)
+    {
+        $start = millitime();
+
+        try
+        {
+            if ($payment->hasOrder() === false)
+            {
+                return;
+            }
+
+            $order = $payment->order;
+
+            if (
+                $this->is1ccOrder($order) === true and
+                $this->isShopifyOrder($order) === true and
+                $this->isPaymentValidFor1cc($payment) === true
+            )
+            {
+                OneCCShopifyCreateOrder::dispatch([
+                    'mode'                => $this->mode,
+                    'razorpay_order_id'   => $order->getPublicId(),
+                    'razorpay_payment_id' => $payment->getPublicId(),
+                    'merchant_id'         => $this->merchant->getId(),
+                    'dispatch_time'       => millitime() - $start,
+                ])->delay(now()->addMinutes(5));
+            }
+
+        }
+        catch (\Exception $e)
+        {
+            // fail silently and log it
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SHOPIFY_1CC_DISPATCH_JOB_FAILED,
+                [
+                    'payment_id'    => $payment->getPublicId(),
+                    'order_id'      => $order->getPublicId(),
+                    'error_message' => $e->getMessage()
+                ]
+            );
+        }
+    }
+
+    protected function is1ccOrder(Order\Entity $order): bool
+    {
+        $valid = false;
+
+        foreach ($order->orderMetas as $meta)
+        {
+            if ($meta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT)
+            {
+                $valid = true;
+                break;
+            }
+        }
+
+        return $valid;
+    }
+
+    // guaranteed that all 1cc Shopify orders have a storefront_id
+    protected function isShopifyOrder(Order\Entity $order): bool
+    {
+       return empty($order->toArrayPublic()['notes']['storefront_id']) === false;
+    }
+
+    protected function isPaymentValidFor1cc(Payment\Entity $payment): bool
+    {
+        $method = $payment->getMethod();
+
+        $status = $payment->getStatus();
+
+        return (
+            ($method === Payment\Method::COD and $status === Payment\Status::PENDING) or
+            ($method !== Payment\Method::COD and in_array($status, [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED]) === true)
+        );
+    }
+
 }

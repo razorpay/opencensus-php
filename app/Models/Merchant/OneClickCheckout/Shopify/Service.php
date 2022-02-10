@@ -19,11 +19,9 @@ class Service extends Base\Service
 
     const MUTEX_LOCK_TTL_SEC = 60;
 
-    const MAX_RETRY_COUNT = 3;
+    const MAX_RETRY_COUNT = 4;
 
-    const MAX_RETRY_DELAY_MILLIS = 2 * 60 * 1000;
-
-    const MIN_RETRY_DELAY_MILLIS = 2 * 60 * 1000;
+    const MAX_RETRY_DELAY_MILLIS = 1 * 30 * 1000;
 
     const skipListCouponMids = [
         'DzyQ9A6YiAcZpT',
@@ -46,6 +44,8 @@ class Service extends Base\Service
      */
     public function shopifyCreateCheckout(array $input): array
     {
+        $start = millitime();
+
         (new Core)->verifyHmacSignature($input);
 
         $checkout = (new Core)->placeShopifyCheckout($input);
@@ -53,7 +53,7 @@ class Service extends Base\Service
         $amount = (int)(floatval($checkout['totalPriceV2']['amount']) * 100);
 
         $rzporder = (new Order\Service)->createOrder([
-            'receipt'          => 'TEMP_' . strval(time()),
+            'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
             'amount'           => $amount,
             'currency'         => 'INR',
             'payment_capture'  => 1,
@@ -65,7 +65,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
-            ['order_id' => $rzporder['id']]
+            ['order_id' => $rzporder['id'], 'time' => millitime() - $start]
         );
 
         return [
@@ -106,36 +106,32 @@ class Service extends Base\Service
     // updates shopify order post payment and redirects the user
     protected function shopifyCompleteCheckout(array $input, bool $fromShopifyApi): array
     {
+        // if it from public API, verify the signature
         if ($fromShopifyApi === true)
         {
             (new Core)->verifyHmacSignature($input);
+        }
+        else
+        {
+            // set the merchant as this is called through SQS
+            $this->app['basicauth']->setMode($input['mode']);
+
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
         }
 
         $orderId = $input['razorpay_order_id'];
 
         $paymentId = $input['razorpay_payment_id'];
 
-        // $rzpSignature = $input['razorpay_signature'];
-
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        $orderData = $order->toArrayPublic();
+        (new Core)->isPaymentAndOrderValid($order, $payment);
 
-        $paymentData = $payment->toArrayPublic();
-
-        if ($paymentData['status'] === 'failed' || $paymentData['status'] === 'refunded')
-        {
-            // TODO: fail the order here
-        }
-
-        if ($paymentData['order_id'] !== $orderData['id'])
-        {
-            // code...
-        }
-
-        $shopifyOrder = $this->placeShopifyOrder($order, $payment);
+        $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
 
         $this->updateRzpOrder($order, $shopifyOrder['order']['id']);
 
@@ -145,19 +141,25 @@ class Service extends Base\Service
     }
 
     // places final order and gateway transaction to Shopify
-    public function placeShopifyOrder($order, $payment): array
+    public function placeShopifyOrder($order, $payment, $fromShopifyApi): array
     {
-        $this->trace->info(
-            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
-            ['order_id' => $order->getId(), 'payment_id' => $payment->getId()]
-        );
+        $start = millitime();
 
-        // TODO: or we do getPublicId()
-        (new Core)->canShopifyOrderBePlaced($order->getId());
+        (new Core)->canShopifyOrderBePlaced($order, $fromShopifyApi);
 
         $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic());
 
         (new Core)->saveShopifyOrderAsPlaced($order->getId());
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
+            [
+                'order_id'   => $order->getId(),
+                'payment_id' => $payment->getId(),
+                'time'       => millitime() - $start,
+                'from_shopify_api' => $fromShopifyApi,
+            ]
+        );
 
         return $shopifyOrder;
     }
