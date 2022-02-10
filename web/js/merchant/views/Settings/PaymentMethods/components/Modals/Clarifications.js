@@ -9,11 +9,8 @@ import {
   setInstrument,
 } from 'merchant/reducers/instrumentRequests';
 import { closeModal } from 'merchant_common/reducers/modals';
-
 import Spinner from 'common/ui/Spinner';
-
 import { bindActionCreators } from 'redux';
-
 import {
   WEBSITE_DETAILS,
   MERCHANT_DOCUMENTS,

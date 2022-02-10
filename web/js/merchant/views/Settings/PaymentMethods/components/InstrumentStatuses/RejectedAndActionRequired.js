@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { ACTION_REQUIRED } from '../../constants';
 import Clarifications from '../Modals/Clarifications';
@@ -36,7 +35,7 @@ const RejectedAndActionRequired = (props) => {
         width="15px"
       />
       <p>
-        {isSmartDashboardActive && status === ACTION_REQUIRED ? (
+        {isSmartDashboardActive && status === ACTION_REQUIRED && !comment ? (
           <>
             <span>We need more information to proceed further with the application,</span>{' '}
             <a onClick={() => handleUpdateForm(merchant_instrument_request_id)}>
