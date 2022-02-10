@@ -1543,7 +1543,7 @@ export default class User {
   }
 
   get isMsmeDisabled() {
-    return this.getExpStatus('disable_msme_upload');
+    return this.getExpStatus('disable_msme_upload') && !!this.isOrgRZP;
   }
 }
 
