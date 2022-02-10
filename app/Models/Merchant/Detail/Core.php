@@ -4304,22 +4304,27 @@ class Core extends Base\Core
             return false;
         }
 
-        if(BusinessType::isAadhaarEsignVerificationRequired($merchantDetails->getBusinessType()) === false)
+        if (BusinessType::isAadhaarEsignVerificationRequired($merchantDetails->getBusinessType()) === false)
         {
             return false;
         }
 
-        if($merchantDetails->merchant->isLinkedAccount() === true)
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
         {
             return false;
         }
 
-        $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                        RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
+        $experimentName = DetailConstants::AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING[$merchantDetails->getBusinessType()];
 
-        if($isAadhaarEsignEnabled === false)
+        if (empty($experimentName) === false)
         {
-            return false;
+            $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                                                                            $experimentName);
+            if($isAadhaarEsignEnabled === false)
+            {
+                return false;
+            }
+
         }
 
         return true;

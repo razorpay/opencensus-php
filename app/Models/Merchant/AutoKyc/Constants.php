@@ -110,31 +110,35 @@ class Constants
 
         BusinessType::PRIVATE_LIMITED => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
-                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
-                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
-                Operator:: OR => [
-                    Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
-                    'certificate_of_incorporation|doc'      => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                Operator:: AND                          => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                ],
+                Operator:: OR                           => [
+                    Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
+                    'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
                 ]
             ]
         ],
 
         BusinessType::PUBLIC_LIMITED => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
-                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
-                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
-                Operator:: OR => [
-                    Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
-                    'certificate_of_incorporation|doc'      => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                Operator:: AND                          => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                ],
+                Operator:: OR                           => [
+                    Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
+                    'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
                 ]
             ]
         ],
 
-        BusinessType::PARTNERSHIP    => [
+        BusinessType::PARTNERSHIP => [
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
                 Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
@@ -144,15 +148,17 @@ class Constants
             ]
         ],
 
-        BusinessType::LLP  => [
+        BusinessType::LLP => [
             Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
-                Entity::POA_VERIFICATION_STATUS          => self::POA_CONDITION,
-                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
-                Operator:: OR => [
-                        Entity::CIN_VERIFICATION_STATUS         => self::CIN_CONDITION,
-                        'certificate_of_incorporation|doc'      => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                Operator:: AND                          => [
+                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                ],
+                Operator:: OR                           => [
+                    Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
+                    'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
                 ]
             ]
         ],
@@ -160,28 +166,28 @@ class Constants
 
     const AUTO_KYC_VERIFICATION_CONDITIONS_NO_DOC = [
         BusinessType::NOT_YET_REGISTERED => [
-            Operator::AND => [
-                Operator::OR => [
-                        Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                        Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+            Operator:: AND => [
+                Operator:: OR                            => [
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                 ],
                 Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION
             ]
         ],
 
         BusinessType::PROPRIETORSHIP => [
-            Operator::AND => [
-                Operator::OR => [
+            Operator:: AND => [
+                Operator:: OR                            => [
                     Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                    Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                    Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                 ],
                 Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION
             ]
         ],
 
         MerchantConstants::DEFAULT => [
-            Operator::AND => [
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+            Operator:: AND => [
+                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
                 Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
             ]
         ],

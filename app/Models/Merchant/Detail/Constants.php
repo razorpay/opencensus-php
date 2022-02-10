@@ -469,5 +469,15 @@ class Constants
         Entity::PROMOTER_PAN,
         Entity::PROMOTER_PAN_NAME
     ];
+
+    const AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING = [
+        BusinessType::NOT_YET_REGISTERED => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::INDIVIDUAL => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::PROPRIETORSHIP =>RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::PARTNERSHIP =>RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
+        BusinessType::PUBLIC_LIMITED =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
+        BusinessType::PRIVATE_LIMITED => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
+        BusinessType::LLP =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES
+    ];
 }
 

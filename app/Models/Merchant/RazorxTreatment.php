@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+    const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES='adharEkyc_for_reg_businessTypes';
+
     //Razorx treatment constant, whether to make sync call or not
     const GSTIN_SYNC    = "gstin_sync";
     const LLPIN_SYNC    = "llpin_sync";
