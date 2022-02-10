@@ -412,6 +412,17 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function filterNullFieldStatusMerchants(string $entityName, int $from, int $to): array
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->WhereNull($entityName)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function findMerchantWithContactNumbersExcludingMerchant(string $merchantIdToBeExcluded, array $numbers)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())

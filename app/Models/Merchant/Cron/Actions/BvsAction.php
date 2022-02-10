@@ -122,7 +122,7 @@ class BvsAction extends BaseAction
 
     private function getMerchantStatusForValidation($merchantId, $artefact_type, $validation_unit)
     {
-        $artefactStatusDetails = Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING[$artefact_type . $validation_unit];
+        $artefactStatusDetails = Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING[$artefact_type . '-' . $validation_unit];
 
         $status = null;
 

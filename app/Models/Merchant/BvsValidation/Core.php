@@ -285,17 +285,21 @@ class Core extends Base\Core
 
         $merchantId = $this->getMerchantId($validation);
 
-        $validation->edit($validationObj);
+        // only edit  bvs_validation table if there is any update on the validation object
+        if (empty($validationObj) === false)
+        {
+            $validation->edit($validationObj);
 
-        $this->mutex->acquireAndRelease(
-            $validationId,
-            function() use ($validation, $merchantId) {
-                $this->repo->bvs_validation->saveOrFail($validation);
+            $this->mutex->acquireAndRelease(
+                $validationId,
+                function() use ($validation, $merchantId) {
+                    $this->repo->bvs_validation->saveOrFail($validation);
 
-            },
-            Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
-            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
+                },
+                Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
+        }
 
         $this->mutex->acquireAndRelease(
             $merchantId,

@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
+use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
 
 class Factory
 {
@@ -63,6 +64,8 @@ class Factory
                 return (new EnableM2MReferralCronJob($input));
             case "first-payment-offer-daily-notification":
                 return (new FirstPaymentOfferCronJob($input));
+            case Constants::BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB:
+                return (new BVSPartlyExecutedValidationCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");
