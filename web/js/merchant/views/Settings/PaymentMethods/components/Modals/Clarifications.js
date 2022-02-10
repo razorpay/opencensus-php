@@ -73,6 +73,7 @@ const ClarificationInput = (props) => {
   };
 
   const discrepancyAnswer = answer ? answer : formFields[iirDiscrepancyId]?.answer_field_value;
+  const isDisabled = formFields[iirDiscrepancyId]?.status === 'answered';
 
   return (
     <div className="clarification-input">
@@ -83,7 +84,7 @@ const ClarificationInput = (props) => {
           <>
             <div className="textarea-container">
               <textarea
-                disabled={answer?.length}
+                disabled={isDisabled}
                 name={iirDiscrepancyId}
                 id="clarification-textarea"
                 placeholder="Please enter your response to the clarification raised"
@@ -104,6 +105,7 @@ const ClarificationInput = (props) => {
                   name="clarification-file-upload"
                   id="clarification-file-upload"
                   accept={['pdf', 'jpg', 'jpeg']}
+                  disabled={isDisabled}
                   maxSize={1048576} // 1MB
                 />
               </div>
@@ -165,11 +167,15 @@ const Clarifications = (props) => {
   useEffect(() => {
     const fields = {};
     if (clarifications?.length > 0) {
-      clarifications.forEach(({ iir_discrepancy_id, iir_discrepancy_answer }) => {
-        fields[iir_discrepancy_id] = {
-          answer_field_value: iir_discrepancy_answer?.answer_field_value,
-        };
-      });
+      clarifications.forEach(
+        ({ iir_discrepancy_id, iir_discrepancy_answer, answerable, status: answer_status }) => {
+          fields[iir_discrepancy_id] = {
+            status: answer_status,
+            answer_field_value: iir_discrepancy_answer?.answer_field_value,
+            answerable,
+          };
+        },
+      );
     }
     if (JSON.stringify(formFields) !== JSON.stringify(fields)) {
       setFormFields(fields);
@@ -207,7 +213,9 @@ const Clarifications = (props) => {
       method: 'post',
       data: formData,
     });
-    props.fetchMerchantInstruments().then(() => props.setInstrument(props.instrument));
+    props
+      .fetchMerchantInstruments()
+      .then(() => props.setInstrument({ ...props.instrument, ...props.leafInstrument }));
     props.closeModal();
   };
 
@@ -216,12 +224,14 @@ const Clarifications = (props) => {
     if (selectedTab === filteredTabs[lastTab]) {
       const data = [];
       for (const [key, value] of Object.entries(formFields)) {
-        const entry = {
-          iir_discrepancy_id: key,
-          answer_field_value: value.answer_field_value,
-          // answer_document: value.answer_document,
-        };
-        data.push(entry);
+        if (value.answerable && value.status !== 'answered') {
+          const entry = {
+            iir_discrepancy_id: key,
+            answer_field_value: value.answer_field_value,
+            // answer_document: value.answer_document,
+          };
+          data.push(entry);
+        }
       }
       return submitDiscrepancies(data, files, formFields);
     } else {
