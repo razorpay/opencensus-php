@@ -1019,6 +1019,8 @@ class UserRolesScope
             'update_serviceability_url'                           => [Role::OWNER, Role::ADMIN],
             'update_coupon_validity_url'                          => [Role::OWNER, Role::ADMIN],
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],
+            '1cc_configs_update'                                  => [Role::OWNER, Role::ADMIN],
+            '1cc_configs_get'                                     => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
             'fund_addition_tpv'                                   => [Role::OWNER, Role::ADMIN],
             'shipping_provider_list'                              => [Role::OWNER, Role::ADMIN],

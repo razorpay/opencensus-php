@@ -31,6 +31,7 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::PLATFORM, '=', $platform)
             ->where(Entity::CONFIG, '=', $config)
+            ->where(Base\Entity::DELETED_AT, '=', null)
             ->first();
     }
 

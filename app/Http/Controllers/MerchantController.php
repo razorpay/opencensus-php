@@ -2814,6 +2814,20 @@ class MerchantController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function update1ccConfig()
+    {
+        $input = Request::all();
+
+        (new Merchant\OneClickCheckout\Config\Service())->update1ccConfig($input);
+    }
+
+    public function get1ccConfig()
+    {
+        $input = Request::all();
+
+        return (new Merchant\OneClickCheckout\Config\Service())->get1ccConfig();
+    }
+
     public function getFUXDetailsForPartner()
     {
         $response = $this->service()->getFUXDetailsForPartner();

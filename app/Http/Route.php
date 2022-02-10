@@ -3294,6 +3294,8 @@ class Route
         'update_shipping_slabs_dark'                => ['post',       'merchant/slabs/shipping_dark',                               'MerchantController@updateShippingSlabs'                      ],
         'order_update_customer_details_1cc'         => ['patch',      'orders/1cc/{id}/customer/',                             'OrderController@updateCustomerDetailsFor1CCOrder'             ],
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
+        '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
+        '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
@@ -5281,6 +5283,8 @@ class Route
         'update_serviceability_url',
         'update_coupon_validity_url',
         'update_fetch_coupons_url',
+        '1cc_configs_update',
+        '1cc_configs_get',
         'update_merchant_platform',
 
         // splitz
@@ -5291,7 +5295,6 @@ class Route
 
         //payout status reason mapping
         'payout_status_to_reason_mapping',
-
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -9243,6 +9246,8 @@ class Route
             'update_serviceability_url',
             'update_coupon_validity_url',
             'update_fetch_coupons_url',
+            '1cc_configs_update',
+            '1cc_configs_get',
             'update_merchant_platform',
             'country_fetch',
             'state_fetch',

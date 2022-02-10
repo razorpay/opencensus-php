@@ -17,4 +17,11 @@ class Repository extends Base\Repository
             ->where(Entity::TYPE, '=', $type)
             ->first();
     }
+
+    public function findByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::DELETED_AT, '=', null);
+    }
 }

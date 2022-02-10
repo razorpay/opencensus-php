@@ -8713,6 +8713,10 @@ class Service extends Base\Service
     {
         $validator = (new Validator);
 
+        if (empty($slabs)===true) {
+            return [];
+        }
+
         foreach ($slabs as $slab) {
             $validator->validateInput('updateSlabRequest', $slab);
         }
