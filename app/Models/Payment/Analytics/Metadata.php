@@ -157,8 +157,12 @@ class Metadata
     ];
 
     const ADDRESS_UNSUPPORTED_LIBRARIES = [
+        self::RAZORPAYJS,
+        self::CUSTOM,
+        self::DIRECT,
         self::PUSH,
         self::LEGACYJS,
+        self::EMBEDDED,
     ];
 
     const DCC_SUPPORTED_LIBRARIES = [
@@ -166,23 +170,6 @@ class Metadata
         self::CUSTOM,
         self::DIRECT,
         self::EMBEDDED,
-    ];
-
-    // These libraries require a http method to be sent to the frontend for redirections
-    const LIBS_HTTP_METHOD_REQ = [
-        self::RAZORPAYJS,
-        self::CUSTOM,
-        self::DIRECT,
-        self::EMBEDDED,
-    ];
-
-    // These libs support address collection for avs via redirect
-    const AVS_SUPPORTED_LIBS_VIA_REDIRECT = [
-        self::S2S,
-        self::RAZORPAYJS,
-        self::CUSTOM,
-        self::DIRECT,
-        self::EMBEDDED
     ];
 
     const DCC_SUPPORTED_LIBRARIES_ON_FEATURE_FLAG = [

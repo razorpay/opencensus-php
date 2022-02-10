@@ -287,10 +287,6 @@ trait PaymentCreationTrait
                             {
                                 return $this->makeRedirectToDCCInfo($targetUrl);
                             }
-                            else if ($this->isRedirectToAddressCollectUrl($targetUrl) === true)
-                            {
-                                return $this->makeRedirectToAddressCollect($targetUrl);
-                            }
                             $gateway = $content['gateway'];
                         }
                         else if ($content['type'] === 'return')

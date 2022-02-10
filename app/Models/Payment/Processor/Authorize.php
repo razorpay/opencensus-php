@@ -9219,6 +9219,12 @@ trait Authorize
      */
     protected function shouldRedirectForAddressCollection(Payment\Entity $payment): bool
     {
+        if (($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false))
+        {
+            return false;
+        }
+
         if ($payment->isRecurring() === true)
         {
             return false;
@@ -9232,6 +9238,7 @@ trait Authorize
             ($payment->card !== null))
         {
             $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
+
             $addressRequired = (new Payment\Service)->isAddressRequired($library, $payment->card->iinRelation, $payment->merchant);
         }
 
@@ -9268,21 +9275,6 @@ trait Authorize
 
     /**
      * To be removed.
-     * @param $library
-     * @return bool
-     */
-    public function isLibrarySupportedForAVSHttpResponse($library): bool
-    {
-        if ((isset($library) === true) and
-            (in_array($library, Analytics\Metadata::LIBS_HTTP_METHOD_REQ) === true) and
-            (in_array($library, Analytics\Metadata::AVS_SUPPORTED_LIBS_VIA_REDIRECT) === true)
-        ) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @param $library
      * @return bool
      */
@@ -9383,7 +9375,6 @@ trait Authorize
             elseif ($redirectAddressCollection === true)
             {
                 $redirectUrl = $this->route->getUrl('payment_redirect_to_address_collect', ['id' => $trackId]);
-                $httpMethod = $this->route::getApiRoute('payment_redirect_to_address_collect')[0];
             }
             else
             {
@@ -9409,10 +9400,9 @@ trait Authorize
                 'task_id'  => $this->request->getTaskId()
             ];
 
-            // Passing http-method additionally for redirect
+            // Passing http-method additionally for custom checkout redirect
             $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
-            if(($this->isLibrarySupportedForDCC($library) || $this->isLibrarySupportedForAVSHttpResponse($library))
-                && empty($httpMethod) !== true)
+            if($this->isLibrarySupportedForDCC($library) && empty($httpMethod) !== true)
             {
                 $data['request']['http_method'] = $httpMethod;
             }
@@ -10239,7 +10229,7 @@ trait Authorize
 
     /**
      * This method is used to validate address if re-direction
-     * is not required (in case of s2s/razorpayjs/custom/embedded we need to redirect for address collection
+     * is not required (in case of s2s we need to redirect for address collection
      * without throwing validation error).
      * @param Payment\Entity $payment
      * @param array $input
@@ -10248,8 +10238,8 @@ trait Authorize
     protected function validateAddressIfPresentWithoutRedirect(Payment\Entity $payment, array $input)
     {
 
-        $library = $payment->getMetadata(Analytics\Entity::LIBRARY);
-        if ((in_array($library, Analytics\Metadata::AVS_SUPPORTED_LIBS_VIA_REDIRECT) === false) and
+        if ((($this->app['api.route']->isS2SPaymentRoute() === false) or
+            ($this->app['basicauth']->isPrivateAuth() === false)) and
             $payment->isRecurring() !== true)
         {
             try {
