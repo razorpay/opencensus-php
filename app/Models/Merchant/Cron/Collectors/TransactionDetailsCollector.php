@@ -4,31 +4,40 @@
 namespace RZP\Models\Merchant\Cron\Collectors;
 
 
+use Carbon\Carbon;
 use Database\Connection;
+use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Models\Merchant\Cron\Traits\ConnectionFallbackMechanism;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Service as MerchantService;
 
 class TransactionDetailsCollector extends TimeBoundDbDataCollector
 {
     use ConnectionFallbackMechanism;
 
+    const DATALAKE_QUERY = "SELECT distinct(merchant_id) FROM hive.realtime_hudi_api.transactions WHERE type='payment' AND created_at BETWEEN %s AND %s";
+
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
-        $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
+        $dataLakeQuery = sprintf(self::DATALAKE_QUERY, $startTime, $endTime);
+
+        $transactedMerchants = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery, false);
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
             'args'          => $this->args,
             'start_time'    => $startTime,
-            'end_time'      => $endTime
+            'end_time'      => $endTime,
+            'merchant_ids'  => count($transactedMerchants)
         ]);
-
-        // Filter out all merchants that have transacted since last time cron ran
-        $transactedMerchants = $this->getRepository("transaction")->fetchTransactedMerchants(
-            'payment', $startTime, $endTime, false, false);
 
         $merchantIdChunks = array_chunk($transactedMerchants, 1000);
 
-        return CollectorDto::create($merchantIdChunks);
+        $merchantDataFromDruid =  $this->getDataFromDruidForMerchants($merchantIdChunks);
+
+        return CollectorDto::create($merchantDataFromDruid);
     }
 
     /**
@@ -37,12 +46,12 @@ class TransactionDetailsCollector extends TimeBoundDbDataCollector
      */
     protected function getStartInterval() : int
     {
-        return $this->lastCronTime - (25 * 60 * 60);   // in seconds
+        return Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp();
     }
 
     protected function getEndInterval() : int
     {
-        return $this->lastCronTime - (24 * 60 * 60);   // in seconds
+        return Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
     }
 
     public function getPrimaryConnection()
@@ -53,5 +62,28 @@ class TransactionDetailsCollector extends TimeBoundDbDataCollector
     public function getFallbackConnection()
     {
         return Connection::MASTER_REPLICA_LIVE;
+    }
+
+    protected function getDataFromDruidForMerchants($merchantIdChunks) : array
+    {
+        $merchantDataFromDruid = [];
+
+        foreach ($merchantIdChunks as $merchantIdChunk)
+        {
+            try
+            {
+                $merchantData = (new MerchantService)->getDataFromDruidForMerchantIds($merchantIdChunk);
+
+                array_push($merchantDataFromDruid, $merchantData);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->app['trace']->traceException($ex, Trace::ERROR, TraceCode::CRON_ATTEMPT_ACTION_FAILURE, [
+                    'merchant_ids'   => $merchantIdChunk,
+                ]);
+            }
+        }
+
+        return $merchantDataFromDruid;
     }
 }

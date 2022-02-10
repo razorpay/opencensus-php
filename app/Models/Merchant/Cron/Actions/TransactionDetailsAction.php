@@ -21,27 +21,26 @@ class TransactionDetailsAction extends BaseAction
 
         $collectorData = $data["transaction_details"]; // since data collector is an array
 
-        $merchantIdChunks = $collectorData->getData();
+        $merchantDataChunks = $collectorData->getData();
 
-        if (count($merchantIdChunks) === 0)
+        if (count($merchantDataChunks) === 0)
         {
             return new ActionDto(Constants::SKIPPED);
         }
 
         $successCount = 0;
-        foreach ($merchantIdChunks as $merchantIdChunk)
+        foreach ($merchantDataChunks as $merchantDataChunk)
         {
             try
             {
-                $this->pushTransactionDetailsSegmentEvent($merchantIdChunk);
+                $this->pushTransactionDetailsSegmentEvent($merchantDataChunk);
 
                 $successCount++;
             }
             catch (\Throwable $ex)
             {
                 $this->app['trace']->traceException($ex, Trace::ERROR, TraceCode::CRON_ATTEMPT_ACTION_FAILURE, [
-                    'merchant_id'   => $merchantIdChunk['merchant_details_merchant_id'],
-                    'args'        => $this->args
+                    'args'           => $this->args
                 ]);
             }
         }
@@ -54,17 +53,15 @@ class TransactionDetailsAction extends BaseAction
         }
         else
         {
-            $status = ($successCount < count($merchantIdChunks)) ? Constants::PARTIAL_SUCCESS : Constants::SUCCESS;
+            $status = ($successCount < count($merchantDataChunks)) ? Constants::PARTIAL_SUCCESS : Constants::SUCCESS;
         }
 
         return new ActionDto($status);
     }
 
-    private function pushTransactionDetailsSegmentEvent($merchantIdChunk)
+    private function pushTransactionDetailsSegmentEvent($merchantDataChunk)
     {
-        $druidData = (new Merchant\Service)->getDataFromDruidForMerchantIds($merchantIdChunk);
-
-        foreach ($druidData as $data)
+        foreach ($merchantDataChunk as $data)
         {
             $segmentProperties = [
                 Merchant\Service::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION => $data[Merchant\Service::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION] ?: 'NULL',
