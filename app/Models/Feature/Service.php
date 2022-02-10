@@ -59,29 +59,83 @@ class Service extends Base\Service
             try
             {
                 $merchantId = $request[Constants::MERCHANT_ID];
-                $isOnboardToLedger = $request['onboard_to_ledger'];
+                $action = $request['action'];
 
                 $this->trace->info(
                     TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
                     [
                         Constants::MERCHANT_ID => $merchantId,
                         Constants::MODE        => $this->mode,
+                        'action'               => $action,
                     ]);
 
                 // fetch merchant entity
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-                // first sending the request to ledger because if anything fails we don't add the feature
-                $this->buildAccountCreateRequest($merchant, $isOnboardToLedger);
+                switch ($action)
+                {
+                    case 'shadow_onboard':
+                        // first sending the request to ledger because if anything fails we don't add the feature
+                        $this->ledgerAccountCreateRequest($merchant);
 
-                // Add LEDGER_JOURNAL_WRITES feature to merchant
-                (new Core)->create(
-                    [
-                        Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                        Entity::ENTITY_ID => $merchant->getId(),
-                        Entity::NAME => Constants::LEDGER_JOURNAL_WRITES,
-                    ]);
+                        // Add LEDGER_JOURNAL_WRITES feature to merchant
+                        (new Core)->create(
+                            [
+                            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                            Entity::ENTITY_ID => $merchant->getId(),
+                            Entity::NAME => Constants::LEDGER_JOURNAL_WRITES,
+                                ]);
+                        break;
 
+                    case 'reverse_shadow':
+                        // Add `ledger_journal_reads` feature flag
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::LEDGER_JOURNAL_READS,
+                            ]);
+
+                        //Add `ledger_reverse_shadow` feature flag
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::LEDGER_REVERSE_SHADOW,
+                            ]);
+
+                        //Delete `ledger_journal_writes` feature flag
+                        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                            EntityConstants::MERCHANT,
+                            $merchant->getId(),
+                            Constants::LEDGER_JOURNAL_WRITES);
+
+                        if (!empty($feature)) {
+                            (new Core)->delete($feature);
+                        }
+                        break;
+
+                    case 'offboard':
+                        //Delete `ledger_journal_reads` feature flag
+                        //Delete `ledger_reverse_shadow` feature flag
+                        //Delete `ledger_journal_writes` feature flag
+                        $featureFlags = [
+                            Constants::LEDGER_JOURNAL_READS,
+                            Constants::LEDGER_REVERSE_SHADOW,
+                            Constants::LEDGER_JOURNAL_WRITES,
+                        ];
+                        foreach ($featureFlags as $featureFlag) {
+                            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                                EntityConstants::MERCHANT,
+                                $merchant->getId(),
+                                $featureFlag);
+
+                            if (!empty($feature)) {
+                                (new Core)->delete($feature);
+                            }
+                        }
+                        break;
+                }
             } catch(\Exception $e) {
 
                 $this->trace->traceException(
@@ -105,46 +159,44 @@ class Service extends Base\Service
         return $response;
     }
 
-    private function buildAccountCreateRequest($merchant, $isOnboardToLedger)
+    private function ledgerAccountCreateRequest($merchant)
     {
-        if ($isOnboardToLedger === true) {
-            // Fetch Merchant balance. Required to generate request body for account creation on ledger
-            $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-                $merchant->getId(),
-                BalanceType::BANKING,
-                AccountType::SHARED,
-                $this->mode);
+        // Fetch Merchant balance. Required to generate request body for account creation on ledger
+        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+            $merchant->getId(),
+            BalanceType::BANKING,
+            AccountType::SHARED,
+            $this->mode);
 
-            // Fetch Merchant banking account. Required to generate request body for account creation on ledger
-            $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
+        // Fetch Merchant banking account. Required to generate request body for account creation on ledger
+        $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
 
-            // credit balance initialized (rewards)
-            $currentMerchantCredits = 0;
+        // credit balance initialized (rewards)
+        $currentMerchantCredits = 0;
 
-            // Fetch Merchant Credit balance. And update the balance value if the credit has 1 element
-            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsForProductForDashboard($merchant->getId(), BalanceType::BANKING);
+        // Fetch Merchant Credit balance. And update the balance value if the credit has 1 element
+        $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsForProductForDashboard($merchant->getId(), BalanceType::BANKING);
 
-            foreach ($creditBalances as $creditBalance)
-            {
-                $currentMerchantCredits += $creditBalance[BalanceEntity::BALANCE];
-            }
-
-            $this->trace->info(TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
-                [
-                    Constants::MERCHANT_ID => $merchant->getId(),
-                    Constants::MODE        => $this->mode,
-                    'balance_id'           => $balance->getId(),
-                    'banking_account_id'   => $bankingAcc->getId(),
-                ]);
-
-            (new Merchant\Balance\Ledger\Core)->createXLedgerAccount(
-                $merchant,
-                $bankingAcc,
-                $this->mode,
-                AccountType::SHARED,
-                $balance->getBalance(),
-                $currentMerchantCredits);
+        foreach ($creditBalances as $creditBalance)
+        {
+            $currentMerchantCredits += $creditBalance[BalanceEntity::BALANCE];
         }
+
+        $this->trace->info(TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+            [
+                Constants::MERCHANT_ID => $merchant->getId(),
+                Constants::MODE        => $this->mode,
+                'balance_id'           => $balance->getId(),
+                'banking_account_id'   => $bankingAcc->getId(),
+            ]);
+
+        (new Merchant\Balance\Ledger\Core)->createXLedgerAccount(
+            $merchant,
+            $bankingAcc,
+            $this->mode,
+            AccountType::SHARED,
+            $balance->getBalance(),
+            $currentMerchantCredits);
     }
 
     public function addAccountFeatures(array $input): array

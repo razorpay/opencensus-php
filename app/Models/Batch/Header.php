@@ -1274,7 +1274,7 @@ class Header
     const FRAUD_OUTPUT_HEADER_STATUS        =   'Status';
     const FRAUD_OUTPUT_HEADER_ERROR_REASON  =   'Error Reason';
 
-    const ONBOARD_TO_LEDGER = 'onboard_to_ledger';
+    const FEATURE_FLAG = 'feature_flag';
 
     // Debit note
     const DEBIT_NOTE_PAYMENT_IDS           = 'payment_ids';
@@ -3694,10 +3694,12 @@ class Header
 
         TYPE::LEDGER_ONBOARD_OLD_ACCOUNT => [
             self::INPUT => [
-                self::MERCHANT_ID
+                self::MERCHANT_ID,
+                self::ACTION,
             ],
             self::OUTPUT => [
                 self::MERCHANT_ID,
+                self::ACTION,
                 self::STATUS,
             ],
         ],
