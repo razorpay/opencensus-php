@@ -30,6 +30,51 @@ const M2MBanner = (props) => {
         name: userName,
       },
     ]);
+    window.friendbuyAPI.push([
+      'subscribe',
+      'couponReceived',
+      (coupon) => {
+        trackEvents({
+          objectName: 'Coupon',
+          actionName: 'Received',
+          screen: 'home page',
+          toCleverTap: true,
+          properties: {
+            couponCode: coupon,
+          },
+        });
+      },
+    ]);
+    window.friendbuyAPI.push([
+      'subscribe',
+      'emailShareSuccess',
+      (payload) => {
+        trackEvents({
+          objectName: 'Email Share',
+          actionName: 'Success',
+          screen: 'home page',
+          toCleverTap: true,
+          properties: {
+            ...payload,
+          },
+        });
+      },
+    ]);
+    window.friendbuyAPI.push([
+      'subscribe',
+      'widgetActionTriggered',
+      (payload) => {
+        trackEvents({
+          objectName: 'Widget Action',
+          actionName: 'Trigerred',
+          screen: 'home page',
+          toCleverTap: true,
+          properties: {
+            ...payload,
+          },
+        });
+      },
+    ]);
     loadFriendBuy();
   }, []);
 
