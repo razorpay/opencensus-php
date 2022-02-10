@@ -9258,6 +9258,7 @@ class Route
             'merchant_update_fraud_type',
             'admin_merchant_post_preferences',
             'merchant_activation_gst_details',
+            'get_merchant_data_for_segment',
             'merchant_upload',
             'user_verify_contact_batch',
             'banking_account_service_routes',
