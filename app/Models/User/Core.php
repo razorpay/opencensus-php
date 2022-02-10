@@ -491,27 +491,7 @@ class Core extends Base\Core
      */
     public function changePassword(Entity $user, array $input): Entity
     {
-        $retainLastFivePasswordsExperiment = $this->app->razorx->getTreatment(
-            $user->getId(),
-            Merchant\RazorxTreatment::RETAIN_LAST_FIVE_PASSWORDS,
-            $this->mode
-        );
-
-        if(strtolower($retainLastFivePasswordsExperiment) === Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            $user = $this->setOldPasswords($user, $input);
-        }
-        else
-        {
-            $user->getValidator()->validatePasswordIsNotSameAsLastThree($input[Entity::PASSWORD]);
-
-            // Once validated updates the old password attributes.
-            $user->setAttribute(Entity::OLD_PASSWORD_2, $user->getAttribute(Entity::OLD_PASSWORD_1));
-            $user->setAttribute(Entity::OLD_PASSWORD_1, $user->getAttribute(Entity::PASSWORD));
-
-            $user->fill($input);
-
-        }
+        $user = $this->setOldPasswords($user, $input);
 
         $user->setPasswordResetToken();
 

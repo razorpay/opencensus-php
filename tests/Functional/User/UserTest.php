@@ -3299,8 +3299,6 @@ class UserTest extends TestCase
 
     public function testChangePasswordMatchesLastNPasswords()
     {
-        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
-
         $user = $this->fixtures->create('user', ['password' => 'P@ssw0rd']);
 
         $testData = & $this->testData[__FUNCTION__];
@@ -3314,8 +3312,6 @@ class UserTest extends TestCase
 
     public function testChangePasswordAfterNChanges()
     {
-        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
-
         $origPassword   = 'P@ssw0rd';
         $user           = $this->fixtures->create('user', ['password' => $origPassword]);
 
@@ -3791,31 +3787,8 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    private function enableRazorXTreatmentForRazorXRetainLastFivePasswords()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function($mid, $feature, $mode) {
-                    if ($feature === 'retain_last_five_passwords')
-                    {
-                        return 'on';
-                    }
-
-                    return 'off';
-                }));
-    }
-
     public function testPasswordResetByToken()
     {
-        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
-
         $resetAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),
@@ -3865,8 +3838,6 @@ class UserTest extends TestCase
 
     public function testPasswordResetByTokenWithSamePassword()
     {
-        $this->enableRazorXTreatmentForRazorXRetainLastFivePasswords();
-
         $resetAttributes = [
             'email'                 => 'resetpass@razorpay.com',
             'password_reset_token'  => str_random(50),

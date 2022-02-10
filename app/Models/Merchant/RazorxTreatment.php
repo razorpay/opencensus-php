@@ -443,9 +443,6 @@ final class RazorxTreatment
     // experiment to send uploaded signed form nach payment in fetch token api
     const SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK = 'send_nach_signed_form_to_merchant_in_response_authlink';
 
-    //Experiment flag to retain last 5 passwords instead of last 3
-    const RETAIN_LAST_FIVE_PASSWORDS = 'retain_last_five_passwords';
-
     //Experiment flag for sending events to segment
     const SEND_EVENTS_TO_SEGMENT = 'send_events_to_segment';
 
