@@ -10,6 +10,7 @@ use RZP\Exception\BaseException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Processor;
@@ -166,6 +167,7 @@ class ProcessorTest extends TestCase
 
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal);
@@ -214,6 +216,7 @@ class ProcessorTest extends TestCase
 
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(false);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal)->zeroOrMoreTimes();
@@ -237,6 +240,7 @@ class ProcessorTest extends TestCase
 
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn(array());

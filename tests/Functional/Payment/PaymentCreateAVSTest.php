@@ -388,6 +388,111 @@ class PaymentCreateAVSTest extends TestCase
         $this->validateCustomerTokenBillingAddress($paymentEntity, $billingAddressArray);
     }
 
+    public function testPaymentCreateWithAVSCustomCheckout()
+    {
+        $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
+        unset($payment['save']);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+
+        $this->fixtures->merchant->addFeatures(['address_required']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertTrue($this->redirectToAddressCollect);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
+    public function testPaymentCreateWithoutAVSCustomCheckout()
+    {
+        $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
+        unset($payment['save']);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+        $this->fixtures->merchant->removeFeatures(['avs']);
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertFalse($this->redirectToAddressCollect);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
+    public function testPaymentCreateWithAVSEmbeddedCheckout()
+    {
+        $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
+        unset($payment['save']);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
+
+        $this->fixtures->merchant->addFeatures(['address_required']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertTrue($this->redirectToAddressCollect);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
+    public function testPaymentCreateWithoutAVSEmbeddedCheckout()
+    {
+        $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
+        unset($payment['save']);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::EMBEDDED;
+
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+        $this->fixtures->merchant->removeFeatures(['avs']);
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertFalse($this->redirectToAddressCollect);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
+    public function testPaymentCreateWithAVSDirectCheckout()
+    {
+        $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
+        unset($payment['save']);
+
+        $this->fixtures->merchant->addFeatures(['address_required']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertTrue($this->redirectToAddressCollect);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
+    public function testPaymentCreateWithAVSAndroidCheckout()
+    {
+        $payment = $this->getPaymentArray($this->getDefaultBillingAddressArray(true), 1);
+        unset($payment['save']);
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CUSTOM;
+
+        $this->fixtures->merchant->addFeatures(['address_required']);
+        $this->fixtures->merchant->addFeatures(['disable_native_currency']);
+
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($payment);
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertTrue($this->redirectToAddressCollect);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+    }
+
     private function getPreferences($orderId = null, $currency = 'INR')
     {
         $request = [
