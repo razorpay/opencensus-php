@@ -87,6 +87,7 @@ use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Order as Order;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Jobs\OneCCShopifyCreateOrder;
+use RZP\Models\Base\UniqueIdEntity;
 
 trait Authorize
 {
@@ -10740,11 +10741,10 @@ trait Authorize
 
             $order = $payment->order;
 
-            if (
-                $this->is1ccOrder($order) === true and
+            if ($this->is1ccOrder($order) === true and
                 $this->isShopifyOrder($order) === true and
-                $this->isPaymentValidFor1cc($payment) === true
-            )
+                $this->isPaymentValidFor1cc($payment) === true and
+                $this->useSqsFrom1ccShopifyExperiment() === true)
             {
                 OneCCShopifyCreateOrder::dispatch([
                     'mode'                => $this->mode,
@@ -10756,36 +10756,32 @@ trait Authorize
             }
 
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
-            // fail silently and log it
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::SHOPIFY_1CC_DISPATCH_JOB_FAILED,
                 [
-                    'payment_id'    => $payment->getPublicId(),
-                    'order_id'      => $order->getPublicId(),
-                    'error_message' => $e->getMessage()
-                ]
-            );
+                    'payment_id' => $payment->getPublicId()
+                ]);
         }
     }
 
     protected function is1ccOrder(Order\Entity $order): bool
     {
-        $valid = false;
+        $is1ccOrder = false;
 
         foreach ($order->orderMetas as $meta)
         {
             if ($meta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT)
             {
-                $valid = true;
+                $is1ccOrder = true;
                 break;
             }
         }
 
-        return $valid;
+        return $is1ccOrder;
     }
 
     // guaranteed that all 1cc Shopify orders have a storefront_id
@@ -10806,4 +10802,22 @@ trait Authorize
         );
     }
 
+    protected function useSqsFrom1ccShopifyExperiment(): bool
+    {
+        if ($this->app->environment(Environment::PRODUCTION) === false)
+        {
+            return true;
+        }
+
+        $properties = [
+          'id'            => UniqueIdEntity::generateUniqueId(),
+          'experiment_id' => $this->app['config']->get('app.shopify_1cc_sqs_splitz_experiment_id'),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === 'enable';
+    }
 }

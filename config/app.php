@@ -368,5 +368,7 @@ return array(
 
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
+    'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
+
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
 );
