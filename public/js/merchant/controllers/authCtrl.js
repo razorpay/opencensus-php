@@ -3177,6 +3177,9 @@ app
       $scope.handleErrorsWithInternalCode = function (error) {
         switch (error.internal_error_code) {
           case 'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED': {
+            fireDLSuccessEvents('2FA.login_display', {
+              source: 'sign_in',
+            });
             $scope.goToLoginStep(4);
             break;
           }
@@ -3193,6 +3196,9 @@ app
           }
 
           case 'BAD_REQUEST_LOCKED_USER_LOGIN': {
+            fireDLSuccessEvents('2FA.account_blocked_page_displayed', {
+              source: 'sign_in',
+            });
             $scope.isOwner = !!(((error || {})._internal || {}).user_details || {}).is_owner;
             $scope.goToLoginStep(7);
             break;
