@@ -32,6 +32,7 @@ class XSegmentClient extends SegmentAnalyticsClient
                 $customProperties = [
                     'phone' => ($user['contact_mobile'] === null) ? null : ('+' . $user['contact_mobile']),
                     'email' => $user['email'],
+                    'name'  => $user['name']
                 ];
 
                 $result = 'on';
