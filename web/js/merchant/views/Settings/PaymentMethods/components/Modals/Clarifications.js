@@ -177,9 +177,11 @@ const Clarifications = (props) => {
   }, [clarifications]);
 
   useEffect(() => {
-    const isValid = Object.values(formFields).every(
-      ({ answer_field_value }) => answer_field_value.length,
-    );
+    const isValid = Object.values(formFields)
+      .filter((item) => item.answerable)
+      .every(({ answer_field_value }) => {
+        return answer_field_value.length;
+      });
     return selectedTab === filteredTabs[lastTab] && !isValid
       ? setIsDisabled(true)
       : setIsDisabled(false);
