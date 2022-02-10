@@ -788,8 +788,10 @@ class Activate extends Base\Core
                             ]);
                     }
                     // assign LEDGER_JOURNAL_READS feature for the merchant to be onboarded in
-                    // reverse shadow mode
-                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === false)
+                    // reverse shadow mode. Assigning as of now only for live mode as this is used by reporting
+                    // and reporting doesn't support test mode as of now.
+                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_READS) === false
+                        and ($mode === Mode::LIVE))
                     {
                         (new Feature\Core)->create(
                             [

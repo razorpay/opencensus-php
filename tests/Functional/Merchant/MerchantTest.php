@@ -8721,7 +8721,6 @@ IFSC Code  ICIC0001206
         $this->assertContains('ledger_reverse_shadow', $liveFeaturesArray);
 
         // Assert that the ledger_journal_reads feature is enabled for live mode
-        $this->assertContains('ledger_journal_reads', $testFeaturesArray);
         $this->assertContains('ledger_journal_reads', $liveFeaturesArray);
     }
 
