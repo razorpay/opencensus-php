@@ -238,7 +238,7 @@ export default class extends React.Component {
 
                   <div class="divider" />
                   <AccountDetails
-                    bankAccount1={bankAccount1}
+                    bankAccount1={bankAccount2 ? bankAccount2 : bankAccount1}
                     upiAddress={bankAccount2 === undefined ? upiAddress : null}
                   />
                   {bankAccount2 && (
@@ -258,7 +258,7 @@ export default class extends React.Component {
                           <div class="copy btn btn-link no-padding">Copy Details</div>
                         </CustomClipboard>
                       </EntityDetailRow>
-                      <AccountDetails bankAccount1={bankAccount2} upiAddress={upiAddress} />
+                      <AccountDetails bankAccount1={bankAccount1} upiAddress={upiAddress} />
                     </div>
                   )}
                 </div>
