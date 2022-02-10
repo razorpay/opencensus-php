@@ -98,17 +98,19 @@ const UPIMandatoryFields = [
   },
 ];
 
-/* getTokenMandatoryFields fn validates tokendetails tab only for emandate & Nach payment methods
+/* getTokenDetailFields fn validates tokendetails tab only for emandate & Nach payment methods
    The fn also ensures firstPaymentAmount is always lesser than or equal to the mandateMaxAmount
 */
-const getTokenMandatoryFields = (maxAmount, isNach = false) => [
+const getTokenDetailFields = (maxAmount, isNach = false) => [
   {
     name: 'mandateMaxAmount',
+    isOptional: true,
     validator: (value) =>
       isAmountLiesInRange(value, isNach ? MAX_TOKEN_AMOUNT_NACH : MAX_TOKEN_AMOUNT),
   },
   {
     name: 'firstPaymentAmount',
+    isOptional: true,
     validator: (value) => isAmountLiesInRange(value, maxAmount, DEFAULT_FIRST_CHARGE), // TODO: TO check the first charge amount
   },
 ];
@@ -446,17 +448,20 @@ export default class NewRegistrationLink extends React.Component {
     return payload;
   };
 
-  checkIfFormValid = (mandatoryFields = []) => {
+  checkIfFormValid = (fields = []) => {
     let isValid = false;
-    if (!mandatoryFields.length) {
+    if (!fields.length) {
       return isValid;
     }
 
-    isValid = mandatoryFields.every((type) => {
+    isValid = fields.every((type) => {
       let value = this.state.formFields[type] && this.state.formFields[type].length;
-
       if (type instanceof Object) {
+        const isFieldOptional = type.isOptional;
         value = this.state.formFields[type.name];
+
+        // Return true if field is optional and value is undefined
+        if (!value && isFieldOptional) return true;
 
         return value && type.validator(value);
       }
@@ -549,7 +554,7 @@ export default class NewRegistrationLink extends React.Component {
       }
 
       case 2: {
-        let tokenMandatoryFields = [];
+        let tokenDetailFields = [];
         const { formFields: fields = {} } = this.state;
         const maxAmount = fields.mandateMaxAmount;
         const maxAmountInPaisa = rupeesToPaise(maxAmount);
@@ -565,12 +570,12 @@ export default class NewRegistrationLink extends React.Component {
           }
         }
         if (this.isEmandatePayment) {
-          tokenMandatoryFields = getTokenMandatoryFields(maxAmountInPaisa);
-          return this.checkIfFormValid(tokenMandatoryFields);
+          tokenDetailFields = getTokenDetailFields(maxAmountInPaisa);
+          return this.checkIfFormValid(tokenDetailFields);
         }
         if (this.isNACHPayment) {
-          tokenMandatoryFields = getTokenMandatoryFields(maxAmountInPaisa, true);
-          return this.checkIfFormValid(tokenMandatoryFields);
+          tokenDetailFields = getTokenDetailFields(maxAmountInPaisa, true);
+          return this.checkIfFormValid(tokenDetailFields);
         }
         return true;
       }
