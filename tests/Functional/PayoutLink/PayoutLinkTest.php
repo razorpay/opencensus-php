@@ -3190,6 +3190,299 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
     }
 
+    private function prepareBankingAccountData($merchantId)
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 300,
+            ]);
+
+        return $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => $merchantId,
+            'balance_id'            => $xBalance1->getId(),
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+    }
+
+    public function testGetHostedPageDataWithEmptySupportEmailForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'expired',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataWithIssuedLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'issued',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataWithProcessingLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'processing',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataWithProcessedLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'processed',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataWithCancelledLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'cancelled',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataForExpiredLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'expired',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataForPendingLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'pending',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataForRejectedLinkForAppAuth()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid);
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'rejected',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth();
+
+        $this->startTest();
+    }
+
     public function testGetDemoHostedPageDataForAppAuth()
     {
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');

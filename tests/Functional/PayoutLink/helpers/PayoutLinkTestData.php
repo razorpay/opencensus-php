@@ -2388,6 +2388,174 @@ return [
         ]
     ],
 
+    'testGetHostedPageDataWithEmptySupportEmailForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'expired',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => '',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataWithIssuedLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'issued',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => '',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataWithProcessingLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'processing',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => '',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataWithProcessedLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'processed',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => '',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataWithCancelledLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'cancelled',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => '',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataForPendingLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'pending',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => 'support@gmail.com',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataForExpiredLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'expired',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => 'support@gmail.com',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataForRejectedLinkForAppAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'rejected',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => 'support@gmail.com',
+                ],
+            ],
+        ]
+    ],
+
     'testGetDemoHostedPageDataForAppAuth' => [
         'request'  => [
             'method' => 'GET',

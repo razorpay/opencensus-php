@@ -187,7 +187,7 @@
         expiredAt: {{ $expired_at }},
         supportDetails: {
             supportPhone: '{{ $support_phone }}',
-            supportEmail: '{{ $support_email }}}',
+            supportEmail: '{{ $support_email }}',
         }
     };
 </script>

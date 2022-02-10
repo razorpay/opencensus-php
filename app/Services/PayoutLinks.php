@@ -56,6 +56,8 @@ class PayoutLinks
     const STATUS_EXPIRED                           = 'expired';
     const STATUS_PROCESSED                         = 'processed';
     const STATUS_CANCELLED                         = 'cancelled';
+    const STATUS_PENDING                           = 'pending';
+    const STATUS_REJECTED                          = 'rejected';
     const EXPIRE_BY                                = 'expire_by';
     const EXPIRED_AT                               = 'expired_at';
     const USER_DETAILS                             = 'user_details';
@@ -155,6 +157,12 @@ class PayoutLinks
     const X_SHOPIFY_SHOP_DOMAIN                    = 'x_shopify_shop_domain';
     const X_SHOPIFY_API_VERSION                    = 'x_shopify_api_version';
     const X_SHOPIFY_WEBHOOK_ID                     = 'x_shopify_webhook_id';
+
+    public static $statusValidForSupportDetailsInHostedPage = [
+        self::STATUS_EXPIRED,
+        self::STATUS_PENDING,
+        self::STATUS_REJECTED,
+    ];
 
     protected $baseUrl;
 
@@ -651,14 +659,15 @@ class PayoutLinks
 
         $supportMail = '';
 
-        // we want the support details in the final response only if payout link has expired
+        // we want the support details in the final response only if payout link has expired, pending, rejected
         // for other status we don't want as of now coz adding it for all status will lead to the security concern
-        if (empty($plStatus) === false and $plStatus === self::STATUS_EXPIRED)
+        if ((empty($plStatus) === false) and (in_array($plStatus, self::$statusValidForSupportDetailsInHostedPage) == true))
         {
             $supportPhone = array_pull($settings, Entity::SUPPORT_CONTACT, '');
 
             $supportMail = array_pull($settings, Entity::SUPPORT_EMAIL, '');
         }
+
 
         $data = [
             'api_host'                    => $this->config['url.api.production'],
