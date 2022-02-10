@@ -24,7 +24,6 @@ class Route
         'internal_reconcile' => ['post', 'internal/{id}/reconcile', 'InternalController@reconcile'],
 
         //friend buy
-        'friendbuy_purchase_events' => ['post', 'friendbuy/purchase_events',  'ReferralController@sendPurchaseEvents' ],
         'friend_buy_reward_validation'  =>  ['post',    'friendbuy/reward_validation',  'ReferralController@performRewardValidation' ],
 
         // Dev routes
@@ -2890,9 +2889,6 @@ class Route
         //cron job to retry penny testing for initiated case
         'retry_penny_testing_cron'                => ['post',      'merchants/retry_penny_testing',                           'MerchantController@retryPennyTestingCron'                 ],
 
-        //cron job to enable m2m referrals for merchants
-        'enable_m2m_referrals_cron'                => ['post',      'merchants/enable_m2m_referrals',                           'MerchantController@enableM2MReferralsCron'                 ],
-
         // low balance notification config apis
         'create_low_balance_config'               => ['post',       'low_balance_configs',                    'LowBalanceConfigController@create'],
         'create_low_balance_config_admin'         => ['post',       'low_balance_configs/admin',              'LowBalanceConfigController@adminCreate'],
@@ -4208,8 +4204,6 @@ class Route
         'update_admin_through_batch',
         'merchant_create_terminal_internal',
         'retry_penny_testing_cron',
-        'enable_m2m_referrals_cron',
-        'friendbuy_purchase_events',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
         'credits_create_bulk_batch',
@@ -6345,7 +6339,6 @@ class Route
     ];
 
     public static $routePermission = [
-        'friendbuy_purchase_events'                 => Permission::EDIT_MERCHANT,
         'admin_trigger_2fa_otp'                    => Permission::AUTH_LOCAL_ADMIN,
         'admin_account_lock_unlock'                => Permission::AUTH_LOCAL_ADMIN,
         'm2m_referral_link_get'                     => Permission::VIEW_MERCHANT,
@@ -11433,8 +11426,6 @@ class Route
             'terminal_service_sync_delete',
             'virtual_account_batch_migrate_yesbank',
             'transfer_settlements_update',
-            'enable_m2m_referrals_cron',
-            'friendbuy_purchase_events',
             'retry_penny_testing_cron',
             'payment_links_bulk_expire',
             'fee_recovery_payout_process',

@@ -131,7 +131,7 @@ class MerchantController extends Controller
 
     public function putMerchant($id)
     {
-        // this is temporary logging: to get all admins who uses this route
+        // this is temporary logging: to get all admins who use this route
         $this->trace->info(TraceCode::MERCHANT_EDIT_REQUEST, []);
 
         $input = Request::all();
@@ -2131,16 +2131,6 @@ class MerchantController extends Controller
     public function retryPennyTestingCron()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->retryPennyTestingCron();
-
-        return ApiResponse::json($response);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function enableM2MReferralsCron()
-    {
-        $response = $this->service()->enableM2MReferralsCron();
 
         return ApiResponse::json($response);
     }
