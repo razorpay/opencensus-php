@@ -9,6 +9,7 @@ use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Feature\Core as FeatureCore;
@@ -254,11 +255,8 @@ class Service extends Base\Service
             if (empty($m2mReferral) === true or
                 ($m2mReferral->getRefereeStatus() <> Status::MTU_EVENT_SENT and $m2mReferral->getRefereeStatus() <> Status::MTU))
             {
-                $this->trace->info(TraceCode::FRIEND_BUY_REWARD_VALIDATION_FAILED, [
-                    'request' => $request,
-                ]);
-
-                return;
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ACTION);
             }
 
             if (empty($m2mReferral->getReferrerId()))
@@ -288,13 +286,17 @@ class Service extends Base\Service
 
             $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_REFERRAL, $referrer, null, $eventAttributes);
 
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->app['segment-analytics']->pushTrackEvent(
                 $referrer, $eventAttributes, SegmentEvent::ADVOCATE_REFERRAL);
 
-            $this->rewardReferrer($m2mReferral);
+            $this->repo->transactionOnLiveAndTest(function() use ($m2mReferral) {
 
-            $this->rewardReferee($m2mReferral);
+                $this->rewardReferrer($m2mReferral);
 
+                $this->rewardReferee($m2mReferral);
+            });
+
+            $this->app['segment-analytics']->buildRequestAndSend();
         }
         catch (\Exception $e)
         {
@@ -304,6 +306,7 @@ class Service extends Base\Service
                                          [
                                              'request' => $request]);
 
+            throw $e;
         }
     }
 
@@ -358,6 +361,7 @@ class Service extends Base\Service
                                          TraceCode::FRIEND_BUY_REFEREE_REWARD_FAILED,
                                          [
                                              'referral' => $m2mReferral]);
+            throw $e;
 
         }
     }
@@ -464,7 +468,7 @@ class Service extends Base\Service
 
             $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_REFERRAL_CREDITS, $referrer, null, $eventAttributes);
 
-            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->app['segment-analytics']->pushTrackEvent(
                 $referrer, $eventAttributes, SegmentEvent::ADVOCATE_REFERRAL_CREDITS);
 
         }
@@ -475,6 +479,7 @@ class Service extends Base\Service
                                          TraceCode::FRIEND_BUY_REFERRER_REWARD_FAILED,
                                          [
                                              'referral' => $m2mReferral]);
+            throw $e;
 
         }
     }

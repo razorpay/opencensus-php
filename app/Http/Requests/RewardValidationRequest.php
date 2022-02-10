@@ -21,7 +21,7 @@ class RewardValidationRequest extends FormRequest
     {
         $app = App::getFacadeRoot();
 
-        $app['trace']->info(TraceCode::FRIEND_BUY_REWARD_VALIDATION_FAILED, [
+        $app['trace']->info(TraceCode::FRIEND_BUY_REWARD_VALIDATION_REQUEST, [
             'request' => $this->getContent()
         ]);
 

@@ -6382,6 +6382,7 @@ class Core extends Base\Core
             }
 
         }
+        $this->app['segment-analytics']->buildRequestAndSend(true);
     }
 
     public function uploadInvoiceForIncreaseTransactionLimit(Detail\Entity $merchantDetails, $invoiceProof)

@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Merchant\Cron\Actions;
 
+use Carbon\Carbon;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Store;
@@ -54,6 +56,9 @@ class EnableM2MReferralAction extends BaseAction
             }
 
         }
+
+        $this->app['segment-analytics']->buildRequestAndSend(true);
+
         return new ActionDto(Constants::SUCCESS);
     }
 
@@ -75,6 +80,15 @@ class EnableM2MReferralAction extends BaseAction
             ];
 
             (new Store\Core())->updateMerchantStore($merchantId, $data, Store\Constants::INTERNAL);
+
+            $properties = [
+                'experiment_timestamp' => Carbon::now()->getTimestamp(),
+            ];
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['segment-analytics']->pushTrackEvent(
+                $merchant, $properties, SegmentEvent::M2M_ENABLED_EXPERIMENT);
 
         }
         catch (\Exception $e)

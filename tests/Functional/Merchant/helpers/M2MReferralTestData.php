@@ -1,6 +1,28 @@
 <?php
 
 return [
+
+    'testSignupFromFriendBuy' => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'utmSource'            => 'friendbuy',
+                'utmMedium'            => 'referral',
+                "utmCampaign"          => "Referral Production",
+                "referralCode"          => "mg5xnqzn",
+                'email'                 => 'test2@c.com',
+                'password'              => 'hello1233',
+                'password_confirmation' => 'hello1233',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'test2@c.com',
+            ]
+        ]
+    ],
     'testOauthSignup' => [
         'request'  => [
             'url'     => '/users/oauth-register',
@@ -48,6 +70,7 @@ return [
             ]
         ]
     ],
+
     'testRewardValidationInvalidReferee' => [
         'request'  => [
             'url'     => '/friendbuy/reward_validation',
@@ -78,7 +101,7 @@ return [
         ],
         'response' => [
             'content' =>[],
-            'status_code' => 200,
+            'status_code' => 400,
         ]
     ],
     'testRewardValidationInvalidReferrer' => [
@@ -252,7 +275,7 @@ return [
         ],
         'response' => [
             'content' =>[],
-            'status_code' => 200,
+            'status_code' => 400,
         ]
     ],
     'testRewardValidationNotMTU' => [
@@ -285,7 +308,7 @@ return [
         ],
         'response' => [
             'content' =>[],
-            'status_code' => 200,
+            'status_code' => 400,
         ]
     ],
     'testRewardValidationInvalidCoupon' => [
@@ -318,29 +341,73 @@ return [
         ],
         'response' => [
             'content' =>[],
-            'status_code' => 200,
+            'status_code' => 400,
         ]
     ],
-
-    'testSignupFromFriendBuy' => [
+    'testRewardValidationAdvocateCouponApplyFailed' => [
         'request'  => [
-            'url'     => '/users/register',
+            'url'     => '/friendbuy/reward_validation',
             'method'  => 'POST',
-            'content' => [
-                'utmSource'            => 'friendbuy',
-                'utmMedium'            => 'referral',
-                "utmCampaign"          => "Referral Production",
-                "referralCode"          => "mg5xnqzn",
-                'email'                 => 'test2@c.com',
-                'password'              => 'hello1233',
-                'password_confirmation' => 'hello1233',
-                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
-                ],
+            'headers' =>[
+                'x-friendbuy-hmac-sha256'=> 'muGWc0fftTMWwYS9Md/kjchLRtfmzq3e8bwt9W+/EwY='
             ],
-        'response' => [
             'content' => [
-                'email' => 'test2@c.com',
+                "eventType"=> "mtu",
+                "recipientType"=> "advocate",
+                "campaignId"=> "e1466ae6-441f-43e4-88c0-36e0b0c6bc15",
+                "event"=> [
+                    "isNewCustomer"=> true,
+                    "email"=> "12@c.com",
+                    "customerId"=> "I0qYGdG9IGaVxz"
+                ],
+                "advocate"=> [
+                    "customerId"=> "Hm9Bv6kFufFS36",
+                    "email"=> "123@razorpay.com",
+                    "ipAddress"=> "115.110.224.178"
+                ],
+                "actor"=> [
+                    "customerId"=> "I0qYGdG9IGaVxz",
+                    "email"=> "124@razorpay.com",
+                    "ipAddress"=> "115.110.224.178"
                 ]
+            ]
+        ],
+        'response' => [
+            'content' =>[],
+            'status_code' => 400,
+        ]
+    ],
+    'testRewardValidationFriendCouponApplyFailed' => [
+        'request'  => [
+            'url'     => '/friendbuy/reward_validation',
+            'method'  => 'POST',
+            'headers' =>[
+                'x-friendbuy-hmac-sha256'=> 'muGWc0fftTMWwYS9Md/kjchLRtfmzq3e8bwt9W+/EwY='
+            ],
+            'content' => [
+                "eventType"=> "mtu",
+                "recipientType"=> "advocate",
+                "campaignId"=> "e1466ae6-441f-43e4-88c0-36e0b0c6bc15",
+                "event"=> [
+                    "isNewCustomer"=> true,
+                    "email"=> "12@c.com",
+                    "customerId"=> "I0qYGdG9IGaVxz"
+                ],
+                "advocate"=> [
+                    "customerId"=> "Hm9Bv6kFufFS36",
+                    "email"=> "123@razorpay.com",
+                    "ipAddress"=> "115.110.224.178"
+                ],
+                "actor"=> [
+                    "customerId"=> "I0qYGdG9IGaVxz",
+                    "email"=> "124@razorpay.com",
+                    "ipAddress"=> "115.110.224.178"
+                ]
+            ]
+        ],
+        'response' => [
+            'content' =>[],
+            'status_code' => 400,
         ]
     ],
     'testRewardValidation' => [
@@ -475,6 +542,7 @@ return [
             'status_code' => 200,
         ]
     ],
+
     'testFetchReferralLinkWithEnabledFeature' => [
         'request'   => [
             'method'  => 'GET',
