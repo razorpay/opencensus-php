@@ -5482,14 +5482,7 @@ class Service extends Base\Service
 
         if ($isLinkedAccount === false)
         {
-            if($optimizeCreationFlow === true)
-            {
-                SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId());
-            }
-            else
-            {
-                $merchantCore->addSubMerchantReferral($merchant, $subMerchant);
-            }
+            SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId());
 
             $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
 
