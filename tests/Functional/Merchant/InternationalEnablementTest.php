@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use Mail;
+use Mockery;
+use RZP\Constants\Mode;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -23,11 +26,25 @@ class InternationalEnablementTest extends TestCase
 
     use WorkflowTrait;
 
+    /**
+     * @var Mockery\Mock
+     */
+    private $storkMock;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/InternationalEnablementTestData.php';
 
         parent::setUp();
+
+        $this->mockStork();
+    }
+
+    protected function mockStork()
+    {
+        $this->storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $this->storkMock);
     }
 
     private function createFixtures()
@@ -323,4 +340,128 @@ class InternationalEnablementTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testReminderCallback()
+    {
+        $merchant = $this->createFixtures();
+
+        //Reminder callback
+
+        $this->ba->reminderAppAuth();
+
+        $attributes = [
+            'merchant_id'        => $merchant->getId(),
+            'goods_type'         => 'physical_goods',
+            'business_use_case'  => null,
+            'allowed_currencies' => [
+                'INR'
+            ],
+            'monthly_sales_intl_cards_min'        => 2000,
+            'monthly_sales_intl_cards_max'        => 4000,
+            'business_txn_size_min'               => 10000,
+            'business_txn_size_max'               => 20000,
+        ];
+
+        $internationalEnablementDetail = $this->fixtures->international_enablement_detail->createEntityInTestAndLive('international_enablement_detail',$attributes);
+
+        Mail::fake();
+
+         $this->expectStorkSmsRequest([
+            'templateName'      => 'sms.dashboard.international_enablement_reminder',
+            'templateNamespace' => 'payments_dashboard',
+
+        ]);
+
+        $this->expectStorkWhatsappRequest("Hi {merchant_name} ! You're 1 step away from unlocking 30% more sales for {business_name} by activating international payments - finish it now!\nRegards,\nTeam Razorpay",
+        [
+            'params'=> [
+                'merchant_name' => "Razorpay",
+                'business_name' => "Razorpay",
+            ]
+        ]);
+
+        //Success Response
+
+        $testData = $this->testData['testReminderCallbackSuccess'];
+
+        $testData['request']['url'] = '/international_enablement/reminders/live/'.$merchant->getId();
+
+        $this->startTest($testData);
+
+        //Failure Response
+
+        $attributes['submit'] = 1;
+
+        $internationalEnablementDetail = $this->fixtures->international_enablement_detail->createEntityInTestAndLive('international_enablement_detail',$attributes);
+
+        $testData = $this->testData['testReminderCallbackFailure'];
+
+        $testData['request']['url'] = '/international_enablement/reminders/live/'.$merchant->getId();
+
+        $this->startTest($testData);
+
+    }
+
+    protected function expectStorkSmsRequest($expectInput): void
+    {
+        $this->storkMock
+            ->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($input) use ($expectInput)
+                {
+                    $this->assertArraySelectiveEquals($expectInput, $input);
+
+                    return true;
+                }),
+                Mockery::on(function ($mockInMode)
+                {
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
+    }
+
+    protected function expectStorkWhatsappRequest($expectedTemplate, $expectedInput,
+                                                  $expectedReceiver = '9876543210'): void
+    {
+        $this->storkMock
+            ->shouldReceive('sendWhatsappMessage')
+            ->with(
+                Mockery::on(function ($mode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($template) use ($expectedTemplate)
+                {
+                    return $expectedTemplate === $template;
+                }),
+                Mockery::on(function ($receiver) use ($expectedReceiver)
+                {
+                    return $receiver === $expectedReceiver;
+                }),
+                Mockery::on(function ($input) use ($expectedInput)
+                {
+                    $this->assertArraySelectiveEquals($expectedInput, $input);
+
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode(['key' => 'value']);
+
+                return $response;
+            });
+    }
+
 }

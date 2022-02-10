@@ -3126,6 +3126,11 @@ class Route
             'international_enablement',
             'MerchantInternationalEnablementController@discard',
         ],
+        'merchant_international_enablement_reminder' => [
+            'post',
+            'international_enablement/reminders/{mode}/{id}',
+            'MerchantInternationalEnablementController@reminderCallBack'
+        ],
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
@@ -4022,6 +4027,7 @@ class Route
         'refund_fetch_status',
         'reminder_send',
         'p2p_reminder_send',
+        'merchant_international_enablement_reminder',
         'scrooge_entities',
         'scrooge_entities_fetch',
         'fund_transfer_attempt_modes',
@@ -11789,6 +11795,7 @@ class Route
             'tax_payments_reminders_callback',
             'payout_links_reminder_callback',
             'payout_links_expire_callback',
+            'merchant_international_enablement_reminder',
         ],
 
         'batch' => [

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Constants\Mode;
 
 class MerchantInternationalEnablementController extends Controller
 {
@@ -51,5 +52,16 @@ class MerchantInternationalEnablementController extends Controller
         $data = $this->service()->getInternationalVisibilityInfo();
 
         return ApiResponse::json($data);
+    }
+
+    public function reminderCallBack(string $mode,string $merchantId)
+    {
+        $mode = ($mode === Mode::TEST) ? Mode::TEST : Mode::LIVE;
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
+        $data = $this->service()->reminderCallBack($merchantId);
+
+        return ApiResponse::json($data['response_body'], $data['status_code']);
     }
 }

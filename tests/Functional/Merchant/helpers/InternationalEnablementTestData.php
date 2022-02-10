@@ -762,4 +762,30 @@ return [
             ],
         ],
     ],
+
+    'testReminderCallbackSuccess' => [
+        'request'  => [
+            'url'    => '/international_enablement/reminders/live/10000000000000',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'=>[
+                'success_response' => 1,
+            ],
+        ]
+    ],
+
+    'testReminderCallbackFailure' => [
+        'request'  => [
+            'url'    => '/international_enablement/reminders/live/10000000000000',
+            'method' => 'POST',
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'=>[
+                'error_response' => 1,
+            ],
+        ]
+    ],
 ];

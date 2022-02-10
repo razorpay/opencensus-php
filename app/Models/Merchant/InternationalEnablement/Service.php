@@ -2,23 +2,43 @@
 
 namespace RZP\Models\Merchant\InternationalEnablement;
 
+use Mail;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Constants as MerchantConstant;
 use RZP\Models\Typeform;
 use RZP\Models\Merchant;
+use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
+use RZP\Services\Reminders;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Merchant\InternationalEnablement as InternationalActivationMail;
 
 class Service extends Base\Service
 {
     protected $mutex;
+
+    /**
+     * @var Reminders
+     */
+    protected $reminders;
+
+    /** @var Stork $stork */
+    protected $stork;
+
+    const SHARED_MERCHANT_ID = '100000razorpay';
 
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->reminders = $this->app['reminders'];
+
+        $this->stork = $this->app['stork_service'];
     }
 
     public function preview(): array
@@ -49,6 +69,8 @@ class Service extends Base\Service
         ]);
 
         $input = $sanitizedInput;
+
+        $this->createReminderForRemarketing($this->merchant->getId());
 
         $mutexKey = sprintf(Constants::INTERNATIONAL_ENABLEMENT_LOCK_KEY, $this->merchant->getId());
 
@@ -276,5 +298,160 @@ class Service extends Base\Service
         $data['paypal'] = $paypalEnabled;
 
         return $data;
+    }
+
+    protected function createReminderForRemarketing(string $merchantId)
+    {
+        $request = $this->getRemindersCreateReminderInput($merchantId);
+        try{
+            $response = $this->reminders->createReminder($request,self::SHARED_MERCHANT_ID);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REMINDERS_RESPONSE,
+                [
+                    'data'        => $request,
+                    'merchant_id' => $merchantId,
+                ]);
+        }
+    }
+
+    protected function getRemindersCreateReminderInput(string $merchantId)
+    {
+        $reminderData = [
+            'submitted_at' => Carbon::now()->getTimestamp()
+        ];
+
+
+        $url = sprintf('international_enablement/reminders/%s/%s',$this->mode,$merchantId);
+
+        $request = [
+            'namespace'     => 'international_activation_reminder',
+            'entity_id'     => $merchantId,
+            'entity_type'   => $this->merchant->getEntityName(),
+            'reminder_data' => $reminderData,
+            'callback_url'  => $url,
+        ];
+
+        return $request;
+    }
+
+    public function reminderCallBack(string $merchantId)
+    {
+
+        $detailEntity = $this->repo->international_enablement_detail->getLatest($merchantId);
+        $statusCode = 200;
+
+        if ($detailEntity->isSubmitted()==true)
+        {
+            $statusCode = 400;
+            $finalResponseBody = ['error_response'=> 1];
+        }
+        else{
+            $this->sendNotificationsForMerchant($merchantId);
+            $finalResponseBody = ['success_response'=> 1];
+        }
+
+        return ['status_code' => $statusCode, 'response_body' => $finalResponseBody];
+
+    }
+
+    protected function sendNotificationsForMerchant(string $merchantId)
+    {
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        //SMS
+        try {
+            $smsPayload = [
+                'ownerId'               => $merchant->getId(),
+                'ownerType'             => MerchantConstant::MERCHANT,
+                'templateName'          => Typeform\Constants::SMS_INTL_ENABLEMENT_REMINDER,
+                'templateNamespace'     => 'payments_dashboard',
+                'orgId'                 => $merchant->getOrgId(),
+                'destination'           => $merchant->merchantDetail->getContactMobile(),
+                'sender'                => 'RZRPAY',
+                'language'              => 'english',
+                'contentParams'         => [
+                    'merchant_name'  => $merchant->getName(),
+                    'business_name'  => $merchant->merchantDetail->getBusinessName()
+                ],
+            ];
+
+            $this->stork->sendSms($this->mode,$smsPayload, false);
+
+            $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_SMS_SENT,[
+                "merchant_id" => $merchantId,
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::INTERNATIONAL_ENABLEMENT_SMS_FAILED,
+                [
+                "merchant_id" => $merchantId,
+                "exception"   => $e,
+            ]);
+        }
+
+        //mail
+        try {
+            $mailPayload['merchant'] = $merchant->toArray();
+
+            $mail = new InternationalActivationMail\Reminder($mailPayload);
+
+            Mail::send($mail);
+
+            $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_EMAIL_SENT,[
+                "merchant_id"=>$merchantId,
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::INTERNATIONAL_ENABLEMENT_EMAIL_FAILED,
+                [
+                "merchant_id"=>$merchantId,
+                "exception"   => $e,
+            ]);
+        }
+
+        //Whatsapp
+        try{
+            $receiver = $merchant->merchantDetail->getContactMobile();
+
+            $template = Typeform\Constants::WHATSAPP_INTL_ENABLEMENT_REMINDER;
+
+            $whatsAppPayLoad = [
+                'ownerId'   => $merchant->getId(),
+                'ownerType' => 'merchant',
+                'params'    => [
+                    'merchant_name'  => $merchant->getName(),
+                    'business_name' => $merchant->merchantDetail->getBusinessName(),
+                ],
+                'is_cta_template' => true,
+                'button_url_param'=> "app/payment-methods",
+            ];
+
+            $whatsAppPayLoad['template_name'] = Typeform\Constants::WHATSAPP_INTL_ENABLEMENT_REMINDER_NAME;
+
+            $this->stork->sendWhatsappMessage($this->mode,$template,$receiver,$whatsAppPayLoad);
+
+            $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_WHATSAPP_SENT,[
+                "merchant_id" => $merchantId,
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::INTERNATIONAL_ENABLEMENT_WHATSAPP_FAILED,
+                [
+                "merchant_id" => $merchantId,
+                "exception"   => $e,
+            ]);
+        }
     }
 }

@@ -2032,5 +2032,10 @@ final class FactoryData
         $factory(\RZP\Models\Settlement\EarlySettlementFeaturePeriod\Entity::class, [
             'id'                => $faker->uniqueid,
         ]);
+
+        $factory(\RZP\Models\Merchant\InternationalEnablement\Detail\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'revision_id'       => $faker->uniqueid,
+            ]);
     }
 }

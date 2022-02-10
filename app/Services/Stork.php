@@ -386,6 +386,22 @@ class Stork
                 $context = json_decode(json_encode(['template' => $input['template_name']]));
             }
 
+            if (isset($input['is_cta_template'])==true and isset($input['button_url_param'])==true)
+            {
+                $whatsappChannels = json_decode(json_encode([
+                    'destination'=>$receiver,
+                    'text'=>$text,
+                    'is_cta_template'=>$input['is_cta_template'],
+                    'button_url_param'=>$input['button_url_param']
+                ]));
+            }
+            else {
+                $whatsappChannels = json_decode(json_encode([
+                    'destination'=>$receiver,
+                    'text'=>$text,
+                ]));
+            }
+
             $requestPayload = [
                 'message' => [
                     'service'           => $this->service,
@@ -393,21 +409,10 @@ class Stork
                     'owner_type'        => $input['ownerType'],
                     'context'           => $context,
                     'whatsapp_channels' => [
-                        [
-                            'destination' => $receiver,
-                            'text'        => $text
-                        ]
+                        $whatsappChannels
                     ]
                 ]
             ];
-
-            if ((isset($input['is_cta_template']) === true) and
-                (isset($input['button_url_param']) === true))
-            {
-                $requestPayload['message']['whatsapp_channels']['is_cta_template'] = $input['is_cta_template'];
-
-                $requestPayload['message']['whatsapp_channels']['button_url_param'] = $input['button_url_param'];
-            }
 
             $this->traceWhatsAppRequest($requestPayload);
 

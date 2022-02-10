@@ -83,6 +83,10 @@ class Constants
     const WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL_NAME    = 'whatsapp_risk_international_acceptance_mobile_signup';
     const WHATSAPP_INTL_ENABLEMENT_REJECT_MOBILE_SIGNUP_TPL_NAME      = 'whatsapp_risk_international_rejection_mobile_signup';
 
+    const WHATSAPP_INTL_ENABLEMENT_REMINDER      =  " Hi {merchant_name} ! You're 1 step away from unlocking 30% more sales for {business_name} by activating international payments - finish it now!\nRegards,\nTeam Razorpay";
+    const WHATSAPP_INTL_ENABLEMENT_REMINDER_NAME = 'whatsapp_international_enablement_reminder2';
+    const SMS_INTL_ENABLEMENT_REMINDER  =   'sms.dashboard.international_enablement_reminder';
+
     const WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL = [
       self::EMAIL_SIGNUP        => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_EMAIL_SIGNUP_TPL,
       self::MOBILE_SIGNUP       => self::WHATSAPP_INTL_ENABLEMENT_APPROVED_MOBILE_SIGNUP_TPL,

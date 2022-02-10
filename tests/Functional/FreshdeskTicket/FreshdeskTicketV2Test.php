@@ -148,9 +148,9 @@ class FreshdeskTicketV2Test extends TestCase
 
                     $actualTemplate = $message['context']->template;
 
-                    $actualText = $whatsappChannel['text'];
+                    $actualText = $whatsappChannel->text;
 
-                    $actualDestination = $whatsappChannel['destination'];
+                    $actualDestination = $whatsappChannel->destination;
 
                     if (($template !== $actualTemplate) or
                         ($text !== $actualText) or
