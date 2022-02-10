@@ -1,4 +1,5 @@
 import React from 'react';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
@@ -13,7 +14,14 @@ export default React.memo(({ userId }) => {
     >
       Automatically create orders on Shiprocket from Payment pages
       <div className="big-circle-seprator" />
-      <a href="#" target="_blank" rel="noreferrer noopener" class="pointer">
+      <a
+        href={getCustomURL(
+          'https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/shiprocket',
+        )}
+        target="_blank"
+        rel="noreferrer noopener"
+        class="pointer"
+      >
         <b>Know More</b>
       </a>
     </AnnouncementBanner>

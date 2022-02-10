@@ -7,6 +7,7 @@ import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Alert from 'common/new-ui/Alert';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
+import { DocLink } from 'merchant/components/DocsLink';
 import { trackPageSettingsData } from '../../ga';
 import track from '../../Wysiwyg/track';
 
@@ -368,15 +369,22 @@ export default class PaymentPageSettings extends React.Component {
                     </div>
                     <Alert.Warning>
                       Note - you also need to add <b>Razorpay Payment pages</b> channel on your{' '}
-                      <a href="https://app.shiprocket.in/register" target="_blank" rel="noreferrer">
+                      <a
+                        href="https://app.shiprocket.in/register?utm_source=Razorpay&utm_medium=In-Product&utm_campaign=PaymentPages&utm_content=Razorpay-In-product"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         Shiprocket dashboard <i className="i i-external-link" />
                       </a>
                     </Alert.Warning>
                     <div>
-                      Need help? Refer to our {/* TODO: Add real link */}
-                      <a href="#" target="_blank" rel="noreferrer">
-                        Shiprocket integration docs <i className="i i-external-link" />
-                      </a>
+                      Need help? Refer to our{' '}
+                      <DocLink
+                        href="https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/shiprocket"
+                        target="_blank"
+                      >
+                        Shiprocket integration docs <i class="i i-external-link" />
+                      </DocLink>
                     </div>
                   </div>
                 )}
