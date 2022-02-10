@@ -693,6 +693,14 @@ class Core extends Base\Core
 
     protected function verifyVPAEnabled(Merchant $merchant)
     {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if (($routeName === 'virtual_account_create_for_internal') and
+            ($this->app['basicauth']->isPaymentLinkServiceApp() === true))
+        {
+            return;
+        }
+
         $feature = Feature\Constants::VIRTUAL_ACCOUNTS;
 
         if ($merchant->isFeatureEnabled($feature) === false)

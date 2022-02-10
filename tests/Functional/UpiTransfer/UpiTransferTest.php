@@ -401,6 +401,8 @@ class UpiTransferTest extends TestCase
     {
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'payment_capture' => true, 'amount' => 3500]);
 
+        $this->fixtures->merchant->removeFeatures(['virtual_accounts']);
+
         $this->ba->paymentLinksAuth();
 
         $this->startTest();
@@ -414,6 +416,8 @@ class UpiTransferTest extends TestCase
     {
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'payment_capture' => true, 'amount' => 3500]);
 
+        $this->fixtures->merchant->removeFeatures(['virtual_accounts']);
+
         $this->ba->paymentLinksAuth();
 
         $this->startTest();
@@ -422,6 +426,8 @@ class UpiTransferTest extends TestCase
     public function testCreateVPAForPLAppWithOrderForNoDescriptor()
     {
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'payment_capture' => true, 'amount' => 3500]);
+
+        $this->fixtures->merchant->removeFeatures(['virtual_accounts']);
 
         $this->ba->paymentLinksAuth();
 
@@ -438,6 +444,8 @@ class UpiTransferTest extends TestCase
             'status'            => 'paid'
             ]
         );
+
+        $this->fixtures->merchant->removeFeatures(['virtual_accounts']);
 
         $this->ba->paymentLinksAuth();
 
