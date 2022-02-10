@@ -50,15 +50,10 @@ export const getSlideByRule = (rule) => {
         CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT,
         CASH_ADVANCE_CAROUSEL_SLIDES.AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT,
       ];
-    case CASH_ADVANCE_CAROUSEL_VIEW_RULES.REPAYMENTS_TAB_SHOW_DUE:
-      return [CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT];
-    case CASH_ADVANCE_CAROUSEL_VIEW_RULES.REPAYMENTS_TAB_SHOW_NO_DUE:
-      return [CASH_ADVANCE_CAROUSEL_SLIDES.FULL_DAY_AUTO_REPAY_FAILED_MANUAL_REPAY_PROMPT];
     case CASH_ADVANCE_CAROUSEL_VIEW_RULES.REPAYMENT_TAB_VIEW:
       return [CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT];
     default:
-      //TODO:this should never happen, as atleast one case must satisfy
-      return [''];
+      return [CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT];
   }
 };
 
@@ -78,7 +73,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
   const outstandingBalance = totalInterestAmount + totalPrincipalAmount;
 
   switch (slideId) {
-    case CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT:
+    case CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT: {
       let lastDate = '';
       let last = upcomingRepayments ? upcomingRepayments[upcomingRepayments.length - 1] : null;
 
@@ -114,6 +109,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
           },
         ],
       };
+    }
     case CASH_ADVANCE_CAROUSEL_SLIDES.ZERO_OUTSTANDING_BALANCE:
       return {
         ...BASE_SLIDE_CONTENT_BY_VARIANT[SLIDE_COLORS.blue],
@@ -204,7 +200,7 @@ export function computePrincipalAndInterest(repaymentBreakups, key = 'breakup_am
   const response = {};
 
   repaymentBreakups.forEach((breakup) => {
-    const type = breakup['balance_type'];
+    const type = breakup.balance_type;
     const amount = Number(breakup[key]);
 
     if (response[type]) response[type] += amount;
