@@ -2630,4 +2630,15 @@ class Repository extends Base\Repository
                     ->whereIn($this->dbColumn(Entity::ENTITY_ID), $commissionIds)
                     ->count();
     }
+
+    public function getDebitAndCreditValues($merchantId, $startTimestamp)
+    {
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+                      ->select(Entity::ID, Entity::DEBIT, Entity::CREDIT, Entity::BALANCE)
+                      ->where(Entity::MERCHANT_ID, $merchantId)
+                      ->where(Entity::CREATED_AT, '>=', $startTimestamp)
+                      ->orderBy(Entity::CREATED_AT, 'asc');
+
+        return $query->get()->toArray();
+    }
 }

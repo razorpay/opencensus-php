@@ -2813,6 +2813,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_CRON_RESULT_ADD                                    = 'LEDGER_CRON_RESULT_ADD';
     const LEDGER_CRON_EXECUTION_ADD                                 = 'LEDGER_CRON_EXECUTION_ADD';
 
+    const LEDGER_RECON_JOB_ENQUEUED                                 = 'LEDGER_RECON_JOB_ENQUEUED';
+    const LEDGER_RECON_JOB_RECEIVED                                 = 'LEDGER_RECON_JOB_RECEIVED';
+    const LEDGER_RECON_DATA_FETCHED_FROM_DB                         = 'LEDGER_RECON_DATA_FETCHED_FROM_DB';
+    const IDEAL_LEDGER_DATA                                         = 'IDEAL_LEDGER_DATA';
+    const IDEAL_LEDGER_PROCESS_FAILED                               = 'IDEAL_LEDGER_PROCESS_FAILED';
+
     const GRATIS_TO_POSTPAID_INPUT                              = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                             = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                           = 'GRATIS_TO_POSTPAID_RESPONSE';

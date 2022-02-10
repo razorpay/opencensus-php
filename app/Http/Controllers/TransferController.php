@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Constants\Entity;
 
 class TransferController extends Controller
 {
@@ -144,15 +145,16 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
+        $response = $this->service(Entity::TRANSACTION)->dispatchIdealLedgerJob($input);
+
+        return ApiResponse::json($response);
+
 //        return ApiResponse::json(
 //            [
 //                'msg'   => 'Transfer/Route debug route. Use this route for debugging/data corrections via dark',
 //                'input' => $input
 //            ]
 //        );
-        $response = $this->service()->dispatchBackfillJob($input);
-
-        return ApiResponse::json($response);
     }
 
     public function transferRecon()

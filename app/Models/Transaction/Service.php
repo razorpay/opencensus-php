@@ -8,6 +8,8 @@ use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Services\Mutex;
 use RZP\Base\JitValidator;
+use RZP\Base\RuntimeManager;
+use RZP\Jobs\Settlement\LedgerReconJob2;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -465,5 +467,84 @@ class Service extends Base\Service
         $resp['items'] = $txn->toArray();
 
         return $resp;
+    }
+
+    public function dispatchIdealLedgerJob(array $input)
+    {
+        if (empty($input) === true)
+        {
+            return;
+        }
+
+        foreach ($input as $merchantId => $startTimestamp)
+        {
+            LedgerReconJob2::dispatch($this->mode, $merchantId, $startTimestamp);
+
+            $this->trace->info(
+                TraceCode::LEDGER_RECON_JOB_ENQUEUED,
+                [
+                    'merchant_id'       => $merchantId,
+                    'start_timestamp'   => $startTimestamp,
+                ]
+            );
+        }
+    }
+
+    public function prepareIdealLedger(string $merchantId, int $startTimestamp)
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        $values = $this->repo->transaction->getDebitAndCreditValues($merchantId, $startTimestamp);
+
+        $this->trace->info(
+            TraceCode::LEDGER_RECON_DATA_FETCHED_FROM_DB,
+            [
+                'merchant_id'       => $merchantId,
+                'start_timestamp'   => $startTimestamp,
+            ]
+        );
+
+        $endIndex = count($values) - 1;
+
+        $startingBalance = $values[0][Entity::BALANCE];
+        $endingBalance = $values[$endIndex][Entity::BALANCE];
+
+        $totalDebit = 0;
+        $totalCredit = 0;
+
+        for ($i = 1; $i <= $endIndex; $i++)
+        {
+            $totalDebit += $values[$i][Entity::DEBIT];
+            $totalCredit += $values[$i][Entity::CREDIT];
+        }
+
+        $lhs = $totalCredit - $totalDebit;
+        $rhs = $endingBalance - $startingBalance;
+
+        if ($lhs === $rhs)
+        {
+            $output = 'green';
+        }
+        else
+        {
+            $output = 'red';
+        }
+
+        $this->trace->info(
+            TraceCode::IDEAL_LEDGER_DATA,
+            [
+                'merchant_id'       => $merchantId,
+                'start_timestamp'   => $startTimestamp,
+                'total_debit'       => $totalDebit,
+                'total_credit'      => $totalCredit,
+                'lhs'               => $lhs,
+                'starting_balance'  => $startingBalance,
+                'ending_balance'    => $endingBalance,
+                'rhs'               => $rhs,
+                'output'            => $output,
+            ]
+        );
+
+        return $output;
     }
 }
