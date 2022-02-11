@@ -90,6 +90,36 @@
         max-width: 100%;
       }
     }
+
+    @media only screen and (max-width: 760px) {
+      .vp-features-table {
+        border-collapse: collapse !important;
+      }
+
+      .table-col {
+        display: block;
+        width: 90% !important;
+      }
+
+      .vp-features-table td {
+        margin-bottom: 4px;
+        height: 40px !important;
+      }
+
+      .responsive-col {
+        display: block !important;
+        padding-bottom: 24px;
+        text-align: justify;
+      }
+
+      .responsive-img {
+        height: 250px !important;
+      }
+
+      .responsive-margin {
+        margin-left: 48px !important;
+      }
+    }
   </style>
 
   <style type="text/css"></style>
@@ -207,7 +237,7 @@
                                             line-height: 0;
                                           ">
                                         <a href="#">
-                                          <img
+                                          <img class="responsive-img"
                                             src="https://cdn.razorpay.com/static/assets/email/vendor-portal/vendor_portal_invite_email.gif"
                                             style="width: 100%; height: 300px" />
                                         </a>
@@ -290,7 +320,7 @@
                                       ">
                                     With Vendor Portal you can:
                                   </div>
-                                  <table style="
+                                  <table class="vp-features-table" style="
                                         border-collapse: separate;
                                         border-spacing: 8px;
                                         margin: 16px 0;
@@ -298,7 +328,7 @@
                                       ">
                                     <tbody>
                                       <tr>
-                                        <td style="
+                                        <td class="table-col" style="
                                               width: 50%;
                                               padding: 12.8px;
                                               height: 50px;
@@ -328,20 +358,20 @@
                                               height: 50px;
                                               background: #d5f2e2;
                                               border-radius: 8px;
-                                            ">
+                                            " class="table-col">
                                           <table>
                                             <tr>
                                               <td style="padding-right: 16px">
                                                 <img
-                                                  src="https://cdn.razorpay.com/static/assets/email/vendor-portal/forward_email.png"
+                                                  src="https://cdn.razorpay.com/static/assets/email/vendor-portal/communication_icon.png"
                                                   style="width: 25px" />
                                               </td>
                                               <td>
                                                 <span style="
                                                       color: #242b4d;
                                                       line-height: 16px;
-                                                    ">Forward invoices via
-                                                  email</span>
+                                                    ">Reduce back and forth
+                                                  communication</span>
                                               </td>
                                             </tr>
                                           </table>
@@ -354,7 +384,7 @@
                                               height: 50px;
                                               background: #d5f2e2;
                                               border-radius: 8px;
-                                            ">
+                                            " class="table-col">
                                           <table>
                                             <tr>
                                               <td style="padding-right: 16px">
@@ -378,7 +408,7 @@
                                               height: 50px;
                                               background: #d5f2e2;
                                               border-radius: 8px;
-                                            ">
+                                            " class="table-col">
                                           <table>
                                             <tr>
                                               <td style="padding-right: 16px">
@@ -390,8 +420,8 @@
                                                 <span style="
                                                       color: #242b4d;
                                                       line-height: 16px;
-                                                    ">Create and Duplicate
-                                                  Invoices</span>
+                                                    ">Create Payment
+                                                  Requests</span>
                                               </td>
                                             </tr>
                                           </table>
@@ -399,33 +429,24 @@
                                       </tr>
                                     </tbody>
                                   </table>
-                                  <div style="
+                                  <div class="responsive-col" style="
                                         display: flex;
                                         margin: 0 16px;
                                         margin-top: 16px;
-                                        padding-bottom: 8px;
                                       ">
                                     <div style="
                                           display: flex;
                                           line-height: 20px;
                                           font-size: 14px;
+                                          padding-right: 8px;
+                                          padding-bottom: 8px;
                                         ">
                                       <p>
-                                        <span style="
-                                              font-weight: bold;
-                                              color: #0038a6;
-                                            "><a class="link btn primary font-bold" href="{{$invite_link}}"
-                                            target="_blank" style="
-                                                text-decoration: none;
-                                                font-size: 14px;                                                                                                
-                                                white-space: nowrap;
-                                                text-align: center;             
-                                              ">Sign up</a></span>
-                                        and complete the onboarding form to
-                                        get started
+                                        Accept invite and complete the
+                                        onboarding to get started
                                       </p>
                                     </div>
-                                    <div style="
+                                    <div class="responsive-margin" style="
                                           text-align: center;
                                           display: table;
                                         ">
@@ -445,7 +466,7 @@
                                               text-align: center;
                                               color: #fff;
                                               background: #6297ff;
-                                            ">SIGN UP NOW</a>
+                                            ">ACCEPT INVITE</a>
                                       </div>
                                     </div>
                                   </div>
