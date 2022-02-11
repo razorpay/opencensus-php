@@ -213,9 +213,8 @@ const Clarifications = (props) => {
       method: 'post',
       data: formData,
     });
-    props
-      .fetchMerchantInstruments()
-      .then(() => props.setInstrument({ ...props.instrument, ...props.leafInstrument }));
+    await props.fetchMerchantInstruments();
+    await props.setInstrument({ ...props.instrument, ...props.leafInstrument });
     props.closeModal();
   };
 

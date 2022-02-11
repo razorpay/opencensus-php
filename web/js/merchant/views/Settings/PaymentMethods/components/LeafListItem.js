@@ -290,6 +290,8 @@ class LeafListItem extends React.Component {
       }
     };
 
+    const shouldRaiseRequest =
+      [ACTION_REQUIRED, REJECTED].includes(instrument.status) && instrument.comment;
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -329,7 +331,7 @@ class LeafListItem extends React.Component {
               ) : null} */}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
-            {instrument.status === REJECTED && (
+            {shouldRaiseRequest && (
               <button className="btn btn-link" onClick={() => this.handleRaiseRequest(instrument)}>
                 Raise Request
               </button>
