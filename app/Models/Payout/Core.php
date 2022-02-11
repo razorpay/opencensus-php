@@ -4620,7 +4620,8 @@ class Core extends Base\Core
                 'amount'                => amount_format_IN($pendingPayout['amount_total']),
                 'notificationPurpose'   => 'bulkaction',
                 'wzrk_dl'               => 'xmobile://payouts?status=pending&pending_on_roles=' . $pendingPayout['role']
-            )
+            ),
+            'tagGroup'      => 'bulkaction',
         );
 
         $pushNotification = new PendingApprovalsPN($notificationData);

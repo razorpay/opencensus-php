@@ -264,6 +264,8 @@ class PushNotification {
 
     protected function addTagGroup()
     {
+        $this->setTagGroup($this->input['tagGroup']);
+
         return $this;
     }
 
