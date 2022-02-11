@@ -499,6 +499,27 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->runEntityAssertions($qrCode);
     }
 
+    public function testQRContentForSubmerchant()
+    {
+        $submerchantId = '10000000000000';
+
+        $partnerId = '10000000000009';
+
+        $this->createPartnerAndLinkSubmerchant($submerchantId, $partnerId);
+
+        $this->fixtures->merchant->addFeatures(['subm_qr_image_content'], $partnerId);
+
+        $qrCode = $this->createQrCode(['tax_invoice' => $this->testData['tax_invoice'], 'type' => 'upi_qr'], 'test', $submerchantId);
+
+        $this->assertNotNull($qrCode['image_content']);
+        $this->assertStringContainsString('gstIn=06AABCU9603R1ZR', $qrCode['image_content']);
+        $this->assertStringContainsString('gstBrkUp=GST:40.1|SGST:20.05|CGST:20.05|CESS:2', $qrCode['image_content']);
+        $this->assertStringContainsString('invoiceNo=INV001', $qrCode['image_content']);
+        $this->assertStringContainsString('invoiceDate=2020-05-20T17:14:58+05:30', $qrCode['image_content']);
+
+        $this->runEntityAssertions($qrCode);
+    }
+
     public function testCreateUpiQrCodeUpiIntentLinkExposure()
     {
         $this->fixtures->merchant->addFeatures(['qr_image_content']);
@@ -1125,7 +1146,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
     public function testSettingsVpaAdditionToQrCode()
     {
         $this->markTestSkipped('Not using settings for VPA anymore');
-        
+
         $response = $this->createQrCode();
 
         $vpa    = $this->getLastEntity('vpa', true);
@@ -1443,5 +1464,31 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse,
                                           $this->fetchQrCode(null, ['payment_id' => 'pay_' . $qrPayment['payment_id']]));
+    }
+
+    protected function createPartnerAndLinkSubmerchant(string $submerchantId, string $partnerId = '10000000000009')
+    {
+        $this->fixtures->merchant->create(['id' => $partnerId]);
+
+        $this->fixtures->merchant->edit($partnerId, ['partner_type' => 'fully_managed']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $appId = $app->getId();
+
+        // Link new submerchants to the partner account
+        $accessMap = $this->getAccessMapArray('application', $appId, $submerchantId, $partnerId);
+
+        $this->fixtures->create('merchant_access_map',$accessMap);
+    }
+
+    protected function getAccessMapArray($entityType, $entityId, $merchantId, $entityOwnerId)
+    {
+        return [
+            'entity_type'     => $entityType,
+            'entity_id'       => $entityId,
+            'merchant_id'     => $merchantId,
+            'entity_owner_id' => $entityOwnerId,
+        ];
     }
 }

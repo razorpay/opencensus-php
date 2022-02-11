@@ -1135,6 +1135,11 @@ class Constants
      */
     const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
 
+    /**
+     * If applied on partner merchant then all its sub merchants will have QR image content visible
+     */
+    const SUBM_QR_IMAGE_CONTENT    = 'subm_qr_image_content';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1576,6 +1581,7 @@ class Constants
         self::DCC_ON_OTHER_LIBRARY            => true,
         self::SKIP_OAUTH_NOTIFICATION         => true,
         self::SKIP_PAYOUT_EMAIL               => true,
+        self::SUBM_QR_IMAGE_CONTENT           => true,
     ];
     // Entity type constants
     const ACCOUNT                       = 'account';

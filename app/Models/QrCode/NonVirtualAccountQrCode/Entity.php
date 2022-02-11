@@ -5,6 +5,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 use Carbon\Carbon;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -241,10 +242,22 @@ class Entity extends QrCode\Entity
     protected function setPublicImageContentAttribute(array &$array)
     {
         if (($this->merchant->isFeatureEnabled(Feature\Constants::QR_IMAGE_CONTENT) === true) or
-            ($this->getRequestSource() === RequestSource::CHECKOUT))
+            ($this->getRequestSource() === RequestSource::CHECKOUT) or
+            ($this->isFeatureEnabledForPartner(Feature\Constants::SUBM_QR_IMAGE_CONTENT)))
         {
             $array[self::RESP_IMAGE_CONTENT] = $this->getAttribute(self::QR_STRING);
         }
+    }
+
+    public function isFeatureEnabledForPartner(string $featureName)
+    {
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
+
+        $partner = $partners->filter(function(Merchant\Entity $partner) use ($featureName) {
+            return ($partner->isFeatureEnabled($featureName) === true);
+        })->first();
+
+        return (empty($partner) === false);
     }
 
     public function hasFixedAmount()
