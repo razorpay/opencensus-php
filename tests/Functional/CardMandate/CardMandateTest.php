@@ -798,7 +798,7 @@ class CardMandateTest extends TestCase
 
         $paymentInp['_']['library'] = 'razorpayjs';
 
-        $paymentInp['save'] = 1;
+        $paymentInp['recurring'] = 1;
 
         $paymentInp['amount'] = 800000;
 
@@ -841,7 +841,73 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
 
         $card = $this->getLastEntity('card', true);
-        $this->assertEquals($card['vault'], 'visa');
+        $this->assertEquals($card['vault'], 'rzpvault');
+    }
+
+    public function testSubscriptionRegistrationTokenizedInitialCardMandatePaymentAmountGreaterThanMaxAmountRupay()
+    {
+        $this->fixtures->edit('iin', 400018 ,[
+            'network' => "RuPay",
+        ]);
+
+        $this->mockCheckBin();
+
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $paymentInp = $this->paymentInput;
+
+        $paymentInp['_']['library'] = 'razorpayjs';
+
+        $paymentInp['recurring'] = 1;
+
+        $paymentInp['amount'] = 800000;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => 400000, 'expire_at' => 4091958776, 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 800000, 'payment_capture' => 1]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $paymentInp['order_id'] = $order->getPublicId();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInp,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals($subr['max_amount'], $token->getMaxAmount());
+        $this->assertEquals($subr['expire_at'], $token->getExpiredAt());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+
+        $card = $this->getLastEntity('card', true);
+        $this->assertEquals($card['vault'], 'rupay');
     }
 
     public function testCreateCardMandatePaymentWithFailedToken()
