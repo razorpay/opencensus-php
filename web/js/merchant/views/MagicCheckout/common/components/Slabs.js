@@ -1,8 +1,8 @@
 import Input from 'common/new-ui/Input';
 import { useCallback } from 'react';
-import { FEE_RULES } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 
-const Slabs = ({ type, slabs, updateSlabs, validationError, removeError }) => {
+const Slabs = ({ type, slabs, updateSlabs, validationError = {}, removeError }) => {
   const { errorInd } = validationError;
   const heading = type === FEE_RULES.COD_FEE_RULE ? 'COD' : 'Shipping';
   if (!slabs || slabs.length === 0) {
@@ -35,6 +35,16 @@ const Slabs = ({ type, slabs, updateSlabs, validationError, removeError }) => {
     [slabs, updateSlabs],
   );
 
+  const SlabsHeader = ({ label, className }) => (
+    <div
+      className={`font-bold font-12 slabs-input slabs-input-header${
+        className ? ` ${className}` : ''
+      }`}
+    >
+      {label}
+    </div>
+  );
+
   const handleSlabValueChange = useCallback(
     (e) => {
       let { value } = e.target;
@@ -62,16 +72,13 @@ const Slabs = ({ type, slabs, updateSlabs, validationError, removeError }) => {
 
   return (
     <>
-      <div className="display-flex slabs-label slabs-input-container">
-        <div className="font-bold font-12 slabs-input">Min Order Value</div>
-        <div className="font-bold font-12 slabs-input">Max Order Value</div>
-        <div className="font-bold font-12 slabs-input slabs-charge">{heading} Charge</div>
+      <div className="display-flex slabs-input-container">
+        <SlabsHeader label="Min Order Value" />
+        <SlabsHeader label="Max Order Value" />
+        <SlabsHeader label={`${heading} Charge`} className="slabs-charge" />
       </div>
       {slabs.map((item, index) => (
-        <div
-          key={index}
-          className={`display-flex slab-parent ${index === errorInd ? ' input-invalid' : ''}`}
-        >
+        <div key={index} className={`display-flex${index === errorInd ? ' input-invalid' : ''}`}>
           <div className="display-flex">
             <div className="slabs-input-container">
               <Input

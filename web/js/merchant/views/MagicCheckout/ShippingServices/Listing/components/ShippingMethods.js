@@ -1,4 +1,4 @@
-import FeeDetails from 'merchant/views/MagicCheckout/ShippingServices/Listing/components/FeeDetails';
+import FeeDetails from 'merchant/views/MagicCheckout/common/components/FeeDetails';
 
 const ShippingMethodsListing = ({
   warehouse_pincode,

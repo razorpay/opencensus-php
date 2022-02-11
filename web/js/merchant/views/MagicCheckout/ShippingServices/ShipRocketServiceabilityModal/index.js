@@ -11,10 +11,10 @@ import { useState, useCallback } from 'react';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
-import FeeConfiguration from 'merchant/views/MagicCheckout/ShippingServices/ShipRocketServiceabilityModal/components/FeeConfiguration';
+import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
 import { validate } from 'merchant/views/MagicCheckout/utils/shippingSettingValidation';
 import Input from 'common/new-ui/Input';
-import { FEE_RULES } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 
 const options = [
   { label: 'YES', name: 'true', value: true },
@@ -114,7 +114,7 @@ const ServiceabilitySettingsModal = ({
               onChange={handleCODAvailabilityChange}
             />
           </div>
-          <div className="filter-item link-account-instruction">
+          <div className="filter-item link-account-instruction c-shiprocket-serviceability">
             <FeeConfiguration
               type={FEE_RULES.SHIPPING_FEE_RULE}
               feeRule={{ ...shipping_fee_rule }}
@@ -126,7 +126,7 @@ const ServiceabilitySettingsModal = ({
             />
           </div>
           {enable_cod ? (
-            <div className="filter-item link-account-instruction">
+            <div className="filter-item link-account-instruction c-shiprocket-serviceability">
               <FeeConfiguration
                 type={FEE_RULES.COD_FEE_RULE}
                 feeRule={{ ...cod_fee_rule }}

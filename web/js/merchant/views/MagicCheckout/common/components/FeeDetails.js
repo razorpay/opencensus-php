@@ -21,8 +21,8 @@ const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
 
   const renderFlatRule = (fee) => (
     <div
-      className={`display-flex justify-space-between fee-container fee-bg fee-slabs-table
-      ${type === 'shipping' ? ' fee-container-shipping' : ''}`}
+      className={`display-flex justify-space-between c-fee-details fee-bg fee-slabs-table
+      ${type === 'shipping' ? ' c-fee-details-shipping' : ''}`}
     >
       <span className="font-12 font-bold color-black">{text}</span>
       <div className="display-flex flex-center">
@@ -33,7 +33,7 @@ const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
   );
 
   const renderSlabsRule = () => (
-    <div className="fee-container no-padding fee-slabs-table">
+    <div className="c-fee-details no-padding fee-slabs-table">
       <div className="padding-8 fee-bg">
         <div className="padding-8 slabs-border color-black font-bold">{`${label} Slabs`}</div>
         <div className="padding-8 display-flex justify-space-between">

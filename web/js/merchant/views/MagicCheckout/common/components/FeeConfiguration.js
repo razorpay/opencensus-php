@@ -2,13 +2,20 @@ import Slabs from 'merchant/views/MagicCheckout/common/components/Slabs';
 import {
   RULE_TYPES,
   RULE_TYPES_RADIO_INPUT,
-  FEE_RULES,
 } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 import Input from 'common/new-ui/Input';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, validationError, removeError }) => {
-  const [slabs, setSlabs] = useState(feeRule.slabs || []);
+  const [slabs, setSlabs] = useState([]);
+
+  useEffect(() => {
+    if (feeRule.slabs) {
+      setSlabs(feeRule.slabs);
+    }
+  }, [feeRule.slabs]);
+
   const label = type === FEE_RULES.COD_FEE_RULE ? 'COD Charge' : 'Shipping Charge';
   const flatLabel =
     type === FEE_RULES.COD_FEE_RULE
@@ -59,23 +66,24 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, validationError, r
 
   return (
     <>
-      <div className="filter-item link-account-instruction display-flex shipping-services">
+      <div className="filter-item link-account-instruction display-flex c-fee-configuration">
         <div className="serviceability-setting-label font-bold" for="cod-availability">
           {label} <sup className="magic-checkout-color-red">*</sup>
         </div>
         <div className="width-full">
-          <div className="display-flex justify-space-around slabs-container">
+          <div className="display-flex justify-space-between slabs-container">
             <Input.Radio
+              key={feeRule.rule_type}
               name={`${type}fee`}
               defaultValue={feeRule.rule_type}
               options={RULE_TYPES_RADIO_INPUT}
               onChange={handleRuleTypeChange}
-              className="serviceability-setting-input"
+              className="c-rule-type"
             />
           </div>
           <div>
             {feeRule.rule_type === RULE_TYPES.FLAT ? (
-              <div className="serviceability-flat-fee">
+              <div className="fee-block">
                 <div className="font-bold font-12">{flatLabel}</div>
                 <div className="slabs-input-container">
                   <Input
@@ -90,7 +98,7 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, validationError, r
               </div>
             ) : null}
             {feeRule.rule_type === RULE_TYPES.SLABS ? (
-              <div className="serviceability-flat-fee">
+              <div className="fee-block">
                 <Slabs
                   type={type}
                   slabs={slabs}
