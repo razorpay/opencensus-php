@@ -4,22 +4,19 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Carbon\Carbon;
 
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Timezone;
-use RZP\Gateway\Netbanking;
+use RZP\Models\Payment;
 use RZP\Gateway\Utility;
 use RZP\Models\FileStore;
-use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Netbanking;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Base as ModelBase;
-use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
 
 class Hdfc extends Base
 {
     const ADHOC         = 'As & when Presented';
     const MAX_END_DATE  = '31/12/2099';
-
     const STEP          = 'debit';
     const GATEWAY       = Payment\Gateway::NETBANKING_HDFC;
     const FILE_NAME     = 'HDFC_EMandate_Debit';
@@ -44,7 +41,7 @@ class Hdfc extends Base
         return $clientCode;
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [];
 
@@ -72,7 +69,7 @@ class Hdfc extends Base
         return $rows;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function getNewGatewayPaymentEntity(): Netbanking\Base\Entity
     {
         return new Netbanking\Base\Entity;
     }

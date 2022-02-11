@@ -3,25 +3,21 @@
 namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Mail;
+use Carbon\Carbon;
+
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
-use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
-use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Services\Beam\Service as BeamService;
-use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
-
-use Carbon\Carbon;
 
 class EnachRbl extends Base
 {
@@ -52,6 +48,9 @@ class EnachRbl extends Base
         $this->gatewayRepo = $this->repo->enach;
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function createFile($data)
     {
         // Don't process further if file is already generated
@@ -100,6 +99,9 @@ class EnachRbl extends Base
         }
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function sendFile($data)
     {
         $fileInfo = [];
@@ -146,7 +148,7 @@ class EnachRbl extends Base
         Mail::queue($mailable);
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [];
 
@@ -174,7 +176,7 @@ class EnachRbl extends Base
         return $rows;
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -188,7 +190,7 @@ class EnachRbl extends Base
         return $fileName;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function getNewGatewayPaymentEntity(): Enach\Base\Entity
     {
         return new Enach\Base\Entity;
     }

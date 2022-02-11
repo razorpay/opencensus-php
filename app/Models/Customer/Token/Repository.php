@@ -217,6 +217,9 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function fetchPendingEmandateRegistration(string $gateway, int $from, int $to)
     {
         $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
@@ -266,6 +269,9 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function fetchPendingEMandateDebit(string $gateway, $from, $to)
     {
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
@@ -386,7 +392,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPendingNachRegistration(string $gateway, int $from, int $to)
+    /**
+     * @throws ServerErrorException
+     */
+    public function fetchPendingNachRegistration(string $gateway, int $from, int $to): Base\PublicCollection
     {
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
 

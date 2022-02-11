@@ -102,7 +102,7 @@ abstract class Base extends Processor\Base
         }
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $time = Carbon::now(Timezone::IST)->format('dmYHis');
 
@@ -136,7 +136,7 @@ abstract class Base extends Processor\Base
         return $mailData;
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }

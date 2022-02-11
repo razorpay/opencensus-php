@@ -2,17 +2,13 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
-use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
-use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Netbanking;
-use RZP\Models\Base\PublicCollection;
-use RZP\Gateway\Netbanking\Axis\EMandateDebitFileHeadings as Headings;
-use RZP\Models\FileStore;
-use RZP\Models\Payment;
-use RZP\Models\Terminal\Entity as TerminalEntity;
-
 use Carbon\Carbon;
+
+use RZP\Models\Payment;
+use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Netbanking;
+use RZP\Gateway\Netbanking\Axis\EMandateDebitFileHeadings as Headings;
 
 class Axis extends Base
 {
@@ -35,7 +31,7 @@ class Axis extends Base
         $this->gatewayRepo = $this->repo->netbanking;
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [];
 
@@ -69,17 +65,17 @@ class Axis extends Base
         return $rows;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function getNewGatewayPaymentEntity(): Netbanking\Base\Entity
     {
         return new Netbanking\Base\Entity;
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return $amount / 100;
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $time = Carbon::now(Timezone::IST)->format('dmYHis');
 

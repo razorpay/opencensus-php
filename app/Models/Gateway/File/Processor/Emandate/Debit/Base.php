@@ -4,7 +4,6 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Carbon\Carbon;
 
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -62,7 +61,7 @@ abstract class Base extends EMandate\Base
             TraceCode::EMANDATE_DEBIT_REQUEST,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
-                'entity_ids'      => $paymentIds,
+                'count'           => count($paymentIds),
                 'begin'           => $begin,
                 'end'             => $end,
             ]);
@@ -70,7 +69,10 @@ abstract class Base extends EMandate\Base
         return $tokens;
     }
 
-    public function generateData(PublicCollection $tokens)
+    /**
+     * @throws GatewayFileException
+     */
+    public function generateData(PublicCollection $tokens): PublicCollection
     {
         try
         {
@@ -141,8 +143,7 @@ abstract class Base extends EMandate\Base
      * Override this method in the child classes in case you want
      * to add extra values in the gateway entity
      *
-     * @param Payment\Entity $payment
-     *
+     * @param ModelBase\PublicEntity $token
      * @return array
      */
     protected function getGatewayAttributes(ModelBase\PublicEntity $token): array

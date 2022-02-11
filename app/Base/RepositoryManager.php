@@ -164,6 +164,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Product\TncMap\Acceptance\Repository     $merchant_tnc_acceptance;
  * @property Models\Settlement\Repository                             $settlement
  * @property Gateway\Enach\Base\Repository                            $enach
+ * @property Gateway\Netbanking\Base\Repository                       $netbanking
  * @property Models\SubVirtualAccount\Repository                      $sub_virtual_account
  * @property Models\Settlement\Transfer\Repository                    $settlement_transfer;
  * @property Models\Dispute\Evidence\Repository                       $dispute_evidence;

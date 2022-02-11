@@ -53,7 +53,7 @@ class EnachNpciNetbanking extends Base
         $this->gatewayRepo = $this->repo->enach;
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [];
 
@@ -78,7 +78,7 @@ class EnachNpciNetbanking extends Base
         return $rows;
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -87,7 +87,7 @@ class EnachNpciNetbanking extends Base
         return self::BASE_STORAGE_DIRECTORY . $fileName;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function getNewGatewayPaymentEntity(): Enach\Base\Entity
     {
         return new Enach\Base\Entity;
     }
@@ -100,6 +100,9 @@ class EnachNpciNetbanking extends Base
         ];
     }
 
+    /**
+     * @throws GatewayErrorException
+     */
     public function sendFile($data)
     {
         $fileInfo = [];
@@ -155,6 +158,9 @@ class EnachNpciNetbanking extends Base
         }
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function createFile($data)
     {
         Config::set('excel.exports.csv.enclosure', '');
@@ -211,6 +217,9 @@ class EnachNpciNetbanking extends Base
         Config::set('excel.exports.csv.enclosure', '"');
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function fetchEntities(): PublicCollection
     {
         $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)

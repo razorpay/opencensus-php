@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -58,6 +59,9 @@ class EnachNbIcici extends Debit\Base
         $this->mailData = [];
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function createFile($data)
     {
         // Don't process further if file is already generated
@@ -124,7 +128,7 @@ class EnachNbIcici extends Debit\Base
         }
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [] ;
 
@@ -231,7 +235,7 @@ class EnachNbIcici extends Debit\Base
         Mail::queue($mailable);
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -244,7 +248,7 @@ class EnachNbIcici extends Debit\Base
         return self::BASE_STORAGE_DIRECTORY . $fileName;
     }
 
-    protected function getFileHeader(array $fileData)
+    protected function getFileHeader(array $fileData): array
     {
         $rows = [];
 
@@ -369,7 +373,7 @@ class EnachNbIcici extends Debit\Base
         return substr($pad_str, 0, $size);
     }
 
-    public function getAccountTypeValue(Token\Entity $token)
+    public function getAccountTypeValue(Token\Entity $token): string
     {
         $row = [
             Fields::SAVINGS => '10',
@@ -383,7 +387,7 @@ class EnachNbIcici extends Debit\Base
         return $accountTypeValue;
     }
 
-    public function getTextData($data, $prependLine = '', string $glue = '|')
+    public function getTextData($data, $prependLine = '', string $glue = '|'): string
     {
         $ignoreLastNewline = true;
 
@@ -397,7 +401,7 @@ class EnachNbIcici extends Debit\Base
         return $prependLine . $txt;
     }
 
-    public function generateText($data, $glue = '|', $ignoreLastNewline = false)
+    public function generateText($data, $glue = '|', $ignoreLastNewline = false): string
     {
         $txt = '';
 
@@ -415,6 +419,9 @@ class EnachNbIcici extends Debit\Base
         return $txt;
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function fetchEntities(): PublicCollection
     {
         if (Holidays::isWorkingDay(Carbon::now(Timezone::IST)) === false)
@@ -465,7 +472,7 @@ class EnachNbIcici extends Debit\Base
         return $tokens;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function getNewGatewayPaymentEntity(): Enach\Base\Entity
     {
         return new Enach\Base\Entity;
     }
@@ -490,7 +497,7 @@ class EnachNbIcici extends Debit\Base
         return $date->timestamp;
     }
 
-    protected function formatDataForMail($fileData)
+    protected function formatDataForMail($fileData): array
     {
         $amount = 0;
 

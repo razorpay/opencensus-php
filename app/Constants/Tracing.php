@@ -287,7 +287,10 @@ class Tracing
             'payout_purpose_post',
             'fund_account_create',
             'payout_links_fetch_multiple',
-            'payment_refund'
+            'payment_refund',
+
+            // Gateway file
+            'gateway_file_create',
         ]);
     }
 

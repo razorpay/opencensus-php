@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\error\ErrorCode;
 use RZP\Models\FileStore;
@@ -12,8 +14,6 @@ use RZP\Models\Gateway\File;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as Headings;
-
-use Carbon\Carbon;
 
 class Sbi extends Base
 {
@@ -39,7 +39,7 @@ class Sbi extends Base
         $this->gatewayRepo = $this->repo->netbanking;
     }
 
-    protected function formatDataForFile($tokens)
+    protected function formatDataForFile($tokens): array
     {
         $rows = [];
         $rowsTxtData = [];
@@ -88,7 +88,7 @@ class Sbi extends Base
         return $rowsTxtData;
     }
 
-    protected function getFileToWriteNameWithoutExt(array $data)
+    protected function getFileToWriteNameWithoutExt(array $data): string
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -97,16 +97,19 @@ class Sbi extends Base
         return $fileName;
     }
 
-    protected function getNewGatewayPaymentEntity()
+    protected function getNewGatewayPaymentEntity(): Netbanking\Base\Entity
     {
         return new Netbanking\Base\Entity;
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, '2', '.', '');
     }
 
+    /**
+     * @throws GatewayFileException
+     */
     public function createFile($data)
     {
         // Don't process further if file is already generated

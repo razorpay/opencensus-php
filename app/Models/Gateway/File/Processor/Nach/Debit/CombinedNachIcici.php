@@ -451,7 +451,7 @@ class CombinedNachIcici extends Debit\Base
             TraceCode::NACH_DEBIT_REQUEST,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
-                'entity_ids'      => $paymentIds,
+                'count'           => count($paymentIds),
                 'begin'           => $begin,
                 'end'             => $end,
             ]);

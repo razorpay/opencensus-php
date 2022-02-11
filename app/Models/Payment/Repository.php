@@ -1827,6 +1827,9 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
+    /**
+     * @throws Exception\ServerErrorException
+     */
     public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
