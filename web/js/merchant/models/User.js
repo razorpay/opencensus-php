@@ -1169,6 +1169,10 @@ export default class User {
     return this.getExpStatus('webhook_stats');
   }
 
+  get isAdharEkycRequired() {
+    return this.isOrgRZP && this.getExpStatus('adharEkyc_for_reg_businessTypes');
+  }
+
   get isInternalStatusPageEnabled() {
     return this.getExpStatus('status_page_enable');
   }

@@ -77,6 +77,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       isUpdatedLiteOnboarding,
       isEmailNonMandatoryOnL2Form,
       isMsmeDisabled,
+      isAdharEkycRequired,
     },
   } = useApp();
   const { gstinDetails } = useGstin();
@@ -333,14 +334,11 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     );
   };
 
-  const ekycRequiredforBusinessType = [
-    PROPRIETORSHIP,
-    PARTNERSHIP,
-    PRIVATE,
-    PUBLIC,
-    LLP,
-    NOT_REGISTERED,
-  ];
+  const ekycRequiredforBusinessType = [PROPRIETORSHIP, NOT_REGISTERED, PARTNERSHIP];
+
+  if (isAdharEkycRequired) {
+    ekycRequiredforBusinessType.push(LLP, PRIVATE, PUBLIC);
+  }
 
   const shouldShowEsignFlow = ekycRequiredforBusinessType.includes(
     parseInt(data.business_type, 10),

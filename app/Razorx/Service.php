@@ -242,7 +242,8 @@ class Service extends Base\Service
             'fee_credit_self_serve',
             'refund_credit_self_serve',
             'reserve_bal_self_serve',
-            'disable_msme_upload'
+            'disable_msme_upload',
+            'adharEkyc_for_reg_businessTypes',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

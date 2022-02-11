@@ -30,18 +30,20 @@ const PRIVATE_LIMITED = 4,
   },
   BusinessTypes = [PRIVATE_LIMITED, PUBLIC_LIMITED, LLP, PARTNERSHIP];
 
-const E_SIGN_AADHAR = [
-  PROPRIETORSHIP,
-  PARTNERSHIP,
-  NOT_REGISTERED,
-  PUBLIC_LIMITED,
-  PRIVATE_LIMITED,
-  LLP,
-];
-
 const bankAccountTabName = 'Bank Account';
 const BANK_LIMIT_MESSAGE =
   "You have already changed your account 9 times, please ensure you enter the correct details this time as you won't be able to make any more changes after this attempt";
+
+const eKycAdharRequired = (activation, currentBusinessType) => {
+  let E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
+  if (activation.props.user.isAdharEkycRequired) {
+    E_SIGN_AADHAR.push(PUBLIC_LIMITED, PRIVATE_LIMITED, LLP);
+  }
+
+  if (E_SIGN_AADHAR.includes(Number(currentBusinessType))) {
+    return true;
+  } else return false;
+};
 
 function differentAddress(activation) {
   return activation.state.same_address === '0';
@@ -395,7 +397,7 @@ function canShowEAadharComponent(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
 
-  if (E_SIGN_AADHAR.includes(Number(currentBusinessType)) && activation.props.user.isOrgRZP) {
+  if (eKycAdharRequired(activation, currentBusinessType) && activation.props.user.isOrgRZP) {
     return true;
   }
   return false;
@@ -446,7 +448,7 @@ function showAadharDoc(activation) {
   const currentBusinessType =
     activation.state.dirty.business_type || activation.props.data.business_type;
   if (
-    E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
+    eKycAdharRequired(activation, currentBusinessType) &&
     activation.state.isAadharDocVisible &&
     !!activation.props.user.isOrgRZP &&
     !activation.props.user.needsClarification
