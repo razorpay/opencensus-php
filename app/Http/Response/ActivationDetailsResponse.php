@@ -227,519 +227,373 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
     private const     RESPONSE_FIELDS_ROLE_MAPPING         = [
 
         self::CONTACT_NAME                             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CONTACT_EMAIL                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CONTACT_MOBILE                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CONTACT_LANDLINE                         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_TYPE                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_NAME                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_DESCRIPTION                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_DBA                             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_WEBSITE                         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_INTERNATIONAL                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_PAYMENTDETAILS                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BUSINESS_REGISTERED_ADDRESS              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_REGISTERED_ADDRESS_L2           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_REGISTERED_COUNTRY              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_REGISTERED_STATE                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_REGISTERED_CITY                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_REGISTERED_DISTRICT             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_REGISTERED_PIN                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_OPERATION_ADDRESS               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
 
         ],
         self::BUSINESS_OPERATION_ADDRESS_L2            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_OPERATION_COUNTRY               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_OPERATION_STATE                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_OPERATION_CITY                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_OPERATION_DISTRICT              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::BUSINESS_OPERATION_PIN                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::PROMOTER_PAN                             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
 
         ],
         self::PROMOTER_PAN_NAME                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
 
         ],
         self::BUSINESS_DOE                             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::GSTIN                                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::P_GSTIN                                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::COMPANY_CIN                              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::COMPANY_PAN                              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::COMPANY_PAN_NAME                         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BUSINESS_CATEGORY                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BUSINESS_SUBCATEGORY                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BUSINESS_MODEL                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::TRANSACTION_VOLUME                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::TRANSACTION_VALUE                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::WEBSITE_ABOUT                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::WEBSITE_CONTACT                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::WEBSITE_PRIVACY                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::WEBSITE_TERMS                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::WEBSITE_REFUND                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::WEBSITE_PRICING                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::WEBSITE_LOGIN                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::STEPS_FINISHED                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::ACTIVATION_PROGRESS                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::LOCKED                                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::ACTIVATION_STATUS                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANK_DETAILS_VERIFICATION_STATUS         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::POA_VERIFICATION_STATUS                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::POI_VERIFICATION_STATUS                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CLARIFICATION_MODE                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ARCHIVED                                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MARKETPLACE_ACTIVATION_STATUS            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::SUBSCRIPTIONS_ACTIVATION_STATUS          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::SUBMITTED                                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::SUBMITTED_AT                             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::TRANSACTION_REPORT_EMAIL                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANK_ACCOUNT_NUMBER                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_ACCOUNT_NAME                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_ACCOUNT_TYPE                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BRANCH                              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BRANCH_IFSC                         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BENEFICIARY_ADDRESS1                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BENEFICIARY_ADDRESS2                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BENEFICIARY_ADDRESS3                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BENEFICIARY_CITY                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BENEFICIARY_STATE                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANK_BENEFICIARY_PIN                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::ROLE                                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -747,9 +601,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::DEPARTMENT                               => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -758,9 +609,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::CREATED_AT                               => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -769,9 +617,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::UPDATED_AT                               => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -780,9 +625,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::ACTIVATION_FLOW                          => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -791,9 +633,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::INTERNATIONAL_ACTIVATION_FLOW            => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -802,9 +641,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::LIVE_TRANSACTION_DONE                    => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -813,9 +649,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::KYC_CLARIFICATION_REASONS                => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -823,57 +656,37 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
 
         ],
         self::KYC_ADDITIONAL_DETAILS                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::ESTD_YEAR                                => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::AUTHORIZED_SIGNATORY_DOB                 => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::PLATFORM                                 => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::FUND_ACCOUNT_VALIDATION_ID               => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::GSTIN_VERIFICATION_STATUS                => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -882,17 +695,11 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::DATE_OF_ESTABLISHMENT                    => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::ACTIVATION_FORM_MILESTONE                => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -901,9 +708,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::COMPANY_PAN_VERIFICATION_STATUS          => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -912,9 +716,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::CIN_VERIFICATION_STATUS                  => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -923,9 +724,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::COMPANY_PAN_DOC_VERIFICATION_STATUS      => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -934,9 +732,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::PERSONAL_PAN_DOC_VERIFICATION_STATUS     => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -945,9 +740,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::BANK_DETAILS_DOC_VERIFICATION_STATUS     => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -956,9 +748,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::MSME_DOC_VERIFICATION_STATUS             => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -967,17 +756,11 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::SHOP_ESTABLISHMENT_NUMBER                => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS   => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -986,46 +769,28 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::BUSINESS_SUGGESTED_PIN                   => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
 
         ],
         self::BUSINESS_SUGGESTED_ADDRESS               => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
 
         ],
         self::FRAUD_TYPE                               => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
         ],
         self::BAS_BUSINESS_ID                          => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
         ],
         self::SHOP_ESTABLISHMENT_VERIFIABLE_ZONE       => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
         ],
         self::VERIFICATION_STATUS                      => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -1034,9 +799,6 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::VERIFICATION_DISABLED_REASON             => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
@@ -1045,883 +807,668 @@ class ActivationDetailsResponse implements UserRoleBasedResponse
         ],
         self::VERIFICATION_REQUIRED_FIELDS             => [
 
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
             Role::OPERATIONS,
         ],
         self::VERIFICATION_ACTIVATION_PROGRESS         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CAN_SUBMIT                               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ACTIVATED                                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::LIVE                                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::INTERNATIONAL                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ID                              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ENTITY                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_NAME                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_EMAIL                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_ACTIVATED                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ACTIVATED_AT                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_LIVE                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_HOLD_FUNDS                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_PRICING_PLAN_ID                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_PARENT_ID                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_WEBSITE                         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_CATEGORY                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_CATEGORY2                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_INTERNATIONAL                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_LINKED_ACCOUNT_KYC              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_HAS_KEY_ACCESS                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_FEE_BEARER                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_FEE_MODEL                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_REFUND_SOURCE                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_BILLING_LABEL                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_RECEIPT_EMAIL_ENABLED           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_RECEIPT_EMAIL_TRIGGER_EVENT     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_TRANSACTION_REPORT_EMAIL        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_INVOICE_LABEL_FIELD             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_CHANNEL                         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_CONVERT_CURRENCY                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_MAX_PAYMENT_AMOUNT              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_AUTO_REFUND_DELAY               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_AUTO_CAPTURE_LATE_AUTH          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_BRAND_COLOR                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_HANDLE                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_RISK_RATING                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_RISK_THRESHOLD                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_PARTNER_TYPE                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_CREATED_AT                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_UPDATED_AT                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_SUSPENDED_AT                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ARCHIVED_AT                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ICON_URL                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_LOGO_URL                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ORG_ID                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_FEE_CREDITS_THRESHOLD           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_AMOUNT_CREDITS_THRESHOLD        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_REFUND_CREDITS_THRESHOLD        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_DISPLAY_NAME                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_ACTIVATION_SOURCE               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_BUSINESS_BANKING                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_SECOND_FACTOR_AUTH              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_RESTRICTED                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_DEFAULT_REFUND_SPEED            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_PARTNERSHIP_URL                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_EXTERNAL_ID                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_PRODUCT_INTERNATIONAL           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_SIGNUP_SOURCE                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_PURPOSE_CODE                    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_IEC_CODE                        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::STAKEHOLDER                              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
         ],
         self::MERCHANT_AVG_ORDER_VALUE                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::DEDUPE_ISMATCH                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::DEDUPE_ISUNDERREVIEW                     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ISDEDUPE                                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ISAUTOKYCDONE                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ISHARDLIMITREACHED                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_BUSINESS_DETAIL                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::PLAYSTORE_URL                            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::APPSTORE_URL                             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_VERIFICATION_DETAIL             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ACTIVATION_STATUS_CHANGE_LOGS            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::ADDITIONAL_WEBSITES                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CLIENT_APPLICATIONS                      => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::CREDIT_BALANCE                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::DOCUMENTS                                => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
         ],
         self::IS_SUB_MERCHANT                          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::VERIFICATION_OPTIONAL_FIELDS             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_NOTES                           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_WHITELISTED_DOMAINS             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_WHITELISTED_IPS_LIVE            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::MERCHANT_WHITELISTED_IPS_TEST            => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_ACCOUNT_CURRENCY         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_ACCOUNT_IFSC             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_ACCOUNT_NUMBER           => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_ACCOUNT_TYPE             => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BALANCE_BALANCE          => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BALANCE_CURRENCY         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BALANCE_ID               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_BALANCE_LAST_FETCHED_AT  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_BALANCE_LOCKED_BALANCE   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_BANK_INTERNAL_STATUS     => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BANK_REFERENCE_NUMBER    => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BENEFICIARY_EMAIL        => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BENEFICIARY_MOBILE       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_BENEFICIARY_NAME         => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::FINANCE,
         ],
         self::BANKING_ACCOUNT_CHANNEL                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_ID                       => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_MERCHANT_ID              => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_PINCODE                  => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_REFERENCE1               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_STATUS                   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_STATUS_LAST_UPDATED_AT   => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
         self::BANKING_ACCOUNT_SUB_STATUS               => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,
             Role::SELLERAPP
         ],
-        self::ALLOWED_NEXT_ACTIVATION_STATUSES                 => [
-            Role::OWNER,
-            Role::ADMIN,
-            Role::MANAGER,
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES         => [
+
             Role::OPERATIONS,
             Role::FINANCE,
             Role::SUPPORT,

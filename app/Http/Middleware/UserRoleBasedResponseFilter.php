@@ -5,10 +5,12 @@ namespace RZP\Http\Middleware;
 use Closure;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Role;
+use RZP\Models\User\BankingRole;
 use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
+use phpDocumentor\Reflection\Types\Self_;
 use RZP\Http\Response\UserRoleBasedResponse;
 use RZP\Http\Response\ActivationDetailsResponse;
 use ApiResponse;
@@ -18,6 +20,12 @@ class UserRoleBasedResponseFilter
 
     const ROUTE_FILTER_MAPPING = [
         "merchant_activation_details" => ActivationDetailsResponse::class
+    ];
+
+    const ROUTE_FILTER_ROLES_MAPPING = ["merchant_activation_details" => [Role::SELLERAPP,
+                                                                          Role::OPERATIONS,
+                                                                          Role::FINANCE,
+                                                                          Role::SUPPORT]
     ];
 
     /** @var BasicAuth */
@@ -67,13 +75,15 @@ class UserRoleBasedResponseFilter
         {
             $routeName = $this->router->currentRouteName();
 
-            $userRole =  $this->ba->getUserRole()??Role::OWNER;
+            $userRole = $this->ba->getUserRole() ?? Role::OWNER;
 
             if ($this->isFilterRequired($routeName, $userRole))
             {
                 $className              = self::ROUTE_FILTER_MAPPING[$routeName];
                 $fieldRoleMappingObject = new $className();
                 $fieldRoleMapping       = $fieldRoleMappingObject->getFieldRoleMapping();
+
+                $this->trace->info(TraceCode::FILTER_RESPONSE_BASED_ON_ROLE, ["merchant_id" => $this->ba->getMerchant()->getId()]);
 
                 $response = $this->filterResponse($response, $fieldRoleMapping, $userRole);
             }
@@ -100,9 +110,9 @@ class UserRoleBasedResponseFilter
                                                RazorxTreatment::RESPONSE_FIELDS_FILTERING_FOR_ROLES,
                                                $this->ba->getMode(), 2);
 
-        $this->trace->info(TraceCode::FILTER_RESPONSE_BASED_ON_ROLE,['variant'=>$variant,'userRole'=>$userRole]);
+        $this->trace->info(TraceCode::FILTER_RESPONSE_BASED_ON_ROLE, ['variant' => $variant, 'userRole' => $userRole]);
 
-        if ((strtolower($variant) === 'on')===false)
+        if ((strtolower($variant) === 'on') === false)
         {
             return false;
         }
@@ -110,8 +120,11 @@ class UserRoleBasedResponseFilter
         {
             return false;
         }
-
-        if (empty($userRole) or $userRole === Role::OWNER or $userRole === Role::ADMIN)
+        if (array_key_exists($routeName, self::ROUTE_FILTER_ROLES_MAPPING) === false)
+        {
+            return false;
+        }
+        if (empty($userRole) === true or array_key_exists($userRole, self::ROUTE_FILTER_ROLES_MAPPING[$routeName]) === false)
         {
             return false;
         }
