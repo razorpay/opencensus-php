@@ -134,6 +134,12 @@ class Core extends Base\Core
 
         $this->repo->merchant_product->saveOrFail($merchantProduct);
 
+        $this->trace->info(TraceCode::PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE, [
+                'merchant_id'           => $merchant->getId(),
+                'merchant_product'      => $merchantProduct
+            ]
+        );
+
         $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
 
         return $response;

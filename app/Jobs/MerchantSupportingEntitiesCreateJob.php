@@ -2,8 +2,10 @@
 
 namespace RZP\Jobs;
 
+use App;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Services\Workflow;
 use RZP\Models\Merchant\Metric;
 use Razorpay\Trace\Logger as Trace;
 use Jitendra\Lqext\TransactionAware;
@@ -36,6 +38,8 @@ class MerchantSupportingEntitiesCreateJob extends Job
     public function handle()
     {
         parent::handle();
+
+        $this->resetWorkflowSingleton();
 
         $this->trace->info(
             TraceCode::MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB,
@@ -89,5 +93,11 @@ class MerchantSupportingEntitiesCreateJob extends Job
         {
             $this->release(self::RETRY_INTERVAL);
         }
+    }
+
+    private function resetWorkflowSingleton()
+    {
+        $app = App::getFacadeRoot();
+        $app['workflow'] =  new Workflow\Service($app);
     }
 }

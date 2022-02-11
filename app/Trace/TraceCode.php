@@ -6327,6 +6327,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS        = 'UNSUPPORTED_LIBRARY_FOR_INTERNATIONAL_APPS';
 
+    //product_config_api
+    const SAVE_MERCHANT_METHODS                             = 'SAVE_MERCHANT_METHODS';
+    const PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE           = 'PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE';
+    const PRODUCT_CONFIGURATION_CREATE_RESPONSE             = 'PRODUCT_CONFIGURATION_CREATE_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

@@ -104,6 +104,13 @@ class Service extends Base\Service
 
                 $this->repo->merchant_product->saveOrFail($merchantProduct);
 
+                $this->trace->info(TraceCode::PRODUCT_CONFIGURATION_CREATE_RESPONSE,
+                    [
+                        'merchant_id'           => $merchant->getId(),
+                        'merchant_product'      => $merchantProduct
+                    ]
+                );
+
                 $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
 
                 $this->captureMetricsForCreateProductConfig($merchantProduct);

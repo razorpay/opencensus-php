@@ -552,6 +552,13 @@ class Core extends Base\Core
             $methods->setUpi(false);
         }
 
+        $this->trace->info(TraceCode::SAVE_MERCHANT_METHODS,
+            [
+                'merchant_id'  => $merchant->getId(),
+                'methods'      => $methods
+            ]
+        );
+
         $this->repo->saveOrFail($methods);
 
         return $methods;
