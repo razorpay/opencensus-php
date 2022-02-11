@@ -373,6 +373,7 @@ export default class PaymentPageSettings extends React.Component {
                         href="https://app.shiprocket.in/register?utm_source=Razorpay&utm_medium=In-Product&utm_campaign=PaymentPages&utm_content=Razorpay-In-product"
                         target="_blank"
                         rel="noreferrer"
+                        onClick={track.settings.clickShiprocketDashboard}
                       >
                         Shiprocket dashboard <i className="i i-external-link" />
                       </a>
@@ -382,6 +383,8 @@ export default class PaymentPageSettings extends React.Component {
                       <DocLink
                         href="https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/shiprocket"
                         target="_blank"
+                        onClick={track.wysiwyg.clickShiprocketDocsLink.bind(null, 'settings')}
+                        rel="noreferrer noopener"
                       >
                         Shiprocket integration docs <i class="i i-external-link" />
                       </DocLink>

@@ -156,6 +156,9 @@ function _track() {
       clickShiprocketDisableConfirm: () => {
         sendToSegment('settings', 'shiprocket disable confirm');
       },
+      clickShiprocketDashboard: () => {
+        sendToSegment('settings', 'shiprocket dashboard');
+      },
     },
 
     success: {
@@ -248,8 +251,8 @@ function _track() {
       clickPageSettingsViaSRField: () => {
         sendToSegment('form section field', 'page settings'); // for shiprocket fields
       },
-      clickShiprocketDocsLink: () => {
-        sendToSegment('form section field', 'page settings'); // for shiprocket fields
+      clickShiprocketDocsLink: (via) => {
+        sendToSegment('shiprocket docs', 'link', { via }); // for shiprocket fields
       },
     },
 

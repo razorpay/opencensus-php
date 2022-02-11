@@ -2,6 +2,7 @@ import React from 'react';
 import { getCustomURL } from 'merchant/components/DocsLink';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import track from '../../../views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 export default React.memo(({ userId }) => {
   return (
@@ -21,6 +22,7 @@ export default React.memo(({ userId }) => {
         target="_blank"
         rel="noreferrer noopener"
         class="pointer"
+        onClick={track.wysiwyg.clickShiprocketDocsLink.bind(null, 'details')}
       >
         <b>Know More</b>
       </a>
