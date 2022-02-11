@@ -6246,6 +6246,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FIRS_DOCUMENT_PROCESSOR_JOB_DELETED   = 'FIRS_DOCUMENT_PROCESSOR_JOB_DELETED';
     const FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED = 'FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED';
 
+    const STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED          = 'STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED';
+    const TOKENISED_CARDS_NOT_SUPPORTED                   = 'TOKENISED_CARDS_NOT_SUPPORTED';
+    const UNSETTING_CARD_NAME_WHILE_FUND_ACCOUNT_CREATION = 'UNSETTING_CARD_NAME_WHILE_FUND_ACCOUNT_CREATION';
+
 
     const PAYOUT_GET_EMPTY_RESPONSE                         = 'PAYOUT_GET_EMPTY_RESPONSE';
 
@@ -6506,8 +6510,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL   => 'FAV update using FTS webhook successful',
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV                => 'Function called to update FAV entity using the mapping created from the FTS webhook',
         self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT   => 'Updating transaction entity for FAV as FTS webhook was received',
-        self::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS   => 'Input creds received from vault after tokenisation',
-    ];
+        self::FTS_UPDATE_EXISTING_SOURCE_ACCOUNT_TOKENISED_CREDS    => 'Input creds received from vault after tokenisation',
+        self::STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED                => 'Standalone payouts API is not supported for payouts to card numbers, please use the composite API',
+        ];
 
     public static $fileBasedReconTraceCodes = [
         self::RECON_FILE_LINK_NOT_FOUND,

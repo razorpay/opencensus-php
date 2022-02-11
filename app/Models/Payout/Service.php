@@ -214,6 +214,8 @@ class Service extends Base\Service
             $isCompositePayout = true;
         }
 
+        $this->checkIfPayoutIsAllowed($isCompositePayout, $input);
+
         if ($isCompositePayout === true)
         {
             $startTime = microtime(true);
@@ -2494,6 +2496,24 @@ class Service extends Base\Service
     public function updatePayoutEntry($payoutId, $input)
     {
         return $this->core->updatePayoutEntry($payoutId, $input);
+    }
+
+    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input)
+    {
+        if (($this->merchant->isFeatureEnabled(Features::ALLOW_NON_SAVED_CARDS) === true) and
+            (($isCompositePayout === false) and
+             (isset($input[Entity::FUND_ACCOUNT_ID]) === true) and
+             ($this->core->isPayoutsToFundAccountAllowed($input[Entity::FUND_ACCOUNT_ID]) === false)))
+        {
+            $this->trace->error(TraceCode::STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED,
+                                [
+                                    'is_composite_payout' => $isCompositePayout,
+                                    'payout_mode'         => $input[Payout\Entity::MODE] ?? null
+                                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED);
+        }
     }
 
     public function axisCCPayoutAnalytics()

@@ -49,6 +49,8 @@ class CitiPayoutTest extends TestCase
 
     public function testCreatePayoutForCitiToCardViaNEFTWithMultipleCredits()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create(
             'fund_account',
             [
@@ -139,6 +141,8 @@ class CitiPayoutTest extends TestCase
 
     public function testCreatePayoutForCitiToCardViaNEFTWithMultipleCreditsWithNewCreditsFlow()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create(
             'fund_account',
             [
@@ -231,6 +235,8 @@ class CitiPayoutTest extends TestCase
     // and the 2nd one will will debitted from banking balance completely
     public function testCreatePayoutForCitiToCardViaNEFTRewardFeeCredits()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create(
             'fund_account',
             [
@@ -400,6 +406,8 @@ class CitiPayoutTest extends TestCase
     // and the 2nd one will will debitted from banking balance completely
     public function testCreatePayoutForCitiToCardViaNEFTRewardFeeCreditsWithNewCreditsFlow()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create(
             'fund_account',
             [

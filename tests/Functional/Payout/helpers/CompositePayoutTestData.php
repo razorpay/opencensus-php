@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Exception\BadRequestException;
 
 return [
     'testCreateCompositePayout' => [
@@ -961,6 +962,182 @@ return [
         ],
     ],
 
+    'testCreateCompositePayoutForNonSavedCardFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025,
+                        'tokenised' => false
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth 98',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'payout',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'credit',
+                        'issuer'    =>  'YESB'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateCompositePayoutWithTokenisedCard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025,
+                        'tokenised' => true
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Tokenised cards are not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testCreateCompositePayoutForNonSavedCardFlowWithoutNameChanges' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025,
+                        'tokenised' => false
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'payout',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'name'      => 'Prashanth YV',
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'credit',
+                        'issuer'    =>  'YESB'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateCompositePayoutForCred' => [
         'request'  => [
             'method'  => 'POST',
@@ -983,7 +1160,7 @@ return [
                         'ifsc'      => 'KKBK0000430',
                     ],
                     'contact'      => [
-                        'name'    => 'Prashanth YV',
+                        'name'    => 'Prashanth',
                         'email'   => 'prashanth@razorpay.com',
                         'contact' => '9999999999',
                         'type'    => 'employee',
@@ -1022,7 +1199,7 @@ return [
                     'active'       => true,
                     'contact'      => [
                         'entity'       => 'contact',
-                        'name'         => 'Prashanth YV',
+                        'name'         => 'Prashanth',
                         'contact'      => '9999999999',
                         'email'        => 'prashanth@razorpay.com',
                         'type'         => 'employee',

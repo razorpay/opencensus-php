@@ -359,6 +359,80 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals(count($contacts), 0);
     }
 
+    public function testCreateCompositePayoutForNonSavedCardFlow()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::ALLOW_CARD_NAME_CHANGES,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_TO_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $card = $this->getDbEntity('card');
+
+        $contact = $this->getDbEntity('contact');
+
+        $this->assertEquals($card['name'], $contact['name']);
+
+        $this->assertArrayNotHasKey('tokenised', $response['fund_account']['card']);
+
+        $this->assertArrayNotHasKey('name', $response['fund_account']['card']);
+    }
+
+    public function testCreateCompositePayoutWithTokenisedCard()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::ALLOW_CARD_NAME_CHANGES,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_TO_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateCompositePayoutForNonSavedCardFlowWithoutNameChanges()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_TO_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $card = $this->getDbEntity('card');
+
+        $contact = $this->getDbEntity('contact');
+
+        $this->assertNotEquals($card['name'], $contact['name']);
+
+        $this->assertArrayNotHasKey('tokenised', $response['fund_account']['card']);
+    }
+
     public function testCreateCompositePayoutForCred()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);

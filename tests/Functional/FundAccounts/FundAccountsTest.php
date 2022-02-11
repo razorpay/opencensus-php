@@ -673,6 +673,23 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateCardFromCustomerWithNameChanges()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_CARD_NAME_CHANGES]);
+
+        $this->fixtures->create('customer', ['id' => '1000facustomer']);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card['name'], 'dummy card');
+    }
+
     public function testCreateCard()
     {
         Queue::fake();
@@ -1233,9 +1250,30 @@ class FundAccountsTest extends TestCase
 
     public function testCreateCardFundAccountWithNameAsNumeric()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
+    }
+
+    /**
+     * This test case skips regex validaiton of name at the time of fund account creation and card entity
+     * entity creation since contact name validation is already been done.
+     */
+    public function testCreateCardFundAccountSkipNameRegexValidation()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_CARD_NAME_CHANGES]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. asd fg 982?@-&a']);
+
+        $this->startTest();
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertEquals('Mr. asd fg 982?@-&a', $card['name']);
     }
 
     public function testBulkFundAccountCard()

@@ -4775,6 +4775,18 @@ class Core extends Base\Core
         return ['Queued email count' => $count];
     }
 
+    public function isPayoutsToFundAccountAllowed($fundAccountId)
+    {
+        $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+        if ($fundAccount->getAccountType() === Entity::CARD)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function fetchPayoutAnalyticsfromPayoutsService(Merchant\Entity $merchant): array
     {
         $this->trace->info(

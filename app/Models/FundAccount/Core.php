@@ -436,6 +436,10 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
+                $this->blockTokenisedFlow($accountInput);
+
+                $this->maskCardNameWithContactName($accountInput, $source);
+
                 if (isset($accountInput[Card\Entity::TOKEN]) === true)
                 {
                     // we will fetch the card details from vault token and modify the input so that rest of the
@@ -461,6 +465,7 @@ class Core extends Base\Core
                 // Name is mandatory for card creation.
                 $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
 
+                // Todo: migrate payout to cards for high TPS merchants as done for whatsapp
                 $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
                 break;
 
@@ -473,6 +478,50 @@ class Core extends Base\Core
         }
 
         return $account;
+    }
+
+    protected function maskCardNameWithContactName(&$accountInput, $source)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
+        {
+            if (($source !== null) and
+                ($source->getEntity() === Entity::CONTACT) and
+                (isset($accountInput[Card\Entity::NAME]) === true))
+            {
+                $accountInput[Card\Entity::NAME] = $source[Contact\Entity::NAME];
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::UNSETTING_CARD_NAME_WHILE_FUND_ACCOUNT_CREATION,
+                    [
+                        'source'            => ($source === null) ? null : $source->getEntity(),
+                        'card_name_present' => isset($accountInput[Card\Entity::NAME]),
+                    ]);
+
+                unset($accountInput[Card\Entity::NAME]);
+            }
+        }
+    }
+
+    public function blockTokenisedFlow($accountInput)
+    {
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
+            ((isset($accountInput[Card\Entity::TOKENISED]) === true) and
+             ($accountInput[Card\Entity::TOKENISED] === true)))
+        {
+            $this->trace->error(TraceCode::TOKENISED_CARDS_NOT_SUPPORTED,
+                                [
+                                    'tokenised' => $accountInput[Card\Entity::TOKENISED],
+                                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                null,
+                [],
+                "Tokenised cards are not supported"
+            );
+        }
     }
 
     public function update(Entity $fundAccount, array $input): Entity

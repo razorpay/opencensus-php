@@ -3049,7 +3049,6 @@ return [
                 'entity'          => 'payout',
                 'amount'          => 100,
                 'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000002fa',
                 'mode'            => 'IMPS',
                 'purpose'         => 'refund',
                 'tax'             => 90,
@@ -6396,7 +6395,23 @@ return [
                 'purpose'               => 'refund',
                 'narration'             => 'Batman',
                 'mode'                  => 'IMPS',
-                'fund_account_id'       => 'fa_100000000002fa',
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name'      => 'Prashanth YV',
+                        'number'    => '04111111111111111',
+                        'ifsc'      => 'KKBK0000430',
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'notes'                 => [
                     'abc' => 'xyz',
                 ],
@@ -6407,7 +6422,31 @@ return [
                 'entity'          => 'payout',
                 'amount'          => 2000000,
                 'currency'        => 'INR',
-                'fund_account_id' => 'fa_100000000002fa',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '1111',
+                        'network'   =>  'Visa',
+                        'type'      =>  'credit',
+                        'issuer'    =>  'HDFC',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'mode'            => 'IMPS',
                 'purpose'         => 'refund',
                 'tax'             => 162,
@@ -6521,7 +6560,22 @@ return [
             'url'     => '/payouts',
             'method'  => 'POST',
             'content' => [
-                'fund_account_id' => 'RandomFundAccId',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        'number' => '378282246310005',
+                        'name'   => 'Tester Test',
+                    ]
+                ],
                 'mode'            => 'UPI',
                 'purpose'         => 'refund',
                 'account_number'  => '2224440041626905',
@@ -7920,7 +7974,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "2126",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'NEFT',
                 'currency'        => 'INR',
@@ -7931,7 +8003,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'American Express',
+                        'type'      =>  'credit',
+                        'issuer'    =>  null,
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -7946,7 +8042,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "2126",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'UPI',
                 'currency'        => 'INR',
@@ -7957,7 +8071,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'American Express',
+                        'type'      =>  'credit',
+                        'issuer'    =>  null,
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -7972,7 +8110,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "2126",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'NEFT',
                 'currency'        => 'INR',
@@ -7983,7 +8139,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'American Express',
+                        'type'      =>  'credit',
+                        'issuer'    =>  'SCBL',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -7998,7 +8178,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "2126",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'UPI',
                 'currency'        => 'INR',
@@ -8009,7 +8207,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'American Express',
+                        'type'      =>  'credit',
+                        'issuer'    =>  'SCBL',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -12181,7 +12403,7 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account_id' => 'fa_100000000001fa',
                 'amount'          => 100,
                 'mode'            => 'IMPS',
                 'currency'        => 'INR',
@@ -14793,12 +15015,57 @@ return [
         ],
     ],
 
+    'testCreatePayoutToCardsNotAllowed' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_100000000002fa',
+                'amount'          => 100,
+                'mode'            => 'IMPS',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Standalone payouts API is not supported for payouts to card numbers, please use the composite API',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_STANDALONE_PAYOUT_TO_CARDS_NOT_ALLOWED,
+        ],
+    ],
+
     'testCreateM2PPayoutForDebitCardWithUpperCaseCardMode' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "212",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'CARD',
                 'currency'        => 'INR',
@@ -14809,7 +15076,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'debit',
+                        'issuer'    =>  'YESB',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -14824,7 +15115,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "212",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'card',
                 'currency'        => 'INR',
@@ -14835,7 +15144,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'debit',
+                        'issuer'    =>  'YESB',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -14850,7 +15183,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "212",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'cARd',
                 'currency'        => 'INR',
@@ -14861,7 +15212,31 @@ return [
         'response' => [
             'content' => [
                 'entity'          => 'payout',
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'debit',
+                        'issuer'    =>  'YESB',
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
                 'amount'          => 100,
                 'currency'        => 'INR',
                 'status'          => 'processing',
@@ -14904,7 +15279,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "212",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'card',
                 'currency'        => 'INR',
@@ -14932,7 +15325,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "212",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'card',
                 'currency'        => 'INR',
@@ -15206,7 +15617,25 @@ return [
             'method'  => 'POST',
             'url'     => '/payouts',
             'content' => [
-                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'fund_account' => [
+                    "account_type" => "card",
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                    "card"         => [
+                        "name"         => "Prashanth YV",
+                        "number"       => "340169570990137",
+                        "cvv"          => "212",
+                        "expiry_month" => 10,
+                        "expiry_year"  => 29,
+                    ]
+                ],
                 'amount'          => 100,
                 'mode'            => 'card',
                 'currency'        => 'INR',

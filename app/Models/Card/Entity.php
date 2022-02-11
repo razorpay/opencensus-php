@@ -189,6 +189,7 @@ class Entity extends Base\PublicEntity
         Card\Entity::SUBTYPE,
         Card\Entity::ISSUER,
         Card\Entity::IIN,
+        Card\Entity::TOKENISED,
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -1048,6 +1049,12 @@ class Entity extends Base\PublicEntity
         if ((isset($attributes[self::NAME]) === true) and
             ($attributes[self::NAME] === self::DUMMY_NAME))
         {
+            unset($attributes[self::NAME]);
+        }
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
+        {
+            //unsetting name according to RBI guidelines for tokenisation
             unset($attributes[self::NAME]);
         }
 

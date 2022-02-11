@@ -517,6 +517,12 @@ class FundTransfer extends Base
             }
         }
 
+        if (($this->fta->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
+            ($this->fta->getSourceType() === Constants::PAYOUT))
+        {
+            $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = $this->fta->card->isTokenPan();
+        }
+
         return $request;
     }
 

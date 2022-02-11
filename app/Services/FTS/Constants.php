@@ -64,6 +64,8 @@ final class Constants
 
     const VAULT_TOKEN                    = 'vault_token';
 
+    const TOKENISED                      = 'tokenised';
+
     const SOURCE_TYPE                    = 'source_type';
 
     const CREDENTIALS                    = 'credentials';
@@ -203,8 +205,6 @@ final class Constants
     const CONTACT_NOTES                  = "contact_notes";
 
     const BENEFICIARY_BANK_NAME          = "beneficiary_bank_name";
-
-    const TOKENISED                      = 'tokenised';
 
     public static function getProducts(): array
     {

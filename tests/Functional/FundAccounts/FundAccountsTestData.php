@@ -901,6 +901,32 @@ return [
         ],
     ],
 
+    'testCreateCardFromCustomerWithNameChanges' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'customer_id'  => 'cust_1000facustomer',
+                'card'         => [
+                    'name'         => 'shk',
+                    'number'       => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year'  => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'customer_id'  => 'cust_1000facustomer',
+                'card'         => [
+                ],
+            ],
+        ],
+    ],
+
     'testCreateCard' => [
         'request'  => [
             'content' => [
@@ -2447,6 +2473,31 @@ return [
         'exception' => [
             'class' => Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateCardFundAccountSkipNameRegexValidation' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name'   => 'Mr. asd fg',
+                    'number' => '4111111111111111'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [
+                ],
+            ],
+            'status_code' => 201
         ],
     ],
 

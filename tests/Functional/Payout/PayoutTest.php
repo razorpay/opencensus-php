@@ -968,6 +968,19 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithInvalidMode()
     {
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000003fa',
+                'account_type' => 'bank_account',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000001ba',
+                'active'       => 1,
+            ]);
+
+        $this->fixtures->create('bank_account',['id' => '100000000000ba']);
+
         // Not asserting the data, just the count.
         $this->mockLedgerSns(0);
 
@@ -2560,10 +2573,12 @@ class PayoutTest extends OAuthTestCase
             'fund_account',
             [
                 'id'           => '100000000004ff',
-                'account_type' => 'card',
-                'account_id'   => '100000000lcard',
+                'account_type' => 'bank_account',
+                'account_id'   => '100000000000ba',
                 'active'       => 1,
             ]);
+
+        $this->fixtures->create('bank_account',['id' => '100000000000ba']);
 
         $this->startTest();
     }
@@ -2586,6 +2601,7 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    // Todo: This test case will be migrated to composite API flow once tokenised saved card flow is live
     public function testCreatePayoutToCardFundAccount()
     {
         $this->fixtures->create(
@@ -2600,6 +2616,10 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $this->startTest();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->assertNotEquals($fundAccount['card']['name'], $fundAccount->contact['name']);
     }
 
     public function testCreatePayoutToInactiveContactFundAccount()
@@ -5919,6 +5939,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateRblPayoutToCard()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
         $this->mockRazorxTreatment('payout_to_cards_via_rbl');
 
         $balanceAttributes = [
@@ -6976,22 +6998,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutToAmexCardWithNullIssuerSupportedMode()
     {
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "2126",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -7007,40 +7013,12 @@ class PayoutTest extends OAuthTestCase
         $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'on');
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(null, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
 
     public function testPayoutToAmexCardWithNullIssuerWithUPIMode()
     {
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "2126",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -7056,18 +7034,6 @@ class PayoutTest extends OAuthTestCase
         $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'on');
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(null, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
@@ -7081,22 +7047,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::SCBL
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "2126",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -7110,18 +7060,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::SCBL, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
@@ -7135,22 +7073,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::SCBL
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "2126",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -7164,18 +7086,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::SCBL, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
@@ -11197,6 +11107,8 @@ class PayoutTest extends OAuthTestCase
      */
     public function testPayoutToSCBLCardWithNetworkOtherThanAmexMasterVisaIfFundAccountAlreadyCreated()
     {
+        $this->markTestSkipped("Standalone Payouts are disabled for cards");
+
         $card = $this->fixtures->create(
             'card',
             [
@@ -11236,17 +11148,13 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = 'fa_100000000001fa';
-
-        $this->testData[__FUNCTION__] = $testData;
-
         $this->startTest();
     }
 
     public function testPayoutToSCBLCardWithMastercardIfFundAccountAlreadyCreated()
     {
+        $this->markTestSkipped("Standalone Payouts are disabled for cards");
+
         $card = $this->fixtures->create(
             'card',
             [
@@ -11297,6 +11205,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutToSCBLCardWithVisaIfFundAccountAlreadyCreated()
     {
+        $this->markTestSkipped("Standalone Payouts are disabled for cards");
+
         $card = $this->fixtures->create(
             'card',
             [
@@ -14584,6 +14494,24 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('payout reversed at bank', $updatePayout2['failure_reason']);
     }
 
+    public function testCreatePayoutToCardsNotAllowed()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000002fa',
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $this->startTest();
+    }
+
     // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
     // We need to make changes to the test sample data to pass them
     public function testCreateM2PPayoutForDebitCardWithUpperCaseCardMode()
@@ -14599,22 +14527,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "212",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -14628,18 +14540,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
 
@@ -14705,22 +14605,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "212",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -14734,18 +14618,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
 
@@ -14770,22 +14642,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "212",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -14799,18 +14655,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
 
@@ -14832,6 +14676,8 @@ class PayoutTest extends OAuthTestCase
     // but support is revoked sometime between FA and PAYOUT creation
     public function testCreateM2PPayoutWithoutSupportedModes()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('iin', [
             'iin'     => 340169,
             'network' => Network::$fullName[Network::MC],
@@ -14918,22 +14764,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "212",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -14947,17 +14777,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
 
@@ -14985,22 +14804,6 @@ class PayoutTest extends OAuthTestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "212",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -15014,17 +14817,6 @@ class PayoutTest extends OAuthTestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }

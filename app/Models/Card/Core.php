@@ -7,6 +7,7 @@ use Route;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -226,7 +227,17 @@ class Core extends Base\Core
     {
         $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
 
-        $card = $this->create($input, $merchant);
+        //Duplication of code here, since using contact.name in place of card.name created problems
+        //with validation due to dissimilar regex.
+        // Todo: Find better approach
+        if ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_CARD_NAME_CHANGES) === true)
+        {
+            $card = $this->createCardWithContactName($input, $merchant);
+        }
+        else
+        {
+            $card = $this->create($input, $merchant);
+        }
 
         $cardType       = $card->getType();
         $cardIssuer     = $card->getIssuer();
@@ -924,5 +935,45 @@ class Core extends Base\Core
         }
 
         return $default;
+    }
+
+    public function createCardWithContactName($input, $merchant, $recurring = false, $dummyProcessing = false)
+    {
+        $card = (new Card\Entity);
+
+        $this->customBuild($card, $input, 'createWithContact');
+
+        $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
+
+        $card->merchant()->associate($merchant);
+
+        $this->card = $card;
+
+        $iin = $this->fillNetworkDetails($card, $input);
+
+        if (empty($iin) === false)
+        {
+            $card->iinRelation()->associate($iin);
+        }
+
+        if ($dummyProcessing === false)
+        {
+            $this->repo->saveOrFail($card);
+        }
+
+        return $card;
+    }
+
+    public function customBuild($card, $input, $operation)
+    {
+        $card->modify($input);
+
+        $card->validateInput($operation, $input);
+
+        $card->generate($input);
+
+        $card->unsetInput('create', $input);
+
+        $card->fill($input);
     }
 }

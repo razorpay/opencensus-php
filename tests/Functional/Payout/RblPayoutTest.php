@@ -614,8 +614,6 @@ class RblPayoutTest extends TestCase
 
     public function testCreateM2PPayoutForMerchantDirectAccountCardMode()
     {
-        $contact = $this->getDbLastEntity('contact');
-
         $balanceAttributes = [
             'balance' => 10000000,
             'balanceType' => 'direct',
@@ -661,22 +659,6 @@ class RblPayoutTest extends TestCase
             'issuer'  => Issuer::YESB
         ]);
 
-        $fundAccountRequest = [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_" . $contact["id"],
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "212",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 29,
-                ]
-            ]
-        ];
-
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::S2S,
             'entity_id'   => 10000000000000,
@@ -690,17 +672,6 @@ class RblPayoutTest extends TestCase
         ]);
 
         $this->ba->privateAuth();
-
-        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
-
-        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
-        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
-
-        $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
     }
@@ -925,12 +896,6 @@ class RblPayoutTest extends TestCase
                 ],
             ],
         ];
-
-        $cardFundAccountCreateResponse = $this->makeRequestAndGetContent($cardFundAccountCreateRequest);
-        $fundAccountId = $cardFundAccountCreateResponse['id'];
-
-        $testData                                          = &$this->testData[__FUNCTION__];
-        $testData['request']['content']['fund_account_id'] = $fundAccountId;
 
         $this->startTest();
 

@@ -1511,6 +1511,8 @@ class IciciCaPayoutTest extends TestCase
 
     public function testPayoutToAmexCardWithSupportedIssuerSupportedMode()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('iin', [
             'iin'     => 340169,
             'network' => Network::$fullName[Network::AMEX],
@@ -1571,6 +1573,8 @@ class IciciCaPayoutTest extends TestCase
 
     public function testCreateM2PPayoutForMerchantDirectAccountCardMode()
     {
+        $this->markTestSkipped();
+
         $contact = $this->getDbLastEntity('contact');
 
         $this->ba->privateAuth();
