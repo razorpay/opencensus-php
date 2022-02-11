@@ -28,11 +28,6 @@ class PaymentPageProcessor extends Job
     protected $queueConfigKey = 'payment_page_generic';
 
     /**
-     * @var \RZP\Models\Payment\Entity
-     */
-    protected $payment;
-
-    /**
      * @var \Illuminate\Support\Collection
      */
     protected $params;
@@ -65,7 +60,6 @@ class PaymentPageProcessor extends Job
 
         $this->params   = collect($params);
         $this->event    = $this->params->get('event', self::PAYMENT_CAPTURE_EVENT);
-        $this->payment  = $this->params->get('payment');
         $this->merchant = $this->params->get('merchant');
     }
 
@@ -127,32 +121,39 @@ class PaymentPageProcessor extends Job
     protected function handlePaymentCaptureEvent()
     {
         $this->core = new PaymentLink\Core;
+
+        $paymentId  = $this->params->get('payment_id');
+
+        if (empty($paymentId) === true)
+        {
+            $this->delete();
+
+            $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
+
+            return;
+        }
+
+        $payment        = $this->repoManager->payment->find($paymentId);
+
+        $paymentLink    = $payment->paymentLink;
+
+        $traceContext = $this->context + [
+                    'payment_id'        => $payment->getId(),
+                    'payment_page_id'   => $paymentLink->getId(),
+                ];
+
         try
         {
-            $paymentLink = $this->payment->paymentLink;
+            $this->trace->info(TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_QUEUE, $traceContext);
 
-            $this->trace->info(
-                TraceCode::PAYMENT_LINK_PAYMENT_CAPTURE_QUEUE,
-                [
-                    'payment_id'     => $this->payment->getId(),
-                    'payment_link'   => $paymentLink->getId(),
-                ]);
-
-            $this->core->postPaymentCaptureAttemptProcessing($this->payment, true);
+            $this->core->postPaymentCaptureAttemptProcessing($payment, true);
 
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL, $this->context);
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                null,
-                null,
-                [
-                    'payment_id'     => $this->payment->getId(),
-                    'payment_link'   => $paymentLink->getId(),
-                ]
-            );
+            $this->trace->traceException($e, null, null, $traceContext);
+
             $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL, $this->context);
         }
 

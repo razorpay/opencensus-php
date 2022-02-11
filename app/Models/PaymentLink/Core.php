@@ -599,8 +599,9 @@ class Core extends Base\Core
         if ($variant === 'on')
         {
             PaymentPageProcessor::dispatch($this->mode, [
-                'payment'   => $payment,
-                'start_time'=> millitime(),
+                'payment_id'    => $payment->getId(),
+                'start_time'    => millitime(),
+                'event'         => PaymentPageProcessor::PAYMENT_CAPTURE_EVENT,
             ]);
 
             return;
