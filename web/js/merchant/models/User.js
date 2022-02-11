@@ -666,6 +666,10 @@ export default class User {
     return this.getExpStatus('frontend_care_active');
   }
 
+  get isClickToCallActive() {
+    return this.getExpStatus('click_to_call_active');
+  }
+
   get isRazorxAnnouncementEnabled() {
     return this.findTag('announcement_razorpayx');
   }

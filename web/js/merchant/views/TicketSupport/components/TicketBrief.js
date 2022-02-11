@@ -18,7 +18,6 @@ export default class TicketBriefRevamped extends React.Component {
     const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
     let subject = ticket.subject;
     subject = subject.replace('[Merchant]', '');
-
     const formattedDate = moment(ticket.created_at).fromNow();
     const ticketStatus = STATUSES[ticket.status];
     // only date showed here
@@ -69,7 +68,8 @@ export default class TicketBriefRevamped extends React.Component {
                     </div>
                   </div>
                   {ticketStatus !== 'CLOSED' ? (
-                    ticket.tags.includes('callback') ? (
+                    ticket.tags.includes('callback') ||
+                    ticket.tags.includes('instant_callback_requested') ? (
                       <p className="call-requested">
                         <img
                           className="schedule-call-icon"
@@ -82,6 +82,7 @@ export default class TicketBriefRevamped extends React.Component {
                             if (window.rzpTicketSystem) {
                               window.rzpTicketSystem.openModal(`#call-details`, {
                                 id: ticket.custom_fields.cf_callback_id,
+                                ticket,
                               });
                             }
                           }}

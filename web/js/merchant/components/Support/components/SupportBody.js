@@ -37,6 +37,7 @@ class SupportBody extends Component {
   state = {
     timings: [],
     careSupportSection: null,
+    openClickToCall: false,
   };
   openDashboardGuide = (_) => {
     analyticsTrack({
@@ -114,21 +115,32 @@ class SupportBody extends Component {
         careSupportSection: null,
       });
     });
-    const params = {
+    const timingConfigParam = {
       url: 'merchants/chat/timings_config',
       headers: {
         'Content-Type': 'application/json',
       },
     };
-
-    return (
-      this.props.user.current &&
-      merchantFetch(params).then((r) => {
-        if (r.success) {
-          this.setState({ timings: r.data });
+    const clickToCallParam = {
+      url: `care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckInstantCallbackEligibility`,
+      mode: 'live',
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    Promise.all([
+      merchantFetch(timingConfigParam).then((resp1) => {
+        if (resp1.success) {
+          this.setState({ timings: resp1.data });
         }
-      })
-    );
+      }),
+      merchantFetch(clickToCallParam).then((resp2) => {
+        if (resp2.success) {
+          this.setState({ openClickToCall: resp2.data.is_eligible });
+        }
+      }),
+    ]).catch((err) => console.log(err));
   }
 
   handleClick = (id) => {
@@ -147,6 +159,10 @@ class SupportBody extends Component {
         return rzpTicketSystem.openModal(`#schedule-call`);
       }
 
+      if (id === 'click-to-call') {
+        // eslint-disable-next-line consistent-return
+        return rzpTicketSystem.openModal(`#click-to-call`);
+      }
       if (id === 'chat') {
         analyticsTrack({
           objectName: 'chat with us',
@@ -248,7 +264,6 @@ class SupportBody extends Component {
         date.end_zone = 'PM';
       }
     }
-
     return (
       <div class={classList('support-body', isOpened && 'active')}>
         {careSupportSection ? (
@@ -258,7 +273,7 @@ class SupportBody extends Component {
               email: user.email,
               name: user.name,
               id: user.id,
-              contact_mobile: user.contact_mobile,
+              contact_mobile: user?.user?.contact_mobile,
             }}
             analyticsInstance={analyticsTrack}
             // removing hash to support frontend care package
@@ -299,6 +314,7 @@ class SupportBody extends Component {
           <ShowWhen
             myRole="owner admin"
             additionalCondition={() =>
+              !(this.props.user.isClickToCallActive || this.state.openClickToCall) &&
               !(
                 scheduleCallbackReason === 'NOT_FETCHED_YET' ||
                 (scheduleCallbackReason === 'NOT_APPLICABLE' && !scheduleCallConfig.is_eligible)
@@ -306,9 +322,6 @@ class SupportBody extends Component {
             }
           >
             <li
-              className={`support-item p-all callback ${
-                !scheduleCallConfig.is_eligible ? 'disabled' : ''
-              }`}
               onClick={() => {
                 analyticsTrack({
                   objectName: 'request a call',
@@ -325,6 +338,30 @@ class SupportBody extends Component {
                 Request a call <span className="badge">Recommended</span>
               </span>
               <small className="help-block">{scheduleCallbackReason}</small>
+            </li>
+          </ShowWhen>
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={() =>
+              this.props.user.isClickToCallActive && this.state.openClickToCall
+            }
+          >
+            <li
+              className="support-item p-all callback "
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'click to call',
+                  actionName: 'clicked',
+                  screen: 'home page',
+                  properties: {
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                handleClick('click-to-call');
+              }}
+            >
+              <span>Click to call</span>
+              <small className="help-block">Click to call instantly</small>
             </li>
           </ShowWhen>
           {window.rzp_user ? (

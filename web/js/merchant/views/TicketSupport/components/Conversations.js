@@ -191,10 +191,11 @@ export default class Conversations extends React.Component {
     return !isEscalationReply;
   }
 
-  openCallDetails = (id) => {
+  openCallDetails = (id, ticket) => {
     if (window.rzpTicketSystem) {
       window.rzpTicketSystem.openModal(`#call-details`, {
         id,
+        ticket,
       });
     }
   };
@@ -211,6 +212,7 @@ export default class Conversations extends React.Component {
     let total_conversations = [];
     const TICKET_ID = this.props.match.params.id;
     const has_callback = this.state.ticket.tags.includes('callback');
+    const has_click_to_call = this.state?.ticket?.tags?.includes('instant_callback_requested');
     Object.keys(this.state.conversations.data).forEach((k) => {
       total_conversations.push(...this.state.conversations.data[k]);
     });
@@ -226,7 +228,7 @@ export default class Conversations extends React.Component {
     message = (
       <h3 className="fsz-14">
         This query is open and our team is working on it.{' '}
-        {!has_callback ? (
+        {!(has_callback || has_click_to_call) ? (
           <>
             <span>You can</span>
             <br />
@@ -327,7 +329,6 @@ export default class Conversations extends React.Component {
     }
 
     const ticketType = this.state.ticket?.custom_fields?.cf_created_by || 'merchant';
-
     const isLoading = this.state.conversations.loading || this.state.loadingTicket;
     return (
       <div className="content-wrapper content-sm ticket-support">
@@ -432,7 +433,7 @@ export default class Conversations extends React.Component {
                             ) : null}
                           </span>
                         )}
-                        {!has_callback ? (
+                        {!(has_callback || has_click_to_call) ? (
                           this.props.scheduleCallConfig.is_eligible ? (
                             <button
                               onClick={() => {
@@ -443,7 +444,7 @@ export default class Conversations extends React.Component {
                                 }
                               }}
                               className="btn btn-outline"
-                              disabled={has_callback}
+                              disabled={has_callback || has_click_to_call}
                             >
                               {' '}
                               <i className="i i-call-new" /> Request a call
@@ -455,7 +456,10 @@ export default class Conversations extends React.Component {
                             <i className="i i-call-new" /> <span>Call requested,</span>{' '}
                             <b
                               onClick={() =>
-                                this.openCallDetails(this.state.ticket.custom_fields.cf_callback_id)
+                                this.openCallDetails(
+                                  this.state.ticket.custom_fields.cf_callback_id,
+                                  this.state.ticket,
+                                )
                               }
                               className="details"
                             >
