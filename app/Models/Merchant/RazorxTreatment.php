@@ -260,9 +260,6 @@ final class RazorxTreatment
     // experiment to enable axis wrapper feature
     const AXIS_WRAPPER_ENABLED = "AXIS_WRAPPER_ENABLED";
 
-    // experiment to enable dedupe functionality
-    const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
-
     //
     const ORG_LEVEL_2FA_ENFORCED_FUNCTIONALITY = 'org_level_2fa_enforced_functionality';
 

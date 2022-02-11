@@ -203,7 +203,7 @@ class MerchantTest extends TestCase
                           ->will($this->returnCallback(
                               function ($merchantId, $feature, $mode)
                               {
-                                  if ($feature === "DEDUPE_FUNCTIONALITY" || $feature === "show_create_ticket_popup")
+                                  if ($feature === "show_create_ticket_popup")
                                   {
                                       return 'on';
                                   }
@@ -3526,8 +3526,6 @@ class MerchantTest extends TestCase
         Config(['services.bvs.mock' => true]);
 
         $this->setupWorkflowForBankAccountUpdate();
-
-        $this->enableRazorXTreatmentForFeature(RazorxTreatment::DEDUPE_FUNCTIONALITY, 'on');
 
         $this->mockMerchantImpersonated();
 
@@ -11886,7 +11884,7 @@ IFSC Code  ICIC0001206
                           ->will($this->returnCallback(
                               function ($merchantId, $feature, $mode)
                               {
-                                  if ($feature === "DEDUPE_FUNCTIONALITY" || $feature === "show_create_ticket_popup")
+                                  if ($feature === "show_create_ticket_popup")
                                   {
                                       return 'on';
                                   }

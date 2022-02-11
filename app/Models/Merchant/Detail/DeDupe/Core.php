@@ -71,11 +71,6 @@ class Core extends Base\Core
             return false;
         }
 
-        if($this->isDedupeExperimentEnabled($merchant->getId(), RazorxTreatment::DEDUPE_FUNCTIONALITY) === false)
-        {
-            return false;
-        }
-
         return true;
     }
 
