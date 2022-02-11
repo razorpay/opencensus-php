@@ -10,11 +10,12 @@ class RouteTeamMap
     /**
      * Follows the notation <BU>_<TeamName>
      */
-    const TEAM_PAYMENTS_DASHBOARD = 'payments_dashboard';
-    const TEAM_PAYMENTS_CARE      = 'payments_care';
-    const TEAM_PAYMENTS_GROWTH    = 'payments_growth';
-    const TEAM_PAYMENTS_RISK      = 'payments_risk';
-    const TEAM_UNKNOWN            = 'unknown_unknown';
+    const TEAM_PAYMENTS_DASHBOARD       = 'payments_dashboard';
+    const TEAM_PAYMENTS_CARE            = 'payments_care';
+    const TEAM_PAYMENTS_GROWTH          = 'payments_growth';
+    const TEAM_PAYMENTS_RISK            = 'payments_risk';
+    const TEAM_UNKNOWN                  = 'unknown_unknown';
+    const TEAM_PAYMENTS_SETTLEMENTS     = 'payments_settlements';
 
     /**
      * @return string comma separated list of team names for the particular route
@@ -366,5 +367,84 @@ class RouteTeamMap
         'customer_flagging_post_grievance'                => [self::TEAM_PAYMENTS_RISK],
         'dispute_fetch_multiple_count'                    => [self::TEAM_PAYMENTS_RISK],
         'merchant_international_enablement_submit'        => [self::TEAM_PAYMENTS_RISK],
+
+        //settlements route
+        'setl_fetch_multiple'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_amount'                                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_retry'                                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_holidays'                                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_fetch_by_id'                                => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_fetch_transactions'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_fetch_source_details'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_initiate'                                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_initiate_daily'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_initiate_action'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_get_details'                                => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transaction_replay'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transaction_replay_admin'                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_status_update'                              => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transactions_verify'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_retry_new_service'                          => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_initiate_new_service'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_schedule_rename'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_replay_status_update'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_service_migration_admin'                    => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transfer_status_update'                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_schedule_get_ids'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_schedule_create'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_admin_fetch_multiple'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_merchant_config_get'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_merchant_config_create'                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_merchant_config_update'                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_merchant_config_bulk_update'                => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bank_account_create'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bank_account_update'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_update_bene_name'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bank_account_get'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bank_account_delete'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_execution_register'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_trigger_multiple'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_execution_resume'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transaction_release'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_transaction_hold'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_channel_status_update'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_channel_state_get'                          => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'set_channel_action'                              => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_update_channel_bulk'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_fetch_schedule'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_get_scheduleableEntities'                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_service_migration'                          => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_execution_reminder'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_optimizer_settlement_cron'                  => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_merchant_dashboard_config_get'              => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_get_transaction_details'                    => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'fb_setl_fetch_transactions'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bucket_backfill'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bucket_delete'                              => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_initiate_adhoc'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_process_data'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_process_data_reset'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_verify'                                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_calc_previous_fees'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_post_details_old'                           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_combined_report'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_combined_recon'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_sms_notification_status'                    => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_sms_notification_toggle'                    => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_admin_fetch'                                => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_schedule_get'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_trigger_report'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_migrate_payout'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_entity_download_file'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'create_settlement_entry'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_ledger_inconsistency_debug_admin'           => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_ledger_inconsistency_debug_cron'            => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'get_global_config'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'payout_create_internal'                          => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'payout_fetch_by_id_internal'                     => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'nodal_initiate_transfer'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'nodal_initiate_transfer_admin'                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'toggle_transaction_hold'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'toggle_transaction_release'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
     ];
 }
