@@ -17,6 +17,8 @@ class ProviderApp
     const ICICI_BANK            = 'com.csam.icici.bank.imobile';
     const NSDL_JIFFY            = 'com.nsdlpb.jiffy';
     const BHIM_AXISPAY          = 'com.upi.axispay';
+    const DAKPAY_UPI_IPBB       = 'com.fss.ippbpsp';
+    const MOBIKWIK              = 'com.mobikwik_new';
 
     // For all other PSP Apps
     const OTHER             = 'other';

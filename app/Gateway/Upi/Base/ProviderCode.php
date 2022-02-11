@@ -391,6 +391,8 @@ class ProviderCode
         ProviderPsp::IMOBILE,
         ProviderPsp::NSDL_JIFFY,
         ProviderPsp::BHIM_AXISPAY,
+        ProviderPsp::DAKPAY_UPI_IPBB,
+        ProviderPsp::MOBIKWIK,
     ];
 
     /**
@@ -412,6 +414,8 @@ class ProviderCode
         self::OKAXIS        => ProviderPsp::GOOGLE_PAY,
         self::NSDL          => ProviderPsp::NSDL_JIFFY,
         self::AXISBANK      => ProviderPsp::BHIM_AXISPAY,
+        self::POSTBANK      => ProviderPsp::DAKPAY_UPI_IPBB,
+        self::IKWIK         => ProviderPsp::MOBIKWIK,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
