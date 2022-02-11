@@ -15,7 +15,7 @@ export const MONTHS = [
 
 export const MODAL_HEADING = {
   1: 'Select Purpose Code',
-  2: 'Enter IEC Code',
+  2: 'Importer/Exporter Code',
   3: 'Confirmation',
 };
 

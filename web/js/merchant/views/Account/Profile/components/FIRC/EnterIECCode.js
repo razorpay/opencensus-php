@@ -38,13 +38,15 @@ const EnterIECCode = ({ onChange }) => {
     <>
       <div className="iec-code-container">
         <p className="label-text">
-          Please enter your 10 digit IEC code issued by Directorate General of Foreign Trade (DGFT).
+          Submit your 10 digit importer/exporter code (IEC) if you have one, or you sell physical
+          goods, or you sell services and utilise certain benefits under India’s Foreign Trade
+          Policy.
         </p>
         <div className="input-container">
           <input
             type="text"
             className="form-control"
-            placeholder="IEC code"
+            placeholder="Enter 10 digit IEC code"
             name="iec_code"
             value={iec_code}
             onChange={inputHandler}
@@ -52,6 +54,15 @@ const EnterIECCode = ({ onChange }) => {
           />
           {error && <p className="error-text text-danger">{error}</p>}
         </div>
+        <p className="highlight-content">
+          <span>
+            Note: The IEC is a code issued by the Indian Director General of Foreign Trade (DGFT) to
+            Indian companies that intend to export from India. You can apply for an IEC at the{' '}
+          </span>
+          <a href="https://www.dgft.gov.in/CP/" target="_blank" rel="noopener noreferrer">
+            DGFT website.
+          </a>
+        </p>
       </div>
       <div className="footer-section">
         <Button.Primary className="next-btn m-0" onClick={onSubmit}>
