@@ -101,7 +101,7 @@ class FreshchatClient
 
         foreach ($mailData['attachments'] as $attachment)
         {
-            unlink($attachment['file_path']);
+            unlink($attachment['file_path']); // nosemgrep : php.lang.security.unlink-use.unlink-use
         }
     }
 

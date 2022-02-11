@@ -15,3 +15,5 @@ app/Gateway/Enach/Npci/Netbanking/Mock/keys/*
 /* DB Seeders */
 database/seeds/DatabaseSeeder.php
 database/queries/heimdall.sql
+
+app/Gateway/Wallet/Amazonpay/Sdk/mock-private.cer

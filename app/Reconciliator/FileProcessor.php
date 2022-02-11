@@ -461,7 +461,7 @@ class FileProcessor
                     ' -o' . escapeshellarg($extractToPath) .
                     ' ' . escapeshellarg($filePath));
 
-        exec($cmd, $unzipOutput, $status);
+        exec($cmd, $unzipOutput, $status); // nosemgrep : php.lang.security.exec-use.exec-use
 
         if ($status !== 0)
         {

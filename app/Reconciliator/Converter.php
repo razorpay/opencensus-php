@@ -856,14 +856,14 @@ class Converter extends Base\Core
 
             // Convert all dashes/underscores into separator
             $flip = $separator === '-' ? '_' : '-';
-            $val = preg_replace('![' . preg_quote($flip) . ']+!u', $separator, $val);
+            $val = preg_replace('![' . preg_quote($flip) . ']+!u', $separator, $val); // nosemgrep :php.lang.security.preg-replace-eval.preg-replace-eval
 
             // Remove all characters that are not the separator,
             // letters, numbers, or whitespace.
-            $val = preg_replace('![^' . preg_quote($separator) . '\pL\pN\s]+!u', '', mb_strtolower($val));
+            $val = preg_replace('![^' . preg_quote($separator) . '\pL\pN\s]+!u', '', mb_strtolower($val)); // nosemgrep :php.lang.security.preg-replace-eval.preg-replace-eval
 
             // Replace all separator characters and whitespace by a single separator
-            $val = preg_replace('![' . preg_quote($separator) . '\s]+!u', $separator, $val);
+            $val = preg_replace('![' . preg_quote($separator) . '\s]+!u', $separator, $val); // nosemgrep :php.lang.security.preg-replace-eval.preg-replace-eval
             $val = trim($val, $separator);
 
             array_push($normalized, $val);

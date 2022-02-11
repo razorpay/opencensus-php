@@ -733,7 +733,7 @@ trait FileHandlerTrait
             $zipCommand .= ' --password ' . $password;
         }
 
-        exec(escapeshellcmd($zipCommand) . ' ' . escapeshellarg($zipPath) . ' ' . escapeshellarg($filePath));
+        exec(escapeshellcmd($zipCommand) . ' ' . escapeshellarg($zipPath) . ' ' . escapeshellarg($filePath)); // nosemgrep : php.lang.security.exec-use.exec-use
     }
 
     protected function getFileToWriteNameWithoutExt()

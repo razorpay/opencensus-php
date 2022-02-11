@@ -812,7 +812,7 @@ class Creator extends Base\Core
             $compressionCommand .= " --password " . $this->file->getPassword();
         }
 
-        exec(
+        exec( // nosemgrep : php.lang.security.exec-use.exec-use
             escapeshellcmd($compressionCommand) .
             " " .
             escapeshellarg($this->getCompressedFileFullPath()) .
