@@ -763,6 +763,38 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateContactWithObserver()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
+
+        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+
+        $metroMock->shouldReceive("publish")->andReturn([]);
+
+        $this->app->instance('metro', $metroMock);
+
+        $this->startTest();
+
+        $metroMock->shouldHaveReceived("publish");
+
+        // Test negative scenario where publishing to metro fails.
+
+        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+
+        $metroMock->shouldReceive("publish")->andThrow(new \Exception("publishing failure"));
+
+        $this->app->instance('metro', $metroMock);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['type'] = 'customer';
+        $data['response']['content']['type'] = 'customer';
+
+        $this->startTest($data);
+
+        $metroMock->shouldHaveReceived("publish");
+    }
+
     public function testDeleteContact()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);

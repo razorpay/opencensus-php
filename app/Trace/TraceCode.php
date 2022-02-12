@@ -99,6 +99,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PUB_SUB_CLIENT_CREATING                              = 'PUB_SUB_CLIENT_CREATING';
     const METRO_MOCKED                                         = 'METRO_MOCKED';
 
+    const CONTACT_UPDATED_MESSAGE                              = "CONTACT_UPDATED_MESSAGE";
+    const CONTACT_UPDATED_MESSAGE_PUBLISHED                    = "CONTACT_UPDATED_MESSAGE_PUBLISHED";
+    const CONTACT_UPDATED_MESSAGE_FAILED                       = "CONTACT_UPDATED_MESSAGE_FAILED";
+
     const BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY                = 'BLOCKING_RX_PRODUCT_SWITCH_TEMPORARILY';
     const BLOCKING_RX_ACTIVATIONS_TEMPORARILY                   = 'BLOCKING_RX_ACTIVATIONS_TEMPORARILY';
 
