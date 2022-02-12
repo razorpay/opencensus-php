@@ -343,7 +343,9 @@ class SupportBody extends Component {
           <ShowWhen
             myRole="owner admin"
             additionalCondition={() =>
-              this.props.user.isClickToCallActive && this.state.openClickToCall
+              this.props.user.isFrontendCareActive &&
+              this.props.user.isClickToCallActive &&
+              this.state.openClickToCall
             }
           >
             <li
