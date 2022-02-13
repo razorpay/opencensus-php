@@ -171,6 +171,7 @@ class Validator extends Base\Validator
         Constants::CF_REQUESTOR_SUBCATEGORY => 'sometimes',
         Constants::CF_REQUESTOR_ITEM        => 'sometimes',
         Constants::CF_CREATED_BY            => 'sometimes',
+        Constants::TICKET_TAGS              => 'sometimes|array',
     ];
 
     protected static $getSupportDashboardXTicketsRules = [

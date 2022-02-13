@@ -195,6 +195,21 @@ class CareServiceTest extends TestCase
             ],
             [
                 self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckInstantCallbackEligibility',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CheckInstantCallbackEligibility',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibilityV2',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CheckEligibilityV2',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
@@ -257,6 +272,21 @@ class CareServiceTest extends TestCase
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CreateCallback',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CreateInstantCallback',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/CreateInstantCallback',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',

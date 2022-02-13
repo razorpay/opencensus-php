@@ -12,12 +12,14 @@ class CareProxyController extends Controller
 {
 
     //proxy
-    const CHECK_ELIGIBILITY = 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility';
-    const CHECK_ELIGIBILITY_V2 = 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibilityV2';
-    const GET_SLOTS         = 'twirp/rzp.care.callback.v1.CallbackService/GetSlots';
-    const CREATE_CALLBACK   = 'twirp/rzp.care.callback.v1.CallbackService/CreateCallback';
-    const GET_CALLBACK      = 'twirp/rzp.care.callback.v1.CallbackService/GetCallback';
-    const CHAT_INIT         = 'twirp/rzp.care.chat.v1.ChatService/Init';
+    const CHECK_ELIGIBILITY                  = 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibility';
+    const CHECK_INSTANT_CALLBACK_ELIGIBILITY = 'twirp/rzp.care.callback.v1.CallbackService/CheckInstantCallbackEligibility';
+    const CHECK_ELIGIBILITY_V2               = 'twirp/rzp.care.callback.v1.CallbackService/CheckEligibilityV2';
+    const GET_SLOTS                          = 'twirp/rzp.care.callback.v1.CallbackService/GetSlots';
+    const CREATE_CALLBACK                    = 'twirp/rzp.care.callback.v1.CallbackService/CreateCallback';
+    const CREATE_INSTANT_CALLBACK            = 'twirp/rzp.care.callback.v1.CallbackService/CreateInstantCallback';
+    const GET_CALLBACK                       = 'twirp/rzp.care.callback.v1.CallbackService/GetCallback';
+    const CHAT_INIT                          = 'twirp/rzp.care.chat.v1.ChatService/Init';
 
     //cron
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
@@ -51,9 +53,11 @@ class CareProxyController extends Controller
 
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
+        self::CHECK_INSTANT_CALLBACK_ELIGIBILITY,
         self::CHECK_ELIGIBILITY_V2,
         self::GET_SLOTS,
         self::CREATE_CALLBACK,
+        self::CREATE_INSTANT_CALLBACK,
         self::GET_CALLBACK,
         self::CHAT_INIT,
     ];

@@ -1158,6 +1158,15 @@ class Service extends Base\Service
             $queryString .= ' AND custom_string:\'' . $customStringsPresent[$key] . '\'';
         }
 
+        if (array_key_exists(Constants::TICKET_TAGS, $input) === true)
+        {
+            // adding tags in the filter
+            foreach ($input['tags'] as $tag)
+            {
+                $queryString .= ' AND tag:\'' . $tag . '\'';
+            }
+        }
+
         $queryString .= '"';
 
         return $queryString;

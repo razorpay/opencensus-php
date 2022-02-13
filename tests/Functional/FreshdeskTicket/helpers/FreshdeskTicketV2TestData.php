@@ -125,6 +125,35 @@ return [
         ],
     ],
 
+    'testFetchTicketsForMerchantWithTagFilter' => [
+        'request'  => [
+            'url'     => '/fd/support_dashboard/ticket',
+            'method'  => 'GET',
+            'content' => ['cf_requester_category'    => 'Merchant',
+                          'cf_requestor_subcategory' => 'Activation',
+                          'cf_requester_item'        => '',
+                          'cf_created_by'            => 'merchant',
+                          'tags'                     => ['testing'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 3,
+                'results' => [
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                    [
+                        'id' => 'razorpayid0012',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchTicketsForAgentWithFilterNoCall' => [
         'request'  => [
             'url'     => '/fd/support_dashboard/ticket',
@@ -367,7 +396,7 @@ return [
             ],
         ],
     ],
-    
+
     'testCreateTicketRzp' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',

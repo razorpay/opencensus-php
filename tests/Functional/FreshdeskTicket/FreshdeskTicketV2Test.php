@@ -37,6 +37,7 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_CREATE_TICKET_SALESFORCE         = 'rzp_create_ticket_salesforce';
     const RZP_CREATE_TICKET_INTERNAL_AUTH      = 'rzp_create_ticket_internal_auth';
     const RZP_FETCH_TICKET_FILTER              = 'rzp_fetch_ticket_filter';
+    const RZP_FETCH_TICKET_FILTER_WITH_TAGS    = 'rzp_fetch_ticket_filter_with_tags';
     const RZP_FETCH_TICKET_FILTER_AGENT        = 'rzp_fetch_ticket_filter_agent';
     const RZP_FETCH_TICKET                     = 'rzp_fetch_ticket';
     const RZP_CREATE_TICKET_HTML_TAGS          = 'rzp_create_ticket_html_tags';
@@ -283,6 +284,34 @@ class FreshdeskTicketV2Test extends TestCase
             $this->startTest();
         }
 
+    }
+
+    public function testFetchTicketsForMerchantWithTagFilter()
+    {
+        $this->createTicketsToFetch();
+
+        $testCases = [
+            [
+                'name'              => 'fetch_merchant_tickets_with_tags',
+                'cf_created_by'     => 'merchant',
+                'fetch_response'    => self::RZP_FETCH_TICKET_FILTER_WITH_TAGS,
+            ],
+        ];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['cf_created_by'] = $testCase['cf_created_by'];
+
+            if (empty($testCase['fetch_response']) === false)
+            {
+                $expectedRequestResponse    =   $this->getExpectedRequestResponse($testCase['fetch_response']);
+
+                $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27+AND+custom_string%3A%27merchant%27+AND+tag%3A%27testing%27%22&page=1', 'get',
+                                                            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 3);
+            }
+
+            $this->startTest();
+        }
     }
 
     public function testFetchTicketsForMerchantFailedForSomeInstance()
@@ -2013,6 +2042,72 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                    ],
+
+                ]];
+        }
+        else if ($key === self::RZP_FETCH_TICKET_FILTER_WITH_TAGS)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'results' => [
+                        [
+                            'id'        => 12,
+                            'body'      => 'some random body 12',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'tags' => [
+                                'testing',
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            'id'        => 34,
+                            'body'      => 'some random body 34',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Merchant Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'tags' => [
+                                'testing',
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+
+                        ],
+                        [
+                            // 56 is not mapped to this merchant in our db. so we don't show it in the response, even if Freshdesk somehow returned this in the response
+                            'id'        => 56,
+                            'body'      => 'some random body 56',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'tags' => [
+                                'testing',
+                            ],
+                            'fr_due_by' => '2020-12-08T16:04:20Z',
+                        ],
+                        [
+                            // 78 is not mapped to 'support_dashboard' in our db. so we don't show it in the response
+                            'id'        => 78,
+                            'body'      => 'some random body 78',
+                            'custom_fields' =>  [
+                                "cf_requestor_subcategory"  => "Activation",
+                                "cf_requester_category"     => "Merchant",
+                                "cf_created_by"             => "merchant"
+                            ],
+                            'tags' => [
+                                'testing',
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
