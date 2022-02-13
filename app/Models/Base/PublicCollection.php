@@ -160,6 +160,11 @@ class PublicCollection extends Collection
         return $this->itemsToArrayHosted();
     }
 
+    public function toArrayRecon()
+    {
+        return $this->itemsToArrayRecon();
+    }
+
     public function toArrayPublicCustomer(bool $populateMessages = false)
     {
         return $this->itemsToArrayPublicCustomer($populateMessages);
@@ -302,6 +307,15 @@ class PublicCollection extends Collection
         return array_map(function ($item)
         {
             return $item->toArrayHosted();
+
+        }, $this->items);
+    }
+
+    private function itemsToArrayRecon()
+    {
+        return array_map(function ($item)
+        {
+            return $item->toArrayRecon();
 
         }, $this->items);
     }

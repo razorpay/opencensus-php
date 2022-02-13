@@ -49,4 +49,29 @@ class UpiTransferController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function processUpiTransferPaymentInternal($gateway)
+    {
+        $this->trace->info(
+            TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST_INTERNAL,
+            [
+                'input' => Request::getContent(),
+                'gateway' => $gateway,
+            ]);
+
+        switch ($gateway)
+        {
+            case Gateway::UPI_ICICI :
+                $input = Request::getContent();
+
+                break;
+
+            default:
+                $input = Request::all();
+        }
+
+        $response = $this->service()->processUpiTransferPaymentInternal($input, $gateway);
+
+        return ApiResponse::json($response);
+    }
 }

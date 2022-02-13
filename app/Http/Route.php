@@ -634,6 +634,7 @@ class Route
         'virtual_account_expiry_setting_get'       => ['get',      'virtual_accounts/setting/expiry',                'VirtualAccountController@getMerchantDefaultVirtualAccountExpiry'   ],
         'virtual_accounts_close_bulk'              => ['post',     'virtual_accounts/close/bulk',                    'VirtualAccountController@bulkCloseVirtualAccount'                  ],
         'upi_transfer_process'                     => ['post',     'live/upi/callback/{acquirer}/{gateway}',         'UpiTransferController@processUpiTransferPayment'                   ],
+        'upi_transfer_process_internal'            => ['post',     'callback/upi/{gateway}/internal',                'UpiTransferController@processUpiTransferPaymentInternal'                   ],
         'upi_transfer_process_test'                => ['post',     'test/upi/callback/{acquirer}/{gateway}',         'UpiTransferController@processUpiTransferPayment'                   ],
         'payment_upi_transfer_fetch'               => ['get',      'payments/{id}/upi_transfer',                     'UpiTransferController@fetchForPayment'                             ],
         'virtual_vpa_prefix_validate'              => ['get',      'virtual_vpa_prefixes/validate',                  'VirtualVpaPrefixController@validatePrefix'                         ],
@@ -3859,7 +3860,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
-
+        'upi_transfer_process_internal',
         'm2m_referral_link_get_public',
         'payout_links_customer_hosted_page_data',
         'payout_links_customer_hosted_page_demo_data',
@@ -12109,6 +12110,7 @@ class Route
 
         'recon' => [
             'payment_create_upi_unexpected',
+            'upi_transfer_process_internal',
             'payment_upi_authorize_failed',
         ]
     ];

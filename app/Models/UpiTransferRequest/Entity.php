@@ -112,6 +112,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYEE_VPA);
     }
 
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
+    }
+
     // -------------------- End Getters --------------------
 
     // -------------------- Setters --------------------
@@ -167,6 +172,7 @@ class Entity extends Base\PublicEntity
 
             case 'reconciliate':
             case 'reconciliate_via_batch_service':
+            case 'upi_transfer_process_internal':
                 $requestSource = [
                     'source'       => 'recon',
                     'request_from' => 'admin',

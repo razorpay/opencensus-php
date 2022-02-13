@@ -494,6 +494,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SETTLED_BY,
     ];
 
+    protected $reconAppInternal = [
+        self::ID,
+        self::ENTITY,
+        self::AMOUNT,
+        self::STATUS,
+        self::MERCHANT_ID
+    ];
+
     /**
      * Relations to be returned when receiving expand[] query param in fetch
      * (eg. transaction, transaction.settlement with payment fetch)
@@ -3851,6 +3859,15 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $attributes[Entity::SETTLED_BY] = $settledBy;
 
         $this->setConvenienceFeeAttributesForDashboard($attributes);
+
+        return $attributes;
+    }
+
+    public function toArrayRecon()
+    {
+        $attributes = parent::toArrayRecon();
+
+        $attributes[self::MERCHANT_ID] = $this->getMerchantId();
 
         return $attributes;
     }

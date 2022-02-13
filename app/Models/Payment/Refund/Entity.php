@@ -189,6 +189,13 @@ class Entity extends Base\PublicEntity
         self::BATCH_ID
     ];
 
+    protected $reconAppInternal = [
+        self::ID,
+        self::ENTITY,
+        self::AMOUNT,
+        self::PAYMENT_ID,
+    ];
+
     protected $publicCustomer = [
         self::ID,
         self::AMOUNT,
@@ -1219,6 +1226,15 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    public function toArrayRecon()
+    {
+        $attributes = parent::toArrayRecon();
+
+        $attributes[self::MERCHANT_ID] = $this->getMerchantId();
+
+        return $attributes;
     }
 
     /**

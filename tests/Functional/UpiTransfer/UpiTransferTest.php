@@ -3,10 +3,13 @@
 namespace RZP\Tests\Functional\UpiTransfer;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\ServerErrorException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -75,11 +78,11 @@ class UpiTransferTest extends TestCase
         return $vpa;
     }
 
-    protected function processUpiTransfer($function = __FUNCTION__, $valid = true, string $gateway = Gateway::UPI_ICICI)
+    protected function processUpiTransfer($function = __FUNCTION__, $valid = true, string $gateway = Gateway::UPI_ICICI, $requestContent = [])
     {
-        $this->ba->directAuth();
-
         $request = $this->testData[$function];
+
+        $request['content'] = array_merge($request['content'], $requestContent);
 
         $mockServer = $this->mockServer($gateway);
 
@@ -87,15 +90,28 @@ class UpiTransferTest extends TestCase
         {
             case Gateway::UPI_ICICI:
             {
-                $request['raw'] = $mockServer->getAsyncCallbackContentForBharatQr($request['content']);
+                if (ends_with($request['url'], 'internal'))
+                {
+                    $this->ba->appAuth();
+
+                    $request['raw'] = json_encode($request['content']);
+
+                    $response = $this->makeRequestAndGetContent($request);
+                }
+                else
+                {
+                    $this->ba->directAuth();
+
+                    $request['raw'] = $mockServer->getAsyncCallbackContentForBharatQr($request['content']);
+
+                    $response = $this->makeRequestAndGetContent($request);
+
+                    $this->assertEquals($valid, $response['valid']);
+                }
 
                 break;
             }
         }
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals($valid, $response['valid']);
 
         return $response;
     }
@@ -205,6 +221,119 @@ class UpiTransferTest extends TestCase
                 'payment_id'                    => $payment->getPublicId(),
             ]
         );
+    }
+
+    public function testProcessIciciUpiTransferPaymentInternal()
+    {
+        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $response = $this->processUpiTransfer('processUpiTransferInternal', true, Gateway::UPI_ICICI);
+
+        $payment     = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+
+        $this->assertArrayHasKey('refunds', $response);
+        $this->assertIsArray($response['refunds']);
+        $this->assertEmpty($response['refunds']);
+
+        $this->runUpiTransferRequestAssertions(
+            'upi_icici',
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+            ]
+        );
+    }
+
+    public function testProcessIciciUpiTransferPaymentInternalDuplicate()
+    {
+        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->processUpiTransfer('processUpiTransferInternal', true, Gateway::UPI_ICICI);
+        $response = $this->processUpiTransfer('processUpiTransferInternal', true, Gateway::UPI_ICICI);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals(10000, $response['payment']['amount']);
+        $this->assertEquals('payment', $response['payment']['entity']);
+    }
+
+    public function testProcessIciciUpiTransferPaymentInternalRefund()
+    {
+        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->closeVirtualAccount($this->virtualAccountId);
+
+        $response = $this->processUpiTransfer('processUpiTransferInternal', true, Gateway::UPI_ICICI);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('refunded', $response['payment']['status']);
+        $this->assertEquals(10000, $response['payment']['amount']);
+        $this->assertEquals('payment', $response['payment']['entity']);
+
+        $this->assertArrayHasKey('refunds', $response);
+        $this->assertEquals($response['payment']['id'], $response['refunds'][0]['payment_id']);
+        $this->assertEquals($response['payment']['amount'], $response['refunds'][0]['amount']);
+    }
+
+    public function testProcessIciciUpiTransferPaymentInternalTerminalNotFound()
+    {
+        $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->expectException(ServerErrorException::class);
+
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_UPI_TRANSFER_PROCESSING_FAILED);
+
+        $this->expectExceptionMessage('No terminal found for upi transfer');
+
+        $this->processUpiTransfer('processUpiTransferInternal', true, Gateway::UPI_ICICI, ['merchantId' => '199602']);
+    }
+
+    public function testUpiTransferRefundFailPaymentSuccessInternal()
+    {
+        $this->fixtures->merchant->editBalance(0);
+
+        $this->fixtures->merchant->editCredits('29000','10000000000000');
+
+        $this->fixtures->pricing->editDefaultPlan(
+            [
+                'fee_bearer'    => 'customer',
+                'percent_rate'  => '0',
+                'fixed_rate'    => '1000000',
+            ]
+        );
+
+        $response = $this->processUpiTransfer('processUpiTransferInternal', true, Gateway::UPI_ICICI);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('authorized', $response['payment']['status']);
+        $this->assertEquals(10000, $response['payment']['amount']);
+        $this->assertEquals('payment', $response['payment']['entity']);
     }
 
     public function testProcessIciciUpiTransferPaymentWithTPVFeatureEnabled()
@@ -793,7 +922,7 @@ class UpiTransferTest extends TestCase
             ]
         );
 
-        $this->processUpiTransfer(__FUNCTION__, false, Gateway::UPI_ICICI);
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
 
         $upiTransferRequestArray = $this->getDbLastEntityToArray('upi_transfer_request');
 

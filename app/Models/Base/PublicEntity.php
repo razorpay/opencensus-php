@@ -143,6 +143,8 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $partner           = [];
 
+    protected $reconAppInternal  = [];
+
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
@@ -331,6 +333,13 @@ class PublicEntity extends UniqueIdEntity
         $attributes = $this->toArrayPublic();
 
         return array_only($attributes, $this->publicCustomer);
+    }
+
+    public function toArrayRecon()
+    {
+        $attributes = $this->toArrayPublic();
+
+        return array_only($attributes, $this->reconAppInternal);
     }
 
     /**

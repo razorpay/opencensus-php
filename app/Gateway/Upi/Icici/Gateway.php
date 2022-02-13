@@ -1142,7 +1142,10 @@ class Gateway extends Base\Gateway
 
         $decoded = json_decode($body, true);
 
-        if (($decoded !== null) and (isset($decoded[Fields::UMN]) === true))
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ((($decoded !== null) and (isset($decoded[Fields::UMN]) === true)) or
+            ($routeName === 'upi_transfer_process_internal'))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
         }

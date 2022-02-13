@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Account;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\UpiTransferRequest;
@@ -41,20 +42,10 @@ class Service extends Base\Service
 
         try
         {
-            $this->determineAndSetMode();
-
-            $gatewayClass = $this->getGatewayClass($input, $gateway);
-
-            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, false, true);
-
-            $requestPayload = $gatewayResponse;
-
-            $terminal = $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
-
-            $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
+            [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminal($input, $gateway);
 
             $upiTransferRequest = (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'],
-                                                                             $requestPayload);
+                                                                             $gatewayResponse['callback_data']);
 
             $upiTransferRequestId = $upiTransferRequest ? $upiTransferRequest->getPublicId() : null;
 
@@ -70,6 +61,88 @@ class Service extends Base\Service
             'message'        => null,
             'transaction_id' => $gatewayResponse['upi_transfer_data'][GatewayResponseParams::PROVIDER_REFERENCE_ID] ?? '',
         ];
+    }
+
+    private function computeGatewayResponseAndTerminal($input, $gateway)
+    {
+        $this->determineAndSetMode();
+
+        $gatewayClass = $this->getGatewayClass($input, $gateway);
+
+        $gatewayResponse = $gatewayClass->preProcessServerCallback($input, false, true);
+
+        $terminal = $this->terminal ?: $this->getTerminalFromGatewayResponse($gatewayResponse, $gateway, $gatewayClass);
+
+        $gatewayResponse = $gatewayClass->getUpiTransferData($gatewayResponse);
+
+        return [$terminal, $gatewayResponse];
+    }
+
+    public function processUpiTransferPaymentInternal($input, $gateway)
+    {
+        $valid           = false;
+        $gatewayResponse = [];
+
+        try
+        {
+            [$terminal, $gatewayResponse] = $this->computeGatewayResponseAndTerminal($input, $gateway);
+
+            $upiTransferData = $gatewayResponse['upi_transfer_data'];
+
+            $upiTransfer = $this->repo
+                                ->upi_transfer
+                                ->findByProviderReferenceIdAndPayeeVpaAndAmount($upiTransferData['provider_reference_id'],
+                                                                                $upiTransferData['payee_vpa'],
+                                                                                $upiTransferData['amount']);
+
+            if ($upiTransfer !== null)
+            {
+                return $this->getUpiTransferResponseInternal($upiTransfer);
+            }
+
+            $upiTransferRequest = (new UpiTransferRequest\Service())->create($gatewayResponse['upi_transfer_data'],
+                                                                             $gatewayResponse['callback_data']);
+
+            $valid = $this->core->processPayment($gatewayResponse, $terminal, $upiTransferRequest->getPublicId());
+
+
+            if ($valid === true)
+            {
+                $upiTransfer = $this->repo
+                                    ->upi_transfer
+                                    ->findByProviderReferenceIdAndPayeeVpaAndAmount($upiTransferData['provider_reference_id'],
+                                                                                    $upiTransferData['payee_vpa'],
+                                                                                    $upiTransferData['amount']);
+
+                return $this->getUpiTransferResponseInternal($upiTransfer);
+            }
+        }
+        catch (\Exception $e)
+        {
+            return $this->getUpiTransferResponseInternal(null, $e->getMessage());
+        }
+
+        $upiTransferRequest = $this->repo->upi_transfer_request->findByPublicId($upiTransferRequest->getPublicId());
+
+        return $this->getUpiTransferResponseInternal(null, $upiTransferRequest->getErrorMessage());
+    }
+
+    private function getUpiTransferResponseInternal($upiTransfer = null, $errorMessage = null)
+    {
+        if ($upiTransfer !== null)
+        {
+            $payment = $upiTransfer->payment;
+
+            $response = ['payment' => $payment->toArrayRecon()];
+
+            $response['refunds'] = $payment->refunds->toArrayRecon();
+
+            return $response;
+        }
+        else
+        {
+            throw new Exception\ServerErrorException($errorMessage, ErrorCode::SERVER_ERROR_UPI_TRANSFER_PROCESSING_FAILED);
+        }
     }
 
     protected function getGatewayClass($input, string $gateway)
