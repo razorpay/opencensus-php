@@ -381,6 +381,23 @@ class OrderTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
+        $testData['response']['content']['error']['field']['order_ids'] = [$order->getPublicId()];
+
+        $this->startTest();
+    }
+
+    public function testUniqueReceiptErrorFeatureWithDuplicateReceipt()
+    {
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique', 'order_receipt_unique_err']);
+
+        $testData = $this->testData[__FUNCTION__];
+
         $testData['response']['content']['error']['field']['order_ids'] = [$order->getId()];
 
         $this->startTest();

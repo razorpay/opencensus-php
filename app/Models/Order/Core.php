@@ -562,7 +562,18 @@ class Core extends Base\Core
 
         if (count($duplicateOrders) > 0)
         {
-            $duplicateOrderIds = $duplicateOrders->pluck(Entity::ID)->all();
+            // Ideally the duplicate order_ids sent in the exception should be a public id,
+            // But we have been sending the raw id to the merchant.
+            // Since a merchant has raised an issue regarding this, and so that other merchants don't get impacted,
+            // we are fixing this functionality with a feature flag for merchants.
+            if ($merchant->isFeatureEnabled(FeatureConstants::ORDER_RECEIPT_UNIQUE_ERR) === false)
+            {
+                $duplicateOrderIds = $duplicateOrders->getPublicIds();
+            }
+            else
+            {
+                $duplicateOrderIds = $duplicateOrders->pluck(Entity::ID)->all();
+            }
 
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,

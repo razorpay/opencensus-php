@@ -1148,6 +1148,9 @@ class Constants
      */
     const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
 
+    // This feature is used to send public_order_id in err instead of order_id.
+    const ORDER_RECEIPT_UNIQUE_ERR = 'order_receipt_unique_err';
+
     /**
      * If applied on partner merchant then all its sub merchants will have QR image content visible
      */
@@ -1596,6 +1599,7 @@ class Constants
         self::ALLOW_CARD_NAME_CHANGES         => true,
         self::SKIP_OAUTH_NOTIFICATION         => true,
         self::SKIP_PAYOUT_EMAIL               => true,
+        self::ORDER_RECEIPT_UNIQUE_ERR        => true,
         self::SUBM_QR_IMAGE_CONTENT           => true,
     ];
     // Entity type constants
