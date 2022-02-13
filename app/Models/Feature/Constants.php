@@ -1041,6 +1041,26 @@ class Constants
     const ONBOARD_TOKENIZATION = 'onboard_tokenization';
 
     /**
+     * Feature flag to onboard merchants on visa network tokenization in live mode
+     */
+    const ONBOARD_TOKENIZATION_VISA = 'onboard_tokenization_visa';
+
+    /**
+     * Feature flag to onboard merchants on mastercard network tokenization in live mode
+     */
+    const ONBOARD_TOKENIZATION_MASTERCARD = 'onboard_tokenization_mc';
+
+    /**
+     * Feature flag to onboard merchants on rupay network tokenization in live mode
+     */
+    const ONBOARD_TOKENIZATION_RUPAY = 'onboard_tokenization_rpy';
+
+    /**
+     * Feature flag to onboard merchants on diners network tokenization in live mode
+     */
+    const ONBOARD_TOKENIZATION_DINERS = 'onboard_tokenization_diners';
+
+    /**
      * Feature flag to let Razorpay collect consent for tokenising cards in the payment flow through intermediate consent page
      * This will be used for custom checkout merchants
      * By default Razorpay collects consent
@@ -1570,6 +1590,10 @@ class Constants
         self::ONE_CC_GA_ANALYTICS             => true,
         self::ONE_CC_FB_ANALYTICS             => true,
         self::ONBOARD_TOKENIZATION            => true,
+        self::ONBOARD_TOKENIZATION_VISA       => true,
+        self::ONBOARD_TOKENIZATION_MASTERCARD => true,
+        self::ONBOARD_TOKENIZATION_RUPAY      => true,
+        self::ONBOARD_TOKENIZATION_DINERS     => true,
         self::EXCLUDE_DEDUCT_DISPUTE          => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,

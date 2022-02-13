@@ -171,6 +171,28 @@ class Core extends Base\Core
            (new Token\Core())->onboardMerchant($merchant, $tokenizationGateways);
         }
 
+
+
+        if(str_contains($feature->getName(), Feature::ONBOARD_TOKENIZATION) && $feature->isMerchantFeature() === true)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+
+            $network = str_replace(Feature::ONBOARD_TOKENIZATION."_","",$feature->getName());
+
+            if($network === 'mc'){
+                $network = 'mastercard';
+            }
+
+            if($network === "rpy"){
+                $network = 'rupay';
+            }
+
+            $tokenizationGateways = "tokenisation_".$network;
+
+
+            (new Token\Core())->onboardMerchant($merchant, [$tokenizationGateways]);
+        }
+
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);
 
         return $feature;
