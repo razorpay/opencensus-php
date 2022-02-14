@@ -212,7 +212,8 @@ class Payout extends Base
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
-        if ($status !== self::PAYOUT_FAILED) {
+        // Ledger doesn't need fts information in case of payout initiated or payout failed events
+        if (($status !== self::PAYOUT_INITIATED) || ($status !== self::PAYOUT_FAILED)) {
             $identifiers = array_merge($identifiers, $ftsSourceAccountData);
         }
 
