@@ -49,6 +49,8 @@ class Entity extends LedgerEntry\Entity
 
     protected $entity = 'ledger_statement';
 
+    protected $primaryKey = self::JOURNAL_ID;
+
     protected $public = [
         self::ID,
         self::ENTITY,
