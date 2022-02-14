@@ -315,6 +315,10 @@ return [
                 'description' => 'Ability to view a terminal',
                 'assignable' => true,
             ],
+            Permission::VIEW_TERMINAL_EXTERNAL_ORG          =>  [
+                'description' => 'Ability to view a terminal from outside the org',
+                'assignable' => true,
+            ],
             Permission::INCREASE_TRANSACTION_LIMIT          => [
                 'assignable'  => true,
                 'workflow'    => true,
@@ -497,6 +501,10 @@ return [
             Permission::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT   => '',
             Permission::EDIT_BULK_MERCHANT                  => '',
             Permission::ASSIGN_MERCHANT_TERMINAL            => '',
+            Permission::CREATE_EXTERNAL_ORG_TERMINALS       => [
+                'description'   => 'Create paysecure terminal',
+                'assignable'    => true,
+            ],
             Permission::ASSIGN_MERCHANT_BANKS               => '',
             Permission::ADD_MERCHANT_ADJUSTMENT             => '',
             Permission::EDIT_MERCHANT_EMAIL                 => [

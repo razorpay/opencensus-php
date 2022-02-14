@@ -241,6 +241,10 @@ class Service extends Base\Service
         {
             $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
         }
+        else if ($this->app['basicauth']->isAppAuth() === true)
+        {
+            $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
+        }
         else
         {
             $entityType = Constants::MERCHANT;

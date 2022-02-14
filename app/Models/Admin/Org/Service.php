@@ -7,6 +7,7 @@ use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Admin;
 use Config;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -187,5 +188,45 @@ class Service extends Base\Service
         $hostnames = $org->hostnames->pluck(Hostname\Entity::HOSTNAME);
 
         return $hostnames->toArray();
+    }
+
+    public function validateEntityOrgId(array $entity):bool // validating the org id
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === false)
+        {
+            $orgId = $this->getStrippedOrgId($orgId);
+        }
+
+        if((empty($orgId)) or ($orgId === Entity::RAZORPAY_ORG_ID))
+        {
+            return true;
+
+        }
+        else if($entity['org_id'] === $orgId )
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getStrippedOrgId(string $orgId)
+    {
+        if (strpos($orgId, 'org_') !== false)
+        {
+            $orgId = ltrim($orgId, 'org_');
+        }
+        return $orgId;
+    }
+
+    public function validateOrgIdWithFeatureFlag(string $orgId, string $featureFlag)
+    {
+        $features = (new \RZP\Models\Feature\Service)->getFeatures('org',$orgId);
+
+        $assignedFeatures =  $features['assigned_features']->pluck('name')->toArray();
+
+        return (in_array($featureFlag, $assignedFeatures) === true);
     }
 }

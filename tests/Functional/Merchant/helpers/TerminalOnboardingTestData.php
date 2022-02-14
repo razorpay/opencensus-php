@@ -82,10 +82,10 @@ return [
         ],
     ],
 
-    'testInitiateOnboardingAdminRoutePaysecureAxis' => [
+    'testInitiateOnboardingAxisAdminRoutePaysecureAxis' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/10000000000000/terminals/onboard',
+            'url' => '/merchants/10000000000000/external_org/terminals/onboard',
             'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'axis']
         ],
         'response' => [
@@ -102,10 +102,23 @@ return [
         ],
     ],
 
+    'testInitiateOnboardingNonAxisOrgAdminRoutePaysecureAxis' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchants/10000000000000/external_org/terminals/onboard',
+            'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'axis']
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code'   => 400,
+        ],
+    ],
+
     'testInitiateOnboardingAdminRoutePaysecureAxisExtraFieldsValidationFailure' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/10000000000000/terminals/onboard',
+            'url' => '/merchants/10000000000000/external_org/terminals/onboard',
             'content' => ['gateway' => 'paysecure', 'currency_code' => "INR"]
         ],
         'response' => [
@@ -118,7 +131,7 @@ return [
     'testInitiateOnboardingAdminRoutePaysecureAxisValidationFailureInvalidAcquirer' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/10000000000000/terminals/onboard',
+            'url' => '/merchants/10000000000000/external_org/terminals/onboard',
             'content' => ['gateway' => 'paysecure', 'gateway_acquirer' => 'ratn']
         ],
         'response' => [

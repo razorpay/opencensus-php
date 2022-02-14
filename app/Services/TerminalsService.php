@@ -164,7 +164,9 @@ class TerminalsService
 
         $params = self::PARAMS[self::CREATE_TERMINAL];
 
-        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+        $headers = $this->getTerminalServiceOrgHeaders();
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], [], $headers);
 
         return $this->parseAndReturnResponse($response)['data'] ?? [];
     }
@@ -306,6 +308,8 @@ class TerminalsService
             self::FEATURES      =>  $features,
         ];
 
+        $headers = $this->getTerminalServiceOrgHeaders();
+
         // for network tokenization
         if (isset($otherInputs[self::ORG_ID]) === true)
         {
@@ -324,9 +328,9 @@ class TerminalsService
 
         $content = json_encode($content);
 
-        $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS]);
+        $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS],$headers);
 
-        return $this->parseAndReturnResponse($response)[self::DATA];
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
     public function getTerminalsByMerchantIdAndGateway(string $merchantId, string $gateway)
@@ -737,6 +741,29 @@ class TerminalsService
         return [
             self::X_DASHBOARD_MERCHANT_ID => $merchantId,
         ];
+    }
+
+    public function getTerminalServiceOrgHeaders():array
+    {
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $orgId = $this->app['basicauth']->getOrgId();
+
+            $orgId = (new \RZP\Models\Admin\Org\Service)->getStrippedOrgId($orgId);
+
+            return [
+                'X-Dashboard-Admin-OrgId'      => $orgId,
+            ];
+        }
+        else if($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            return [
+                'X-Dashboard-Merchant-OrgId'             => $merchant->getOrgId(),
+            ];
+        }
+        return [];
     }
 
     protected function getRequestMultipart($input)
