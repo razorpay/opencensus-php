@@ -306,11 +306,29 @@ class BankingAccountService
                     'error' => $error,
                 ]);
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
-                [
-                    'errorDetail' => $response->body
-                ], $error);
+
+            if ($response->status_code == 400)
+            {
+                if (isset($error['description']))
+                {
+                    $description = $error['description'];
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
+                        [
+                            'errorDetail' => $response->body
+                        ], $description);
+                }
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
+                    [
+                        'errorDetail' => $response->body
+                    ], $error);
+            }
+
         }
 
         return $parsedResponse;
