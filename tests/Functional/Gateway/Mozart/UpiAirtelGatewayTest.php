@@ -294,6 +294,42 @@ class UpiAirtelGatewayTest extends TestCase
         $this->assertEquals('refunded', $payment['status']);
     }
 
+    /**
+     * Tests if the refund callback is handled properly for both the cases
+     * - Refund Success
+     * - Refund Failure
+     *
+     * @dataProvider refundCallbackDataProvider
+     * @param array $override To override the callback contents
+     */
+    public function testRefundCallback(array $override)
+    {
+        $this->testRefundPayment();
+
+        $content = $this->mockServer()->getAsyncRefundCallbackContentForAirtel();
+
+        $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertEquals(['success' => true], $response);
+    }
+
+    public function refundCallbackDataProvider(): array
+    {
+        $cases = [
+            'successCallback'   => [[]],
+            'failureCallback'   => [[
+                'code'          => '1',
+                'errorCode'     => '1210',
+                'messageText'   => 'FAILURE',
+                'txnStatus'     => 'FAILURE',
+                'amount'        => 200,
+                'txnRefNo'	    => null,
+            ]],
+        ];
+
+        return $cases;
+    }
+
     public function testVerifyRefundSuccessfulOnGateway()
     {
         $payment = $this->testPayment();

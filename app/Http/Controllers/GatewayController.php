@@ -205,6 +205,16 @@ class GatewayController extends Controller
             }
         }
 
+        if ($this->isUpiRefundCallback($gatewayDriver, $input) === true)
+        {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'gateway'   => $gatewayDriver,
+                'message'   => 'Refund Callback',
+            ]);
+
+            return $gateway->postProcessServerCallback($input);
+        }
+
         $paymentId = $gateway->getPaymentIdFromServerCallback($input, $gatewayDriver);
 
         $paymentRepo = $this->app['repo']->payment;
@@ -1668,5 +1678,33 @@ class GatewayController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Returns true if the callback is an UPI refund callback
+     * i.e. payer VPA handle is a merchant's VPA
+     * and payee VPA handle is not a merchant's VPA
+     * and the transaction ID is of length 14 (refund ID)
+     *
+     * @param $gatewayDriver
+     * @param $input
+     *
+     * @return bool
+     */
+    protected function isUpiRefundCallback($gatewayDriver, $input)
+    {
+        switch ($gatewayDriver)
+        {
+            case Gateway::UPI_AIRTEL:
+                $payerVpa = $input['payerVPA'] ?? '';
+                $payeeVpa = $input['payeeVPA'] ?? '';
+
+                return ((str_ends_with($payerVpa, '@' . ProviderCode::MAIRTEL) === true) and
+                    (str_ends_with($payeeVpa, '@' . ProviderCode::MAIRTEL) === false) and
+                    (strlen($input['hdnOrderID']) === 14));
+
+            default:
+                return false;
+        }
     }
 }

@@ -340,6 +340,37 @@ class Server extends Base\Mock\Server
         return json_encode($response);
     }
 
+    public function getAsyncRefundCallbackContentForAirtel(array $override = [])
+    {
+        $response = [
+            'code'          => '0',
+            'errorCode'     => '0',
+            'messageText'   => 'SUCCESS',
+            'rrn'           => '200517825983',
+            'txnStatus'     => 'SUCCESS',
+            'amount'        => 200,
+            'hdnOrderID'    => str_random(14),
+            'payerVPA'      => 'razorpay@mairtel',
+            'payeeVPA'      => 'customer@airtel',
+            'txnRefNo'	    => 'FT2129114821982611',
+            'mid'           => 'MER0000000548542',
+        ];
+
+        $response = array_merge($response, $override);
+
+        $str = implode('#', $response);
+
+        $secret = $this->getUpiAirtelSecret();
+
+        $str .= '#'.$secret;
+
+        $hash = hash(HashAlgo::SHA512, $str);
+
+        $response['hash'] = $hash;
+
+        return json_encode($response);
+    }
+
     public function getFailedAsyncCallbackContent(array $payment)
     {
         $response = [
