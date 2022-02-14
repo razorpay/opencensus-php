@@ -30,6 +30,7 @@ import {
   RR_UPDATE_WEBSITE,
   RR_ADD_WEBSITE,
   RR_INCREASE_TXN_LIMIT,
+  RR_ADD_ADDITIONAL_WEBSITE,
 } from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
@@ -111,7 +112,7 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
                 handleEditWebsite(FLOWS.ADDITIONAL_WEBSITE);
               }}
             >
-              <i class="i i-edit p-l" />
+              <i class="i i-plus p-l" />
             </Button.Transparent>
           </div>
         )}
@@ -508,7 +509,7 @@ const MerchantDetails = ({
               value={() => renderWebsites(user, handleEditWebsite, businessWebsiteWorkflow)}
             />
           </IntoView>
-          <IntoView hashedWith={[NC_ADD_ADDITIONAL_WEBSITE]}>
+          <IntoView hashedWith={[NC_ADD_ADDITIONAL_WEBSITE, RR_ADD_ADDITIONAL_WEBSITE]}>
             <DetailRow
               label={() => (
                 <div class="website-self-serve__listItem">
