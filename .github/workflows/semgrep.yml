@@ -6,7 +6,7 @@ on:
 jobs:
   semgrep:
     name: Scan
-    runs-on: [self-hosted]
+    runs-on: [ubuntu-latest]
     steps:
       - uses: razorpay/checkout-action@30aedaf6f35b3b7756b8095789c1e18674bcf2f6
       - uses: returntocorp/semgrep-action@v1
