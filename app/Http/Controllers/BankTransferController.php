@@ -119,9 +119,15 @@ class BankTransferController extends Controller
         try
         {
             $input = $this->modifyRblDataToEntity($input);
+            $provider = Provider::RBL;
 
-            $response = $this->service()->saveRequestAndProcess($input, Provider::RBL, false, Request::all());
+//          manually config for JSW as the IFSC changed for JSW
+            if (substr($input['payee_account'], 0, 5) === 'VAJSW')
+            {
+                $provider = Provider::RBL_JSW;
+            }
 
+            $response = $this->service()->saveRequestAndProcess($input, $provider, false, Request::all());
             /*
              * Commenting this as RBL doesn't have check on their end to restrict retry count.
              * In case the response is not 200, the retry is infinite.

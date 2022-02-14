@@ -2114,6 +2114,26 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
+    public function testBankTransferRblJSW()
+    {
+        $testData = $this->testData['testBankTransferRbl'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblJSWVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals(Gateway::BT_RBL_JSW, $payment['gateway']);
+    }
+
     /**
      * Account number is less than 16 characters in length for some RBL VAs.
      */
@@ -4376,6 +4396,17 @@ class BankTransferTest extends TestCase
     protected function getRblVaBankAccount()
     {
         $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $bankAccount = $this->createVirtualAccount();
+
+        return $bankAccount['account_number'];
+    }
+
+    protected function getRblJSWVaBankAccount()
+    {
+        $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL_JSW, 'gateway_merchant_id' => 'VAJSW' ];
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
 

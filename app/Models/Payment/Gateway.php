@@ -44,6 +44,7 @@ class Gateway
     const KOTAK                  = 'kotak';
     const YESB                   = 'yesb';
     const RBL                    = 'rbl';
+    const RBL_JSW                = 'rbl_jsw';
     const AXIS                   = 'axis';
     const IDFC                   = 'idfc';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -174,6 +175,7 @@ class Gateway
     const BT_ICICI           = 'bt_icici';
     const BT_DASHBOARD       = 'bt_dashboard';
     const BT_RBL             = 'bt_rbl';
+    const BT_RBL_JSW         = 'bt_rbl_jsw';
     const BT_HDFC_ECMS       = 'bt_hdfc_ecms';
 
     // this is a dummy gateway. this is required to save MIDs & TIDs of a merchant.
@@ -360,6 +362,7 @@ class Gateway
         self::INDUSIND              => self::INDUSIND,
         self::KOTAK                 => self::KOTAK,
         self::RBL                   => self::RBL,
+        self::RBL_JSW               => self::RBL_JSW,
         self::PAYTM                 => self::PAYTM,
         self::PAYU                  => self::PAYU,
         self::CASHFREE              => self::CASHFREE,
@@ -1310,6 +1313,7 @@ class Gateway
         Payment\Gateway::BT_KOTAK,
         Payment\Gateway::BT_ICICI,
         Payment\Gateway::BT_RBL,
+        Payment\Gateway::BT_RBL_JSW,
         Payment\Gateway::NETBANKING_SBI,
         Payment\Gateway::BT_HDFC_ECMS,
         Payment\Gateway::NETBANKING_JSB,
@@ -1662,6 +1666,7 @@ class Gateway
         Provider::DASHBOARD => self::BT_DASHBOARD,
         Provider::ICICI     => self::BT_ICICI,
         Provider::RBL       => self::BT_RBL,
+        Provider::RBL_JSW   => self::BT_RBL_JSW,
         Provider::HDFC_ECMS => self::BT_HDFC_ECMS,
     ];
 
@@ -1674,6 +1679,7 @@ class Gateway
         self::BT_DASHBOARD,
         self::BT_ICICI,
         self::BT_RBL,
+        self::BT_RBL_JSW,
         self::BT_HDFC_ECMS,
     ];
 
@@ -4213,10 +4219,10 @@ class Gateway
         }
         return [];
     }
-    
-   /* 
+
+   /*
     * Used at Settlement/Bucket/core.php
-    * For Getting Remitter Name from Address Table during OPGSP Settlement Meta Data Creation. 
+    * For Getting Remitter Name from Address Table during OPGSP Settlement Meta Data Creation.
     * @param $gateway
     * @return bool
     */

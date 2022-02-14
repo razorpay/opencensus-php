@@ -207,6 +207,26 @@ class VirtualAccountTest extends TestCase
         $this->verifyEntityOrigin($response['id'], 'merchant', '10000000000000');
     }
 
+    public function testCreateVirtualAccountRBLJSW()
+    {
+        $terminalAttributes = [
+            'gateway'               => Gateway::BT_RBL_JSW,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => 'VAJSW',
+            'type'                  => [
+                Type::NON_RECURRING             => '1',
+                Type::NUMERIC_ACCOUNT     => '1',
+            ]
+        ];
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->createVirtualAccount([], true);
+
+        $jswAccount = $this->getDbLastEntity('bank_account');
+        $this->assertEquals('VAJSW', substr($jswAccount['account_number'], 0, 5));
+        $this->assertEquals('RATN0000001', $jswAccount['ifsc_code']);
+    }
+
     public function testCreateVirtualAccountForOrgMerchantFeatureFlag()
     {
         $this->fixtures->create('feature', [

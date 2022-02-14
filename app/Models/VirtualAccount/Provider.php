@@ -27,6 +27,7 @@ class Provider
     const KOTAK     = 'kotak';
     const ICICI     = 'icici';
     const RBL       = 'rbl';
+    const RBL_JSW   = 'rbl_jsw';
     const HDFC_ECMS = 'hdfc_ecms';
 
     const UPI_ICICI = 'upi_icici';
@@ -51,6 +52,7 @@ class Provider
         self::ICICI     => 'ICIC0000104',
         self::RBL       => 'RATN0VAAPIS',
         self::HDFC_ECMS => 'HDFC0000113',
+        self::RBL_JSW   => 'RATN0000001'
     ];
 
     // The default details are fixed by each provider, most specifically
@@ -76,6 +78,9 @@ class Provider
         ],
         self::HDFC_ECMS => [
             BankAccount::IFSC_CODE => self::IFSC[self::HDFC_ECMS],
+        ],
+        self::RBL_JSW => [
+            BankAccount::IFSC_CODE => self::IFSC[self::RBL_JSW],
         ],
     ];
 
@@ -114,6 +119,9 @@ class Provider
             '*',
         ],
         self::HDFC_ECMS => [
+            '*',
+        ],
+        self::RBL_JSW => [
             '*',
         ]
     ];
