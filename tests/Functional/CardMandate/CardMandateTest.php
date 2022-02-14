@@ -111,6 +111,40 @@ class CardMandateTest extends TestCase
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
+    public function testCreateCardMandatePaymentWithSkipSummaryPage()
+    {
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $this->fixtures->merchant->addFeatures(['card_mandate_skip_page']);
+
+        $input = $this->paymentInput;
+        $input['order_id'] = $this->fixtures->create('order', [
+            'amount' => 50000,
+        ])->getPublicId();
+
+        $this->doAuthAndCapturePayment($input);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+    }
+
     public function testCreateSplitAuthenticatePayment($frequency = 'as_presented')
     {
         $this->mockCheckBin();

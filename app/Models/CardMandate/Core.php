@@ -5,6 +5,7 @@ namespace RZP\Models\CardMandate;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -41,6 +42,11 @@ class Core extends Base\Core
         if ($payment->getCurrency() !== Currency::INR)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+        }
+
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::CARD_MANDATE_SKIP_PAGE) === true)
+        {
+            $input[Entity::SKIP_SUMMARY_PAGE] = true;
         }
 
         $cardMandate = (new Entity)->build();

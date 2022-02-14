@@ -239,6 +239,7 @@ class Entity extends Base\PublicEntity
         self::AUTH_TYPE,
         self::AADHAAR_NUMBER,
         self::AADHAAR_VID,
+        self::CARD_MANDATE_ID,
         self::USED_COUNT,
         self::CONFIRMED_AT,
         self::REJECTED_AT,

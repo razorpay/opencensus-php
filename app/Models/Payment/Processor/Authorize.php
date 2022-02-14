@@ -1039,14 +1039,13 @@ trait Authorize
             throw $e;
         }
 
-
         $token = $payment->localToken;
 
         $token->cardMandate()->associate($cardMandate->getId());
 
         $token->saveOrFail();
 
-        if ($this->app->mandateHQ->shouldSkipSummaryPage())
+        if ($cardMandate->isCustomerConsentRequired() === false)
         {
             return $ret;
         }

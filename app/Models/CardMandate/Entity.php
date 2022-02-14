@@ -2,6 +2,8 @@
 
 namespace RZP\Models\CardMandate;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer\Token;
@@ -240,6 +242,13 @@ class Entity extends Base\PublicEntity
     public function isMandateApproved(): bool
     {
         return $this->getAttribute(self::STATUS) === Status::MANDATE_APPROVED;
+    }
+
+    public function isCustomerConsentRequired(): bool
+    {
+        $app = App::getFacadeRoot();
+
+        return $this->getStatus() === Status::CREATED and $app->mandateHQ->shouldSkipSummaryPage() === false;
     }
 
     // Relations
