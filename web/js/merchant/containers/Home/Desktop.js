@@ -29,6 +29,7 @@ import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecov
 import CatalystCampaignBannerPhase2 from 'merchant/components/Announcements/CatalystCampaignBannerPhase2';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
 import InternationalRequestStatusAnnouncement from 'merchant/components/Announcements/InternationalRequestStatus';
+import InternationalFormStatusAnnouncement from 'merchant/components/Announcements/InternationalFormStatus';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
@@ -474,6 +475,12 @@ class AnalyticsDesktop extends Component {
                 internationalProductsStatus={this.props.internationalProductsStatus}
               />
             )}
+          {mode === 'live' && (
+            <InternationalFormStatusAnnouncement
+              status={this.props.internationalSettingStatus}
+              businessName={user.business_name}
+            />
+          )}
           {/* needs clarification modal */}
           {this.state.showNcPopup &&
             user.needsClarification &&
