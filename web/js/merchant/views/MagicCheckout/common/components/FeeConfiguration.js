@@ -6,8 +6,9 @@ import {
 import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
 import Input from 'common/new-ui/Input';
 import { useState, useCallback, useEffect } from 'react';
+import validators from 'merchant/views/MagicCheckout/common/feeUtils';
 
-const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, validationError, removeError }) => {
+const FeeConfiguration = ({ feeRule, updateUserFeeRule, type }) => {
   const [slabs, setSlabs] = useState([]);
 
   useEffect(() => {
@@ -93,19 +94,14 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, validationError, r
                     type="number"
                     onChange={updateFlatFeeChange}
                     className="slabs-flat-charge-input"
+                    validator={validators.flat}
                   />
                 </div>
               </div>
             ) : null}
             {feeRule.rule_type === RULE_TYPES.SLABS ? (
               <div className="fee-block">
-                <Slabs
-                  type={type}
-                  slabs={slabs}
-                  updateSlabs={updateSlabs}
-                  validationError={validationError}
-                  removeError={removeError}
-                />
+                <Slabs type={type} slabs={slabs} updateSlabs={updateSlabs} />
               </div>
             ) : null}
           </div>

@@ -1,32 +1,4 @@
-const validateSlabs = (slabs) => {
-  let lastVal = 0;
-  for (let i = 0; i < slabs.length; i++) {
-    const { lte, gte } = slabs[i];
-    if ((gte !== lastVal + 1 || !lte || !gte || lte < gte) && i > 0) {
-      return {
-        error: true,
-        errorInd: i,
-      };
-    }
-    lastVal = lte;
-  }
-  return { error: false, errorField: '' };
-};
-
-const validateFeeRule = (feeRule) => {
-  const { rule_type, flat, slabs } = feeRule;
-  switch (rule_type) {
-    case 'flat':
-      if (typeof flat !== 'undefined') return true;
-      break;
-    case 'slabs':
-      if (!slabs) return { error: false, errorField: '' };
-      return validateSlabs(slabs);
-    default:
-      return true;
-  }
-  return { error: false, errorField: '' };
-};
+import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
 
 export const validate = (payload) => {
   const { warehouse_pincode, shipping_fee_rule, cod_fee_rule, enable_cod } = payload;
@@ -35,11 +7,11 @@ export const validate = (payload) => {
   if (!warehouse_pincode || !regex.test(warehouse_pincode)) {
     return { error: true, errorField: 'warehouse_pincode' };
   }
-  const codValidation = validateFeeRule(cod_fee_rule);
+  const codValidation = isFeeRuleValid(cod_fee_rule);
   if (enable_cod && (!codValidation || codValidation.error)) {
     return { errorField: 'cod_fee_rule', ...codValidation };
   }
-  const shippingValidation = validateFeeRule(shipping_fee_rule);
+  const shippingValidation = isFeeRuleValid(shipping_fee_rule);
   if (!shippingValidation || shippingValidation.error) {
     return { errorField: 'shipping_fee_rule', ...shippingValidation };
   }

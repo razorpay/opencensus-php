@@ -1,9 +1,9 @@
 import Input from 'common/new-ui/Input';
 import { useCallback } from 'react';
 import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
+import validators from 'merchant/views/MagicCheckout/common/feeUtils';
 
-const Slabs = ({ type, slabs, updateSlabs, validationError = {}, removeError }) => {
-  const { errorInd } = validationError;
+const Slabs = ({ type, slabs, updateSlabs }) => {
   const heading = type === FEE_RULES.COD_FEE_RULE ? 'COD' : 'Shipping';
   if (!slabs || slabs.length === 0) {
     slabs = [{ gte: 0, lte: 0, fee: 0 }];
@@ -25,9 +25,6 @@ const Slabs = ({ type, slabs, updateSlabs, validationError = {}, removeError }) 
     (e) => {
       const { arrInd } = e.target.dataset;
       const parsedArrInd = parseInt(arrInd, 10);
-      if (parsedArrInd === errorInd) {
-        removeError();
-      }
       const newSlabs = [...slabs];
       newSlabs.splice(parsedArrInd, 1);
       updateSlabs(newSlabs);
@@ -52,9 +49,6 @@ const Slabs = ({ type, slabs, updateSlabs, validationError = {}, removeError }) 
         dataset: { key, arrInd },
       } = e.target;
       const parsedArrInd = parseInt(arrInd, 10);
-      if (parsedArrInd === errorInd) {
-        removeError();
-      }
       const nextInd = parsedArrInd + 1;
       value = isNaN(parseInt(value, 10)) ? value : parseInt(value, 10);
       const newSlabs = [...slabs];
@@ -78,7 +72,7 @@ const Slabs = ({ type, slabs, updateSlabs, validationError = {}, removeError }) 
         <SlabsHeader label={`${heading} Charge`} className="slabs-charge" />
       </div>
       {slabs.map((item, index) => (
-        <div key={index} className={`display-flex${index === errorInd ? ' input-invalid' : ''}`}>
+        <div key={index} className="display-flex">
           <div className="display-flex">
             <div className="slabs-input-container">
               <Input
@@ -88,19 +82,20 @@ const Slabs = ({ type, slabs, updateSlabs, validationError = {}, removeError }) 
                 value={item.gte}
                 data-key="gte"
                 data-arr-ind={index}
-                disabled={index > 0}
+                disabled={true}
                 onChange={handleSlabValueChange}
               />
             </div>
             <div className="slabs-input-container">
               <Input
                 addonBefore="₹"
-                className="slabs-input"
                 type="number"
                 value={item.lte}
                 data-key="lte"
                 data-arr-ind={index}
+                className="slabs-input"
                 onChange={handleSlabValueChange}
+                validator={validators.lte(slabs, index)}
               />
             </div>
           </div>

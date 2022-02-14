@@ -119,10 +119,6 @@ const ServiceabilitySettingsModal = ({
               type={FEE_RULES.SHIPPING_FEE_RULE}
               feeRule={{ ...shipping_fee_rule }}
               updateUserFeeRule={updateUserMethods}
-              validationError={
-                validationError.errorField === FEE_RULES.SHIPPING_FEE_RULE ? validationError : {}
-              }
-              removeError={removeError}
             />
           </div>
           {enable_cod ? (
@@ -131,10 +127,6 @@ const ServiceabilitySettingsModal = ({
                 type={FEE_RULES.COD_FEE_RULE}
                 feeRule={{ ...cod_fee_rule }}
                 updateUserFeeRule={updateUserMethods}
-                validationError={
-                  validationError.errorField === FEE_RULES.COD_FEE_RULE ? validationError : {}
-                }
-                removeError={removeError}
               />
             </div>
           ) : null}
