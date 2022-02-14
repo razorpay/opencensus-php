@@ -8918,6 +8918,57 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(0, $basDetail[0][BasDetails\Entity::STATEMENT_CLOSING_BALANCE]);
     }
 
+    public function testCreateBASDetailsTable()
+    {
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            BasDetails\Entity::ACCOUNT_NUMBER => "2224440041626906",
+            BasDetails\Entity::CHANNEL        => BasDetails\Channel::RBL,
+            BasDetails\Entity::MERCHANT_ID    => "10000000000000",
+            BasDetails\Entity::ACCOUNT_TYPE   => BasDetails\AccountType::SHARED,
+            BasDetails\Entity::BALANCE_ID     => "bal00000000000"
+        ];
+
+        $this->startTest();
+
+        $basDetail = $this->getDbEntity('banking_account_statement_details', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626906']);
+
+        $this->assertNotNull($basDetail);
+
+        $detailsExpected = [
+            BasDetails\Entity::MERCHANT_ID               => "10000000000000",
+            BasDetails\Entity::BALANCE_ID                => "bal00000000000",
+            BasDetails\Entity::ACCOUNT_NUMBER            => "2224440041626906",
+            BasDetails\Entity::CHANNEL                   => "rbl",
+            BasDetails\Entity::STATUS                    => 'active',
+            BasDetails\Entity::GATEWAY_BALANCE           => 0,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE => 0,
+            BasDetails\Entity::ACCOUNT_TYPE              => BasDetails\AccountType::SHARED
+        ];
+
+        $this->assertArraySubset($detailsExpected, $basDetail->toArray(), true);
+    }
+
+    public function testCreateBASDetailsTableWithInvalidAccountType()
+    {
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            BasDetails\Entity::ACCOUNT_NUMBER => "2224440041626906",
+            BasDetails\Entity::CHANNEL        => BasDetails\Channel::RBL,
+            BasDetails\Entity::MERCHANT_ID    => "10000000000000",
+            BasDetails\Entity::ACCOUNT_TYPE   => "escrow",
+            BasDetails\Entity::BALANCE_ID     => "bal00000000000"
+        ];
+
+        $this->startTest();
+
+        $basDetail = $this->getDbEntity('banking_account_statement_details', [BasDetails\Entity::ACCOUNT_NUMBER => '2224440041626906']);
+
+        $this->assertNull($basDetail);
+    }
+
     // Due to discrepancies on bank side where new records can appear in few seconds, we prefer not to save
     // latest records within time range set using $offset to maintain order.
     // Ref. rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700

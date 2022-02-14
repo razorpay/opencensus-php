@@ -26,11 +26,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchAccountNumbersByChannelOrderByLastStatementAttemptAt(string $channel)
+    public function fetchAccountNumbersByChannelOrderByLastStatementAttemptAt(string $channel, string $accountType = AccountType::DIRECT)
     {
         $channelColumn = $this->dbColumn(Entity::CHANNEL);
 
         $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
 
         $basDetailsAttr = $this->dbColumn('*');
 
@@ -38,15 +40,18 @@ class Repository extends Base\Repository
                     ->select($basDetailsAttr)
                     ->where($channelColumn, '=', $channel)
                     ->where($statusColumn, '=', Status::ACTIVE)
+                    ->where($accountTypeColumn, '=', $accountType)
                     ->oldest(Entity::LAST_STATEMENT_ATTEMPT_AT)
                     ->get();
     }
 
-    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel)
+    public function fetchByChannelOrderByBalanceLastFetchedAt(string $channel, string $accountType = AccountType::DIRECT)
     {
         $channelColumn = $this->dbColumn(Entity::CHANNEL);
 
         $statusColumn = $this->dbColumn(Entity::STATUS);
+
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
 
         $basDetailsAttr = $this->dbColumn('*');
 
@@ -54,19 +59,17 @@ class Repository extends Base\Repository
                     ->select($basDetailsAttr)
                     ->where($channelColumn, '=', $channel)
                     ->where($statusColumn, '=', Status::ACTIVE)
+                    ->where($accountTypeColumn, '=', $accountType)
                     ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->get();
     }
 
     public function getMerchantIdsByChannel($channel, $limit)
     {
-        $basDetailsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
         $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
 
-        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
-        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
-        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+        $accountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
 
         $basDetailsAttr = $this->dbColumn('*');
 
@@ -74,9 +77,7 @@ class Repository extends Base\Repository
                     ->select($basDetailsAttr)
                     ->where($channelColumn, '=', $channel)
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->join(Constants\Table::BALANCE, $basDetailsBalanceIdColumn, '=', $balanceIdColumn)
-                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
-                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($accountTypeColumn, '=', AccountType::DIRECT)
                     ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->limit($limit)
                     ->pluck($merchantIdColumn);

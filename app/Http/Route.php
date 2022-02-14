@@ -2673,6 +2673,7 @@ class Route
         'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
         'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
         'banking_account_statement_channel_fetch' => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'],
+        'banking_account_statement_details_create'=> ['post',     'banking_account_statement/details',                         'BankingAccountStatementController@createBankingAccountStatementDetails'],
         'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
         'banking_account_activation_detail'
         .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
@@ -5875,6 +5876,7 @@ class Route
         'banking_account_comment_edit',
         'banking_account_bulk_assign_reviewer',
         'banking_account_activation_detail_create',
+        'banking_account_statement_details_create',
         'banking_account_activation_detail_update',
         'banking_account_service_lms_routes_all',
         'banking_account_service_lms_routes_ops',
@@ -7148,6 +7150,7 @@ class Route
         'set_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'banking_account_create_dashboard_admin'   => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_statement_details_create' => Permission::VIEW_ACTIVATION_FORM,
 
         'commissions_get_multiple'                 => Permission::VIEW_COMMISSIONS,
         'commissions_get'                          => Permission::VIEW_COMMISSIONS,
@@ -9419,6 +9422,7 @@ class Route
             'bank_transfer_strip_payer_accounts',
             'banking_account_activate',
             'banking_account_activation_detail_create',
+            'banking_account_statement_details_create',
             'banking_account_activation_detail_update',
             'banking_account_activation_mis_download',
             'banking_account_activation_spocs',

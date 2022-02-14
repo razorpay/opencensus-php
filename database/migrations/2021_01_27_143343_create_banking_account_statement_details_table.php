@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\BankingAccountStatement\Details\Entity;
+use RZP\Models\BankingAccountStatement\Details\AccountType;
 
 class CreateBankingAccountStatementDetailsTable extends Migration
 {
@@ -29,6 +30,10 @@ class CreateBankingAccountStatementDetailsTable extends Migration
                   ->nullable();
 
             $table->string(Entity::CHANNEL, 255);
+
+            $table->string(Entity::ACCOUNT_TYPE, 20)
+                  ->nullable()
+                  ->default(AccountType::DIRECT);
 
             $table->string(Entity::STATUS, 255)
                   ->nullable();

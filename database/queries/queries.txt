@@ -6496,6 +6496,9 @@ ALTER TABLE qr_code_config
 ALTER TABLE merchant_documents
     ADD COLUMN document_date INTEGER UNSIGNED DEFAULT NULL;
 
+ALTER TABLE banking_account_statement_details
+    ADD COLUMN account_type varchar(20) DEFAULT 'direct';
+
 ALTER TABLE cards
     ADD COLUMN token_iin char(9) DEFAULT NULL;
 

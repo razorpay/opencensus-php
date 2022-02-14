@@ -101,7 +101,7 @@ class Core extends Base\Core
     }
 
     // create function to be called from createOrUpdate function only or check if a record already exists.
-    protected function create(array $input)
+    public function create(array $input)
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_CREATE_REQUEST, $input);
 

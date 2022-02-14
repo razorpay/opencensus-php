@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use View;
 use Request;
 use ApiResponse;
+use RZP\Constants\Entity as E;
 
 class BankingAccountStatementController extends Controller
 {
@@ -61,6 +62,15 @@ class BankingAccountStatementController extends Controller
         $input = Request::all();
 
         $response = $this->service()->validateSourceLinkingUpdate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createBankingAccountStatementDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::BANKING_ACCOUNT_STATEMENT_DETAILS)->create($input);
 
         return ApiResponse::json($response);
     }

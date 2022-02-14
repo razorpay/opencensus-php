@@ -16,6 +16,7 @@ class Validator extends Base\Validator
         Entity::STATUS                              => 'sometimes|custom',
         Entity::GATEWAY_BALANCE                     => 'sometimes|nullable|int',
         Entity::STATEMENT_CLOSING_BALANCE           => 'sometimes|nullable|int',
+        Entity::ACCOUNT_TYPE                        => 'sometimes|custom'
     ];
 
     protected static $preFetchRules = [
@@ -31,5 +32,10 @@ class Validator extends Base\Validator
     protected function validateStatus($attributes, $status)
     {
         Status::validate($status);
+    }
+
+    protected function validateAccountType($attributes, $status)
+    {
+        AccountType::validate($status);
     }
 }

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID                         = 'merchant_id';
     const CHANNEL                             = 'channel';
     const ACCOUNT_NUMBER                      = 'account_number';
+    const ACCOUNT_TYPE                        = 'account_type';
     const STATUS                              = 'status';
     const STATEMENT_CLOSING_BALANCE           = 'statement_closing_balance';
     const BALANCE_ID                          = 'balance_id';
@@ -48,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::BALANCE_ID,
         self::MERCHANT_ID,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
         self::STATUS,
         self::STATEMENT_CLOSING_BALANCE,
         self::GATEWAY_BALANCE,
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_NUMBER,
         self::BALANCE_ID,
         self::CHANNEL,
+        self::ACCOUNT_TYPE,
         self::STATUS,
         self::STATEMENT_CLOSING_BALANCE,
         self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
@@ -80,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::STATUS                    => Status::ACTIVE,
         self::STATEMENT_CLOSING_BALANCE => 0,
         self::GATEWAY_BALANCE           => 0,
+        self::ACCOUNT_TYPE              => AccountType::DIRECT,
     ];
 
     // ============================= MUTATORS =============================
@@ -161,6 +165,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAGINATION_KEY);
     }
 
+    public function getAccountType()
+    {
+        return $this->getAttribute(self::ACCOUNT_TYPE);
+    }
+
     // ============================= END GETTERS ===========================
 
     // ============================= SETTERS ===========================
@@ -195,6 +204,11 @@ class Entity extends Base\PublicEntity
     public function setPaginationKey($paginationKey)
     {
         $this->setAttribute(self::PAGINATION_KEY, $paginationKey);
+    }
+
+    public function setAccountType(string $accountType)
+    {
+        $this->setAttribute(self::ACCOUNT_TYPE, $accountType);
     }
 
     // ============================= END SETTERS ===========================

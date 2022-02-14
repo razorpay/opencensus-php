@@ -7,11 +7,13 @@ use RZP\Exception;
 class Status
 {
     const ACTIVE = 'active';
+    const INACTIVE = 'inactive';
 
     public static function getStatuses()
     {
         return [
             self::ACTIVE,
+            self::INACTIVE,
         ];
     }
 

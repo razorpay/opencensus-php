@@ -923,5 +923,34 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+
+    'testCreateBASDetailsTable' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/banking_account_statement/details',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testCreateBASDetailsTableWithInvalidAccountType' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/banking_account_statement/details',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Invalid account_type: escrow',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ]
 ];
