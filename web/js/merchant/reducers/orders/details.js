@@ -4,8 +4,8 @@ import { set, merge } from 'common/utils/immutable';
 const ORDER_FETCH = 'ORDER_FETCH';
 const ORDER_PAYMENTS_FETCH = 'ORDER_PAYMENTS_FETCH';
 
-export const fetchItem = id => {
-  let order = new Order();
+export const fetchItem = (id) => {
+  const order = new Order();
 
   return {
     type: ORDER_FETCH,
@@ -13,14 +13,23 @@ export const fetchItem = id => {
   };
 };
 
-export const fetchOrderPayments = order => {
+export const fetchMagicCheckoutItem = (id) => {
+  const order = new Order();
+
+  return {
+    type: ORDER_FETCH,
+    payload: order.fetchMagicCheckoutOrder(id),
+  };
+};
+
+export const fetchOrderPayments = (order) => {
   return {
     type: ORDER_PAYMENTS_FETCH,
     payload: order.fetchPayments(),
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   order: {},
   error: null,
@@ -31,7 +40,7 @@ let initialState = {
   },
 };
 
-export default function(state = initialState, action) {
+export default function orderDetails(state = initialState, action) {
   switch (action.type) {
     case `${ORDER_FETCH}::PENDING`:
       return set(state, 'loading', true);

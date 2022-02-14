@@ -7,23 +7,26 @@ import { bindActionCreators } from 'redux';
 import MagicCheckoutOrderDetails from 'merchant/views/Transactions/Orders/components/MagicCheckoutOrderDetails';
 
 class OrderDetailsContainer extends Component {
-  componentWillMount() {
-    this.props.fetchItem(this.props.id);
-  }
+  UNSAFE_componentWillReceiveProps({ id }) {
+    if (this.props.id !== id) {
+      const { ordersListItems, fetchItem, fetchMagicCheckoutItem } = this.props;
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.props.fetchItem(nextProps.id);
+      this.isMagicCheckoutOrder(ordersListItems, id) ? fetchMagicCheckoutItem(id) : fetchItem(id);
     }
   }
+
+  isMagicCheckoutOrder = (ordersListItems, id) =>
+    ordersListItems?.find((order) => order?.id === id && 'line_items_total' in order);
 
   fetchOrderPayments = (order) => {
     return this.props.fetchOrderPayments(order);
   };
 
   componentDidMount() {
-    const { closeUrl, id } = this.props;
+    const { closeUrl, id, ordersListItems, fetchItem, fetchMagicCheckoutItem } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
+
+    this.isMagicCheckoutOrder(ordersListItems, id) ? fetchMagicCheckoutItem(id) : fetchItem(id);
 
     if (eventCategory) {
       window?.rzpAnalytics?.({
@@ -47,7 +50,8 @@ class OrderDetailsContainer extends Component {
   }
 
   render() {
-    const { loading, error, order, payments } = this.props;
+    const { order: orderInfo } = this.props;
+    const { loading, error, order, payments } = orderInfo || {};
     let statusMsg = {};
 
     if (error) {
@@ -80,7 +84,13 @@ class OrderDetailsContainer extends Component {
   }
 }
 
-export default connect(
-  (state) => state.order,
-  (dispatch) => bindActionCreators(OrderActions, dispatch),
-)(OrderDetailsContainer);
+const mapStateToProps = (state) => {
+  return {
+    ordersListItems: state.orders?.items,
+    order: state.order,
+  };
+};
+
+export default connect(mapStateToProps, (dispatch) => bindActionCreators(OrderActions, dispatch))(
+  OrderDetailsContainer,
+);

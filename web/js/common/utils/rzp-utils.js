@@ -1377,3 +1377,11 @@ export const isLoggedInViaMobile = () => localStorage?.getItem('loggedInVia') ==
 export const htmlApiList = ['URLSearchParams'];
 
 export const checkHTML5APIvalidity = () => htmlApiList.find((apiName) => !window[apiName]);
+
+/**
+ * truncate a String.
+ * @param {String} str
+ * @param {Number} num
+ * @return {String}
+ */
+export const truncateString = (str, num) => (str?.length > num ? `${str.slice(0, num)}...` : str);
