@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Cron\Actions;
 
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
@@ -66,6 +67,9 @@ class FriendBuySendPurchaseEventsAction extends BaseAction
 
                 $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                     $merchant, $properties, SegmentEvent::PURCHASE_EVENT_SENT);
+
+                $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_PURCHASE_EVENT, $merchant, null, $properties);
+
                 $successCount += 1;
             }
             catch (\Throwable $ex)

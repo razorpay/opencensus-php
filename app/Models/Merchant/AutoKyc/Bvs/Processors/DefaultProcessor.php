@@ -213,7 +213,8 @@ class DefaultProcessor implements Processor
             empty($this->experimentMap) === true or
             empty($this->configName) === true or
             array_key_exists($this->configName, $this->experimentMap) === false or
-            empty($this->experimentMap[$this->configName]) === true
+            empty($this->experimentMap[$this->configName]) === true or
+            $this->merchant->isLinkedAccount() === true
         )
         {
             return Constant::ASYNC;

@@ -538,15 +538,30 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'mtu.apply_coupon_code.failed',
     ];
+
+
+    //M2M
     const M2M_APPLY_COUPON_CODE_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'm2m.apply_coupon_code.success',
     ];
-
     const M2M_APPLY_COUPON_CODE_FAILED = [
         'group' => 'onboarding',
         'name'  => 'm2m.apply_coupon_code.failed',
     ];
+    const MERCHANT_REFERRAL_CREDITS = [
+    'group' => 'onboarding',
+    'name'  => 'merchant.referral_credits'
+    ];
+    const MERCHANT_REFERRAL = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.referral'
+    ];
+    const MERCHANT_PURCHASE_EVENT = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.purchase_event'
+    ];
+
     const SIGNUP_FINISH_SIGNUP_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'signup.finish_signup.success',
@@ -670,16 +685,6 @@ class EventCode
     const MERCHANT_DEDUPE = [
         'group' => 'onboarding',
         'name'  => 'merchant.dedupe'
-    ];
-
-    const MERCHANT_REFERRAL_CREDITS = [
-        'group' => 'onboarding',
-        'name'  => 'merchant.referral_credits'
-    ];
-
-    const MERCHANT_REFERRAL = [
-        'group' => 'onboarding',
-        'name'  => 'merchant.referral'
     ];
 
     const MERCHANT_AUTO_NC = [

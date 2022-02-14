@@ -530,7 +530,7 @@ class Service extends Base\Service
      *
      * @throws Throwable
      */
-    public function fetchReferralDetails(): array
+    public function fetchReferralDetails($merchant=null): array
     {
         $this->app['rzp.mode'] = Mode::LIVE;
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
@@ -539,7 +539,8 @@ class Service extends Base\Service
 
         $response[Constants::CAN_REFER] = false;
 
-        $merchant = $this->merchant;
+        $merchant = $merchant??$this->merchant;
+
         //when m2m_referral is enabled for the merchant get details for advocate/referrer
         $featureCore           = (new FeatureCore);
         $featureStatusResponse = $featureCore->getStatus(FeatureConstants::MERCHANT, $merchant->getMerchantId(), FeatureConstants::M2M_REFERRAL);
