@@ -1,5 +1,7 @@
+import React from 'react';
 import { Label, Description } from 'common/new-ui/Input';
 import { PowerSelect } from 'react-power-select';
+import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 
 export default class InputDropdown extends React.Component {
   constructor(props) {
@@ -17,6 +19,7 @@ export default class InputDropdown extends React.Component {
       if (prevProps.value != this.props.value) {
         const defaultOption = this.findSelectedOption();
 
+        // eslint-disable-next-line react/no-did-update-set-state
         this.setState({
           selectedOption: defaultOption || null,
         });
@@ -39,7 +42,7 @@ export default class InputDropdown extends React.Component {
 
   checkIfControlledComponent() {
     if (this.props.hasOwnProperty('defaultValue') && this.props.hasOwnProperty('value')) {
-      throw 'Both props defaultValue or value are not allowed to InputDropdown';
+      throw new Error('Both props defaultValue or value are not allowed to InputDropdown');
     }
 
     if (this.props.hasOwnProperty('value')) {
@@ -64,7 +67,7 @@ export default class InputDropdown extends React.Component {
         return option[optionValuePath] === currentValue;
       }
 
-      throw 'optionValuePath is not present in the options';
+      throw new Error('optionValuePath is not present in the options');
     });
   }
 
@@ -111,21 +114,23 @@ export default class InputDropdown extends React.Component {
               {name && (
                 <input name={name} value={selectedOption[optionValuePath]} hidden readOnly />
               )}
-              <PowerSelect
-                ref={this.ref}
-                class={dropdownElementClass}
-                placeholder={placeholder}
-                options={options}
-                optionLabelPath={optionLabelPath}
-                optionComponent={optionComponent}
-                selectedOptionComponent={selectedOptionComponent}
-                onChange={this.handleChange}
-                selected={selectedOption}
-                showClear={false}
-                searchEnabled={searchEnabled}
-                disabled={disabled}
-                afterOptionsComponent={afterOptionsComponent}
-              />
+              <ErrorBoundary resetOnProps rank={Ranks.P2}>
+                <PowerSelect
+                  ref={this.ref}
+                  class={dropdownElementClass}
+                  placeholder={placeholder}
+                  options={options}
+                  optionLabelPath={optionLabelPath}
+                  optionComponent={optionComponent}
+                  selectedOptionComponent={selectedOptionComponent}
+                  onChange={this.handleChange}
+                  selected={selectedOption}
+                  showClear={false}
+                  searchEnabled={searchEnabled}
+                  disabled={disabled}
+                  afterOptionsComponent={afterOptionsComponent}
+                />
+              </ErrorBoundary>
             </div>
           </div>
           <Description text={description} />

@@ -4,6 +4,7 @@ import { PowerSelect } from 'react-power-select';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 
 const Drp = lazy(() =>
   import(/* webpackChunkName: 'Drp' */ 'common/ui/Forms/DateRangePickerField'),
@@ -157,14 +158,16 @@ class DateRangePicker extends Component {
         <div className="icon-container pull-left">{icon ? icon : <i class="i i-date-range" />}</div>
         <div className="presets-container pull-left">
           {presets.length > 0 && (
-            <PowerSelect
-              className="date-range-preset-select react-normal-select"
-              onChange={this.onPresetChange}
-              searchEnabled={false}
-              optionLabelPath="name"
-              selected={selectedPreset}
-              options={presets}
-            />
+            <ErrorBoundary resetOnProps rank={Ranks.P2}>
+              <PowerSelect
+                className="date-range-preset-select react-normal-select"
+                onChange={this.onPresetChange}
+                searchEnabled={false}
+                optionLabelPath="name"
+                selected={selectedPreset}
+                options={presets}
+              />
+            </ErrorBoundary>
           )}
         </div>
         <div className="daterange-container pull-left">
