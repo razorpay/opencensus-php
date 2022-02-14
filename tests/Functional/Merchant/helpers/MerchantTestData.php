@@ -10180,6 +10180,19 @@ return [
         ],
     ],
 
+    'testGetCapitalTags' => [
+        'request'  => [
+            'content' => [
+                ],
+            'url'     => '/merchants/tags/capital',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testBulkAssignRiskTagAndSetFraudType' => [
         'request'  => [
             'content' => [

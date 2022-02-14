@@ -1452,6 +1452,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getCapitalTags()
+    {
+        $response = $this->service()->getCapitalTags();
+
+        return ApiResponse::json($response);
+    }
+
     public function markGratisTransactionPostpaid()
     {
         $input = Request::all();

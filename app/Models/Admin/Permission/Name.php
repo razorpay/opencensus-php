@@ -27,6 +27,7 @@ class Name
     const VIEW_ALL_MERCHANT_AGGREGATIONS      = 'view_all_merchant_aggregations';
     const VIEW_MERCHANT_AGGREGATIONS          = 'view_merchant_aggregations';
     const VIEW_MERCHANT_TAGS                  = 'view_merchant_tags';
+    const VIEW_MERCHANT_CAPITAL_TAGS          = 'view_merchant_capital_tags';
     const CREATE_PRICING_PLAN                 = 'create_pricing_plan';
     const PAYMENTS_CREATE_BUY_PRICING_PLAN    = 'payments_create_buy_pricing_plan';
     const ADMIN_FETCH_MERCHANTS               = 'admin_fetch_merchants';

@@ -4200,6 +4200,11 @@ class Service extends Base\Service
         return $tags;
     }
 
+    public function getCapitalTags()
+    {
+        return Constants::$capitalMerchantTags;
+    }
+
     protected function updateFraudTypeIfApplicable($merchant, $fraudType)
     {
         $riskTags= explode(',', RiskActionConstants::RISK_TAGS_CSV);

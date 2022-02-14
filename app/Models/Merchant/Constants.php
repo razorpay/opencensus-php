@@ -163,6 +163,7 @@ final class Constants
     const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
     const TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT   = 'Support Document (Invoice) URL: %sadmin/entity/ufh.files/live/file_%s';
 
+
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
         self::IDEMPOTENT_ID,
@@ -181,6 +182,11 @@ final class Constants
         self::AGGREGATOR,
         self::FULLY_MANAGED,
         self::PURE_PLATFORM,
+    ];
+
+    //Capital Tags assigned to merchants
+    public static $capitalMerchantTags = [
+
     ];
 
     // Used in merchant activation elastic search flows
