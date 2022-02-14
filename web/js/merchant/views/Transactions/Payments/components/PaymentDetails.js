@@ -22,6 +22,7 @@ import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo
 import React, { useEffect } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { isInteger } from 'common/utils/validators';
 
 function PaymentDetails(props) {
   const {
@@ -276,6 +277,20 @@ function PaymentDetails(props) {
                     </span>
                   </Definition>
                 </EntityDetailRow>
+
+                {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (
+                  <EntityDetailRow label="Total Convenience Fee">
+                    <Definition>
+                      <Amount value={payment.customer_fee + payment.customer_fee_gst} />
+                      <span>
+                        Convenience Fee - <Amount value={payment.customer_fee} currency="INR" />
+                      </span>
+                      <span>
+                        GST - <Amount value={payment.customer_fee_gst} currency="INR" />
+                      </span>
+                    </Definition>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Fee Bearer">
                   <Definition>
