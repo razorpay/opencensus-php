@@ -140,6 +140,10 @@ function getRazorpayConfig () {
         frameUrl = '/test/checkout.html?branch=' + params.branch;
     }
 
+    if (params.prod_build) {
+        frameUrl = '/test/checkout.html?prod_build=' + params.prod_build;
+    }
+
     var config = {
         api: '/',
     };
@@ -188,6 +192,8 @@ $('#keys').onclick = t.onkeydown = e => {
 
     if (getSearchParams().branch) {
       source = `betacdn.np.razorpay.in/checkout/builds/branch-builds/${getSearchParams().branch}`
+    } else if (getSearchParams().prod_build) {
+      source = `betacdn.np.razorpay.in/checkout/builds/prod-builds/${getSearchParams().prod_build}`
     } else if (isStage) {
       source = 'checkout.stage.razorpay.in';
     } else if (isFunc) {
