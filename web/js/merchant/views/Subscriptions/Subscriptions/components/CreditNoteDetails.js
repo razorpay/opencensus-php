@@ -46,7 +46,7 @@ export default class CreditNoteDetails extends React.Component {
                   <Amount currency={creditNote.currency} value={creditNote.amount} />
                 </EntityDetailRow>
 
-                {!!creditNote.invoices.length && <RefundsList refunds={refunds} />}
+                {!!creditNote.invoices?.length && <RefundsList refunds={refunds} />}
               </div>
             </div>
           </div>
