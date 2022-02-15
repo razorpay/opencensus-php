@@ -10,7 +10,9 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payout\Status;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -1837,5 +1839,151 @@ class PayoutServiceTest extends TestCase
             ];
 
         return $response;
+    }
+
+    protected function mockRazorxDefault()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  return 'on';
+                              }));
+    }
+
+    // test api is not sending status update to payout service when razorx experiment is on
+    // below test is for processed status
+    public function testStatusUpdateToPayoutServiceForProcessedStatusWhenCallerIsFtsWebhook()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial()
+                                           ->shouldReceive('updatePayoutDetailsViaFTS')
+                                           ->withAnyArgs()->times(0)->getMock();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial()
+                                        ->shouldReceive('updatePayoutStatusViaFTS')
+                                        ->withAnyArgs()->times(0)->getMock();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $this->ba->appAuthLive();
+
+        $this->mockRazorxDefault();
+
+        $this->startTest();
+
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                             ], 'live')->first();
+
+        $this->assertEquals('processed', $ftaForPayout->getStatus());
+
+        $payout->reload();
+
+        $this->assertEquals('processed', $payout->getStatus());
+    }
+
+    // test api is  sending status update to payout service when razorx experiment is on but status updates were pushed
+    // from admin dashboard . below test is for processed status
+    public function testStatusUpdateToPayoutServiceForProcessedStatusWhenCalledManuallyViaAdminDashboard()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial()
+                                           ->shouldReceive('updatePayoutDetailsViaFTS')
+                                           ->withAnyArgs()->times(0)->getMock();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial()
+                                          ->shouldReceive('updatePayoutStatusViaFTS')
+                                          ->withAnyArgs()->times(1)->getMock();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $this->ba->appAuthLive();
+
+        $this->mockRazorxDefault();
+
+        $request = [
+            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'processed',
+            ]
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $this->assertEquals('processed', $payout->getStatus());
+    }
+
+    // even when disable_status_update_to_payout_service razorx experiment is on , status updates via admin dashboard
+    // should go to payout service
+    public function testStatusUpdateToPayoutServiceForFailedStatusWhenCalledManuallyViaAdminDashboard()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial()
+                                           ->shouldReceive('updatePayoutDetailsViaFTS')
+                                           ->withAnyArgs()->times(0)->getMock();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial()
+                                          ->shouldReceive('updatePayoutStatusViaFTS')
+                                          ->withAnyArgs()->times(1)->getMock();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $this->ba->appAuthLive();
+
+        $this->mockRazorxDefault();
+
+        $this->fixtures->on('live')->edit('payout', $payout['id'], ['status' => 'initiated', 'transaction_id' => null]);
+
+        $request = [
+            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'failed',
+            ]
+        ];
+
+        $this->ba->adminAuth('live');
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $this->assertEquals('failed', $payout->getStatus());
+
+        $this->assertNotNull($payout->getFailedAt());
     }
 }
