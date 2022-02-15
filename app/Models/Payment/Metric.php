@@ -55,6 +55,8 @@ class Metric extends Base\Core
     const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
     const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
     const SHIELD_FRAUD_DETECTION_FAILED         = 'shield_fraud_detection_failed';
+    const SHIELD_FRAUD_DETECTION_SKIPPED        = 'shield_fraud_detection_skipped';
+    const SHIELD_INTEGRATION_ERROR              = 'shield_integration_error';
 
     const PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT = 'payment_creation_amount_validation_failure_count';
 

@@ -3459,6 +3459,8 @@ trait Authorize
                             'mode'        => $this->mode,
                         ]
                     );
+
+                    $this->trace->count(Payment\Metric::SHIELD_FRAUD_DETECTION_SKIPPED);
                 }
             }
 

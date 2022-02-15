@@ -445,6 +445,8 @@ class ShieldClient implements ExternalService
 
             $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $data);
 
+            $this->trace->count(Payment\Metric::SHIELD_INTEGRATION_ERROR);
+
             throw $e;
         }
     }
