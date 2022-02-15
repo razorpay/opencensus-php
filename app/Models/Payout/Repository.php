@@ -1744,6 +1744,49 @@ class Repository extends Base\Repository
     }
 
     /**
+     * This will fetch all payouts in created state which are created in the last 24 hours
+     * after 05-02-2022 and where transaction_id is null.
+     * @param int $days
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchCreatedPayoutsAndTxnIdNullBetweenTimestamp(int $days, $limit = 500)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->subMinutes(15)->subDays($days);
+        $currentTimeStamp = $currentTime->getTimestamp();
+
+        $lastTimestamp = $currentTime->subDay()->getTimestamp();
+        $txnIdFillingTimestamp = Carbon::createFromFormat('d-m-Y', '05-02-2022', Timezone::IST)->getTimestamp();
+
+        if ($lastTimestamp < $txnIdFillingTimestamp)
+        {
+            $lastTimestamp = $txnIdFillingTimestamp;
+        }
+
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $payoutTransactionIdColumn = $this->repo->payout->dbColumn(Entity::TRANSACTION_ID);
+        $payoutStatusColumn        = $this->repo->payout->dbColumn(Entity::STATUS);
+        $payoutBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $payoutCreatedColumn       = $this->dbColumn(Entity::CREATED_AT);
+
+        $payoutAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutBalanceIdColumn)
+                    ->select($payoutAttrs)
+                    ->where($payoutStatusColumn, '=', Status::CREATED)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($payoutTransactionIdColumn)
+                    ->whereBetween($payoutCreatedColumn, [$lastTimestamp, $currentTimeStamp])
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
      * get yesterday's total payout amount, fee and tax count
      *
      */

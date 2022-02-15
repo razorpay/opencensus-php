@@ -70,6 +70,7 @@ class Base extends Core
     const LEDGER_TRANSACTION_CREATE = 'ledger_transaction_create';
 
     // Constants for reading ledger response
+    const BODY              = 'body';
     const LEDGER_ENTRY      = 'ledger_entry';
     const ACCOUNT_ENTITIES  = 'account_entities';
     const ACCOUNT_TYPE      = 'account_type';
@@ -102,6 +103,28 @@ class Base extends Core
         // throw error if reaches here
         throw new BadRequestValidationFailureException(
             Errorcode::BAD_REQUEST_LEDGER_JOURNAL_ENTRY_BALANCE_GET_ERROR,
+            null,
+            $ledgerResponse
+        );
+    }
+
+    public static function getFtsDataFromLedgerResponse(array $ledgerResponse)
+    {
+        foreach($ledgerResponse[self::BODY][self::LEDGER_ENTRY] as $ledgerEntry)
+        {
+            if ((empty($ledgerEntry[self::ACCOUNT_ENTITIES][self::FTS_FUND_ACCOUNT_ID]) === false) and
+                (empty($ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE]) === false))
+            {
+                return [
+                    self::FTS_FUND_ACCOUNT_ID => $ledgerEntry[self::ACCOUNT_ENTITIES][self::FTS_FUND_ACCOUNT_ID][0],
+                    self::FUND_ACCOUNT_TYPE   => $ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0]
+                ];
+            }
+        }
+
+        // throw error if reaches here
+        throw new BadRequestValidationFailureException(
+            Errorcode::BAD_REQUEST_LEDGER_JOURNAL_ENTRY_FTS_GET_ERROR,
             null,
             $ledgerResponse
         );

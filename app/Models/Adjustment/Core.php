@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\LedgerStatus;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Jobs\Transactions;
@@ -775,5 +776,58 @@ class Core extends Base\Core
 
         $adjustment->setStatus(Status::FAILED);
         $this->repo->saveOrFail($adjustment);
+    }
+
+    public function createAdjustmentViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    {
+
+        for ($i = 0; $i < 3; $i++)
+        {
+            // Fetch all adjustments created in the last 24 hours.
+            // Doing this 3 times in for loop to fetch adjustments created in last 72 hours.
+            // This is done so as to not put extra load on the database while querying.
+            $adjustments = $this->repo->adjustment->fetchCreatedAdjustmentAndTxnIdNullBetweenTimestamp($i, $limit);
+
+            foreach ($adjustments as $adj)
+            {
+                try
+                {
+                    if(in_array($adj->getPublicId(), $blacklistIds) === true)
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_ADJUSTMENT,
+                            [
+                                'adjustment_id' => $adj->getPublicId(),
+                            ]
+                        );
+                        continue;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_ADJUSTMENT_CRON_INIT,
+                        [
+                            'adjustment_id' => $adj->getPublicId(),
+                        ]
+                    );
+                    $event = self::getLedgerEventBasedOnAdjustment($adj);
+                    $ledgerRequest = (new LedgerAdjustment())->createPayloadForJournalEntry($adj, $event);
+
+                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_ADJUSTMENT_CRON_FAILED,
+                        [
+                            'adjustment_id' => $adj->getPublicId(),
+                        ]
+                    );
+
+                    continue;
+                }
+            }
+        }
     }
 }

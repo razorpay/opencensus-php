@@ -26,6 +26,7 @@ use RZP\Models\External;
 use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Jobs\LedgerStatus;
 use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
 use RZP\Jobs\FundTransfer;
@@ -5027,5 +5028,58 @@ class Core extends Base\Core
             $payout,
             $error,
             $eventAttribute);
+    }
+
+    public function createPayoutViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    {
+
+        for ($i = 0; $i < 3; $i++)
+        {
+            // Fetch all payouts created in the last 24 hours.
+            // Doing this 3 times in for loop to fetch payouts created in last 72 hours.
+            // This is done so as to not put extra load on the database while querying.
+            $payouts = $this->repo->payout->fetchCreatedPayoutsAndTxnIdNullBetweenTimestamp($i, $limit);
+
+            foreach ($payouts as $payout)
+            {
+                try
+                {
+                    if(in_array($payout->getPublicId(), $blacklistIds) === true)
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_PAYOUT,
+                            [
+                                'payout_id' => $payout->getPublicId(),
+                            ]
+                        );
+                        continue;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_PAYOUT_CRON_INIT,
+                        [
+                            'payout_id' => $payout->getPublicId(),
+                        ]
+                    );
+
+                    $ledgerRequest = (new PayoutsLedgerProcessor())->createLedgerPayloadFromEntity($payout);
+
+                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_PAYOUT_CRON_FAILED,
+                        [
+                            'payout_id' => $payout->getPublicId(),
+                        ]
+                    );
+
+                    continue;
+                }
+            }
+        }
     }
 }

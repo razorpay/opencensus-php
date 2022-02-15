@@ -3,14 +3,17 @@
 namespace RZP\Models\Reversal;
 
 use DB;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Transaction\Type;
 use RZP\Exception\LogicException;
 use RZP\Models\Pricing\Calculator;
@@ -227,6 +230,49 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, '=', $payoutId)
                     ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
                     ->first();
+    }
+
+    /**
+     * This will fetch all reversals for payouts and fund_account_validations
+     * which are created in the last 24 hour after 05-02-2022 and where transaction_id is null.
+     * @param int $days
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchReversalAndTxnIdNullBetweenTimestamp(int $days, $limit = 500)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->subMinutes(15)->subDays($days);
+        $currentTimeStamp = $currentTime->getTimestamp();
+
+        $lastTimestamp = $currentTime->subDay()->getTimestamp();
+        $txnIdFillingTimestamp = Carbon::createFromFormat('d-m-Y', '05-02-2022', Timezone::IST)->getTimestamp();
+
+        if ($lastTimestamp < $txnIdFillingTimestamp)
+        {
+            $lastTimestamp = $txnIdFillingTimestamp;
+        }
+
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $revTransactionIdColumn = $this->repo->reversal->dbColumn(Entity::TRANSACTION_ID);
+        $revEntityType          = $this->repo->reversal->dbColumn(Entity::ENTITY_TYPE);
+        $revBalanceIdColumn     = $this->repo->reversal->dbColumn(Entity::BALANCE_ID);
+        $revCreatedAtColumn     = $this->dbColumn(Entity::CREATED_AT);
+
+        $revAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $revBalanceIdColumn)
+                    ->select($revAttrs)
+                    ->whereIn($revEntityType, [Type::PAYOUT, Type::FUND_ACCOUNT_VALIDATION])
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($revTransactionIdColumn)
+                    ->whereBetween($revCreatedAtColumn, [$lastTimestamp, $currentTimeStamp])
+                    ->limit($limit)
+                    ->get();
     }
 
     /**

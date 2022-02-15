@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
+use RZP\Jobs\LedgerStatus;
 use RZP\Jobs\Transactions;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
@@ -31,6 +32,7 @@ use RZP\Services\FTS\Constants as FtsConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
+use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedgerProcessor;
 
 class Core extends Base\Core
 {
@@ -1169,4 +1171,58 @@ class Core extends Base\Core
             'txn'    => $txn->getPublicId(),
         ];
     }
+
+    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    {
+
+        for ($i = 0; $i < 3; $i++)
+        {
+            // Fetch all fund_account_validations created in the last 24 hours.
+            // Doing this 3 times in for loop to fetch fav created in last 72 hours.
+            // This is done so as to not put extra load on the database while querying.
+            $favs = $this->repo->fund_account_validation->fetchCreatedFAVAndTxnIdNullBetweenTimestamp($i, $limit);
+
+            foreach ($favs as $fav)
+            {
+                try
+                {
+                    if(in_array($fav->getPublicId(), $blacklistIds) === true)
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_FAV,
+                            [
+                                'fav_id' => $fav->getPublicId(),
+                            ]
+                        );
+                        continue;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_FAV_CRON_INIT,
+                        [
+                            'fav_id' => $fav->getPublicId(),
+                        ]
+                    );
+
+                    $ledgerRequest = (new FavLedgerProcessor())->createLedgerPayloadFromEntity($fav);
+
+                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_FAV_CRON_FAILED,
+                        [
+                            'fav_id' => $fav->getPublicId(),
+                        ]
+                    );
+
+                    continue;
+                }
+            }
+        }
+    }
+
 }

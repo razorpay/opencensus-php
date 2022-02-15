@@ -31,6 +31,7 @@ class LedgerStatus extends Job
 
     protected $ledgerRequest;
     protected $feeSplit;
+    protected $retryEnabled;
     protected $transactorId;
     protected $transactorEvent;
 
@@ -56,12 +57,13 @@ class LedgerStatus extends Job
     const LEDGER_RESPONSE_MSG       = 'msg';
     const LEDGER_RECORD_NOT_FOUND   = 'record_not_found';
 
-    public function __construct(string $mode, array $ledgerRequest, array $feeSplit = null)
+    public function __construct(string $mode, array $ledgerRequest, array $feeSplit = null, bool $retryEnabled = true)
     {
         parent::__construct($mode);
 
-        $this->ledgerRequest    = $ledgerRequest;
-        $this->feeSplit         = $feeSplit;
+        $this->ledgerRequest = $ledgerRequest;
+        $this->feeSplit      = $feeSplit;
+        $this->retryEnabled  = $retryEnabled;
     }
 
     public function handle()
@@ -109,8 +111,12 @@ class LedgerStatus extends Job
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
             );
-            // delete job on successful processing
-            $this->delete();
+
+            if ($this->retryEnabled === true)
+            {
+                // delete job on successful processing
+                $this->delete();
+            }
         }
         catch (\Throwable $ex)
         {
@@ -120,8 +126,16 @@ class LedgerStatus extends Job
                     'transactor_event'  => $this->transactorEvent,
                     'ledger_request'    => $this->ledgerRequest
                 ]);
-            // retry job on failure
-            $this->checkRetry($ex);
+
+            if ($this->retryEnabled === true)
+            {
+                // retry job on failure
+                $this->checkRetry($ex);
+            }
+            else
+            {
+                throw $ex;
+            }
         }
     }
 

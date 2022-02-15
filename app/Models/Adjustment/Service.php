@@ -233,4 +233,9 @@ class Service extends Base\Service
     {
          return $this->repo->adjustment->findAdjustmentByDescription($description, $merchantId);
     }
+
+    public function createAdjustmentViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    {
+        return (new Adjustment\Core)->createAdjustmentViaLedgerCronJob($blacklistIds, $limit);
+    }
 }

@@ -483,6 +483,21 @@ return [
         ],
     ],
 
+    'testPayoutInitiatedInLedgerCron' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/create_journal_cron',
+            'content' => [
+                'entity' => 'payout',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success",
+            ]
+        ],
+    ],
+
     'testPayoutReversalWithMultipleRewards'  => [
         'request'  => [
             'method'  => 'POST',

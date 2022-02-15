@@ -188,10 +188,11 @@ class FundAccountValidation extends Base
     /**
      * Create payload from the validation
      * @param Entity $validation
-     *
+     * @param array $ftsSourceAccountInformation
+     * @param string|null $favStatus
      * @return array
      */
-    protected function createLedgerPayloadFromEntity(Entity $validation, array $ftsSourceAccountInformation = null, string $favStatus = null): array
+    public function createLedgerPayloadFromEntity(Entity $validation, array $ftsSourceAccountInformation = [], string $favStatus = null): array
     {
         if ($favStatus === null)
         {

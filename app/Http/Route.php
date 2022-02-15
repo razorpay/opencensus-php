@@ -3230,7 +3230,8 @@ class Route
         'fetch_ledger_config_form_field_options_ledger'   => ['post',      'ledger_service/fetch_ledger_config_form_field_options', 'LedgerController@fetchLedgerConfigFormFieldOptions'],
         'fetch_account_types_ledger'                      => ['post',      'ledger_service/fetch_account_types',                    'LedgerController@fetchAccountTypes'],
         'fetch_fund_account_types_ledger'                 => ['post',      'ledger_service/fetch_fund_account_types',               'LedgerController@fetchFundAccountTypes'],
-        'delete_merchants_ledger'                         => ['post',      'ledger_service/delete_merchants',                       'LedgerController@deleteMerchants'      ],
+        'delete_merchants_ledger'                         => ['post',      'ledger_service/delete_merchants',                       'LedgerController@deleteMerchants'],
+        'create_ledger_journal_cron'                      => ['post',      'create_journal_cron',                                   'LedgerController@createJournalCron'],
 
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
@@ -4012,6 +4013,7 @@ class Route
         'payment_capture_gateway_multiple',
         'payment_capture_reminder',
         'payment_refund_authorized',
+        'create_ledger_journal_cron',
         'payment_timeout',
         'payment_auth_timeout',
         'payment_update_on_hold',
@@ -11373,6 +11375,7 @@ class Route
             'payment_capture_verify',
             'refund_generate_excel',
             'payment_refund_authorized',
+            'create_ledger_journal_cron',
             'payment_capture_reminder',
             'emi_generate_excel',
             'setl_post_details_old',

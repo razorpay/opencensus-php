@@ -134,11 +134,10 @@ class Adjustment extends Base
 
     /**
      * Create payload for Journal function for adjustment
-     *
-     * @param Entity $bankTransfer
-     *
-     * @throws BadRequestException
-     * @throws \Throwable
+     * @param Entity $adjustment
+     * @param string $transactorEvent
+     * @return array
+     * @throws \Exception
      */
     public function createPayloadForJournalEntry(Entity $adjustment,
                                                  string $transactorEvent)
@@ -153,7 +152,7 @@ class Adjustment extends Base
             self::BANKING_ACCOUNT_ID => $adjustment->balance->bankingAccount->getPublicId(),
         ];
 
-        $payload = [
+        return [
             self::TENANT             => self::X,
             self::MODE               => $this->mode,
             self::IDEMPOTENCY_KEY    => Uuid::uuid1()->toString(),
@@ -169,8 +168,6 @@ class Adjustment extends Base
             self::TRANSACTION_DATE   => $adjustment->getCreatedAt(),
             self::IDENTIFIERS        => $identifiers,
         ];
-
-        return $payload;
     }
 
     /**

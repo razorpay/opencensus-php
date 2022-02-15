@@ -275,7 +275,7 @@ class Processor extends VirtualAccount\Processor
         $ledgerResponse = [];
         $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
 
-        $ledgerPayload = (new LedgerFundLoading)->createPayloadForJournalEntry($bankTransfer,$terminal->getPublicId(), $terminal->getAccountType());
+        $ledgerPayload = (new LedgerFundLoading)->createPayloadForJournalEntry($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
         try {
             $ledgerResponse = (new LedgerFundLoading)->createJournalEntry($ledgerPayload);
             $bankTransfer->setStatus(Status::PROCESSED);

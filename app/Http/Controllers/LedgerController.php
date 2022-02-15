@@ -168,4 +168,12 @@ class LedgerController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function createJournalCron()
+    {
+        $response = $this->app['ledger']->createJournalCron($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
 }

@@ -2571,4 +2571,9 @@ class Service extends Base\Service
     {
         return StatusReasonMap::$payoutStatusToReasonMap;
     }
+
+    public function createPayoutViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    {
+        $this->core->createPayoutViaLedgerCronJob($blacklistIds, $limit);
+    }
 }

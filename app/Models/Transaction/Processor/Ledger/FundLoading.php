@@ -142,9 +142,10 @@ class FundLoading extends Base
      * Create payload for Journal function for fundloading
      *
      * @param Entity $bankTransfer
-     *
-     * @throws BadRequestException
-     * @throws \Throwable
+     * @param string $terminalId
+     * @param $terminalAccountType
+     * @return array
+     * @throws \Exception
      */
     public function createPayloadForJournalEntry(Entity $bankTransfer,
                                                  string $terminalId,

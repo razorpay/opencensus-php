@@ -2,10 +2,14 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -140,5 +144,48 @@ class Repository extends Base\Repository
                              ->firstOrFail();
 
         return $bankTransfer;
+    }
+
+    /**
+     * This will fetch all bank transfers in created state which are created in the last 24 hours
+     * after 05-02-2022 and where transaction_id is null.
+     * @param int $days
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchCreatedBankTransferAndTxnIdNullBetweenTimestamp(int $days, $limit = 500)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->subMinutes(15)->subDays($days);
+        $currentTimeStamp = $currentTime->getTimestamp();
+
+        $lastTimestamp = $currentTime->subDay()->getTimestamp();
+        $txnIdFillingTimestamp = Carbon::createFromFormat('d-m-Y', '05-02-2022', Timezone::IST)->getTimestamp();
+
+        if ($lastTimestamp < $txnIdFillingTimestamp)
+        {
+            $lastTimestamp = $txnIdFillingTimestamp;
+        }
+
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $btTransactionIdColumn = $this->repo->bank_transfer->dbColumn(Entity::TRANSACTION_ID);
+        $btStatusColumn        = $this->repo->bank_transfer->dbColumn(Entity::STATUS);
+        $btBalanceIdColumn     = $this->repo->bank_transfer->dbColumn(Entity::BALANCE_ID);
+        $btCreatedAtColumn     = $this->dbColumn(Entity::CREATED_AT);
+
+        $btAttrs = $this->dbColumn('*');
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::BALANCE, $balanceIdColumn, '=', $btBalanceIdColumn)
+                    ->select($btAttrs)
+                    ->where($btStatusColumn, '=', Status::CREATED)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->whereNull($btTransactionIdColumn)
+                    ->whereBetween($btCreatedAtColumn, [$lastTimestamp, $currentTimeStamp])
+                    ->limit($limit)
+                    ->get();
     }
 }

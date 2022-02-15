@@ -193,14 +193,18 @@ class Payout extends Base
             ]
         );
 
-        $payload = $this->createLedgerPayloadFromEntity($payout, $reversal, $ftsSourceAccountInformation);
+        $payload = $this->createLedgerPayloadFromEntity($payout, null, $reversal, $ftsSourceAccountInformation);
 
         return $this->createJournalEntry($payload);
     }
 
-    public function createLedgerPayloadFromEntity(Entity $payout, Reversal\Entity $reversal = null, array $ftsSourceAccountInformation = [])
+    public function createLedgerPayloadFromEntity(Entity $payout, string $status = null, Reversal\Entity $reversal = null, array $ftsSourceAccountInformation = [])
     {
-        $status = Status::getLedgerEventFromPayoutStatus($payout->getStatus(), $payout->getPurpose());
+        if ($status === null)
+        {
+            $status = $payout->getStatus();
+        }
+        $transactorEvent = Status::getLedgerEventFromPayoutStatus($status, $payout->getPurpose());
 
         $notes = [
             self::BALANCE_ID => BalanceEntity::getSignedIdOrNull($payout->getBalanceId()),
@@ -212,8 +216,9 @@ class Payout extends Base
 
         $ftsSourceAccountData = $this->getFtsSourceAccountData($ftsSourceAccountInformation);
 
+
         // Ledger doesn't need fts information in case of payout initiated or payout failed events
-        if (($status !== self::PAYOUT_INITIATED) || ($status !== self::PAYOUT_FAILED)) {
+        if (($transactorEvent !== self::PAYOUT_INITIATED) || ($transactorEvent !== self::PAYOUT_FAILED)) {
             $identifiers = array_merge($identifiers, $ftsSourceAccountData);
         }
 
@@ -227,13 +232,13 @@ class Payout extends Base
             self::COMMISSION       => (string) $payout->getFees(),
             self::TAX              => (string) $payout->getTax(),
             self::TRANSACTOR_ID    => $payout->getPublicId(),
-            self::TRANSACTOR_EVENT => $status,
+            self::TRANSACTOR_EVENT => $transactorEvent,
             self::TRANSACTION_DATE => $payout->getCreatedAt(),
             self::NOTES            => $notes,
             self::IDENTIFIERS      => $identifiers,
         ];
 
-        if (($status === self::PAYOUT_REVERSED) || ($status === self::PAYOUT_FAILED))
+        if (($transactorEvent === self::PAYOUT_REVERSED) || ($transactorEvent === self::PAYOUT_FAILED))
         {
             if ($reversal !== null)
             {

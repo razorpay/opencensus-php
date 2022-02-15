@@ -18200,4 +18200,25 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals(substr($txn['id'], strlen('txn_')), $reversal['transaction_id']);
     }
+
+    public function testPayoutInitiatedInLedgerCron()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testPayoutInitiatedInLedgerCron'];
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->create('payout', [
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+    }
 }

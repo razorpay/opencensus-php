@@ -13,6 +13,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\LedgerStatus;
 use RZP\Jobs\Transactions;
 use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
@@ -20,7 +21,9 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankTransferRequest;
 use RZP\Models\Payment\Refund as PaymentRefund;
+use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
 
 class Core extends Base\Core
 {
@@ -816,6 +819,59 @@ class Core extends Base\Core
                 'ledger_response'       => $ledgerResponse,
             ];
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::LEDGER_TRANSACTIONS_QUEUE_JOB_PUSH_FAILED, $payload);
+        }
+    }
+
+    public function createBankTransferViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    {
+        for ($i = 0; $i < 3; $i++)
+        {
+            // Fetch all bank transfers created in the last 24 hours.
+            // Doing this 3 times in for loop to fetch bank transfers created in last 72 hours.
+            // This is done so as to not put extra load on the database while querying.
+            $bankTransfers = $this->repo->bank_transfer->fetchCreatedBankTransferAndTxnIdNullBetweenTimestamp($i, $limit);
+
+            foreach ($bankTransfers as $bt)
+            {
+                try
+                {
+                    if(in_array($bt->getPublicId(), $blacklistIds) === true)
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_BANK_TRANSFER,
+                            [
+                                'bank_transfer_id' => $bt->getPublicId(),
+                            ]
+                        );
+                        continue;
+                    }
+
+                    $this->trace->info(
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_BANK_TRANSFER_CRON_INIT,
+                        [
+                            'bank_transfer_id' => $bt->getPublicId(),
+                        ]
+                    );
+
+                    $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bt);
+                    $ledgerRequest = (new LedgerFundLoading())->createPayloadForJournalEntry($bt, $terminal->getPublicId(), $terminal->getAccountType());
+
+                    (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::LEDGER_STATUS_QUEUE_JOB_BANK_TRANSFER_CRON_FAILED,
+                        [
+                            'bank_transfer_id' => $bt->getPublicId(),
+                        ]
+                    );
+
+                    continue;
+                }
+            }
         }
     }
 }

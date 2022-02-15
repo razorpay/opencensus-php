@@ -3,12 +3,18 @@
 namespace RZP\Services;
 
 use Request;
-use RZP\Http\Request\Requests;
 use RZP\Exception;
-use Requests_Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Http\Request\Requests;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Payout\Service as PayoutService;
+use RZP\Models\Reversal\Service as ReversalService;
+use RZP\Models\Adjustment\Service as AdjustmentService;
+use RZP\Models\BankTransfer\Service as BankTransferService;
+use RZP\Models\FundAccount\Validation\Service as FAVService;
 
 class Ledger
 {
@@ -668,5 +674,61 @@ class Ledger
         {
             return 'X';
         }
+    }
+
+    /**
+     * @param $input
+     * @return string[]
+     * @throws LogicException
+     */
+    public function createJournalCron($input): array
+    {
+        $this->trace->info(TraceCode::LEDGER_JOURNAL_CRON_INIT, [
+            'input' => $input,
+        ]);
+
+        $limit = null;
+        $blacklistIds = [];
+
+        if(array_key_exists('limit', $input))
+        {
+            $limit = $input['limit'];
+        }
+        if(array_key_exists('blacklist_ids', $input))
+        {
+            $blacklistIds = $input['blacklist_ids'];
+        }
+
+        switch ($input['entity'])
+        {
+            case EntityConstant::PAYOUT:
+                (new PayoutService())->createPayoutViaLedgerCronJob($blacklistIds, $limit);
+                break;
+
+            case EntityConstant::FUND_ACCOUNT_VALIDATION:
+                (new FAVService())->createFundAccountValidationViaLedgerCronJob($blacklistIds, $limit);
+                break;
+
+            case EntityConstant::REVERSAL:
+                (new ReversalService())->createReversalViaLedgerCronJob($blacklistIds, $limit);
+                break;
+
+            case EntityConstant::ADJUSTMENT:
+                (new AdjustmentService())->createAdjustmentViaLedgerCronJob($blacklistIds, $limit);
+                break;
+
+            case EntityConstant::BANK_TRANSFER:
+                (new BankTransferService())->createBankTransferViaLedgerCronJob($blacklistIds, $limit);
+                break;
+
+            default:
+                throw new LogicException('entity mapping not implemented at ledger journal cron : ' . $input['entity']);
+        }
+        return [
+            'code' => 200,
+            'body' => [
+                'success',
+            ]
+        ];
     }
 }
