@@ -3929,11 +3929,13 @@ class Core extends Base\Core
             $receiver = $input[Entity::CONTACT_MOBILE] ?? $user->getContactMobile();
 
             if ((empty($receiver) === true) and
-                (isset($input['medium']) === true) and
-                ($input['medium'] === 'sms_and_email'))
+                (((isset($input['medium']) === true) and
+                ($input['medium'] === 'sms_and_email')) ||
+                ($input[Entity::ACTION] === 'create_payout')))
             {
                 $this->trace->info(TraceCode::SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT, [
-                    Entity::USER_ID => $user->getId()
+                    Entity::USER_ID => $user->getId(),
+                    'input' => $input,
                 ]);
 
                 $receiver = $user->getEmail();
