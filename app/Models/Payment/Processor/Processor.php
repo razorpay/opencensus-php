@@ -1990,7 +1990,7 @@ class Processor
                 ($payment->isGooglePayCard() === true) or
                 (empty($payment->getGooglePayMethods()) === false) or
                 ($payment->isAppCred() === true)) and
-            ($payment->getWallet() !== Wallet::FREECHARGE))
+            ($payment->getGateway() !== Payment\Gateway::WALLET_FREECHARGE))
         {
             $payment->disableCpsRoute();
 
