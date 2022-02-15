@@ -1748,7 +1748,7 @@ class Route
         'user_merchant_upgrade'                    => ['post',     'users/upgrade-merchant',                         'UserController@postUpgradeUserToMerchant'                          ],
         'user_resend_verification'                 => ['post',     'users/resend-verification',                      'UserController@postResendVerificationMail'                         ],
         'user_resend_verification_otp'             => ['post',     'users/resend-verification-otp',                  'UserController@postResendVerificationOtp'                          ],
-        'user_reset_password_create'               => ['post',     'users/reset-password',                           'UserController@postResetPasswordByEmail'                           ],
+        'user_reset_password_create'               => ['post',     'users/reset-password',                           'UserController@postResetPassword'                                  ],
         'user_reset_password_token'                => ['post',     'users/reset-password-token',                     'UserController@postChangePasswordByToken'                          ],
         'user_oauth_login'                         => ['post',     'users/oauth-login',                              'UserController@oAuthLogin'                                         ],
         'user_oauth_register'                      => ['post',     'users/oauth-register',                           'UserController@oAuthSignup'                                        ],

@@ -442,6 +442,9 @@ final class RazorxTreatment
     // experiment to send uploaded signed form nach payment in fetch token api
     const SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK = 'send_nach_signed_form_to_merchant_in_response_authlink';
 
+    //Experiment flag for reset password using sms
+    const RESET_PASSWORD_USING_SMS = 'reset_password_using_sms';
+
     //Experiment flag for sending events to segment
     const SEND_EVENTS_TO_SEGMENT = 'send_events_to_segment';
 

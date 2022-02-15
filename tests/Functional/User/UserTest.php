@@ -3785,6 +3785,102 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+
+    }
+
+    private function enableRazorXTreatmentForResetPasswordForSMS()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === 'reset_password_using_sms')
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+    }
+
+    public function testPasswordResetSMS()
+    {
+        $this->enableRazorXTreatmentForResetPasswordForSMS();
+
+        $this->fixtures->create('user', [
+            'contact_mobile' => '7349196832',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.reset_password', '7349196832', []);
+
+        $this->startTest();
+    }
+
+    protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
+    {
+        $storkMock->shouldReceive('sendSms')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($mockInMode)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualPayload) use ($templateName, $destination, $expectedParms)
+                {
+
+                    if(isset($actualPayload['contentParams']) === true)
+                    {
+                        $this->assertArraySelectiveEquals($expectedParms, $actualPayload['contentParams']);
+                    }
+
+                    if (($templateName !== $actualPayload['templateName']) or
+                        ($destination !== $actualPayload['destination']))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                return ['success' => true];
+            });
+    }
+
+    public function testPasswordResetUnverifiedMobileNumber()
+    {
+        $this->enableRazorXTreatmentForResetPasswordForSMS();
+
+        $this->fixtures->create('user', ['contact_mobile' => '7349196832']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetMobileNumberMultipleUsersAssociated()
+    {
+        $this->fixtures->create('user', ['contact_mobile' => '7349196832']);
+
+        $this->fixtures->create('user', ['contact_mobile' => '7349196832']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
     }
 
     public function testPasswordResetByToken()
@@ -3895,6 +3991,93 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['content']['email']      = $user->getEmail();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->makeRequestAndGetContent($testData['request']);
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetByTokenAndMobile()
+    {
+        $resetAttributes = [
+            'contact_mobile'                 => '7349196832',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ];
+
+        // create user with password reset token; reset password
+        // and check if old_passwords are getting updated
+        $user = $this->fixtures->create('user', $resetAttributes);
+        $oldPassword2 = $user->getPassword();
+        $this->doTestPasswordResetByToken($user);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $this->assertNotNull($user->getAttribute(Entity::OLD_PASSWORDS));
+        $this->assertEquals(
+            [$oldPassword2, $user->getPassword()],
+            $user->getAttribute(Entity::OLD_PASSWORDS)
+        );
+
+        // Repeats same request against to assert attribute OLD_PASSWORDS is captured.
+        $this->fixtures->edit('user', $user->getId(), $resetAttributes);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $oldPassword1 = $user->getPassword();
+        $this->doTestPasswordResetByTokenAndMobile($user);
+        $user = $this->getDbEntityById('user', $user->getId());
+        $this->assertEquals(
+            [$oldPassword2, $oldPassword1, $user->getPassword()],
+            $user->getAttribute(Entity::OLD_PASSWORDS)
+        );
+    }
+
+    public function doTestPasswordResetByTokenAndMobile(Entity $user)
+    {
+        $testData = & $this->testData['testPasswordResetByTokenAndMobile'];
+
+        $password = str_random(10) . '1';
+
+        $testData['request']['content']['contact_mobile']           = $user->getContactMobile();
+        $testData['request']['content']['token']                    = $user->getPasswordResetToken();
+        $testData['request']['content']['password']                 = $password;
+        $testData['request']['content']['password_confirmation']    = $password;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest($testData);
+
+    }
+
+    public function testPasswordResetByExpiredTokenAndMobile()
+    {
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'                 => '7349196832',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp - 1,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['contact_mobile']      = $user->getContactMobile();
+        $testData['request']['content']['token']      = $user->getPasswordResetToken();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testPasswordResetByUsedTokenAndMobile()
+    {
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'        => '7349196832',
+            'password_reset_token'  => str_random(50),
+            'password_reset_expiry' => Carbon::now()->timestamp + Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME,
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['contact_mobile']      = $user->getContactMobile();
         $testData['request']['content']['token']      = $user->getPasswordResetToken();
 
         $this->ba->dashboardGuestAppAuth();

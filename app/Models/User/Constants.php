@@ -44,6 +44,8 @@ class Constants
 
     const BANNER_CLICKTIME = 'banner_clicktime';
 
+    const MERCHANT = 'merchant';
+
     const METHOD                = 'method';
     const MEDIUM                = 'medium';
     const ACTION                = 'action';
@@ -121,6 +123,9 @@ class Constants
     const CHANGE_PASSWORD_RATE_LIMIT_TTL = 1800; // 30 mins
     const CHANGE_PASSWORD_RATE_LIMIT_THRESHOLD = 5;
 
+    const RESET_PASSWORD_RATE_LIMIT_THRESHOLD = 5;
+    const RESET_PASSWORD_RATE_LIMIT_TTL = 7200;
+
 
     public static $attributionList = [
         self::UTM_SOURCE,
@@ -160,6 +165,8 @@ class Constants
     const MAX_PASSWORD_TO_RETAIN                                = 5;
 
     const USER_EMAIL_NOT_FOUND  = 'USER_EMAIL_NOT_FOUND';
+
+    const USER_CONTACT_MOBILE_NOT_FOUND  = 'USER_CONTACT_MOBILE_NOT_FOUND';
 
     const LOCK   = 'lock';
     const UNLOCK = 'unlock';
@@ -306,6 +313,8 @@ class Constants
     const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX = 'update_contact_mobile_attempts_%s';
     const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT            = 3;
 
+    const RESET_PASSWORD_RATE_LIMIT_SUFFIX          = '_reset_password_count';
+
     //Email id used for banking demo mode
     const BANKING_DEMO_USER_EMAILS = [
         "razorpayx.demo@gmail.com",
@@ -333,6 +342,13 @@ class Constants
             "redisTraceCode"            => TraceCode::CHANGE_PASSWORD_REDIS_ERROR,
             "redisErrorCode"            => ErrorCode::SERVER_ERROR_CHANGE_PASSWORD_REDIS_ERROR,
             "redisErrorDescription"     => "An error occurred while interacting with redis while changing the password.",
+        ],
+        self::RESET_PASSWORD_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::RESET_PASSWORD_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_RESET_PASSWORD_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::RESET_PASSWORD_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_RESET_PASSWORD_REDIS_ERROR,
+            "redisErrorDescription"     => "An error occurred while interacting with redis while resetting the password.",
         ],
         "default" => [
             "thresholdTraceCode"        => TraceCode::REDIS_KEY_THRESHOLD_EXCEEDED,
