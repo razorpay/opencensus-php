@@ -1853,6 +1853,14 @@ class Service extends Base\Service
         return (new Core())->getDetails($input);
     }
 
+
+    public function getInternationalDetails(array $input)
+    {
+        $merchantEmailId = $this->merchant->getEmail();
+
+        return (new Core())->getInternationalDetails($merchantEmailId);
+    }
+
     public function getDetailsUnified(array $input)
     {
         (new Validator)->validateInput('get_details', $input);

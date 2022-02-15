@@ -5693,57 +5693,14 @@ class UserTest extends TestCase
 
     public function testUserPurposeCodeDetails()
     {
-        $user = $this->fixtures->create('user');
+        $merchant = $this->fixtures->create('merchant', [
+            'email'        => 'test@razorpay.com'
+        ]);
 
-        $merchant = $user->primaryMerchants()->first();
-
-        // check the data for default test merchant
-        $this->testData[__FUNCTION__] = [
-            'request' => [
-                'method'    => 'GET',
-                'url'       => '/users/purpose/code?email='.$user['email'],
-            ],
-            'response' => [
-                'content' => [
-                    'name'                      => $user->getName(),
-                    'email'                     => $user->getEmail(),
-                    'contact_mobile'            => NULL,
-                    'contact_mobile_verified'   => FALSE,
-                    'account_locked'            => FALSE,
-                    'confirmed'                 => TRUE,
-                    'merchants' => [
-                        [
-                            'gstin'             => NULL,
-                            'pan'               => NULL,
-                            'billing_address'   => NULL,
-                            'id'                => $merchant->getId(),
-                            'activated'         => FALSE,
-                            'website'           => $merchant->getWebsite(),
-                            'name'              => $merchant->getName(),
-                            'description'       => NULL,
-                            'billing_label'     => $merchant->getBillingLabelNotName(),
-                            'purpose_code'      => $merchant->getPurposeCode(),
-                            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
-                            'iec_code'          => $merchant->getIecCode(),
-                        ],
-                    ],
-                ],
-            ]
-        ];
-
-        $merchantDetail = $this->fixtures->create('merchant_detail');
-
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
-
-        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id'], $merchantUser['id']);
-
-        $this->startTest();
-    }
-
-    public function testGetIecCode()
-    {
-        $merchant = $this->fixtures->create('merchant', ['purpose_code' => PurposeCodeList::P0001]);
-        $user = $this->fixtures->user->createUserForMerchant($merchant->getId());
+        $user = $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'email' => $merchant->getEmail(),
+            'name' => $merchant->getName()
+        ]);
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id' => $merchant->getId(),
@@ -5754,7 +5711,7 @@ class UserTest extends TestCase
         $this->testData[__FUNCTION__] = [
             'request' => [
                 'method'    => 'GET',
-                'url'       => '/users/purpose/code?email='.$user['email'],
+                'url'       => '/users/purpose/code',
             ],
             'response' => [
                 'content' => [
@@ -5783,7 +5740,62 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->ba->proxyAuth('rzp_test_' .$merchant->getId(), $user->getId(), 'owner');
+        $this->ba->proxyAuth('rzp_test_' .$merchant->getId(), $user['id'], 'owner');
+
+        $this->startTest();
+    }
+
+    public function testGetIecCode()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'purpose_code' => PurposeCodeList::P0001,
+            'email'        => 'test@razorpay.com'
+        ]);
+
+        $user = $this->fixtures->user->createUserForMerchant($merchant->getId(), [
+            'email' => $merchant->getEmail(),
+            'name' => $merchant->getName()
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'iec_code'=> 'iec_code_x',
+        ]);
+
+        // check the data for default test merchant
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'method'    => 'GET',
+                'url'       => '/users/purpose/code',
+            ],
+            'response' => [
+                'content' => [
+                    'name'                      => $user->getName(),
+                    'email'                     => $user->getEmail(),
+                    'contact_mobile'            => NULL,
+                    'contact_mobile_verified'   => FALSE,
+                    'account_locked'            => FALSE,
+                    'confirmed'                 => TRUE,
+                    'merchants' => [
+                        [
+                            'gstin'             => NULL,
+                            'pan'               => NULL,
+                            'id'                => $merchant->getId(),
+                            'activated'         => FALSE,
+                            'website'           => $merchant->getWebsite(),
+                            'name'              => $merchant->getName(),
+                            'description'       => NULL,
+                            'billing_label'     => $merchant->getBillingLabelNotName(),
+                            'purpose_code'      => $merchant->getPurposeCode(),
+                            'purpose_code_desc' => $merchant->getPurposeCodeDescription(),
+                            'iec_code'          => $merchant->getIecCode(),
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant->getId(), $user['id'], 'owner');
 
         $this->startTest();
     }

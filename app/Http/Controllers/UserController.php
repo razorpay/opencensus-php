@@ -501,6 +501,13 @@ class UserController extends Controller
         return $this->service()->getDetails($input);
     }
 
+    public function getInternationalUserDetails()
+    {
+        $input = Request::all();
+
+        return $this->service()->getInternationalDetails($input);
+    }
+
     public function getUserDetailsUnified()
     {
         $input = Request::all();

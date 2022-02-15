@@ -1877,7 +1877,7 @@ class Route
         //PurposeCode Route
         'purpose_code_fetch'                       => ['get',      'purposecode',                                    'MerchantController@getPurposeCodeDetails'                          ],
         'merchant_patch_purpose_code'              => ['patch',    'merchants/purpose/code',                         'MerchantController@patchMerchantPurposeCode'                       ],
-        'user_fetch_purpose_code'                  => ['get',      'users/purpose/code',                             'UserController@getUserDetails'                                     ],
+        'user_fetch_purpose_code'                  => ['get',      'users/purpose/code',                             'UserController@getInternationalUserDetails'                                     ],
 
         //Location Route
         'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],

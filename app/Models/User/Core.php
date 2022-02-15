@@ -4687,6 +4687,8 @@ class Core extends Base\Core
             'billing_address' => NULL,
             'description'     => NULL,
             'iec_code'        => NULL,
+            'purpose_code'    => NULL,
+            'purpose_code_desc' => NULL,
         ];
 
         $details = $merchant->merchantDetail;
@@ -4934,5 +4936,33 @@ class Core extends Base\Core
     {
         // Email is used instead of ID as email can be same across ENVs
         return in_array($user->getEmail(),Constants::BANKING_DEMO_USER_EMAILS,true);
+    }
+
+    /**
+     * it'll fetch the user details given the user email id
+     * - purpose code and it's description
+     * - all primary merchant accounts associated with the user
+     * - IEC code for the merchant.
+     * @param string $email
+     * @return array
+     */
+    public function getInternationalDetails($email): array
+    {
+        $user = $this->repo
+            ->user
+            ->getUserFromEmailOrFail($email);
+
+        $merchantDetails = $this->getMerchantDetails($user);
+
+        return [
+            'user_id'                 => $user->getId(),
+            'name'                    => $user->getName(),
+            'email'                   => $user->getEmail(),
+            'contact_mobile'          => $user->getContactMobile(),
+            'contact_mobile_verified' => $user->isContactMobileVerified(),
+            'account_locked'          => $user->isAccountLocked(),
+            'confirmed'               => $user->confirmed,
+            'merchants'               => $merchantDetails,
+        ];
     }
 }
