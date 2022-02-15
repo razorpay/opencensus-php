@@ -176,7 +176,8 @@ class Entity extends Base\PublicEntity
     const EXPIRED             = 'expired';
     const DEACTIVATED_BY_BANK = 'deactivated_by_bank';
 
-    const SERVICE_PROVIDER_TOKENS = 'service_provider_tokens';
+    const PAYMENT_ACCOUNT_REFERENCE = 'payment_account_reference';
+    const SERVICE_PROVIDER_TOKENS   = 'service_provider_tokens';
 
     protected static $sign      = 'token';
 
@@ -371,6 +372,7 @@ class Entity extends Base\PublicEntity
     public static $cryptogramDataProviderDataUnsetAttributes = [
         self::TOKEN_REFERENCE_NUMBER,
         self::CARD_REFERENCE_NUMBER,
+        self::PAYMENT_ACCOUNT_REFERENCE,
         self::TOKEN_IIN,
     ];
 

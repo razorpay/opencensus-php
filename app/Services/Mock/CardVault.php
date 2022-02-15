@@ -100,11 +100,12 @@ class CardVault extends BaseCardVault
                 'interoperable'  => true,
                 'status'         => 'activated',
                 'provider_data'  => [
-                    'token_reference_number' => $token,
-                    'card_reference_number'  => strrev($token),
-                    'token_iin'              => '453335',
-                    'token_expiry_month'     => 12,
-                    'token_expiry_year'      => 2021,
+                    'token_reference_number'     => $token,
+                    'payment_account_reference'  => strrev($token),
+                    'card_reference_number'      => strrev($token),
+                    'token_iin'                  => '453335',
+                    'token_expiry_month'         => 12,
+                    'token_expiry_year'          => 2021,
                 ],
             ]
         ];
@@ -138,11 +139,12 @@ class CardVault extends BaseCardVault
                 'interoperable'  => true,
                 'status'         => 'activated',
                 'provider_data'  => [
-                    'token_reference_number' => $token,
-                    'card_reference_number'  => strrev($token),
-                    'token_iin'              => '453335',
-                    'token_expiry_month'     => 12,
-                    'token_expiry_year'      => 2021,
+                    'token_reference_number'     => $token,
+                    'payment_account_reference'  => strrev($token),
+                    'card_reference_number'      => strrev($token),
+                    'token_iin'                  => '453335',
+                    'token_expiry_month'         => 12,
+                    'token_expiry_year'          => 2021,
                 ],
             ]
         ];
@@ -187,9 +189,10 @@ class CardVault extends BaseCardVault
                 'type'  => 'network',
                 'name'  => 'visa',
                 'data'  => [
-                    'token_reference_number' => $token,
-                    'card_reference_number'  => strrev($token),
-                    'interoperable'          => true,
+                    'token_reference_number'     => $token,
+                    'payment_account_reference'  => strrev($token),
+                    'card_reference_number'      => strrev($token),
+                    'interoperable'              => true,
                 ]
             ]
         ];
