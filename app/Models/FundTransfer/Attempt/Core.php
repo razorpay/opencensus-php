@@ -729,20 +729,11 @@ class Core extends Base\Core
             return;
         }
 
-        $startTime = microtime(true);
-
-        $this->updateTransactionEntity($fta->source);
-
-        $endTime = microtime(true);
-
-        $this->trace->info(
-            TraceCode::TIME_TAKEN_TO_UPDATE_TXN_IN_FTA_UPDATE_FTS_WEBHOOK,
-            [
-                'source_id'   => $fta->source->getId(),
-                'source_type' => $fta->getSourceType(),
-                'time_taken'  => $endTime - $startTime,
-            ]
-        );
+        // Not adding a check for FAV as FTA is deprecated for FAV.
+        if ($fta->getSourceType() !== EntityConstant::PAYOUT)
+        {
+            $this->updateTransactionEntity($fta->source);
+        }
     }
 
     protected function sourceReconByFta($source, array $ftaData)
