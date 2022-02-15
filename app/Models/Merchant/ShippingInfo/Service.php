@@ -532,7 +532,7 @@ class Service extends Base\Service
             {
                 try
                 {
-                    $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode'], true, false, $address['country']);
+                    $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode'], true, true, $address['country']);
                 }
                 catch (Throwable $e)
                 {
