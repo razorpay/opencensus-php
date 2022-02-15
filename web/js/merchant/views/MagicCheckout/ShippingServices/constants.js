@@ -1,9 +1,3 @@
-export const RULE_TYPES = {
-  FLAT: 'flat',
-  SLABS: 'slabs',
-  FREE: 'free',
-};
-
 export const RULE_TYPES_RADIO_INPUT = [
   {
     value: 'free',

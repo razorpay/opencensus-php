@@ -1,14 +1,11 @@
 import Slabs from 'merchant/views/MagicCheckout/common/components/Slabs';
-import {
-  RULE_TYPES,
-  RULE_TYPES_RADIO_INPUT,
-} from 'merchant/views/MagicCheckout/ShippingServices/constants';
-import { FEE_RULES } from 'merchant/views/MagicCheckout/constants';
+import { RULE_TYPES_RADIO_INPUT } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { FEE_RULES, RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
 import Input from 'common/new-ui/Input';
 import { useState, useCallback, useEffect } from 'react';
 import validators from 'merchant/views/MagicCheckout/common/feeUtils';
 
-const FeeConfiguration = ({ feeRule, updateUserFeeRule, type }) => {
+const FeeConfiguration = ({ feeRule, updateUserFeeRule, type, required = true }) => {
   const [slabs, setSlabs] = useState([]);
 
   useEffect(() => {
@@ -69,7 +66,7 @@ const FeeConfiguration = ({ feeRule, updateUserFeeRule, type }) => {
     <>
       <div className="filter-item link-account-instruction display-flex c-fee-configuration">
         <div className="serviceability-setting-label font-bold" for="cod-availability">
-          {label} <sup className="magic-checkout-color-red">*</sup>
+          {label} {required && <sup className="magic-checkout-color-red">*</sup>}
         </div>
         <div className="width-full">
           <div className="display-flex justify-space-between slabs-container">

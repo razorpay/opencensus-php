@@ -55,7 +55,7 @@ const BulkAddressUpload = ({ openModal, createBatch, validateBatch }) => {
   }, [createBatch, validateBatch, openModal]);
 
   return (
-    <>
+    <div className="content-wrapper">
       <HeaderAction responsive>
         <div className="btn-toolbar pull-right">
           <div className="pull-right MultiBatch--action">
@@ -69,7 +69,7 @@ const BulkAddressUpload = ({ openModal, createBatch, validateBatch }) => {
       <content>
         <AddressList />
       </content>
-    </>
+    </div>
   );
 };
 

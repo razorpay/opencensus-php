@@ -109,6 +109,7 @@ import magicCheckoutReducer from 'merchant/reducers/magicCheckout';
 import shippingServiceReducer from 'merchant/reducers/magicCheckout/shipping_services/reducers';
 import trackEventsReducer from './reducers/trackEvents';
 import workflowReducer from './reducers/workflows';
+import magicSettingsReducer from 'merchant/reducers/magicCheckout/magicSettings/reducer';
 
 export default combineReducers({
   modal: modalReducer,
@@ -211,6 +212,7 @@ export default combineReducers({
   qr_codes: qrCodesReducer,
   migrations: MigrationReducer,
   magicCheckout: magicCheckoutReducer,
+  magic_settings: magicSettingsReducer,
   shippingService: shippingServiceReducer,
   merchantReferral: merchantReferralReducer,
   trackEvents: trackEventsReducer,

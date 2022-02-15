@@ -1,4 +1,4 @@
-import { RULE_TYPES } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
 import { useState, useEffect } from 'react';
 
 const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
@@ -48,8 +48,18 @@ const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
             className="display-flex slabs-border padding-16 justify-space-between"
           >
             <div className="display-flex flex-center">
-              <i className="i i-rupee font-10 rupee-icon-fees-details" />
-              {item.gte} - <i className="i i-rupee font-10 rupee-icon-fees-details" /> {item.lte}
+              {item.lte === Infinity ? (
+                <div>
+                  {'>'}
+                  <i className="i i-rupee font-10 rupee-icon-fees-details" /> {item.gte}
+                </div>
+              ) : (
+                <>
+                  <i className="i i-rupee font-10 rupee-icon-fees-details" />
+                  {item.gte} - <i className="i i-rupee font-10 rupee-icon-fees-details" />{' '}
+                  {item.lte}
+                </>
+              )}
             </div>
             <div className="display-flex flex-center">
               <i className="i i-rupee font-10 rupee-icon-fees-details" />

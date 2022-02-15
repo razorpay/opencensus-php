@@ -25,17 +25,15 @@ const RouteContainer = ({ user }) => {
         {magicCheckoutRoutes.map(renderNav)}
       </header>
       <content>
-        <div className="content-wrapper">
-          {magicCheckoutRoutes.map((item) => (
-            <ShowWhenRoute
-              path={item.path}
-              key={item.path}
-              exact
-              component={item.Component}
-              additionalCondition={(_user) => !item.condition || item.condition(_user)}
-            />
-          ))}
-        </div>
+        {magicCheckoutRoutes.map((item) => (
+          <ShowWhenRoute
+            path={item.path}
+            key={item.path}
+            exact
+            component={item.Component}
+            additionalCondition={(_user) => !item.condition || item.condition(_user)}
+          />
+        ))}
       </content>
       <Redirect to={redirectPath} />
     </tabbed-container>

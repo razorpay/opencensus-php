@@ -47,19 +47,21 @@ const ShippingAccount = ({
     );
   }
   return (
-    <div className="row">
-      <div className="col-sm-5 no-padding">
-        <div className="font-heading font-bold shipping-header color-black">
-          Link Shiprocket Account
+    <div className="content-wrapper">
+      <div className="row">
+        <div className="col-sm-5 no-padding">
+          <div className="font-heading font-bold shipping-header color-black">
+            Link Shiprocket Account
+          </div>
+          <div className="no-padding">
+            Check pincode serviceability directly via Shiprocket. Get better RTO protection with
+            realtime order status updates.
+          </div>
+          <Listing id={id} />
         </div>
-        <div className="no-padding">
-          Check pincode serviceability directly via Shiprocket. Get better RTO protection with
-          realtime order status updates.
+        <div className="benefit-shiprocket-container display-inline">
+          <BenefitsShiprocket />
         </div>
-        <Listing id={id} />
-      </div>
-      <div className="benefit-shiprocket-container display-inline">
-        <BenefitsShiprocket />
       </div>
     </div>
   );

@@ -342,6 +342,10 @@ export default class User {
     return [rolesList.OWNER, rolesList.ADMIN].indexOf(this.userRole) > -1;
   }
 
+  get isMagicSettingsEnabled() {
+    return [rolesList.OWNER, rolesList.ADMIN].indexOf(this.userRole) > -1;
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 

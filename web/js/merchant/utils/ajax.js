@@ -67,3 +67,14 @@ export default (url, params = {}, baseUrl = '') => {
 
   return ajax(ajaxParams, getMode());
 };
+
+export function merchantFetchWithContentType(params, contentType = 'application/json') {
+  params.headers = params.headers || {};
+  return merchantFetch({
+    ...params,
+    headers: {
+      ...params.headers,
+      'Content-Type': contentType,
+    },
+  });
+}
