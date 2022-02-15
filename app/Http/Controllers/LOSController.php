@@ -78,7 +78,8 @@ class LOSController extends Controller
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
-            'X-Auth-Type'   => 'admin'
+            'X-Auth-Type'   => 'admin',
+            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
         ];
 
 
