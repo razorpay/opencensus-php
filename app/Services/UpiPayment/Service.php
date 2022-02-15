@@ -16,6 +16,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Psr\Http\Client\NetworkExceptionInterface;
@@ -164,7 +165,7 @@ class Service
 
         $terminalData = $this->getTerminalDataFromServerCallback($gateway, $input);
 
-        $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData(Payment\Gateway::UPI_AIRTEL,
+        $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gateway,
         $terminalData);
 
         if (empty($terminal) === true)
@@ -266,17 +267,8 @@ class Service
 
         $content = $this->buildRequestBody($input);
 
-        $version = 'v1';
-
-        $uri = sprintf('%s/%s', $version, $this->action);
-
-        if ($uri === Payment\Action::AUTHORIZE_FAILED)
-        {
-            $uri = Payment\Action::VERIFY;
-        }
-
         $request = [
-            Request::URL        => $domain . $uri,
+            Request::URL        => $domain . $this->getUri(),
             Request::METHOD     => Request::POST,
             Request::CONTENT    => $content,
         ];
@@ -332,6 +324,7 @@ class Service
                 break;
             case Payment\Action::VERIFY:
             case Payment\Action::AUTHORIZE_FAILED:
+                $this->convertInputToArray($input);
                 $data = [
                     'data'      => $input,
                     'gateway'   => $input['payment']['gateway'],
@@ -354,12 +347,25 @@ class Service
     }
 
     /**
-     * Sends the request to UPS
+     * Sends request to UPS and parse response
      *
      * @param  RequestInterface $request
      * @return array
      */
     protected function sendRequest(RequestInterface $request): array
+    {
+        $response = $this->sendRawRequest($request);
+
+        return $this->parseResponse($response);
+    }
+
+    /**
+     * sends a request to UPS
+     *
+     * @param  array $data
+     * @return ResponseInterface
+     */
+    protected function sendRawRequest(RequestInterface $request): ResponseInterface
     {
         $retryCount = 0;
 
@@ -369,13 +375,7 @@ class Service
             {
                 $httpClient = Psr18ClientDiscovery::find();
 
-                $response = $httpClient->sendRequest($request);
-
-                $responseBody = json_decode($response->getBody(), true);
-
-                $statusCode = $response->getStatusCode();
-
-                return [$responseBody, $statusCode];
+                return $httpClient->sendRequest($request);
             }
             catch (\Exception $e)
             {
@@ -396,7 +396,6 @@ class Service
                 $this->throwServerRequestException($e);
             }
         }
-
     }
 
     /**
@@ -438,7 +437,7 @@ class Service
 
         $this->trace->traceException(
             $e,
-            Trace::WARNING,
+            Trace::CRITICAL,
             TraceCode::UPI_PAYMENT_SERVICE_REQUEST_ERROR);
 
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
@@ -519,8 +518,10 @@ class Service
     {
         if ($code === 200)
         {
-            // Verify error is handled seprately.
-            if ($this->action == Payment\Action::VERIFY)
+            // Verify error is handled separately.
+            // We do not process pre-process gateway failures.
+            if (($this->action == Payment\Action::VERIFY) or
+                ($this->action === self::PRE_PROCESS))
             {
                 return;
             }
@@ -547,12 +548,6 @@ class Service
 
     protected function checkGatewayFailure($response)
     {
-        if ($this->action === self::PRE_PROCESS)
-        {
-            // gateway error handling for pre-process will be handled else where
-            return;
-        }
-
         $error = $response['error'] ?? null;
 
         if ((isset($error) === false) or
@@ -604,25 +599,16 @@ class Service
         {
             $payment = $response[Response::DATA][Response::DATA][Entity::PAYMENT];
 
-            $amountAuthorized = $payment[Payment\Entity::AMOUNT_AUTHORIZED];
-            $currecy = $payment[Payment\Entity::CURRENCY];
-
-            if ((is_string($currecy) !== true) or
-                (is_integer($amountAuthorized) !== true))
-            {
-                throw new Exception\LogicException(
-                    'currecy and amount authorized is mandatory and should be of correct type',
-                    null,
-                    ['payment' => $payment]);
-            }
+            $amountAuthorized = (int) $payment[Payment\Entity::AMOUNT_AUTHORIZED];
+            $currency = $payment[Payment\Entity::CURRENCY];
 
             $verify->setAmountMismatch(
-                $payment[Payment\Entity::AMOUNT_AUTHORIZED] !== $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT]
+                $amountAuthorized !== $this->input[Entity::PAYMENT][Payment\Entity::AMOUNT]
             );
 
             $verify->setCurrencyAndAmountAuthorized(
-                $payment[Payment\Entity::CURRENCY],
-                $payment[Payment\Entity::AMOUNT_AUTHORIZED]
+                $currency,
+                $amountAuthorized
             );
         }
 
@@ -846,33 +832,55 @@ class Service
             Request::AUTH_HEADER              => $authString,
         ];
 
+        $this->setTestingHeaders($headers);
+
         return $headers;
     }
 
-    /*********************************
-     * Helpers
-     **************************************/
 
     /**
-     * converts the input object array to array
+     * Returns uri for request
      *
-     * @param  array $input
-     * @return void
+     * @return string
      */
-    protected function convertInputToArray(array &$input)
+    protected function getUri(): string
     {
-        if (empty($input[Entity::TERMINAL]) === false)
+        $version = 'v1';
+
+        $action = $this->action;
+
+        if ($action === Payment\Action::AUTHORIZE_FAILED)
         {
-            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+            $action = Payment\Action::VERIFY;
         }
 
-        foreach ($input as $key => $data)
+        return sprintf('%s/%s', $version, $action);
+    }
+
+    /**
+     * Parses the response from UPS
+     *
+     * @param ResponseInterface $response
+     * @return array
+     */
+    protected function parseResponse(ResponseInterface $response): array
+    {
+        $statusCode = $response->getStatusCode();
+
+        if ($statusCode === 404)
         {
-            if ((is_object($data) === true) and ($data instanceof PublicEntity))
-            {
-                $input[$key] = $data->toArray();
-            }
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
+        else if ($statusCode === 503)
+        {
+            throw new Exception\ServerErrorException(
+                'Upi Payments Service is not available',
+                ErrorCode::SERVER_ERROR_SERVICE_UNAVAILABLE);
+        }
+
+        $responseBody = json_decode($response->getBody(), true);
+
+        return [$responseBody, $statusCode];
     }
 
     /**
@@ -910,6 +918,8 @@ class Service
      */
     protected function getVerifyTraceData(array $content): array
     {
+        $content = $content['data'];
+
         $data = [
             Payment\Entity::GATEWAY    => $content[Entity::PAYMENT][Payment\Entity::GATEWAY] ?? null,
             Entity::PAYMENT     => [
@@ -925,6 +935,47 @@ class Service
         ];
 
         return $data;
+    }
+
+    /**
+     * headers used for E2E testing
+     *
+     * @param  array $input
+     */
+    private function setTestingHeaders(array &$headers)
+    {
+        $testCaseID = $this->app['request']->header('X-RZP-TESTCASE-ID');
+
+        if (empty($testCaseID) === false)
+        {
+            $headers[Request::X_RZP_TESTCASE_ID] = $testCaseID;
+        }
+    }
+
+    /*********************************
+     * Helpers
+     **************************************/
+
+    /**
+     * converts the input object array to array
+     *
+     * @param  array $input
+     * @return void
+     */
+    protected function convertInputToArray(array &$input)
+    {
+        if (empty($input[Entity::TERMINAL]) === false)
+        {
+            $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();
+        }
+
+        foreach ($input as $key => $data)
+        {
+            if ((is_object($data) === true) and ($data instanceof PublicEntity))
+            {
+                $input[$key] = $data->toArray();
+            }
+        }
     }
 
     /**

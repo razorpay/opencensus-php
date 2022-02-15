@@ -17,11 +17,12 @@ class Request
     // header parameters
     const CONTENT_TYPE_HEADER       = 'Content-Type';
     const ACCEPT_HEADER             = 'Accept';
-    const X_RAZORPAY_APP_HEADER     = 'X-Razorpay-App';
-    const X_RAZORPAY_TASKID_HEADER  = 'X-Razorpay-TaskId';
-    const X_REQUEST_ID              = 'X-Request-ID';
-    const X_RAZORPAY_TRACKID        = 'X-Razorpay-TrackId';
+    const X_RAZORPAY_APP_HEADER     = 'Grpc-Metadata-X-Razorpay-App';
+    const X_RAZORPAY_TASKID_HEADER  = 'Grpc-Metadata-X-Razorpay-TaskId';
+    const X_REQUEST_ID              = 'Grpc-Metadata-X-Request-ID';
+    const X_RAZORPAY_TRACKID        = 'Grpc-Metadata-X-Razorpay-TrackId';
     const AUTH_HEADER               = 'Authorization';
+    const X_RZP_TESTCASE_ID         = 'Grpc-Metadata-X-RZP-TESTCASE-ID';
 
     //Content Type
     const APPLICATION_JSON          = 'application/json';

@@ -151,7 +151,7 @@ class Service extends UpiPaymentService
             ],
             'payment' => [
                 'currency' => 'INR',
-                'amount_authorized' => $payload['amount'] * 100
+                'amount_authorized' => (string) $payload['amount'] * 100
             ],
             'terminal' => [
                 'gateway_merchant_id' => 'MER0000000548542'
@@ -199,7 +199,7 @@ class Service extends UpiPaymentService
                 'vpa'         => $upi['vpa'],
                 'reference16' => $upi['npci_reference_id'],
             ],
-            'amount_authorized' => $payment['amount_authorized'],
+            'amount_authorized' => (string) $payment['amount_authorized'],
             'currency'          => $payment['currency'],
         ];
 
@@ -227,7 +227,7 @@ class Service extends UpiPaymentService
             ],
             'payment' => [
                 'currency' => 'INR',
-                'amount_authorized' => $data['payment']['amount']
+                'amount_authorized' => (string) $data['payment']['amount']
             ],
             'terminal' => [
                 'gateway_merchant_id' => 'MER0000000548542'
