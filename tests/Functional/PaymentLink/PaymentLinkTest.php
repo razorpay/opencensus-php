@@ -2070,6 +2070,39 @@ class PaymentLinkTest extends TestCase
         $this->assertStringContainsString('payment-handle/error.js', $view->getContent());
     }
 
+    public function testPaymentHandleCreationPrecreateCalled()
+    {
+        $this->mockGimliPaymentHandle();
+        // make precreate api call
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/v1/precreate_payment_handle',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey(Entity::SLUG, $content);
+
+        $this->ba->proxyAuthLive();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleCreationPrecreateNotCalled()
+    {
+        $this->mockGimliPaymentHandle();
+
+        $this->ba->proxyAuthLive();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->startTest();
+    }
+
     /**
      * @group pp_donation_goal_tracker
      */
@@ -2531,6 +2564,8 @@ class PaymentLinkTest extends TestCase
         $elfin->method('shorten')->willReturn(
             "https://rzp.io/i/" . $handle
         );
+
+        $gimli->method('update')->willReturn("{}");
 
         $this->app->instance('elfin', $elfin);
     }

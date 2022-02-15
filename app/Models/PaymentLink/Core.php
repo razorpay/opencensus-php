@@ -153,18 +153,31 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
-    public function createPaymentHandle(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
+    public function createPaymentHandle(array $input, Merchant\Entity $merchant): Entity
     {
-        // payment page creation
-        $entity = $this->create($input, $merchant, $user);
+        $this->trace->info(
+            TraceCode::PAYMENT_HANDLE_CREATE_PAYMENT_PAGE,
+            [
+                Entity::SLUG        => $input[Entity::SLUG],
+                Entity::MERCHANT_ID => $this->merchant->getPublicId()
+            ]);
 
-        // upsert in merchant setting
+        $paymentPage = $this->createPaymentPageForPaymentHandle($input,  $merchant);
+
         $this->upsertDefaultPaymentHandleForMerchant([
             Entity::DEFAULT_PAYMENT_HANDLE          => $input[Entity::SLUG],
-            Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID  => $entity->getPublicId(),
+            Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID  => $paymentPage->getPublicId()
         ]);
 
-        return $entity;
+        $this->trace->info(
+            TraceCode::PAYMENT_HANDLE_PAYMENT_PAGE_CREATED,
+            [
+                Entity::SLUG      => $input[Entity::SLUG],
+                Entity::MERCHANT_ID => $this->merchant->getPublicId(),
+                "payment_page" =>  $paymentPage
+            ]);
+
+        return $paymentPage;
     }
 
     public function updatePaymentHandle(array $input, string $id)
@@ -2358,6 +2371,11 @@ class Core extends Base\Core
 
     public function precreatePaymentHandle(Merchant\Entity $merchant): array
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_HANDLE_PRECREATE_STARTED,
+            [
+                Entity::MERCHANT_ID => $merchant->getId()
+            ]);
         // get unique handle
         $handle = $this->suggestionPaymentHandle(1);
 
@@ -2369,6 +2387,15 @@ class Core extends Base\Core
 
         // upsert handle in merchant setting
         $this->upsertDefaultPaymentHandleForMerchant([Entity::DEFAULT_PAYMENT_HANDLE => $handle]);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_HANDLE_PRECREATE_COMPLETED,
+            [
+                Entity::MERCHANT_ID => $merchant->getId(),
+                Entity::TITLE          => $merchant->getBillingLabel(),
+                Entity::URL            => $url,
+                Entity::SLUG           => $handle
+            ]);
 
         return [
             Entity::TITLE          => $merchant->getBillingLabel(),
@@ -2415,6 +2442,69 @@ class Core extends Base\Core
                     ]);
             }
             throw $e;
+        }
+    }
+
+    protected function createPaymentPageForPaymentHandle(array $input, Merchant\Entity $merchant)
+    {
+        $paymentPage = (new Entity)->generateId();
+
+        $paymentPage->merchant()->associate($merchant);
+
+        //TODO: not sure if we need settings
+        $settings = $input[Entity::SETTINGS] ?? [];
+
+        $settings[Entity::VERSION] = Version::V2;
+
+        $paymentPage->build($input);
+
+        $paymentPage->setShortUrl($this->paymentHandleHostedBaseUrl . '/' . $input[Entity::SLUG]);
+
+        // instead of creating a new short url, we will update the existing gimli mapping
+        // which was created in pre-create step in case of payment handle
+        $this->updateGimliMappingForHandle($input[Entity::SLUG], $paymentPage->getPublicId());
+
+        $this->repo->transaction(function() use ($paymentPage, $settings, $input)
+        {
+            $this->upsertSettings($paymentPage, $settings);
+
+            $this->repo->saveOrFail($paymentPage);
+
+            $this->createPaymentPageItems($input, $paymentPage);
+        });
+
+        $this->trackPaymentPageCreatedEvent($paymentPage, $input);
+
+        return $paymentPage;
+    }
+
+    protected function updateGimliMappingForHandle(string $handle, string $paymentPageId)
+    {
+        $gimli        = $this->app['elfin']->driver('gimli');
+
+        $newMetadata = [
+            'mode'          => $this->mode,
+            'entity'        => ViewType::PAYMENT_HANDLE,
+            'merchant_id'   => $this->merchant->getId(),
+            Entity::ID      => $paymentPageId
+        ];
+
+        $input = json_encode(['metadata' => $newMetadata]);
+
+        try
+        {
+            $gimli->update($handle, $input);
+        }
+        catch (\Throwable $e)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                Entity::SLUG,
+                [
+                    Entity::SLUG         => $handle,
+                    Entity::ERROR        => $e->getMessage(),
+                    Entity::MERCHANT_ID  => $this->merchant->getId()
+                ]);
         }
     }
 }

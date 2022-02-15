@@ -3,6 +3,8 @@
 namespace RZP\Services\Elfin\Impl;
 
 use RZP\Constants\HashAlgo;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
 
 class Gimli extends Base
@@ -89,6 +91,16 @@ class Gimli extends Base
         {
             return $details['url_aliases'][0]['metadata'];
         }
+    }
+
+    public function update(string $hash, string $input)
+    {
+        $apiUrl   = "{$this->apiBaseUrl}/hashes/{$hash}/url_alias";
+        $headers  = $this->getHeaders($input);
+        $response = Requests::patch($apiUrl, $headers, $input);
+        $body     = json_decode($response->body, true);
+
+        return $body['hash'];
     }
 
     /**

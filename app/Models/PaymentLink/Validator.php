@@ -562,11 +562,26 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validatePaymentHandleCreatedForMerchant(Merchant\Entity $merchant)
+    {
+        $merchantSetting = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)->all();
+
+        $handlePageId = array_get($merchantSetting, ENTITY::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID);
+
+        if (empty($handlePageId) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle already created for this merchant',
+                null,
+                null);
+        }
+    }
+
     public function validatePaymentHandleCreation(array $input,Merchant\Entity $merchant )
     {
         $this->isValidPaymentHandle($input[Entity::SLUG]);
 
-        $this->validatePaymentHandleExistsForMerchant($merchant);
+        $this->validatePaymentHandleCreatedForMerchant($merchant);
 
         $this->validateSlugUnique($input[Entity::SLUG]);
     }

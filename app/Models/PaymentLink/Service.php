@@ -466,7 +466,7 @@ class Service extends Base\Service
 
     public function updatePaymentHandle(array $input, string $id): array
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->mode !== Mode::LIVE)
         {
             throw new BadRequestValidationFailureException(
                 'Payment handle can only be updated in live mode.',
@@ -516,6 +516,51 @@ class Service extends Base\Service
         $gimli  = $this->app['elfin']->driver('gimli');
 
         return $gimli->expand($slug) !== null;
+    }
+
+    public function createPaymentHandleV2(): array
+    {
+        // If live mode exists it means that merchant is activated
+        if($this->mode !== Mode::LIVE)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle can be created in live mode only.'
+            );
+        }
+
+        $input = $this->getDefaultValuesPaymentHandle();
+
+        $merchantSetting = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        $handlePageId = array_get($merchantSetting, ENTITY::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE);
+
+        // ie precreate was not called on payment handle
+        if (empty($handlePageId) === true)
+        {
+            $ph = $this->precreatePaymentHandle($this->merchant);
+
+            // edit here
+            $input[Entity::SLUG] = $ph[Entity::SLUG];
+        }
+        else
+        {
+            $input[Entity::SLUG] = $handlePageId;
+        }
+
+        $this->modifyInputForPaymentHandle($input);
+
+        // TODO: change this with validatepaymenthandle later
+
+        $validator = new Validator();
+
+        $validator->isValidPaymentHandle($input[Entity::SLUG]);
+
+        $validator->validatePaymentHandleCreatedForMerchant($this->merchant);
+
+        $paymentHandle = $this->core->createPaymentHandle($input, $this->merchant);
+
+        return $this->modifyResponseForPaymentHandle($paymentHandle);
     }
 
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
@@ -594,12 +639,7 @@ class Service extends Base\Service
 
         $modifiedResponse[ENTITY::ID]    = $response->getPublicId();
 
-        $merchantSetting = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
-            ->all();
-
-        $merchantHandleSetting = $merchantSetting[Entity::DEFAULT_PAYMENT_HANDLE];
-
-        $modifiedResponse[ENTITY::SLUG]  = $merchantHandleSetting[Entity::DEFAULT_PAYMENT_HANDLE];
+        $modifiedResponse[ENTITY::SLUG]  = $response->getSlugFromShortUrl();
 
         $modifiedResponse[ENTITY::URL]   = $response->getHandleUrl();
 
