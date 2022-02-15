@@ -245,16 +245,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $changePasswordTokenRules = [
-        Entity::CONTACT_MOBILE        => 'required_without:email|max:15|contact_syntax',
-        Entity::EMAIL                 => 'required_without:contact_mobile|email',
+        Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:8,50|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
         Entity::TOKEN                 => 'required|string|size:50',
-    ];
-
-    protected static $resetPasswordRules = [
-        Entity::CONTACT_MOBILE        => 'required_without:email|max:15|contact_syntax',
-        Entity::EMAIL                 => 'required_without:contact_mobile|email',
     ];
 
     protected static $changePasswordAdminRules = [
@@ -455,10 +449,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $signupOtpValidators = [
-        'country_code'
-    ];
-
-    protected static $resetPasswordValidators = [
         'country_code'
     ];
 

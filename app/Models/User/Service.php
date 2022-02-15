@@ -57,8 +57,6 @@ class Service extends Base\Service
         $this->merchantService = $merchantService ?? new Merchant\Service();
 
         $this->m2mReferralService = $m2mReferralService ?? new Merchant\M2MReferral\Service();
-
-        $this->elfin = $this->app['elfin'];
     }
 
     public function register(array $input, string $operation = 'create'): array
@@ -1096,14 +1094,8 @@ class Service extends Base\Service
         return $data;
     }
 
-    /**
-     * @throws \libphonenumber\NumberParseException
-     * @throws BadRequestException
-     */
     public function postResetPassword(array $input)
     {
-        $this->validator->validateInput('resetPassword', $input);
-
         $this->trace->info(TraceCode::USER_PASSWORD_RESET_REQUEST, $input);
 
         if (isset($input['email']) === true)
@@ -1118,7 +1110,7 @@ class Service extends Base\Service
             {
                 $this->trace->info(TraceCode::USER_NOT_FOUND,
                     [
-                        'email' => mask_email($email)
+                        'email' => $email
                     ]);
 
                 $this->core->trackOnboardingEvent($email,
@@ -1127,13 +1119,6 @@ class Service extends Base\Service
             }
             else
             {
-                LoginSignupRateLimit::validateKeyLimitExceeded(
-                    $user->getId(),
-                    Constants::RESET_PASSWORD_RATE_LIMIT_SUFFIX,
-                    Constants::RESET_PASSWORD_RATE_LIMIT_TTL,
-                    Constants::RESET_PASSWORD_RATE_LIMIT_THRESHOLD
-                );
-
                 $orgId = $this->auth->getOrgId();
 
                 $org = $this->repo->org->findByPublicId($orgId);
@@ -1156,122 +1141,8 @@ class Service extends Base\Service
                                                  EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_SUCCESS);
             }
         }
-        else if(isset($input['contact_mobile']) === true)
-        {
-            $contactMobile = $input['contact_mobile'];
-
-            $user = $this->core->getUserFromMobile($contactMobile);
-
-            if (empty($user) === true)
-            {
-                $this->trace->info(TraceCode::USER_NOT_FOUND,
-                    [
-                        'contact_mobile' => mask_phone($contactMobile)
-                    ]);
-
-                $this->core->trackOnboardingEventByContactMobile($contactMobile,
-                    EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE,
-                    new BaseException(Constants::USER_CONTACT_MOBILE_NOT_FOUND));
-            }
-            else
-            {
-                $this->trace->info(TraceCode::USER_DETAILS,
-                    [
-                        'user_id' => $user->getId(),
-                    ]);
-
-                $resetPasswordUsingSmsExperiment = $this->app->razorx->getTreatment(
-                    $user->getId(),
-                    Merchant\RazorxTreatment::RESET_PASSWORD_USING_SMS,
-                    $this->mode
-                );
-
-                if(strtolower($resetPasswordUsingSmsExperiment) === Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
-                {
-                    if($user->isContactMobileVerified() === true)
-                    {
-                        LoginSignupRateLimit::validateKeyLimitExceeded(
-                            $user->getId(),
-                            Constants::RESET_PASSWORD_RATE_LIMIT_SUFFIX,
-                            Constants::RESET_PASSWORD_RATE_LIMIT_TTL,
-                            Constants::RESET_PASSWORD_RATE_LIMIT_THRESHOLD
-                        );
-
-                        $this->processResetPasswordByMobile($user);
-                    }
-                    else
-                    {
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
-                            null,
-                            [
-                                'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
-                            ]);
-                    }
-                }
-            }
-        }
 
         return ['success' => true];
-    }
-
-    public function processResetPasswordByMobile(Entity $user)
-    {
-      $token = $this->getTokenWithExpiry(
-          $user['id'],
-          User\Constants::PASSWORD_RESET_TOKEN_EXPIRY_TIME
-      );
-
-      $resetPasswordUrl = $this->getResetPasswordUrlForMobile($user, $token);
-
-      $this->sendResetPasswordSMS($user, $resetPasswordUrl);
-    }
-
-    public function getResetPasswordUrlForMobile(Entity $user, string $token)
-    {
-        $product = $this->auth->getRequestOriginProduct();
-
-        if($product === Product::BANKING)
-        {
-            $passwordResetUrl = 'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST).'/forgot-password#token='. $token . '&contact_mobile=' . $user['contact_mobile'];
-        }
-        else
-        {
-            $hostName = $this->auth->getOrgHostName();
-            $passwordResetUrl = 'https://' . $hostName . '/#/access/resetpassword?contact_mobile='.$user['contact_mobile'].'&token='.$token;
-        }
-
-        return $this->elfin->shorten($passwordResetUrl);
-    }
-
-
-    public function getSMSPayloadForResetPassword(Entity $user, string $url)
-    {
-        $receiver = $user[Entity::CONTACT_MOBILE];
-        $params = [
-            'link' => $url,
-        ];
-
-        $payload = [
-            'ownerId'               => $user->getId(),
-            'ownerType'             => Constants::MERCHANT,
-            'orgId'                 => $this->auth->getOrgId(),
-            'templateName'          => 'sms.user.reset_password',
-            'templateNamespace'     => 'partnerships',
-            'language'              => 'english',
-            'sender'                => 'RZRPAY',
-            'destination'           => $receiver,
-            'contentParams'         => $params
-        ];
-
-        return $payload;
-    }
-
-    public function sendResetPasswordSMS(Entity $user, string $url)
-    {
-        $payload = $this->getSMSPayloadForResetPassword($user, $url);
-
-        return $this->app['stork_service']->sendSms($this->mode, $payload);
     }
 
     /**
@@ -1364,19 +1235,10 @@ class Service extends Base\Service
     {
         $this->validator->validateInput('changePasswordToken', $input);
 
-        if(isset($input['email']))
-        {
-            $email = mb_strtolower($input['email']);
+        $email = mb_strtolower($input['email']);
 
-            /** @var Entity $user */
-            $user = $this->repo->user->findByEmail($email);
-        }
-        else
-        {
-            $contact_mobile = $input['contact_mobile'];
-
-            $user = $this->core->getUserFromMobile($contact_mobile);
-        }
+        /** @var Entity $user */
+        $user = $this->repo->user->findByEmail($email);
 
         $expiry = $user->getPasswordResetExpiry();
 
@@ -1396,13 +1258,6 @@ class Service extends Base\Service
         }
         else
         {
-            LoginSignupRateLimit::validateKeyLimitExceeded(
-                $user->getId(),
-                Constants::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX,
-                Constants::CHANGE_PASSWORD_RATE_LIMIT_TTL,
-                Constants::CHANGE_PASSWORD_RATE_LIMIT_THRESHOLD
-            );
-
             $this->core->setNewPassword($user, $input);
 
             // Password reset via mail essentially confirms the email.

@@ -1999,8 +1999,6 @@ class UserTest extends TestCase
 
         $subMerchantUser->shouldReceive('getUserFromEmail')->andReturn($subMerchantUser);
 
-        $this->userValidator->shouldReceive('validateInput')->andReturn([]);
-
         $orgMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
         $this->repoMock->shouldReceive('driver')->with('org')->andReturn($orgMock);

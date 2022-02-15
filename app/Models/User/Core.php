@@ -3051,30 +3051,7 @@ class Core extends Base\Core
      * @throws NumberParseException
      * @throws Throwable
      */
-    public function getSingleUserByMobileOrFail(string $mobile)
-    {
-        $user = $this->getUserFromMobile($mobile);
-
-        // if none of the mobile number formats are associated with any user, raise an exception
-        if(empty($user) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
-                null,
-                [
-                    'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
-                ]
-            );
-        }
-
-        return $user;
-    }
-
-    /**
-     * @throws NumberParseException
-     * @throws BadRequestException
-     */
-    public function getUserFromMobile(string $mobile)
+    public function getSingleUserByMobileOrFail($mobile)
     {
         $validMobileNumberFormats = (new PhoneBook($mobile))->getMobileNumberFormats();
 
@@ -3090,7 +3067,7 @@ class Core extends Base\Core
             try
             {
                 $user = $this->repo->user->getUserFromMobileOrFail($mobileNumber);
-                $userCount = $userCount + 1;
+                $userCount += 1;
                 if($userCount > 1)
                 {
                     throw new BadRequestException(
@@ -3112,6 +3089,18 @@ class Core extends Base\Core
                         throw $e;
                 }
             }
+        }
+
+        // if none of the mobile number formats are associated with any user, raise an exception
+        if(empty($user) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                null,
+                [
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED,
+                ]
+            );
         }
 
         return $user;
@@ -4431,14 +4420,6 @@ class Core extends Base\Core
 
         $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, $ex, $customProperties);
     }
-
-    public function trackOnboardingEventByContactMobile(string $userMobile, array $eventCode, Throwable $ex = null)
-    {
-        $customProperties = ['contact_mobile' => $userMobile];
-
-        $this->app['diag']->trackOnboardingEvent($eventCode, $this->merchant, $ex, $customProperties);
-    }
-
 
     //Verify user through otp sent to the provided Email
     public function verifyUserThroughEmail(array $input, Merchant\Entity $merchant, Entity $user): array

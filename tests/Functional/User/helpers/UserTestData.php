@@ -2511,67 +2511,6 @@ return [
         ],
     ],
 
-    'testPasswordResetSMS' => [
-        'request' => [
-            'url'     => '/users/reset-password',
-            'method'  => 'post',
-            'content' => [
-                'contact_mobile' => '7349196832',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                "success" => true,
-            ],
-        ],
-    ],
-
-    'testPasswordResetUnverifiedMobileNumber' => [
-        'request' => [
-            'url'     => '/users/reset-password',
-            'method'  => 'post',
-            'content' => [
-                'contact_mobile' => '7349196832',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
-        ],
-    ],
-
-    'testPasswordResetMobileNumberMultipleUsersAssociated' => [
-        'request' => [
-            'url'     => '/users/reset-password',
-            'method'  => 'post',
-            'content' => [
-                'contact_mobile' => '7349196832',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED,
-        ],
-    ],
-
     'testPasswordResetByToken' => [
         'request'  => [
             'url'     => '/users/reset-password-token',
@@ -2613,70 +2552,6 @@ return [
     ],
 
     'testPasswordResetByUsedToken' => [
-        'request'   => [
-            'url'     => '/users/reset-password-token',
-            'method'  => 'post',
-            'content' => [
-                'password'              => '123456xx',
-                'password_confirmation' => '123456xx',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
-        ],
-    ],
-
-    'testPasswordResetByTokenAndMobile' => [
-        'request'  => [
-            'url'     => '/users/reset-password-token',
-            'method'  => 'post',
-            'content' => [
-                'password'              => '123456xx',
-                'password_confirmation' => '123456xx',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                "success" => true,
-            ],
-        ],
-    ],
-
-    'testPasswordResetByExpiredTokenAndMobile' => [
-        'request'   => [
-            'url'     => '/users/reset-password-token',
-            'method'  => 'post',
-            'content' => [
-                'password'              => '123456xx',
-                'password_confirmation' => '123456xx',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID,
-        ],
-    ],
-
-    'testPasswordResetByUsedTokenAndMobile' => [
         'request'   => [
             'url'     => '/users/reset-password-token',
             'method'  => 'post',

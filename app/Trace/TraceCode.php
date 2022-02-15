@@ -6245,9 +6245,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHANGE_PASSWORD_THRESHOLD_EXHAUSTED               = 'CHANGE_PASSWORD_THRESHOLD_EXHAUSTED';
     const CHANGE_PASSWORD_REDIS_ERROR                       = 'CHANGE_PASSWORD_REDIS_ERROR';
 
-    const RESET_PASSWORD_THRESHOLD_EXHAUSTED                = 'RESET_PASSWORD_THRESHOLD_EXHAUSTED';
-    const RESET_PASSWORD_REDIS_ERROR                        = 'RESET_PASSWORD_REDIS_ERROR';
-
     const BULK_REGENERATE_API_KEYS                          =  'BULK_REGENERATE_API_KEYS';
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
