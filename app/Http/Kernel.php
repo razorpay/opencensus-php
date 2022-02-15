@@ -15,6 +15,7 @@ class Kernel extends HttpKernel {
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
         \App\Http\Middleware\TrustedProxy::class,
         \App\Http\Middleware\Metrics::class,
+        \App\Http\Middleware\SetResponseLogHeaders::class,
     ];
 
     /**
