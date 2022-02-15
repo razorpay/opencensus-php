@@ -245,6 +245,11 @@ class GovernorController extends Controller
 
                 $originalRule = $rule ?? [];
 
+                // not indexing mode in case of deletion 
+                if ( isset($originalRule['mode']) ){
+
+                    unset($originalRule['mode']);
+                }
                 $this->app['trace']->info(TraceCode::GOVERNOR_DELETE_RULE_REQUEST_VIA_WORKFLOW, $originalRule);
 
                 $this->app['workflow']
