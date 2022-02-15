@@ -78,8 +78,11 @@ class Base extends Core
     const MERCHANT_VA       = 'merchant_va';
     const BALANCE           = 'balance';
 
-    // Ledger retry
+    // Ledger sync retry
     const DEFAULT_MAX_RETRY_COUNT = 3;
+
+    // Ledger SNS push retry
+    const DEFAULT_MAX_SNS_RETRY_COUNT = 3;
 
     const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED, FundAccountValidation::FAV_INITIATED, Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
 
@@ -111,7 +114,7 @@ class Base extends Core
      * Later on, API will directly interact with ledger to create transactions instead of
      * this sns flow, and would use the ledger's response.
      */
-    protected function pushToLedgerSns(array $payload)
+    protected function pushToLedgerSns(array $payload, int $maxRetryCount = self::DEFAULT_MAX_SNS_RETRY_COUNT, int $retryCount = 0)
     {
         $this->trace->info(TraceCode::LEDGER_JOURNAL_STREAMING_STARTED, $payload);
 
@@ -122,15 +125,32 @@ class Base extends Core
             $target = self::LEDGER_TRANSACTION_CREATE;
 
             $sns->publish(json_encode($payload), $target);
-
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::LEDGER_JOURNAL_STREAMING_FAILED,
-                $payload);
+            if ($retryCount < $maxRetryCount)
+            {
+                // trace and ignore exception and retry in sync for sns push
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_JOURNAL_STREAMING_FAILED_AND_RETRIED,
+                    [
+                        'retries' => $retryCount,
+                        'payload' => $payload
+                    ]);
+                $retryCount++;
+                $this->pushToLedgerSns($payload, $maxRetryCount, $retryCount);
+            }
+            else
+            {
+                // sumo alert on LEDGER_JOURNAL_STREAMING_FAILED
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::LEDGER_JOURNAL_STREAMING_FAILED,
+                    $payload);
+            }
         }
     }
 
