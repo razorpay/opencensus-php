@@ -5750,15 +5750,13 @@ You can now start accepting payments from https://www.example.com.
 
         $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_additional_website_successful', '1234567890', $expectedStorkParametersForTemplate);
 
-        //will uncomment once the templates are approved
-
-//        $this->expectStorkWhatsappRequest($storkMock,
-//                                          'Hi Test name,
-//We have successfully added the https://www.example.com to your Razorpay account. You can now start accepting payments from it.
-//We look forward to transacting with you!
-//-Team Razorpay',
-//                                          '1234567890'
-//        );
+        $this->expectStorkWhatsappRequest($storkMock,
+                                          'Hi Test name,
+We have successfully added the https://www.example.com to your Razorpay account. You can now start accepting payments from it.
+We look forward to transacting with you!
+-Team Razorpay',
+                                          '1234567890'
+        );
     }
 
     public function testAddAdditionalWebsiteSelfServeWorkflowApprove()
@@ -6120,15 +6118,13 @@ You can now start accepting payments from https://www.example.com.
 
         $this->expectStorkSendSmsRequest($storkMock,'sms.dashboard.merchant_additional_website_successful', '1234567890', $expectedStorkParametersForTemplate);
 
-        //will uncomment once the templates are approved
-
-//        $this->expectStorkWhatsappRequest($storkMock,
-//                                          'Hi Test name,
-//We have successfully added the https://play.google.com/store/apps/details?id=com.abc.app.test to your Razorpay account. You can now start accepting payments from it.
-//We look forward to transacting with you!
-//-Team Razorpay',
-//                                          '1234567890'
-//        );
+        $this->expectStorkWhatsappRequest($storkMock,
+                                          'Hi Test name,
+We have successfully added the https://play.google.com/store/apps/details?id=com.abc.app.test to your Razorpay account. You can now start accepting payments from it.
+We look forward to transacting with you!
+-Team Razorpay',
+                                          '1234567890'
+        );
     }
 
     public function testAddAdditionalApp()

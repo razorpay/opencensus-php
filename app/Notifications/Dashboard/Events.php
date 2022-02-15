@@ -351,7 +351,7 @@ class Events
         self::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW                 => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BULK_REGENERATE_API_KEYS                                  => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BANK_ACCOUNT_CHANGE_REJECTION_REASON                      => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
-        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Channel::EMAIL, Channel::SMS],
+        self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
     ];
