@@ -31,6 +31,10 @@ class Core extends Base\Core
 
     const MUTEX_KEY = 'shopify_1cc_place_order_mutex';
 
+    const CONTENT_TYPE_PRODUCT = 'product';
+
+    const CONTENT_TYPE_VARIANT = 'variant';
+
     public function placeShopifyCheckout(array $input): array
     {
         $start = millitime();
@@ -110,33 +114,49 @@ class Core extends Base\Core
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
+    // non critical flow so we add a catch for Throwable
     public function getDataForFbPixels(array $checkout): array
     {
-        $lineItems = $checkout['lineItems']['edges'];
-
-        $items = [];
-
-        foreach ($lineItems as $lineItem)
+        try
         {
-            $item = $lineItem['node'];
+            $lineItems = $checkout['lineItems']['edges'];
 
-            $variant = $item['variant'];
+            $items = [];
 
-            $items[] = [
-                'id'         => str_replace('gid://shopify/Product/', '', base64_decode($variant['product']['id'])),
-                'variant_id' => str_replace('gid://shopify/ProductVariant/', '', base64_decode($variant['id'])),
-                'name'       => $item['title'],
-                'value'      => $variant['priceV2']['amount'],
-                'quantity'   => $item['quantity'],
+            foreach ($lineItems as $lineItem)
+            {
+                $item = $lineItem['node'];
+
+                $variant = $item['variant'];
+
+                $items[] = [
+                    'id'         => $this->getContentId($variant['product']['id'], self::CONTENT_TYPE_PRODUCT),
+                    'variant_id' => $this->getContentId($variant['id'], self::CONTENT_TYPE_VARIANT),
+                    'name'       => $item['title'],
+                    'value'      => $variant['priceV2']['amount'],
+                    'quantity'   => $item['quantity'],
+                ];
+            }
+
+            return [
+                'currency'     => $checkout['currencyCode'],
+                'value'        => $checkout['totalPriceV2']['amount'],
+                'content_type' => 'product',
+                'contents'     => $items,
             ];
-        }
 
-        return [
-            'currency'     => $checkout['currencyCode'],
-            'value'        => $checkout['totalPriceV2']['amount'],
-            'content_type' => 'product',
-            'contents'     => $items,
-        ];
+        }
+        catch (\Throwable $e)
+        {
+            return [];
+        }
+    }
+
+    protected function getContentId(string $id, string $type): int
+    {
+        $base = $type === self::CONTENT_TYPE_PRODUCT ? 'gid://shopify/Product/' : 'gid://shopify/ProductVariant/';
+
+        return (int)str_replace($base, '', base64_decode($id));
     }
 
     public function getAvailableShippingRates($checkoutId)
