@@ -1516,6 +1516,13 @@ class RecurringPaymentTest extends TestCase
 
         $this->app->instance('mandateHQ', $this->mandateHQ);
 
+        $mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
+
+        $terminalSelectorMock = \Mockery::mock('RZP\Models\CardMandate\MandateHubs\MandateHubTerminalSelector')
+                                        ->makePartial();
+
+        $terminalSelectorMock->shouldReceive('GetTerminalForPayment')->andReturn($mandateHqTerminal);
+
         $this->mandateConfirm = 'true';
 
         $this->mockRegisterMandate();

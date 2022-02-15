@@ -53,7 +53,11 @@ class Core extends Base\Core
 
         $cardMandate->merchant()->associate($payment->merchant);
 
-        $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForPayment($payment);
+        $terminal = (new MandateHubs\MandateHubTerminalSelector)->GetTerminalForPayment($payment, $cardMandate);
+
+        $cardMandate->terminal()->associate($terminal);
+
+        $mandateHub = (new MandateHubs\MandateHubSelector)->getHubInstance($terminal->getGateway());
 
         $mandate = $mandateHub->RegisterMandate($payment, $input);
 

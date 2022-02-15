@@ -6,10 +6,13 @@ use App;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Customer\Token;
+use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 
 /**
  * @property Merchant\Entity $merchant
+ * @property Terminal\Entity $terminal
  * @property Token\Entity    $token
  */
 class Entity extends Base\PublicEntity
@@ -36,6 +39,7 @@ class Entity extends Base\PublicEntity
     const PAUSED_BY                  = 'paused_by';
     const CANCELLED_BY               = 'cancelled_by';
     const MANDATE_HUB                = 'mandate_hub';
+    const TERMINAL_ID                = 'terminal_id';
 
     const SKIP_SUMMARY_PAGE          = 'skip_summary_page';
 
@@ -55,6 +59,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::MANDATE_ID,
         self::MERCHANT_ID,
         self::MANDATE_ID,
         self::MANDATE_HUB,
@@ -209,6 +214,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MANDATE_HUB);
     }
 
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
     public function getFrequency()
     {
         return $this->getAttribute(self::FREQUENCY);
@@ -239,6 +249,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS) === Status::ACTIVE;
     }
 
+    public function shouldSaveAInputDetailsToCache()
+    {
+        return $this->getMandateHub() === MandateHubs::MANDATE_HQ;
+    }
+
     public function isMandateApproved(): bool
     {
         return $this->getAttribute(self::STATUS) === Status::MANDATE_APPROVED;
@@ -255,6 +270,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    public function terminal()
+    {
+        return $this->belongsTo(Terminal\Entity::class);
     }
 
     public function token()

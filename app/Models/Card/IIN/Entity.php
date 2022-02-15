@@ -325,6 +325,11 @@ class Entity extends Base\PublicEntity
 
     public function isCardMandateApplicable(Merchant\Entity $merchant)
     {
+        if ($this->getMandateHubs() > 0)
+        {
+            return true;
+        }
+
         $iin = $this->getIin();
 
         $app = App::getFacadeRoot();

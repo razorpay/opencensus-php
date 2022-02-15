@@ -607,9 +607,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_MANDATE_ID);
     }
 
+    public function getFrequency()
+    {
+        return $this->getAttribute(self::FREQUENCY);
+    }
+
     public function hasCardMandate()
     {
-        return $this->getCardMandateId() !== null;
+        return $this->isAttributeNotNull(self::CARD_MANDATE_ID);
     }
 
     public function isLocal()

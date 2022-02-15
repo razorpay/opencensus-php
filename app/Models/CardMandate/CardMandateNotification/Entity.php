@@ -207,6 +207,11 @@ class Entity extends Base\PublicEntity
         return $time->timestamp;
     }
 
+    public function getReminderId()
+    {
+        return $this->getAttribute(self::REMINDER_ID);
+    }
+
     // Relations
     public function merchant()
     {

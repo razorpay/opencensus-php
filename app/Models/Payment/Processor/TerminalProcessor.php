@@ -11,6 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\BharatQr;
+use RZP\Models\CardMandate;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
@@ -38,7 +39,8 @@ class TerminalProcessor extends Base\Core
      *
      * @return array
      */
-    public function getTerminalsForPayment(Payment\Entity $payment, Merchant\Entity $chargeAccountMerchant = null)
+    public function getTerminalsForPayment(Payment\Entity $payment, Merchant\Entity $chargeAccountMerchant = null,
+                                           CardMandate\Entity $cardMandate = null)
     {
         $this->payment = $payment;
 
@@ -48,6 +50,7 @@ class TerminalProcessor extends Base\Core
             'payment'                   => $this->payment,
             'merchant'                  => $this->payment->merchant,
             'charge_account_merchant'   => $chargeAccountMerchant,
+            'card_mandate'              => $cardMandate,
         ];
 
         $terminalSelector = new Terminal\Selector($input, $options);

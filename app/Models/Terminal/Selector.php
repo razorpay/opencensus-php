@@ -26,6 +26,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Card\NetworkName;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Card\IIN\MandateHub;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Merchant\Preferences;
@@ -813,6 +814,13 @@ class Selector extends Base\Core
                 }
 
                 $paymentData['card']['tokenised'] = $card->isTokenPan();
+
+                if (empty($this->input['card_mandate']) === false)
+                {
+                    $mandateHubs = MandateHub::getEnabledMandateHubs($iin->getMandateHubs());
+
+                    $paymentData['card']['mandate_hubs'] = $mandateHubs;
+                }
             }
 
             if ($payment->getEmiPlanId() !== null)

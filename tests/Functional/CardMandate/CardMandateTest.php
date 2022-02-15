@@ -38,6 +38,12 @@ class CardMandateTest extends TestCase
 
     protected $mandateConfirm;
 
+    protected $smartRoutingService;
+
+    protected $sharedSharpTerminal;
+
+    protected $mandateHqTerminal;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/CardMandateTestData.php';
@@ -50,13 +56,16 @@ class CardMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['recurring_card_mandate']);
 
-        $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->sharedSharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
 
         $this->fixtures->create('iin', [
             'iin' => '400018',
             'type' => 'credit',
             'recurring' => 1,
             'issuer' => IFSC::RATN,
+            'mandate_hubs' => ['mandate_hq' => '1'],
         ]);
 
         $this->paymentInput = $this->getDefaultRecurringPaymentArray();
@@ -84,6 +93,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -152,6 +163,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $this->razorxValue = 'cardps';
         $this->enableCpsConfig();
@@ -516,6 +529,8 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -552,6 +567,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -739,6 +756,8 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/checkout',
@@ -772,6 +791,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $paymentInp = $this->paymentInput;
 
@@ -954,6 +975,8 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -988,6 +1011,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -1027,6 +1052,8 @@ class CardMandateTest extends TestCase
         $this->mandateConfirm = 'false';
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $exception = false;
         try
@@ -1756,6 +1783,8 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
         $this->paymentInput[Payment::CALLBACK_URL]='https://www.facebook.com';
 
         $request = [
@@ -1778,6 +1807,8 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -1798,6 +1829,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate($callable);
 
         $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -1975,6 +2008,8 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
         $request = [
             'method' => 'POST',
             'url' => '/payments/create/ajax',
@@ -1998,6 +2033,14 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandate);
         $this->assertEquals('mandate_cancelled', $cardMandate->getStatus());
 
+    }
+
+    protected function mockGetMandateHubTerminal($terminal): void
+    {
+        $terminalSelectorMock = \Mockery::mock('RZP\Models\CardMandate\MandateHubs\MandateHubTerminalSelector')
+                                 ->makePartial();
+
+        $terminalSelectorMock->shouldReceive('GetTerminalForPayment')->andReturn($terminal);
     }
 }
 

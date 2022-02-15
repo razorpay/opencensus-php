@@ -91,6 +91,9 @@ class CreateCardMandatesTable extends Migration
             $table->string(Entity::MANDATE_HUB, 30)
                   ->nullable();
 
+            $table->char(Entity::TERMINAL_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->unsignedInteger(Entity::CREATED_AT);
 
             $table->unsignedInteger(Entity::UPDATED_AT);

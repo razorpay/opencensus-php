@@ -1041,7 +1041,7 @@ trait Authorize
 
         $token = $payment->localToken;
 
-        $token->cardMandate()->associate($cardMandate->getId());
+        $token->cardMandate()->associate($cardMandate);
 
         $token->saveOrFail();
 
@@ -9271,6 +9271,7 @@ trait Authorize
     }
 
     /**
+     * To be removed.
      * @param $library
      * @return bool
      */
@@ -9285,7 +9286,6 @@ trait Authorize
     }
 
     /**
-     * To be removed.
      * @param $library
      * @return bool
      */
