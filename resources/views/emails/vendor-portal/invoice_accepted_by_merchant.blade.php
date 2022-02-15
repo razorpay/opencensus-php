@@ -6,7 +6,7 @@
 >
   <head>
     <title></title>
-    <!--[if !mso]><!-- -->
+    <!--[if !mso]><-- -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!--<![endif]-->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -239,7 +239,7 @@
                                           class="content-element"
                                           style="display: inline-block; vertical-align: middle; margin-left: 10px; color: {{ $merchant['contrast_color'] }};"
                                         >
-                                          {{ $business_name }}
+                                          {{ $merchant['name'] }}
                                         </div>
                                       </div>
                                     </div>
@@ -292,7 +292,7 @@
                                             color: #7b8199;
                                           "
                                         >
-                                          {{ $business_name }} has received your
+                                          {{$merchant['name']}} has received your
                                           payment request on RazorpayX
                                         </div>
                                         <div
@@ -328,7 +328,7 @@
                                           color: #7b8199;
                                         "
                                       >
-                                        {{ $business_name }} will review your
+                                        {{ $merchant['name'] }} will review your
                                         payment request and pay on the due date.
                                         Once the merchant approves or discards
                                         the payment, you will be notified via
@@ -551,7 +551,7 @@
                                         {{ $invoice['invoice_number'] }}
                                       </div>
                                     </div>
-                                    if(!empty($invoice['description']))
+                                    @if(!empty($invoice['description']))
                                     <div
                                       class="information-row"
                                       style="
@@ -713,7 +713,7 @@
                                         ₹ {{ $invoice['total_amount'] }}
                                       </div>
                                     </div>
-                                    @if(!empty($invoice['tds_calculated']['amount']]))
+                                    @if(!empty($invoice['tds_amount']))
                                     <div
                                       class="information-row"
                                       style="
@@ -746,14 +746,14 @@
                                         "
                                       >
                                         ₹ {{
-                                        $invoice['tds_calculated']['amount'] }}
+                                        $invoice['tds_amount'] }}
                                         •
                                         <span style="font-size: 12px"
-                                          >@if(isset($invoice['tds_calculated']['overridden_percent'])){{
-                                          $invoice['tds_calculated']['overridden_percent']
+                                          >@if(isset($invoice['tds_category']['overridden_slab'])){{
+                                          $invoice['tds_category']['overridden_slab']
                                           }} @endif
-                                          @if(empty($invoice['tds_calculated']['overridden_percent'])){{
-                                          $invoice['tds_calculated']['percent']
+                                          @if(empty($invoice['tds_category']['overridden_slab'])){{
+                                          $invoice['tds_category']['slab']
                                           }} @endif
                                           <span style="color: #00000099"
                                             >% of subtotal</span
@@ -762,7 +762,7 @@
                                       </div>
                                     </div>
                                     @endif
-                                    @if(!empty($invoice['tds_calculated']['code']))
+                                    @if(!empty($invoice['tds_category']['code']))
                                     <div
                                       class="information-row"
                                       style="
@@ -794,8 +794,8 @@
                                           color: #323438;
                                         "
                                       >
-                                        {{ $invoice['tds_calculated']['code'] }}
-                                        , {{ $invoice['tds']['description'] }}
+                                        {{ $invoice['tds_category']['code']}}
+                                        , {{ $invoice['tds_category']['name']}}
                                       </div>
                                       <div
                                         class="label"
@@ -816,7 +816,7 @@
                                           font-size: 12px;
                                         "
                                       >
-                                        {{ $invoice['tds_calculated']['percent']
+                                        {{ $invoice['tds_category']['code']
                                         }}% Tax Slab
                                       </div>
                                     </div>
@@ -844,7 +844,7 @@
                                         {{ $invoice['gst_type'] == 'inter_state'
                                         ? 'IGST' : 'CGST + SGST' }} @ {{
                                         round($invoice['gst_amount'] /
-                                        $invoice['subtotal'] * 100, 2) }}%
+                                        $invoice['subtotal_amount'] * 100, 2) }}%
                                       </div>
                                       <div
                                         class="value left-align font-color-black-o-30"
@@ -890,7 +890,7 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['payout_amount'] }}
+                                        ₹ {{ $invoice['payouts']['amount'] }}
                                       </div>
                                     </div>
                                     <div style="text-align: center">
@@ -1255,7 +1255,7 @@
                                         box-sizing: border-box;
                                       "
                                     >
-                                      @isset($support_contact)
+                                      @isset($merchant['support_contact'])
                                       <div
                                         class="value"
                                         style="
@@ -1263,7 +1263,7 @@
                                           width: 25%;
                                         "
                                       >
-                                        {{ $support_contact }}
+                                        {{ $merchant['support_contact'] }}
                                       </div>
                                       <div
                                         class="line"
@@ -1271,7 +1271,8 @@
                                       >
                                         |
                                       </div>
-                                      @endisset @isset($support_email)
+                                      @endisset 
+                                      @isset($merchant['support_email'])
                                       <div
                                         class="value"
                                         style="
@@ -1280,7 +1281,7 @@
                                           width: 25%;
                                         "
                                       >
-                                        {{ $support_email }}
+                                        {{ $merchant['support_email'] }}
                                       </div>
                                       @endisset
                                     </div>

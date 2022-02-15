@@ -6,7 +6,7 @@
 >
   <head>
     <title> </title>
-    <!--[if !mso]><!-- -->
+    <!--[if !mso]><-- -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <!--<![endif]-->
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -444,7 +444,7 @@
                                       "
                                     >
                                       {{ $vendor_name }} raised a payment
-                                      request worth Rs.{{ $payout_amount }}/-.
+                                      request worth Rs.{{ $invoice['payouts']['amount'] }}/-.
                                       To edit, accept or discard the payment
                                       request, go to the details view of this
                                       vendor payment by clicking the button
@@ -699,7 +699,7 @@
                                           text-align: left;
                                         "
                                       >
-                                        {{ $invoice['number'] }}
+                                        {{ $invoice['invoice_number'] }}
                                       </div>
                                     </div>
                                     <div
@@ -772,7 +772,7 @@
                                         {{ $invoice['due_date'] }}
                                       </div>
                                     </div>
-                                    if(!empty($invoice['description']))
+                                    @if(!empty($invoice['description']))
                                     <div
                                       class="information-row"
                                       style="
@@ -809,7 +809,7 @@
                                       </div>
                                     </div>
                                     @endif
-                                    @isset($invoice['notes_to_merchant'].key)
+                                    @isset($invoice['metadata']['notes_to_merchant'])
                                     <div
                                       class="information-row"
                                       style="
@@ -842,9 +842,9 @@
                                           text-align: left;
                                         "
                                       >
-                                        {{ $invoice['notes_to_merchant'].key }}
+                                        {{ $invoice['metadata']['notes_to_merchant'].key }}
                                         <div style="opacity: 0.7">
-                                          {{ $invoice['notes_to_merchant'].value
+                                          {{ $invoice['metadata']['notes_to_merchant'].value
                                           }}
                                         </div>
                                       </div>
@@ -903,10 +903,10 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['total'] }}
+                                        ₹ {{ $invoice['total_amount'] }}
                                       </div>
                                     </div>
-                                    @if(!empty($invoice['subtotal']))
+                                    @if(!empty($invoice['subtotal_amount']))
                                     <div
                                       class="information-row"
                                       style="
@@ -939,11 +939,11 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['subtotal'] }}
+                                        ₹ {{ $invoice['subtotal_amount'] }}
                                       </div>
                                     </div>
                                     @endif
-                                    @if(!empty($invoice['tds_calculated']['amount']]))
+                                    @if(!empty($invoice['tds_amount']))
                                     <div
                                       class="information-row"
                                       style="
@@ -977,7 +977,7 @@
                                         "
                                       >
                                         ₹ {{
-                                        $invoice['tds_calculated']['amount'] }}
+                                        $invoice['tds_amount'] }}
                                       </div>
                                       <div
                                         class="label"
@@ -999,10 +999,10 @@
                                           font-size: 12px;
                                         "
                                       >
-                                        {{ $invoice['tds_calculated']['percent']
+                                        {{ $invoice['tds_category']['slab']
                                         }}% Tax • {{
-                                        $invoice['tds_calculated']['code'] }},
-                                        {{ $invoice['tds_calculated']['name'] }}
+                                        $invoice['tds_category']['code'] }},
+                                        {{ $invoice['tds_category']['name'] }}
                                       </div>
                                     </div>
                                     @endif
@@ -1038,7 +1038,7 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['payout_amount'] }}
+                                        ₹ {{ $invoice['payouts']['amount'] }}
                                       </div>
                                     </div>
                                     <a
