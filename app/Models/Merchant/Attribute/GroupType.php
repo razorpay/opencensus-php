@@ -26,6 +26,7 @@ class GroupType
             Type::CA_PROCEEDED_BANK,
             Type::CA_ONBOARDING_FLOW,
             Type::CA_CAMPAIGN_ID,
+            Type::CA_SALES_LED_ALLOCATED_BANK,
         ],
 
         Group::X_MERCHANT_INTENT => [

@@ -21,6 +21,7 @@ class Type
     const CA_PROCEEDED_BANK             = 'ca_proceeded_bank';
     const CA_ONBOARDING_FLOW            = 'ca_onboarding_flow';
     const CA_CAMPAIGN_ID                = 'ca_campaign_id';
+    const CA_SALES_LED_ALLOCATED_BANK   = 'ca_sales_led_allocated_bank';
 
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';
