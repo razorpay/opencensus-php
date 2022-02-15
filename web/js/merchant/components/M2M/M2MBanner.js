@@ -32,21 +32,6 @@ const M2MBanner = (props) => {
     ]);
     window.friendbuyAPI.push([
       'subscribe',
-      'couponReceived',
-      (coupon) => {
-        trackEvents({
-          objectName: 'Coupon',
-          actionName: 'Received',
-          screen: 'home page',
-          toCleverTap: true,
-          properties: {
-            couponCode: coupon,
-          },
-        });
-      },
-    ]);
-    window.friendbuyAPI.push([
-      'subscribe',
       'emailShareSuccess',
       (payload) => {
         trackEvents({
@@ -65,7 +50,7 @@ const M2MBanner = (props) => {
       'widgetActionTriggered',
       (payload) => {
         trackEvents({
-          objectName: 'Widget Action',
+          objectName: 'Referral Widget Action',
           actionName: 'Trigerred',
           screen: 'home page',
           toCleverTap: true,
