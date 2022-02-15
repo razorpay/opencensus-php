@@ -44,6 +44,7 @@ import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { fetchActiveTickets, fetchTicketsRaisedByAgents } from 'merchant/reducers/config.js';
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
+import * as EventActions from 'merchant/reducers/trackEvents';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchMerchantReferralDetail } from 'merchant/reducers/merchantReferral';
@@ -129,6 +130,7 @@ class App extends Component {
     return isPartnerKYCActivated && currentMode === 'test' && !isAlreadyActivated;
   };
 
+  // nosemgrep
   componentWillMount() {
     const user = window.rzp_user;
 
@@ -303,22 +305,40 @@ class App extends Component {
         removeSplashLoader();
         this.setState({ isLoading: false });
       });
-
-    if (
-      this.props.user?.isActivationFormFullView &&
-      user?.merchants &&
-      Object.keys(user.merchants).length === 1
-    ) {
-      if (!user?.activation_form_milestone && !user?.activated) {
+    const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
+    if (user?.merchants && Object.keys(user.merchants).length === 1) {
+      if (this.props.user?.isActivationFormFullView) {
+        if (!user?.activation_form_milestone && !user?.activated) {
+          if (isMobileDevice()) {
+            this.props.history.push('/onboarding/steps');
+          } else {
+            const firstStepToken = 'onboarding_first_step';
+            removeItem(`${firstStepToken}--${user?.current}`);
+            this.props.history.push('/kyc');
+          }
+        } else if (this.props.location.pathname === '/activation' && !isMobileDevice()) {
+          this.props.history.push('/kyc');
+        }
+      } else if (
+        this.props.user?.showL1FormOnLogin &&
+        signUpFormStatus &&
+        signUpFormStatus === 'sign_up_completed'
+      ) {
+        this.props.trackEvents({
+          objectName: 'L1 form on login',
+          actionName: 'displayed',
+          screen: 'KYC Document',
+          properties: {
+            experiment_name: 'show_L1_Form_on_login',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        LocalStorageService.setItem('sign_up_exp_status', 'kyc_form_fill_started');
         if (isMobileDevice()) {
           this.props.history.push('/onboarding/steps');
         } else {
-          const firstStepToken = 'onboarding_first_step';
-          removeItem(`${firstStepToken}--${user?.current}`);
-          this.props.history.push('/kyc');
+          this.props.history.push('/activation');
         }
-      } else if (this.props.location.pathname === '/activation' && !isMobileDevice()) {
-        this.props.history.push('/kyc');
       }
     }
   }
@@ -1003,6 +1023,7 @@ const mapDispatchToProps = (dispatch) =>
       ...SessionActions,
       ...ConfigActions,
       ...NotificationActions,
+      ...EventActions,
       updateTwoFactorVerified,
       fetchGST,
       fetchTicketsRaisedByAgents,

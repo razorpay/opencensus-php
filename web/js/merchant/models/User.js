@@ -1505,7 +1505,10 @@ export default class User {
   }
 
   get showL1FormOnLogin() {
-    return this.getExpStatus('show_L1_Form_on_login') && !!this.isOrgRZP;
+    return (
+      getSplitzExperimentVariant('show_L1_Form_on_login')?.variables?.result === 'on' &&
+      !!this.isOrgRZP
+    );
   }
 
   get autoOpenL1Form() {
@@ -1547,7 +1550,10 @@ export default class User {
     if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {
       return false;
     }
-    return this.getExpStatus('show_activation_form_full_view') && !!this.isOrgRZP;
+    return (
+      getSplitzExperimentVariant('show_activation_form_full_view')?.variables?.result === 'on' &&
+      !!this.isOrgRZP
+    );
   }
 
   get isMsmeDisabled() {

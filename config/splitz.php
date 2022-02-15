@@ -161,5 +161,11 @@ return [
 
         // Growth Services Integration with Exclusive Offer
         'GS_EXCLUSIVE_OFFER_SPLITZ' => env('GS_EXCLUSIVE_OFFER_SPLITZ', ''),
+
+        // Show L1 form on Login
+        'SHOW_L1_FORM_ON_LOGIN' => env('SHOW_L1_FORM_ON_LOGIN', ''),
+
+        // Show Activation Form full view
+        'SHOW_ACTIVATION_FORM_FULL_VIEW' => env('SHOW_ACTIVATION_FORM_FULL_VIEW', ''),
     ]
 ];

@@ -331,4 +331,18 @@ export default {
     // prod experiment ids,
     'IlBv2LyCzsyZqI',
   ],
+  show_activation_form_full_view: [
+    // beta experiment id
+    'IuGpRXYJQvkELz',
+
+    // prod experiment id
+    'Iw2UPvr88nwZdA',
+  ],
+  show_L1_Form_on_login: [
+    // beta experiment id
+    'IuGq9FliGTmv88',
+
+    // prod experiment id
+    'Iw2TWM0yRhXrWI',
+  ],
 };

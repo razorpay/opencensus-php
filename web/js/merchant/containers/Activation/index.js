@@ -8,7 +8,6 @@ import { withRouter } from 'react-router-dom';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
-import * as LocalStorageService from 'common/utils/localStorage';
 import { merchantFetch } from 'merchant/utils/ajax';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 
@@ -276,25 +275,6 @@ export default class ActivationContainer extends Component {
     this.sendEventsForSubMerchantView(
       window.rzpQ.routeActions().interaction('route.linked_account.activate_account.started'),
     );
-    const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
-    if (
-      signUpFormStatus &&
-      signUpFormStatus === 'sign_up_completed' &&
-      this.props.user.showL1FormOnLogin
-    ) {
-      this.props.trackEvents({
-        objectName: 'Show Activation form on login',
-        actionName: 'redirect',
-        screen: 'home page',
-        properties: {
-          loginL1Experiment: 'redirect to activation page',
-        },
-      });
-      LocalStorageService.setItem('sign_up_exp_status', 'kyc_form_fill_started');
-      this.setState({
-        showWelcomeBanner: true,
-      });
-    }
   }
 
   setOnCloseCb(cb) {
