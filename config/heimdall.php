@@ -1505,7 +1505,111 @@ return [
             Permission::SETTLEMENT_ONDEMAND_TRANSFER_RETRY => [
                 'description' => 'Allow access to ondemand transfer trigger API',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_READ => [
+                'description' => 'Allow access to view Capital LOS applications',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_EDIT => [
+                'description' => 'Allow access to make changes to Capital LOS applications',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_CLOSURE => [
+                'description' => 'Allow access to close/reject Capital LOS applications',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_DOC_READ => [
+                'description' => 'Allow access to view Capital LOS application documents',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_DOC_EDIT => [
+                'description' => 'Allow access to make changes to Capital LOS application documents',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_DOC_REVIEW => [
+                'description' => 'Allow access to accept/reject Capital LOS application documents',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_SCORE_EDIT => [
+                'description' => 'Allow access to add UW score for Capital LOS applications',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_OFFER_READ => [
+                'description' => 'Allow access to view Capital LOS application offers',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_OFFER_EDIT => [
+                'description' => 'Allow access to make changes to Capital LOS application offers',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_DISBURSAL_READ => [
+                'description' => 'Allow access to view Capital LOS application disbursals',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_DISBURSAL_EDIT => [
+                'description' => 'Allow access to make changes to Capital LOS application disbursals',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_ESIGN_READ => [
+                'description' => 'Allow access to view E-Sign flow for Capital LOS application',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_APPLICATION_ESIGN_EDIT => [
+                'description' => 'Allow access to make changes in E-Sign flow in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_D2C_READ => [
+                'description' => 'Allow access to view D2C bureau reports in Capital LOS - detailed unmasked view',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_D2C_MASKED_READ => [
+                'description' => 'Allow access to view D2C bureau reports in Capital LOS - masked summary',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_D2C_SUMMARY_READ => [
+                'description' => 'Allow access to view D2C bureau reports in Capital LOS - unmasked summary',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_D2C_REPORT_READ => [
+                'description' => 'Allow access to access D2C bureau report files',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_PRODUCTS_READ => [
+                'description' => 'Allow access to view products in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_PRODUCTS_EDIT => [
+                'description' => 'Allow access to add/update products in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_DOCUMENTS_READ => [
+                'description' => 'Allow access to view master documents in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_DOCUMENTS_EDIT => [
+                'description' => 'Allow access to add/update master documents in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_LENDER_READ => [
+                'description' => 'Allow access to view lenders in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_LENDER_EDIT => [
+                'description' => 'Allow access to add/update lenders in Capital LOS',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_M2P_EDIT => [
+                'description' => 'Allow access to make M2P integration related API calls',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_BUREAU_COMPLIANCE_EDIT => [
+                'description' => 'Allow access to purge bureau related data points on behalf of the user',
+                'assignable'  => true,
+            ],
+            Permission::CAPITAL_LOS_DEVELOPER => [
+                'description' => 'Allow access to make specific admin API calls in Capital LOS(for Capital LOS developers)',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::PAYOUTS => [
