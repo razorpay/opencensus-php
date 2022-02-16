@@ -137,8 +137,8 @@ class GatewayController extends Controller
                 catch (\Exception $e)
                 {
                     $this->trace->traceException(
-                        $e, 
-                        Logger::WARNING, 
+                        $e,
+                        Logger::WARNING,
                         TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_FAILURE);
                 }
             }
@@ -1419,34 +1419,22 @@ class GatewayController extends Controller
 
     protected function getMerchantKeyForPayment(Payment\Entity $payment, string $mode)
     {
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
-            RazorxTreatment::PUBLIC_KEY_SIGNATURE_GENERATION,
-            $mode);
+        $publicKey = $payment->getPublicKey();
 
-        if (strtolower($variant) === 'on')
+        if (empty($publicKey) === false)
         {
-            $this->app['trace']->info(TraceCode::PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX, [
-                'merchant_id'   => $payment->getMerchantId(),
-                'variant'    => $variant,
-            ]);
+            return $publicKey;
+        }
 
-            $publicKey = $payment->getPublicKey();
+        if ($payment->getOrderId() !== null)
+        {
+            $order = $this->repo->order->findOrFailPublic($payment->getOrderId());
+
+            $publicKey = $order->getPublicKey();
 
             if (empty($publicKey) === false)
             {
                 return $publicKey;
-            }
-
-            if ($payment->getOrderId() !== null)
-            {
-                $order = $this->repo->order->findOrFailPublic($payment->getOrderId());
-
-                $publicKey = $order->getPublicKey();
-
-                if (empty($publicKey) === false)
-                {
-                    return $publicKey;
-                }
             }
         }
 
