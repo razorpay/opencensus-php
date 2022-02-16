@@ -2083,4 +2083,16 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testRiskThresholdFieldNotVisibleOnMerchantEntity()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', '10000000000000', true);
+
+        $this->assertArrayNotHasKey('risk_threshold', $merchant);
+
+    }
 }

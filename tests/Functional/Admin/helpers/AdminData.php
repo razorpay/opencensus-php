@@ -1838,4 +1838,20 @@ return [
             ]
         ]
     ],
+
+    'testRiskThresholdFieldNotVisibleOnMerchantEntity' => [
+        'request' => [
+            'url' => '/admin/merchant/10000000000000',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "org_id" => "100000razorpay",
+                'entity' => 'merchant',
+                'id' => '10000000000000',
+                'email' => "test@razorpay.com",
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

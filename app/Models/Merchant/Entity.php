@@ -516,6 +516,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::LOGO_URL,
         self::DCC,
+        self::RISK_THRESHOLD,
     ];
 
     protected $casts = [
@@ -2324,6 +2325,17 @@ class Entity extends Base\PublicEntity
         if ($app['basicauth']->isAdminAuth() === true)
         {
             $array[self::DCC_MARKUP_PERCENTAGE] = $this->getDccMarkupPercentage();
+        }
+    }
+
+    public function setPublicRiskThresholdAttribute(array & $array)
+    {
+        $app = \App::getFacadeRoot();
+        $routeName = $app['request.ctx']->getRoute();
+
+        if (($app['basicauth']->isAdminAuth() === true ) and ($routeName == 'admin_fetch_entity_by_id'))
+        {
+            array_pull($array, self::RISK_THRESHOLD);
         }
     }
 
