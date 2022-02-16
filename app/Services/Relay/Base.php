@@ -204,8 +204,8 @@ class Base
         $service = $this->config[$mode];
 
         return [
-           "config",
-            "secret",
+            $service[self::KEY],
+            $service[self::SECRET],
         ];
     }
 
