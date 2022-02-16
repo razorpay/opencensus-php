@@ -67,7 +67,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $customerDeviceDetailsRules = [
-        Fields::CUSTOMER_DETAILS_DEVICE_ID          => 'required|regex:/^\d{1}\.[a-zA-Z0-9]{16}\.\d{13}\.\d{8}$/',
+        Fields::CUSTOMER_DETAILS_DEVICE_ID          => 'required|regex:/^\d{1}\.[a-zA-Z0-9]{40}\.\d{13}\.\d{8}$/',
     ];
 
     protected function validateShippingAddress($attribute, $value)
