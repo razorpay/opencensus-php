@@ -164,6 +164,70 @@ class BankTransferTest extends TestCase
         );
     }
 
+    public function testFetchPaymentsPostRblMigration()
+    {
+        $accountNumber = $this->getIciciVaBankAccount();
+
+        $terminalAttributes = [ 'id' =>'GENERICBANKRBL', 'gateway' => Gateway::BT_RBL, 'gateway_merchant_id' => '0001046' ];
+        $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal', $terminalAttributes);
+
+        $bankAccount1LastEntity = $this->getDbLastEntity('bank_account');
+
+//       replicated current bank account and set IFSC to RBL.
+        $bankAccount2 = $this->fixtures->create(
+            'bank_account',
+            [
+                'merchant_id'       => '10000000000000',
+                'entity_id'         => substr($this->virtualAccountId, 3, strlen($this->virtualAccountId)),
+                'type'              => 'virtual_account',
+                'account_number'    =>  $accountNumber,
+                'ifsc_code'         => 'RATN0VAAPIS',
+            ]
+        );
+
+        $this->fixtures->edit(
+            'virtual_account',
+            $this->virtualAccountId,
+            ['bank_account_id_2' => $bankAccount2->getId()]
+        );
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+        $this->assertTrue($virtualAccount->hasBankAccount2());
+        $this->assertEquals($virtualAccount->getAttribute('bank_account_id_2'), $bankAccount2->getId());
+        $this->assertEquals($virtualAccount->getAttribute('bank_account_id'), $bankAccount1LastEntity->getId());
+
+//        bank Tranfer on RBL
+
+        $testData = $this->testData['testBankTransferRbl'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $accountNumber;
+
+        $this->ba->directAuth();
+
+        $this->startTest($testData);
+
+        $bankTransfer2 =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer2['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer2['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals($bankAccount2->getId(), $payment['receiver_id']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $this->ba->proxyAuth();
+        $request = [
+            'url' => '/virtual_accounts/'.$this->virtualAccountId.'/payments',
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals($response['items'][0]['id'], $payment['id']);
+    }
+
     public function testBankTransferProcessPgWhenLedgerReverseShadowEnabled()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);

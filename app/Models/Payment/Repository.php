@@ -2126,15 +2126,20 @@ class Repository extends Base\Repository
                               ->virtual_account
                               ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
 
+        $bankAccountId2 = $this->repo
+                               ->virtual_account
+                               ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID2);
+
         $vpaId = $this->repo
                       ->virtual_account
                       ->dbColumn(VirtualAccount\Entity::VPA_ID);
 
-        $query->join(Table::VIRTUAL_ACCOUNT, function($join) use ($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId)
+        $query->join(Table::VIRTUAL_ACCOUNT, function($join) use ($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId, $bankAccountId2)
         {
             $join->on($paymentReceiverId, '=', $qrcodeId);
             $join->orOn($paymentReceiverId, '=', $bankAccountId);
             $join->orOn($paymentReceiverId, '=', $vpaId);
+            $join->orOn($paymentReceiverId, '=', $bankAccountId2);
         });
     }
 
