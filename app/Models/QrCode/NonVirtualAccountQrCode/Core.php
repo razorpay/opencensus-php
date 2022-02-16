@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
@@ -10,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Exception\BadRequestException;
+use RZP\Trace\Tracer;
 
 class Core extends QrCode\Core
 {
@@ -34,7 +36,9 @@ class Core extends QrCode\Core
 
         $qrCode->source()->associate($order);
 
-        return $this->build($qrCode);
+        return Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($qrCode) {
+            return $this->build($qrCode);
+        });
     }
 
     private function build(Entity $qrCode)

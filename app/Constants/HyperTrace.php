@@ -40,4 +40,14 @@ class HyperTrace
     const UPI_SERVICE_FIND_BY_PUBLIC_ID_AND_MERCHANT            = 'upi.service.fetchForPayment.findByPublicIdAndMerchant';
     const UPI_SERVICE_FIND_BY_PAYMENT_ID                        = 'upi.service.findByPaymentId';
     const PAYMENT_REFUND                                        = 'payment.refund';
+
+    /*QR code traces names*/
+    const QR_CODE_CREATE                                        = 'qrv2_qr_code.create';
+    const QR_CODE_CREATE_FOR_CHECKOUT                           = 'qrv2_qr_code.create_for_checkout';
+    const QR_CODE_CREATE_BUILD_QR_CODE                          = 'qrv2_qr_code.create.buildQrCode';
+    const QR_CODE_CREATE_FOR_CHECKOUT_SERVICE                   = 'qrv2_qr_code.create_for_checkout.createForCheckout';
+    const QR_CODES_CLOSE_QR_CODE                                = 'qrv2_qr_codes.closeQrCode';
+    const QR_CODES_FETCH_MULTIPLE_PAYMENT_ID                    = 'qrv2_qr_codes.fetch_multiple.paymentId';
+    const QR_CODES_FETCH_MULTIPLE_FETCH_ALL                     = 'qrv2_qr_codes.fetch_multiple.fetch_all';
+    const QR_CODES_FETCH                                        = 'qrv2_qr_codes.fetch';
 }

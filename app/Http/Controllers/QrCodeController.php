@@ -6,19 +6,24 @@ use App;
 use Request;
 use Response;
 use ApiResponse;
+use RZP\Constants\HyperTrace;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Models\QrCode\Constants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as NonVAQrCodeService;
+use RZP\Trace\Tracer;
 
 
 class QrCodeController extends Controller
 {
+
     public function create()
     {
         $input = Request::all();
 
-        $entity = (new NonVAQrCodeService())->create($input);
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
+            return (new NonVAQrCodeService())->create($input);
+        });
 
         return ApiResponse::json($entity);
     }
@@ -26,7 +31,9 @@ class QrCodeController extends Controller
     {
         $input = Request::all();
 
-        $entity = (new NonVAQrCodeService())->createForCheckout($input);
+        $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_FOR_CHECKOUT], function () use ($input) {
+            return (new NonVAQrCodeService())->createForCheckout($input);
+        });
 
         return ApiResponse::json($entity);
     }

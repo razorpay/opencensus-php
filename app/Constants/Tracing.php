@@ -6,6 +6,7 @@ use RZP\Http\Route;
 
 class Tracing
 {
+
     // constants related to distributed tracing setup
     const SERVICE_NAME_IN_JAEGER      =   'api';
 
@@ -291,6 +292,12 @@ class Tracing
 
             // Gateway file
             'gateway_file_create',
+
+            //QR codes
+            'qr_code_create',
+            'qr_code_close',
+            'qr_code_fetch',
+            'qr_code_fetch_multiple',
         ]);
     }
 

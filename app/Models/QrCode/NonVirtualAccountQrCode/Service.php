@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use RZP\Constants\HyperTrace;
 use RZP\Models\QrCode;
 use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
@@ -14,6 +15,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as ConstantEntity;
+use RZP\Trace\Tracer;
 
 class Service extends QrCode\Service
 {
@@ -34,7 +36,9 @@ class Service extends QrCode\Service
         {
             $input[Entity::REQUEST_SOURCE] = $this->getRequestSourceViaAuth();
 
-            $qrCode = (new Core)->buildQrCode($input);
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
+                return (new Core)->buildQrCode($input);
+            });
 
             $this->publishQrCodeEvent($qrCode, Event::CREATED);
         }
@@ -72,7 +76,9 @@ class Service extends QrCode\Service
                             throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_DISALLOWED_FOR_ORDER);
                         }
 
-                        $qrCode = $this->createForOrder($input, $order);
+                        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_FOR_CHECKOUT_SERVICE], function () use ($input, $order) {
+                            return $this->createForOrder($input, $order);
+                        });
 
                         break;
                 }
@@ -156,7 +162,9 @@ class Service extends QrCode\Service
                 return $qrCode->toArrayPublic();
             }
 
-            $qrCode = (new Core)->close($qrCode, $closeReason);
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_CLOSE_QR_CODE], function () use ($qrCode,$closeReason) {
+                return (new Core)->close($qrCode, $closeReason);
+            });
 
             $this->publishQrCodeEvent($qrCode, Event::CLOSED);
 
@@ -181,21 +189,27 @@ class Service extends QrCode\Service
                 $this->trace->info(TraceCode::QR_CODE_FETCH_MULTIPLE_KEYS_SUPPLIED_WITH_PAYMENT_ID, $input);
             }
 
-            $qrCode = (new Repository())->fetchQrCodeForPaymentId($input[QrPayment\Entity::PAYMENT_ID], $this->merchant->getId());
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_FETCH_MULTIPLE_PAYMENT_ID], function () use ($input) {
+                return (new Repository())->fetchQrCodeForPaymentId($input[QrPayment\Entity::PAYMENT_ID], $this->merchant->getId());
+            });
 
             return $qrCode->toArrayPublic();
         }
 
         $input[Entity::ENTITY_TYPE] = 'qr_code';
 
-        $qrCodes = (new Repository)->fetch($input, $this->merchant->getId());
+        $qrCodes = Tracer::inspan(['name' => HyperTrace::QR_CODES_FETCH_MULTIPLE_FETCH_ALL], function () use ($input) {
+            return (new Repository)->fetch($input, $this->merchant->getId());
+        });
 
         return $qrCodes->toArrayPublic();
     }
 
     public function fetch($id)
     {
-        $qrCode = (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
+        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_FETCH], function () use ($id) {
+            return (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
+        });
 
         if ($qrCode->source !== null)
         {
