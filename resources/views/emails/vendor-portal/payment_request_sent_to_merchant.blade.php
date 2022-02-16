@@ -100,7 +100,7 @@
 
       <div
         class="max-width-override"
-        style="background: linear-gradient(0deg, #F8F9F9 70%, {{ $merchant['brand_color'] }} 30%); Margin: 0px auto; max-width: unset;"
+        style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;"
       >
         <table
           align="center"
@@ -347,7 +347,7 @@
                                       >
                                         <a
                                           class="link btn primary font-bold"
-                                          href="https://x.razorpay.com/vendor-portal"
+                                          href="{{ $invoice['url'] }}"
                                           target="_blank"
                                           style="
                                             text-decoration: none;
@@ -748,9 +748,13 @@
                                         ₹
                                         {{$invoice['tds_amount']}}
                                         •
-                                        <span style="font-size: 12px"
+                                        <span 
+                                          style="
+                                            font-size: 12px;
+                                            color: #00000099;
+                                          "
                                           >@if(isset($invoice['tds_category']['overridden_slab'])){{$invoice['tds_category']['overridden_slab']}}@endif
-                                          @if(empty($invoice['tds_category']['overridden_slab'])){{$invoice['tds_category']['code']}}@endif
+                                          @if(empty($invoice['tds_category']['overridden_slab'])){{$invoice['tds_category']['slab']}}@endif
                                           <span style="color: #00000099"
                                             >% of subtotal</span
                                           ></span
@@ -886,13 +890,13 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['payouts']['amount']  }}
+                                        ₹ {{ $invoice['amount_requested']  }}
                                       </div>
                                     </div>
                                     <div style="text-align: center">
                                       <a
                                         class="link btn primary font-bold"
-                                        href="https://x.razorpay.com/vendor-portal"
+                                        href="{{ $invoice['url'] }}"
                                         target="_blank"
                                         style="
                                           text-decoration: none;
@@ -1267,7 +1271,7 @@
                                       >
                                         |
                                       </div>
-                                      @endisset 
+                                      @endisset
                                       @isset($merchant['support_email'])
                                       <div
                                         class="value"

@@ -100,7 +100,7 @@
 
       <div
         class="max-width-override"
-        style="background: linear-gradient(0deg, #F8F9F9 70%, {{ $merchant['brand_color'] }} 30%); Margin: 0px auto; max-width: unset;"
+        style="background: {{ $merchant['brand_color'] }}; background-color: {{ $merchant['brand_color'] }}; Margin: 0px auto; max-width: unset;"
       >
         <table
           align="center"
@@ -292,8 +292,7 @@
                                             color: #7b8199;
                                           "
                                         >
-                                          {{$merchant['name']}} has received your
-                                          payment request on RazorpayX
+                                          {{$merchant['name']}} has accepted your payment request on RazorpayX
                                         </div>
                                         <div
                                           class="center-align"
@@ -328,12 +327,7 @@
                                           color: #7b8199;
                                         "
                                       >
-                                        {{ $merchant['name'] }} will review your
-                                        payment request and pay on the due date.
-                                        Once the merchant approves or discards
-                                        the payment, you will be notified via
-                                        email. You can also check the payment
-                                        status on the Vendor Portal.
+                                        Once the payment is processed, you will receive an email containing the transfer details. You can also check the payment status on the Vendor Portal dashboard.
                                         <div style="margin-top: 16px">
                                           For any queries, contact the merchant
                                           directly.
@@ -347,7 +341,7 @@
                                       >
                                         <a
                                           class="link btn primary font-bold"
-                                          href="https://x.razorpay.com/vendor-portal"
+                                          href="{{ $invoice['url'] }}"
                                           target="_blank"
                                           style="
                                             text-decoration: none;
@@ -748,7 +742,11 @@
                                         ₹ {{
                                         $invoice['tds_amount'] }}
                                         •
-                                        <span style="font-size: 12px"
+                                        <span 
+                                          style="
+                                            font-size: 12px;
+                                            color: #00000099;
+                                          "
                                           >@if(isset($invoice['tds_category']['overridden_slab'])){{
                                           $invoice['tds_category']['overridden_slab']
                                           }} @endif
@@ -816,7 +814,7 @@
                                           font-size: 12px;
                                         "
                                       >
-                                        {{ $invoice['tds_category']['code']
+                                        {{ $invoice['tds_category']['slab']
                                         }}% Tax Slab
                                       </div>
                                     </div>
@@ -890,13 +888,13 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['payouts']['amount'] }}
+                                        ₹ {{ $invoice['amount_requested'] }}
                                       </div>
                                     </div>
                                     <div style="text-align: center">
                                       <a
                                         class="link btn primary font-bold"
-                                        href="https://x.razorpay.com/vendor-portal"
+                                        href="{{ $invoice['url'] }}"
                                         target="_blank"
                                         style="
                                           text-decoration: none;

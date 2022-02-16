@@ -444,7 +444,7 @@
                                       "
                                     >
                                       {{ $vendor_name }} raised a payment
-                                      request worth Rs.{{ $invoice['payouts']['amount'] }}/-.
+                                      request worth Rs.{{ $invoice['amount_requested'] }}/-.
                                       To edit, accept or discard the payment
                                       request, go to the details view of this
                                       vendor payment by clicking the button
@@ -809,7 +809,7 @@
                                       </div>
                                     </div>
                                     @endif
-                                    @isset($invoice['metadata']['notes_to_merchant'])
+                                    @isset($invoice['notes_to_merchant'])
                                     <div
                                       class="information-row"
                                       style="
@@ -842,11 +842,7 @@
                                           text-align: left;
                                         "
                                       >
-                                        {{ $invoice['metadata']['notes_to_merchant'].key }}
-                                        <div style="opacity: 0.7">
-                                          {{ $invoice['metadata']['notes_to_merchant'].value
-                                          }}
-                                        </div>
+                                        {{ $invoice['notes_to_merchant'] }}
                                       </div>
                                     </div>
                                     @endisset
@@ -984,7 +980,7 @@
                                         style="
                                           color: #9195a6;
                                           display: inline-block;
-                                          width: 40%;
+                                          width: 45%;
                                           vertical-align: middle;
                                         "
                                       ></div>
@@ -1038,7 +1034,7 @@
                                           text-align: left;
                                         "
                                       >
-                                        ₹ {{ $invoice['payouts']['amount'] }}
+                                        ₹ {{ $invoice['amount_requested'] }}
                                       </div>
                                     </div>
                                     <a
