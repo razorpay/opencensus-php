@@ -1,6 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
-import store, { getUser } from 'merchant/store';
+import store from 'merchant/store';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
@@ -285,15 +285,11 @@ export const getPurposeCodes = () => {
 };
 
 export const fetchPurposeCode = () => {
-  const user = getUser();
   return {
     type: GET_FIRC_DETAILS,
     payload: merchantFetch({
       url: `users/purpose/code`,
       method: 'get',
-      data: {
-        email: user.email,
-      },
     }),
   };
 };

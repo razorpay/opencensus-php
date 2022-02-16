@@ -1,0 +1,150 @@
+$heading-color = #0D2366
+$bg-color = #fafafa
+$bg-hover = #0b70e70c
+$border-color = #e4e4e4
+$accordian-title = #515978
+$text-color = #5b666d
+$label-color = #162F56BD
+$tick-color = #528ff0
+
+.firc-container
+  .modal-header
+    color: $heading-color
+
+  .modal-content
+    box-shadow: none
+    border: none
+    background: $bg-color
+
+  .fw-600
+    font-weight: 600
+  
+  .pr-10
+    padding-right: 10px
+  
+  .m-0
+    margin: 0
+
+  .content-box
+    padding: 24px
+
+  .no-content
+    display: flex
+    justify-content: center
+    align-items: center
+    flex-wrap: wrap
+
+  .footer-section
+    padding: 18px 24px
+    background-color: $bg-color
+    border-top: 1px solid $border-color
+
+    .next-btn
+      width: 70%
+      font-weight: 600
+
+    .back-btn
+      width: 30%
+
+.purpose-code-container
+  .header-section
+    background-color: $bg-color
+
+  .search-container
+    position: relative
+
+    input
+      padding: 0 24px
+
+    .i-search
+      position: absolute
+      top: 13px
+      left: 5px
+
+    .close-icon
+      position: absolute
+      top: 8px
+      right: 0
+
+  .scroll-container
+    overflow-y: scroll
+    max-height: 350px
+    min-height: 350px
+
+    -ms-overflow-style: none  /* IE and Edge */
+    scrollbar-width: none  /* Firefox */
+
+    &::-webkit-scrollbar
+      display: none /* Hide scrollbar for Chrome, Safari and Opera */
+
+    .list-container
+      .list-item
+        position: relative
+        padding: 10px 24px
+        color: $text-color
+        cursor: pointer
+        &:hover
+          background-color: $bg-hover
+    
+        &:first-child
+          margin-top: 8px
+    
+        &:last-child
+          margin-bottom: 8px
+    
+        &:only-child
+          margin: 8px 0
+
+        .tick-icon
+          color: $tick-color
+          font-size: 16px
+          position: absolute
+          top: 50%
+          right: 15px
+
+    .collapse-section
+      .Accordion .Accordion__item
+        margin-top: 0px
+        border-top: 1px solid $border-color
+
+      .Accordion
+        .Accordion__item
+          .Accordion__title
+            color: $accordian-title
+            background-color: $bg-color
+            padding: 12px 24px
+
+        .accordion__arrow
+          right: 20px
+
+      .Accordion
+        .Accordion__item
+          .Accordion__content
+            padding: 0
+  
+  .confirmation-content
+    padding: 12px 24px
+    color: $label-color
+
+    .label-text
+      margin-top: 16px
+
+    .label-text:last-child
+      margin-bottom: 16px
+
+.iec-code-container 
+	padding 24px
+	.label-text
+    color $label-color
+    padding 15px 0
+  .input-container 
+    height 55px
+  .error-text 
+    font-size 12px
+    margin 5px 5px 0
+  .highlight-content 
+    background-color $bg-hover
+    color $text-color
+    padding 6px 12px
+    font-size 12px
+    margin-top 15px

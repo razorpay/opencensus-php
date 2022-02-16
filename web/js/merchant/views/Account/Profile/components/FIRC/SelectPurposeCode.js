@@ -55,20 +55,20 @@ const SelectPurposeCode = (props) => {
               ))}
             </div>
           ) : (
-            <div className="content-box no-results">
+            <p className="content-box no-content">
               No results found for &quot;<b>{search.text}</b>&quot;
-            </div>
+            </p>
           ))}
 
         <div className="collapse-section">
-          <Accordion>
-            {purposeCodeList.data?.length > 0 &&
-              purposeCodeList.data.map((categoryCodes) => (
-                <AccordionItem key={categoryCodes.purposeGroup}>
-                  <AccordionItemTitle>{categoryCodes.purposeGroup}</AccordionItemTitle>
+          {purposeCodeList.data?.length > 0 && (
+            <Accordion>
+              {purposeCodeList.data.map(({ purposeGroup, codes }) => (
+                <AccordionItem key={purposeGroup}>
+                  <AccordionItemTitle>{purposeGroup}</AccordionItemTitle>
                   <AccordionItemContent>
                     <div className="list-container">
-                      {categoryCodes.codes.map((code) => (
+                      {codes.map((code) => (
                         <div
                           key={code.purposeCode}
                           className="list-item"
@@ -85,7 +85,8 @@ const SelectPurposeCode = (props) => {
                   </AccordionItemContent>
                 </AccordionItem>
               ))}
-          </Accordion>
+            </Accordion>
+          )}
         </div>
       </div>
 

@@ -9,6 +9,7 @@ import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { getPurposeCodes, updatePurposeCode } from 'merchant/reducers/profile';
 import { MODAL_HEADING, SPECIAL_PURPOSE_CODES, computeSearch } from './utility';
+import 'merchant/views/Account/Profile/components/FIRC/css/firc.styl';
 
 const FIRCFormModal = (props) => {
   const [step, setStep] = useState(1);
@@ -26,11 +27,11 @@ const FIRCFormModal = (props) => {
   useEffect(() => {
     getPurposeCodes()
       .then(({ data }) => setList({ isLoading: false, data }))
-      .catch(() => {
+      .catch(({ errors }) => {
         setList({ isLoading: false, data: [] });
         showNotification({
           type: 'error',
-          message: 'Sorry! Could not fetch purpose code list.',
+          message: errors[0] || 'Fetching purpose code list failed.',
         });
       });
   }, [showNotification]);
