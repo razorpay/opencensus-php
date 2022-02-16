@@ -7520,4 +7520,17 @@ class RefundTest extends TestCase
         $this->assertEquals('created', $fta['status']);
         $this->assertEquals($tokenisedCard['id'], $fta['card_id']);
     }
+
+    public function testRefundOnDisabledMethod()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->payment->edit($payment['id'], ['method' => 'offline']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+    }
 }

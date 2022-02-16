@@ -20,6 +20,7 @@ class Method
     const NACH                  = 'nach';
     const APP                   = 'app';
     const COD                   = 'cod';
+    const OFFLINE               = 'offline';
     const UNSELECTED            = 'unselected';
 
     protected static $methods = [

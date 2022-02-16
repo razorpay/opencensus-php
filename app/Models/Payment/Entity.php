@@ -2531,6 +2531,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->isMethod(Payment\Method::COD);
     }
 
+    public function isOffline()
+    {
+        return $this->isMethod(Payment\Method::OFFLINE);
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);
