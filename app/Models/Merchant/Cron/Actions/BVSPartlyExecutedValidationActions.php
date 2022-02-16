@@ -22,10 +22,20 @@ class BVSPartlyExecutedValidationActions extends BaseAction
 
         $collectorData = $data["bvs_partly_executed_validations"]; // since data collector is an array
         $unprocessedValidations = $collectorData->getData();
-        $successCount = 0;
+        $unprocessedValidationCount = count($unprocessedValidations);
 
+        // Skip as there are no unprocessed validations.
+        if ($unprocessedValidationCount === 0)
+        {
+            $this->app['trace']->info(TraceCode::PARTLY_EXECUTED_VALIDATIONS_PROCESS_SKIPPED, [
+                'message' => 'partly executed validations do not exist.'
+            ]);
+            return new ActionDto(Constants::SKIPPED);
+        }
+
+        $successCount = 0;
         $this->app['trace']->info(TraceCode::PARTLY_EXECUTED_VALIDATIONS_PROCESS, [
-            '$unprocessedValidations' => count($unprocessedValidations)
+            '$unprocessedValidationCount' => $unprocessedValidationCount
         ]);
 
         foreach ($unprocessedValidations as $validation)
