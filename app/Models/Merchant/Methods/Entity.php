@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
     const OPENWALLET        = 'openwallet';
     const MPESA             = 'mpesa';
     const EMI               = 'emi';
+    const OFFLINE           = 'offline';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const PREPAID_CARD      = 'prepaid_card';
@@ -118,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_EMI_PROVIDERS,
         self::ADDITIONAL_WALLETS,
         self::COD,
+        self::OFFLINE,
     ];
 
     protected $visible = [
@@ -163,6 +165,7 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::COD,
+        self::OFFLINE,
     ];
 
     protected $public = [
@@ -209,6 +212,7 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::COD,
+        self::OFFLINE,
     ];
 
     protected $appends = [
@@ -262,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT_EMI_PROVIDERS => DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS,
         self::ADDITIONAL_WALLETS => [],
         self::COD            => false,
+        self::OFFLINE        => false,
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -355,6 +360,7 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
         self::APPS,
         self::COD,
+        self::OFFLINE,
     ];
 
     // Casts the attributes to native types
@@ -388,6 +394,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH=> 'bool',
         self::PAYPAL        => 'bool',
         self::COD           => 'bool',
+        self::OFFLINE       => 'bool',
     ];
 
     public function merchant()
@@ -661,6 +668,11 @@ class Entity extends Base\PublicEntity
     public function isCodEnabled()
     {
         return $this->getAttribute(self::COD);
+    }
+
+    public function isOfflineEnabled()
+    {
+        return $this->getAttribute(self::OFFLINE);
     }
 
     public function isCredEnabled()

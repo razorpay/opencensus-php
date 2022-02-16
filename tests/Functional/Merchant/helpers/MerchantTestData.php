@@ -3867,6 +3867,40 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithOfflineEnabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'offline' => true
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithOfflineDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'offline' => false
+                ],
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithCreditCardDisabled' => [
         'request' => [
             'url' => '/preferences',

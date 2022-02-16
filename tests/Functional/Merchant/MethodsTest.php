@@ -1087,4 +1087,21 @@ class MethodsTest extends TestCase
 
         $this->assertEquals(1, $merchantMethods['apps']['poli']);
     }
+
+    public function testEnableOfflineMethod()
+    {
+        $this->fixtures->merchant->disableAllMethods('10000000000000');
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }

@@ -644,6 +644,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function enableOffline($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['offline' => true]);
+    }
+
+    public function disableOffline($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['offline' => false]);
+    }
+
     public function enableEmandate($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['emandate' => true]);

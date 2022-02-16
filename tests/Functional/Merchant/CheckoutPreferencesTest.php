@@ -2016,6 +2016,29 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayNotHasKey('convenience_fee_config', $response['order']);
     }
 
+    public function testGetCheckoutPreferencesWithOfflineEnabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::OFFLINE_PAYMENT_ON_CHECKOUT]);
+
+        $this->fixtures->merchant->enableOffline();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithOfflineDisabled()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::OFFLINE_PAYMENT_ON_CHECKOUT]);
+
+        $this->fixtures->merchant->disableOffline();
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+
     public function testGetCheckoutPreferencesWithFeeConfigEmpty()
     {
         $data = $this->testData[__FUNCTION__];

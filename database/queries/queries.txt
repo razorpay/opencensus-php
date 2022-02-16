@@ -6650,6 +6650,9 @@ ALTER TABLE cards ADD COLUMN token_expiry_month CHAR(2) default NULL;
 
 ALTER TABLE cards ADD COLUMN token_expiry_year CHAR(4) default NULL;
 
+ALTER TABLE merchant_banks
+    ADD COLUMN offline TINYINT(1) DEFAULT 0;
+
 ALTER TABLE merchant_business_details
     ADD COLUMN `business_parent_category` varchar(255) DEFAULT NULL;
 

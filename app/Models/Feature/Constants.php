@@ -1176,6 +1176,8 @@ class Constants
      */
     const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
 
+    const OFFLINE_PAYMENT_ON_CHECKOUT = 'offline_checkout';
+  
     // This feature is used to send public_order_id in err instead of order_id.
     const ORDER_RECEIPT_UNIQUE_ERR = 'order_receipt_unique_err';
 
@@ -1633,6 +1635,7 @@ class Constants
         self::ALLOW_CARD_NAME_CHANGES         => true,
         self::SKIP_OAUTH_NOTIFICATION         => true,
         self::SKIP_PAYOUT_EMAIL               => true,
+        self::OFFLINE_PAYMENT_ON_CHECKOUT     => true,
         self::ORDER_RECEIPT_UNIQUE_ERR        => true,
         self::SUBM_QR_IMAGE_CONTENT           => true,
     ];

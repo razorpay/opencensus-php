@@ -63,8 +63,9 @@ class Validator extends Base\Validator
         Entity::OXIGEN             => 'sometimes|boolean',
         Entity::AMEXEASYCLICK      => 'sometimes|boolean',
         Entity::PAYCASH            => 'sometimes|boolean',
-        Entity::CITIBANKREWARDS => 'sometimes|boolean',
+        Entity::CITIBANKREWARDS    => 'sometimes|boolean',
         Entity::COD                => 'sometimes|boolean',
+        Entity::OFFLINE            => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

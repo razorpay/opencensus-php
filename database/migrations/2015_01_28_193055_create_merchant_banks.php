@@ -138,6 +138,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::COD)
                   ->default(0);
 
+            $table->tinyInteger(Methods::OFFLINE)
+                  ->default(0);
+
             $table->integer(Methods::CREATED_AT);
 
             $table->integer(Methods::UPDATED_AT);

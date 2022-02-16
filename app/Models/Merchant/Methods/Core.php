@@ -55,6 +55,15 @@ class Core extends Base\Core
                 'category' => $merchant->getCategory(),
             ]);
 
+        if(isset($input[Entity::OFFLINE]) === true and $input[Entity::OFFLINE] == true and
+        $merchant->isFeatureEnabled(Constants::OFFLINE_PAYMENT_ON_CHECKOUT) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,null,[
+                "internal_error_code" =>ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+            ]);
+        }
+
         if (isset($input['custom_text']) === true)
         {
             $this->setMerchantCustomTextForMethods($merchant->getMethods(), $input);
@@ -246,6 +255,7 @@ class Core extends Base\Core
         $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getDebitEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
         $data[Entity::COD] = $methods->isCodEnabled();
+        $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
 
 
         if ($netbankingEnabled === true)
@@ -305,6 +315,7 @@ class Core extends Base\Core
         {
             $data['upi_intent'] = true;
         }
+
 
         if ($merchant->isFeatureEnabled(Constants::UPI_OTM) === true)
         {

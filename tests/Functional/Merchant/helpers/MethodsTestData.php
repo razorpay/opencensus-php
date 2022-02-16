@@ -589,4 +589,26 @@ return [
             ],
         ],
     ],
+
+    'testEnableOfflineMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content'   => [
+                'offline' => 1
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+        ],
+    ],
 ];
