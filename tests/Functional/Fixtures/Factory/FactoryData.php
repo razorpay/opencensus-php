@@ -1926,6 +1926,27 @@ final class FactoryData
             'updated_at'  => $faker->timestamp,
         ]);
 
+        $factory(\RZP\Models\BankingAccountStatement\Pool\Base\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\BankingAccountStatement\Pool\Rbl\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\BankingAccountStatement\Pool\Icici\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Settings\Entity::class, [
             'module'                 => 'm2p_transfer',
             'entity_type'            => 'merchant',

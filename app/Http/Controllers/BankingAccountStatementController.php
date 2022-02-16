@@ -18,6 +18,29 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchStatementForPoolAccount()
+    {
+        $input = Request::all();
+
+        $channel = $input['channel'];
+
+        switch ($channel)
+        {
+            case 'rbl':
+                $response = $this->service(E::BANKING_ACCOUNT_STATEMENT_POOL_RBL)->fetchStatementForAccount($input);
+                break;
+
+            case 'icici':
+                $response = $this->service(E::BANKING_ACCOUNT_STATEMENT_POOL_ICICI)->fetchStatementForAccount($input);
+                break;
+
+            default:
+                $response = ['message' => 'invalid channel. Will throw exception if you hit with same request again'];
+        }
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * TODO: https://razorpay.atlassian.net/browse/RX-537
      *

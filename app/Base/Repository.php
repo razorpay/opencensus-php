@@ -1148,6 +1148,16 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
+    public function getRxStatementConnection(string $mode = null)
+    {
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        return Connection::RX_ACCOUNT_STATEMENTS_LIVE;
+    }
+
     public function getReportingReplicaConnection(string $mode = null): string
     {
         if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)

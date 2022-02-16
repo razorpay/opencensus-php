@@ -289,16 +289,18 @@ class Table
     const SETTINGS              = 'settings';
 
     // Banking Accounts Tables
-    const EXTERNAL                          = 'external';
-    const BANKING_ACCOUNT                   = 'banking_accounts';
-    const BANKING_ACCOUNT_STATE             = 'banking_account_state';
-    const BANKING_ACCOUNT_DETAIL            = 'banking_account_details';
-    const BANKING_ACCOUNT_STATEMENT         = 'banking_account_statement';
-    const BANKING_ACCOUNT_COMMENT           = 'banking_account_comments';
-    const BANKING_ACCOUNT_CALL_LOG          = 'banking_account_call_log';
-    const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_details';
-    const BANKING_ACCOUNT_STATEMENT_DETAILS = 'banking_account_statement_details';
-    const INTERNAL                          = 'internal_entity';
+    const EXTERNAL                             = 'external';
+    const BANKING_ACCOUNT                      = 'banking_accounts';
+    const BANKING_ACCOUNT_STATE                = 'banking_account_state';
+    const BANKING_ACCOUNT_DETAIL               = 'banking_account_details';
+    const BANKING_ACCOUNT_STATEMENT            = 'banking_account_statement';
+    const BANKING_ACCOUNT_COMMENT              = 'banking_account_comments';
+    const BANKING_ACCOUNT_CALL_LOG             = 'banking_account_call_log';
+    const BANKING_ACCOUNT_ACTIVATION_DETAIL    = 'banking_account_activation_details';
+    const BANKING_ACCOUNT_STATEMENT_DETAILS    = 'banking_account_statement_details';
+    const BANKING_ACCOUNT_STATEMENT_POOL_RBL   = 'banking_account_statement_pool_rbl';
+    const BANKING_ACCOUNT_STATEMENT_POOL_ICICI = 'banking_account_statement_pool_icici';
+    const INTERNAL                             = 'internal_entity';
 
     // P2P Service Tables
     const P2P_VPA               = 'p2p_vpa';

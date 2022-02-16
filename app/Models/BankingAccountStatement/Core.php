@@ -2170,11 +2170,14 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON_INITIATED,
             [
-                'channel'                               => $channel,
-                'banking_account_statement_rate_limit'  => $limit,
+                'channel'                              => $channel,
+                'banking_account_statement_rate_limit' => $limit,
+                'input'                                => $input
             ]);
 
-        $bankingAccountDetails = $this->repo->banking_account_statement_details->fetchAccountNumbersByChannelOrderByLastStatementAttemptAt($channel);
+        $accountType = array_pull($input, BASDetails\Entity::ACCOUNT_TYPE, BASDetails\AccountType::DIRECT);
+
+        $bankingAccountDetails = $this->repo->banking_account_statement_details->fetchAccountNumbersByChannelOrderByLastStatementAttemptAt($channel, $accountType);
 
         $accountNumbersToDispatch = [];
 
@@ -2265,7 +2268,7 @@ class Core extends Base\Core
 
             $accountNumberDetails[self::DELAY] = $cronDispatchDelay;
 
-            $this->dispatchBankingAccountStatementJob($accountNumberDetails);
+            $this->dispatchBankingAccountStatementJob($accountNumberDetails, $accountType);
         }
 
         return ['accounts_processed' => $accountNumbersDispatched];
@@ -2289,7 +2292,7 @@ class Core extends Base\Core
 
     // Adding a delay in dispatch and default is 0 min delay.
     // This delay can be made channel specific and can be kept in redis
-    public function dispatchBankingAccountStatementJob(array $accountDetails)
+    public function dispatchBankingAccountStatementJob(array $accountDetails, string $accountType = BASDetails\AccountType::DIRECT)
     {
         $channel       = array_pull($accountDetails, BASDetails\Entity::CHANNEL);
         $accountNumber = array_pull($accountDetails, BASDetails\Entity::ACCOUNT_NUMBER);
@@ -2307,7 +2310,7 @@ class Core extends Base\Core
                 self::ATTEMPT_NUMBER              => $attemptNumber
             ]);
 
-        $job = $this->getAccountStatementJobForChannel($channel, $accountNumber);
+        $job = $this->getAccountStatementJobForChannel($channel, $accountNumber, $accountType);
 
         $job::dispatch($this->mode,
                        [
@@ -2318,9 +2321,11 @@ class Core extends Base\Core
                        ])->delay($delay);
     }
 
-    protected function getAccountStatementJobForChannel(string $channel, string $accountNumber)
+    // Channel wise Queues are available for fetching direct accounts statement only. For Pool accounts we want to use BankingAccountStatementJob only.
+    protected function getAccountStatementJobForChannel(string $channel, string $accountNumber, string $accountType)
     {
-        if ($this->checkReArchFlow($accountNumber, $channel) === true)
+        if (($accountType === BASDetails\AccountType::DIRECT) and
+            ($this->checkReArchFlow($accountNumber, $channel) === true))
         {
             $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'BankingAccountStatement';
 
@@ -2455,6 +2460,24 @@ class Core extends Base\Core
         /** @var BASDetails\Entity $basDetailEntity */
         $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 
+        //s($basDetailEntity->toArray());
+
+        if ($basDetailEntity === null)
+        {
+            $id = (new Entity)->generateId()->getId();
+            s($id);
+
+            (new Details\Core)->createOrUpdate([
+                                                   BASDetails\Entity::MERCHANT_ID               => $id,
+                                                   BASDetails\Entity::ACCOUNT_NUMBER            => $accountNumber,
+                                                   BASDetails\Entity::CHANNEL                   => $channel,
+                                                   BASDetails\Entity::BALANCE_ID => $id
+                                               ]);
+
+            $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
+            s($basDetailEntity->toArray());
+        }
         // roll out via razorx.
         $variant = $this->app->razorx->getTreatment(
             $basDetailEntity->getMerchantId(),

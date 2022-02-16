@@ -5,12 +5,15 @@ namespace RZP\Models\BankingAccountStatement\Processor;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\Base\PublicEntity;
 use Rzp\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\BankingAccountStatement\Pool;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Channel;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 
 abstract class Base extends BaseCore
 {
@@ -26,13 +29,16 @@ abstract class Base extends BaseCore
 
     protected $channel;
 
+    /** @var BasDetails\Entity */
+    protected $basDetails;
+
     abstract public function checkForDuplicateTransactions(array $bankTransactions,
-                                                            string $channel,
-                                                            string $accountNumber);
+                                                           string $channel,
+                                                           string $accountNumber);
 
     abstract protected function sendRequestAndGetResponse(array $input);
 
-    abstract public function getUtrForChannel(Entity $basEntity);
+    abstract public function getUtrForChannel(PublicEntity $basEntity);
 
     public function __construct(string $channel, string $accountNumber)
     {
@@ -104,12 +110,61 @@ abstract class Base extends BaseCore
 
     protected function getLastBankTransaction()
     {
-        /** @var Entity|null $bankTxn */
-        $bankTxn = $this->repo->banking_account_statement
-                              ->findLatestByAccountNumberAndChannel($this->getAccountNumber(),
-                                                                    $this->channel);
+        $isAccountTypeShared = ($this->basDetails->getAccountType() === BasDetails\AccountType::SHARED);
+
+        switch (true)
+        {
+            case (($isAccountTypeShared === true) and
+                  ($this->channel === Channel::RBL)):
+                /** @var Pool\Rbl\Entity|null $bankTxn */
+                $bankTxn = $this->repo->banking_account_statement_pool_rbl
+                    ->findLatestByAccountNumber($this->getAccountNumber());
+
+                break;
+
+            case (($isAccountTypeShared === true) and
+                  ($this->channel === Channel::ICICI)):
+                /** @var Pool\Icici\Entity|null $bankTxn */
+                $bankTxn = $this->repo->banking_account_statement_pool_icici
+                    ->findLatestByAccountNumber($this->getAccountNumber());
+
+                break;
+
+            default:
+                /** @var Entity|null $bankTxn */
+                $bankTxn = $this->repo->banking_account_statement
+                    ->findLatestByAccountNumberAndChannel($this->getAccountNumber(),
+                                                          $this->channel);
+        }
 
         return $bankTxn;
+    }
+
+    protected function alterStatementColumnsToMatch()
+    {
+        if ($this->basDetails->getAccountType() === BasDetails\AccountType::SHARED)
+        {
+            array_delete(Entity::CHANNEL, $this->statementRecordsToMatch);
+        }
+    }
+
+    protected function getColumnsToFindDuplicates($bankTransaction)
+    {
+        $record = [
+            $bankTransaction[Entity::BANK_TRANSACTION_ID],
+            $bankTransaction[Entity::BANK_SERIAL_NUMBER],
+            $bankTransaction[Entity::TRANSACTION_DATE],
+            $bankTransaction[Entity::AMOUNT],
+        ];
+
+        if ($this->basDetails->getAccountType() === BasDetails\AccountType::DIRECT)
+        {
+            $record[] = $bankTransaction[Entity::CHANNEL];
+        }
+
+        $record[] = $bankTransaction[Entity::ACCOUNT_NUMBER];
+
+        return $record;
     }
 
     protected function getTimestampFromDateString(string $dateStr, string $timezone = Timezone::IST): int
@@ -168,5 +223,24 @@ abstract class Base extends BaseCore
         }
 
         return Carbon::create($year, Carbon::APRIL , 1, 0, 0, 0, Timezone::IST);
+    }
+
+    protected function getStartOfMonth($timestamp)
+    {
+        $currentTime = Carbon::createFromTimestamp($timestamp, Timezone::IST);
+        $year = $currentTime->year;
+        $month = $currentTime->month;
+
+        return Carbon::create($year, $month , 1, 0, 0, 0, Timezone::IST);
+    }
+
+    protected function getStartTime()
+    {
+        if ($this->basDetails->getAccountType() === BasDetails\AccountType::SHARED)
+        {
+            return $this->getStartOfMonth($this->basDetails->getCreatedAt());
+        }
+
+        return $this->getStartOfFinancialYear($this->basDetails->getCreatedAt());
     }
 }

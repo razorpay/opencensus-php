@@ -319,6 +319,9 @@ trait RepositoryFetch
                 }
 
                 return $this->getMasterReplicaConnection();
+
+            case ConnectionType::RX_ACCOUNT_STATEMENTS:
+                return $this->getRxStatementConnection();
         }
 
         return $connection;

@@ -1796,6 +1796,42 @@ class AdminFetch
                 ]
             ],
 
+            Entity::BANKING_ACCOUNT_STATEMENT_POOL_ICICI => [
+
+                BAS\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+
+                BAS\Entity::ACCOUNT_NUMBER => [
+                    Fetch::LABEL  => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::BANK_TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Bank Txn Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::UTR => [
+                    Fetch::LABEL  => 'UTR',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::BANKING_ACCOUNT_STATEMENT_POOL_RBL => [
+
+                BAS\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
+
+                BAS\Entity::ACCOUNT_NUMBER => [
+                    Fetch::LABEL  => 'Account Number',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::BANK_TRANSACTION_ID => [
+                    Fetch::LABEL  => 'Bank Txn Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                BAS\Entity::UTR => [
+                    Fetch::LABEL  => 'UTR',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::BANKING_ACCOUNT_STATEMENT_DETAILS => [
                 BAS\Details\Entity::MERCHANT_ID => Fetch::FIELD_MERCHANT_ID,
                 BAS\Details\Entity::BALANCE_ID => Fetch::FIELD_BALANCE_ID,

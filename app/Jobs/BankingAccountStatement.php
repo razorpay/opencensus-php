@@ -69,7 +69,27 @@ class BankingAccountStatement extends Job
 
             $workerStartTime = Carbon::now()->getTimestamp();
 
-            $result = $BASCore->processStatementForAccount($this->params);
+            if ($BASCore->getBasDetails()->getAccountType() === BAS\Details\AccountType::SHARED)
+            {
+                switch ($BASCore->getBasDetails()->getChannel())
+                {
+                    case 'rbl':
+                        $BasPoolCore = new BAS\Pool\Rbl\Core();
+                        break;
+
+                    case 'icici':
+                        $BasPoolCore = new BAS\Pool\Icici\Core();
+                }
+
+
+                $BasPoolCore->basDetails = $BASCore->getBasDetails();
+
+                $result = $BasPoolCore->fetchAccountStatementV2($this->params);
+            }
+            else
+            {
+                $result = $BASCore->processStatementForAccount($this->params);
+            }
 
             $workerEndTime = Carbon::now()->getTimestamp();
 

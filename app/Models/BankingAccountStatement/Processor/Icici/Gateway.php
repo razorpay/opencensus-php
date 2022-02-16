@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountStatement\Processor\Icici;
 
 use Carbon\Carbon;
 
+use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
@@ -84,9 +85,6 @@ class Gateway extends BaseProcessor
     ];
 
     const MAX_ATTEMPTS_TO_FETCH_CREDENTIALS_FROM_BAS = 3;
-
-    /** @var BasDetails\Entity */
-    protected $basDetails;
 
     protected $statementRecordsToMatch = [
         Entity::ACCOUNT_NUMBER,
@@ -457,7 +455,7 @@ class Gateway extends BaseProcessor
     protected function getStatementStartTime(array $lastTransaction)
     {
         // In case there are no transactions for the merchant in our DB then we will fetch statement from start of financial year.
-        $startTime = $this->getStartOfFinancialYear($this->basDetails->getCreatedAt())->getTimestamp();
+        $startTime = $this->getStartTime()->getTimestamp();
 
         if (empty($lastTransaction) === false)
         {
@@ -614,6 +612,8 @@ class Gateway extends BaseProcessor
 
     public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber)
     {
+        $this->alterStatementColumnsToMatch();
+
         $recordsToCheck = [];
         $totalRecordCount = count($bankTransactions);
         $totalRecords = 0;
@@ -632,14 +632,7 @@ class Gateway extends BaseProcessor
 
         foreach ($bankTransactions as $index => $bankTransaction)
         {
-            $recordsToCheck[] = [
-                $bankTransaction[Entity::BANK_TRANSACTION_ID],
-                $bankTransaction[Entity::BANK_SERIAL_NUMBER],
-                $bankTransaction[Entity::TRANSACTION_DATE],
-                $bankTransaction[Entity::AMOUNT],
-                $bankTransaction[Entity::CHANNEL],
-                $bankTransaction[Entity::ACCOUNT_NUMBER],
-            ];
+            $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
 
             $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
@@ -749,7 +742,7 @@ class Gateway extends BaseProcessor
         return $tempBankTransactionRecord;
     }
 
-    public function getUtrForChannel(Entity $basEntity)
+    public function getUtrForChannel(PublicEntity $basEntity)
     {
         $utr = null;
 
@@ -779,7 +772,7 @@ class Gateway extends BaseProcessor
         return $utr;
     }
 
-    protected function getCreditUtr(Entity $basEntity)
+    protected function getCreditUtr(PublicEntity $basEntity)
     {
         $description = $basEntity->getDescription();
 
@@ -807,7 +800,7 @@ class Gateway extends BaseProcessor
         return null;
     }
 
-    protected function getDebitUtr(Entity $basEntity)
+    protected function getDebitUtr(PublicEntity $basEntity)
     {
         $description = $basEntity->getDescription();
 

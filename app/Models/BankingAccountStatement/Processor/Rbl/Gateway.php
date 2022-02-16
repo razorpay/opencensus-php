@@ -12,6 +12,7 @@ use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement\Type;
@@ -65,9 +66,6 @@ class Gateway extends BaseProcessor
 
     const PAGINATION_KEY_REGEX = '/^[1-9][0-9]{9}_/';
 
-    /** @var BasDetails\Entity */
-    protected $basDetails;
-
     protected $rblAccountStatementV2MaxNumberOfRecords;
 
     protected $savePaginationKey = true;
@@ -109,6 +107,8 @@ class Gateway extends BaseProcessor
 
     public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber)
     {
+        $this->alterStatementColumnsToMatch();
+
         $recordsToCheck = [];
         $totalRecordCount = count($bankTransactions);
         $totalRecords = 0;
@@ -126,14 +126,7 @@ class Gateway extends BaseProcessor
 
         foreach ($bankTransactions as $index => $bankTransaction)
         {
-            $recordsToCheck[] = [
-                $bankTransaction[Entity::BANK_TRANSACTION_ID],
-                $bankTransaction[Entity::BANK_SERIAL_NUMBER],
-                $bankTransaction[Entity::TRANSACTION_DATE],
-                $bankTransaction[Entity::AMOUNT],
-                $bankTransaction[Entity::CHANNEL],
-                $bankTransaction[Entity::ACCOUNT_NUMBER],
-            ];
+            $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
 
             $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
@@ -147,8 +140,16 @@ class Gateway extends BaseProcessor
             if ((($processedRecordCount % $limit) === 0) or
                 (($totalRecords === $totalRecordCount) and ($processedRecordCount % $limit) !== 0))
             {
-                $existingRecords = $this->repo->banking_account_statement
-                                              ->findExistingStatementRecordsForBank($recordsToCheck);
+                if ($this->basDetails->getAccountType() === BasDetails\AccountType::DIRECT)
+                {
+                    $existingRecords = $this->repo->banking_account_statement
+                        ->findExistingStatementRecordsForBank($recordsToCheck);
+                }
+                else
+                {
+                    $existingRecords = $this->repo->banking_account_statement_pool_rbl
+                        ->findExistingStatementRecordsForBank($recordsToCheck);
+                }
 
                 /** @var Entity $record */
                 foreach ($existingRecords as $record)
@@ -325,7 +326,7 @@ class Gateway extends BaseProcessor
                 'delay'                           => $delay
             ];
 
-            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($data);
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($data, $this->basDetails->getAccountType());
         }
 
         return $finalFormattedResponse;
@@ -543,7 +544,7 @@ class Gateway extends BaseProcessor
                 'delay'                           => $delay
             ];
 
-            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($data);
+            (new BankingAccountStatementCore)->dispatchBankingAccountStatementJob($data, $this->basDetails->getAccountType());
         }
 
         return $finalFormattedResponse;
@@ -646,7 +647,7 @@ class Gateway extends BaseProcessor
         $statementEndTime = Carbon::now()->getTimestamp();
 
         // In case there are no transactions for the merchant in our DB then we will fetch statement from start of financial year.
-        $statementStartTime = $this->getStartOfFinancialYear($this->basDetails->getCreatedAt())->getTimestamp();
+        $statementStartTime = $this->getStartTime()->getTimestamp();
 
         if (array_key_exists(Fields::TO_DATE, $request[Fields::ATTEMPT]) === true)
         {
@@ -783,8 +784,7 @@ class Gateway extends BaseProcessor
     protected function getRequestDataForMozartV2(array $input)
     {
         /** @var BankingAccountEntity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByAccountNumberAndChannel($this->accountNumber,
-            $this->channel);
+        $bankingAccount = $this->repo->banking_account->getFromBalanceId($this->basDetails->getBalanceId());
 
         return [
             Fields::ATTEMPT => [
@@ -818,7 +818,7 @@ class Gateway extends BaseProcessor
         $bankTransaction = $this->getLastBankTransaction();
 
         // In case there are no transactions for the merchant in our DB then we will fetch statement from start of financial year.
-        $startTime = $this->getStartOfFinancialYear($this->basDetails->getCreatedAt())->getTimestamp();
+        $startTime = $this->getStartTime()->getTimestamp();
 
         $secondsInDay = Carbon::SECONDS_PER_MINUTE * Carbon::MINUTES_PER_HOUR * Carbon::HOURS_PER_DAY;
 
@@ -830,8 +830,6 @@ class Gateway extends BaseProcessor
             // This came up in rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
             $startTime -= $secondsInDay;
         }
-
-//        $startTime = 1606312668;
 
         $startTime = $this->getDateTimeStringFromTimestamp($startTime, self::STATEMENT_START_TIME_DATE_FORMAT);
 
@@ -1254,7 +1252,7 @@ class Gateway extends BaseProcessor
         return ($hasMoreData === 'Y');
     }
 
-    public function getUtrForChannel(Entity $basEntity)
+    public function getUtrForChannel(PublicEntity $basEntity)
     {
         $description = $basEntity->getDescription();
 

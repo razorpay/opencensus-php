@@ -840,6 +840,20 @@ return [
 
     ],
 
+    'testStatementFetchDispatchUsingBASDetailsTablePoolAccounts' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/rbl',
+            'content' => [
+                "account_type" => "shared"
+            ],
+        ],
+        'response' => [
+            'content' => ['accounts_processed' => ['2323230041626906']]
+        ]
+
+    ],
+
     'testLimitForEightHourRuleAndAccountsThatMadePayoutsForBASFetch' => [
         'request' => [
             'method'  => 'POST',

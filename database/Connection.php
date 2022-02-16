@@ -26,6 +26,8 @@ class Connection
     const DATA_WAREHOUSE_MERCHANT_TEST = 'data-warehouse-merchant-test';
     const DATA_WAREHOUSE_MERCHANT_LIVE = 'data-warehouse-merchant-live';
 
+    const RX_ACCOUNT_STATEMENTS_LIVE = 'rx_account_statements_live';
+
     const DATA_WAREHOUSE_CONNECTIONS = [
         self::DATA_WAREHOUSE_LIVE,
         self::DATA_WAREHOUSE_TEST,

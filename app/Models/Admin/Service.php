@@ -400,6 +400,10 @@ class Service extends Base\Service
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::DATA_WAREHOUSE_ADMIN_REPLICA);
         }
+        else if ($entity === Entity::BANKING_ACCOUNT_STATEMENT_POOL_ICICI or $entity === Entity::BANKING_ACCOUNT_STATEMENT_POOL_RBL)
+        {
+            $entities = $this->repo->$entity->fetch($input, null, ConnectionType::RX_ACCOUNT_STATEMENTS);
+        }
         else
         {
             $entities = $this->repo->$entity->fetch($input, null, ConnectionType::REPLICA);

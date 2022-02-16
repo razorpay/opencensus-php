@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional;
 
 use Artisan;
+use Database\Connection;
 use Illuminate\Database\DatabaseManager;
 
 class Database
@@ -26,7 +27,7 @@ class Database
     protected static $dbConnections = [
         'live',
         'test',
-        'auth'
+        'auth',
     ];
 
     public function __construct($app)

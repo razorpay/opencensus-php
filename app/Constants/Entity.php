@@ -214,10 +214,14 @@ class Entity
     const BANKING_ACCOUNT                   = 'banking_account';
     const BANKING_ACCOUNT_STATE             = 'banking_account_state';
     const BANKING_ACCOUNT_DETAIL            = 'banking_account_detail';
-    const BANKING_ACCOUNT_STATEMENT         = 'banking_account_statement';
-    const BANKING_ACCOUNT_STATEMENT_DETAILS = 'banking_account_statement_details';
     const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_detail';
     const BANKING_ACCOUNT_CALL_LOG          = 'banking_account_call_log';
+
+    // Banking Account Statement Entities
+    const BANKING_ACCOUNT_STATEMENT            = 'banking_account_statement';
+    const BANKING_ACCOUNT_STATEMENT_DETAILS    = 'banking_account_statement_details';
+    const BANKING_ACCOUNT_STATEMENT_POOL_RBL   = 'banking_account_statement_pool_rbl';
+    const BANKING_ACCOUNT_STATEMENT_POOL_ICICI = 'banking_account_statement_pool_icici';
 
     // heimdall
     const ORG                   = 'org';
@@ -872,7 +876,9 @@ class Entity
         self::CARD_MANDATE_NOTIFICATION         => \RZP\Models\CardMandate\CardMandateNotification::class,
         self::SUB_BALANCE_MAP                   => \RZP\Models\Merchant\Balance\SubBalanceMap::class,
 
-        self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
+        self::BANKING_ACCOUNT_STATEMENT_DETAILS    => \RZP\Models\BankingAccountStatement\Details::class,
+        self::BANKING_ACCOUNT_STATEMENT_POOL_RBL   => \RZP\Models\BankingAccountStatement\Pool\Rbl::class,
+        self::BANKING_ACCOUNT_STATEMENT_POOL_ICICI => \RZP\Models\BankingAccountStatement\Pool\Icici::class,
 
         self::PAYOUTS_DETAILS => \RZP\Models\PayoutsDetails::class,
 
