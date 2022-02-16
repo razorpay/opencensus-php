@@ -1,4 +1,4 @@
-import { Component, lazy } from 'react';
+import React, { Component, lazy } from 'react';
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
@@ -10,6 +10,8 @@ import { connect } from 'react-redux';
 import WriteToUsPopup from './WriteToUsPopup';
 import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
 import { initCare, TicketSystemEmitter } from '../../../care/init';
+import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
+import { Modal, ModalBody } from 'common/components/Modal';
 
 const SupportSection = lazy(
   () => import('@razorpay/frontend-care'),
@@ -266,26 +268,50 @@ class SupportBody extends Component {
     }
     return (
       <div class={classList('support-body', isOpened && 'active')}>
-        {careSupportSection ? (
-          <SupportSection
-            user={{
-              experiments: user.experiments,
-              email: user.email,
-              name: user.name,
-              id: user.id,
-              contact_mobile: user?.user?.contact_mobile,
-            }}
-            analyticsInstance={analyticsTrack}
-            // removing hash to support frontend care package
-            module={careSupportSection.module?.replace('#', '')}
-            initialData={careSupportSection.initialData}
-            onClose={() => {
-              this.setState({
-                careSupportSection: null,
-              });
-            }}
-          />
-        ) : null}
+        <ErrorBoundary
+          resetOnProps
+          rank={Ranks.P1}
+          team={Teams.CARE}
+          FallbackComponent={(props) => {
+            const [isOpen, setIsOpen] = React.useState(true);
+            return (
+              <Modal
+                isOpen={isOpen}
+                onClose={() => {
+                  setIsOpen(false);
+                  this.setState({
+                    careSupportSection: null,
+                  });
+                }}
+              >
+                <ModalBody>
+                  <InlineFallbackComponent {...props} />
+                </ModalBody>
+              </Modal>
+            );
+          }}
+        >
+          {careSupportSection ? (
+            <SupportSection
+              user={{
+                experiments: user.experiments,
+                email: user.email,
+                name: user.name,
+                id: user.id,
+                contact_mobile: user?.user?.contact_mobile,
+              }}
+              analyticsInstance={analyticsTrack}
+              // removing hash to support frontend care package
+              module={careSupportSection.module?.replace('#', '')}
+              initialData={careSupportSection.initialData}
+              onClose={() => {
+                this.setState({
+                  careSupportSection: null,
+                });
+              }}
+            />
+          ) : null}
+        </ErrorBoundary>
 
         <header>
           <i className="i i-headset m-r" /> Help and Support{' '}

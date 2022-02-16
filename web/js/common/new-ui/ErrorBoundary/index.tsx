@@ -38,7 +38,7 @@ class ErrorBoundary extends Component<Props, State> {
     let tags = this.props.tags;
 
     const pathname = window.location.pathname;
-    const team = getTeamName(pathname);
+    const team = this.props.team || getTeamName(pathname);
 
     // merge tags with extra tags
     tags = { ...tags, route: pathname, team };
