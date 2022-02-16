@@ -8,6 +8,7 @@ import EditSettings from 'merchant/views/MagicCheckout/MagicSettings/components/
 import { FETCH_STATUS, PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
 import { FEE_RULES, DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
+import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const isUrlValid = (value) => {
@@ -43,7 +44,7 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
   );
 
   useEffect(() => {
-    if (isUrlLenient(domain)) {
+    if (isUrlLenient(domain) && isFeeRuleValid(feeRule)) {
       setFormValid(true);
       setListPromotionsUrl(`${domain}/wp-json/1cc/v1/coupon/list`);
       setApplyPromotionUrl(`${domain}/wp-json/1cc/v1/coupon/apply`);

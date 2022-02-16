@@ -24,7 +24,7 @@ const FeeDetails = ({ rule_type, flat, slabs, type, label }) => {
       className={`display-flex justify-space-between c-fee-details fee-bg fee-slabs-table
       ${type === 'shipping' ? ' c-fee-details-shipping' : ''}`}
     >
-      <span className="font-12 font-bold color-black">{text}</span>
+      {fee !== RULE_TYPES.FREE && <span className="font-12 font-bold color-black">{text}</span>}
       <div className="display-flex flex-center">
         <i className="i i-rupee font-10 rupee-icon-fees-details" />
         {fee}

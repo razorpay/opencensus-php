@@ -1,4 +1,4 @@
-import { RULE_TYPES } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import { RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
 
 const validators = {
   flat: (value) => {
