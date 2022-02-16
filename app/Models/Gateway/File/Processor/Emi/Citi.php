@@ -10,7 +10,7 @@ class Citi extends Base
     const BANK_CODE             = IFSC::CITI;
     const FILE_TYPE             = FileStore\Type::CITI_EMI_FILE;
     const FILE_NAME             = 'Citi_Emi_File';
-    const DATE_FORMAT           = 'n/j/Y';
+    const DATE_FORMAT           = 'd/m/Y';
     const COMPRESSION_REQUIRED  = true;
 
     protected function formatDataForFile($data)
@@ -27,7 +27,7 @@ class Citi extends Base
 
             try
             {
-                $cardNumber = $this->getCardNumber($emiPayment->card);
+                $cardNumber = str_repeat('*', 12) . $emiPayment->card->getLast4();
             }
             catch (\Exception $e)
             {
@@ -54,7 +54,7 @@ class Citi extends Base
                 'STORE_STATE'                  => '',
                 'BANK_MID'                     => '',
                 'BANK_TID'                     => '',
-                'EMI_OFFER'                    => $emiTenure . ' months',
+                'EMI_OFFER'                    => $emiTenure,
                 'CARD_PAN'                     => $cardNumber,
                 'FIRST_NAME'                   => '',
                 'BANKAPPROVALCODE'             => $this->getAuthCode($emiPayment),
