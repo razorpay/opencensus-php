@@ -325,7 +325,7 @@ class UserController extends Controller
         return $data;
     }
 
-    public function postResetPasswordByEmail()
+    public function postResetPassword()
     {
         $input = Request::all();
 
