@@ -159,6 +159,31 @@ class Core extends Base\Core
         return (int)str_replace($base, '', base64_decode($id));
     }
 
+    public function getNotesForCheckout(array $checkout): array
+    {
+        $notes = ['storefront_id'  => $checkout['id']];
+
+        $lineItems = $checkout['lineItems']['edges'];
+
+        foreach ($lineItems as $lineItem)
+        {
+            $item = $lineItem['node'];
+
+            $title = $this->getVariantName($item);
+
+            $notes[$title] = 'Quantity: ' . strval($item['quantity']);
+        }
+
+        return $notes;
+    }
+
+    protected function getVariantName($item): string
+    {
+        $variantName = $item['variant']['title'] !== 'Default Title' ? ': ' . $item['variant']['title'] : '';
+
+        return $item['title'] . $variantName;
+    }
+
     public function getAvailableShippingRates($checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();

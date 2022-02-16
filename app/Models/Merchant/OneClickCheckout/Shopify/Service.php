@@ -58,9 +58,7 @@ class Service extends Base\Service
             'currency'         => 'INR',
             'payment_capture'  => 1,
             'line_items_total' => $amount,
-            'notes'            => [
-                'storefront_id'  => $checkout['id'],
-            ],
+            'notes'            => (new Core)->getNotesForCheckout($checkout),
         ])->toArrayPublic();
 
         $this->trace->info(
