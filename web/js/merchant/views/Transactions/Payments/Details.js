@@ -77,7 +77,7 @@ class PaymentDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window.rzpAnalytics({
+      window?.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Payments',
         eventLabel: `payment_id=${id}`,
@@ -91,7 +91,7 @@ class PaymentDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window.rzpAnalytics({
+      window?.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Payments',
         eventLabel: `payment_id=${id}`,
