@@ -146,7 +146,7 @@ return [
         'request' => [
             'method' => 'POST',
             'url' => '/merchants/10000000000000/terminals/onboard',
-            'content' => ['gateway' => 'fulcrum', 'currency_code' => 'INR']
+            'content' => ['gateway' => 'fulcrum', 'gateway_acquirer'  => 'ratn', 'currency_code' => 'INR']
         ],
         'response' => [
             'content' => [
@@ -166,7 +166,7 @@ return [
         'request' => [
             'method' => 'POST',
             'url' => '/merchants/10000000000000/terminals/onboard',
-            'content' => ['gateway' => 'fulcrum', 'gateway_acquirer' => 'axis']
+            'content' => ['gateway' => 'fulcrum', 'gateway_input' => 'axis']
         ],
         'response' => [
             'content' => [

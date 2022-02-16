@@ -491,12 +491,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:fulcrum',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
-        Entity::MODE                       => 'sometimes|integer|in:1', // default value for fulcrum terminal mode is auth_capture(1)
+        Entity::MODE                       => 'sometimes|integer|in:1,2', // default value for fulcrum terminal mode is auth_capture(1)
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
-        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
+        Entity::GATEWAY_ACQUIRER           => 'required|in:ratn,axis',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
     ];
@@ -687,7 +687,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::EXPECTED                   => 'sometimes|boolean',
-        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn,axis',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
@@ -2518,6 +2518,13 @@ class Validator extends Base\Validator
             array_push($PurchaseOnlyGateway, Gateway::CARDLESS_EMI);
 
             unset($authCaptureOnly[array_search(Gateway::CARDLESS_EMI,$authCaptureOnly)]);
+        }
+
+        if ((isset($input[Entity::GATEWAY_ACQUIRER]) === true) and ($input[Entity::GATEWAY_ACQUIRER] === Gateway::ACQUIRER_AXIS) and ($gateway === Gateway::FULCRUM))
+        {
+            array_push($PurchaseOnlyGateway, Gateway::FULCRUM);
+
+            unset($authCaptureOnly[array_search(Gateway::FULCRUM,$authCaptureOnly)]);
         }
 
         $isPurchaseSupportedCardGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and

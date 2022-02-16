@@ -190,7 +190,7 @@ class TerminalOnboardingTest extends TestCase
             ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED);
 
         $this->expectExceptionMessage(
-            'gateway_acquirer is/are not required and should not be sent');
+            'gateway_input is/are not required and should not be sent');
 
         $this->startTest();
     }
