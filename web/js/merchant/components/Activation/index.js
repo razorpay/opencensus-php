@@ -1371,7 +1371,7 @@ export default class ActivationWizard extends React.Component {
     const businessCategories = await this.props.fetchBusinessCategory();
 
     const data =
-      !this.props.data.activation_form_milestone && !this.isLinkedAccountForm
+      !this.props.data.activation_form_milestone && !this.isLinkedAccountForm && !this.isSourceRX
         ? (this.props.user.isEmailMandatoryOnL1 || this.props.user.isEmailNonMandatoryOnL1) &&
           !this.props.user.user?.signup_via_email
           ? Object.entries(this.state.dirty).reduce((a, c) => {
