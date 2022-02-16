@@ -272,7 +272,7 @@ class InstrumentRequestController extends BaseController
             [],
             \Requests::GET,
             'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
-            ['timeout' => 1.5],
+            ['timeout' => 2.5],
             $this->getMerchantHeadersForInstrumentRequest());
 
         return ApiResponse::json($response);
