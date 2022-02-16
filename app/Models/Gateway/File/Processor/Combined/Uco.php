@@ -68,9 +68,9 @@ class Uco extends Base
 
         $account = [
             'accountNumber' => $config['account_number'],
-            'accountName'   => 'Razorpay Software Private Limited',
-            'ifsc'          => 'UCBA',
-            'bank'          => 'Uco Bank Limited',
+            'accountName'   => 'Razorpay Software Private Limited - Axis Bank Nodal A/c',
+            'ifsc'          => $config['ifsc_code'],
+            'bank'          => 'Axis Bank Limited',
         ];
 
         $emailIds = [

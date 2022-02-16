@@ -159,7 +159,7 @@ class NbplusNetbankingUcoCombinedFileTest extends StaticCallbackNbplusGatewayTes
                 }
             }
 
-            $mystring = $row_new[3];
+            $mystring = $row_new[2];
 
             $first = strtok($mystring, 'ref');
 

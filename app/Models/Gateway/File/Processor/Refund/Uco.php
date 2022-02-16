@@ -26,7 +26,7 @@ class Uco extends Base
 
     const BANK_PAY_TYPE         = 'BankPayType';
 
-    const FILE_NAME              = 'Razorpay Refund_';
+    const FILE_NAME              = 'Razorpay_Refund_';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::UCO_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_UCO;
@@ -71,7 +71,7 @@ class Uco extends Base
 
         $refundDate1 = Carbon::now(Timezone::IST)->format('d/m/Y');
 
-        $poolAcNumber = '099917700000180';
+        $poolAcNumber = '18700210002254';
 
         $bank4digit = substr($poolAcNumber, 0, 4);
 
@@ -121,7 +121,7 @@ class Uco extends Base
 
         $count = count($data);
 
-        $refund_space_spec = [17, 10, 2, 18, 126, 0];
+        $refund_space_spec = [16, 11, 1, 17, 133, 0];
 
         foreach ($data as $row)
         {
@@ -129,7 +129,7 @@ class Uco extends Base
             for ($i = 0; $i < count($testArray); $i++)
             {
                 $j = $refund_space_spec[$i];
-                if ($j == 18)
+                if ($j == 17)
                 {
                     $txt = $txt . str_pad($testArray[$i], $j, ' ', STR_PAD_LEFT);
                 }
