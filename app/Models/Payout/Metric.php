@@ -76,7 +76,18 @@ final class Metric
 
         try
         {
-            Status::validateStatusUpdate($currentStatus, $previousStatus);
+            // adding this if clause for ledger based payouts
+            // Whenever a payout is initiated thru the ledger microservice, the payout moves to the created state
+            // before the balance checks. Thus, if this payout has to be queued for low balance, the payout moves
+            // from created to queued state. For non-ledger service payouts, that's illegal.
+            // But for ledger case, it is legal.
+            // TODO: Resolve this in a cleaner way when payout states go thru the simplification changes.
+            if ((Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) and
+                $previousStatus === Status::CREATED and
+                $currentStatus === Status::QUEUED) === false)
+            {
+                Status::validateStatusUpdate($currentStatus, $previousStatus);
+            }
 
             if (empty($previousStatus) === false)
             {
