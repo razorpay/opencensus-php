@@ -1,19 +1,26 @@
+import React, { useEffect } from 'react';
+
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+
 import { classList } from 'common/utils/rzp-utils';
 
 /* Position-awared Modal which opens over the field being edited / in the middle of screen */
-const CreatorModal = ({
-  children,
-  overElement,
-  className,
-  onClose,
-  allowScroll,
-}) => {
+const CreatorModal = ({ children, overElement, className, onClose, allowScroll }) => {
   // If not available, then opens modal in center of screen
 
-  const modalContent = (
-    <ModalContent class="paymentlinks-creator">{children}</ModalContent>
-  );
+  /*
+    Adding class on paymentpage-container to handle CSS on 
+    mobile based on whether base forms are open or not
+  */
+  useEffect(() => {
+    document.getElementById('paymentpage-container')?.classList.add('creator-modal-open');
+
+    return () => {
+      document.getElementById('paymentpage-container')?.classList.remove('creator-modal-open');
+    };
+  }, []);
+
+  const modalContent = <ModalContent class="paymentlinks-creator">{children}</ModalContent>;
 
   return overElement ? (
     <React.Fragment>

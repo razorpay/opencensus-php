@@ -545,6 +545,16 @@
     z-index: 3
     width: 100%
 
+  /* 
+    on mobile, if base form is open 
+    reducing z-index so that the the nav container
+    doesn't come above the creator modal
+  */
+  @media (max-width: $screen-xs-max)
+    &.creator-modal-open
+      .page-nav-container
+        z-index: 2
+
   .page-nav
     color: #fff
     background-color: #2F3445
