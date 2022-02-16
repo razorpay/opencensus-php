@@ -26,9 +26,11 @@ class Validator extends Base\Validator
         $expireAt       = $this->getExpireAtRule();
 
         $rules = [
+            Entity::NAME                            => 'string',
             Entity::DEVICE_ID                       => 'string',
-            Entity::CLIENT_ID                       => 'string',
+            Entity::MERCHANT_ID                     => 'string',
             Entity::CUSTOMER_ID                     => 'string',
+            Entity::HANDLE                          => 'string',
             Entity::AMOUNT                          => 'integer|min:1|max:10000000',
             Entity::AMOUNT_RULE                     => 'string|' . $amountRules,
             Entity::PAYER_ID                        => 'string',
@@ -42,24 +44,17 @@ class Validator extends Base\Validator
             Entity::UMN                             => 'string',
             Entity::STATUS                          => 'string',
             Entity::INTERNAL_STATUS                 => 'string',
-            Entity::EXPIRE_AT                       => 'epoch|' . $expireAt,
             Entity::START_DATE                      => 'epoch',
             Entity::END_DATE                        => 'epoch',
-            Entity::DETAILS                         => 'string',
-            Entity::ACTIVE                          => 'boolean',
             Entity::DESCRIPTION                     => 'string',
             Entity::ACTION                          => 'string',
-            Entity::NETWORK_TRANSACTION_ID          => 'string',
-            Entity::GATEWAY_TRANSACTION_ID          => 'string',
-            Entity::GATEWAY_REFERENCE_ID            => 'string',
-            Entity::RRN                             => 'string',
-            Entity::REF_ID                          => 'string|max:50',
-            Entity::REF_URL                         => 'string|max:255',
-            Entity::MCC                             => 'string|size:4',
-            Entity::GATEWAY_ERROR_CODE              => 'string',
-            Entity::GATEWAY_ERROR_DESCRIPTION       => 'string',
-            Entity::RISK_SCORES                     => 'string',
+            Entity::GATEWAY                         => 'string',
             Entity::GATEWAY_DATA                    => 'string',
+            Entity::INTERNAL_ERROR_CODE             => 'string',
+            Entity::ERROR_CODE                      => 'string',
+            Entity::ERROR_DESCRIPTION               => 'string',
+            Entity::COMPLETED_AT                    => 'epoch|',
+            Entity::EXPIRE_AT                       => 'epoch|' . $expireAt,
         ];
 
         return $rules;

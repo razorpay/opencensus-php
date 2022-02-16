@@ -4,8 +4,9 @@ namespace RZP\Services\Pspx\Mock;
 
 use Carbon\Carbon;
 use RZP\Services\Pspx\Routes;
-use RZP\Models\P2p\Mandate\Entity;
 use RZP\Services\Pspx\Mandate as BaseMandate;
+use RZP\Models\P2p\Mandate\Entity as MandateEntity;
+use RZP\Models\P2p\Mandate\UpiMandate\Entity as UpiMandateEntity;
 
 /**
  * Mock for Mandate class
@@ -19,38 +20,40 @@ class Mandate extends BaseMandate
     const CACHE_KEY          = 'api:p2p:upi:mocked_cache_key';
     const MANDATE_CACHE_SIZE = 5;
 
+    protected $upiEntitySkeleton = array(
+        UpiMandateEntity::NETWORK_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
+        UpiMandateEntity::GATEWAY_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
+        UpiMandateEntity::GATEWAY_REFERENCE_ID          => '911416196085',
+        UpiMandateEntity::RRN                           => '911416196085',
+        UpiMandateEntity::REF_ID                        => '',
+        UpiMandateEntity::REF_URL                       => '',
+        UpiMandateEntity::MCC                           => '1234',
+        UpiMandateEntity::GATEWAY_ERROR_CODE            => '00',
+        UpiMandateEntity::GATEWAY_ERROR_DESCRIPTION     => 'Incoming mandate create request"'
+    );
+
     protected $entitySkeleton = array(
-        Entity::DEVICE_ID                     => 'Device00123456',
-        Entity::CLIENT_ID                     => 'Client00123456',
-        Entity::CUSTOMER_ID                   => 'Customer001234',
-        Entity::AMOUNT_RULE                   => 'EXACT',
-        Entity::PAYER_ID                      => 'CustomerVpa001',
-        Entity::PAYEE_ID                      => 'CustomerVpa002',
-        Entity::TYPE                          => 'collect',
-        Entity::FLOW                          => 'debit',
-        Entity::MODE                          => 'default',
-        Entity::RECURRING_TYPE                => 'WEEKLY',
-        Entity::RECURRING_VALUE               => 2,
-        Entity::RECURRING_RULE                => 'ON',
-        Entity::UMN                           => '123456789012345678901234',
-        Entity::STATUS                        => 'requested',
-        Entity::INTERNAL_STATUS               => 'requested',
-        Entity::GATEWAY                       => 'p2p_upi_axis',
-        Entity::EXPIRE_AT                     => 0,
-        Entity::START_DATE                    => 0,
-        Entity::END_DATE                      => 0,
-        Entity::DETAILS                       => '',
-        Entity::ACTION                        => 'incomingMandate',
-        Entity::NETWORK_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
-        Entity::GATEWAY_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
-        Entity::GATEWAY_REFERENCE_ID          => '911416196085',
-        Entity::RRN                           => '911416196085',
-        Entity::REF_ID                        => '',
-        Entity::REF_URL                       => '',
-        Entity::MCC                           => '1234',
-        Entity::GATEWAY_ERROR_CODE            => '00',
-        Entity::GATEWAY_ERROR_DESCRIPTION     => 'Incoming mandate create request"',
-        Entity::GATEWAY_DATA                  => [],
+        MandateEntity::DEVICE_ID                     => 'Device00123456',
+        MandateEntity::CUSTOMER_ID                   => 'Customer001234',
+        MandateEntity::AMOUNT_RULE                   => 'EXACT',
+        MandateEntity::PAYER_ID                      => 'CustomerVpa001',
+        MandateEntity::PAYEE_ID                      => 'CustomerVpa002',
+        MandateEntity::TYPE                          => 'collect',
+        MandateEntity::FLOW                          => 'debit',
+        MandateEntity::MODE                          => 'default',
+        MandateEntity::RECURRING_TYPE                => 'WEEKLY',
+        MandateEntity::RECURRING_VALUE               => 2,
+        MandateEntity::RECURRING_RULE                => 'ON',
+        MandateEntity::UMN                           => '123456789012345678901234',
+        MandateEntity::STATUS                        => 'requested',
+        MandateEntity::INTERNAL_STATUS               => 'requested',
+        MandateEntity::GATEWAY                       => 'p2p_upi_axis',
+        MandateEntity::EXPIRE_AT                     => 0,
+        MandateEntity::START_DATE                    => 0,
+        MandateEntity::END_DATE                      => 0,
+        MandateEntity::ACTION                        => 'incomingMandate',
+        MandateEntity::GATEWAY_DATA                  => [],
+        MandateEntity::UPI                           => []
     );
 
     protected $response = array();
@@ -122,22 +125,22 @@ class Mandate extends BaseMandate
      */
     private function getMandateArray($input): array
     {
-        $mandateInput = isset($input[Entity::MANDATE]) ? $input[Entity::MANDATE] : [];
-        $contextInput = isset($input[Entity::CONTEXT]) ? $input[Entity::CONTEXT] : [];
+        $mandateInput = isset($input[MandateEntity::MANDATE]) ? $input[MandateEntity::MANDATE] : [];
+        $contextInput = isset($input[MandateEntity::CONTEXT]) ? $input[MandateEntity::CONTEXT] : [];
 
         $mandate = array_merge($mandateInput, [
-            Entity::ID              => Entity::generateUniqueId(),
-            Entity::CREATED_AT      => Carbon::now()->getTimestamp(),
-            Entity::UPDATED_AT      => Carbon::now()->getTimestamp(),
-            Entity::DELETED_AT      => null,
+            MandateEntity::ID              => MandateEntity::generateUniqueId(),
+            MandateEntity::CREATED_AT      => Carbon::now()->getTimestamp(),
+            MandateEntity::UPDATED_AT      => Carbon::now()->getTimestamp(),
+            MandateEntity::DELETED_AT      => null,
         ]);
 
         if (empty($contextInput) === false)
         {
             $mandate = array_merge($mandate, [
-                Entity::CLIENT_ID   => $contextInput['client']['id'],
-                Entity::DEVICE_ID   => $contextInput['device']['id'],
-                Entity::CUSTOMER_ID => $contextInput[Entity::CUSTOMER_ID],
+                MandateEntity::MERCHANT_ID      => $contextInput['client']['id'],
+                MandateEntity::DEVICE_ID        => $contextInput['device']['id'],
+                MandateEntity::CUSTOMER_ID      => $contextInput[MandateEntity::CUSTOMER_ID],
             ]);
         }
 
@@ -174,7 +177,7 @@ class Mandate extends BaseMandate
 
         foreach ($container as $key => $value)
         {
-            if($input[Entity::ID] === $container[$key][Entity::ID])
+            if($input[MandateEntity::ID] === $container[$key][MandateEntity::ID])
             {
                 unset($container[$key]);
 
@@ -205,7 +208,7 @@ class Mandate extends BaseMandate
 
         foreach ($container as $key => $value)
         {
-            if($input[Entity::ID] === $container[$key][Entity::ID])
+            if($input[MandateEntity::ID] === $container[$key][MandateEntity::ID])
             {
                 $deletedRecord = $container[$key];
 

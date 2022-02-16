@@ -7,6 +7,7 @@ use RZP\Services\Pspx\Service;
 use RZP\Models\P2p\Mandate\Entity;
 use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
+use RZP\Models\P2p\Mandate\UpiMandate\Entity as UpiMandateEntity;
 
 class PspxMandateTest extends TestCase
 {
@@ -17,9 +18,21 @@ class PspxMandateTest extends TestCase
 
     protected $context;
 
+    protected $upiEntitySkeleton = array(
+        UpiMandateEntity::NETWORK_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
+        UpiMandateEntity::GATEWAY_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
+        UpiMandateEntity::GATEWAY_REFERENCE_ID          => '911416196085',
+        UpiMandateEntity::RRN                           => '911416196085',
+        UpiMandateEntity::REF_ID                        => '',
+        UpiMandateEntity::REF_URL                       => '',
+        UpiMandateEntity::MCC                           => '1234',
+        UpiMandateEntity::GATEWAY_ERROR_CODE            => '00',
+        UpiMandateEntity::GATEWAY_ERROR_DESCRIPTION     => 'Incoming mandate create request"'
+    );
+
     protected $entitySkeleton = array(
         Entity::DEVICE_ID                     => 'Device00123456',
-        Entity::CLIENT_ID                     => 'Client00123456',
+        Entity::MERCHANT_ID                   => 'Client00123456',
         Entity::CUSTOMER_ID                   => 'Customer001234',
         Entity::AMOUNT_RULE                   => 'EXACT',
         Entity::PAYER_ID                      => 'CustomerVpa001',
@@ -37,18 +50,9 @@ class PspxMandateTest extends TestCase
         Entity::EXPIRE_AT                     => 0,
         Entity::START_DATE                    => 0,
         Entity::END_DATE                      => 0,
-        Entity::DETAILS                       => '',
         Entity::ACTION                        => 'incomingMandate',
-        Entity::NETWORK_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
-        Entity::GATEWAY_TRANSACTION_ID        => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
-        Entity::GATEWAY_REFERENCE_ID          => '911416196085',
-        Entity::RRN                           => '911416196085',
-        Entity::REF_ID                        => '',
-        Entity::REF_URL                       => '',
-        Entity::MCC                           => '1234',
-        Entity::GATEWAY_ERROR_CODE            => '00',
-        Entity::GATEWAY_ERROR_DESCRIPTION     => 'Incoming mandate create request"',
         Entity::GATEWAY_DATA                  => [],
+        Entity::UPI                           => []
     );
 
     public function setUp(): void
@@ -77,9 +81,12 @@ class PspxMandateTest extends TestCase
         // Because these fields are taken from context
         $expectedResult[Entity::CUSTOMER_ID] = $this->context->getDevice()->getCustomerId();
         $expectedResult[Entity::DEVICE_ID]   = $this->context->getDevice()->getId();
-        $expectedResult[Entity::CLIENT_ID]   = $this->context->getClient()->getId();
+        $expectedResult[Entity::MERCHANT_ID]   = $this->context->getClient()->getId();
 
         $response = $this->pspxMandate->create($this->context, $input);
+
+        ksort($expectedResult);
+        ksort($response);
 
         $this->assertIsArray($response);
 

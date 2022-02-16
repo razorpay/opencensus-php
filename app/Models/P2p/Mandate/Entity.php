@@ -16,12 +16,13 @@ class Entity extends Base\Entity
     use Base\Traits\HasMerchant;
     use Base\Traits\HasBankAccount;
 
+    const NAME			            = 'name';
     const DEVICE_ID			        = 'device_id';
-    const CLIENT_ID			        = 'client_id';
+    const MERCHANT_ID 		        = 'merchant_id';
     const CUSTOMER_ID 		        = 'customer_id';
+    const HANDLE 		            = 'handle';
     const AMOUNT			        = 'amount';
     const AMOUNT_RULE 		        = 'amount_rule';
-    const GATEWAY                   = 'gateway';
     const PAYER_ID 			        = 'payer_id';
     const PAYEE_ID 			        = 'payee_id';
     const TYPE 			            = 'type';
@@ -33,24 +34,16 @@ class Entity extends Base\Entity
     const UMN			            = 'umn';
     const STATUS			        = 'status';
     const INTERNAL_STATUS	        = 'internal_status';
-    const EXPIRE_AT			        = 'expire_at';
     const START_DATE		        = 'start_date';
     const END_DATE			        = 'end_date';
-    const DETAILS			        = 'details';
     const ACTION			        = 'action';
-    const ACTIVE			        = 'active';
     const DESCRIPTION			    = 'description';
-    const NETWORK_TRANSACTION_ID	= 'network_transaction_id';
-    const GATEWAY_TRANSACTION_ID	= 'gateway_transaction_id';
-    const GATEWAY_REFERENCE_ID		= 'gateway_reference_id';
-    const RRN			            = 'rrn';
-    const REF_ID			        = 'ref_id';
-    const REF_URL			        = 'ref_url';
-    const MCC			            = 'mcc';
-    const GATEWAY_ERROR_CODE 	    = 'gateway_error_code';
-    const GATEWAY_ERROR_DESCRIPTION	= 'gateway_error_description';
-    const RISK_SCORES 			    = 'risk_scores';
-    const GATEWAY_DATA			    = 'gateway_data';
+    const GATEWAY                   = 'gateway';
+    const INTERNAL_ERROR_CODE       = 'internal_error_code';
+    const ERROR_CODE			    = 'error_code';
+    const ERROR_DESCRIPTION			= 'error_description';
+    const COMPLETED_AT			    = 'completed_at';
+    const EXPIRE_AT			        = 'expire_at';
 
     /************** Input  Properties ************/
 
@@ -58,6 +51,7 @@ class Entity extends Base\Entity
     const CUSTOMER              = 'customer';
     const PAYER                 = 'payer';
     const PAYEE                 = 'payee';
+    const UPI                   = 'upi';
     const IS_PENDING_COLLECT    = 'is_pending_collect';
 
     /************** Entity Properties ************/
@@ -70,6 +64,8 @@ class Entity extends Base\Entity
         Entity::END_DATE,
         Entity::EXPIRE_AT,
         Entity::CREATED_AT,
+        Entity::COMPLETED_AT,
+        Entity::EXPIRE_AT,
         Entity::UPDATED_AT,
     ];
 
@@ -78,37 +74,26 @@ class Entity extends Base\Entity
         Entity::FLOW,
         Entity::MODE,
         Entity::AMOUNT,
-        Entity::DESCRIPTION,
         Entity::PAYER_ID,
         Entity::PAYEE_ID,
-        Entity::DETAILS,
-        Entity::GATEWAY,
+        Entity::EXPIRE_AT,
+        Entity::ACTION,
+        Entity::UMN,
         Entity::STATUS,
         Entity::INTERNAL_STATUS,
         Entity::START_DATE,
         Entity::END_DATE,
-        Entity::EXPIRE_AT,
-        Entity::ACTIVE,
+        Entity::DESCRIPTION,
+        Entity::GATEWAY,
         Entity::GATEWAY_DATA,
-        Entity::ACTION,
-        Entity::STATUS,
-        Entity::NETWORK_TRANSACTION_ID,
-        Entity::GATEWAY_TRANSACTION_ID,
-        Entity::GATEWAY_REFERENCE_ID,
-        Entity::RRN,
-        Entity::UMN,
-        Entity::REF_ID,
-        Entity::REF_URL,
-        Entity::MCC,
-        Entity::GATEWAY_ERROR_CODE,
-        Entity::GATEWAY_ERROR_DESCRIPTION,
-        Entity::RISK_SCORES,
+        Entity::IS_PENDING_COLLECT,
+        Entity::COMPLETED_AT,
     ];
 
     protected $visible = [
         Entity::ID,
         Entity::DEVICE_ID,
-        Entity::CLIENT_ID,
+        Entity::MERCHANT_ID,
         Entity::CUSTOMER_ID,
         Entity::AMOUNT,
         Entity::AMOUNT_RULE,
@@ -130,24 +115,15 @@ class Entity extends Base\Entity
         Entity::EXPIRE_AT,
         Entity::START_DATE,
         Entity::END_DATE,
-        Entity::DETAILS,
         Entity::ACTION,
-        Entity::ACTIVE,
         Entity::DESCRIPTION,
-        Entity::NETWORK_TRANSACTION_ID,
-        Entity::GATEWAY_TRANSACTION_ID,
-        Entity::GATEWAY_REFERENCE_ID,
-        Entity::RRN,
-        Entity::REF_ID,
-        Entity::REF_URL,
-        Entity::MCC,
-        Entity::GATEWAY_ERROR_CODE,
-        Entity::GATEWAY_ERROR_DESCRIPTION,
-        Entity::RISK_SCORES,
         Entity::GATEWAY_DATA,
         Entity::IS_PENDING_COLLECT,
-        Entity::CREATED_AT,
-        Entity::UPDATED_AT,
+        Entity::ERROR_CODE,
+        Entity::ERROR_DESCRIPTION,
+        Entity::INTERNAL_ERROR_CODE,
+        Entity::COMPLETED_AT,
+        Entity::EXPIRE_AT,
     ];
 
     protected $public = [
@@ -163,20 +139,14 @@ class Entity extends Base\Entity
         Entity::RECURRING_TYPE,
         Entity::RECURRING_VALUE,
         Entity::RECURRING_RULE,
-        Entity::UMN,
         Entity::STATUS,
         Entity::EXPIRE_AT,
         Entity::START_DATE,
         Entity::END_DATE,
-        Entity::DETAILS,
         Entity::DESCRIPTION,
-        Entity::NETWORK_TRANSACTION_ID,
-        Entity::RRN,
-        Entity::REF_ID,
-        Entity::REF_URL,
-        Entity::GATEWAY_ERROR_CODE,
-        Entity::GATEWAY_ERROR_DESCRIPTION,
         Entity::IS_PENDING_COLLECT,
-        Entity::CREATED_AT,
+        Entity::ERROR_CODE,
+        Entity::ERROR_DESCRIPTION,
+        Entity::INTERNAL_ERROR_CODE,
     ];
 }
