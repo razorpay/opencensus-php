@@ -157,12 +157,16 @@ class Metadata
     ];
 
     const ADDRESS_UNSUPPORTED_LIBRARIES = [
+        self::PUSH,
+        self::LEGACYJS,
+    ];
+
+    const ADDRESS_COLLECTION_VIA_REDIRECT_LIBS = [
         self::RAZORPAYJS,
         self::CUSTOM,
         self::DIRECT,
-        self::PUSH,
-        self::LEGACYJS,
         self::EMBEDDED,
+        self::S2S,
     ];
 
     const DCC_SUPPORTED_LIBRARIES = [

@@ -10,6 +10,7 @@ use RZP\Exception\BaseException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Processor;
@@ -166,12 +167,12 @@ class ProcessorTest extends TestCase
 
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal);
 
         $processor->shouldReceive('updatePaymentFailed')->withAnyArgs()->andReturnNull();
-
 
         $processor->addBackupMethodForRetry($payment, $merchant, $ex);
         $data = $ex->getData();
@@ -214,6 +215,34 @@ class ProcessorTest extends TestCase
 
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(false);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
+
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
+        $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal)->zeroOrMoreTimes();
+
+        $processor->shouldReceive('updatePaymentFailed')->withAnyArgs()->andReturnNull();
+
+        $processor->addBackupMethodForRetry($payment, $merchant, $ex);
+        if(isset($ex->getData()['error']['metadata'])) {
+            self::assertArrayNotHasKey('next', $ex->getData()['error']['metadata']);
+        }
+    }
+
+    public function testPaypalAsBackupForNonCheckoutJSLibs(){
+
+        $ex = new GatewayErrorException(ErrorCode::GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED);
+        $paypal = [
+            'paypal' => true
+        ];
+
+        $payment = \Mockery::mock(Entity::class);
+        $merchant = \Mockery::mock(Merchant\Entity::class);
+
+        $processor = \Mockery::mock(Processor::class)->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $payment->shouldReceive('isCard')->andReturn(true);
+        $payment->shouldReceive('isInternational')->andReturn(false);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::RAZORPAYJS);
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal)->zeroOrMoreTimes();
@@ -237,6 +266,7 @@ class ProcessorTest extends TestCase
 
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
+        $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn(array());
