@@ -296,7 +296,13 @@ class Core extends Base\Core
     {
         $offers = $this->repo->offer->fetchAllActiveNonSubscriptionOffers($merchantId)->toArray();
 
-        $offerUsages = $this->repo->offer->getOffersUsage(array_column($offers, 'id'));
+        $offerIds = array_column($offers, Entity::ID);
+
+        // Find the created_at value of the oldest offer to ensure we only scan
+        // data from that date for calculating offer usages.
+        $oldestCreatedAtTimeStamp = min(array_column($offers, Entity::CREATED_AT) ?: [0]);
+
+        $offerUsages = $this->repo->offer->getOffersUsage($offerIds, $oldestCreatedAtTimeStamp);
 
         array_multisort($offerUsages, SORT_DESC, $offers);
 
