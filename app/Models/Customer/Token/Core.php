@@ -1328,8 +1328,6 @@ class Core extends Base\Core
         if ($this->isNetworkRuPay($input[Entity::CARD]))
         {
             (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_RUPAY, $input);
-
-            (new Validator)->validateInput(Validator::CREATE_NETWORK_TOKEN_AUTHENTICAION_DATA_RUPAY, $input[Token\Entity::AUTHENTICATION]);
         }
         else if (empty($input[Token\Entity::AUTHENTICATION]) === false)
         {

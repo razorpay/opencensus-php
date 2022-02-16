@@ -83,7 +83,7 @@ class Validator extends Base\Validator
         Entity::CARD                 => 'required|array',
         Entity::CUSTOMER_ID          => 'sometimes|public_id',
         Entity::METHOD               => 'required|in:card',
-        Entity::AUTHENTICATION       => 'required|array',
+        Entity::AUTHENTICATION       => 'sometimes',
         Entity::NOTES                => 'sometimes|notes',
     ];
 
@@ -100,9 +100,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $createNetworkTokenAuthenticationDataRupayRules = [
-        "provider"                        => "required|string",
-        "provider_reference_id"           => "required|string",
-        "authentication_reference_number" => "required|string",
+        "provider"                        => "sometimes|string",
+        "provider_reference_id"           => "sometimes|string",
+        "authentication_reference_number" => "sometimes|string",
     ];
 
     protected static $fetchCryptogramRules = [
