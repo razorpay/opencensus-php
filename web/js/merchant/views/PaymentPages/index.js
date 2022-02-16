@@ -9,14 +9,11 @@ import { getCurrentProductOnBoardingDetails } from 'merchant/reducers/onboarding
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import ShiprocketBanner from 'merchant/components/Announcements/ShiprocketBanner/ShiprocketBanner';
-import { getItem } from 'common/utils/localStorage';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect((state) => {
@@ -39,17 +36,6 @@ export default class PaymentPagesContainer extends Component {
         <div className="banner-container">
           {user.isPPShiprocket && <ShiprocketBanner userId={user?.current} />}
           <DashboardBanner />
-          <ShowWhen
-            additionalCondition={(currentUser) =>
-              currentUser.isPartOfZapierIntegrationExperiment &&
-              !getItem(`zapier-integration-banner-${user.current}`)
-            }
-          >
-            <ZapierLaunchBanner
-              fromWhere="payment-pages"
-              bannerKey={`zapier-integration-banner-${user.current}`}
-            />
-          </ShowWhen>
         </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
