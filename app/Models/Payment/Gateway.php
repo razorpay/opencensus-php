@@ -3195,6 +3195,12 @@ class Gateway
             return false;
         }
 
+        if (($input[Payment\Entity::PROVIDER] === CardlessEmi::ZESTMONEY) and
+            ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE))
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -4069,11 +4075,24 @@ class Gateway
         return (in_array($gateway, $gatewayPartiallyMigrated, true));
     }
 
-    public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway)
+    public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway, $payment = null)
     {
         $gatewayToNbPlusOnMerchantLevel = [
 
         ];
+
+        $acquirerGateways = [
+            self::CARDLESS_EMI => [
+                CardlessEmi::ZESTMONEY,
+            ]
+        ];
+
+        if($payment !== null && in_array($gateway, array_keys($acquirerGateways), true))
+        {
+            $gatewayToNbPlusOnMerchantLevel = $acquirerGateways[$gateway];
+
+            $gateway = $payment->getWallet();
+        }
 
         return (in_array($gateway, $gatewayToNbPlusOnMerchantLevel, true));
     }
@@ -4133,6 +4152,7 @@ class Gateway
             self::CARDLESS_EMI => [
                 CardlessEmi::WALNUT369,
                 CardlessEmi::SEZZLE,
+                CardlessEmi::ZESTMONEY,
             ],
             self::PAYLATER     => [
                 Paylater::LAZYPAY,

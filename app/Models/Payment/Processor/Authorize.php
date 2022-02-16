@@ -1808,6 +1808,13 @@ trait Authorize
             return;
         }
 
+        //todo need to remove when zestmoney is migrated to new flow
+        if (($input[Payment\Entity::PROVIDER] === CardlessEmi::ZESTMONEY) and
+            ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE))
+        {
+            return;
+        }
+
         if(($input[Payment\Entity::PROVIDER] === CardlessEmi::EARLYSALARY) and
             ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY)))
         {
