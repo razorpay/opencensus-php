@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Methods;
 
+use Carbon\Carbon;
 use Config;
 
 use RZP\Exception;
@@ -26,6 +27,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Feature as Feature;
+use RZP\Services\KafkaProducer;
 
 class Core extends Base\Core
 {
@@ -125,6 +127,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($methods);
 
+        $this->pushMethodUpdateEventToKafka($merchant,$methods);
+
         $methodsArray = $methods->toArrayPublic();
 
         return array_intersect_key($methodsArray, $input);
@@ -175,6 +179,8 @@ class Core extends Base\Core
             $methods->setMethods([Entity::EMI => [EmiType::CREDIT => '1', EmiType::DEBIT => '1']]);
 
             $this->repo->saveOrFail($methods);
+
+            $this->pushMethodUpdateEventToKafka($merchant,$methods);
         }
     }
 
@@ -572,6 +578,8 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($methods);
 
+        $this->pushMethodUpdateEventToKafka($merchant,$methods);
+
         return $methods;
     }
 
@@ -651,6 +659,8 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($methods);
+
+        $this->pushMethodUpdateEventToKafka($merchant,$methods);
     }
 
     private function resetDefaultMethodsBasedOnMerchantPricingPlan(Merchant\Entity $merchant, $defaultMethods)
@@ -763,7 +773,7 @@ class Core extends Base\Core
 
         $method = $this->repo->methods->getMethodsForMerchant($merchant);
 
-        return $this->disablePaymentBanks($method, $input);
+        return $this->disablePaymentBanks($method, $input,$merchant);
     }
 
     public function getPaymentMethods(Merchant\Entity $merchant): Entity
@@ -773,7 +783,7 @@ class Core extends Base\Core
         return $methods;
     }
 
-    protected function disablePaymentBanks($methods, $input)
+    protected function disablePaymentBanks($methods, $input,$merchant)
     {
         (new Validator)->validateInput('addDisabledBanks', $input);
 
@@ -786,6 +796,8 @@ class Core extends Base\Core
         $workflow->setDirty(['disabled_banks' => $methods->getDisabledBanks()])->handle();
 
         $this->repo->saveOrFail($methods);
+
+        $this->pushMethodUpdateEventToKafka($merchant,$methods);
 
         return $this->getEnabledDisabledBanks($methods);
     }
@@ -831,6 +843,78 @@ class Core extends Base\Core
                     'icon'     => ':boom:'
                 ]
             );
+
+            $this->pushMethodUpdateEventToKafkaWrapper($merchant,$data);
+        }
+    }
+
+    /**
+     * Method pushes Kafka events for Payments Methods enabled/disabled
+     * @param Merchant\Entity $merchant
+     * @param Entity $methods
+     */
+    protected function pushMethodUpdateEventToKafka(Merchant\Entity $merchant, Entity $methods) {
+        $data = $this->getEditedMethodsDifference($methods);
+
+        if (empty($data) === false) {
+            $this->pushMethodUpdateEventToKafkaWrapper($merchant, $methods);
+        }
+    }
+
+    /**
+     * Method pushes Kafka events for Payments Methods enabled/disabled
+     * @param Merchant\Entity $merchant
+     * @param array $methods Methods changed are alone sent 
+     */
+    protected function pushMethodUpdateEventToKafkaWrapper(Merchant\Entity $merchant, array $methods)
+    {
+        try {
+            $topic = env('TERMINALS_MERCHANT_METHODS_UPDATE_TOPIC', 'events.merchant_methods_update.v2.live');
+
+            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+            $properties = [
+                "admin_user_email" => $dashboardInfo['user_email'] ?? $dashboardInfo['admin_username'] ?? Merchant\Constants::DASHBOARD_INTERNAL,
+                "methods" => $methods,
+                "url" => $merchant->getDashboardEntityLink(),
+                "merchant" => [
+                    'id' => $merchant->getId(),
+                    'name' => $merchant->getBillingLabel(),
+                    'mcc' => $merchant->getCategory(),
+                    'category' => $merchant->getCategory2(),
+                ],
+            ];
+
+            $metaDetails = [
+                'trackId' => $this->app['req.context']->getTrackId(),
+            ];
+
+            $event = [
+                "event_name" => "payment.methods.enablement",
+                "event_type" => "merchant_methods_update",
+                "event_group" => "terminals",
+                "version" => "v2",
+                "event_timestamp" => Carbon::now()->getTimestamp(),
+                "producer_timestamp" => Carbon::now()->getTimestamp(),
+                "source" => "api",
+                "mode" => $this->app['env'],
+                "properties" => $properties,
+                "metadata" => $metaDetails,
+                "read_key" => array("merchant.id"),
+                "write_key" => "merchant.id"
+            ];
+
+            (new KafkaProducer($topic, stringify($event)))->Produce();
+
+            $this->trace->info(TraceCode::MERCHANT_METHODS_UPDATE_KAFKA_PUSH_SUCCESS,
+                [
+                    "Topic" => $topic,
+                    "Merchant.ID" => $merchant->getId(),
+                ]
+            );
+        }
+        catch(\Throwable $ex) {
+            $this->trace->traceException($ex);
         }
     }
 
