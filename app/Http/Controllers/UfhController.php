@@ -45,7 +45,12 @@ class UfhController extends Controller
         $app = $this->app;
         $ufhServiceMock = $app['config']->get('applications.ufh.mock');
         $merchantId = isset($input['merchant_id']) == true ? $input['merchant_id'] : null;
+        $params  = [];
 
+        if (isset($input['Content-Disposition']) == true)
+        {
+            $params['Content-Disposition'] = $input['Content-Disposition'];
+        }
         if ($ufhServiceMock === true)
         {
             $ufhService = new MockUfhService($app, $merchantId);
@@ -59,7 +64,7 @@ class UfhController extends Controller
                                                 $input[UfhService::NAME],
                                                 $input[UfhService::TYPE],
                                                 $input[self::ENTITY],
-                                                []);
+                                                $params);
 
         return ApiResponse::json($response);
     }
