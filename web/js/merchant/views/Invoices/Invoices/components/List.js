@@ -10,11 +10,8 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { getCustomerDisplayName, truncatedString } from 'common/utils/rzp-utils';
+import copyToClipboard from 'common/utils/copyToClipboard';
 import { isMobileDevice } from 'merchant/components/Home/data';
-
-const copyText = (url) => {
-  navigator?.clipboard.writeText(url);
-};
 
 const shareURL = (url, title) => {
   if (navigator.share) {
@@ -26,7 +23,7 @@ const shareURL = (url, title) => {
       .catch(console.error);
   } else {
     // fallback
-    copyText(url);
+    copyToClipboard(url);
   }
 };
 

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import { closeModal as closeModalReducer } from 'merchant_common/reducers/modals';
+import copyToClipboard from 'common/utils/copyToClipboard';
 import Questions from './Questions';
 import Button from 'common/new-ui/Button';
 
@@ -12,10 +13,6 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
 
   const handleIsVerifiedDetailsOpen = () => {
     setIsVerifiedDetailsOpen((prev) => !prev);
-  };
-
-  const copyToClipboard = (copyText) => {
-    navigator.clipboard.writeText(copyText);
   };
 
   return (
@@ -147,7 +144,7 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
                       data-tip="Copied"
                       data-event="active"
                       onClick={() => {
-                        copyToClipboard(bankDetails.receivers[0].ifsc);
+                        copyToClipboard(bankDetails?.receivers[0]?.ifsc);
                       }}
                       className="Btn--link Button--transparent Button"
                     >
