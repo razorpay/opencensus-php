@@ -11,12 +11,6 @@ const routes = [
     Component: BulkAddressUpload,
   },
   {
-    tabName: 'Upload Delivery Status',
-    path: '/magic/delivery-status',
-    condition: (_user) => false,
-    Component: OrderStatusTab,
-  },
-  {
     tabName: 'Shipping Services',
     path: '/magic/shipping',
     condition: (_user) => _user.isShiprocketEnabled,
@@ -27,6 +21,11 @@ const routes = [
     path: '/magic/settings',
     condition: (_user) => _user.isMagicSettingsEnabled,
     Component: MagicSettings,
+  },
+  {
+    tabName: 'Upload Delivery Status',
+    path: '/magic/delivery-status',
+    Component: OrderStatusTab,
   },
 ];
 
