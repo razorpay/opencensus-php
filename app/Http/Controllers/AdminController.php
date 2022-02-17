@@ -8,9 +8,6 @@ use Redirect;
 use ApiResponse;
 use Illuminate\Support\Facades\File;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use Razorpay\Api\Errors\BadRequestError;
 use RZP\Constants\Environment;
 use RZP\Models\Admin;
 use RZP\Models\Merchant\Account;
@@ -66,18 +63,12 @@ class AdminController extends Controller
 
             $path = "v1/admin/terminals/" . $id;
 
-            $headers =$this->app['terminals_service']->getTerminalServiceOrgHeaders();
-
-            $this->trace->info(TraceCode::ENTITY_ORG_ID, [
-                'headers' => $headers,
-            ]);
-
             //Increasing the timeout value to 40 Seconds as terminals api default timeout is 30 seconds.
             $options = [];
             $options['timeout'] = 30;
             $options['connect_timeout'] = 10;
 
-            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path, $options, $headers);
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path,$options);
 
             return ApiResponse::json($response);
         }

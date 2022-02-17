@@ -99,7 +99,6 @@ class Name
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
     const VIEW_TERMINAL                       = 'view_terminal';
-    const VIEW_TERMINAL_EXTERNAL_ORG          = 'view_terminal_external_org';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const PAYMENTS_BATCH_CREATE_TERMINALS_BULK = "payments_batch_create_terminals_bulk";
@@ -627,8 +626,6 @@ class Name
     const VIEW_GATEWAY_CREDENTIAL             = 'view_gateway_credential';
     const CREATE_GATEWAY_CREDENTIAL           = 'create_gateway_credential';
     const DELETE_GATEWAY_CREDENTIAL           = 'delete_gateway_credential';
-
-    const CREATE_EXTERNAL_ORG_TERMINALS       = 'external_org_create_terminals';
 
     const EXECUTE_TERMINAL_TEST               = 'execute_terminal_test';
 

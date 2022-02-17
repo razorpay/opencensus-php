@@ -4,8 +4,6 @@ namespace RZP\Models\Terminal;
 
 use App;
 use Crypt;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Http\Route;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
@@ -21,7 +19,6 @@ use RZP\Constants\Mode as RzpMode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Base\QueryCache\Cacheable;
-use RZP\Models\Admin\Org\Core as OrgCore;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -315,7 +312,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::GATEWAY,
         self::MODE,
-        self::ORG_ID,
     ];
 
     protected $defaults = [
@@ -1204,41 +1200,6 @@ class Entity extends Base\PublicEntity
     protected function modifyGateway(& $input)
     {
         $input[self::GATEWAY] = strtolower($input[self::GATEWAY]);
-    }
-
-    protected function modifyOrgId(& $input)
-    {
-        if (isset($input[self::ORG_ID]) === true)
-        {
-            // remove the 'org_' from org_id in input if present,
-            // since resulting terminal's org_id should not have 'org_'
-            // if 'org_' not present in the org_id in input, input will not be changed, but,
-            // we need to append it to the local variable orgId which we are using to fetch the org here
-            if(strpos($input[self::ORG_ID], 'org_') !== false)
-            {
-                $input[self::ORG_ID] = ltrim($input[self::ORG_ID], 'org_');
-            }
-
-            $orgId = 'org_' . $input[self::ORG_ID];  // resulting orgId will be org_{id}
-
-            try
-            {
-                $org = (new OrgCore)->fetch($orgId);
-
-                $this->org()->associate($org);  // if org is set in input, associate the terminal with this org
-            }
-            catch (\Exception $e)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_ORG_ID,
-                    null,
-                    [
-                        'org_id' => $orgId,
-                    ]
-                );
-            }
-
-        }
     }
 
     // ---------------------- END MODIFIERS ----------------------

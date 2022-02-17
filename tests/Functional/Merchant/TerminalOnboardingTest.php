@@ -70,71 +70,16 @@ class TerminalOnboardingTest extends TestCase
         $this->startTest();
     }
 
-    public function testInitiateOnboardingAxisAdminRoutePaysecureAxis()
+    public function testInitiateOnboardingAdminRoutePaysecureAxis()
     {
-        $org = $this->fixtures->org->createAxisOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $admin = $this->ba->getAdmin();
-
-        $role = $admin->roles()->get()[0];
-
-        $perm = $this->fixtures->create('permission', ['name' => 'external_org_create_terminals']);
-
-        $role->permissions()->attach($perm->getId());
-
-        $this->fixtures->create('feature', [
-            'entity_id' => $org->getId(),
-            'name'   => 'axis_org',
-            'entity_type' => 'org',
-        ]);
-
-        $this->startTest();
-    }
-
-    public function testInitiateOnboardingNonAxisOrgAdminRoutePaysecureAxis() // not adding the feature flag for axis org
-    {
-        $org = $this->fixtures->org->createAxisOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $admin = $this->ba->getAdmin();
-
-        $role = $admin->roles()->get()[0];
-
-        $perm = $this->fixtures->create('permission', ['name' => 'external_org_create_terminals']);
-
-        $role->permissions()->attach($perm->getId());
-
-        $this->expectExceptionCode(
-            ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
-
-        $this->expectExceptionMessage(
-            'Org not allowed');
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
 
     public function testInitiateOnboardingAdminRoutePaysecureAxisExtraFieldsValidationFailure()
     {
-        $org = $this->fixtures->org->createAxisOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $admin = $this->ba->getAdmin();
-
-        $role = $admin->roles()->get()[0];
-
-        $perm = $this->fixtures->create('permission', ['name' => 'external_org_create_terminals']);
-
-        $role->permissions()->attach($perm->getId());
-
-        $this->fixtures->create('feature', [
-            'entity_id' => $org->getId(),
-            'name'   => 'axis_org',
-            'entity_type' => 'org',
-        ]);
+        $this->ba->adminAuth();
 
         $this->expectExceptionCode(
             ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED);
@@ -147,23 +92,7 @@ class TerminalOnboardingTest extends TestCase
 
     public function testInitiateOnboardingAdminRoutePaysecureAxisValidationFailureInvalidAcquirer()
     {
-        $org = $this->fixtures->org->createAxisOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $admin = $this->ba->getAdmin();
-
-        $role = $admin->roles()->get()[0];
-
-        $perm = $this->fixtures->create('permission', ['name' => 'external_org_create_terminals']);
-
-        $role->permissions()->attach($perm->getId());
-
-        $this->fixtures->create('feature', [
-            'entity_id' => $org->getId(),
-            'name'   => 'axis_org',
-            'entity_type' => 'org',
-        ]);
+        $this->ba->adminAuth();
 
         $this->expectExceptionCode(
             ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);

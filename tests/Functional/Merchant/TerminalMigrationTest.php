@@ -407,7 +407,6 @@ class TerminalMigrationTest extends TestCase
 
     public function testGetEntityFromTerminalServiceResponseShouldUseOrgKeyForEncryption()
     {
-        $this->fixtures->org->createAxisOrg();
         // Enabling razorx mock on so that BYOK encryption of attributes when we get terminal from TS also gets tested in this test only.
         // Basically to test that buildFromTerminalServiceResponse don't cause issues
         $this->enableRazorxMockOn();
@@ -1910,116 +1909,6 @@ class TerminalMigrationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
-    }
-
-    public function testAdminFetchTerminalByIdForHdfcOrg()
-    {
-        $org = $this->fixtures->org->createHdfcOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $terminal = $this->fixtures->create(
-            'terminal:shared_hdfc_terminal', [
-            'used'        => true,
-            'enabled'     => '1',
-            'sync_status' => 'sync_success',
-            'org_id'      => $org->getId(),
-        ]);
-
-        $this->razorxValue = 'control';
-
-        $url = '/admin/external_org/terminal/' . $terminal['id'] . '/';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-
-    }
-
-    public function testAdminFetchTerminalByIdForAxisOrg()
-    {
-        $org = $this->fixtures->org->createAxisOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprAxisbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $terminal = $this->fixtures->create(
-            'terminal:shared_axis_terminal', [
-            'used'        => true,
-            'enabled'     => '1',
-            'sync_status' => 'sync_success',
-            'org_id'      => $org->getId(),
-        ]);
-
-        $this->razorxValue = 'control';
-
-        $expected = [
-            'route'         => 'admin_fetch_terminal_by_id',
-            'message'       => null,
-            'terminal_id'   => 'term_'.$terminal['id'],
-
-        ];
-
-        $url = '/admin/external_org/terminal/' . $terminal['id'] . '/';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $expectedResponse = $this->testData[__FUNCTION__]['response']['content'];
-
-        $this->fixtures->create('feature', [
-            'entity_id' => $org->getId(),
-            'name'   => 'axis_org',
-            'entity_type' => 'org',
-        ]);
-
-        $response = $this->startTest();
-
-        $this->assertEquals($expectedResponse['id'], $response['id']);
-
-        $this->assertEquals($expectedResponse['org_id'], $response['org_id']);
-
-        $this->assertEquals($expectedResponse['gateway'], $response['gateway']);
-    }
-
-    public function testAdminFetchTerminalByIdForDifferentOrg()
-    {
-        $org = $this->fixtures->org->createHdfcOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $org = $this->fixtures->org->createAxisOrg();
-
-        $terminal = $this->fixtures->create(
-            'terminal:shared_hdfc_terminal', [
-            'used'        => true,
-            'enabled'     => '1',
-            'sync_status' => 'sync_success',
-            'org_id'      => $org->getId(),
-        ]);
-
-        $this->razorxValue = 'control';
-
-        $url = '/admin/external_org/terminal/' . $terminal['id'] . '/';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-
-    }
-
-    public function testAdminFetchTerminalByIdForInvalidTerminal()
-    {
-        $org = $this->fixtures->org->createHdfcOrg();
-
-        $this->ba->adminAuth('test', 'SuperSecretTokenForRazorpaySuprHdfcbToken', $org->getPublicId(), 'hdfcbank.com');
-
-        $this->razorxValue = 'control';
-
-        $url = '/admin/external_org/terminal/invalidTerminalId'  . '/';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-
     }
 
     public function testCheckEncryptedValueTerminalServiceValidResponseProxy()
