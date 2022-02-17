@@ -5,6 +5,7 @@ namespace Tests\Unit\Models\User;
 use Mockery;
 use Carbon\Carbon;
 use Tests\Unit\TestCase;
+use RZP\Error\ErrorCode;
 use RZP\Models\User\Core;
 use RZP\Models\User\Entity;
 use RZP\Models\User\Constants;
@@ -2659,6 +2660,57 @@ class UserTest extends TestCase
         $method->setAccessible(true);
 
         $response = $method->invoke($validatorMock, []);
+
+        $this->assertEquals($successResponse, $response);
+    }
+
+    public function testRavenGenerateOTPRequestOnFailureResponse()
+    {
+        $successResponse = ["success => true"];
+
+        $validatorMock = $this->getMockBuilder(RavenService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRequest'])
+            ->getMock();
+
+        $validatorMock->method('sendRequest')
+            ->will($this->onConsecutiveCalls($successResponse));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('generateOtp');
+
+        $method->setAccessible(true);
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage("Something went wrong, please try again after sometime.");
+
+        $method->invoke($validatorMock, [], false);
+    }
+
+    public function testRavenGenerateOTPRequestOnSuccessResponse()
+    {
+        $successResponse = [
+            "success => true",
+            "otp" => "0007",
+        ];
+
+        $validatorMock = $this->getMockBuilder(RavenService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRequest'])
+            ->getMock();
+
+        $validatorMock->method('sendRequest')
+            ->will($this->onConsecutiveCalls($successResponse));
+
+        $validatorMockReflectionObj = new \ReflectionObject($validatorMock);
+
+        $method = $validatorMockReflectionObj->getMethod('generateOtp');
+
+        $method->setAccessible(true);
+
+        $response = $method->invoke($validatorMock, [], false);
 
         $this->assertEquals($successResponse, $response);
     }

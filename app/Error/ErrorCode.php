@@ -1511,6 +1511,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 
+    const BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN                           = 'BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN';
+
     // Heimdall Error Codes
     const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
     const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                                  = 'BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED';

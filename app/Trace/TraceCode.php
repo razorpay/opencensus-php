@@ -1984,6 +1984,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAVEN_REQUEST                                         = 'RAVEN_REQUEST';
     const RAVEN_RETRY_SUCCESS                                   = 'RAVEN_RETRY_SUCCESS';
     const RAVEN_RESPONSE                                        = 'RAVEN_RESPONSE';
+    const RAVEN_INVALID_OTP_RESPONSE                            = 'RAVEN_INVALID_OTP_RESPONSE';
     const RAVEN_REQUEST_ORG_ID_EMPTY                            = 'RAVEN_REQUEST_ORG_ID_EMPTY';
     const FETCHING_ORG_ID_FAILED                                = 'FETCHING_ORG_ID_FAILED';
     const RAVEN_CALLBACK_REQUEST                                = 'RAVEN_CALLBACK_REQUEST';

@@ -99,6 +99,16 @@ class Raven
         return $response;
     }
 
+    /**
+     * @param array $input
+     * @param bool  $mockInTestMode
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\RuntimeException
+     * @throws \Requests_Exception
+     */
     public function generateOtp(array $input, $mockInTestMode = true): array
     {
         if (($this->mode === Mode::TEST) and
@@ -111,6 +121,15 @@ class Raven
         }
 
         $response = $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
+
+        // Note: this is a hack to prevent rare eventuality. Issue: Request wasn't (probably)
+        // reaching Raven but here in API, we were receiving response with 200. For details refer
+        // to the slack thread: https://razorpay.slack.com/archives/C012KKG1STS/p1617873425033100
+        if (empty($response['otp']) === true)
+        {
+            $this->trace->info(TraceCode::RAVEN_INVALID_OTP_RESPONSE, compact('response'));
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN);
+        }
 
         return $response;
     }
