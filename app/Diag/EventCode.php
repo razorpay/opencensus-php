@@ -561,6 +561,14 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'merchant.purchase_event'
     ];
+    const M2M_ENABLED = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.m2m_enabled'
+    ];
+    const M2M_ENABLED_EXPERIMENT = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.m2m_experiment_enabled'
+    ];
 
     const SIGNUP_FINISH_SIGNUP_SUCCESS = [
         'group' => 'onboarding',

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Cron\Actions;
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
@@ -93,10 +94,15 @@ class EnableM2MReferralAction extends BaseAction
             $this->app['segment-analytics']->pushTrackEvent(
                 $merchant, $input, SegmentEvent::M2M_ENABLED);
 
+            $this->app['diag']->trackOnboardingEvent(EventCode::M2M_ENABLED, $merchant, null, $input);
+
             if ($input['can_refer'] === true)
             {
                 $this->app['segment-analytics']->pushTrackEvent(
                     $merchant, $input, SegmentEvent::M2M_ENABLED_EXPERIMENT);
+
+                $this->app['diag']->trackOnboardingEvent(EventCode::M2M_ENABLED_EXPERIMENT, $merchant, null, $input);
+
             }
 
         }
