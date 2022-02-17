@@ -128,7 +128,7 @@ const desktopListViewHeaders = (desktopListViewChildren, label, isPaymentlinksV2
   ) : (
     <tr>
       <th>{label} Id</th>
-      <th>Created Date Test</th>
+      <th>Created Date</th>
       <th>Amount</th>
       <th>{isPaymentlinksV2Enabled ? 'Reference Id' : 'Receipt No.'}</th>
       <th>Customer</th>
