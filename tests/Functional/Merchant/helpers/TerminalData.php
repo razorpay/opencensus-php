@@ -1551,6 +1551,29 @@ return [
         ]
     ],
 
+    'testCreateIngenicoCardTerminal' => [
+        "request" => [
+            'content' => [
+                'gateway'               => 'ingenico',
+                'gateway_merchant_id'   => 'T706040',
+                'gateway_access_code'   => '8036335687FEMIEC',
+                'gateway_secure_secret' => '2418691025AFCDDF',
+                'card'                  => 1,
+                'type'                  => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'T706040',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateDirectSettlemtTerminal' => [
         'request' => [
             'content' => [

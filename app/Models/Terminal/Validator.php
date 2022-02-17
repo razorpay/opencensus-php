@@ -169,6 +169,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_UCO,
         Payment\Gateway::MOBIKWIK,
         Payment\Gateway::EMERCHANTPAY,
+        Payment\Gateway::INGENICO,
     ];
 
     protected static $createValidators = [
@@ -366,6 +367,23 @@ class Validator extends Base\Validator
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::NOTES                                   => 'sometimes|string',
+    ];
+
+    protected static $ingenicoTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:ingenico',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE                     => 'required|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+        Entity::NOTES                                   => 'sometimes|string',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -766,6 +784,21 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
+    ];
+
+    protected static $ingenicoEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $billdeskSihubEditTerminalRules = [
@@ -2504,6 +2537,7 @@ class Validator extends Base\Validator
             Gateway::PAYTM,
             Gateway::ZAAKPAY,
             Gateway::PINELABS,
+            Gateway::INGENICO,
         ];
 
         //Migs now supports purchase mode as well

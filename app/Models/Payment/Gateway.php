@@ -30,6 +30,7 @@ class Gateway
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
+    const INGENICO               = 'ingenico';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -346,6 +347,7 @@ class Gateway
         self::NETBANKING_YESB       => self::YESB,
         self::CCAVENUE              => self::CCAVENUE,
         self::PINELABS              => self::PINELABS,
+        self::INGENICO              => self::INGENICO,
         self::NETBANKING_IDFC       => self::IDFC,
         self::PAYSECURE             => self::ACQUIRER_AXIS,
         self::NETBANKING_SBI        => self::SBIN,
@@ -377,6 +379,7 @@ class Gateway
         self::ENACH_NPCI_NETBANKING => self::NPCI,
         self::ZAAKPAY               => self::ZAAKPAY,
         self::PINELABS              => self::PINELABS,
+        self::INGENICO              => self::INGENICO,
     ];
 
 
@@ -466,7 +469,8 @@ class Gateway
         self::PAYU,
         self::CCAVENUE,
         self::ZAAKPAY,
-        self::PINELABS
+        self::PINELABS,
+        self::INGENICO
     ];
 
     /**
@@ -1346,6 +1350,7 @@ class Gateway
         Payment\Gateway::ZAAKPAY,
         Payment\Gateway::PINELABS,
         Payment\Gateway::EMERCHANTPAY,
+        Payment\Gateway::INGENICO,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1461,6 +1466,7 @@ class Gateway
             self::PINELABS,
             self::CHECKOUT_DOT_COM,
             self::FULCRUM,
+            self::INGENICO,
         ],
 
         Method::NETBANKING => [
@@ -1509,6 +1515,7 @@ class Gateway
             self::NETBANKING_BDBL,
             self::NETBANKING_UCO,
             self::NETBANKING_TMB,
+            self::INGENICO,
         ],
 
         //
@@ -1939,7 +1946,14 @@ class Gateway
             Network::DISC,
             Network::DICL,
             Network::JCB,
-        ]
+        ],
+        self::INGENICO => [
+            Network::MC,
+            Network::AMEX,
+            Network::MAES,
+            Network::VISA,
+            Network::RUPAY,
+        ],
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -2904,6 +2918,7 @@ class Gateway
         Gateway::CASHFREE,
         Gateway::CCAVENUE,
         Gateway::ZAAKPAY,
+        Gateway::INGENICO,
     ];
 
     /**
@@ -3030,7 +3045,8 @@ class Gateway
         Gateway::ZAAKPAY          => Gateway::ZAAKPAY,
         Gateway::CCAVENUE         => Gateway::CCAVENUE,
         Gateway::PINELABS         => Gateway::PINELABS,
-        Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM
+        Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM,
+        Gateway::INGENICO         => Gateway::INGENICO,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3930,7 +3946,8 @@ class Gateway
             self::FULCRUM,
             self::CCAVENUE,
             self::PINELABS,
-            self::CHECKOUT_DOT_COM
+            self::CHECKOUT_DOT_COM,
+            self::INGENICO,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3969,6 +3986,7 @@ class Gateway
             self::CCAVENUE,
             self::PINELABS,
             self::CHECKOUT_DOT_COM,
+            self::INGENICO,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4022,6 +4040,7 @@ class Gateway
             self::EMERCHANTPAY,
             self::NETBANKING_TMB,
             self::NETBANKING_CANARA,
+            self::INGENICO,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -4146,6 +4165,7 @@ class Gateway
             self::NETBANKING_TMB,
             self::WALLET_FREECHARGE,
             self::NETBANKING_HDFC,
+            self::INGENICO,
         ];
 
         $acquirerGateways = [

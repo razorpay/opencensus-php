@@ -1290,6 +1290,7 @@ class DatabaseSeeder extends Seeder
         $this->createCashfreeTerminal();
         $this->createZaakpayTerminal();
         $this->createPinelabsTerminal();
+        $this->createIngenicoTerminal();
         $this->createNetbankingDcbTerminal();
         $this->createTwidTerminal();
         $this->createCcavenueTerminal();
@@ -2992,6 +2993,24 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '1',
                 'netbanking'            => '0',
                 'gateway_merchant_id'   => 'test_pinelabs_mid',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'gateway_access_code'   => Crypt::encrypt('test_access_code'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createIngenicoTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => 'h1t3hfU4c2A11L',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::INGENICO,
+                'card'                  => '1',
+                'netbanking'            => '0',
+                'gateway_merchant_id'   => 'test_ingenico_mid',
                 'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
                 'gateway_access_code'   => Crypt::encrypt('test_access_code'),
                 'created_at'            => time(),

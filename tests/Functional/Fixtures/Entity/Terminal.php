@@ -424,6 +424,22 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createIngenicoTerminal()
+    {
+        $attributes = [
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'ingenico',
+            'card'                   => 1,
+            'netbanking'             => 0,
+            'gateway_merchant_id'    => 'abcd',
+            'gateway_access_code'    => 'test_access_code',
+            'gateway_secure_secret'  => 'secret',
+            'gateway_access_code'    => 'dummy'
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createCheckoutDotComTerminal(array $override)
     {
         $attributes = [

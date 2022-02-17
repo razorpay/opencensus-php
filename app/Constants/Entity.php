@@ -268,6 +268,7 @@ class Entity
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
     const PINELABS               = 'pinelabs';
+    const INGENICO               = 'ingenico';
     const ENACH                  = 'enach';
     const SHARP                  = 'sharp';
     const PAYTM                  = 'paytm';

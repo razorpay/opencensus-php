@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         Gateway::CCAVENUE         => 'sometimes|numeric|min:0|max:100',
         Gateway::PINELABS         => 'sometimes|numeric|min:0|max:100',
         Gateway::CHECKOUT_DOT_COM => 'sometimes|numeric|min:0|max:100',
+        Gateway::INGENICO         => 'sometimes|numeric|min:0|max:100',
     ];
 
     public function validateMethod(string $method)

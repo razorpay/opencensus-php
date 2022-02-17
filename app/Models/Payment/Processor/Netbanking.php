@@ -677,6 +677,49 @@ class Netbanking
                 IFSC::YESB,
             ],
         ],
+        Gateway::INGENICO => [
+            'retail' => [
+                IFSC::ANDB,
+                self::BARB_R,
+                IFSC::BKID,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CSBK,
+                IFSC::DCBL,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::ORBC,
+                IFSC::PSIB,
+                self::PUNB_R,
+                IFSC::RATN,
+                IFSC::SBIN,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SVCB,
+                IFSC::SYNB,
+                IFSC::TMBL,
+                IFSC::UBIN,
+                IFSC::UCBA,
+                IFSC::UTBI,
+                IFSC::UTIB,
+                IFSC::VIJB,
+                IFSC::YESB,
+            ],
+        ],
         Gateway::CCAVENUE => [
             'retail' => [
                 IFSC::AIRP,
@@ -1231,6 +1274,11 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::ZAAKPAY]['retail'];
     }
 
+    public static function getIngenicoSupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::INGENICO]['retail'];
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -1343,6 +1391,11 @@ class Netbanking
     public static function isZaakpaySupportedBank($bank)
     {
         return in_array($bank, self::getZaakpaySupportedBanks(), true) === true;
+    }
+
+    public static function isIngenicoSupportedBank($bank)
+    {
+        return in_array($bank, self::getIngenicoSupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank): bool
