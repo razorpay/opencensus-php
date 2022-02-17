@@ -119,10 +119,10 @@ class ReconService
                 'data'      => $data,
             ]);
 
-        if (array_key_exists(self::AUTH_TYPE, $data))
+        if (array_key_exists(self::AUTH_TYPE, $input))
         {
-            $auth_type = $data[self::AUTH_TYPE];
-            unset($data[self::AUTH_TYPE]);
+            $auth_type = $input[self::AUTH_TYPE];
+            unset($input[self::AUTH_TYPE]);
             return $this->sendRequest($url, $method, $data, $auth_type);
         }
 
