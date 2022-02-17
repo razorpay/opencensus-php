@@ -18,6 +18,21 @@ return [
         'amount'             => '500.00',
         'Date'               => Carbon::today()->format("Y-d-m")
     ],
+    'testIciciRefundRecon' => [
+        'Payee id'         => '',
+        'Payee Name'       => '',
+        'Payment id'       => '',
+        'ITC'              => '',
+        'PRN'              => '',
+        'Txn Amount'       => '1000.00',
+        'Reversal Amount'  => '500.00',
+        'Reversal Date'    => Carbon::today()->format("Ymd"),
+        'ReversalId'       => '1234',
+        'Status'           => 'W',
+        'Reason'           => '',
+        'SPID'             => '1234',
+        'Sub-merchant Name'=> '',
+    ],
     'testFsbSuccessRecon' => [
         'AggregatorReferenceNumber'     => '',
         'BankTransactionReferenceNo'    => '1234',

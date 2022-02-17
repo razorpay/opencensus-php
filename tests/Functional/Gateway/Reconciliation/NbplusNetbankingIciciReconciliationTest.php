@@ -137,6 +137,45 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
         $this->assertEquals('processed', $batch['status']);
     }
 
+    public function testIciciRefundRecon()
+    {
+        $capturedPayment = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
+
+        $this->refundPayment($capturedPayment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
+        $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
+
+        $data = $this->testData[__FUNCTION__];
+        $data['ITC'] = 'ITC';
+        $data['PRN'] = 'PRN';
+        $data['Reversal Date'] = 'Reversal Date';
+
+        $data2 = $this->testData[__FUNCTION__];
+        $data2['ITC'] = $payment['id'];
+        $data2['PRN'] = substr($refund['id'], 5);
+
+        $reconFile = $this->generateReconFile($data, $data2, '|');
+
+        $fileName = 'OFPR_Daily_Report_'.Carbon::today()->format("dmY").'.txt';
+
+        $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, "text/plain");
+
+        $this->reconcile($uploadedFile, Base::NETBANKING_ICICI);
+
+        $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
+
+        $this->assertNotNull($transactionEntity[Txn::RECONCILED_AT]);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals($batch['status'], 'processed');
+    }
+
     protected function createPaylaterPayment()
     {
         $this->payment = $this->getDefaultPayLaterPaymentArray('icic');
@@ -164,10 +203,10 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
         return $mozart;
     }
 
-    protected function generateReconFile($data, $data2)
+    protected function generateReconFile($data, $data2, $separator = ',')
     {
-        $fileData = implode(',', $data);
-        $fileData2 = implode(',', $data2);
+        $fileData = implode($separator, $data);
+        $fileData2 = implode($separator, $data2);
 
         $data = nl2br($fileData."\n".$fileData2);
 

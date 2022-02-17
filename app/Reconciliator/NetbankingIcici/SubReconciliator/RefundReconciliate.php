@@ -1,0 +1,69 @@
+<?php
+
+namespace RZP\Reconciliator\NetbankingIcici\SubReconciliator;
+
+use Carbon\Carbon;
+
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Timezone;
+use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
+
+class RefundReconciliate extends SubReconciliator\RefundReconciliate
+{
+    const COLUMN_REFUND_ID = 'PRN';
+    const COLUMN_REFUND_AMOUNT = 'Reversal Amount';
+    const COLUMN_REVERSAL_DATE = 'Reversal Date';
+    const REFUND_REF_NO = 'ReversalId';
+
+    const BLACKLISTED_COLUMNS = [];
+
+    protected function getRefundId(array $row)
+    {
+        return $row[self::COLUMN_REFUND_ID] ?? null;
+    }
+
+    protected function getReconRefundAmount(array $row)
+    {
+        return Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
+    }
+
+    protected function getGatewaySettledAt(array $row)
+    {
+        if (empty($row[self::COLUMN_REVERSAL_DATE]) === true)
+        {
+            return null;
+        }
+
+        $columnSettledAt = strtolower($row[self::COLUMN_REVERSAL_DATE]);
+
+        $gatewaySettledAt = null;
+
+        try
+        {
+            $gatewaySettledAt = Carbon::createFromFormat('Ymd', $columnSettledAt, Timezone::IST);
+            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::INFO,
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
+                    'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
+                    'date'      => $columnSettledAt,
+                    'gateway'   => $this->gateway,
+                ]);
+        }
+
+        return $gatewaySettledAt;
+    }
+
+    protected function getArn(array $row)
+    {
+        return $row[self::REFUND_REF_NO] ?? null;
+    }
+}

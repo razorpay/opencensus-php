@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\NetbankingIcici;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Reconciliator\RequestProcessor;
 
 class Reconciliate extends Base\Reconciliate
@@ -20,6 +21,7 @@ class Reconciliate extends Base\Reconciliate
         'zest_money_sip'                                 => self::PAYMENT,
         'razorpaywalletreports'                          => self::PAYMENT,
         'consumer_durable_loan_booking_razorpay_reports' => self::PAYMENT,
+        'ofpr_daily_report'                              => self::REFUND,
     ];
 
     const EXCLUDE_FILE_STRING = 'success';
@@ -30,7 +32,8 @@ class Reconciliate extends Base\Reconciliate
      * Currently Icici shares only payment report
      */
     const TYPE_TO_COLUMN_HEADER_MAP = [
-        self::PAYMENT => self::PAYMENT_COLUMN_HEADER
+        self::PAYMENT => self::PAYMENT_COLUMN_HEADER,
+        self::REFUND  => self::REFUND_COLUMN_HEADER
     ];
 
     const PAYMENT_COLUMN_HEADER = [
@@ -40,6 +43,24 @@ class Reconciliate extends Base\Reconciliate
         'Amount',
         'Date'
     ];
+
+    const REFUND_COLUMN_HEADER = [
+        'Payee id',
+        'Payee Name',
+        'Payment id',
+        'ITC',
+        'PRN',
+        'Txn Amount',
+        'Reversal Amount',
+        'Reversal Date',
+        'ReversalId',
+        'Status',
+        'Reason',
+        'SPID',
+        'Sub-merchant Name'
+    ];
+
+    private $recon_type;
 
     /**
      * Determines the type of reconciliation
@@ -70,6 +91,8 @@ class Reconciliate extends Base\Reconciliate
                 break;
             }
         }
+
+        $this->recon_type = $typeName;
 
         return $typeName;
     }
@@ -132,5 +155,34 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return false;
+    }
+
+    public function getNumLinesToSkip(array $fileDetails)
+    {
+        $type = $this->getTypeName($fileDetails['file_name']);
+
+        if ($type === self::REFUND)
+        {
+            return [
+                FileProcessor::LINES_FROM_TOP       => 1,
+                FileProcessor::LINES_FROM_BOTTOM    => 0
+            ];
+        }
+        else
+        {
+            return parent::getNumLinesToSkip($fileDetails);
+        }
+    }
+
+    public function getDelimiter()
+    {
+        if ($this->recon_type === self::REFUND)
+        {
+            return '|';
+        }
+        else
+        {
+            return parent::getDelimiter();
+        }
     }
 }
