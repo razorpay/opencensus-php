@@ -19,6 +19,7 @@ class GroupType
             Type::MONTHLY_PAYOUT_COUNT,
             Type::EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED,
             Type::NFT_PROJECT,
+            Type::CA_LINKING_OPT_OUT,
         ],
 
         Group::X_MERCHANT_CURRENT_ACCOUNTS => [
@@ -27,6 +28,7 @@ class GroupType
             Type::CA_ONBOARDING_FLOW,
             Type::CA_CAMPAIGN_ID,
             Type::CA_SALES_LED_ALLOCATED_BANK,
+            Type::CA_SALES_LED_ICICI_LEAD_TIMESTAMP,
         ],
 
         Group::X_MERCHANT_INTENT => [

@@ -15,6 +15,7 @@ class Type
     const MONTHLY_PAYOUT_COUNT                             = 'monthly_payout_count';
     const EXPLORE_DASHBOARD_BUTTON_AT_WELCOME_PAGE_CLICKED = 'explore_dashboard_button_at_welcome_page_clicked';
     const NFT_PROJECT                                      = 'nft_project'; // used for checking if merchant has received their NFT
+    const CA_LINKING_OPT_OUT                               = 'ca_linking_opt_out';
 
     // CA Account Status Types
     const CA_ALLOCATED_BANK             = 'ca_allocated_bank';
@@ -22,6 +23,7 @@ class Type
     const CA_ONBOARDING_FLOW            = 'ca_onboarding_flow';
     const CA_CAMPAIGN_ID                = 'ca_campaign_id';
     const CA_SALES_LED_ALLOCATED_BANK   = 'ca_sales_led_allocated_bank';
+    const CA_SALES_LED_ICICI_LEAD_TIMESTAMP = 'ca_sales_led_icici_lead_timestamp';
 
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';
