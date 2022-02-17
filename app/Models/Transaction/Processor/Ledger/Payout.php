@@ -247,6 +247,16 @@ class Payout extends Base
             }
         }
 
+        if ($transactorEvent === self::PAYOUT_INITIATED)
+        {
+            $payload[self::TRANSACTION_DATE] = $payout->getInitiatedAt();
+        }
+
+        if ($transactorEvent === self::PAYOUT_PROCESSED)
+        {
+            $payload[self::TRANSACTION_DATE] = $payout->getProcessedAt();
+        }
+
         $this->updatePayloadForPrePaidSourceAccounts($payload, $payout);
 
         $this->updatePayloadForFeeCredits($payload, $payout);
