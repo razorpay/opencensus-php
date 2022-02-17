@@ -416,7 +416,7 @@ class Repository extends Base\Repository
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
-            ->whereBetween(Entity::CREATED_AT, [$from, $to])
+            ->whereBetween(Entity::UPDATED_AT, [$from, $to])
             ->WhereNull($entityName)
             ->get()
             ->pluck(Entity::MERCHANT_ID)
