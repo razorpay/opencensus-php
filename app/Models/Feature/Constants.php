@@ -1186,6 +1186,11 @@ class Constants
      */
     const SUBM_QR_IMAGE_CONTENT    = 'subm_qr_image_content';
 
+    /**
+     * Feature flag to allow only 3ds enabled international transactions
+     */
+    const INTL_ALLOW_ONLY_3DS = 'intl_allow_only_3ds';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1638,7 +1643,9 @@ class Constants
         self::OFFLINE_PAYMENT_ON_CHECKOUT     => true,
         self::ORDER_RECEIPT_UNIQUE_ERR        => true,
         self::SUBM_QR_IMAGE_CONTENT           => true,
+        self::INTL_ALLOW_ONLY_3DS             => true,
     ];
+
     // Entity type constants
     const ACCOUNT                       = 'account';
     const MERCHANT                      = 'merchant';

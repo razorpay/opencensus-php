@@ -2968,4 +2968,12 @@ Regards,
 
         $this->testFeatureStatus($featureToBeChecked);
     }
+
+    public function testInternationalAllowOnly3ds()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
 }

@@ -2355,4 +2355,24 @@ return [
             'status_code' => 200
         ]
     ],
+    'testInternationalAllowOnly3ds'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['intl_allow_only_3ds'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'intl_allow_only_3ds',
+                    'entity_id' => '10000000000000',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
 ];

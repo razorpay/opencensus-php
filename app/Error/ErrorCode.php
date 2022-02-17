@@ -269,6 +269,7 @@ class ErrorCode
     const GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS                            = 'GATEWAY_ERROR_NOT_AUTHORIZED_EXCESSIVE_REFUNDS';
     const GATEWAY_ERROR_NO_RECORDS_FOUND                                            = 'GATEWAY_ERROR_NO_RECORDS_FOUND';
     const GATEWAY_ERROR_PERMISSION_DENIED_FOR_ACTION                                = 'GATEWAY_ERROR_PERMISSION_DENIED_FOR_ACTION';
+    const BAD_REQUEST_NON_3DS_INTERNATIONAL_NOT_ALLOWED                             = 'BAD_REQUEST_NON_3DS_INTERNATIONAL_NOT_ALLOWED';
 
     // UPI (NPCI) response codes mapping
     const GATEWAY_ERROR_TRANSACTION_PENDING                                         = 'GATEWAY_ERROR_TRANSACTION_PENDING';

@@ -399,6 +399,8 @@ class PublicErrorDescription
     const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_REQUEST_MADE_IN_LAST_30_DAYS       = 'Bad Request Edit Transaction Limit Request Made In Last 30 Days';
     const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5             = 'The transaction limit cannot be updated for your account. Please reach out to our support team for further clarification';
 
+    const BAD_REQUEST_NON_3DS_INTERNATIONAL_NOT_ALLOWED                         = 'Non 3DS international card not allowed';
+
     // Virtual VPA Prefix
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_UNAVAILABLE                            = 'This prefix is already in use. Please try another prefix.';
     const BAD_REQUEST_VIRTUAL_VPA_PREFIX_NOT_ALLOWED                            = 'Prefix is not enabled for this merchant.';
