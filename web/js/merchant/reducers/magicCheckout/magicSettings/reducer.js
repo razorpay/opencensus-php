@@ -8,13 +8,15 @@ const FETCH_STATUS = {
   ERROR: 'error',
 };
 
+const DEFAULT_SELECTED_PLATFORM = 'woocommerce';
+
 const initialState = {
   status: FETCH_STATUS.IDLE,
   shipping_info: '',
   list_promotions: '',
   apply_promotion: '',
   cod_slabs: [],
-  platform: 'woocommerce',
+  platform: DEFAULT_SELECTED_PLATFORM,
   shop_id: '',
   error: null,
   has_saved_config: false,
@@ -28,6 +30,7 @@ export default function magicSettingsReducer(state = initialState, action) {
       return merge(state, {
         status: FETCH_STATUS.IDLE,
         ...action.payload.data,
+        platform: action.payload?.data?.platform || DEFAULT_SELECTED_PLATFORM,
         has_saved_config: !!action.payload.data?.platform,
         cod_slabs: transformToComponentFormat(action.payload.data?.cod_slabs),
       });
