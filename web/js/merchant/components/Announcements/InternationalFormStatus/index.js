@@ -8,20 +8,20 @@ const eventName = 'International activation form reminder banner';
 const getAnnouncementContent = ({ status, track, businessName = 'your business' }) => {
   if (
     status &&
-    status.international_activation_form_initiated &&
-    !status.international_activation_form_completed
+    status.data?.international_activation_form_initiated &&
+    !status.data?.international_activation_form_completed
   ) {
     return {
       title: 'International Payments',
       theme: 'danger',
       content: (
-        <>
+        <span>
           Don&apos;t stop! You&apos;re 1 step away from unlocking international payments for{' '}
           {businessName}.{' '}
-          <Link to="/app/payment-methods?instrument=international" onClick={track}>
+          <Link to="/payment-methods?instrument=international" onClick={track}>
             <strong>Activate Now</strong>
           </Link>
-        </>
+        </span>
       ),
     };
   }
