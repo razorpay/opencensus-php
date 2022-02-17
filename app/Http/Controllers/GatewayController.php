@@ -197,7 +197,19 @@ class GatewayController extends Controller
 
         if (Gateway::isUpiRecurringSupportedGateway($gatewayDriver) === true)
         {
-            $redirect = $gateway->redirectCallbackIfRequired($input);
+            try
+            {
+                $headers = Request::header();
+                $content = Request::getContent();
+
+                $redirect = $gateway->redirectCallbackIfRequired($input, $content, $headers);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException($exception, Logger::CRITICAL, TraceCode::PAYMENT_CALLBACK_FAILURE);
+
+                return $gateway->postProcessServerCallback($input, $exception);
+            }
 
             if (empty($redirect) === false)
             {
@@ -428,19 +440,7 @@ class GatewayController extends Controller
                 break;
 
             case Gateway::UPI_ICICI:
-                $content = Request::getContent();
-
-                if (empty($content) === false)
-                {
-                    $input = $content;
-                }
-                else
-                {
-                    // This condition is applicable when we receive a GET method callback with data
-                    // as query params. One use case in when API redirects request to dark.
-                    // $input contains query params data in array form, converting to json string.
-                    $input = json_encode($input);
-                }
+                $input = Request::getContent();
 
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
 
@@ -484,12 +484,6 @@ class GatewayController extends Controller
                 $data = $this->processServerCallbackWithGatewayResponse($input, Gateway::UPI_YESBANK);
 
                 break;
-        }
-
-        // UPI Gateways might send redirection headers
-        if ($data instanceof RedirectResponse)
-        {
-            return $data;
         }
 
         // $input['gateway'] = $gateway;

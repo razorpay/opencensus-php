@@ -44,4 +44,17 @@ class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
     {
         $this->markTestSkipped();
     }
+
+    public function testRecurringMandateCreateOnDark(&$requestSentToDark = false)
+    {
+        $this->mockServerContentFunction(function (&$content, $action) use (&$requestSentToDark)
+        {
+            if ($action === 'redirectToDark')
+            {
+                $requestSentToDark = true;
+            }
+        }, 'upi_mindgate');
+
+        parent::testRecurringMandateCreateOnDark($requestSentToDark);
+    }
 }

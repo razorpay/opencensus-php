@@ -6,9 +6,11 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Axis;
 use Razorpay\Trace\Logger;
 use RZP\Gateway\Base\Action;
+use RZP\Http\Request\Requests;
 use RZP\Exception\RuntimeException;
 
 class Gateway extends Base\Gateway
@@ -78,9 +80,35 @@ class Gateway extends Base\Gateway
         $this->pushGatewayMetrics($totalTime*1000);
     }
 
-    public function redirectCallbackIfRequired(array $response)
+    public function redirectCallbackIfRequired(array $response, $content, $headers)
     {
         false;
+    }
+
+    protected function sendProxyRequestToDark($url, $content, $headers)
+    {
+        $method = 'POST';
+
+        $options = [
+            'timeout'           => 30,
+            'connect_timeout'   => 10,
+        ];
+
+        try
+        {
+            $response = Requests::request(
+                $url,
+                $headers,
+                $content,
+                $method,
+                $options);
+        }
+        catch (\Requests_Exception $e)
+        {
+            throw $e;
+        }
+
+        return $response;
     }
 
     protected function createGatewayPaymentEntity($attributes, $action = null, $shouldMap = true)

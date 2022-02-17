@@ -33,7 +33,7 @@ trait RecurringTrait
     // 24 + 1 hours in second
     protected $defaultExecuteBuffer = 90000;
 
-    public function redirectCallbackIfRequired(array $response)
+    public function redirectCallbackIfRequired(array $response, $content, $headers)
     {
         $details = $this->getRecurringDetailsFromServerCallback($response);
         $env     = $details[Constants::ENVIRONMENT] ?? 0;
@@ -44,13 +44,8 @@ trait RecurringTrait
             // Only if we are not on dark, we need to redirect
             if ($this->isRunningOnDark() === false)
             {
-                $uri = route('gateway_payment_callback_get', ["gateway" => $this->gateway],false);
-
+                $uri = route('gateway_payment_callback_post', ["gateway" => $this->gateway], false);
                 $url = 'https://api-dark.razorpay.com' . $uri;
-
-                $queryParams = http_build_query($response);
-
-                $url = $url . "?" .$queryParams;
 
                 $this->trace->info(TraceCode::MISC_TRACE_CODE, [
                     'message'       => 'callback redirected',
@@ -58,7 +53,16 @@ trait RecurringTrait
                     'url'           => $url,
                 ]);
 
-                return redirect($url);
+                $response = $this->sendProxyRequestToDark($url, $content, $headers);
+
+                $response = json_decode($response->body, true);
+
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'message'       => 'response from dark',
+                    'response'      => $response,
+                ]);
+
+                return $response;
             }
         }
     }

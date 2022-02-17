@@ -1730,17 +1730,30 @@ EOT;
             'method'    => 'post',
             'raw'       => $content,
         ];
+
+        $requestSentToDark = false;
+
+        $this->mockServerContentFunction(function (&$content, $action = null) use (&$requestSentToDark) {
+            if ($action === 'redirectToDark')
+            {
+                $requestSentToDark = true;
+            }
+        }, $this->gateway);
+
         $response = $this->makeRequestParent($request);
 
-        $queryParams = $this->getMockServer()->getQueryParams($upiEntity, $payment->toArray());
-
-        $response->assertRedirect('https://api-dark.razorpay.com/v1/callback/upi_icici?' . $queryParams);
+        $this->assertTrue($requestSentToDark, 'The callback was not sent to dark-api');
 
         $this->assertTrue($payment->refresh()->isCreated());
 
+        // set the mozart url as the mozart-dark url so that callback is not sent to dark-api
         config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
 
+        $requestSentToDark = false;
+
         $response = $this->makeS2sCallbackAndGetContent($content);
+
+        $this->assertFalse($requestSentToDark, 'The callback was sent to dark-api');
 
         $this->assertEquals($response, ['success' => false]);
     }

@@ -1263,7 +1263,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
     }
 
-    public function testRecurringMandateCreateOnDark()
+    public function testRecurringMandateCreateOnDark(&$requestSentToDark = false)
     {
         // First set the config to mozart so that gateway data is created correctly
         config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
@@ -1350,23 +1350,18 @@ class UpiInitialRecurringTestCase extends TestCase
         config()->set('applications.mozart.live.url', 'https://mozart.razorpay.com');
 
         // First callback will not work
-        $exceptionThrown = false;
-        try
-        {
-            $this->mandateCreateCallback($payment);
-        }
-        catch (\Exception $e)
-        {
-            // A work around to make sure redirection occurred
-            $this->assertStringEndsWith('(Syntax error, malformed JSON).', $e->getMessage());
-            $exceptionThrown = true;
-        }
-        $this->assertTrue($exceptionThrown, 'Redirection exception not thrown');
+        $this->mandateCreateCallback($payment);
 
-        // Now reset back to prod
+        $this->assertTrue($requestSentToDark, 'The callback was not sent to dark-api');
+
+        // Now reset back to dark
         config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
 
+        $requestSentToDark = false;
+
         $this->mandateCreateCallback($payment);
+
+        $this->assertFalse($requestSentToDark, 'The callback was sent to dark-api');
 
         $payment->reload();
 
@@ -1415,23 +1410,20 @@ class UpiInitialRecurringTestCase extends TestCase
         // Now reset back to prod
         config()->set('applications.mozart.live.url', 'https://mozart.razorpay.com');
 
-        $exceptionThrown = false;
-        try
-        {
-            $this->firstDebitCallback($payment);
-        }
-        catch (\Exception $e)
-        {
-            // A work around to make sure redirection occurred
-            $this->assertStringEndsWith('(Syntax error, malformed JSON).', $e->getMessage());
-            $exceptionThrown = true;
-        }
-        $this->assertTrue($exceptionThrown, 'Redirection exception not thrown');
-
-        // Now reset back to prod
-        config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
+        $requestSentToDark = false;
 
         $this->firstDebitCallback($payment);
+
+        $this->assertTrue($requestSentToDark, 'The callback was not sent to dark-api');
+
+        // Now reset back to dark
+        config()->set('applications.mozart.live.url', 'https://mozart-dark.razorpay.com');
+
+        $requestSentToDark = false;
+
+        $this->firstDebitCallback($payment);
+
+        $this->assertFalse($requestSentToDark, 'The callback was sent to dark-api');
 
         $payment->reload();
 

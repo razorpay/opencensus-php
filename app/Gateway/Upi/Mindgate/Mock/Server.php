@@ -606,4 +606,15 @@ class Server extends Base\Mock\Server
 
         return $this->makeResponse($res);
     }
+
+    public function redirectToDark($input)
+    {
+        $this->request($input, __FUNCTION__);
+
+        $response = ['success' => true];
+
+        $this->content($response, __FUNCTION__);
+
+        return $this->makeResponse($response);
+    }
 }
