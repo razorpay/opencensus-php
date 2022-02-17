@@ -1,8 +1,8 @@
-import { Fragment } from 'react';
+import React from 'react';
 import Field from 'razorx/components/ui/Field';
 import InputField from 'common/ui/Forms/InputField';
 import Select from './Select';
-import { AmountTooltip } from 'common/ui/Amount';
+import Amount, { AmountTooltip } from 'common/ui/Amount';
 import { operators, getValue } from './util';
 
 export default class Expression extends React.Component {
@@ -13,18 +13,62 @@ export default class Expression extends React.Component {
     };
   }
 
-  getValue = (type, value) => {
-    let r;
-    r = this.props.parameters;
+  getValue = (value) => {
+    const r = this.props.parameters;
     return r.find((p) => p.value == value) || '';
   };
 
+  renderAmount = (value) => {
+    if (value) {
+      return value.split(',').map((item, key, arr) => (
+        <>
+          <Amount key={`${item}_${key}`} value={item} />
+          {key !== arr.length - 1 && <span>, </span>}
+        </>
+      ));
+    }
+    return null;
+  };
+
+  getAmountComp = (val, handleChange, VALUE_TYPE) => (
+    <div class="input-group">
+      <AmountTooltip
+        currency="INR"
+        parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
+        customClass="input-group-addon"
+      />
+      <Field
+        value={val ? val / 100 : val}
+        component={InputField}
+        onChange={(e) => {
+          const value = handleChange(e);
+          this.props.update({
+            ...this.props.expression,
+            operands: [
+              this.props.expression.operands[0],
+              {
+                ...this.props.expression.operands[1],
+                value,
+                type: VALUE_TYPE,
+              },
+            ],
+          });
+        }}
+        type="number"
+        placeholder="Enter Amount"
+        name="amountInINR"
+        class="form-control"
+        min="0"
+      />
+    </div>
+  );
+
   render() {
-    const PARAMETER = this.getValue('parameter', this.props.expression.operands[0].value);
+    const PARAMETER = this.getValue(this.props.expression.operands[0].value);
     const OPERATORS = operators.filter((o) => {
-      let p = PARAMETER;
+      const p = PARAMETER;
       if (p) {
-        let ops = Object.keys(p.operators);
+        const ops = Object.keys(p.operators);
         return ops.indexOf(o.value) !== -1;
       } else {
         return true;
@@ -57,7 +101,7 @@ export default class Expression extends React.Component {
         className={`expression-row ${this.props.readonly ? 'expression-row-readonly' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
-          let parent = e.target;
+          const parent = e.target;
           if (parent.classList[0] === 'expression-row') {
             if (this.props.onClose) {
               this.props.onClose();
@@ -71,7 +115,11 @@ export default class Expression extends React.Component {
               <div class="expression-readonly-high">
                 When <b>{PARAMETER.name}</b>{' '}
                 {getValue('operator', this.props.expression.value).name}{' '}
-                <b>{this.props.expression.operands[1].value}</b>
+                {PARAMETER.value === '$payment.navigator_amount' ? (
+                  this.renderAmount(this.props.expression.operands[1].value)
+                ) : (
+                  <b>{this.props.expression.operands[1].value}</b>
+                )}
               </div>
             </div>
           </div>
@@ -161,22 +209,25 @@ export default class Expression extends React.Component {
                     }}
                   />
                 );
-                if (RHS_TYPE.type == 'input' && !RHS_TYPE.multiple) {
+                if (
+                  RHS_TYPE.type == 'input' &&
+                  !RHS_TYPE.multiple &&
+                  PARAMETER.value !== '$payment.navigator_amount'
+                ) {
                   jsx = (
                     <div className="row">
                       <div className="col-xs-12">
                         <input
                           value={this.props.expression.operands[1].value}
                           onChange={(e) => {
-                            let value;
-                            value = e.target.value;
+                            const value = e.target.value;
                             this.props.update({
                               ...this.props.expression,
                               operands: [
                                 this.props.expression.operands[0],
                                 {
                                   ...this.props.expression.operands[1],
-                                  value: value,
+                                  value,
                                   type: VALUE_TYPE,
                                 },
                               ],
@@ -189,6 +240,18 @@ export default class Expression extends React.Component {
                         />
                       </div>
                     </div>
+                  );
+                }
+                if (
+                  RHS_TYPE.type == 'input' &&
+                  !RHS_TYPE.multiple &&
+                  PARAMETER.value === '$payment.navigator_amount'
+                ) {
+                  jsx = this.getAmountComp(
+                    this.props.expression.operands[1].value,
+                    (e) =>
+                      e.target.value && e.target.value >= 0 ? String(e.target.value * 100) : '',
+                    VALUE_TYPE,
                   );
                 }
                 if (
@@ -209,7 +272,7 @@ export default class Expression extends React.Component {
                                 this.props.expression.operands[0],
                                 {
                                   ...this.props.expression.operands[1],
-                                  value: value,
+                                  value,
                                   type: VALUE_TYPE,
                                 },
                               ],
@@ -235,8 +298,7 @@ export default class Expression extends React.Component {
                         <input
                           value={this.props.expression.operands[1].value}
                           onChange={(e) => {
-                            let value;
-                            value = e.target.value;
+                            const value = e.target.value;
                             const values = value.split(',');
                             let update = true;
                             values.forEach((item, index) => {
@@ -268,6 +330,7 @@ export default class Expression extends React.Component {
                                 if (item !== '') {
                                   return item;
                                 }
+                                return null;
                               });
                               this.props.update({
                                 ...this.props.expression,
@@ -300,85 +363,44 @@ export default class Expression extends React.Component {
                 }
                 if (RHS_TYPE.between) {
                   jsx = (
-                    <Fragment>
-                      <div className="between-amount-div">
-                        <div className="row">
-                          <div className="col-xs-12" style={{ display: 'flex' }}>
-                            <div className="between-inp-div" style={{ width: '45%' }}>
-                              <div class="input-group">
-                                <AmountTooltip
-                                  currency={'INR'}
-                                  parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
-                                  customClass={`input-group-addon`}
-                                />
-                                <Field
-                                  value={this.props.expression.operands[1].value.split(',')[0]}
-                                  component={InputField}
-                                  onChange={(e) => {
-                                    let value = this.props.expression.operands[1].value.split(',');
-                                    value[0] = e.target.value;
-                                    value = value.join(',');
-                                    this.props.update({
-                                      ...this.props.expression,
-                                      operands: [
-                                        this.props.expression.operands[0],
-                                        {
-                                          ...this.props.expression.operands[1],
-                                          value: value,
-                                          type: VALUE_TYPE,
-                                        },
-                                      ],
-                                    });
-                                  }}
-                                  type="number"
-                                  placeholder="Enter Amount"
-                                  name="amountInINR"
-                                  class="form-control"
-                                />
-                              </div>
-                            </div>
-                            <div
-                              className="between-inp-div"
-                              style={{ width: '10%', margin: '5px 6px' }}
-                            >
-                              <div class="text-center">to</div>
-                            </div>
-                            <div className="between-inp-div" style={{ width: '45%' }}>
-                              <div class="input-group">
-                                <AmountTooltip
-                                  currency={'INR'}
-                                  parentQuerySelector=".ReactModal__Overlay .ReactModal__Content"
-                                  customClass={`input-group-addon`}
-                                />
-                                <Field
-                                  component={InputField}
-                                  type="number"
-                                  value={this.props.expression.operands[1].value.split(',')[1]}
-                                  onChange={(e) => {
-                                    let value = this.props.expression.operands[1].value.split(',');
-                                    value[1] = e.target.value;
-                                    value = value.join(',');
-                                    this.props.update({
-                                      ...this.props.expression,
-                                      operands: [
-                                        this.props.expression.operands[0],
-                                        {
-                                          ...this.props.expression.operands[1],
-                                          value: value,
-                                        },
-                                      ],
-                                    });
-                                  }}
-                                  placeholder="Enter Amount"
-                                  name="amountInINR"
-                                  class="form-control"
-                                />
-                              </div>
-                            </div>
+                    <div className="between-amount-div">
+                      <div className="row">
+                        <div className="col-xs-12" style={{ display: 'flex' }}>
+                          <div className="between-inp-div" style={{ width: '45%' }}>
+                            {this.getAmountComp(
+                              this.props.expression.operands[1].value.split(',')[0],
+                              (e) => {
+                                let value = this.props.expression.operands[1].value.split(',');
+                                value[0] =
+                                  e.target.value && e.target.value >= 0 ? e.target.value * 100 : '';
+                                value = value.join(',');
+                                return value;
+                              },
+                              VALUE_TYPE,
+                            )}
+                          </div>
+                          <div
+                            className="between-inp-div"
+                            style={{ width: '10%', margin: '5px 6px' }}
+                          >
+                            <div class="text-center">to</div>
+                          </div>
+                          <div className="between-inp-div" style={{ width: '45%' }}>
+                            {this.getAmountComp(
+                              this.props.expression.operands[1].value.split(',')[1],
+                              (e) => {
+                                let value = this.props.expression.operands[1].value.split(',');
+                                value[1] =
+                                  e.target.value && e.target.value >= 0 ? e.target.value * 100 : '';
+                                value = value.join(',');
+                                return value;
+                              },
+                              VALUE_TYPE,
+                            )}
                           </div>
                         </div>
                       </div>
-                    </Fragment>
+                    </div>
                   );
                 }
                 return jsx;

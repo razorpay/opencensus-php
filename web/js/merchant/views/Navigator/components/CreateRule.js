@@ -432,7 +432,7 @@ export default class CreateRule extends React.Component {
       name: rule.name,
       precondition: rule.precondition,
       rules: setRuleMode(rule.rules, mode),
-      description: '',
+      description: rule.description,
       // outcome_type: '',
       strategy: 'default',
       // mandatory_attributes: [],

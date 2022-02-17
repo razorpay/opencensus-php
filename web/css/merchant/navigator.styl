@@ -403,7 +403,7 @@
     list-style-type: none;
     padding-left: 0;
     overflow-y: scroll;
-    max-height: 120px;
+    max-height: 210px;
     color: rgba(22, 47, 86, 0.87);
     margin-bottom: 0;
 
@@ -561,6 +561,11 @@
   padding-left: 10px;
   padding-top: 4px;
   color: rgba(22, 47, 86, 0.87);
+  .rzp-amount {
+    .rzp-currency, .rzp-whole, .rzp-paise {
+      font-weight: bold;
+    }
+  }
 }
 
 .expression-row-readonly {
@@ -688,6 +693,14 @@ div.operator-btn {
 
 .select-value .input-select {
   left: 16px;
+}
+
+.select-value {
+  .row {
+    .col-xs-12 {
+      padding: 0;
+    }
+  }
 }
 
 .navigator-rule-detail {
