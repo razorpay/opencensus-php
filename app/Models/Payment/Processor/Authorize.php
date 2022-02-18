@@ -1382,6 +1382,15 @@ trait Authorize
                 'iin'        => $card->getIin(),
             ];
 
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            if ((empty($token) === false) &&
+                (empty($token->card) === false))
+            {
+                $metaData['last4'] = $token->card->getLast4();
+            }
+
+
             if ((empty($this->isJsonRoute) === false) and
                 ($this->isJsonRoute === false))
             {
