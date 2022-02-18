@@ -377,22 +377,12 @@ class ViewSerializer extends Base\Core
 
     protected function getKeylessAuth()
     {
-        $keylessHeader = null;
         $merchantId = $this->merchant->getId();
         $mode = $this->mode ?? Mode::LIVE;
-        $isKeylessHeaderEnabled = $this->app->razorx->getTreatment(
+
+        return $this->app['keyless_header']->get(
             $merchantId,
-            Merchant\RazorxTreatment::KEYLESS_HEADER_PP,
-            $mode
-        );
-
-        if ($isKeylessHeaderEnabled === "on") {
-            $keylessHeader = $this->app['keyless_header']->get(
-                $merchantId,
-                $mode);
-        }
-
-        return $keylessHeader;
+            $mode);
     }
 
     protected function populateDonationGoalTrackerWithAdditionalKeys(array & $settings): void
