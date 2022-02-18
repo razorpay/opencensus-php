@@ -4505,6 +4505,14 @@ class AdminFetch
                     Fetch::TYPE  => Fetch::TYPE_STRING
                 ],
             ],
+
+            Entity::REFERRALS => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID
+            ],
+
+            Entity::MERCHANT_ATTRIBUTE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID
+            ]
         ];
 
         //

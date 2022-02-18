@@ -774,4 +774,20 @@ return [
     E::LEDGER_STATEMENT => [],
 
     E::MERCHANT_NOTIFICATION_CONFIG => [],
+
+    E::REFERRALS => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ]
+        ]
+    ],
+
+    E::MERCHANT_ATTRIBUTE => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' =>  '10000000000000'
+            ]
+        ]
+    ]
 ];
