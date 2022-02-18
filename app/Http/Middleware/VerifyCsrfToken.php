@@ -77,7 +77,7 @@ class VerifyCsrfToken extends BaseVerifier
                 return $next($request);
             }
             else
-            {
+            {   
                 if (
                     $this->isReading($request) or
                     $this->runningUnitTests() or
@@ -114,7 +114,11 @@ class VerifyCsrfToken extends BaseVerifier
     private function getErrorResponseForGraphQlClients()
     {
         $baseAppUrl = config('app.url');
-
+        
+        app('trace')->info(TraceCode::UNAUTHORISED_BACKTRACE, [
+            'backtrace' => debug_backtrace(10),
+        ]);
+        
         return [
             'errors'    => [
                 [

@@ -126,6 +126,10 @@ class GraphRequestAuthCheck
 
     private function getErrorResponseForGraphQlClients()
     {
+        app('trace')->info(TraceCode::UNAUTHORISED_BACKTRACE, [
+            'backtrace' => debug_backtrace(10),
+        ]);
+
         $baseAppUrl = config('app.url');
 
         return [

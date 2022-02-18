@@ -81,6 +81,8 @@ class TraceCode
 
     const MISMATCHED_VERIFY_TOKEN                   = 'MISMATCHED_VERIFY_TOKEN';
 
+    const UNAUTHORISED_BACKTRACE                    = 'UNAUTHORISED_BACKTRACE';
+
     const DEBUG_MERCHANT_TRUTHY_VALUE               = 'DEBUG_MERCHANT_TRUTHY_VALUE';
 
     const SPLITZ_EVALUATE_FAILED                    = 'SPLITZ_EVALUATE_FAILED';
