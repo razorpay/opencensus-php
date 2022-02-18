@@ -1602,6 +1602,10 @@ return [
                 'description' => 'Allow access to make specific admin API calls in Capital LOS(for Capital LOS developers)',
                 'assignable'  => true,
             ],
+            Permission::CAPITAL_LOS_SCORECARD_FILES_DELETE => [
+                'description' => 'Allow access to delete scorecard files',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::PAYOUTS => [
