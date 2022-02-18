@@ -78,7 +78,11 @@ class Mandate extends BaseMandate
                 break;
 
             case Routes::FETCH_MANDATE:
-                $this->response = $this->mockFetchMandate();
+                $this->response = $this->mockFetchMandate($payload);
+                break;
+
+            case Routes::FETCH_ALL_MANDATE:
+                $this->response = $this->mockFetchAllMandate($payload);
                 break;
 
             case Routes::UPDATE_MANDATE:
@@ -148,11 +152,35 @@ class Mandate extends BaseMandate
     }
 
     /**
+     * This is the method to fetch mandate data from cache
+     * @param array $input
+     *
+     * @return array
+     */
+    private function mockFetchMandate(array $input): array
+    {
+        $container = $this->getContainer();
+
+        if (count($container) > 0)
+        {
+            foreach ($container as $key => $value)
+            {
+                if($input[MandateEntity::MANDATE][MandateEntity::ID] === $container[$key][MandateEntity::ID])
+                {
+                    return $container[$key];
+                }
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * Mock function which returns an array containing all the created mandates
      *
      * @return array
      */
-    private function mockFetchMandate(): array
+    private function mockFetchAllMandate(): array
     {
         $container = $this->getContainer();
 
@@ -177,7 +205,7 @@ class Mandate extends BaseMandate
 
         foreach ($container as $key => $value)
         {
-            if($input[MandateEntity::ID] === $container[$key][MandateEntity::ID])
+            if($input[MandateEntity::MANDATE][MandateEntity::ID] === $container[$key][MandateEntity::ID])
             {
                 unset($container[$key]);
 
@@ -208,7 +236,7 @@ class Mandate extends BaseMandate
 
         foreach ($container as $key => $value)
         {
-            if($input[MandateEntity::ID] === $container[$key][MandateEntity::ID])
+            if($input[MandateEntity::MANDATE][MandateEntity::ID] === $container[$key][MandateEntity::ID])
             {
                 $deletedRecord = $container[$key];
 

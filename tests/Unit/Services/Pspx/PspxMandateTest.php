@@ -5,6 +5,7 @@ namespace Unit\Services\Pspx;
 use Carbon\Carbon;
 use RZP\Services\Pspx\Service;
 use RZP\Models\P2p\Mandate\Entity;
+use RZP\Models\P2p\Mandate\RecurringType;
 use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 use RZP\Models\P2p\Mandate\UpiMandate\Entity as UpiMandateEntity;
@@ -67,7 +68,7 @@ class PspxMandateTest extends TestCase
         $this->setContext();
 
         $input = array(
-            Entity::AMOUNT              => '100',
+            Entity::AMOUNT              => 100,
             Entity::AMOUNT_RULE         => 'EXACT',
             Entity::RECURRING_VALUE     => 3,
             Entity::RECURRING_TYPE      => 'MONTHLY',
@@ -90,19 +91,12 @@ class PspxMandateTest extends TestCase
 
         $this->assertIsArray($response);
 
-        // Assert response has id key, and it is not empty
-        $this->assertArrayHasKey(Entity::ID, $response);
-        $this->assertTrue(empty($response[Entity::ID]) === false);
+        $this->assertMandateData($response);
+
         unset($response[Entity::ID]);
 
-        // Assert response has created_at key and it's value is an integer
-        $this->assertArrayHasKey(Entity::CREATED_AT, $response);
-        $this->assertIsInt($response[Entity::CREATED_AT]);
         unset($response[Entity::CREATED_AT]);
 
-        // Assert response has updated_at key and it's value is an integer
-        $this->assertArrayHasKey(Entity::UPDATED_AT, $response);
-        $this->assertIsInt($response[Entity::UPDATED_AT]);
         unset($response[Entity::UPDATED_AT]);
 
         unset($response[Entity::DELETED_AT]);
@@ -112,31 +106,51 @@ class PspxMandateTest extends TestCase
 
     public function testFetch()
     {
-        $context = array();
+        $this->setContext();
 
-        $response = $this->pspxMandate->fetch($context);
+        $mandate = $this->pspxMandate->create($this->context, []);
 
-        $this->assertIsArray($response);
+        $response = $this->pspxMandate->fetch($this->context , array_only($mandate, Entity::ID));
+
+        $this->assertMandateData($response);
+    }
+
+    public function testFetchAll()
+    {
+        $this->setContext();
+
+        $this->pspxMandate->create($this->context, []);
+
+        $this->pspxMandate->create($this->context, []);
+
+        $response = $this->pspxMandate->fetchAll($this->context);
+
+        $this->assertCount(2, $response);
+
+        // verify each and every mandate data
+        foreach($response as $key => $value)
+        {
+            $this->assertMandateData($response[$key]);
+        }
     }
 
     public function testUpdate()
     {
-        $input = array(
-            Entity::ID      => '12',
-            Entity::AMOUNT  => '200'
-        );
+        $this->setContext();
 
-        $context = array();
+        $mandate =  $this->pspxMandate->create($this->context, []);
 
-        $response = $this->pspxMandate->update($context, $input);
+        $mandate[Entity::RECURRING_TYPE] = RecurringType::BIMONTHLY;
+
+        $response = $this->pspxMandate->update($this->context, $mandate);
 
         $this->assertIsArray($response);
 
         foreach ($response as $key=>$value)
         {
-            if($input['id'] == $response[$key]['id'])
+            if($mandate[Entity::ID] == $response[$key][Entity::MANDATE][Entity::ID])
             {
-                $this->assertSame($input['amount'], $response[$key]['amount']);
+                $this->assertSame($mandate[Entity::AMOUNT_RULE], $response[$key][Entity::MANDATE][Entity::AMOUNT_RULE]);
             }
         }
     }
@@ -174,5 +188,31 @@ class PspxMandateTest extends TestCase
         $context->registerServices();
 
         $this->context = $context;
+    }
+
+    /**
+     * This is the function to assert mandate data
+     * @param $response
+     */
+    private function assertMandateData($response)
+    {
+        $this->assertIsArray($response);
+
+        // Assert response has id key, and it is not empty
+        $this->assertArrayHasKey(Entity::ID, $response);
+        $this->assertTrue(empty($response[Entity::ID]) === false);
+        unset($response[Entity::ID]);
+
+        // Assert response has created_at key and it's value is an integer
+        $this->assertArrayHasKey(Entity::CREATED_AT, $response);
+        $this->assertIsInt($response[Entity::CREATED_AT]);
+        unset($response[Entity::CREATED_AT]);
+
+        // Assert response has updated_at key and it's value is an integer
+        $this->assertArrayHasKey(Entity::UPDATED_AT, $response);
+        $this->assertIsInt($response[Entity::UPDATED_AT]);
+        unset($response[Entity::UPDATED_AT]);
+
+        unset($response[Entity::DELETED_AT]);
     }
 }

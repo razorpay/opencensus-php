@@ -2,7 +2,10 @@
 
 namespace RZP\Tests\P2p\Service\UpiSharp\Mandate;
 
+use RZP\Models\P2p\Mandate\Entity;
 use RZP\Exception\RuntimeException;
+use RZP\Exception\BadRequestException;
+use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
@@ -14,99 +17,106 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $response = $helper->fetchAll();
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->assertArrayHasKey(Entity::ENTITY, $response);
 
-        $helper->fetchAll();
+        $this->assertArrayHasKey('count', $response);
+
+        $this->assertArrayHasKey('items', $response);
     }
 
     public function testFetch()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->fetch("20");
+        $response = $helper->fetch('IlS1WhGL84jAoR');
+
+        $this->assertIsArray($response);
+
+        // Assert response has id key, and it is not empty
+        $this->assertArrayHasKey(Entity::ID, $response);
     }
 
     public function testInitiateAuthorize()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->initiateAuthorize("20", []);
+        $response = $helper->initiateAuthorize('IlS1WhGL84jAoR', []);
     }
 
     public function testInitiateReject()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->initiateReject("20", []);
+        $response = $helper->initiateReject('IlS1WhGL84jAoR', []);
     }
 
     public function testInitiatePause()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->initiatePause("20", []);
+        $response = $helper->initiatePause('IlS1WhGL84jAoR', []);
     }
 
     public function testInitiateUnPause()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->initiateUnPause("20", []);
+        $response = $helper->initiateUnPause('IlS1WhGL84jAoR', []);
     }
 
     public function testInitiateRevoke()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->initiateRevoke("20", []);
+        $response = $helper->initiateRevoke('IlS1WhGL84jAoR', []);
     }
 
     public function testAuthorizeMandate()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->authorizeMandate("20", []);
+        $response = $helper->authorizeMandate('IlS1WhGL84jAoR', []);
     }
 
     public function testRejectMandate()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->rejectMandate("20", []);
+        $response = $helper->rejectMandate('IlS1WhGL84jAoR', []);
     }
 
 
@@ -114,22 +124,22 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->pauseMandate("20", []);
+        $response = $helper->pauseMandate('IlS1WhGL84jAoR', []);
     }
 
     public function testUnPauseMandate()
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->unpauseMandate("20", []);
+        $response = $helper->unpauseMandate('IlS1WhGL84jAoR', []);
 
     }
 
@@ -137,10 +147,10 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(BadRequestException::class);
 
-        $this->expectExceptionMessage('Not implemented, Core Implementation is on the way');
+        $this->expectExceptionMessage('The id provided does not exist');
 
-        $response = $helper->revokeMandate("20", []);
+        $response = $helper->revokeMandate('IlS1WhGL84jAoR', []);
     }
 }

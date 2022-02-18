@@ -39,9 +39,28 @@ class Mandate extends Service
      * @throws \RZP\Exception\RuntimeException
      * @throws \RZP\Exception\ServerErrorException
      */
-    public function fetch($context)
+    public function fetch($context, array $input)
     {
-        $response = $this->sendRequest('POST', Routes::FETCH_MANDATE);
+        $payload = $this->getPayloadArray($context, $input);
+
+        $response = $this->sendRequest('POST', Routes::FETCH_MANDATE, $payload);
+
+        return $response;
+    }
+
+    /**
+     * @param $context
+     * Fetchall call to PSPx
+     * @return mixed|null
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function fetchAll($context)
+    {
+        $payload = $this->getPayloadArray($context, Array());
+
+        $response = $this->sendRequest('POST', Routes::FETCH_ALL_MANDATE, $payload);
 
         return $response;
     }
@@ -60,7 +79,9 @@ class Mandate extends Service
      */
     public function update($context, array $input)
     {
-        $response = $this->sendRequest('POST', Routes::UPDATE_MANDATE, $input);
+        $payload = $this->getPayloadArray($context, $input);
+
+        $response = $this->sendRequest('POST', Routes::UPDATE_MANDATE, $payload);
 
         return $response;
     }
@@ -79,7 +100,9 @@ class Mandate extends Service
      */
     public function delete($context, array $input)
     {
-        $response = $this->sendRequest('POST', Routes::DELETE_MANDATE, $input);
+        $payload = $this->getPayloadArray($context, $input);
+
+        $response = $this->sendRequest('POST', Routes::DELETE_MANDATE, $payload);
 
         return $response;
     }

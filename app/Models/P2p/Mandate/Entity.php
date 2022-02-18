@@ -2,11 +2,15 @@
 
 namespace RZP\Models\P2p\Mandate;
 
+use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
+use RZP\Models\Customer;
 
 /**
  * Class Entity
  *
+ * @property Vpa\Entity $payer
+ * @property Vpa\Entity $payee
  * @package RZP\Models\P2p\Mandate
  */
 class Entity extends Base\Entity
@@ -16,48 +20,49 @@ class Entity extends Base\Entity
     use Base\Traits\HasMerchant;
     use Base\Traits\HasBankAccount;
 
-    const NAME			            = 'name';
-    const DEVICE_ID			        = 'device_id';
-    const MERCHANT_ID 		        = 'merchant_id';
-    const CUSTOMER_ID 		        = 'customer_id';
-    const HANDLE 		            = 'handle';
-    const AMOUNT			        = 'amount';
-    const AMOUNT_RULE 		        = 'amount_rule';
-    const PAYER_ID 			        = 'payer_id';
-    const PAYEE_ID 			        = 'payee_id';
-    const TYPE 			            = 'type';
-    const FLOW 			            = 'flow';
-    const MODE 			            = 'mode';
-    const RECURRING_TYPE 	        = 'recurring_type';
-    const RECURRING_VALUE	        = 'recurring_value';
-    const RECURRING_RULE 	        = 'recurring_rule';
-    const UMN			            = 'umn';
-    const STATUS			        = 'status';
-    const INTERNAL_STATUS	        = 'internal_status';
-    const START_DATE		        = 'start_date';
-    const END_DATE			        = 'end_date';
-    const ACTION			        = 'action';
-    const DESCRIPTION			    = 'description';
-    const GATEWAY                   = 'gateway';
-    const INTERNAL_ERROR_CODE       = 'internal_error_code';
-    const ERROR_CODE			    = 'error_code';
-    const ERROR_DESCRIPTION			= 'error_description';
-    const COMPLETED_AT			    = 'completed_at';
-    const EXPIRE_AT			        = 'expire_at';
+    const NAME                = 'name';
+    const DEVICE_ID           = 'device_id';
+    const MERCHANT_ID         = 'merchant_id';
+    const CUSTOMER_ID         = 'customer_id';
+    const HANDLE              = 'handle';
+    const AMOUNT              = 'amount';
+    const AMOUNT_RULE         = 'amount_rule';
+    const PAYER_ID            = 'payer_id';
+    const PAYEE_ID            = 'payee_id';
+    const TYPE                = 'type';
+    const FLOW                = 'flow';
+    const MODE                = 'mode';
+    const RECURRING_TYPE      = 'recurring_type';
+    const RECURRING_VALUE     = 'recurring_value';
+    const RECURRING_RULE      = 'recurring_rule';
+    const UMN                 = 'umn';
+    const STATUS              = 'status';
+    const INTERNAL_STATUS     = 'internal_status';
+    const START_DATE          = 'start_date';
+    const END_DATE            = 'end_date';
+    const ACTION              = 'action';
+    const DESCRIPTION         = 'description';
+    const GATEWAY             = 'gateway';
+    const INTERNAL_ERROR_CODE = 'internal_error_code';
+    const ERROR_CODE          = 'error_code';
+    const ERROR_DESCRIPTION   = 'error_description';
+    const COMPLETED_AT        = 'completed_at';
+    const EXPIRE_AT           = 'expire_at';
 
     /************** Input  Properties ************/
 
-    const MANDATE               = 'mandate';
-    const CUSTOMER              = 'customer';
-    const PAYER                 = 'payer';
-    const PAYEE                 = 'payee';
-    const UPI                   = 'upi';
-    const IS_PENDING_COLLECT    = 'is_pending_collect';
+    const MANDATE            = 'mandate';
+    const CUSTOMER           = 'customer';
+    const PAYER              = 'payer';
+    const PAYEE              = 'payee';
+    const UPI                = 'upi';
+    const IS_PENDING_COLLECT = 'is_pending_collect';
+
+    protected static $sign = 'cmdt';
 
     /************** Entity Properties ************/
 
-    protected $entity       = 'p2p_mandate';
-    protected static $sign  = 'cmdt';
+    protected $entity = 'p2p_mandate';
 
     protected $dates = [
         Entity::START_DATE,
@@ -149,4 +154,76 @@ class Entity extends Base\Entity
         Entity::ERROR_DESCRIPTION,
         Entity::INTERNAL_ERROR_CODE,
     ];
+
+    /***************** SETTERS *****************/
+
+    /**
+     * @param array $array
+     */
+    public function setPublicEntityAttribute(array &$array)
+    {
+        $array[self::ENTITY] = 'customer.mandate';
+    }
+
+    /**
+     * @param Vpa\Entity $payer
+     *
+     * @return mixed|Entity
+     */
+    public function setPayer(Vpa\Entity $payer)
+    {
+        return $this->setAttribute(self::PAYER, $payer);
+    }
+
+    /**
+     * @param Vpa\Entity $payee
+     *
+     * @return mixed|Entity
+     */
+    public function setPayee(Vpa\Entity $payee)
+    {
+        return $this->setAttribute(self::PAYEE, $payee);
+    }
+
+    /**
+     * @param Customer\Entity $customer
+     *
+     * @return mixed|Entity
+     */
+    public function setCustomer(Customer\Entity $customer)
+    {
+        return $this->setAttribute(self::CUSTOMER, $customer);
+    }
+
+    /***************** GETTERS *****************/
+
+    public function toArrayPublic()
+    {
+        $array = parent::toArrayPublic();
+
+        if (isset($array[self::PAYER]))
+        {
+            $array[self::PAYER] = $this->payer->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::PAYEE]))
+        {
+            $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
+        }
+
+        if (isset($array[self::CUSTOMER]))
+        {
+            $array[self::CUSTOMER] = $this->getCustomer()->toArrayPublic();
+        }
+
+        return $array;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCustomer()
+    {
+        return $this->getAttribute(self::CUSTOMER);
+    }
 }

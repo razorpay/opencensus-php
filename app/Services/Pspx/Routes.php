@@ -9,6 +9,7 @@ class Routes
 
     const CREATE_MANDATE    = 'CREATE_MANDATE';
     const FETCH_MANDATE     = 'FETCH_MANDATE';
+    const FETCH_ALL_MANDATE = 'FETCH_ALL_MANDATE';
     const UPDATE_MANDATE    = 'UPDATE_MANDATE';
     const DELETE_MANDATE    = 'DELETE_MANDATE';
 }
