@@ -65,7 +65,7 @@ class PartialScheduledSettlementJob extends Job
                 {
                     PartialScheduledSettlementForMerchantJob::dispatch($this->mode, $merchantId);
 
-                    $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_JOB_MERCHANT_JOB_DISPATCHED, [
+                    $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
                         "merchant_id"   =>  $merchantId
                     ]);
                 }
