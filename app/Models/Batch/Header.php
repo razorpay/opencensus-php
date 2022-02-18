@@ -1121,6 +1121,9 @@ class Header
     const ACCOUNT_OPENED_DATE                     = 'Account Opened Date';
     const MULTI_LOCATION                          = 'Multi location';
     const DROP_OFF_REASON                         = 'Drop off reason';
+    const STP_DOCS_COLLECTED                      = 'STP docs collected (Y/N)';
+    const ACCOUNT_NUMBER_CHANGE                   = 'Account number change (Y/N)';
+    const FOLLOW_UP_DATE                          = 'Follow up date';
 
     //Mastercard
     const SR_NO                                = "Sr. No";
@@ -3971,6 +3974,9 @@ class Header
                 self::ACCOUNT_OPENED_DATE,
                 self::MULTI_LOCATION,
                 self::DROP_OFF_REASON,
+                self::STP_DOCS_COLLECTED,
+                self::ACCOUNT_NUMBER_CHANGE,
+                self::FOLLOW_UP_DATE
             ]
         ],
 

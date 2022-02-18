@@ -119,7 +119,10 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::CASE_INITIATION_DATE                    => '2021-12-01',
                     Batch\Header::ACCOUNT_OPENED_DATE                     => '2021-12-01',
                     Batch\Header::MULTI_LOCATION                          => '2021-12-01',
-                    Batch\Header::DROP_OFF_REASON                         => '2021-12-01'
+                    Batch\Header::DROP_OFF_REASON                         => '2021-12-01',
+                    Batch\Header::STP_DOCS_COLLECTED                      => 'Y',
+                    Batch\Header::ACCOUNT_NUMBER_CHANGE                   => 'N',
+                    Batch\Header::FOLLOW_UP_DATE                          => '20/7/2020'
                 ],
                 [
                     Batch\Header::APPLICATION_NO                          => '198735',
@@ -140,7 +143,10 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::CASE_INITIATION_DATE                    => '2021-12-01',
                     Batch\Header::ACCOUNT_OPENED_DATE                     => '2021-12-01',
                     Batch\Header::MULTI_LOCATION                          => '2021-12-01',
-                    Batch\Header::DROP_OFF_REASON                         => '2021-12-01'
+                    Batch\Header::DROP_OFF_REASON                         => '2021-12-01',
+                    Batch\Header::STP_DOCS_COLLECTED                      => 'Y',
+                    Batch\Header::ACCOUNT_NUMBER_CHANGE                   => 'N',
+                    Batch\Header::FOLLOW_UP_DATE                          => '20/7/2020'
                 ]
             ];
         }
