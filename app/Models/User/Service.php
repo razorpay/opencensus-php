@@ -252,9 +252,9 @@ class Service extends Base\Service
             ]
         );
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
-
         $merchant = $this->pushSegmentSignupEvent($user[Entity::ID], $customProperties);
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $merchant, null, $customProperties);
 
         $this->notifyRasOnSignup($merchant, $customProperties, $user);
     }
