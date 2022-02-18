@@ -194,6 +194,10 @@ class Payment extends Base
         {
             $rule = $this->getRelevantPricingRuleForAPP($rules);
         }
+        else if ($method === PaymentModel\Method::OFFLINE)
+        {
+            $rule = $this->getRelevantPricingRuleForOffline($rules);
+        }
         // else if ($method === PaymentModel\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -570,6 +574,11 @@ class Payment extends Base
     }
 
     protected function getRelevantPricingRuleForBankTransfer($rules)
+    {
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForOffline($rules)
     {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }

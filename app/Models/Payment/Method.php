@@ -38,6 +38,7 @@ class Method
         self::NACH                  => 'nach',
         self::APP                   => 'App',
         self::COD                   => 'Cash on Delivery',
+        self::OFFLINE               => 'Offline'
     ];
 
     protected static $nonEsAutomaticMethods = [

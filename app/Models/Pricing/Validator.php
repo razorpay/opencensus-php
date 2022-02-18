@@ -196,6 +196,7 @@ class Validator extends Base\Validator
             'procurer is not required when feature is optimizer.');
     }
 
+
     protected function validateAddPlanRuleGateway($input)
     {
         if (isset($input[Entity::GATEWAY]) === false)
@@ -540,6 +541,12 @@ class Validator extends Base\Validator
                 }
             }
         }
+
+        if(isset($input[Entity::PAYMENT_METHOD])===true and $input[Entity::PAYMENT_METHOD] === Payment\Method::OFFLINE
+            and  (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true or isset($input[Entity::PAYMENT_METHOD_SUBTYPE]) === true))
+        {
+            $this->throwExtraFieldsException([Entity::PAYMENT_METHOD_SUBTYPE,Entity::PAYMENT_METHOD_TYPE]);
+        }
     }
 
     protected function validateaddPlanRuleEmi($input)
@@ -698,6 +705,13 @@ class Validator extends Base\Validator
                     'Network selected for method ' . $input[Entity::PAYMENT_METHOD] .' is invalid');
             }
         }
+
+        if(isset($input[Entity::PAYMENT_METHOD]) === true and $input[Entity::PAYMENT_METHOD] === Payment\Method::OFFLINE
+            and  isset($input[Entity::PAYMENT_NETWORK]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Offline method cannot have a network associated with it');
+        }
     }
 
     protected function validateAddPlanRuleRefund($input)
@@ -808,7 +822,6 @@ class Validator extends Base\Validator
     public function addPlanRuleValidate($input, Plan $plan)
     {
         $this->validateInput('addPlanRule', $input);
-
         // The plan should already have at least one rule
         if ($plan->count() === 0)
         {
@@ -1315,6 +1328,13 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The selected auth type is invalid');
+        }
+
+        //Check if Auth type is not being sent when payment method is offline
+        if(isset($input[Entity::PAYMENT_METHOD])===true and $input[Entity::PAYMENT_METHOD] === Payment\Method::OFFLINE
+            and  isset($input[Entity::AUTH_TYPE]) === true)
+        {
+            $this->throwExtraFieldsException(Entity::AUTH_TYPE);
         }
     }
 

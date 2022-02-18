@@ -988,6 +988,58 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest('200100', 'Visa', ['payment' => '1nvp2XPMmaRLxx'], Card\Type::CREDIT, false, false, 'qr_code');
     }
 
+    public function testOfflineRuleSelection()
+    {
+        $pricingRuleOffline = new Pricing\Entity([
+            'id'                  => '1nvp2XPMmaaxyz',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'offline',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => true,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 1000,
+            'percent_rate'        => 300,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $pricingRuleOffline1 = new Pricing\Entity([
+            'id'                  => '1nvp2XPMmaaxyw',
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'offline',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => true,
+            'amount_range_min'    => 1000,
+            'amount_range_max'    => 10000,
+            'percent_rate'        => 500,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
+        $this->fee->setPricingRepo($this->getMockPricingRepo(false,false,false,[$pricingRuleOffline,$pricingRuleOffline1]));
+
+        $this->runMerchantFeeTestOffline('100',['payment' => '1nvp2XPMmaaxyz']);
+
+        $this->runMerchantFeeTestOffline('5000',['payment' => '1nvp2XPMmaaxyw']);
+
+    }
+
     public function testCreditCardRuleSelectionWithReceiverRule()
     {
 
@@ -1652,6 +1704,31 @@ class MerchantFeeTest extends TestCase
         $payment->setAuthType($authType);
 
         return $payment;
+    }
+
+    protected function runMerchantFeeTestOffline($amount,array $expectedRules = [])
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = $amount;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::OFFLINE;
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->setBaseAmount($amount);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->associateTerminal($this->sharpTerminal);
+
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertPricingRules($expectedRules, $feesSplit);
+
+        return [$fee, $tax, $feesSplit];
     }
 
     protected function runMerchantFeeTestNetB($amount, $bank, array $expectedRules)

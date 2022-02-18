@@ -1432,6 +1432,44 @@ return [
         ],
     ],
 
+    'testAddPricingPlanRuleForOfflineMethod' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'offline',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'offline',
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleForOfflineMethodWithNetworkSpecified' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'offline',
+                'payment_network'     => 'DICL'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Offline method cannot have a network associated with it',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddPricingPlanRuleWithReceiver' => [
         'request' => [
             'content' => [
