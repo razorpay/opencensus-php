@@ -173,6 +173,8 @@ class Entity extends Base\PublicEntity
 
     const CONVENIENCE_FEE_CONFIG = 'convenience_fee_config';
 
+    const CUSTOMER_ADDITIONAL_INFO = 'customer_additional_info';
+
     protected $fillable = [
         self::DISCOUNT,
         self::AMOUNT,

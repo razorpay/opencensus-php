@@ -569,4 +569,57 @@ class OrderMetaTest extends TestCase
 
         return array_merge($taxInvoice, $overrideWith);
     }
+
+    public function testCustomerAdditionalInfoOrderCreate()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+        $orderId = $response['id'];
+
+        Order\Entity::verifyIdAndSilentlyStripSign($orderId);
+
+        $orderMeta = DB::select('select * from order_meta')[0];
+
+        $this->assertEquals($orderId, $orderMeta->order_id);
+
+        $this->assertNotEmpty($orderMeta->value);
+
+    }
+
+    public function testCustomerAdditionalInfoEmptyOrderCreate()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testCustomerAdditionalInfoEmptyValuesOrderCreate()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testCustomerAdditionalInfoFeatureNotPresentOrderCreate()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testCustomerAdditionalInfoMissingIdOrderCreate()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT);
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+    }
 }

@@ -109,6 +109,11 @@ class Service extends Base\Service
             return false;
         }
 
+        if (isset($input[Entity::CUSTOMER_ADDITIONAL_INFO]) === true)
+        {
+            return false;
+        }
+
         $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
 
         return ($result === 'on');
@@ -220,6 +225,13 @@ class Service extends Base\Service
         {
             $result[Entity::CONVENIENCE_FEE_CONFIG] = $input[Entity::CONVENIENCE_FEE_CONFIG];
         }
+
+        if(isset($input[Entity::CUSTOMER_ADDITIONAL_INFO]) === true and
+            empty($input[Entity::CUSTOMER_ADDITIONAL_INFO]) === false)
+        {
+            $result[Entity::CUSTOMER_ADDITIONAL_INFO] = $input[Entity::CUSTOMER_ADDITIONAL_INFO];
+        }
+
 
         return $result;
     }

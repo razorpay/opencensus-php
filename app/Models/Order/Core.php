@@ -69,6 +69,13 @@ class Core extends Base\Core
             $this->validateCheckoutConfigId($input[Entity::CHECKOUT_CONFIG_ID]);
         }
 
+        //Unsetting CUSTOMER_ADDITIONAL_INFO from input
+        if (isset($input[Entity::CUSTOMER_ADDITIONAL_INFO]) === true)
+        {
+            $orderOfflineInput = $input[Entity::CUSTOMER_ADDITIONAL_INFO];
+            unset($input[Entity::CUSTOMER_ADDITIONAL_INFO]);
+        }
+
         $order = new Entity;
 
         // Needs to be associated first cause merchant entity is required
@@ -82,6 +89,12 @@ class Core extends Base\Core
 
         // Re-merging 1CC specific fields.
         $input = array_merge($orderMeta1ccInput, $input);
+
+        // Re-merging CUSTOMER_ADDITIONAL_INFO specific fields.
+        if (empty($orderOfflineInput) === false) {
+
+            $input[Entity::CUSTOMER_ADDITIONAL_INFO] = $orderOfflineInput;
+        }
 
         $order->setPublicKey(App::getFacadeRoot()['basicauth']->getPublicKey());
 

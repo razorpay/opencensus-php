@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 return [
     'test1CCOrderCreate'                             => [
@@ -283,5 +284,135 @@ return [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER,
         ],
+    ],
+    'testCustomerAdditionalInfoOrderCreate' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc'
+                ],
+            ],
+        ],
+    ],
+    'testCustomerAdditionalInfoEmptyOrderCreate' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+            ],
+        ],
+    ],
+    'testCustomerAdditionalInfoEmptyValuesOrderCreate' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '',
+                    'property_value' => '',
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_MISSING_KEY_FIELD,
+        ],
+    ],
+    'testCustomerAdditionalInfoFeatureNotPresentOrderCreate' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_id' => '12345',
+                    'property_value' => 'abc',
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
+        ],
+    ],
+    'testCustomerAdditionalInfoMissingIdOrderCreate' => [
+        'request'  => [
+            'convertContentToString' => false,
+            'url'                    => '/orders',
+            'method'                 => 'POST',
+            'content'                => [
+                'amount'           => 1000,
+                'currency'         => 'INR',
+                'receipt'          => 'rec1',
+                'customer_additional_info' => [
+                    'property_value' => 'abc'
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+        ],
+          'exception' => [
+              'class' => RZP\Exception\BadRequestException::class,
+              'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_MISSING_KEY_FIELD,
+          ],
     ],
 ];

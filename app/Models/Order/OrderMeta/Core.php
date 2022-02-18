@@ -26,6 +26,7 @@ class Core extends Base\Core
     public function createAndSaveOrderMeta(Order\Entity $order, array $input)
     {
         $this->createAndSave1CCOrderMetaData($order, $input);
+        $this->createAndSaveOfflineConfigMetaData($order,$input);
         return $this->createAndSaveTaxInvoice($order, $input);
     }
 
@@ -70,6 +71,43 @@ class Core extends Base\Core
         }
         return [$order1ccInput, $input];
     }
+
+
+    protected function createAndSaveOfflineConfigMetaData(Order\Entity $order, array $input)
+    {
+        if ($this->merchant === null or
+            isset($input[Type::CUSTOMER_ADDITIONAL_INFO]) === false)
+        {
+            return null;
+        }
+
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::OFFLINE_PAYMENT_ON_CHECKOUT) === false)
+        {
+            if(isset($input[Type::CUSTOMER_ADDITIONAL_INFO]) === true)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
+            }
+
+        }
+
+        $orderOfflineInput = $input[Type::CUSTOMER_ADDITIONAL_INFO];
+
+        if (empty($orderOfflineInput))
+        {
+            return null;
+        }
+
+        $this->validateOfflineAdditionalInfo($orderOfflineInput);
+
+        $orderMetaInput = [
+            Entity::ORDER_ID => $order->getId(),
+            Entity::TYPE     => Type::CUSTOMER_ADDITIONAL_INFO,
+            Entity::VALUE    => $orderOfflineInput,
+        ];
+
+        return $this->saveOrderMeta($orderMetaInput);
+    }
+
 
     /**
      * @param Order\Entity $order
@@ -217,6 +255,21 @@ class Core extends Base\Core
         return array_merge(
             $orderMeta->getValue(),
             [Order\Entity::AMOUNT => $orderMeta->getValue()[Order1cc\Fields::NET_PRICE]]);
+    }
+
+    public function validateOfflineAdditionalInfo(array $offlineInfo)
+    {
+        foreach (Order\OrderMeta\OfflineAdditionalInfo\Fields::$dataFields as $key)
+        {
+
+            if ((isset($offlineInfo[$key]) === true) and
+                (empty($offlineInfo[$key]) === false)) {
+                return true;
+            }
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_ADDITIONAL_INFO_MISSING_KEY_FIELD);
+
     }
 
     protected function calculateAndUpdateNetPrice(array $value): array
