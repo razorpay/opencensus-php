@@ -233,6 +233,7 @@ class Type
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
+    const INVOICE_BUCKET_AP_SOUTH_MIGRATED      = 'invoice_bucket_ap_south_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
@@ -578,6 +579,9 @@ class Type
         self::INVOICE_BUCKET_CONFIG => [
             self::INVOICE_PDF,
             self::COMMISSION_INVOICE,
+        ],
+
+        self::INVOICE_BUCKET_AP_SOUTH_MIGRATED => [
             self::MERCHANT_INVOICE,
         ],
 
