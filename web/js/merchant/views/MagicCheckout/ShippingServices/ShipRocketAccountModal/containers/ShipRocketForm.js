@@ -79,7 +79,7 @@ const ShipRocketForm = ({
             <Input
               autoFocus
               name="email"
-              placeholder="Password of the Shiprocket API User "
+              placeholder="Email Id of your Shiprocket API User"
               id="email"
               type="email"
               value={email}
@@ -93,7 +93,7 @@ const ShipRocketForm = ({
             </label>
             <Input
               name="password"
-              placeholder="Email Id of your Shiprocket API User "
+              placeholder="Password of the Shiprocket API User "
               id="password"
               type="password"
               value={password}
