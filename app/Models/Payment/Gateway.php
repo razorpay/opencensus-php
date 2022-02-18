@@ -591,6 +591,7 @@ class Gateway
     const ENACH_NPCI_NB_AUTH_NETBANKING_BANKS = [
         IFSC::ANDB,
         IFSC::APGB,
+        IFSC::AUBL,
         Netbanking::BARB_R,
         IFSC::BDBL,
         IFSC::CBIN,
@@ -644,11 +645,14 @@ class Gateway
     // in case of any changes in gateway config, please contact smart routing team
     // changes done here won't be reflected in routing
     const ENACH_NPCI_NB_AUTH_CARD_BANKS = [
+        IFSC::AIRP,
         IFSC::ANDB,
         IFSC::AUBL,
         Netbanking::BARB_R,
         IFSC::BKID,
+        IFSC::CBIN,
         IFSC::CITI,
+        IFSC::CLBL,
         IFSC::CNRB,
         IFSC::CNSX,
         IFSC::CSBK,
@@ -665,7 +669,10 @@ class Gateway
         IFSC::JSFB,
         IFSC::KARB,
         IFSC::KKBK,
+        IFSC::KNSB,
         IFSC::MAHB,
+        IFSC::MHSX,
+        IFSC::NCBL,
         Netbanking::PUNB_R,
         IFSC::PYTM,
         IFSC::RATN,
@@ -680,6 +687,7 @@ class Gateway
         IFSC::UTBI,
         IFSC::UTIB,
         IFSC::YESB,
+        IFSC::ZCBL,
     ];
 
     // disabled for all auth types
@@ -692,13 +700,8 @@ class Gateway
     ];
 
     const NB_EMANDATE_REGISTRATION_DISABLED_BANKS = [
-        IFSC::APGB,
         IFSC::CBIN,
-        IFSC::DCBL,
-        IFSC::IOBA,
         IFSC::JIOP,
-        IFSC::KVGB,
-        IFSC::PSIB,
         IFSC::UCBA,
     ];
 
@@ -2248,6 +2251,7 @@ class Gateway
         IFSC::AGCX,
         IFSC::AHMX,
         IFSC::AHUX,
+        IFSC::AIRP,
         IFSC::AJKB,
         IFSC::AJPX,
         IFSC::AJSX,
@@ -2300,6 +2304,7 @@ class Gateway
         IFSC::CITI,
         IFSC::CIUB,
         IFSC::CJAX,
+        IFSC::CLBL,
         IFSC::CMLX,
         IFSC::CNRB,
         IFSC::CNSX,
@@ -2370,6 +2375,7 @@ class Gateway
         IFSC::KKMX,
         IFSC::KMCX,
         IFSC::KNBX,
+        IFSC::KNSB,
         IFSC::KRNX,
         IFSC::KSCB,
         IFSC::KTBX,
@@ -2387,6 +2393,7 @@ class Gateway
         IFSC::MALX,
         IFSC::MDEX,
         IFSC::MGCX,
+        IFSC::MHSX,
         IFSC::MLCG,
         IFSC::MPCX,
         IFSC::MPDX,
@@ -2404,6 +2411,7 @@ class Gateway
         IFSC::NAWX,
         IFSC::NBBX,
         IFSC::NBMX,
+        IFSC::NCBL,
         IFSC::NCCX,
         IFSC::NGRX,
         IFSC::NICB,
@@ -2526,6 +2534,7 @@ class Gateway
         IFSC::XJKG,
         IFSC::YESB,
         IFSC::YLNX,
+        IFSC::ZCBL,
         ];
 
     /**
