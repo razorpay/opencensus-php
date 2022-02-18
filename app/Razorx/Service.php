@@ -245,6 +245,7 @@ class Service extends Base\Service
             'reserve_bal_self_serve',
             'disable_msme_upload',
             'adharEkyc_for_reg_businessTypes',
+            'rx_search_enhancement_phase1',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
