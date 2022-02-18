@@ -45,7 +45,7 @@ const OrderStatuses = ({ openModal, createBatch, validateBatch }) => {
     openBatchUploadModal(createBatch, validateBatch, openModal);
   }, [createBatch, validateBatch, openModal]);
   return (
-    <>
+    <div className="content-wrapper">
       <HeaderAction responsive>
         <div className="pull-right MultiBatch--action">
           <button className="btn btn-primary" onClick={onUploadClick}>
@@ -54,7 +54,7 @@ const OrderStatuses = ({ openModal, createBatch, validateBatch }) => {
         </div>
       </HeaderAction>
       <OrderStatusList sampleUrl={SAMPLE_BATCH_UPLOAD_FILE} />
-    </>
+    </div>
   );
 };
 
