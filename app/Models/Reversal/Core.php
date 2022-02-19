@@ -1008,7 +1008,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function createReversalViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createReversalViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
 
         for ($i = 0; $i < 3; $i++)
@@ -1025,10 +1025,27 @@ class Core extends Base\Core
 
                 try
                 {
+                    /*
+                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                     * only then skip the merchant.
+                     */
+                    if (($rev->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                        && (in_array($rev->getMerchantId(), $forcedMerchantIds) === false))
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                            [
+                                'reversal_id' => $rev->getPublicId(),
+                                'merchant_id' => $rev->getMerchantId(),
+                            ]
+                        );
+                        continue;
+                    }
+
                     if(in_array($rev->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
-                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_REVERSAL,
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_BLACKLIST_REVERSAL,
                             [
                                 'reversal_id' => $rev->getPublicId(),
                                 'source_id'   => $sourceId,
@@ -1039,7 +1056,7 @@ class Core extends Base\Core
                     }
 
                     $this->trace->info(
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_REVERSAL_CRON_INIT,
+                        TraceCode::LEDGER_STATUS_CRON_REVERSAL_INIT,
                         [
                             'reversal_id' => $rev->getPublicId(),
                             'source_id'   => $sourceId,
@@ -1093,7 +1110,7 @@ class Core extends Base\Core
                     $this->trace->traceException(
                         $e,
                         Logger::ERROR,
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_REVERSAL_CRON_FAILED,
+                        TraceCode::LEDGER_STATUS_CRON_REVERSAL_FAILED,
                         [
                             'reversal_id' => $rev->getPublicId(),
                             'source_id'   => $sourceId,

@@ -1172,7 +1172,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createFundAccountValidationViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
 
         for ($i = 0; $i < 3; $i++)
@@ -1186,10 +1186,27 @@ class Core extends Base\Core
             {
                 try
                 {
+                    /*
+                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                     * only then skip the merchant.
+                     */
+                    if (($fav->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                        && (in_array($fav->getMerchantId(), $forcedMerchantIds) === false))
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                            [
+                                'fav_id'      => $fav->getPublicId(),
+                                'merchant_id' => $fav->getMerchantId(),
+                            ]
+                        );
+                        continue;
+                    }
+
                     if(in_array($fav->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
-                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_FAV,
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_BLACKLIST_FAV,
                             [
                                 'fav_id' => $fav->getPublicId(),
                             ]
@@ -1198,7 +1215,7 @@ class Core extends Base\Core
                     }
 
                     $this->trace->info(
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_FAV_CRON_INIT,
+                        TraceCode::LEDGER_STATUS_CRON_FAV_INIT,
                         [
                             'fav_id' => $fav->getPublicId(),
                         ]
@@ -1213,7 +1230,7 @@ class Core extends Base\Core
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_FAV_CRON_FAILED,
+                        TraceCode::LEDGER_STATUS_CRON_FAV_FAILED,
                         [
                             'fav_id' => $fav->getPublicId(),
                         ]

@@ -687,8 +687,9 @@ class Ledger
             'input' => $input,
         ]);
 
-        $limit = null;
+        $limit = 500;
         $blacklistIds = [];
+        $forcedMerchantIds = [];
 
         if(array_key_exists('limit', $input))
         {
@@ -698,27 +699,31 @@ class Ledger
         {
             $blacklistIds = $input['blacklist_ids'];
         }
+        if(array_key_exists('forced_merchant_ids', $input))
+        {
+            $forcedMerchantIds = $input['forced_merchant_ids'];
+        }
 
         switch ($input['entity'])
         {
             case EntityConstant::PAYOUT:
-                (new PayoutService())->createPayoutViaLedgerCronJob($blacklistIds, $limit);
+                (new PayoutService())->createPayoutViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
                 break;
 
             case EntityConstant::FUND_ACCOUNT_VALIDATION:
-                (new FAVService())->createFundAccountValidationViaLedgerCronJob($blacklistIds, $limit);
+                (new FAVService())->createFundAccountValidationViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
                 break;
 
             case EntityConstant::REVERSAL:
-                (new ReversalService())->createReversalViaLedgerCronJob($blacklistIds, $limit);
+                (new ReversalService())->createReversalViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
                 break;
 
             case EntityConstant::ADJUSTMENT:
-                (new AdjustmentService())->createAdjustmentViaLedgerCronJob($blacklistIds, $limit);
+                (new AdjustmentService())->createAdjustmentViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
                 break;
 
             case EntityConstant::BANK_TRANSFER:
-                (new BankTransferService())->createBankTransferViaLedgerCronJob($blacklistIds, $limit);
+                (new BankTransferService())->createBankTransferViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
                 break;
 
             default:

@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -822,7 +823,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createBankTransferViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
         for ($i = 0; $i < 3; $i++)
         {
@@ -835,10 +836,27 @@ class Core extends Base\Core
             {
                 try
                 {
+                    /*
+                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                     * only then skip the merchant.
+                     */
+                    if (($bt->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                        && (in_array($bt->getMerchantId(), $forcedMerchantIds) === false))
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                            [
+                                'bank_transfer_id' => $bt->getPublicId(),
+                                'merchant_id'      => $bt->getMerchantId(),
+                            ]
+                        );
+                        continue;
+                    }
+
                     if(in_array($bt->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
-                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_BANK_TRANSFER,
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_BLACKLIST_BANK_TRANSFER,
                             [
                                 'bank_transfer_id' => $bt->getPublicId(),
                             ]
@@ -847,7 +865,7 @@ class Core extends Base\Core
                     }
 
                     $this->trace->info(
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_BANK_TRANSFER_CRON_INIT,
+                        TraceCode::LEDGER_STATUS_CRON_BANK_TRANSFER_INIT,
                         [
                             'bank_transfer_id' => $bt->getPublicId(),
                         ]
@@ -863,7 +881,7 @@ class Core extends Base\Core
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_BANK_TRANSFER_CRON_FAILED,
+                        TraceCode::LEDGER_STATUS_CRON_BANK_TRANSFER_FAILED,
                         [
                             'bank_transfer_id' => $bt->getPublicId(),
                         ]

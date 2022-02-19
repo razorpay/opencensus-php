@@ -778,9 +778,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($adjustment);
     }
 
-    public function createAdjustmentViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createAdjustmentViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
-
         for ($i = 0; $i < 3; $i++)
         {
             // Fetch all adjustments created in the last 24 hours.
@@ -792,10 +791,27 @@ class Core extends Base\Core
             {
                 try
                 {
+                    /*
+                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                     * only then skip the merchant.
+                     */
+                    if (($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+                        && (in_array($adj->getMerchantId(), $forcedMerchantIds) === false))
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                            [
+                                'adjustment_id' => $adj->getPublicId(),
+                                'merchant_id'   => $adj->getMerchantId(),
+                            ]
+                        );
+                        continue;
+                    }
+
                     if(in_array($adj->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
-                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_ADJUSTMENT,
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_BLACKLIST_ADJUSTMENT,
                             [
                                 'adjustment_id' => $adj->getPublicId(),
                             ]
@@ -804,7 +820,7 @@ class Core extends Base\Core
                     }
 
                     $this->trace->info(
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_ADJUSTMENT_CRON_INIT,
+                        TraceCode::LEDGER_STATUS_CRON_ADJUSTMENT_INIT,
                         [
                             'adjustment_id' => $adj->getPublicId(),
                         ]
@@ -819,7 +835,7 @@ class Core extends Base\Core
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_ADJUSTMENT_CRON_FAILED,
+                        TraceCode::LEDGER_STATUS_CRON_ADJUSTMENT_FAILED,
                         [
                             'adjustment_id' => $adj->getPublicId(),
                         ]

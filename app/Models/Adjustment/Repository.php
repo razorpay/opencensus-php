@@ -34,7 +34,7 @@ class Repository extends Base\Repository
      * @param int $limit
      * @return mixed
      */
-    public function fetchCreatedAdjustmentAndTxnIdNullBetweenTimestamp(int $days, $limit = 500)
+    public function fetchCreatedAdjustmentAndTxnIdNullBetweenTimestamp(int $days, int $limit)
     {
         $currentTime = Carbon::now(Timezone::IST)->subMinutes(15)->subDays($days);
         $currentTimeStamp = $currentTime->getTimestamp();

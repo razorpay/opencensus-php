@@ -153,7 +153,7 @@ class Repository extends Base\Repository
      * @param int $limit
      * @return mixed
      */
-    public function fetchCreatedBankTransferAndTxnIdNullBetweenTimestamp(int $days, $limit = 500)
+    public function fetchCreatedBankTransferAndTxnIdNullBetweenTimestamp(int $days, int $limit)
     {
         $currentTime = Carbon::now(Timezone::IST)->subMinutes(15)->subDays($days);
         $currentTimeStamp = $currentTime->getTimestamp();

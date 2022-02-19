@@ -5030,9 +5030,8 @@ class Core extends Base\Core
             $eventAttribute);
     }
 
-    public function createPayoutViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createPayoutViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
-
         for ($i = 0; $i < 3; $i++)
         {
             // Fetch all payouts created in the last 24 hours.
@@ -5044,10 +5043,27 @@ class Core extends Base\Core
             {
                 try
                 {
+                    /*
+                     * If merchant is not on reverse shadow, and is not present in $forcedMerchantIds array,
+                     * only then skip the merchant.
+                     */
+                    if (($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                        && (in_array($payout->getMerchantId(), $forcedMerchantIds) === false))
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW,
+                            [
+                                'payout_id'   => $payout->getPublicId(),
+                                'merchant_id' => $payout->getMerchantId(),
+                            ]
+                        );
+                        continue;
+                    }
+
                     if(in_array($payout->getPublicId(), $blacklistIds) === true)
                     {
                         $this->trace->info(
-                            TraceCode::LEDGER_STATUS_QUEUE_JOB_SKIP_BLACKLIST_PAYOUT,
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_BLACKLIST_PAYOUT,
                             [
                                 'payout_id' => $payout->getPublicId(),
                             ]
@@ -5056,7 +5072,7 @@ class Core extends Base\Core
                     }
 
                     $this->trace->info(
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_PAYOUT_CRON_INIT,
+                        TraceCode::LEDGER_STATUS_CRON_PAYOUT_INIT,
                         [
                             'payout_id' => $payout->getPublicId(),
                         ]
@@ -5071,7 +5087,7 @@ class Core extends Base\Core
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
-                        TraceCode::LEDGER_STATUS_QUEUE_JOB_PAYOUT_CRON_FAILED,
+                        TraceCode::LEDGER_STATUS_CRON_PAYOUT_FAILED,
                         [
                             'payout_id' => $payout->getPublicId(),
                         ]

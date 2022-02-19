@@ -239,7 +239,7 @@ class Repository extends Base\Repository
      * @param int $limit
      * @return mixed
      */
-    public function fetchReversalAndTxnIdNullBetweenTimestamp(int $days, $limit = 500)
+    public function fetchReversalAndTxnIdNullBetweenTimestamp(int $days, int $limit)
     {
         $currentTime = Carbon::now(Timezone::IST)->subMinutes(15)->subDays($days);
         $currentTimeStamp = $currentTime->getTimestamp();

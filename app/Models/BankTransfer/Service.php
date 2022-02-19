@@ -827,8 +827,8 @@ class Service extends Base\Service
         return $this->saveRequestAndProcess($input, 'dashboard', false, $input);
     }
 
-    public function createBankTransferViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createBankTransferViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
-        $this->core->createBankTransferViaLedgerCronJob($blacklistIds, $limit);
+        $this->core->createBankTransferViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
     }
 }

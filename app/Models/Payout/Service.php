@@ -2572,8 +2572,8 @@ class Service extends Base\Service
         return StatusReasonMap::$payoutStatusToReasonMap;
     }
 
-    public function createPayoutViaLedgerCronJob(array $blacklistIds, int $limit = null)
+    public function createPayoutViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
-        $this->core->createPayoutViaLedgerCronJob($blacklistIds, $limit);
+        $this->core->createPayoutViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
     }
 }
