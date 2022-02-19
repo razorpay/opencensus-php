@@ -280,6 +280,14 @@ class Service extends Base\Service
 
         $source = $this->getRequestSource();
 
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_PROCESS_REQUEST_SOURCE,
+            [
+                'source'     => $source,
+                'batch_type' => $batchType,
+            ]
+        );
+
         $requestProcessor = $this->getRequestProcessor($source);
 
         $fileDetails = $requestProcessor->processForVa($input);
