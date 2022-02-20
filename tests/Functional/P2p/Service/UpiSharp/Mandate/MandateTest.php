@@ -2,11 +2,15 @@
 
 namespace RZP\Tests\P2p\Service\UpiSharp\Mandate;
 
+use Carbon\Carbon;
+use RZP\Exception\LogicException;
 use RZP\Models\P2p\Mandate\Entity;
 use RZP\Exception\RuntimeException;
+use RZP\Gateway\P2p\Upi\Sharp\Fields;
 use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
+use RZP\Gateway\P2p\Upi\Sharp\Actions\UpiAction;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class MandateTest extends TestCase
@@ -40,6 +44,30 @@ class MandateTest extends TestCase
 
         // Assert response has id key, and it is not empty
         $this->assertArrayHasKey(Entity::ID, $response);
+    }
+
+    /**
+     * Test incoming mandate collect request from gateway.
+     */
+    public function testIncomingCollect()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = [
+            Fields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
+            Fields::AMOUNT                  => 100,
+            Fields::AMOUNT_RULE             => 'MAX',
+            Fields::PAYER_VPA               => $this->fixtures->vpa->getAddress(),
+            Fields::PAYEE_VPA               => 'username@randompsp',
+            Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
+            Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
+        ];
+
+        $this->expectException(LogicException::class);
+
+        $this->expectExceptionMessage('Gateway response processor not found.');
+
+        $helper->callback($this->gateway, ['content' => json_encode($request)]);
     }
 
     public function testInitiateAuthorize()

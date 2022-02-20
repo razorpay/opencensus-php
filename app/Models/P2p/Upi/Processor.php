@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Upi;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
+use RZP\Models\P2p\Mandate;
 use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\Transaction;
 use RZP\Models\P2p\Transaction\UpiTransaction;
@@ -92,6 +93,11 @@ class Processor extends Base\Processor
             case Device\Entity::DEVICE:
                 $this->resolveContextFromDevice($context[Base\Entity::ACTION]);
                 break;
+
+            case Mandate\Entity::MANDATE:
+                $this->resolveContextFromMandate($context[Base\Entity::ACTION]);
+                break;
+
             default:
                 throw $this->logicException(ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);
         }
@@ -149,6 +155,32 @@ class Processor extends Base\Processor
                 $this->context()->setHandleAndMode($concern[Transaction\Entity::HANDLE]);
 
                 $device = $this->resolveDeviceFromConcern($concern);
+        }
+
+        $this->context()->setMerchant($device->merchant);
+        $this->context()->setDevice($device);
+    }
+
+    /**
+     * @param string $action
+     *
+     * @throws \RZP\Exception\P2p\BadRequestException
+     */
+    public function resolveContextFromMandate(string $action)
+    {
+        $context =$this->input->get(Base\Entity::CONTEXT);
+
+        switch ($context[Base\Entity::ACTION])
+        {
+            case Mandate\Action::INCOMING_COLLECT:
+
+                $payer = $this->input->get(Mandate\Entity::MANDATE)[Mandate\Entity::PAYER];
+
+                $this->context()->setHandleAndMode($payer[Vpa\Entity::HANDLE]);
+
+                $device = $this->resolveDeviceFromVpa($payer);
+
+                break;
         }
 
         $this->context()->setMerchant($device->merchant);

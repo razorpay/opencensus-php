@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Upi;
 
 use Exception;
+use RZP\Models\P2p\Mandate;
 use RZP\Models\P2p\Transaction;
 
 /**
@@ -25,6 +26,10 @@ class ExpectedHardFailures
             Transaction\Action::AUTHORIZE_TRANSACTION_SUCCESS => [
                 'Count of UPI should be exactly one',
             ],
+        ],
+
+        Mandate\Entity::MANDATE => [
+
         ],
     ];
 

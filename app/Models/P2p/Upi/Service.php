@@ -6,6 +6,7 @@ use Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
+use RZP\Models\P2p\Mandate;
 use RZP\Models\P2p\Transaction;
 use Razorpay\Trace\Logger as Trace;
 
@@ -110,6 +111,14 @@ class Service extends Base\Service
                 $this->processor->resolveContextFromDevice($context[Base\Entity::ACTION], $context);
 
                 $processor->processAction($context[Base\Entity::ACTION], $context);
+
+                break;
+
+            case Mandate\Entity::MANDATE:
+
+                $processor = new Mandate\Processor();
+
+                $processor->processAction($context[Base\Entity::ACTION], $callback);
 
                 break;
         }
