@@ -266,6 +266,11 @@ class ConfigKey
     // which belong to razorpay.
     const INTER_ACCOUNT_PAYOUT_MERCHANTS = self::PREFIX . 'inter_account_payout_merchants';
 
+    // This config contains the list of razorpay internal accounts with the following structure
+    // [{"merchant_id": "sampleMerchant", "entity": "RZPX", "account_number": "100000000"}]
+    // RZPX - Razorpay X, RSPL - Razorpay Private Limited
+    const RZP_INTERNAL_ACCOUNTS = self::PREFIX . 'rzp_internal_accounts';
+
     const SUB_BALANCES_MAP = self::PREFIX . 'sub_balance_map';
 
     // This will be used to get the utrs facing credit before debit issue.
@@ -387,6 +392,7 @@ class ConfigKey
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
         self::RBL_CA_BALANCE_UPDATE_LIMITS,
         self::INTER_ACCOUNT_PAYOUT_MERCHANTS,
+        self::RZP_INTERNAL_ACCOUNTS,
         self::SUB_BALANCES_MAP,
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
     ];
