@@ -87,17 +87,18 @@ class SelfServeCreditsTest extends TestCase
 
     public function testCreateOrderAndMakePaymentForFeeCreditAddition()
     {
-        $this->bank = 'IDFB';
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $this->payment = $this->getDefaultUpiPaymentArray();
 
-        $this->setMockGatewayTrue();
+        $this->gateway = 'upi_icici';
 
-        $terminal = $this->fixtures->create('terminal:idfc_tpv_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal', ['tpv' => 3]);
 
         $this->fixtures->merchant->enableTPV();
 
         $this->app['config']->set('banking_account.razorpay_fund_addition_accounts.refund_credit.merchant_id', '10000000000000');
+
+        $this->fixtures->edit('methods', '10000000000000', ['upi' => true]);
 
         $this->fixtures->create('merchant', ['id' => '10000000000001']);
 
@@ -119,37 +120,37 @@ class SelfServeCreditsTest extends TestCase
 
         $this->payment['order_id'] = $order->getPublicId();
 
-        $this->doAuthPayment($this->payment);
+        $payment = $this->doAuthPayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $payment['payment_id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment->toArrayPublic());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
 
         $this->assertEquals($payment['terminal_id'], $terminal->getId());
 
         $this->fixtures->merchant->disableTPV();
 
-        $gatewayEntity = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTpvPaymentEntity'], $gatewayEntity);
-
-        $this->assertEquals($gatewayEntity['account_number'],
-          $bankAccount->getAccountNumber());
+        $gatewayEntity = $this->getLastEntity('upi', true);
     }
 
     public function testCreateOrderAndMakePaymentForRefundCreditAdditionWithWebhook()
     {
 
-        $this->bank = 'IDFB';
+        $this->payment = $this->getDefaultUpiPaymentArray();
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+        $this->gateway = 'upi_icici';
 
-        $this->setMockGatewayTrue();
-
-        $terminal = $this->fixtures->create('terminal:idfc_tpv_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal', ['tpv' => 3]);
 
         $this->fixtures->merchant->enableTPV();
 
         $this->app['config']->set('banking_account.razorpay_fund_addition_accounts.refund_credit.merchant_id', '10000000000000');
+
+        $this->fixtures->edit('methods', '10000000000000', ['upi' => true]);
 
         $this->fixtures->create('merchant', ['id' => '10000000000001']);
 
@@ -189,9 +190,15 @@ class SelfServeCreditsTest extends TestCase
 
         $this->payment['order_id'] = $order->getPublicId();
 
-        $this->doAuthPayment($this->payment);
+        $payment = $this->doAuthPayment($this->payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbEntityById('payment', $payment['payment_id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment->toArrayPublic());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
 
         $this->assertEquals($payment['terminal_id'], $terminal->getId());
 
@@ -199,13 +206,8 @@ class SelfServeCreditsTest extends TestCase
 
         $this->fixtures->merchant->disableTPV();
 
-        $gatewayEntity = $this->getLastEntity('netbanking', true);
+        $gatewayEntity = $this->getLastEntity('upi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTpvPaymentEntity'], $gatewayEntity);
-
-        $this->assertEquals($gatewayEntity['account_number'],
-            $bankAccount->getAccountNumber());
     }
 
     public function testCreateOrder($key= null, $merchant_id='10000000000000')

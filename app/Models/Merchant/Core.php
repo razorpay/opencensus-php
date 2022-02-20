@@ -466,7 +466,8 @@ class Core extends Base\Core
             "notes" => [
                 "merchant_id" => $transactingMerchant->getId(),
                 "type" => $input["type"]
-            ]
+            ],
+            "method" => "upi"
         ];
 
         $this->setRazorpayMerchantForFundAddition($razorpayMerchant);
