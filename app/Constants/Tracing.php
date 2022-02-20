@@ -298,6 +298,9 @@ class Tracing
             'qr_code_close',
             'qr_code_fetch',
             'qr_code_fetch_multiple',
+            'qr_payments_fetch_multiple',
+            'qr_payment_fetch_for_qr_code',
+            'qr_code_payment_fetch_by_id',
         ]);
     }
 

@@ -4,12 +4,14 @@ namespace RZP\Models\QrPayment;
 
 use RZP\Base\Common;
 use RZP\Constants\Es;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
 use RZP\Models\QrPaymentRequest;
 use RZP\Models\QrPaymentRequest\Type;
+use RZP\Trace\Tracer;
 
 class Service extends Base\Service
 {
@@ -35,7 +37,10 @@ class Service extends Base\Service
                                 },
                                 $qrPaymentIds[ES::HITS][ES::HITS]);
 
-        return $this->fetchPaymentsForQrPaymentIds($qrPaymentIds);
+        return Tracer::inspan(['name' => HyperTrace::QR_PAYMENT_FETCH_MULTIPLE_PAYMENTS], function () use ($qrPaymentIds) {
+            return $this->fetchPaymentsForQrPaymentIds($qrPaymentIds);
+        });
+
     }
 
     public function fetchPaymentsForQrPaymentIds(array $qrPaymentIds)
