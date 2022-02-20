@@ -296,7 +296,17 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $payment);
 
-        $this->updateBalances($txn, false);
+        $oldBalanceCheck = false;
+
+        $parentMerchant = $payment->merchant->parent ?? null;
+
+        if ((isset($parentMerchant) === true) and
+            (($parentMerchant->isCapitalFloatRouteMerchant() === true) or ($parentMerchant->isSliceRouteMerchant() === true)))
+        {
+            $oldBalanceCheck = true;
+        }
+
+        $this->updateBalances($txn, false, $oldBalanceCheck);
 
         $this->dispatchForSettlementBucketing($txn);
 
@@ -826,7 +836,17 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $transfer);
 
-        $this->updateBalances($txn, false);
+        $oldBalanceCheck = false;
+
+        $parentMerchant = $transfer->merchant ?? null;
+
+        if ((isset($parentMerchant) === true) and
+            (($parentMerchant->isCapitalFloatRouteMerchant() === true) or ($parentMerchant->isSliceRouteMerchant() === true)))
+        {
+            $oldBalanceCheck = true;
+        }
+
+        $this->updateBalances($txn, false, $oldBalanceCheck);
 
         $this->dispatchForSettlementBucketing($txn);
 
@@ -1050,11 +1070,11 @@ class Core extends Base\Core
         return (new Pricing\Fee)->calculateMerchantFees($source);
     }
 
-    public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
+    public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true, $oldBalanceCheck = false)
     {
         $negativeLimit = (new Balance\Core)->getNegativeLimit($txn);
 
-        $txn = $this->updateMerchantBalance($txn, $negativeLimit);
+        $txn = $this->updateMerchantBalance($txn, $negativeLimit, $oldBalanceCheck);
 
         // if ($updateNodalBalance === true)
         // {
@@ -1070,7 +1090,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function updateMerchantBalance(Transaction\Entity $txn, int $negativeLimit = 0)
+    public function updateMerchantBalance(Transaction\Entity $txn, int $negativeLimit = 0, $oldBalanceCheck = false)
     {
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_BEFORE_MERCHANT_BALANCE,
@@ -1111,7 +1131,47 @@ class Core extends Base\Core
                 'method'            => 'updateMerchantBalance',
             ]);
 
-        $this->repo->balance->updateBalance($merchantBalance);
+        //
+        // For Route transfer processing, we are observing dirty reads on the balance entity for a few
+        // merchants, especially at high traffic. To ensure that writes don't happen in case of dirty
+        // reads, we are modifying the flow to include a balance check in the MySQL query. The modified flow
+        // is only being applied to transfers, all other transactions will continue on the existing flow.
+        //
+        if ($oldBalanceCheck === true)
+        {
+            $rowsUpdated = $this->repo->balance->updateBalanceWithOldBalanceCheck($merchantBalance, $oldBalance);
+
+            if ($rowsUpdated === 0)
+            {
+                throw new Exception\LogicException(
+                    Transfer\Constant::BALANCE_UPDATE_WITH_OLD_BALANCE_CHECK_FAILED,
+                    null,
+                    [
+                        'merchant_id'   => $txn->getMerchantId(),
+                        'txn_entity_id' => $txn->getEntityId(),
+                        'balance_id'    => $merchantBalance->getId(),
+                        'old_balance'   => $oldBalance,
+                        'new_balance'   => $newBalance,
+                    ]
+                );
+            }
+
+            $this->trace->info(
+                TraceCode::BALANCE_UPDATE_WITH_OLD_BALANCE_CHECK_SUCCESS,
+                [
+                    'merchant_id'   => $txn->getMerchantId(),
+                    'txn_entity_id' => $txn->getEntityId(),
+                    'balance_id'    => $merchantBalance->getId(),
+                    'old_balance'   => $oldBalance,
+                    'new_balance'   => $newBalance,
+                    'rows_updated'  => $rowsUpdated,
+                ]
+            );
+        }
+        else
+        {
+            $this->repo->balance->updateBalance($merchantBalance);
+        }
 
         $checkNegativeLimit = $oldBalance >= $newBalance;
 

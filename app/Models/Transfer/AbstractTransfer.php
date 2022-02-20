@@ -165,9 +165,10 @@ abstract class AbstractTransfer
 
                 break;
             }
-            catch (DbQueryException $ex)
+            catch (DbQueryException | LogicException $ex)
             {
-                if ($transfer->isBalanceTransfer() === true)
+                if (($transfer->isBalanceTransfer() === true) or
+                    (($ex instanceof LogicException) and ($ex->getMessage() !== Constant::BALANCE_UPDATE_WITH_OLD_BALANCE_CHECK_FAILED)))
                 {
                     throw $ex;
 

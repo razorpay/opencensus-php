@@ -177,6 +177,16 @@ class Repository extends Base\Repository
         $balance->saveOrFail();
     }
 
+    public function updateBalanceWithOldBalanceCheck($balance, $oldBalance)
+    {
+        assertTrue ($this->isTransactionActive());
+
+        return $this->newQuery()
+                    ->where(Entity::ID, $balance->getId())
+                    ->where(Entity::BALANCE, $oldBalance)
+                    ->update($balance->getDirty());
+    }
+
     public function updateBalanceDirectly($balance, $amount)
     {
         $balance->increment(Entity::BALANCE, $amount);
