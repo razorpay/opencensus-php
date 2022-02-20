@@ -326,6 +326,16 @@ class IciciBankingAccountStatementTest extends TestCase
                         "TYPE"          => "DR",
                         "VALUEDATE"     => "19-02-2021",
                     ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "9,997.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "CRP/DEBIT/20220201011500",
+                        "TRANSACTIONID" => "S86758858",
+                        "TXNDATE"       => "01-02-2022 01:15:08",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "01-02-2022",
+                    ],
                 ],
                 "URN"       => "SR189932540",
                 "USER_ID"   => "SATYANAR"
@@ -1688,6 +1698,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertCount(2, $basEntities);
 
         $transactions = $mockedResponse[F::DATA][F::RECORD];
+
+        unset($transactions[count($transactions) -1]);
 
         $txn = last($transactions);
 

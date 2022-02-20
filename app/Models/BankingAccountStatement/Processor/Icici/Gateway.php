@@ -4,10 +4,11 @@ namespace RZP\Models\BankingAccountStatement\Processor\Icici;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base\PublicEntity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\IntegrationException;
@@ -96,6 +97,8 @@ class Gateway extends BaseProcessor
         Entity::AMOUNT,
         Entity::BANK_TRANSACTION_ID
     ];
+
+    protected $allowRecordsToSave = true;
 
     public function __construct(string $channel,
                                 string $accountNumber,
@@ -275,7 +278,9 @@ class Gateway extends BaseProcessor
 
             $attemptCount++;
 
-            $fetchMore = (($this->hasMoreData($bankResponse) === true) and ($attemptCount < $attemptLimit));
+            $fetchMore = (($this->hasMoreData($bankResponse) === true) and
+                          ($attemptCount < $attemptLimit) and
+                          ($this->allowRecordsToSave === true));
 
         } while ($fetchMore);
 
@@ -520,6 +525,23 @@ class Gateway extends BaseProcessor
                                ] + $transactionData
             );
 
+            $variant = $this->app->razorx->getTreatment(
+                $this->basDetails->getMerchantId(),
+                Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS,
+                $this->mode
+            );
+
+            if (($variant === 'on') or
+                ($variant === 'control'))
+            {
+                $this->checkForTemporaryRecord($transactionData);
+            }
+
+            if ($this->allowRecordsToSave === false)
+            {
+                continue;
+            }
+
             $recordNumber++;
 
             $transactions[] = [
@@ -541,6 +563,34 @@ class Gateway extends BaseProcessor
         }
 
         return $transactions;
+    }
+
+    protected function checkForTemporaryRecord($transactionData)
+    {
+        $postedDate = $this->getPostedDateFromResponse($transactionData);
+
+        $longFormatPostedDate = intval(Carbon::createFromTimestamp($postedDate, Timezone::IST)->format('YmdHis'));
+
+        $description = $this->getDescriptionFromResponse($transactionData);
+
+        if (preg_match("/\/(20)([0-9]{12})$/", $description, $matches) === 1)
+        {
+            $timeInDescription = intval(substr($description, -14));
+
+            if (abs($longFormatPostedDate - $timeInDescription) < 120)
+            {
+                $this->allowRecordsToSave = false;
+            }
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ICICI_TEMP_RECORD,
+                               [
+                                   'allowed_record_to_save' => $this->allowRecordsToSave,
+                                   Entity::MERCHANT_ID      => $this->basDetails->getMerchantId(),
+                                   Entity::CHANNEL          => $this->getChannel(),
+                                   Entity::ACCOUNT_NUMBER   => $this->accountNumber
+                               ] + $transactionData
+            );
+        }
     }
 
 
