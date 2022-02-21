@@ -876,17 +876,7 @@ class Core extends Base\Core
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 
-        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
-        {
-            $payload = ['ca_channel' => Entity::Neostone];
-
-            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE, Event::INFO, $payload);
-        }
-        else
-        {
-            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
-        }
+        $this->sendNotificationAfterCAActivation($bankingAccount);
 
         return $bankingAccount;
     }
@@ -1473,17 +1463,6 @@ class Core extends Base\Core
             $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
 
             $this->app['x-segment']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE);
-
-            if($currentBankingAccountStatus == Status::ACTIVATED){
-                if(empty($merchant) === false){
-                    $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
-                } else{
-                    $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
-                        [
-                            'event_name'  => SegmentEvent::CA_ACTIVATED,
-                        ]);
-                }
-            }
         }
     }
 
@@ -2208,6 +2187,32 @@ class Core extends Base\Core
 
             default:
                 return null;
+        }
+    }
+
+    public function sendNotificationAfterCAActivation(Entity $bankingAccount){
+
+        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true) {
+
+            $merchant = $bankingAccount->merchant;
+
+            $payload = ['ca_channel' => Entity::Neostone];
+
+            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE, Event::INFO, $payload);
+
+            if (empty($merchant) === false) {
+                $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
+            } else {
+                $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
+                    [
+                        'event_name' => SegmentEvent::CA_ACTIVATED,
+                    ]);
+            }
+        }
+        else
+        {
+            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
         }
     }
 }
