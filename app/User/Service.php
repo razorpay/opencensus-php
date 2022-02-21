@@ -10,6 +10,7 @@ use Session;
 use Request;
 use App\Base;
 use App\Merchant;
+use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\MerchantDetails;
@@ -26,10 +27,12 @@ use Razorpay\Api\Errors\BadRequestError;
 use Lcobucci\JWT\Parser as JWTParser;
 use Illuminate\Support\Facades\Crypt;
 use App\Splitz\Service as SplitzService;
+use App\Metrics\Constants as MetricConstants;
 use Lcobucci\JWT\ValidationData as JWTValidation;
 use Illuminate\Auth\Access\AuthorizationException;
 use hisorange\BrowserDetect\Parser as BrowserDetect;
 
+const EVENT_TRIGGER_COUNT = 1;
 class Service extends Base\Service
 {
     const OAUTH_SESSION_TOKEN = 'oauth_session_token';
@@ -79,6 +82,8 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
 
         $this->cache = $app['cache'];
+
+        $this->metrics = $app['metrics'];
     }
 
     /**
@@ -101,7 +106,19 @@ class Service extends Base\Service
 
         $request = new ApiRequestAny($options);
 
-        $this->checkOauthProviderInPayload($input);
+        $this->checkOauthProviderInPayload(
+            $input,
+            TraceCode::USER_REGISTER_OAUTH_PROVIDER_ERROR,
+            MetricConstants::USER_REGISTER_REQUEST_WITH_OAUTH_PROVIDER_COUNT
+        );
+
+        $this->traceApiTrigger(
+            $input,
+            TraceCode::USER_SIGNUP_TRIGGERED,
+            MetricConstants::USER_SIGNUP_TRIGGERED_COUNT,
+            MetricConstants::PASSWORD,
+            false
+        );
 
         list($error, $data) = $request->processInput($input)->send('users/register', 'POST');
 
@@ -124,7 +141,38 @@ class Service extends Base\Service
      */
     public function registerWithOtp(array $input): array
     {
+        $this->traceApiTrigger(
+            $input,
+            TraceCode::SEND_SIGNUP_OTP_TRIGGERED,
+            MetricConstants::SEND_SIGNUP_OTP_TRIGGERED_COUNT,
+            MetricConstants::OTP,
+            false
+        );
+
         return $this->requestAPI($input,'users/register/otp', 'POST');
+    }
+
+    public function traceApiTrigger(array $input, string $traceCode, string $metricConstant, string $method, bool $isLogin)
+    {
+        $signup_medium  = isset($input['email']) ? MetricConstants::EMAIL : MetricConstants::CONTACT_MOBILE;
+        $product = ApiUrl::isBankingOriginRequest() ? 'banking' : 'primary';
+        $methodLabel = $isLogin ? MetricConstants::LOGIN_METHOD : MetricConstants::SIGNUP_METHOD;
+        $mediumLabel = $isLogin ? MetricConstants::LOGIN_MEDIUM : MetricConstants::SIGNUP_MEDIUM;
+
+        $this->trace->info($traceCode, [
+            $signup_medium => isset($input['email']) ? Util::mask_email($input['email']) : Util::mask_phone($input['contact_mobile']),
+            'medium' => $signup_medium,
+            'product'=> $product,
+
+        ]);
+
+        $this->metrics->count($metricConstant ,
+            EVENT_TRIGGER_COUNT,
+            [
+                $methodLabel => $method,
+                $mediumLabel => $signup_medium,
+                MetricConstants::PRODUCT => $product,
+            ]);
     }
 
     /**
@@ -137,11 +185,18 @@ class Service extends Base\Service
         $options['headers']['X-Send-Email-Otp'] = 'false';
         $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
 
+        $this->traceApiTrigger(
+            $input,
+            TraceCode::VERIFY_SIGNUP_OTP_TRIGGERED,
+            MetricConstants::VERIFY_SIGNUP_OTP_TRIGGERED_COUNT,
+            MetricConstants::OTP,
+            false
+        );
+
         list($error, $data) = $this->requestAPI($input,'users/register/otp/verify', 'POST', $options);
 
         return [$error, $data];
     }
-
 
     /**
      *  For security reasons, checking explicitly for oauth_provider key in the payload.
@@ -151,11 +206,17 @@ class Service extends Base\Service
      *
      * @throws BadRequestError
      */
-    protected function checkOauthProviderInPayload($input)
+    protected function checkOauthProviderInPayload($input, $traceCode, $metricConstant)
     {
         if (isset($input[Constants::OAUTH_PROVIDER]) === true)
         {
-            $this->trace->info(TraceCode::USER_REGISTER_OAUTH_PROVIDER_ERROR, ['email' => $input['email'] ?? null]);
+            $this->trace->info($traceCode, ['data' => Util::maskLoginSignupInput($input)]);
+
+            $this->metrics->count($metricConstant ,
+                EVENT_TRIGGER_COUNT,
+                [
+                    MetricConstants::PRODUCT => ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY,
+                ]);
 
             throw new \Razorpay\Api\Errors\BadRequestError(
                 'invalid payload',
@@ -1446,14 +1507,34 @@ class Service extends Base\Service
             self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
         ];
 
-        $this->checkOauthProviderInPayload($input);
+        $this->checkOauthProviderInPayload(
+            $input,
+            TraceCode::USER_LOGIN_OAUTH_PROVIDER_ERROR,
+            MetricConstants::USER_LOGIN_REQUEST_WITH_OAUTH_PROVIDER_COUNT
+        );
+
+        $this->traceApiTrigger(
+            $input,
+            TraceCode::USER_LOGIN_TRIGGERED,
+            MetricConstants::USER_LOGIN_TRIGGERED_COUNT,
+            MetricConstants::PASSWORD,
+            true
+        );
 
         return $this->loginOnApiOnRoute($input,'users/login', 'POST', [ 'headers' => $headers ]);
     }
 
     public function otpLoginOnApi(array $input)
     {
-           return $this->loginOtpRoute($input,'users/login/otp', 'POST');
+        $this->traceApiTrigger(
+            $input,
+            TraceCode::SEND_LOGIN_OTP_TRIGGERED,
+            MetricConstants::SEND_LOGIN_OTP_TRIGGERED_COUNT,
+            MetricConstants::OTP,
+            true
+        );
+
+        return $this->loginOtpRoute($input,'users/login/otp', 'POST');
     }
 
     public function otpLoginForVerifyUser(array $input)
@@ -1474,6 +1555,14 @@ class Service extends Base\Service
         $headers = [
             self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
         ];
+
+        $this->traceApiTrigger(
+            $input,
+            TraceCode::VERIFY_LOGIN_OTP_TRIGGERED,
+            MetricConstants::VERIFY_LOGIN_OTP_TRIGGERED_COUNT,
+            MetricConstants::OTP,
+            true
+        );
 
         return $this->loginOnApiOnRoute(
             $input,'users/login/otp/verify',

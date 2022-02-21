@@ -19,6 +19,8 @@ class TraceCode
     const SLACK_QUERY_RESPONSE                      = 'SLACK_QUERY_RESPONSE';
     const USER_REGISTER_OAUTH_PROVIDER_ERROR        = 'USER_REGISTER_OAUTH_PROVIDER_ERROR';
     const CAPTCHA_DISABLE_INVALID_PAYLOAD_ERROR     = 'CAPTCHA_DISABLE_INVALID_PAYLOAD_ERROR';
+    const USER_LOGIN_OAUTH_PROVIDER_ERROR           = 'USER_LOGIN_OAUTH_PROVIDER_ERROR';
+    const INVALID_EMAIL_CANNOT_MASK                 = 'INVALID_EMAIL_CANNOT_MASK';
 
     const ADMIN_ACTION_SLACK_LOG                    = 'ADMIN_ACTION_SLACK_LOG';
     const SLACK_QUERY_LOG                           = 'SLACK_QUERY_LOG';
@@ -45,9 +47,28 @@ class TraceCode
     const SEND_USER_VERIFY_OTP_DURATION             = 'SEND_USER_VERIFY_OTP_DURATION';
     const VERIFY_LOGIN_OTP_DURATION                 = 'VERIFY_LOGIN_OTP_DURATION';
     const VERIFY_VERIFICATION_OTP_DURATION          = 'VERIFY_VERIFICATION_OTP_DURATION';
+    const LOGIN_ATTEMPT_ON_SIGNUP_FAILED            = 'LOGIN_ATTEMPT_ON_SIGNUP_FAILED';
+    const SEND_LOGIN_OTP_TRIGGERED                  = 'SEND_LOGIN_OTP_TRIGGERED';
+    const VERIFY_LOGIN_OTP_TRIGGERED                = 'VERIFY_LOGIN_OTP_TRIGGERED';
+    const SEND_LOGIN_OTP_FAILED                     = 'SEND_LOGIN_OTP_FAILED';
+    const SEND_LOGIN_OTP_SUCCESS                    = 'SEND_LOGIN_OTP_SUCCESS';
+    const VERIFY_LOGIN_OTP_SUCCESS                  = 'VERIFY_LOGIN_OTP_SUCCESS';
+    const VERIFY_LOGIN_OTP_FAILED                   = 'VERIFY_LOGIN_OTP_FAILED';
 
     const SEND_SIGNUP_OTP_DURATION                  = 'SEND_SIGNUP_OTP_DURATION';
     const VERIFY_SIGNUP_OTP_DURATION                = 'VERIFY_SIGNUP_OTP_DURATION';
+    const USER_SIGNUP_FAILED                        = 'USER_SIGNUP_FAILED';
+    const USER_SIGNUP_SUCCESS                       = 'USER_SIGNUP_SUCCESS';
+    const SEND_SIGNUP_OTP_TRIGGERED                 = 'SEND_SIGNUP_OTP_TRIGGERED';
+    const SEND_SIGNUP_OTP_SUCCESS                   = 'SEND_SIGNUP_OTP_SUCCESS';
+    const SEND_SIGNUP_OTP_FAILED                    = 'SEND_SIGNUP_OTP_FAILED';
+    const VERIFY_SIGNUP_OTP_TRIGGERED               = 'VERIFY_SIGNUP_OTP_TRIGGERED';
+    const VERIFY_SIGNUP_OTP_SUCCESS                 = 'VERIFY_SIGNUP_OTP_SUCCESS';
+    const VERIFY_SIGNUP_OTP_FAILED                  = 'VERIFY_SIGNUP_OTP_FAILED';
+    const USER_LOGIN_TRIGGERED                      = 'USER_LOGIN_TRIGGERED';
+    const USER_LOGIN_SUCCESS                        = 'USER_LOGIN_SUCCESS';
+    const USER_LOGIN_FAILED                         = 'USER_LOGIN_FAILED';
+    const USER_SIGNUP_TRIGGERED                     = 'USER_SIGNUP_TRIGGERED';
 
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
     const USER_OAUTH_LOGIN                          = 'USER_OAUTH_LOGIN';

@@ -70,4 +70,92 @@ class Util
         return (($allowedHostsEnv === '*') or
             (in_array($baseUrl, $allowedHostsEnv, true) === true));
     }
+
+    public static function mask_phone(string $phone = null)
+    {
+        if (empty($phone) === true)
+        {
+            return null;
+        }
+        $phoneLen = strlen($phone);
+
+        return substr($phone, 0, 2) .
+            str_repeat('*', $phoneLen - 4) .
+            substr($phone, $phoneLen - 2, 2);
+    }
+
+    public static function mask_email(string $email = null, float $percentageToMask = 0.7)
+     {
+         $trace = \App::getFacadeRoot()['trace'];
+         $maskedEmail = $email;
+
+         if (empty($email) === true)
+         {
+             return null;
+         }
+         try
+         {
+             $email = explode('@', $email); // ex: test_email@gmail.com
+
+             $emailName = $email[0]; // test_email
+
+             $emailDomain = $email[1]; // gmail.com
+
+             $emailDomain = explode('.', $emailDomain);
+
+             $domain = $emailDomain[0]; // gmail
+
+             $topLevelDomain = $emailDomain[1]; // .com
+
+             $emailLen = strlen($emailName);
+
+             $lengthToMask = ceil($emailLen * $percentageToMask);
+
+             // replace the name except first 3 characters with *
+             $maskedEmailName = substr($emailName, 0, $emailLen - $lengthToMask) .
+                 str_repeat('*', $lengthToMask);
+
+             // replace the domain with *, except the first and the last character
+             $maskedDomain = $domain[0] .
+                 str_repeat('*', strlen($domain) - 2) .
+                 $domain[strlen($domain) - 1];
+
+             $maskedEmail = sprintf('%s@%s.%s', $maskedEmailName, $maskedDomain, $topLevelDomain);
+         } catch (\Exception $e) {
+             $trace->error('INVALID_EMAIL_CANNOT_MASK', [
+                 'email' => $email
+             ]);
+         }
+
+         return $maskedEmail;
+     }
+
+    public static function maskLoginSignupInput($input)
+    {
+        $copiedInput =  $input;
+
+        if(isset($copiedInput['email']))
+        {
+            $copiedInput['email'] = Util::mask_email($copiedInput['email']);
+        }
+
+        if(isset($copiedInput['contact_mobile']))
+        {
+            $copiedInput['contact_mobile'] = Util::mask_phone($copiedInput['contact_mobile']);
+        }
+
+        if(isset($copiedInput['password'])) unset($copiedInput['password']);
+
+        if(isset($copiedInput['password_confirmation'])) unset($copiedInput['password_confirmation']);
+
+        if(isset($copiedInput['otp'])) unset($copiedInput['otp']);
+
+        if(isset($copiedInput['otp_auth_token'])) unset($copiedInput['otp_auth_token']);
+
+        if(isset($copiedInput['token'])) unset($copiedInput['token']);
+
+        if(isset($copiedInput['id_token'])) unset($copiedInput['id_token']);
+
+        return $copiedInput;
+    }
 }
