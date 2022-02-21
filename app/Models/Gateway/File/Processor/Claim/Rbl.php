@@ -3,14 +3,17 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Trace\TraceCode;
 
 class Rbl extends NetbankingBase
 {
@@ -20,7 +23,29 @@ class Rbl extends NetbankingBase
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::RBL_NETBANKING_CLAIM;
     const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
+    const BANK_CODE              = IFSC::RATN;
     const BASE_STORAGE_DIRECTORY = 'Rbl/Claims/Netbanking/';
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
+        $end = Carbon::createFromTimestamp($end)->addDay()->timestamp;
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['begin' => $begin,
+            'end' => $end,
+            'status' => $statuses]);
+
+        $claims = $this->repo->payment->fetchReconciledPaymentsForGatewayWithBankCode(
+            $begin,
+            $end,
+            static::GATEWAY,
+            self::BANK_CODE,
+            $statuses
+        );
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['claims' => count($claims)]);
+        return $claims;
+    }
 
     protected function formatDataForFile(array $data)
     {
