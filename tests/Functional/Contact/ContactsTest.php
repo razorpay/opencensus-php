@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Contacts;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
@@ -767,6 +769,8 @@ class ContactsTest extends TestCase
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
 
+        Carbon::setTestNow(Carbon::now(Timezone::IST)->addMinutes(5));
+
         $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
 
         $metroMock->shouldReceive("publish")->andReturn([]);
@@ -775,7 +779,15 @@ class ContactsTest extends TestCase
 
         $this->startTest();
 
-        $metroMock->shouldHaveReceived("publish");
+        $expectedMetroMessage = [
+            "data" => json_encode([
+                "id" => "cont_1000000contact",
+                "change_set" => ["type" => "employee", "updated_at" => Carbon::now()->getTimestamp()],
+            ]),
+            "attributes" => ["type" => "employee"],
+        ];
+
+        $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
 
         // Test negative scenario where publishing to metro fails.
 
@@ -792,7 +804,40 @@ class ContactsTest extends TestCase
 
         $this->startTest($data);
 
-        $metroMock->shouldHaveReceived("publish");
+        $expectedMetroMessage = [
+            "data" => json_encode([
+                "id" => "cont_1000000contact",
+                "change_set" => ["type" => "customer"],
+            ]),
+            "attributes" => ["type" => "customer"],
+        ];
+
+        $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
+
+        // Test negative scenario where contact type is null.
+
+        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+
+        $metroMock->shouldReceive("publish")->andThrow(new \Exception("publishing failure"));
+
+        $this->app->instance('metro', $metroMock);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['type'] = null;
+        $data['response']['content']['type'] = null;
+
+        $this->startTest($data);
+
+        $expectedMetroMessage = [
+            "data" => json_encode([
+                "id" => "cont_1000000contact",
+                "change_set" => ["type" => null],
+            ]),
+            "attributes" => ["type" => ""],
+        ];
+
+        $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
     }
 
     public function testDeleteContact()

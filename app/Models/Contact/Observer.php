@@ -30,7 +30,7 @@ class Observer extends BaseObserver
         $metroMessage = [
             'data' => json_encode($data),
             'attributes' => [
-                Entity::TYPE => $contact->getType()
+                Entity::TYPE => $contact->getType() ?? ""
             ]
         ];
 
