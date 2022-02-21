@@ -864,7 +864,7 @@ class Core extends Base\Core
     /**
      * Method pushes Kafka events for Payments Methods enabled/disabled
      * @param Merchant\Entity $merchant
-     * @param array $methods Methods changed are alone sent 
+     * @param array $methods Methods changed are alone sent
      */
     protected function pushMethodUpdateEventToKafkaWrapper(Merchant\Entity $merchant, array $methods)
     {
@@ -874,7 +874,7 @@ class Core extends Base\Core
             $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
             $properties = [
-                "admin_user_email" => $dashboardInfo['user_email'] ?? $dashboardInfo['admin_username'] ?? Merchant\Constants::DASHBOARD_INTERNAL,
+                "admin_user_email" => $dashboardInfo['admin_email'] ?? $dashboardInfo['admin_username'] ?? Merchant\Constants::DASHBOARD_INTERNAL,
                 "methods" => $methods,
                 "url" => $merchant->getDashboardEntityLink(),
                 "merchant" => [
