@@ -6,7 +6,10 @@ import IntentForm from '../PromoterDetails/IntentForm';
 import BusinessDetailsForm from '../PromoterDetails/BusinessDetailsForm';
 import PersonalDetailsForm from '../PromoterDetails/PersonalDetailsForm';
 import { isPreceedingState } from '../../../utils';
-import { saveApplicantDetails, saveBusinessDetails } from 'merchant/reducers/capital';
+import {
+  saveApplicantDetails as saveApplicantDetailsAction,
+  saveBusinessDetails as saveBusinessDetailsAction,
+} from 'merchant/reducers/capital';
 import { APPLICATION_STATES } from '../../constants';
 import { trackTabChange } from '../ga';
 
@@ -167,7 +170,17 @@ const PromoterDetailsEntity = ({
 
   function updateBusinessDetails(data) {
     const { reference_id, id, addresses } = data;
-    const { address, city, state, pincode, gstin, business_pan } = formsData.business;
+    const {
+      address,
+      city,
+      state,
+      pincode,
+      gstin,
+      business_pan,
+      nature,
+      date_of_incorporation,
+      ownership,
+    } = formsData.business;
 
     const payload = {
       business: {
@@ -185,6 +198,9 @@ const PromoterDetailsEntity = ({
         ],
         gstin,
         business_pan,
+        date_of_incorporation,
+        nature,
+        ownership,
       },
     };
     return saveBusinessDetails(payload);
@@ -278,6 +294,6 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, {
-  saveBusinessDetails,
-  saveApplicantDetails,
+  saveBusinessDetails: saveBusinessDetailsAction,
+  saveApplicantDetails: saveApplicantDetailsAction,
 })(PromoterDetailsEntity);

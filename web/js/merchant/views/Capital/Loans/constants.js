@@ -14,6 +14,21 @@ export const BUSINESS_TYPES = {
   11: 'NOT_REGISTERED',
 };
 
+export const BUSINESS_NATURE_TYPES = [
+  { label: 'Manufacturer', name: 'Manufacturer' },
+  { label: 'Wholesaler', name: 'Wholesaler' },
+  { label: 'Trader', name: 'Trader' },
+  { label: 'Distributer', name: 'Distributer' },
+  { label: 'Retailers', name: 'Retailers' },
+  { label: 'Service Providers', name: 'Service Providers' },
+];
+
+export const PROPERTY_OWNERSHIP_TYPES = [
+  { label: 'Owned', name: 'Owned' },
+  { label: 'Rented', name: 'Rented' },
+  { label: 'Other', name: 'Other' },
+];
+
 export const CAPITAL_LINKS = {
   faqs: 'https://razorpay.com/capital/working-capital-loans/#faqs',
   ca_faqs: 'https://razorpay.com/capital/cash-advance/#faqs',

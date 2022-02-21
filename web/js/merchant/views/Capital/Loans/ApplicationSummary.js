@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-key */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { isLoanProduct, isPreceedingState } from '../utils';
@@ -8,7 +9,6 @@ import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   APPLICATION_STATES,
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
   TENURE_UNIT_LABELS,
   TOOLTIP_DESCRIPTIONS,
   GA_CATEGORY_BY_PRODUCT,
@@ -28,8 +28,8 @@ import {
 class ApplicationSummary extends Component {
   _getParentStepLabel = (step) => {
     const { meta } = this.props.loanApplicationDetails;
-    return Object.values(meta.configuration.getSideNavigationStateGroups()).filter((meta) =>
-      Object.values(meta.steps)
+    return Object.values(meta.configuration.getSideNavigationStateGroups()).filter((metaData) =>
+      Object.values(metaData.steps)
         .reduce((acc, curr) => [...acc, ...curr], [])
         .includes(step),
     )[0].description;
@@ -143,7 +143,7 @@ class ApplicationSummary extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = GA_CATEGORY_BY_PRODUCT[this.getProductCode()];
+    eventObject.eventCategory = GA_CATEGORY_BY_PRODUCT[this.getProductCode()];
     window.rzpAnalytics(eventObject);
   };
 
@@ -233,7 +233,7 @@ class ApplicationSummary extends Component {
               <i className="i i-info-outline" onMouseOver={() => this.trackMouseOver('ewi')} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['ewi']}</div>
+                  <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS.ewi}</div>
                 </PopoverBody>
               </Popover>
             </small>
@@ -250,7 +250,7 @@ class ApplicationSummary extends Component {
               <i className="i i-info-outline" onMouseOver={() => this.trackMouseOver('edi')} />
               <Popover align="top" theme="dark">
                 <PopoverBody>
-                  <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS['edi']}</div>
+                  <div style={{ textAlign: 'left' }}>{TOOLTIP_DESCRIPTIONS.edi}</div>
                 </PopoverBody>
               </Popover>
             </small>
@@ -375,7 +375,7 @@ class ApplicationSummary extends Component {
               meta.configuration.getApplicationStateGroups(),
             )}
             size={100}
-            helpMsg={'completed'}
+            helpMsg="completed"
           />
         </div>
         {this.isOfferAccepted() ? this.getCreditOfferDetails() : this.getBusinessSection()}

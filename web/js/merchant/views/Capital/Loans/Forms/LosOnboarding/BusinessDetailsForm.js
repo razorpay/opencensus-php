@@ -6,7 +6,12 @@ import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { states } from 'merchant/helpers/data';
 import { trackBusinessFormContinueCta, trackBusinessFormTab } from '../ga';
-import { BUSINESS_TYPES, NOOP } from '../../constants';
+import {
+  BUSINESS_TYPES,
+  NOOP,
+  BUSINESS_NATURE_TYPES,
+  PROPERTY_OWNERSHIP_TYPES,
+} from '../../constants';
 import { getCityAndState } from '../LosOnboarding/PersonalDetailsForm';
 import {
   validateBusinessAddress,
@@ -17,6 +22,7 @@ import {
 import { isValidPinCode, isPanNumber } from 'common/utils/validators';
 import { isValidGSTIN } from 'common/utils/rzp-utils';
 import { statesOptions } from '../Helpers/getStatesOptions';
+import moment from 'moment';
 
 const INITIAL_VALUES = {
   legal_name: '',
@@ -27,6 +33,9 @@ const INITIAL_VALUES = {
   city: '',
   state: Object.entries(states)[0][0],
   pincode: '',
+  date_of_incorporation: '',
+  nature: '',
+  ownership: '',
 };
 
 const BusinessDetailsForm = ({
@@ -42,7 +51,7 @@ const BusinessDetailsForm = ({
   const loadFormData = () => {
     let businessDetails = {
       legal_name: user.business_name,
-      deed_type: BUSINESS_TYPES[parseInt(user.business_type)],
+      deed_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
       business_pan: user.company_pan,
       addresses: [
         {
@@ -55,8 +64,8 @@ const BusinessDetailsForm = ({
       ],
     };
 
-    if (loanApplicationDetails.business_details.data.business) {
-      businessDetails = loanApplicationDetails.business_details.data.business;
+    if (loanApplicationDetails?.business_details?.data?.business) {
+      businessDetails = loanApplicationDetails?.business_details?.data?.business;
     }
 
     const { legal_name, deed_type, business_pan, gstin } = businessDetails;
@@ -90,6 +99,15 @@ const BusinessDetailsForm = ({
     });
   };
 
+  const handleDateChange = (value) => {
+    handleChange({
+      target: {
+        name: 'date_of_incorporation',
+        value: moment(value).format('YYYY-MM-DD'),
+      },
+    });
+  };
+
   const handleSubmit = () => {
     trackBusinessFormContinueCta(merchantId);
     handleBusinessDetailsSubmit(formData);
@@ -116,7 +134,17 @@ const BusinessDetailsForm = ({
   }, [formData.pincode]);
 
   const isValidForm = () => {
-    const mandatoryFields = ['legal_name', 'deed_type', 'address', 'city', 'state', 'pincode'];
+    const mandatoryFields = [
+      'legal_name',
+      'deed_type',
+      'address',
+      'city',
+      'state',
+      'pincode',
+      'nature',
+      'date_of_incorporation',
+      'ownership',
+    ];
 
     const validBusinessPan = formData.business_pan ? isPanNumber(formData.business_pan) : true;
     const validGSTIN = formData.gstin ? isValidGSTIN(formData.gstin) : true;
@@ -149,6 +177,35 @@ const BusinessDetailsForm = ({
           disabled
         />
       </div>
+      <div className="flex los-row">
+        <Input.Select
+          label="Nature Of Business "
+          value={formData.nature || {}}
+          onChange={handleChange}
+          size="small"
+          name="nature"
+          options={BUSINESS_NATURE_TYPES}
+          className="InputGroup--vTop Input--required"
+        />
+        <Input.Group
+          label="Date of Incorporation"
+          className="Input--small InputGroup--inline InputGroup--vTop Input--required"
+        >
+          <div className="Input-content">
+            <div className="Input-elWrapper">
+              <Input.ToCalendar
+                allowToday
+                placeholder="DD-MM-YYYY"
+                onChange={handleDateChange}
+                addonAfter={<i class="i i-date-range" />}
+                placement="bottomLeft"
+                value={formData.date_of_incorporation}
+              />
+            </div>
+          </div>
+        </Input.Group>
+      </div>
+
       <div className="flex los-row">
         <Input
           label="Business PAN"
@@ -227,6 +284,18 @@ const BusinessDetailsForm = ({
           />
         </div>
       )}
+
+      <div className="flex los-row">
+        <Input.Select
+          label="Select Property Ownership "
+          value={formData.ownership || {}}
+          onChange={handleChange}
+          size="small"
+          name="ownership"
+          options={PROPERTY_OWNERSHIP_TYPES}
+          className="InputGroup--vTop Input--required"
+        />
+      </div>
 
       <Button.Primary
         type="submit"

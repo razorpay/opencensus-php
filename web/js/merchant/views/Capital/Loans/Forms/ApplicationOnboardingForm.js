@@ -199,7 +199,17 @@ const ApplicationOnboardingForm = (props) => {
 
   function updateBusinessDetails(data) {
     const { reference_id, id, addresses } = data;
-    const { address, city, state, pincode, gstin, business_pan } = formsData.business;
+    const {
+      address,
+      city,
+      state,
+      pincode,
+      gstin,
+      business_pan,
+      nature,
+      date_of_incorporation,
+      ownership,
+    } = formsData.business;
 
     const payload = {
       business: {
@@ -217,6 +227,9 @@ const ApplicationOnboardingForm = (props) => {
         ],
         gstin,
         business_pan,
+        nature,
+        date_of_incorporation,
+        ownership,
       },
     };
     return props.saveBusinessDetails(payload);
@@ -224,14 +237,25 @@ const ApplicationOnboardingForm = (props) => {
 
   function createBusinessEntity() {
     const { user } = props;
-    const { address, city, state, pincode } = formsData.business;
+    const {
+      address,
+      city,
+      state,
+      pincode,
+      date_of_incorporation,
+      nature,
+      ownership,
+    } = formsData.business;
 
     const payload = {
       business: {
         reference_id: user.current,
         reference_type: 'MID',
         legal_name: user.business_name,
-        deed_type: BUSINESS_TYPES[parseInt(user.business_type)],
+        date_of_incorporation,
+        ownership,
+        nature,
+        deed_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
         business_pan: user.company_pan,
         addresses: [
           {

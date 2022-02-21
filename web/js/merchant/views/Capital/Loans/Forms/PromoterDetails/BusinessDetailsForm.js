@@ -13,6 +13,8 @@ import { isValidPinCode, isPanNumber } from 'common/utils/validators';
 import { isValidGSTIN } from 'common/utils/rzp-utils';
 import { getCityAndState } from '../LosOnboarding/PersonalDetailsForm';
 import { statesOptions } from '../Helpers/getStatesOptions';
+import { BUSINESS_NATURE_TYPES, PROPERTY_OWNERSHIP_TYPES } from '../../constants';
+import moment from 'moment';
 
 const BusinessDetailsForm = ({
   canModify,
@@ -26,7 +28,10 @@ const BusinessDetailsForm = ({
     business_pan,
     gstin,
     addresses,
-  } = loanApplicationDetails.business_details.data.business;
+    date_of_incorporation,
+    nature,
+    ownership,
+  } = loanApplicationDetails?.business_details?.data?.business;
 
   const { address_line1, city, state, pincode } = addresses[0];
 
@@ -39,7 +44,11 @@ const BusinessDetailsForm = ({
     city,
     state,
     pincode,
+    date_of_incorporation,
+    nature,
+    ownership,
   });
+
   const [pincodeError, setPincodeError] = React.useState(false);
 
   React.useEffect(() => {
@@ -56,32 +65,67 @@ const BusinessDetailsForm = ({
     });
   };
 
-  const handleSubmit = () => {
-    handleBusinessSubmit(formData);
-  };
-
-  const loadCityAndState = async () => {
+  const loadCityAndState = async (updatedFormData) => {
     try {
-      const { data } = await getCityAndState(formData.pincode);
+      const { data } = await getCityAndState(updatedFormData.pincode);
       setFormData({
-        ...formData,
+        ...updatedFormData,
         city: data.city,
         state: data.state_code,
       });
       setPincodeError(false);
     } catch (error) {
+      setFormData({
+        ...updatedFormData,
+      });
       setPincodeError(true);
     }
   };
 
-  React.useEffect(() => {
-    if (isValidPinCode(formData.pincode)) {
-      loadCityAndState();
+  const handlePinCodeChange = ({ target }) => {
+    const { value, name } = target;
+    const updatedFormData = {
+      ...formData,
+      [name]: value,
+    };
+    if (isValidPinCode(value)) {
+      loadCityAndState(updatedFormData);
+    } else {
+      setFormData(updatedFormData);
     }
-  }, [formData.pincode]);
+  };
+
+  const handleDateChange = (value) => {
+    handleChange({
+      target: {
+        name: 'date_of_incorporation',
+        value: moment(value).format('YYYY-MM-DD'),
+      },
+    });
+  };
+
+  const handleSubmit = () => {
+    handleBusinessSubmit(formData);
+  };
+
+  // React.useEffect(() => {
+  //   if (isValidPinCode(formData.pincode)) {
+  //     loadCityAndState();
+  //   }
+  // }, [formData.pincode]);
 
   const isValidForm = () => {
-    const mandatoryFields = ['legal_name', 'deed_type', 'address', 'city', 'state', 'pincode'];
+    const mandatoryFields = [
+      'legal_name',
+      'deed_type',
+      'address',
+      'city',
+      'state',
+      'pincode',
+      'nature',
+      'date_of_incorporation',
+      'ownership',
+    ];
 
     const validBusinessPan = formData.business_pan ? isPanNumber(formData.business_pan) : true;
     const validGSTIN = formData.gstin ? isValidGSTIN(formData.gstin) : true;
@@ -117,6 +161,33 @@ const BusinessDetailsForm = ({
           size="small"
           className="InputGroup--vTop"
           disabled
+        />
+      </Input.Group>
+      <Input.Group
+        className="InputGroup--inline InputGroup--vTop"
+        label="Nature Of Business"
+        required
+      >
+        <Input.Select
+          value={formData.nature || {}}
+          onChange={handleChange}
+          size="small"
+          name="nature"
+          options={BUSINESS_NATURE_TYPES}
+          className="InputGroup--vTop Input--required"
+        />
+      </Input.Group>
+      <Input.Group
+        label="Date of Incorporation"
+        className="Input--small InputGroup--inline InputGroup--vTop Input--required"
+      >
+        <Input.ToCalendar
+          allowToday
+          placeholder="DD-MM-YYYY"
+          onChange={handleDateChange}
+          addonAfter={<i class="i i-date-range" />}
+          placement="bottomLeft"
+          value={formData.date_of_incorporation}
         />
       </Input.Group>
       <Input.Group className="InputGroup--inline InputGroup--vTop" label="Business PAN">
@@ -161,7 +232,7 @@ const BusinessDetailsForm = ({
       >
         <Input
           value={formData.pincode}
-          onChange={handleChange}
+          onChange={handlePinCodeChange}
           size="small"
           name="pincode"
           className="InputGroup--vTop"
@@ -203,6 +274,21 @@ const BusinessDetailsForm = ({
           </Input.Group>
         </>
       )}
+
+      <Input.Group
+        className="InputGroup--inline InputGroup--vTop"
+        label="Select Property Ownership"
+        required
+      >
+        <Input.Select
+          value={formData.ownership || {}}
+          onChange={handleChange}
+          size="small"
+          name="ownership"
+          options={PROPERTY_OWNERSHIP_TYPES}
+          className="InputGroup--vTop Input--required"
+        />
+      </Input.Group>
 
       <Button.Primary
         type="submit"

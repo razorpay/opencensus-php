@@ -47,10 +47,10 @@ const OutlineLockIcon = <i class="i i-outline-lock" />;
                 legal_name: business_details.data.business.legal_name,
                 business_email: business_details.data.business.emails[0].email_id,
                 business_pan: business_details.data.business.business_pan,
-                business_type: BUSINESS_TYPES[parseInt(user.business_type)],
+                business_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
               }
             : {
-                business_type: BUSINESS_TYPES[parseInt(user.business_type)],
+                business_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
                 legal_name: user.business_name,
                 business_email: user.email,
                 business_pan: user.company_pan,
@@ -158,7 +158,7 @@ class BusinessInfoEntity extends Component {
       APPLICATION_STATES.CONTRACT_PENDING,
     );
 
-  handleSubmit = async (formData) => {
+  handleSubmit = (formData) => {
     const {
       legal_name,
       business_email,
@@ -179,10 +179,10 @@ class BusinessInfoEntity extends Component {
       return;
     }
     const businessExists = Boolean(
-      loanApplicationDetails.business_details.data.business &&
-        loanApplicationDetails.business_details.data.business.id,
+      loanApplicationDetails?.business_details?.data?.business &&
+        loanApplicationDetails?.business_details?.data?.business.id,
     );
-    const businessDetails = loanApplicationDetails.business_details.data.business;
+    const businessDetails = loanApplicationDetails?.business_details?.data?.business;
     const payload = {
       business: {
         ...(businessExists
@@ -193,7 +193,7 @@ class BusinessInfoEntity extends Component {
         reference_id: businessExists ? businessDetails.id : user.current,
         reference_type: 'MID',
         legal_name,
-        deed_type: BUSINESS_TYPES[parseInt(user.business_type)],
+        deed_type: BUSINESS_TYPES[parseInt(user.business_type, 10)],
         business_pan,
         addresses: [
           {
@@ -240,7 +240,7 @@ class BusinessInfoEntity extends Component {
     };
 
     const loanAttributes = {
-      amount: amount,
+      amount,
       currency: 'INR',
       interest_rate: 10,
       expected_tenure,
@@ -248,8 +248,8 @@ class BusinessInfoEntity extends Component {
       credit_request_purpose,
     };
     if (
-      this.props.loanApplicationDetails.meta.data.application.id &&
-      this.props.loanApplicationDetails.meta.data.application.id !== 'new'
+      this.props?.loanApplicationDetails?.meta?.data?.application?.id &&
+      this.props?.loanApplicationDetails?.meta?.data?.application?.id !== 'new'
     ) {
       const applicationPayload = {
         id: this.props.loanApplicationDetails.meta.data.application.id,
@@ -269,7 +269,7 @@ class BusinessInfoEntity extends Component {
           given_at: Date.now(),
         },
       };
-      return this.props
+      this.props
         .saveApplicationDetails(applicationPayload)
         .then((_) => {
           this.props._trackNavigationActions('NEXT', 'PROMOTER_INFO_PENDING');

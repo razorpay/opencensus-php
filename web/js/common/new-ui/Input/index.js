@@ -690,6 +690,5 @@ Field.TimePicker = TimePicker;
 Field.DateTime = DateTime;
 Field.CurrencySelect = CurrencySelect;
 Field.CurrencyInput = CurrencyInput;
-Field.DateTime = DateTime;
 
 Field.TextareaAutoResize = TextareaAutoResize;

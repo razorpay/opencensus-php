@@ -431,10 +431,12 @@ const PersonalDetailsForm = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  initialFormValues: personalInfoSelector(state.session.user),
-  loanApplicationDetails: state.loanApplicationDetails,
-});
+const mapStateToProps = (state) => {
+  return {
+    initialFormValues: personalInfoSelector(state.session.user),
+    loanApplicationDetails: state.loanApplicationDetails,
+  };
+};
 
 export default connect(mapStateToProps, {
   showNotification: fnShowNotification,
