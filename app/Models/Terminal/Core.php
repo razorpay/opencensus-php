@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Admin;
@@ -777,6 +778,66 @@ class Core extends Base\Core
 
         $this->processMerchantMccUpdateForHitachiTerminals($merchant, $oldCategory);
         $this->processMerchantMccUpdateForFulcrumTerminals($merchant, $oldCategory);
+    }
+
+    /**
+     * Returns the list of networks on which the given merchantId is onboarded for tokenisation
+     * Onboarded Network Codes are returned => Example - ['VISA','MC','RUPAY']
+     *
+     * @param string $merchantId
+     * @return array
+     */
+    public function getMerchantTokenisationOnboardedNetworks(string $merchantId): array
+    {
+        $onboardedNetworks = $this->getMerchantTokenisationOnboardedNetworksFromRedis($merchantId);
+
+        if (isset($onboardedNetworks) === true)
+        {
+            return $onboardedNetworks;
+        }
+
+        $onboardedNetworks = $this->app['terminals_service']->fetchMerchantTokenisationOnboardedNetworks($merchantId);
+
+        if (isset($onboardedNetworks) === false)
+        {
+            return [];
+        }
+
+        $this->setMerchantTokenisationOnboardedNetworksInRedis($merchantId, $onboardedNetworks);
+
+        return $onboardedNetworks;
+    }
+
+    protected function getMerchantTokenisationOnboardedNetworksRedisKey($merchantId): string
+    {
+        return $merchantId . '_tokenisation_onboarded_networks';
+    }
+
+    protected function setMerchantTokenisationOnboardedNetworksInRedis($merchantId, $onboardedNetworks): void
+    {
+        $redisKey = $this->getMerchantTokenisationOnboardedNetworksRedisKey($merchantId);
+
+        $ttl = 60 * 60; // 1 hour
+
+        $this->app['cache']->put($redisKey, json_encode($onboardedNetworks), $ttl);
+    }
+
+    protected function getMerchantTokenisationOnboardedNetworksFromRedis($merchantId): ?array
+    {
+        try
+        {
+            $redisKey = $this->getMerchantTokenisationOnboardedNetworksRedisKey($merchantId);
+
+            return json_decode($this->app['cache']->get($redisKey), true);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::GET_ONBOARDED_NETWORKS_ERROR, [
+                'merchantId' => $merchantId,
+            ]);
+
+            return null;
+        }
     }
 
     protected function validateExistingTerminalGatewayMerchantId(Entity $terminal, $gateway)

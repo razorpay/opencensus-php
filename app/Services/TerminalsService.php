@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 
 use GuzzleHttp\Client;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -17,6 +18,7 @@ use  RZP\Models\Base\Service;
 use RZP\Http\Request\Requests;
 use RZP\Constants\Environment;
 use RZP\Models\Admin\Group\Core as core;
+use RZP\Models\Customer\Token;
 use RZP\Models\Admin\Admin\Service as AdminService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -74,6 +76,7 @@ class TerminalsService
     const FETCH_TERMINALS_FOR_MERCHANT_GATEWAY = 'fetch_terminals_for_merchant_gateway';
     const TERMINAL_ONBOARD_CALLBACK            = 'terminal_onboard_callback';
     const SYNC_DELETED_TERMINALS               = 'sync_deleted_terminals';
+    const FETCH_TOKENISATION_TERMINALS         = 'fetch_tokenisation_terminals';
 
     // terminals service error descriptions
     const MERCHANT_HAS_ALREADY_COMPLETED_PAYPAL_ONBOARDING         = 'Merchant has already completed PayPal onboarding';
@@ -143,6 +146,10 @@ class TerminalsService
             self::PATH   => 'v2/terminal/sync/deleted',
             self::METHOD => Requests::POST,
         ],
+        self::FETCH_TOKENISATION_TERMINALS => [
+            self::PATH      => 'v1/merchants/terminals',
+            self::METHOD    => Requests::POST,
+        ]
     ];
 
     public function __construct($app)
@@ -511,6 +518,55 @@ class TerminalsService
             $this->trace->error(TraceCode::TERMINALS_SERVICE_MERCHANT_DEFAULT_INSTRUMENTS_REQUEST_FAILED, $data);
         }
 
+    }
+
+    public function fetchMerchantTokenisationOnboardedNetworks(string $merchantId): ?array
+    {
+        try
+        {
+            $this->trace->info(TraceCode::FETCH_TOKENISATION_TERMINALS, ['merchantId' => $merchantId]);
+
+            $params = self::PARAMS[self::FETCH_TOKENISATION_TERMINALS];
+
+            $content = json_encode([
+                Terminal\Entity::TYPE   => Terminal\Type::TOKENISATION,
+                'merchant_ids'          => [$merchantId],
+                Terminal\Entity::STATUS => Terminal\Status::ACTIVATED,
+            ]);
+
+            $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD]);
+
+            $tokenisationActivatedTerminalList = $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+
+            $onboardedNetworks = [];
+
+            foreach ($tokenisationActivatedTerminalList as $terminal)
+            {
+                $tokenisationGateway = $terminal[self::GATEWAY];
+
+                $network = Token\Core::TokenisationGatewayToNetworkMapping[$tokenisationGateway] ?? '';
+
+                if (empty($network) === false)
+                {
+                    $onboardedNetworks[] = $network;
+                }
+            }
+
+            $this->trace->info(TraceCode::FETCH_TOKENISATION_TERMINALS_SUCCESS, [
+                'merchantId'        => $merchantId,
+                'onboardedNetworks' => $onboardedNetworks
+            ]);
+
+            return $onboardedNetworks;
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::FETCH_TOKENISATION_TERMINALS_ERROR, [
+                'merchantId' => $merchantId,
+            ]);
+
+            return null;
+        }
     }
 
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $addditionalOptions = [],

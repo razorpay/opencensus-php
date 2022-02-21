@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\PaperMandate\Constants as PaperMandateConstants;
+use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
@@ -134,6 +135,11 @@ class Validator extends Base\Validator
         'purpose'  => 'sometimes|string|max:512',
         'currency' => 'sometimes|string|in:INR',
         'notes'    => 'sometimes|notes',
+    ];
+
+    protected static $validateBulkLocalTokenisationRules = [
+        'merchant_id'   => 'required|string|not_in:' . Merchant\Account::SHARED_ACCOUNT,
+        'token_ids'     => 'required|filled|array|max:' . Entity::BULK_TOKENISATION_INPUT_LIMIT,
     ];
 
     protected static function validateBank($attribute, $value)

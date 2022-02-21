@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Token;
 use Aws\Ec2\Exception\Ec2Exception;
 use phpseclib\Crypt\AES;
 use RZP\Encryption\AESEncryption;
+use RZP\Jobs\MerchantAsyncTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -856,6 +857,91 @@ class Service extends Base\Service
         elseif ($input[Token\Entity::STATUS] === 'deactivated')
         {
             $this->app['events']->dispatch('api.token.service_provider.deactivated', $eventPayload);
+        }
+    }
+
+    public function localSavedCardAsyncTokenisation(): array
+    {
+        try
+        {
+            $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::ASYNC_TOKENISATION]);
+
+            $this->trace->info(TraceCode::ASYNC_LOCAL_TOKENISATION_REQUEST, [
+                'merchantIdsCount'  => count($merchantIds),
+                'merchantIdsList'   => $merchantIds,
+            ]);
+
+            foreach ($merchantIds as $merchantId)
+            {
+                MerchantAsyncTokenisationJob::dispatch($this->mode, $merchantId);
+            }
+
+            $this->trace->info(TraceCode::ASYNC_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [
+                'merchantIdsCount'  => count($merchantIds),
+            ]);
+
+            return ['success' => true];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ASYNC_LOCAL_TOKENISATION_ERROR
+            );
+
+            return ['success' => false];
+        }
+    }
+
+    public function localSavedCardBulkTokenisation($input): array
+    {
+        (new Validator())->validateInput('validate_bulk_local_tokenisation', $input);
+
+        try
+        {
+            $merchantId    = $input['merchant_id'];
+            $inputTokenIds = $input['token_ids'];
+
+            $this->trace->info(TraceCode::BULK_LOCAL_TOKENISATION_REQUEST, [
+                'merchantId'    => $merchantId,
+                'tokenIdsCount' => count($inputTokenIds),
+            ]);
+
+            $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $tokenIds = array_unique($inputTokenIds);
+
+            $validTokenIds = $this->core->getValidTokensForTokenisation($merchantId, $tokenIds);
+
+            $this->core->storeConsents($merchantId, $validTokenIds);
+
+            $this->core->pushTokenIdsToQueueForTokenisation($validTokenIds);
+
+            $this->trace->info(TraceCode::BULK_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [
+                'merchantId'              => $merchantId,
+                'inputTokenIdsCount'      => count($inputTokenIds),
+                'uniqueTokenIdsCount'     => count($tokenIds),
+                'dispatchedTokenIdsCount' => count($validTokenIds),
+            ]);
+
+            return [
+                'success'                       => true,
+                'message'                       => 'Tokenisation is triggered on valid token ids',
+                'merchantId'                    => $merchantId,
+                'inputTokenIdsCount'            => count($inputTokenIds),
+                'triggeredTokenIdsCount'        => count($validTokenIds),
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::BULK_LOCAL_TOKENISATION_ERROR
+            );
+
+            return ['success' => false, 'message' => 'Error occurred while triggering tokenisation'];
         }
     }
 }

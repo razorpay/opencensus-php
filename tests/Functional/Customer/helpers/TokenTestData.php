@@ -533,4 +533,35 @@ return [
             ],
         ],
     ],
+
+    'testBulkTokenisation' => [
+        'request'  => [
+            'url'    => '/tokenisation/local_cards/bulk',
+            'method' => 'post',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'token_ids'   => []
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'     => true,
+                'message'     => 'Tokenisation is triggered on valid token ids',
+                'merchantId'  => '10000000000000',
+            ],
+        ],
+    ],
+
+    'testAsyncTokenisation' => [
+        'request'  => [
+            'url'      => '/tokenisation/local_cards',
+            'method'   => 'post',
+            'content'  => []
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];

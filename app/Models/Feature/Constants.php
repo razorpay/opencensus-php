@@ -1066,6 +1066,11 @@ class Constants
     const ONBOARD_TOKENIZATION_DINERS = 'onboard_tokenization_diners';
 
     /**
+     * Feature flag to onboard merchants on async tokenisation
+     */
+    const ASYNC_TOKENISATION = 'async_tokenisation';
+
+    /**
      * Feature flag to let Razorpay collect consent for tokenising cards in the payment flow through intermediate consent page
      * This will be used for custom checkout merchants
      * By default Razorpay collects consent
@@ -1607,6 +1612,7 @@ class Constants
         self::ONBOARD_TOKENIZATION_MASTERCARD => true,
         self::ONBOARD_TOKENIZATION_RUPAY      => true,
         self::ONBOARD_TOKENIZATION_DINERS     => true,
+        self::ASYNC_TOKENISATION              => true,
         self::EXCLUDE_DEDUCT_DISPUTE          => true,
         self::ORG_ANNOUNCEMENT_TAB_DISABLE    => true,
         self::ASYNC_TXN_FILL_DETAILS          => true,

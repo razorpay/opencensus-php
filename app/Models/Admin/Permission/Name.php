@@ -833,6 +833,8 @@ class Name
     // Razorpay Trusted Badge
     const TRUSTED_BADGE_BLACKLIST       = 'trusted_badge_blacklist';
 
+    const BULK_TOKENISATION       = 'bulk_tokenisation';
+
     const ECOLLECT_ICICI_BATCH_UPLOAD                = 'ecollect_icici_batch_upload';
     const ECOLLECT_RBL_BATCH_UPLOAD                  = 'ecollect_rbl_batch_upload';
     const VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD          = 'virtual_bank_account_batch_upload';

@@ -3261,6 +3261,10 @@ class Route
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
+        // Async tokenisation
+        'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
+        'tokenisation_local_cards_bulk'           => ['post',        'tokenisation/local_cards/bulk',                            'TokenController@localSavedCardBulkTokenisation'           ],
+
        // 1 click checkout
        'third_watch_address_check'               => ['post',       'tw/address/check_cod_eligibility',                      'ThirdWatchController@checkAddressServiceability'   ],
        '1cc_cod_check'                           => ['post',       '1cc/check_cod_eligibility',                             'ThirdWatchController@checkCodEligibility'   ],
@@ -4284,6 +4288,7 @@ class Route
 
         'reward_expire_cron',
         'trusted_badge_eligibility_cron',
+        'tokenisation_local_cards',
         'gateway_downtime_for_payment',
         'partner_config_bulk_upsert',
         //Accounting Payouts
@@ -6322,6 +6327,8 @@ class Route
         // razorpay trusted badge
         'trusted_badge_blacklist',
 
+        'tokenisation_local_cards_bulk',
+
         'risk_attributes_get',
 
         'create_risk_action',
@@ -7481,6 +7488,7 @@ class Route
         'user_verify_contact_batch'                       => Permission::UPDATE_USER_CONTACT_MOBILE,
         'bulk_regenerate_api_keys'                        => Permission::BULK_REGENERATE_API_KEYS,
         'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
+        'tokenisation_local_cards_bulk'                   => Permission::BULK_TOKENISATION,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
 
@@ -10911,6 +10919,7 @@ class Route
             'transparent_redirect_get',
             'transparent_redirect_post',
             'trusted_badge_blacklist',
+            'tokenisation_local_cards_bulk',
             'ufh_admin_upload_file',
             'ufh_get_file_signed_url',
             'ufh_get_file_signed_url_admin',
@@ -11461,6 +11470,7 @@ class Route
             'dispute_initiate_risk_assessment',
             'reward_expire_cron',
             'trusted_badge_eligibility_cron',
+            'tokenisation_local_cards',
             'nps_survey_process_scheduled',
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',

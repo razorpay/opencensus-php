@@ -698,6 +698,10 @@ return [
                 'description' => 'Blacklist trusted badge for merchant',
                 'assignable'  => true
             ],
+            Permission::BULK_TOKENISATION => [
+                'description' => 'Bulk tokenise saved cards',
+                'assignable'  => true
+            ],
             Permission::CREATE_CREDIT_BUREAU_REPORTS => [
                 'assignable'  => true,
             ],

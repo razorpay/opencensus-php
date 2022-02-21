@@ -615,4 +615,40 @@ class Repository extends Base\Repository
             ->where(Token\Entity::ID, $tokenId)
             ->update($updateData);
     }
+
+    public function bulkUpdateTokenIdsConsent(string $merchantId, array $tokenIds, int $consentTimestamp)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->whereIn(Entity::ID, $tokenIds)
+                    ->whereNull(Token\Entity::ACKNOWLEDGED_AT)
+                    ->update(
+                        [
+                            TOKEN\Entity::ACKNOWLEDGED_AT => $consentTimestamp
+                        ]
+                    );
+    }
+
+    /**
+     * This function is used to validate the following -
+     * Given a merchantId and list of tokenIds
+     * 1. filter card method tokenIds
+     * 2. filter given merchant's tokenIds
+     *
+     * @param  string  $merchantId
+     * @param  array  $tokenIds
+     * @return array
+     */
+    public function filterMerchantCardTokens(string $merchantId, array $tokenIds): array
+    {
+        /** @var Base\PublicCollection $result */
+        $result = $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select(Entity::ID)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Token\Entity::METHOD, Payment\Method::CARD)
+                    ->whereIn(Entity::ID, $tokenIds)
+                    ->get();
+
+        return $result->getIds();
+    }
 }

@@ -149,6 +149,9 @@ class Entity extends Base\PublicEntity
     public const CONSENT_TAKEN = 'consent_taken';
     public const COMPLIANT_WITH_TOKENISATION_GUIDELINES = 'compliant_with_tokenisation_guidelines';
 
+    public const BULK_TOKENISATION_INPUT_LIMIT = 100000;
+    public const MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT = 100000;
+
     /*
      * service provider tokens attributes
      */

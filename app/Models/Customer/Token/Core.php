@@ -18,6 +18,8 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Jobs\LocalSavedCardTokenisationJob;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
@@ -29,6 +31,12 @@ class Core extends Base\Core
         self::GATEWAY_VISA,
         self::GATEWAY_MC,
         self::GATEWAY_RUPAY
+    ];
+
+    public const TokenisationGatewayToNetworkMapping = [
+        self::GATEWAY_VISA  => Card\Network::VISA,
+        self::GATEWAY_MC    => Card\Network::MC,
+        self::GATEWAY_RUPAY => Card\Network::RUPAY
     ];
 
     /**
@@ -1702,5 +1710,219 @@ class Core extends Base\Core
         $networkName = Card\Network::getFullName($network);
 
         return ($networkName === Card\Network::$fullName[Card\Network::RUPAY]);
+    }
+
+    /**
+     * executes datalake query to fetch consent received tokenIds for tokenisation
+     *
+     * @param  string $merchantId
+     * @param  array $onboardedNetworkNames
+     * @param  int $offset
+     * @return array
+     */
+    private function executeDataLakeQueryToFetchConsentReceivedTokenIds(string $merchantId, array $onboardedNetworkNames, int $offset): array
+    {
+        $onboardedNetworkNamesInString = implode("','", $onboardedNetworkNames);
+
+        $rzpVaultsInString = implode("','", [Card\Vault::RZP_ENCRYPTION, Card\Vault::RZP_VAULT]);
+
+        $rawQueryBuilder = " SELECT t.id " .
+            " FROM alluxio.realtime_hudi_api.tokens t " .
+                " INNER JOIN alluxio.realtime_hudi_api.cards c " .
+                    " ON t.card_id = c.id " .
+            " WHERE  t.method = 'card' " .
+                " AND t.acknowledged_at IS NOT NULL " .
+                " AND c.international = 0 " .
+                " AND t.merchant_id = '%s' " .
+                " AND c.network IN ('%s') " .
+                " AND c.vault IN ('%s') " .
+                " AND t.deleted_at IS NULL " .
+            " ORDER BY t.id " .
+            " OFFSET %d LIMIT %d";
+
+        $rawQuery = sprintf(
+            $rawQueryBuilder,
+            $merchantId,
+            $onboardedNetworkNamesInString,
+            $rzpVaultsInString,
+            $offset,
+            Entity::MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT
+        );
+
+        $queryResult = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
+
+        return array_column($queryResult, "id");
+    }
+
+    /**
+     * Fetch consent received tokenIds for tokenisation
+     *
+     * @param  string  $merchantId
+     * @param  int  $offset
+     * @param  int  $retryCount
+     * @return array
+     * @throws \Exception
+     */
+    public function fetchConsentReceivedTokenIdsForTokenisation(string $merchantId, int $offset, int $retryCount = 0): array
+    {
+        try
+        {
+            $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($merchantId);
+
+            $onboardedNetworkNames = Card\Network::getFullNames($onboardedNetworks);
+
+            if (empty($onboardedNetworkNames))
+            {
+                return [];
+            }
+
+            return $this->executeDataLakeQueryToFetchConsentReceivedTokenIds($merchantId, $onboardedNetworkNames, $offset);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::ASYNC_TOKENISATION_DATALAKE_QUERY_FAILURE, [
+                'merchantId'    => $merchantId,
+                'offset'        => $offset,
+                'retryCount'    => $retryCount,
+            ]);
+
+            // One retry is made before throwing exception
+            if ($retryCount < 1)
+            {
+                return $this->fetchConsentReceivedTokenIdsForTokenisation($merchantId, $offset, $retryCount + 1);
+            }
+
+            throw $ex;
+        }
+    }
+
+    /**
+     * Push local tokenIds into SQS for local saved cards tokenisation
+     *
+     * @param  array  $tokenIds
+     *
+     * @return void
+     */
+    public function pushTokenIdsToQueueForTokenisation(array $tokenIds): void
+    {
+        foreach ($tokenIds as $tokenId)
+        {
+            LocalSavedCardTokenisationJob::dispatch($this->mode, $tokenId);
+        }
+    }
+
+    public function getValidTokensForTokenisation(string $merchantId, array $tokenIds): array
+    {
+        $validTokenIds = $this->repo->token->filterMerchantCardTokens($merchantId, $tokenIds);
+
+        $invalidTokenIds = array_values(array_diff($tokenIds, $validTokenIds));
+
+        $this->trace->info(TraceCode::BULK_LOCAL_TOKENISATION_INVALID_TOKENS, [
+            'merchantId'            => $merchantId,
+            'validTokensCount'      => count($validTokenIds),
+            'invalidTokensCount'    => count($invalidTokenIds),
+            'invalidTokensIds'      => $invalidTokenIds,
+        ]);
+
+        return $validTokenIds;
+    }
+
+    /**
+     * stores the consents in DB
+     *
+     * @param  string $merchantId
+     * @param  array $tokenIds
+     * @return array
+     */
+    public function storeConsents(string $merchantId, array $tokenIds): array
+    {
+        $tokenIdsBatches     = array_chunk($tokenIds, 10000);
+        $consentTimestamp    = Carbon::now()->getTimestamp();
+        $tokensUpdatedCount  = 0;
+
+        foreach ($tokenIdsBatches as $tokenIdsBatch)
+        {
+            $updatedCount = $this->repo->token->bulkUpdateTokenIdsConsent(
+                $merchantId,
+                $tokenIdsBatch,
+                $consentTimestamp
+            );
+
+            $tokensUpdatedCount += $updatedCount;
+        }
+
+        $this->trace->info(TraceCode::BULK_LOCAL_TOKENISATION_CONSENT_STORAGE, [
+            'merchantId'                => $merchantId,
+            'validTokenIdsCount'        => count($tokenIds),
+            'tokensConsentStoredCount'  => $tokensUpdatedCount,
+        ]);
+
+        return $tokenIds;
+    }
+
+    /**
+     * Does the following checks
+     * 1. check that token method is card
+     * 2. check that consent received
+     * 3. check that card is not already tokenised
+     * 4. check that card is not international
+     * 5. check if token is recurring, allow only rupay cards for tokenisation till other networks are supported
+     * 6. check that card network is in tokenisation onboarded networks for that merchant
+     *
+     * @param $token Entity
+     * @return bool
+     */
+    public function checkIfTokenisationApplicable(Entity $token): bool
+    {
+        // If token method is not card or consent for tokenisation is not present, then it is not applicable for tokenisation
+        if (($token->getMethod() !== Method::CARD) or
+            ($token->hasBeenAcknowledged() === false))
+        {
+            return false;
+        }
+
+        $card = $token->card;
+
+        // If card is already tokenised or card is international card, then it is not applicable for tokenisation
+        if (($card->isRzpTokenisedCard() === false) or
+            ($card->isInternational() === true))
+        {
+            return false;
+        }
+
+        // For recurring tokens, only rupay network is supported for now
+        if (($token->isRecurring() === true) and
+            ($card->isRupay() === false))
+        {
+            return false;
+        }
+
+        $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($token->getMerchantId());
+
+        if(in_array($card->getNetworkCode(), $onboardedNetworks, true) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * builds card input for tokenisation
+     *
+     * @param  Card\Entity $card
+     * @return array
+     */
+    public function buildCardInputForTokenisation(Card\Entity $card): array
+    {
+        return [
+            'cvv'          => 123,
+            'last4'        => $card->getLast4() ?? "0000",
+            'expiry_month' => $card->getExpiryMonth() ?? "0",
+            'expiry_year'  => $card->getExpiryYear() ?? "9999",
+            'emi'          => $card->getEmi() ?? false,
+            'iin'          => $card->getIin() ?? "",
+            'name'         => $card->getName(),
+        ];
     }
 }

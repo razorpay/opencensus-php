@@ -116,7 +116,7 @@ class CardVault extends BaseCardVault
     public function migrateToTokenizedCard($input): array
     {
         $response['success'] = true;
-        $token = base64_encode($input['vault_token']);
+        $token = base64_encode($input['card']['vault_token']);
 
         $response['success'] = true;
         $response['token']  = $token;
@@ -135,7 +135,7 @@ class CardVault extends BaseCardVault
                 'id'             => 'spt_1234abcd',
                 'entity'         => 'service_provider_token',
                 'provider_type'  => 'network',
-                'provider_name'  => $input['provider']['network'],
+                'provider_name'  => $input['iin']['network'],
                 'interoperable'  => true,
                 'status'         => 'activated',
                 'provider_data'  => [

@@ -251,7 +251,7 @@ return [
         'test'       => env('AWS_FTS_TEST_QUEUE'),
         'live'       => env('AWS_FTS_LIVE_QUEUE'),
     ],
-    'carvault_migration' => [
+    'cardvault_migration' => [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
@@ -431,6 +431,11 @@ return [
     'trusted_badge' => [
         'test'       => env('AWS_TRUSTED_BADGE_TEST_QUEUE'),
         'live'       => env('AWS_TRUSTED_BADGE_LIVE_QUEUE'),
+    ],
+
+    'merchant_async_tokenisation' => [
+        'test'       => env('AWS_MERCHANT_ASYNC_TOKENISATION_TEST_QUEUE'),
+        'live'       => env('AWS_MERCHANT_ASYNC_TOKENISATION_LIVE_QUEUE'),
     ],
 
     'firs_document_process' => [

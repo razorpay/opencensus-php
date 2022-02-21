@@ -13,7 +13,7 @@ class CardVaultMigrationJob extends Job
     /**
      * @var string
      */
-    protected $queueConfigKey = 'carvault_migration';
+    protected $queueConfigKey = 'cardvault_migration';
 
     /**
      * @var array
