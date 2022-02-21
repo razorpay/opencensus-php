@@ -2077,7 +2077,7 @@ class Processor
         // Check if the method is UPI
         if ($payment->getMethod() !== Payment\Method::UPI)
         {
-            return false;
+            return ;
         }
 
         // Check if the Upi Payment Service is enabled in config
@@ -2102,7 +2102,7 @@ class Processor
         $feature = 'api'. '_' . $payment->getGateway() . '_v1';
 
         // hit razorx service to get the variant
-        $variant = $this->app->razorx->getTreatment($payment->getId(),
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
             $feature, $this->mode);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
@@ -2112,6 +2112,7 @@ class Processor
             'gateway'       => $payment->getGateway(),
             'feature'       => $feature,
             'mode'          => $this->mode,
+            'merchant_id'   => $payment->getMerchantId(),
         ]);
 
         if ($variant !== 'upips')
