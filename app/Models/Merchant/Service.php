@@ -148,7 +148,7 @@ class Service extends Base\Service
     const MINUTE    = 60 * self::SECOND;
     const HOUR      = 60 * self::MINUTE;
 
-    const REQUEST_TIMEOUT_MERCHANT_ANALYTICS = 5;  // in seconds
+    const REQUEST_TIMEOUT_MERCHANT_ANALYTICS   = 20;  // in seconds
     const REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT = 5;  // in seconds
 
     const MERCHANT_USER_FETCH_RETRY = 5;

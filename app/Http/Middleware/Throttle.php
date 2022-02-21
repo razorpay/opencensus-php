@@ -3,6 +3,8 @@
 namespace RZP\Http\Middleware;
 
 use App;
+use RZP\Http\RouteLatencyGroup;
+use RZP\Http\RouteMaxLatency;
 use RZP\Trace\TraceCode;
 use RZP\Http\RouteTeamMap;
 use Illuminate\Http\Request;
@@ -106,6 +108,7 @@ final class Throttle
             Metric::LABEL_RZP_PRODUCT           => optional($basicAuth)->getProduct(), // optional because not sure basicAuth is initialized in all flows
             Metric::LABEL_RZP_TEAM              => RouteTeamMap::getTeamNamesForRoute($request->route()->getName()),
             Metric::LABEL_HOST                  => $request->getHttpHost() ?? Metric::LABEL_NONE_VALUE,
+            Metric::LABEL_RZP_LATENCY_GROUP     => RouteLatencyGroup::getLatencyGroupForRoute($request->route()->getName()),
         ];
     }
 
