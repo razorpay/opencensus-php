@@ -1,0 +1,279 @@
+{
+  "With Amount,Stock, Min and Max Purchase": {
+    "currency": "INR",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay",
+      "pp_fb_pixel_tracking_id":"123",
+      "pp_ga_pixel_tracking_id":"786",
+      "pp_fb_event_add_to_cart_enabled":"1",
+      "pp_fb_event_initiate_payment_enabled":"1",
+      "pp_fb_event_payment_complete_enabled":"1"
+    },
+    "template_type": "event",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "amount": 50000,
+          "currency": "INR",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "image_url": "https://upload.wikimedia.org/wikipedia/en/3/35/Information_icon.svg",
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 1
+      }
+    ]
+  },
+  "With USD currency": {
+    "currency": "USD",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay",
+      "pp_fb_pixel_tracking_id":"122",
+      "pp_ga_pixel_tracking_id":"786",
+      "pp_fb_event_add_to_cart_enabled":"0",
+      "pp_fb_event_initiate_payment_enabled":"0",
+      "pp_fb_event_payment_complete_enabled":"0"
+    },
+    "template_type": "event",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "amount": 50000,
+          "currency": "USD",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "image_url": "url",
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 1
+      }
+    ]
+  },
+  "without amount and min,max amount": {
+    "currency": "INR",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay",
+      "pp_fb_pixel_tracking_id":"122",
+      "pp_ga_pixel_tracking_id":"786",
+      "pp_fb_event_add_to_cart_enabled":"1",
+      "pp_fb_event_initiate_payment_enabled":"0",
+      "pp_fb_event_payment_complete_enabled":"1"
+    },
+    "template_type": "event",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "currency": "INR",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 2
+      }
+    ]
+  },
+    "template_type": "event",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "currency": "INR",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "image_url": "url",
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 2,
+        "min_amount": 100,
+        "max_amount": 500
+      }
+    ]
+  },
+  "PaymentPageData": {
+    "currency": "INR",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay",
+      "pp_fb_pixel_tracking_id":"122",
+      "pp_ga_pixel_tracking_id":"786",
+      "pp_fb_event_add_to_cart_enabled":"1",
+      "pp_fb_event_initiate_payment_enabled":"0",
+      "pp_fb_event_payment_complete_enabled":"0"
+    },
+    "template_type": "event",
+    "payment_page_items": [
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "description" : "with out amount,setting and mandatory as false",
+          "type" : "payment_page"
+        },
+        "mandatory":false,
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg"
+      },
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "description" : "mandatory as true",
+          "type" : "payment_page"
+        },
+        "mandatory":true,
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg"
+      },
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "amount":50000,
+          "description" : "set position",
+          "type" : "payment_page"
+        },
+        "mandatory":false,
+        "settings": {
+          "position": 1
+        },
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg"
+      },
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "description" : "set stock",
+          "type" : "payment_page"
+        },
+        "mandatory":false,
+        "settings": {
+          "position": 1
+        },
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg" ,
+        "stock": 100
+      },
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "description" : "set min and max purchase",
+          "type" : "payment_page"
+        },
+        "mandatory":false,
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg",
+        "min_purchase": 1,
+        "max_purchase":10
+      },
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "description" : "set min and max purchase",
+          "type" : "payment_page"
+        },
+        "mandatory":false,
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg",
+        "min_amount": 100,
+        "max_amount": 500
+      },
+      {
+        "item": {
+          "name" : "sachin bat",
+          "currency" : "INR",
+          "description" : "all fields",
+          "type" : "payment_page"
+        },
+        "settings": {
+          "position": 10
+        },
+        "mandatory":true,
+        "image_url":"https://pmcvariety.files.wordpress.com/2018/03/facebook-logo1.jpg",
+        "stock": 10,
+        "min_purchase": 1,
+        "max_purchase": 2,
+        "min_amount": 100,
+        "max_amount": 500
+      }
+    ]
+  }
+}

@@ -31,11 +31,11 @@ type PaymentPageResponse struct {
 		SignupViaEmail              int    `json:"signup_via_email"`
 	} `json:"user"`
 	Title            string        `json:"title"`
-	Description      interface{}   `json:"description"`
+	Description      string        `json:"description"`
 	Notes            []interface{} `json:"notes"`
-	SupportContact   interface{}   `json:"support_contact"`
-	SupportEmail     interface{}   `json:"support_email"`
-	Terms            interface{}   `json:"terms"`
+	SupportContact   string        `json:"support_contact"`
+	SupportEmail     string        `json:"support_email"`
+	Terms            string        `json:"terms"`
 	Type             string        `json:"type"`
 	PaymentPageItems []struct {
 		ID            string `json:"id"`
@@ -45,7 +45,7 @@ type PaymentPageResponse struct {
 			ID           string      `json:"id"`
 			Active       bool        `json:"active"`
 			Name         string      `json:"name"`
-			Description  interface{} `json:"description"`
+			Description  string      `json:"description"`
 			Amount       int         `json:"amount"`
 			UnitAmount   int         `json:"unit_amount"`
 			Currency     string      `json:"currency"`
@@ -60,12 +60,12 @@ type PaymentPageResponse struct {
 			CreatedAt    int         `json:"created_at"`
 		} `json:"item"`
 		Mandatory       bool        `json:"mandatory"`
-		ImageURL        interface{} `json:"image_url"`
-		Stock           interface{} `json:"stock"`
+		ImageURL        string      `json:"image_url"`
+		Stock           int         `json:"stock"`
 		QuantitySold    int         `json:"quantity_sold"`
 		TotalAmountPaid int         `json:"total_amount_paid"`
-		MinPurchase     interface{} `json:"min_purchase"`
-		MaxPurchase     interface{} `json:"max_purchase"`
+		MinPurchase     int         `json:"min_purchase"`
+		MaxPurchase     int         `json:"max_purchase"`
 		MinAmount       interface{} `json:"min_amount"`
 		MaxAmount       interface{} `json:"max_amount"`
 		PlanID          interface{} `json:"plan_id"`

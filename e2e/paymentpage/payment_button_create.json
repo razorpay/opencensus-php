@@ -1,0 +1,135 @@
+{
+  "With Amount,Stock, Min and Max Purchase": {
+    "currency": "INR",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "pp_button_disable_branding":"1",
+      "payment_button_theme":"light",
+      "payment_button_text":"Please Pay",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay"
+    },
+    "template_type": "event",
+    "view_type": "button",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "amount": 50000,
+          "currency": "INR",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "image_url": "https://upload.wikimedia.org/wikipedia/en/3/35/Information_icon.svg",
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 1
+      }
+    ]
+  },
+  "With USD currency": {
+    "currency": "USD",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "pp_button_disable_branding":"1",
+      "payment_button_theme":"light",
+      "payment_button_text":"Please Pay",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay"
+    },
+    "template_type": "event",
+    "view_type": "button",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "amount": 50000,
+          "currency": "USD",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "image_url": "url",
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 1
+      }
+    ]
+  },
+  "without amount and min,max amount": {
+    "currency": "INR",
+    "expire_by": null,
+    "title": "Test Page",
+    "description": "bag for test",
+    "terms": "Terms and contions",
+    "support_email": "prem.svmm@test.com",
+    "support_contact": "7502233314",
+    "settings": {
+      "theme": "light",
+      "pp_button_disable_branding":"1",
+      "payment_button_theme":"light",
+      "payment_button_text":"Please Pay",
+      "allow_social_share": "1",
+      "payment_success_message": "Test Custom message",
+      "payment_success_redirect_url": "http://www.google.com",
+      "udf_schema": "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+      "checkout_options": {
+        "email": "email",
+        "phone": "phone"
+      },
+      "payment_button_label": "Pay"
+    },
+    "template_type": "event",
+    "view_type": "button",
+    "payment_page_items": [
+      {
+        "item": {
+          "name": "sachin bat",
+          "currency": "INR",
+          "description": "buy sachin bat if you want",
+          "type": "payment_page"
+        },
+        "mandatory": true,
+        "settings": {
+          "position": 1
+        },
+        "stock": 1,
+        "min_purchase": 1,
+        "max_purchase": 2
+      }
+    ]
+  }
+}
