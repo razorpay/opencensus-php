@@ -91,6 +91,7 @@ class ReconService
             $data = $input;
             unset($data[self::FILE]);
             unset($data[self::METHOD]);
+            unset($data[self::AUTH_TYPE]);
         }
         else
         {
