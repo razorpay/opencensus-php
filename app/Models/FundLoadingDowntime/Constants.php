@@ -21,4 +21,5 @@ class Constants
     const UPDATION            = 'updation';
     const RESOLUTION          = 'resolution';
     const CANCELLATION        = 'cancellation';
+    const NOTE                = 'note';
 }

@@ -6,44 +6,75 @@ use App;
 
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants as Constants;
+use RZP\Models\FundLoadingDowntime\Entity;
 use RZP\Models\FundLoadingDowntime\Constants as Constant;
 
 class FundLoadingDowntimeMail extends Mailable
 {
-    protected $merchantEmail;
-    public $downtimeParams;
-    public $flowType;
+    protected $orgId;
 
-    const SOURCE    = 'fund_loading_downtime';
+    public $merchantId;
+    public $merchantEmail;
+    public $emailParams;
+    public $flowType;
+    public $templateName;
+
     const NAMESPACE = 'razorpayx_payouts_core';
 
-    public function __construct($flowType , array $data)
+    // emojis used in email subject
+    const whiteCheckMark = "\xE2\x9C\x85";     // slack equivalent : ✅ (:white_check_mark:)
+    const rotatingLight  = "\xF0\x9F\x9A\xA8"; // slack equivalent : 🚨 (:rotating_light:)
+
+    public function __construct($flowType , array $emailParams)
     {
         parent::__construct();
 
-        $this->merchantEmail = $data['email_id'];
+        $app = App::getFacadeRoot();
 
-        $this->downtimeParams = $data['params'];
+        $this->orgId = $app['basicauth']->getAdmin()->getOrgId();
+
+        $this->emailParams = $emailParams;
 
         $this->flowType = $flowType;
+
+        $this->templateName = array_pull($this->emailParams, 'templateName');
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->merchantId = $merchantId;
+    }
+
+    public function setMerchantEmailId($emailId)
+    {
+        $this->merchantEmail = $emailId;
     }
 
     protected function addSubject()
     {
+        $subject = null;
+        $subjectChannel = preg_replace('/Virtual Account/', 'VA', $this->emailParams[Entity::CHANNEL]);
+
         switch ($this->flowType)
         {
             case Constant::CREATION:
-
-                $this->subject('Downtime communication for loading funds to RazorpayX virtual account');
+                $subject = self::rotatingLight . "[Downtime Alert] : {$subjectChannel} | " . $this->getDurationsInSubject();
                 break;
 
-            Default:
+            Case Constant::UPDATION:
+                $subject = self::rotatingLight . "[Downtime Updated] : {$subjectChannel} | " . $this->getDurationsInSubject();
+                break;
 
-                $this->subject('Update on Downtime communication for loading funds to RazorpayX virtual account');
+            case Constant::RESOLUTION:
+                $subject = self::whiteCheckMark . "[Downtime Resolved] : {$subjectChannel}";
+                break;
+
+            case Constant::CANCELLATION:
+                $subject = self::whiteCheckMark . "[Downtime Cancelled] : {$subjectChannel}";
                 break;
         }
 
-        return $this;
+        return $this->subject($subject);
     }
 
     protected function addSender()
@@ -71,8 +102,7 @@ class FundLoadingDowntimeMail extends Mailable
 
     protected function addHtmlView()
     {
-        $templateName = self::SOURCE . '.' . $this->flowType;
-        $this->view($templateName);
+        $this->view($this->templateName);
         return $this;
     }
 
@@ -80,8 +110,33 @@ class FundLoadingDowntimeMail extends Mailable
     {
         return [
             'template_namespace' => self::NAMESPACE,
-            'template_name'      => self::SOURCE . '.' . $this->flowType,
-            'params'             => $this->downtimeParams,
+            'template_name'      => $this->templateName,
+            'params'             => $this->emailParams,
+            'org_id'             => $this->orgId,
         ];
+    }
+
+    /** Construct the subject based on the number of durations
+     *  see https://razorpay.slack.com/archives/C01HA1ZDT4L/p1643713677010339
+     */
+    protected function getDurationsInSubject()
+    {
+        if(empty($this->emailParams[Constant::DURATIONS_AND_MODES]) === true)
+        {
+            // this means only one duration to be mentioned in the subject
+            $duration = "{$this->emailParams[Entity::START_TIME]} {$this->emailParams[Entity::END_TIME]}";
+        }
+        else
+        {
+            // this means multiple durations to be mentioned, separated by '&'
+            $durations = [];
+            foreach ($this->emailParams[Constant::DURATIONS_AND_MODES] as $durationAndMode)
+            {
+                $durations[] = $durationAndMode[Entity::START_TIME] . ' ' . $durationAndMode[Entity::END_TIME];
+            }
+            $duration = implode(' & ', $durations);
+        }
+
+        return $duration;
     }
 }

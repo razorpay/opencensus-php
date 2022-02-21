@@ -21,5 +21,6 @@ class SmsConstants
     // Razorpayx
     const RAZORPAYX_SENDER                = 'RZPAYX';
     const PAYOUTS_CORE_TEMPLATE_NAMESPACE = 'razorpayx_payouts_core';
-    const ENGLISH = 'english';
+    const ENGLISH                         = 'english';
+    const DEFAULT_OWNER_ID                = '10000000000000';
 }

@@ -363,13 +363,13 @@ return [
                     'durations_and_modes' => [
                         [
                             'modes'      => ['NEFT', 'UPI'],
-                            'start_time' => 1632313321,
-                            'end_time'   => 1632314321
+                            'start_time' => 1632313321, // Wednesday, 22 September 2021 17:52:01 GMT+05:30
+                            'end_time'   => 1632314321, // Wednesday, 22 September 2021 18:08:41 GMT+05:30
                         ],
                         [
                             'modes'      => ['RTGS'],
-                            'start_time' => 1632314321,
-                            'end_time'   => 1632315321
+                            'start_time' => 1632314321, // Wednesday, 22 September 2021 18:08:41 GMT+05:30
+                            'end_time'   => 1632315321, // Wednesday, 22 September 2021 18:25:21 GMT+05:30
                         ],
                     ],
                 ],
@@ -416,13 +416,13 @@ return [
                 'update_details' => [
                     [
                         'id'         => '100000downtime',
-                        'start_time' => 1640802600,
-                        'end_time'   => 1640889000,
+                        'start_time' => 1640802600, // Thursday, 30 December 2021 00:00:00 GMT+05:30
+                        'end_time'   => 1640889000, // Friday, 31 December 2021 00:00:00 GMT+05:30
                     ],
                     [
                         'id'         => '100001downtime',
-                        'start_time' => 1640802600,
-                        'end_time'   => 1640889000,
+                        'start_time' => 1640802600, // Thursday, 30 December 2021 00:00:00 GMT+05:30
+                        'end_time'   => 1640889000, // Friday, 31 December 2021 00:00:00 GMT+05:30
 
                     ],
                 ],
@@ -448,6 +448,59 @@ return [
                             'end_time'   => 1640889000,
                             "modes"      => "IMPS,NEFT",
                         ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testUpdationFlowWithMultipleDurations' => [
+        'request'  => [
+            'url'     => '/fund_loading/downtime/notification/updation',
+            'method'  => 'POST',
+            'content' => [
+                "send_sms"       => true,
+                "send_email"     => true,
+                'update_details' => [
+                    [
+                        'id'         => '100000downtime',
+                        'start_time' => 1640802600, // Thursday, 30 December 2021 00:00:00 GMT+05:30
+                        'end_time'   => 1640889000, // Friday, 31 December 2021 00:00:00 GMT+05:30
+                    ],
+                    [
+                        'id'         => '100001downtime',
+                        'start_time' => 1640806200, // Thursday, 30 December 2021 01:00:00 GMT+05:30
+                        'end_time'   => 1640820600, // Thursday, 30 December 2021 05:00:00 GMT+05:30
+
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "sms"                  => [
+                    "successes" => 2,
+                    "failures"  => 0,
+                ],
+                'email'                => [
+                    "successes" => 2,
+                    "failures"  => 0,
+                ],
+                'downtime_information' => [
+                    'type'                => 'Scheduled Maintenance Activity',
+                    'source'              => 'Partner Bank',
+                    'channel'             => 'icicibank',
+                    'durations_and_modes' => [
+                        0 => [
+                            'start_time' => 1640802600,
+                            'end_time'   => 1640889000,
+                            "modes"      => "IMPS",
+                        ],
+                        1 => [
+                            'start_time' => 1640806200,
+                            'end_time'   => 1640820600,
+                            "modes"      => "NEFT",
+                        ]
                     ],
                 ],
             ],
@@ -480,7 +533,7 @@ return [
                     "failures"  => 0,
                 ],
                 'email'                => [
-                    "successes" => 2,
+                    "successes" => 1,
                     "failures"  => 0,
                 ],
                 'downtime_information' => [

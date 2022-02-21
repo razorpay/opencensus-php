@@ -37,7 +37,7 @@ class Core extends \RZP\Models\Base\Core
 
         $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_CREATED,
                            [
-                               'id' => $downtime->getId(),
+                               'id'     => $downtime->getId(),
                                'values' => $downtime->toArrayPublic()
                            ]);
 
@@ -271,6 +271,8 @@ class Core extends \RZP\Models\Base\Core
 
         $notifyRequest[Notification::SEND_EMAIL] = $input[Notification::SEND_EMAIL];
 
+        $notifyRequest[Constants::NOTE] = $input[Constants::NOTE] ?? null;
+
         return $notifyRequest;
     }
 
@@ -395,5 +397,4 @@ class Core extends \RZP\Models\Base\Core
 
         return $combinedModes;
     }
-
 }

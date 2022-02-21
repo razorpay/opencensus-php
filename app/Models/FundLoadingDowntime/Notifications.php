@@ -10,6 +10,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
+use RZP\Mail\Base\Constants as MailConstant;
 use RZP\Models\Payout\Notifications\SmsConstants;
 use RZP\Models\FundLoadingDowntime\Entity as Entity;
 use RZP\Mail\FundLoadingDowntime\FundLoadingDowntimeMail;
@@ -38,6 +39,8 @@ class Notifications
      */
     protected $repo;
 
+    protected $note;
+
     protected $flowType;
 
     protected $downtimeInformation;
@@ -45,6 +48,11 @@ class Notifications
     protected $sendSMS;
 
     protected $sendEmail;
+
+    /**
+     * @var FundLoadingDowntimeMail $mailInstance
+     */
+    protected $mailInstance;
 
 
     const SMS        = 'sms';
@@ -55,6 +63,8 @@ class Notifications
     const SUCCESSES  = 'successes';
     const SEND_EMAIL = 'send_email';
     const SOURCE     = 'fund_loading_downtime';
+    const smsDateTimeFormat = 'dM h:i a';
+    const emailDateTimeFormat = 'd M h:i a';
 
     const YES_BANK_PREFIXES = [
         '787878',
@@ -95,6 +105,8 @@ class Notifications
         $this->sendEmail = boolval($input[self::SEND_EMAIL]);
 
         $this->flowType = $flowType;
+
+        $this->note = trim($input[Constants::NOTE]);
     }
 
     public function sendNotifications()
@@ -102,8 +114,18 @@ class Notifications
         $response = $this->initializeResponse();
         $response[Constants::DOWNTIME_INFO] = $this->downtimeInformation;
 
-        $bankThatIsDown              = $this->downtimeInformation[Entity::CHANNEL];
+        $bankThatIsDown = $this->downtimeInformation[Entity::CHANNEL];
+
+        $startTime = Carbon::now(Timezone::IST)->getTimestamp();
+
         $merchantNotificationConfigs = $this->repo->merchant_notification_config->getEnabledConfigsForNotificationType(NotificationType::FUND_LOADING_DOWNTIME);
+
+        $endTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(TraceCode::TIME_TAKEN_TO_FETCH_DATA_FROM_DB,
+                           [
+                               'time_in_seconds' => $endTime - $startTime
+                           ]);
 
         $merchantIds = $merchantNotificationConfigs->pluck(Constants::MERCHANT_ID)->toArray();
 
@@ -124,6 +146,12 @@ class Notifications
                                    'reason'               => 'No active virtual accounts'
                                ]);
         }
+
+        $emailParams = $this->getEmailParams();
+
+        $this->mailInstance = new FundLoadingDowntimeMail($this->flowType, $emailParams);
+
+        $smsPayload  = $this->getSmsPayload();
 
         foreach ($merchantNotificationConfigs as $notificationConfig)
         {
@@ -156,12 +184,12 @@ class Notifications
                 {
                     if (($this->sendEmail === true) and (count($emailIds) > 0))
                     {
-                        $emailResponse = $this->sendEmail($emailIds, $merchantId);
+                        $emailResponse = $this->sendEmail($emailIds, $merchantId, $emailParams);
                     }
 
                     if (($this->sendSMS === true) and (count($mobileNumbers) > 0))
                     {
-                        $smsResponse = $this->sendSms($mobileNumbers, $merchantId);
+                        $smsResponse = $this->sendSms($mobileNumbers, $merchantId, $smsPayload);
                     }
                 }
             }
@@ -169,12 +197,12 @@ class Notifications
             {
                 if (($this->sendEmail === true) and (count($emailIds) > 0))
                 {
-                    $emailResponse = $this->sendEmail($emailIds, $merchantId);
+                    $emailResponse = $this->sendEmail($emailIds, $merchantId, $emailParams);
                 }
 
                 if (($this->sendSMS === true) and (count($mobileNumbers) > 0))
                 {
-                    $smsResponse = $this->sendSms($mobileNumbers, $merchantId);
+                    $smsResponse = $this->sendSms($mobileNumbers, $merchantId, $smsPayload);
                 }
             }
             else
@@ -208,12 +236,11 @@ class Notifications
         return $response;
     }
 
-    protected function sendEmail($emailIds, $merchantId)
+    protected function sendEmail($emailIds, $merchantId, $emailParams)
     {
         $response[self::SUCCESSES]        = 0;
         $response[self::FAILURES]         = 0;
         $response[Constants::MERCHANT_ID] = $merchantId;
-        $emailParams                      = $this->getEmailParams();
 
         $this->trace->info(
             TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_INIT,
@@ -224,24 +251,30 @@ class Notifications
             ]
         );
 
+        $this->mailInstance->setMerchantId($merchantId);
+        $storkResponse = null;
+
         foreach ($emailIds as $index => $emailId)
         {
-            $args = [
-                'email_id' => trim($emailId),
-                'params'   => $emailParams,
-            ];
+            $emailId = trim($emailId);
 
-            $email = new FundLoadingDowntimeMail($this->flowType, $args);
+            if (empty($emailId) === true)
+            {
+                continue;
+            }
+
+            $this->mailInstance->setMerchantEmailId($emailId);
 
             try
             {
-                Mail::send($email);
+                $storkResponse = Mail::queue($this->mailInstance);
                 $response[self::SUCCESSES]++;
 
                 $this->trace->info(TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_SENT,
                                    [
                                        Constants::MERCHANT_ID => $merchantId,
-                                       'email_id_index'       => $index
+                                       'email_id_index'       => $index,
+                                       'email_response'       => $storkResponse
                                    ]
                 );
             }
@@ -253,7 +286,8 @@ class Notifications
                     TraceCode::FUND_LOADING_DOWNTIME_EMAIL_TO_MERCHANT_FAILED,
                     [
                         Constants::MERCHANT_ID => $merchantId,
-                        'email_id_index'       => $index
+                        'email_id_index'       => $index,
+                        'email_response'       => $storkResponse
                     ]
                 );
 
@@ -269,13 +303,13 @@ class Notifications
         return $response;
     }
 
-    protected function sendSms($mobileNumbers, $merchantId)
+    protected function sendSms($mobileNumbers, $merchantId, $smsPayload)
     {
-        $response[self::SUCCESSES]        = 0;
-        $response[self::FAILURES]         = 0;
-        $response[Constants::MERCHANT_ID] = $merchantId;
+        $response[self::SUCCESSES] = 0;
+        $response[self::FAILURES]  = 0;
 
-        $smsPayload = $this->getSmsPayload($merchantId);
+        $response[Constants::MERCHANT_ID]   = $merchantId;
+        $smsPayload[SmsConstants::OWNER_ID] = $merchantId;
 
         $this->trace->info(
             TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_INIT,
@@ -290,7 +324,12 @@ class Notifications
 
         foreach ($mobileNumbers as $key => $mobileNumber)
         {
-            $smsPayload['destination'] = trim($mobileNumber);
+            $smsPayload[SmsConstants::DESTINATION] = trim($mobileNumber);
+
+            if (empty($smsPayload[SmsConstants::DESTINATION]) === true)
+            {
+                continue;
+            }
 
             try
             {
@@ -330,11 +369,10 @@ class Notifications
         return $response;
     }
 
-    public function getSmsPayload($merchantId)
+    public function getSmsPayload()
     {
         return [
             SmsConstants::SOURCE                      => self::SOURCE,
-            SmsConstants::OWNER_ID                    => $merchantId,
             SmsConstants::OWNER_TYPE                  => 'merchant',
             SmsConstants::ORG_ID                      => $this->ba->getAdmin()->getOrgId() ?? '',
             SmsConstants::TEMPLATE_NAME               => $this->getSMSTemplate(),
@@ -353,13 +391,13 @@ class Notifications
         switch ($channel)
         {
             case Constants::ICICI_BANK :
-                $params[Entity::CHANNEL] = strtoupper(substr($channel, 0, 5));
+                $params[Entity::CHANNEL] = 'ICICI';
                 break;
             case Constants::YES_BANK :
-                $params[Entity::CHANNEL] = strtoupper(substr($channel, 0, 4));
+                $params[Entity::CHANNEL] = 'YESB';
                 break;
             default:
-                $params[Entity::CHANNEL] = studly_case($channel);
+                $params[Entity::CHANNEL] = 'All';
         }
 
         foreach ($this->downtimeInformation[Constants::DURATIONS_AND_MODES] as $key => $value)
@@ -370,11 +408,11 @@ class Notifications
                 continue;
             }
 
-            $start = Carbon::createFromTimestamp($value[Entity::START_TIME], Timezone::IST)->format("dM H:i A");
+            $start = Carbon::createFromTimestamp($value[Entity::START_TIME], Timezone::IST)->format(self::smsDateTimeFormat);
 
             if ($value[Entity::END_TIME] !== Constants::DEFAULT_END_TIME)
             {
-                $end = 'to ' . Carbon::createFromTimestamp($value[Entity::END_TIME], Timezone::IST)->format("dM H:i A");
+                $end = 'to ' . Carbon::createFromTimestamp($value[Entity::END_TIME], Timezone::IST)->format(self::smsDateTimeFormat);
             }
             else
             {
@@ -383,6 +421,11 @@ class Notifications
             $params['start' . strval($key + 1)] = $start;
             $params['end' . strval($key + 1)]   = $end;
             $params['modes' . strval($key + 1)] = $value[Constants::MODES];
+
+            if($key < (count($this->downtimeInformation[Constants::DURATIONS_AND_MODES]) - 1))
+            {
+                $params['modes' . strval($key + 1)] .= ' &';
+            }
         }
 
         if ($this->flowType === Constants::RESOLUTION)
@@ -395,46 +438,112 @@ class Notifications
 
     public function getEmailParams()
     {
-        $durationsAndModes = [];
-        $channel           = $this->downtimeInformation[Entity::CHANNEL];
-        switch ($channel)
+        $params[SmsConstants::TEMPLATE_NAME] = $this->getEmailTemplate();
+        $params['support_email']             = MailConstant::MAIL_ADDRESSES[MailConstant::X_SUPPORT];
+        $params['has_notes']                 = (empty($this->note) === false);
+
+        if($params['has_notes'] === true)
+        {
+            $params[Constants::NOTE] = $this->note;
+        }
+
+        $params[Entity::TYPE] = $this->downtimeInformation[Entity::TYPE];
+        $params[Entity::SOURCE] = $this->downtimeInformation[Entity::SOURCE];
+
+        switch ($this->downtimeInformation[Entity::CHANNEL])
         {
             case Constants::ICICI_BANK :
-                $channel = 'ICICI Bank';
+                $params[Entity::CHANNEL]  = 'RazorpayX ICICI Virtual Account';
                 break;
             case Constants::YES_BANK :
-                $channel = 'YES BANK';
+                $params[Entity::CHANNEL]  = 'RazorpayX Yes Bank Virtual Account';
                 break;
             case Constants::ALL:
-                $channel = 'All';
+                $params[Entity::CHANNEL]  = 'All RazorpayX Virtual Accounts';
         }
 
         foreach ($this->downtimeInformation[Constants::DURATIONS_AND_MODES] as $duration)
         {
-            $start = Carbon::createFromTimestamp($duration[Entity::START_TIME], Timezone::IST)->toDayDateTimeString();
+            $start = Carbon::createFromTimestamp($duration[Entity::START_TIME], Timezone::IST)->format(self::emailDateTimeFormat);
 
             if ($duration[Entity::END_TIME] !== Constants::DEFAULT_END_TIME)
             {
-                $end = 'to ' . Carbon::createFromTimestamp($duration[Entity::END_TIME], Timezone::IST)->toDayDateTimeString();
+                $end = 'to ' . Carbon::createFromTimestamp($duration[Entity::END_TIME], Timezone::IST)->format(self::emailDateTimeFormat);
             }
             else
             {
                 $end = $duration[Entity::END_TIME];
             }
 
-            $durationsAndModes[] = [
-                Entity::START_TIME => $start,
-                Entity::END_TIME   => $end,
-                Constants::MODES   => $duration[Constants::MODES]
-            ];
+            switch ($this->flowType)
+            {
+                case Constants::RESOLUTION:
+
+                    $params[Constants::MODES][] = implode(', ', explode(',', $duration[Constants::MODES]));
+                    break;
+
+                case Constants::CANCELLATION:
+
+                    $params[Entity::START_TIME] = $start;
+                    $params[Entity::END_TIME]   = $end;
+                    $params[Constants::MODES]   = implode(', ', explode(',', $duration[Constants::MODES]));
+                    break;
+
+                case Constants::CREATION:
+                case Constants::UPDATION:
+
+                    $params[Constants::DURATIONS_AND_MODES][] = [
+                        Entity::START_TIME => $start,
+                        Entity::END_TIME   => $end,
+                        Constants::MODES   => implode(', ', explode(',', $duration[Constants::MODES]))
+                    ];
+            }
         }
 
-        return [
-            Entity::TYPE                   => $this->downtimeInformation[Entity::TYPE],
-            Entity::SOURCE                 => $this->downtimeInformation[Entity::SOURCE],
-            Entity::CHANNEL                => $channel,
-            Constants::DURATIONS_AND_MODES => $durationsAndModes,
-        ];
+        if(($this->flowType === Constants::CREATION ) or ($this->flowType === Constants::UPDATION))
+        {
+            // this means we will choose the 'fund_loading_downtime.creation' or 'fund_loading_downtime.updation' templates
+            if(count($params[Constants::DURATIONS_AND_MODES]) === 1)
+            {
+                // here we won't be passing an array of start_time, end_time and modes
+                // we will pull these params out from the array and unset the array
+                $params[Entity::START_TIME] = array_pull($params[Constants::DURATIONS_AND_MODES][0], Entity::START_TIME);
+                $params[Entity::END_TIME]   = array_pull($params[Constants::DURATIONS_AND_MODES][0], Entity::END_TIME);
+                $params[Constants::MODES]   = array_pull($params[Constants::DURATIONS_AND_MODES][0], Constants::MODES);
+                unset($params[Constants::DURATIONS_AND_MODES]);
+            }
+            // else we will choose 'fund_loading_downtime.creation.multiple' or 'fund_loading_downtime.updation.multiple'
+            // which will have an array $durations_and_modes where we will have different {start_time, end_time, modes}
+        }
+
+        if($this->flowType === Constants::RESOLUTION)
+        {
+            $params[Constants::MODES] = implode(', ', $params[Constants::MODES]);
+        }
+
+        $this->trace->info(TraceCode::EMAIL_PARAMS_FOR_FUND_LOADING_DOWNTIME_NOTIFICATION, $params);
+
+        return $params;
+
+    }
+
+    public function getEmailTemplate()
+    {
+        $templateName = self::SOURCE . '.' . $this->flowType;
+
+        if(($this->flowType === 'creation') or ($this->flowType === 'updation'))
+        {
+            if(count($this->downtimeInformation[Constants::DURATIONS_AND_MODES]) > 1)
+            {
+                $templateName .= '.' . 'multiple';
+            }
+        }
+        $this->trace->info(TraceCode::EMAIL_TEMPLATE_FOR_FUND_LOADING_DOWNTIME_NOTIFICATION,
+                           [
+                               'template' => $templateName
+                           ]);
+
+        return $templateName;
     }
 
     public function getSMSTemplate()
@@ -448,7 +557,15 @@ class Notifications
             $templateKey .= '_' . strval($distinctIntervalCount);
         }
 
-        return self::SMS_TEMPLATE_MAP[$templateKey];
+        $templateName = self::SMS_TEMPLATE_MAP[$templateKey];
+
+        $this->trace->info(TraceCode::SMS_TEMPLATE_FOR_FUND_LOADING_DOWNTIME_NOTIFICATION,
+                           [
+                               'template' => $templateName,
+                           ]);
+
+        return $templateName;
+
     }
 
     /** Does a DB call and fetches the active virtual accounts assigned all mid's in the input array
@@ -460,7 +577,13 @@ class Notifications
     protected function getChannelsAssignedToMerchants(array $merchantIds)
     {
         // get MID's and bank account numbers of shared virtual accounts which are active
+        $startTime = Carbon::now(Timezone::IST)->getTimestamp();
+
         $merchantIdAndAccountNumberColumns = $this->repo->bank_account->getBankAccountAccountNumbersOfActiveVirtualAccountsFromMerchantIds($merchantIds);
+
+        $endTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->trace->info(TraceCode::TIME_TAKEN_TO_FETCH_DATA_FROM_DB, ['time_in_seconds' => $endTime - $startTime]);
 
         $merchantIdsAndAccountNumbersMap = $this->combineMerchantIdsWitChannelsAssigned($merchantIdAndAccountNumberColumns);
 
@@ -472,7 +595,7 @@ class Notifications
             $merchantIdsWithChannelsAssigned[$merchantId][Constants::YES_BANK] = false;
             $merchantIdsWithChannelsAssigned[$merchantId][Constants::ICICI_BANK] = false;
 
-            foreach( $accountNumbers as $accountNumber)
+            foreach ($accountNumbers as $accountNumber)
             {
                 $firstSixDigits  = substr($accountNumber, 0, 6);
                 $firstFourDigits = substr($accountNumber, 0, 4);
