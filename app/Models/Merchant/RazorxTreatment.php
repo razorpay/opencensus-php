@@ -414,9 +414,6 @@ final class RazorxTreatment
 
     const KEYLESS_HEADER_INVOICE = 'keyless_header_invoice';
 
-    // Experiment for sending auth header for Stores
-    const KEYLESS_HEADER_STORES = 'keyless_header_stores';
-
     //Experiment for showing status details to selected merchant
     const ENABLE_STATUS_DETAILS_FEATURE = 'enable_status_details_feature';
 
