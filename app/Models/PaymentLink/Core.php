@@ -164,10 +164,7 @@ class Core extends Base\Core
 
         $paymentPage = $this->createPaymentPageForPaymentHandle($input,  $merchant);
 
-        $this->upsertDefaultPaymentHandleForMerchant([
-            Entity::DEFAULT_PAYMENT_HANDLE          => $input[Entity::SLUG],
-            Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID  => $paymentPage->getPublicId()
-        ]);
+        $this->upsertDefaultPaymentHandleForMerchant($input[Entity::SLUG], $paymentPage->getPublicId());
 
         $this->trace->info(
             TraceCode::PAYMENT_HANDLE_PAYMENT_PAGE_CREATED,
@@ -180,34 +177,81 @@ class Core extends Base\Core
         return $paymentPage;
     }
 
-    public function updatePaymentHandle(array $input, string $id)
+    public function updatePaymentHandle(array $input): array
     {
-        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $this->updateShortUrlIfApplicable($paymentLink, $input);
-
-        $this->upsertDefaultPaymentHandleForMerchant([
-            Entity::DEFAULT_PAYMENT_HANDLE          => $input[Entity::SLUG],
-            Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID  => $paymentLink->getPublicId(),
-        ]);
-
-        return $paymentLink;
-    }
-
-    public function getPaymentHandleByMerchant(Merchant\Entity $merchant)
-    {
-        $merchantSetting = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+        $merchantSettings = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
             ->all();
 
-        if (empty($merchantSetting) === true || empty($merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE]) === true)
+        $handleOld = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE);
+
+        if(empty($handleOld) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle does not exists for this merchant.');
+        }
+
+        $handlePageId = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID);
+
+        $this->createGimliEntryForHandle($input[Entity::SLUG], $this->merchant->getPublicId(), $handlePageId);
+
+
+        $this->upsertDefaultPaymentHandleForMerchant($input[Entity::SLUG], $handlePageId);
+
+        $url = $this->paymentHandleHostedBaseUrl . '/' . $input[Entity::SLUG];
+
+        $response = [];
+
+        $response[Entity::URL] = $url;
+
+        $response[Entity::TITLE] = $this->merchant->getBillingLabel();
+
+        $response[Entity::SLUG] = $input[Entity::SLUG];
+
+        if(empty($handlePageId) === true)
+        {
+            return $response;
+        }
+
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant(
+            $handlePageId,
+            $this->merchant);
+
+        $paymentLink->setShortUrl($url);
+
+        $this->repo->saveOrFail($paymentLink);
+
+        $response[Entity::ID] = $paymentLink->getPublicId();
+
+        return $response;
+    }
+
+    public function getPaymentHandleByMerchant(Merchant\Entity $merchant): array
+    {
+        $merchantSettings = Settings\Accessor::for($merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        if (empty($merchantSettings) === true || empty($merchantSettings[ENTITY::DEFAULT_PAYMENT_HANDLE]) === true)
         {
             throw new BadRequestValidationFailureException(
                 'Payment Handle does not exists for this merchant. Please create a new one');
         }
 
-        $paymentHandleId = $merchantSetting[ENTITY::DEFAULT_PAYMENT_HANDLE][Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID];
+        $response[Entity::TITLE] = $merchant->getBillingLabel();
 
-        return $this->repo->payment_link->findByPublicIdAndMerchant($paymentHandleId, $merchant);
+        $response[Entity::SLUG] =  $merchantSettings[ENTITY::DEFAULT_PAYMENT_HANDLE][Entity::DEFAULT_PAYMENT_HANDLE];
+
+        $response[Entity::URL] = $this->paymentHandleHostedBaseUrl . '/' . $response[Entity::SLUG];
+
+        $handlePageId = array_get($merchantSettings, Entity::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID);
+
+        if(empty($handlePageId) === true)
+        {
+            return $response;
+        }
+
+        $response[ENTITY::ID] = $handlePageId;
+
+        return $response;
     }
 
     public function createSubscription(Entity $paymentLink, array $input, Merchant\Entity $merchant)
@@ -2261,8 +2305,15 @@ class Core extends Base\Core
         }
     }
 
-    public function upsertDefaultPaymentHandleForMerchant(array $input): void
+    public function upsertDefaultPaymentHandleForMerchant(string $slug, string $handlePageId = null): void
     {
+        $input[Entity::DEFAULT_PAYMENT_HANDLE] = $slug;
+
+        if($handlePageId !== null)
+        {
+            $input[Entity::DEFAULT_PAYMENT_HANDLE_PAGE_ID] = $handlePageId;
+        }
+
         Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
             ->upsert([
                 Entity::DEFAULT_PAYMENT_HANDLE => $input
@@ -2386,7 +2437,7 @@ class Core extends Base\Core
         $this->createGimliEntryForHandle($handle, $merchant->getPublicId());
 
         // upsert handle in merchant setting
-        $this->upsertDefaultPaymentHandleForMerchant([Entity::DEFAULT_PAYMENT_HANDLE => $handle]);
+        $this->upsertDefaultPaymentHandleForMerchant($handle);
 
         $this->trace->info(
             TraceCode::PAYMENT_HANDLE_PRECREATE_COMPLETED,
@@ -2404,7 +2455,7 @@ class Core extends Base\Core
         ];
     }
 
-    protected function createGimliEntryForHandle(string $handle, string $merchantId)
+    protected function createGimliEntryForHandle(string $handle, string $merchantId,string $handlePageId = null)
     {
         // Fail: If failed to shorten the URL, do not continue with creation and fail
         $fail = true;
@@ -2422,6 +2473,12 @@ class Core extends Base\Core
                 'merchant_id'   => $merchantId
             ],
         ];
+
+        // Gimli Metadata will not have payment page id if the handle is in precreated state
+        if($handlePageId !== null)
+        {
+            $params['metadata'][Entity::ID] = $handlePageId;
+        }
 
         $url = $this->paymentHandleHostedBaseUrl . '/' . $handle;
 
@@ -2506,5 +2563,29 @@ class Core extends Base\Core
                     Entity::MERCHANT_ID  => $this->merchant->getId()
                 ]);
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getHandleFromTestMode(): string
+    {
+        // As when we hit the precreate api, we might be in test mode, therefore we are checking
+        // test mode if we have precreated handle.
+        // Precreate handle entry in merchant settings will be made in live mode when we are
+        // upserting the merchant setting in Payment Handle creation flow
+
+        $prevMode = $this->mode;
+
+        $this->app['basicauth']->setModeAndDbConnection('test');
+
+        $merchantSetting = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
+            ->all();
+
+        $handle = array_get($merchantSetting, ENTITY::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE);
+
+        $this->app['basicauth']->setModeAndDbConnection($prevMode);
+
+        return $handle === null ? '' : $handle;
     }
 }

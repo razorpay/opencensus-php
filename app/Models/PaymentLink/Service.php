@@ -464,9 +464,10 @@ class Service extends Base\Service
         }
     }
 
-    public function updatePaymentHandle(array $input, string $id): array
+    public function updatePaymentHandle(array $input): array
     {
-        if ($this->mode !== Mode::LIVE)
+        if (($this->merchant->isActivated() ===  true) &&
+            ($this->mode !== Mode::LIVE))
         {
             throw new BadRequestValidationFailureException(
                 'Payment handle can only be updated in live mode.',
@@ -481,16 +482,25 @@ class Service extends Base\Service
         $validator->validatePaymentHandleUpdation($input, $this->merchant);
 
         // TODO Add validation to see if id and default payment handle id is same
-        $response = $this->core->updatePaymentHandle($input, $id);
+        $response = $this->core->updatePaymentHandle($input);
 
-        return $this->modifyResponseForPaymentHandle($response);
+        return $response;
     }
 
     public function getPaymentHandleByMerchant(): array
     {
+        if (($this->merchant->isActivated() ===  true) &&
+            ($this->mode !== Mode::LIVE))
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment handle can only be fetched in live mode.',
+                null,
+                null);
+        }
+
         $response = $this->core->getPaymentHandleByMerchant($this->merchant);
 
-        return $this->modifyResponseForPaymentHandle($response);
+        return $response;
     }
 
     public function suggestionPaymentHandle($input)
@@ -528,24 +538,21 @@ class Service extends Base\Service
             );
         }
 
+        $precreatedHandle = $this->core->getHandleFromTestMode();
+
         $input = $this->getDefaultValuesPaymentHandle();
 
-        $merchantSetting = Settings\Accessor::for($this->merchant, Settings\Module::PAYMENT_LINK)
-            ->all();
-
-        $handlePageId = array_get($merchantSetting, ENTITY::DEFAULT_PAYMENT_HANDLE . '.' . Entity::DEFAULT_PAYMENT_HANDLE);
-
         // ie precreate was not called on payment handle
-        if (empty($handlePageId) === true)
+        if (empty($precreatedHandle) === true)
         {
-            $ph = $this->precreatePaymentHandle($this->merchant);
+            $ph = $this->core->precreatePaymentHandle($this->merchant);
 
             // edit here
             $input[Entity::SLUG] = $ph[Entity::SLUG];
         }
         else
         {
-            $input[Entity::SLUG] = $handlePageId;
+            $input[Entity::SLUG] = $precreatedHandle;
         }
 
         $this->modifyInputForPaymentHandle($input);
@@ -680,6 +687,13 @@ class Service extends Base\Service
 
     public function precreatePaymentHandle(): array
     {
+        if($this->mode === Mode::LIVE)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payment Handle can be pre-created in test mode only.'
+            );
+        }
+
         (new Validator)->validatePaymentHandleExistsForMerchant($this->merchant);
 
         $paymentHandle = $this->core->precreatePaymentHandle($this->merchant);

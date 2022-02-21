@@ -3030,6 +3030,24 @@ return [
         ]
     ],
 
+    'testPaymentHandleUpdate' => [
+        'request' => [
+            'method' => 'PATCH',
+            'url' => '/v1/payment_handle',
+            'content' => [
+                'slug' => "@updatedPaymentHandle"
+            ],
+        ],
+        'response'  => [
+            'content'  => [
+                'slug' => '@updatedPaymentHandle',
+                'url'  => 'https://razorpay.me/@updatedPaymentHandle',
+                'title'=> 'Test Label 123'
+            ]
+        ]
+
+    ],
+
     'testPaymentHandleFetchWhenHandleDoesNotExists' => [
         'request'  => [
             'url'   => '/payment_handle',
@@ -3088,6 +3106,37 @@ return [
                 'title'   => 'Test Merchant',
                 'slug'    => '@testmerchant',
                 'url'     => 'https://razorpay.me/@testmerchant'
+            ]
+        ]
+    ],
+
+    'testPaymentHandleUpdateAtPrecreateState' => [
+        'request'  => [
+            'url'   => '/payment_handle',
+            'method'=> 'patch',
+            'content'  => [
+                'slug' => '@newhandle'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'url'    => 'https://razorpay.me/@newhandle',
+                'title'  => 'Test Merchant',
+                'slug'   => '@newhandle'
+            ]
+        ]
+    ],
+
+    'testPaymentHandleGetAtPrecreateState' => [
+        'request' => [
+            'url'   => '/payment_handle',
+            'method'=> 'get',
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'https://razorpay.me/@testmerchant',
+                'title'  => 'Test Merchant',
+                'slug' => '@testmerchant'
             ]
         ]
     ],

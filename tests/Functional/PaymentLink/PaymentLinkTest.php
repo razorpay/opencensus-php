@@ -1966,44 +1966,9 @@ class PaymentLinkTest extends TestCase
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
-        $gimli = $this->createMock(Gimli::class);
+        $this->mockGimliPaymentHandle();
 
-        $gimli->method('expandAndGetMetadata')->willReturn(null);
-
-        $elfin = $this->createMock(ElfinService::class);
-
-        $elfin->method('driver')->willReturn($gimli);
-
-        $elfin->method('shorten')->willReturn(
-            "https://rzp.io/i/@newHandle"
-        );
-
-        $this->app->instance('elfin', $elfin);
-
-        $this->app->instance('mode', 'live');
-
-        $newPaymentHandle = "@newHandle";
-
-        $handleUrl = $this->app['config']->get('app.payment_handle_hosted_base_url')
-            . "/". $newPaymentHandle;
-
-        $request = [
-            'method' => 'PATCH',
-            'url' => '/v1/payment_handle/' . $pl->getPublicId(),
-            'content' => [
-                'slug' => $newPaymentHandle
-            ]
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey(Entity::URL, $content);
-
-        $this->assertArrayHasKey(Entity::SLUG, $content);
-
-        $this->assertEquals($content[Entity::SLUG], $newPaymentHandle);
-
-        $this->assertEquals($content[Entity::URL], $handleUrl);
+        $this->startTest();
     }
 
     public function testPaymentHandleFetch()
@@ -2075,6 +2040,26 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuthLive();
 
         $this->fixtures->merchant->activate('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleUpdateAtPrecreateState()
+    {
+        $this->testPaymentHandlePrecreation();
+
+        $this->mockGimliPaymentHandle();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPaymentHandleGetAtPrecreateState()
+    {
+        $this->testPaymentHandlePrecreation();
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
@@ -2541,7 +2526,9 @@ class PaymentLinkTest extends TestCase
             "https://rzp.io/i/" . $handle
         );
 
-        $gimli->method('update')->willReturn("{}");
+        $gimli->method('update')->willReturn([
+            "hash" => $handle
+        ]);
 
         $this->app->instance('elfin', $elfin);
     }
