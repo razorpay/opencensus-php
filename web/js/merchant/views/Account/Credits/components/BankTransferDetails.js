@@ -62,7 +62,7 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
 
               {isVerifiedDetailsOpen && (
                 <div className="verified-account-details m-t m-b">
-                  {bankDetails.allowed_payers.map(
+                  {bankDetails?.allowed_payers.map(
                     ({ bank_account: { bank_name, account_number, ifsc } }) => (
                       <div className="verified-account-detail m-l" key={ifsc}>
                         <div className="detail detail-first">
@@ -86,7 +86,7 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
                       placeholder="Name"
                       name="accoutHolder"
                       className="form-control"
-                      value={bankDetails.receivers[0].name}
+                      value={bankDetails?.receivers[0].name}
                       readOnly
                     />
                     <button
@@ -94,7 +94,7 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
                       data-tip="Copied"
                       data-event="active"
                       onClick={() => {
-                        copyToClipboard(bankDetails.receivers[0].name);
+                        copyToClipboard(bankDetails?.receivers[0].name);
                       }}
                       className="Btn--link Button--transparent Button"
                     >
@@ -111,13 +111,13 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
                       placeholder="Account No."
                       name="accountNo"
                       className="form-control"
-                      value={bankDetails.receivers[0].account_number}
+                      value={bankDetails?.receivers[0]?.account_number}
                       readOnly
                     />
                     <button
                       type="button"
                       onClick={() => {
-                        copyToClipboard(bankDetails.receivers[0].account_number);
+                        copyToClipboard(bankDetails?.receivers[0]?.account_number);
                       }}
                       data-tip="Copied"
                       data-event="active"
@@ -136,7 +136,7 @@ function BankTransferDetails({ closeModal, bankDetails, onBack }) {
                       placeholder="IFSC Code"
                       name="ifscCode"
                       className="form-control"
-                      value={bankDetails.receivers[0].ifsc}
+                      value={bankDetails?.receivers[0].ifsc}
                       readOnly
                     />
                     <button

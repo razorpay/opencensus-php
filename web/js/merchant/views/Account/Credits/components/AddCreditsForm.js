@@ -62,9 +62,6 @@ function AddCreditsForm({
             validate={[required(), amount()]}
           />
         </div>
-        <div>
-          <p>Note: Standard TDR charges applies on adding credits</p>
-        </div>
         <div className="Modal__actions">
           <AsyncButton
             type="submit"

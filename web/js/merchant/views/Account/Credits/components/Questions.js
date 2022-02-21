@@ -11,8 +11,8 @@ const faqs = [
     answer: 'We will process the refund of the full-amount to non-verified Razorpay account.',
   },
   {
-    question: 'What are the limits for IMPS, NEFT, UPI, RTGS?',
-    answer: 'IMPS upto 1Lac, NEFT & RTGS for 1Lac and above.',
+    question: 'What are the limits for IMPS, NEFT, RTGS?',
+    answer: 'IMPS upto 5Lakhs, NEFT and RTGS limits depend upon your bank',
   },
 ];
 
