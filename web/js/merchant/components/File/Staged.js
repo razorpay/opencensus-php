@@ -1,3 +1,4 @@
+import React from 'react';
 import { readableFileSize } from 'common/utils/rzp-utils';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
@@ -14,9 +15,9 @@ export default class Staged extends React.Component {
   componentWillReceiveProps(nextProps) {
     if (
       nextProps.uploadedBytes !== this.props.uploadedBytes &&
-      document.getElementById(this.props.name + '--progress')
+      document.getElementById(`${this.props.name}--progress`)
     ) {
-      document.getElementById(this.props.name + '--progress').style.transform = 'none'; // Halt previous transform
+      document.getElementById(`${this.props.name}--progress`).style.transform = 'none'; // Halt previous transform
     }
   }
 
@@ -29,7 +30,6 @@ export default class Staged extends React.Component {
       return { progress: this.lastPercProgress, duration: 0 }; // No Progress
     }
 
-    let duration;
     let PercProgress = uploadedBytes / file.size;
     PercProgress = PercProgress >= 1 ? 1 : PercProgress; // Due to packet size, uploadedBytes could be >= file.size
 
@@ -42,7 +42,7 @@ export default class Staged extends React.Component {
     }
 
     const progress = -70 + 70 * PercProgress; // At t0, translateX = -100%. At t1 of start, we start from translateX = -70%;
-    duration = (Math.abs(progress) * 5) / 100; // 100% translate in 5s and rest in proportions
+    const duration = (Math.abs(progress) * 5) / 100; // 100% translate in 5s and rest in proportions
 
     this.lastPercProgress = PercProgress;
 
@@ -84,7 +84,7 @@ export default class Staged extends React.Component {
             fileName ? (
               <p class="Dropzone-content-desc--primary text-muted">
                 {downloadUrl ? (
-                  <a href={downloadUrl} target="_blank">
+                  <a href={downloadUrl} target="_blank" rel="noreferrer noopener">
                     {fileName}
                   </a>
                 ) : (
@@ -109,6 +109,7 @@ export default class Staged extends React.Component {
                 {file.name} {showFileSize && readableFileSize(file.size)}
               </p>
               {showStagedFileStatus && (
+                // eslint-disable-next-line no-use-before-define
                 <p class="text-muted text-small">{stagedStatusMsgMap[currentStatus]}</p>
               )}
             </React.Fragment>
@@ -129,10 +130,10 @@ export default class Staged extends React.Component {
           <div class="Loader">
             <div
               class="Loader-progress"
-              id={name + '--progress'}
+              id={`${name}--progress`}
               style={{
-                transform: 'translateX(' + loader.progress + '%)',
-                transitionDuration: loader.duration + 's',
+                transform: `translateX(${loader.progress}%)`,
+                transitionDuration: `${loader.duration}s`,
               }}
             />
           </div>

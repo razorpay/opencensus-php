@@ -45,6 +45,7 @@ class ScheduledNitroBanner extends Component {
         <a
           class="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"
+          rel="noopener noreferrer"
           onClick={() => {
             const { closeModal, openModal } = this.props;
 

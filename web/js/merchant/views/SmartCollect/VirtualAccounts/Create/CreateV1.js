@@ -288,7 +288,7 @@ export default class CreateVirtualAccount extends Component {
                   class="highlight"
                   target="_blank"
                   href="https://lp.razorpay.com/unregistered-businesses-faqs-0"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Know more
                   <i class="i i-external-link" style={{ marginLeft: '5px' }} />

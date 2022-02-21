@@ -1,30 +1,22 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import Group, { GroupItem } from 'common/ui/Group';
-import LocalStorageService from 'common/utils/localStorage';
-
-import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 import ActivationStep from './ActivationStep';
 import Integration from './Integration';
 import { onBoardingItems, LIVE_MODE } from './data';
-import {
-  trackWelcomeCTAClick,
-  trackCloseOnboarding,
-  trackGoToDocumentation,
-} from './ga';
+import { trackWelcomeCTAClick, trackCloseOnboarding } from './ga';
 
-@connect(state => ({ ...state.session, config: state.config.config }))
+@connect((state) => ({ ...state.session, config: state.config.config }))
 export default class OnboardingCard extends Component {
   constructor(props) {
     super(props);
 
-    const { mode, user, config, isFirstStep } = props,
-      { isActivated, isSubmitted } = user,
-      { hasPersonalised } = config;
+    const { mode, user, isFirstStep } = props;
+    const { isActivated, isSubmitted } = user;
+    // const { hasPersonalised } = config;
 
     this.state = {
       integrated: false,
@@ -33,9 +25,7 @@ export default class OnboardingCard extends Component {
 
     if (typeof window.hj === 'function') {
       window.hj('trigger', 'onboarding_card');
-      window.hj('tagRecording', [
-        isFirstStep ? 'welcome_step_opened' : 'main_step_opened',
-      ]);
+      window.hj('tagRecording', [isFirstStep ? 'welcome_step_opened' : 'main_step_opened']);
     }
 
     this.onIntegrationComplete = this.onIntegrationComplete.bind(this);
@@ -49,15 +39,10 @@ export default class OnboardingCard extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { mode, integration } = nextProps,
-      { keysGenerated, paymentsMade } = integration;
+    const { mode, integration } = nextProps;
+    const { keysGenerated, paymentsMade } = integration;
 
-    if (
-      !this.state.integrated &&
-      mode === LIVE_MODE &&
-      keysGenerated &&
-      paymentsMade
-    ) {
+    if (!this.state.integrated && mode === LIVE_MODE && keysGenerated && paymentsMade) {
       this.onIntegrationComplete();
     }
   }
@@ -73,8 +58,8 @@ export default class OnboardingCard extends Component {
   }
 
   render() {
-    let { user, config, integration, mode, isFirstStep } = this.props;
-    let { integrated, activated } = this.state;
+    const { user, config, integration, mode, isFirstStep } = this.props;
+    const { integrated, activated } = this.state;
 
     let FirstStep = null;
 
@@ -82,15 +67,12 @@ export default class OnboardingCard extends Component {
       FirstStep = (
         <div class="media-body">
           <div class="media-heading">
-            <span className="highlight">W</span>elcome{user.isOrgRZP
-              ? ' to Razorpay!'
-              : '!'}{' '}
+            <span className="highlight">W</span>elcome{user.isOrgRZP ? ' to Razorpay!' : '!'} Let's
             Let's get you going.
           </div>
           <div className="onboarding-desc">
-            Your {user.isOrgRZP ? 'Razorpay' : 'dashboard'} account is ready to
-            use! There is a lot that you can do on the Dashboard. Here are some
-            of the actions that you can take:
+            Your {user.isOrgRZP ? 'Razorpay' : 'dashboard'} account is ready to use! There is a lot
+            that you can do on the Dashboard. Here are some of the actions that you can take:
           </div>
           <div class="row">
             {onBoardingItems(user).map((item, index) => {
@@ -107,10 +89,7 @@ export default class OnboardingCard extends Component {
             })}
           </div>
 
-          <button
-            class="btn btn-default onboarding-cta"
-            onClick={this.gotoNextStep}
-          >
+          <button class="btn btn-default onboarding-cta" onClick={this.gotoNextStep}>
             <span>Okay, got it</span>
             <i class="i i-chevron-right" />
           </button>
@@ -126,24 +105,24 @@ export default class OnboardingCard extends Component {
           <div className="onboarding-desc">
             {mode === 'test' ? (
               <span>
-                You are currently in test mode. Feel free to explore the
-                dashboard or do the following:
+                You are currently in test mode. Feel free to explore the dashboard or do the
+                following:
               </span>
             ) : (
               <span>
                 {integrated && activated ? (
                   <span>
-                    You are all set up. You may now{' '}
-                    <a onClick={this.closeOnboarding}>close this</a> or view our{' '}
-                    <a href="https://razorpay.com/docs" target="_blank">
+                    You are all set up. You may now <a onClick={this.closeOnboarding}>close this</a>{' '}
+                    or view our{' '}
+                    <a href="https://razorpay.com/docs" target="_blank" rel="noreferrer">
                       documentation
                     </a>{' '}
                     from top right.
                   </span>
                 ) : (
                   <span>
-                    You are now in Live Mode. Generate live API keys and
-                    Integrate to start accepting payments.
+                    You are now in Live Mode. Generate live API keys and Integrate to start
+                    accepting payments.
                   </span>
                 )}
               </span>
@@ -151,9 +130,7 @@ export default class OnboardingCard extends Component {
           </div>
           <div className="onboarding-steps">
             <Group>
-              <ShowWhen
-                additionalCondition={user => user.isAllowedView('activation')}
-              >
+              <ShowWhen additionalCondition={(user) => user.isAllowedView('activation')}>
                 <GroupItem>
                   <ActivationStep mode={mode} user={user} config={config} />
                 </GroupItem>
@@ -174,21 +151,13 @@ export default class OnboardingCard extends Component {
 
     return (
       <div className="onboarding-card-wrapper">
-        <div
-          className={`onboarding-card-wrapper-content${
-            isFirstStep ? ' first-step' : ''
-          }`}
-        >
+        <div className={`onboarding-card-wrapper-content${isFirstStep ? ' first-step' : ''}`}>
           <div class="media onboarding-card">
             {FirstStep}
             <div class="onboarding-illustration" />
             {(isFirstStep || (integrated && activated)) && (
               <a
-                onClick={
-                  isFirstStep
-                    ? this.gotoNextStep
-                    : e => this.closeOnboarding(e, true)
-                }
+                onClick={isFirstStep ? this.gotoNextStep : (e) => this.closeOnboarding(e, true)}
                 className="close"
               >
                 <i className="i i-close" />

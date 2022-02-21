@@ -83,7 +83,7 @@ class SupportTicketDropdown extends Component {
                               supportTicket?.custom_fields?.cf_created_by || 'merchant'
                             }/conversation`}
                             className="btn btn-primary"
-                            rel="noreferrer"
+                            rel="noreferrer noopener"
                           >
                             Reply Now &nbsp; &gt;
                           </a>

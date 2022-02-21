@@ -2,6 +2,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Button from 'common/new-ui/Button';
 import { DocLink } from 'merchant/components/DocsLink';
 
+import React from 'react';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { switchToV2 } from '../model';
@@ -14,6 +15,7 @@ const DEPRECATION_DATE = '30 April, 2021';
 })
 class SwitchToPLV2Modal extends React.Component {
   static contextTypes = {
+    // eslint-disable-next-line no-undef
     confirm: PropTypes.func,
   };
 
@@ -50,7 +52,7 @@ class SwitchToPLV2Modal extends React.Component {
         this.props.track.lj.confirmModal.confirm();
 
         return switchToV2()
-          .then((data) => {
+          .then(() => {
             setTimeout(this.openSuccessModal, 500);
 
             this.props.track.lj.confirmModal.success();
@@ -74,7 +76,7 @@ class SwitchToPLV2Modal extends React.Component {
     this.context.confirm({
       header: (
         <span>
-          <i class="i-check-circle"></i> &nbsp; Migrated to new API service
+          <i class="i-check-circle" /> &nbsp; Migrated to new API service
         </span>
       ),
       message: () => (
@@ -119,7 +121,7 @@ class SwitchToPLV2Modal extends React.Component {
             Current Payment Link APIs will be <b>deprecated by {DEPRECATION_DATE}.</b>
           </div>
           <br />
-          <a href={DOCS_LINK} target="_blank" rel="noopener">
+          <a href={DOCS_LINK} target="_blank" rel="noopener noreferrer">
             Click here to know more &nbsp;
             <i className="i i-external-link " />
           </a>

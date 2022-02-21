@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators, compose } from 'redux';
+import { bindActionCreators } from 'redux';
 import { isEmail, isPhone, isValidPinCode } from 'common/utils/validators';
-import ajax, { merchantFetch } from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 import Form from 'common/new-ui/Form';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import Input from 'common/new-ui/Input';
@@ -18,6 +18,7 @@ const CaApplyForm = (props) => {
     const portalId = '5558946';
     const formId = 'fa3c8dba-4c22-42d6-92bf-c1b01bf4da54';
     const apiURl = `https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formId}`;
+    // eslint-disable-next-line no-undef
     axios({
       url: apiURl,
       method: 'post',
@@ -73,7 +74,7 @@ const CaApplyForm = (props) => {
     }
     const { id } = user.merchant;
 
-    let payload = {
+    const payload = {
       event_type: caReqEventType,
       event_properties: {
         interested_in_current_account: 1,
@@ -170,6 +171,7 @@ const CaApplyForm = (props) => {
                 className="btn btn-link"
                 href="https://razorpay.com/links/neo-plan-terms-conditions"
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 terms and conditions
               </a>
@@ -192,6 +194,7 @@ const mapDispatchToProps = (dispatch) => ({
   showNotification: bindActionCreators(showNotification, dispatch),
 });
 
+// eslint-disable-next-line babel/new-cap
 export default RTracking({ page: 'RXNeoCaApply' })(
   connect(mapStateToProps, mapDispatchToProps)(CaApplyForm),
 );

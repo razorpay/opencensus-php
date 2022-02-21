@@ -39,7 +39,12 @@ const OptOut = (props) => {
       <div class="modal-body">
         <p>{data.body}</p>
         {data.link && (
-          <a href={data.link.href} className="link-color mt-2" rel="noreferrer" target="_blank">
+          <a
+            href={data.link.href}
+            className="link-color mt-2"
+            rel="noreferrer noopener"
+            target="_blank"
+          >
             {data.link.text} <i className="new-window-icon" />
           </a>
         )}

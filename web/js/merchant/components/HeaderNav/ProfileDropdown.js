@@ -337,7 +337,7 @@ export default class ProfileDropdown extends Component {
                     <div className="media-body">
                       <a
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noreferrer noopener"
                         onClick={() => {
                           analyticsTrack({
                             objectName: 'documentation',
@@ -378,7 +378,7 @@ export default class ProfileDropdown extends Component {
                     </div>
                   </div>
                   <div className="media-body">
-                    <a rel="noreferrer" href="https://x.razorpay.com" target="_blank">
+                    <a rel="noreferrer noopener" href="https://x.razorpay.com" target="_blank">
                       Go to RazorpayX
                     </a>
                   </div>

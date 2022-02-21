@@ -352,7 +352,7 @@ class Success extends React.Component {
                   className="preview-icon"
                   href={paymentPageEntity.short_url}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   <i className="i i-external-link" />
                 </a>

@@ -30,14 +30,19 @@ export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetail
       {!hideRazorpayDetails && (
         <div class="col-md-4 inv__branding--rzp">
           <div class="text-right pull-right">
-            <a class="rzp-logo" href="https://razorpay.com/" target="_blank">
+            <a
+              class="rzp-logo"
+              href="https://razorpay.com/"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
               <img src="https://razorpay.com/images/logo-black.png" alt="." />
             </a>
             <div class="rzp-header-branding-label">
               <div>Invoicing and payments</div>
               <div>
                 powered by{' '}
-                <a href="https://razorpay.com/" target="_blank">
+                <a href="https://razorpay.com/" target="_blank" rel="noreferrer noopener">
                   Razorpay
                 </a>
               </div>

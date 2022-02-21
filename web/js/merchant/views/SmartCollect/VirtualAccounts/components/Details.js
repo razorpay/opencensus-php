@@ -202,7 +202,7 @@ export default class extends React.Component {
                       alt="yes bank moratorium razorpay"
                       target="_blank"
                       href="https://razorpay.com/docs/smart-collect/pa-pg-migration/#frequently-asked-questions-faqs"
-                      rel="noreferrer"
+                      rel="noreferrer noopener"
                     >
                       {' '}
                       Why ?

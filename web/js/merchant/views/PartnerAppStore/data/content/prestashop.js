@@ -1,7 +1,7 @@
-import PadImage from '../PadImage.js';
+// import PadImage from '../PadImage.js';
 
 function Data(brandColor) {
-  const PaddedImage = PadImage(brandColor);
+  // const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
     brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
@@ -38,6 +38,7 @@ function Data(brandColor) {
                   <a
                     href="https://github.com/razorpay/razorpay-prestashop/releases/download/1.3.1/razorpay.zip"
                     target="_blank"
+                    rel="noreferrer noopener"
                   >
                     version 1.3.1
                   </a>
@@ -49,6 +50,7 @@ function Data(brandColor) {
                   <a
                     href="https://github.com/razorpay/razorpay-prestashop/releases/tag/2.1.0"
                     target="_blank"
+                    rel="noreferrer noopener"
                   >
                     version 2.1.0
                   </a>
@@ -59,7 +61,7 @@ function Data(brandColor) {
             <li>
               <div className="list-counter" style={brandStyles.listBg} />
               Log into{' '}
-              <a href="https://addons.prestashop.com/en/" target="_blank">
+              <a href="https://addons.prestashop.com/en/" target="_blank" rel="noreferrer noopener">
                 PrestaShop account
               </a>
               .
@@ -101,7 +103,11 @@ function Data(brandColor) {
               <strong>Note</strong>:
               <br />
               If you face any errors, refer to the{' '}
-              <a href="https://addons.prestashop.com/en/content/21-how-to" target="_blank">
+              <a
+                href="https://addons.prestashop.com/en/content/21-how-to"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 PrestaShop guide
               </a>
               .

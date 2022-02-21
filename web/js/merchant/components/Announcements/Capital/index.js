@@ -19,6 +19,7 @@ export default ({ userId }) => {
         href="https://razorpay.com/capital/?get-in-touch&utm_source=signup&utm_medium=banner&utm_campaign=businessloans_febs2"
         target="_blank"
         onClick={() => trackMarketingExperimentBanner('Capital', 'Click Link')}
+        rel="noreferrer noopener"
       >
         I'm Interested
       </a>

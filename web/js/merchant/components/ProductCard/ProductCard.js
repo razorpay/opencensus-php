@@ -1,4 +1,5 @@
 import './ProductCard.styl';
+import React from 'react';
 
 const primaryCTAText = 'Explore Now';
 const secondaryCTAText = 'Learn More';
@@ -13,6 +14,7 @@ export default class ProductCard extends React.Component {
 
     window.rzpQ.push(
       trackerFn.initiated('merchant_dashboard.click_product_card_cta1', {
+        // eslint-disable-next-line no-undef
         mode,
         card_text: this.props.description,
         card_id: this.props.title,
@@ -32,6 +34,7 @@ export default class ProductCard extends React.Component {
 
     window.rzpQ.push(
       trackerFn.initiated('merchant_dashboard.click_product_card_cta2', {
+        // eslint-disable-next-line no-undef
         mode,
         card_text: this.props.description,
         card_id: this.props.title,
@@ -54,7 +57,12 @@ export default class ProductCard extends React.Component {
 
           <div class="ProductCard-actionBtns">
             {!!primaryLink && (
-              <a class="Button--primary--invert Button" href={primaryLink} target="_blank">
+              <a
+                class="Button--primary--invert Button"
+                href={primaryLink}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 <b>{primaryCTAText}</b>
               </a>
             )}
@@ -63,6 +71,7 @@ export default class ProductCard extends React.Component {
                 class="Button--Link Button--transparent Button"
                 href={secondaryLink}
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 <b>
                   {secondaryCTAText} <i class="i-external-link" />

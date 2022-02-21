@@ -1,6 +1,7 @@
-import PadImage from '../PadImage.js';
+import PadImage from '../PadImage';
 
 function Data(brandColor) {
+  // eslint-disable-next-line babel/new-cap
   const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
@@ -28,7 +29,11 @@ function Data(brandColor) {
           </li>
         </ul>
         <p>
-          <a target="_blank" href="https://www.youtube.com/watch?v=GTm3MxIekOk">
+          <a
+            target="_blank"
+            href="https://www.youtube.com/watch?v=GTm3MxIekOk"
+            rel="noreferrer noopener"
+          >
             https://www.youtube.com/watch?v=GTm3MxIekOk
           </a>
         </p>
@@ -45,6 +50,7 @@ function Data(brandColor) {
               <a
                 href="https://razorpay.com/docs/payment-gateway/dashboard-guide/sign-up/"
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 Create and activate an account with Razorpay
               </a>

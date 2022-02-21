@@ -34,6 +34,7 @@ export default ({ userId }) => {
           <a
             href="mailto:covid-19relief@razorpay.com"
             target="_blank"
+            rel="noreferrer noopener"
             onClick={() => trackMarketingExperimentBanner('CovidCampaign', 'Click Link')}
           >
             covid-19relief@razorpay.com

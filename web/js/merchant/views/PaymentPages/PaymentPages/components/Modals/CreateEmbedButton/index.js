@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
 import Button from 'common/new-ui/Button';
@@ -32,7 +33,7 @@ export default class extends React.Component {
   render() {
     const { closeModal, id } = this.props;
     const { btnLabel, btnSize } = this.state;
-    const el = document.getElementById('embed-btn-preview');
+    // const el = document.getElementById('embed-btn-preview');
 
     /* Embed Button */
 
@@ -132,6 +133,7 @@ export default class extends React.Component {
   }),
   null,
 )
+// eslint-disable-next-line no-unused-vars
 class PreviewPaymentPageButton extends React.Component {
   state = {
     textColor: '#fff',
@@ -198,6 +200,7 @@ class PreviewPaymentPageButton extends React.Component {
             zIndex: 2,
           }}
           target="_blank"
+          rel="noreferrer noopener"
         >
           {this.state.textColor && btnLabel}
         </a>

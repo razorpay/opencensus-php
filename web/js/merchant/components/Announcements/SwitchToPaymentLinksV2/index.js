@@ -1,4 +1,5 @@
 import { connect } from 'react-redux';
+import React from 'react';
 
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import Button from 'common/new-ui/Button';
@@ -10,7 +11,7 @@ import track from './track/index';
 
 const bannerText =
   'Your account is pending for migration to the new service. Click on "Switch Now" to switch. To know more, click';
-const cardId = 'Switch to Payment Links V2';
+// const cardId = 'Switch to Payment Links V2';
 
 const cta1Text = 'here.';
 const cta1Link = getCustomURL('https://razorpay.com/docs/payment-links/api/new/');
@@ -52,6 +53,7 @@ const SwitchToPaymentLinksV2 = React.memo((props) => {
       <a
         href={cta1Link}
         target="_blank"
+        rel="noreferrer noopener"
         class="btn btn-link"
         style={{ paddingLeft: '2px' }}
         onClick={trackKnowMoreClick}

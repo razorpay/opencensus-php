@@ -43,7 +43,7 @@ const InfoComponent = ({ step, setStep }) => {
                         <a
                           className="font-bold"
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noreferrer noopener"
                           href="https://app.shiprocket.in/api-user"
                         >
                           CONFIGURE - <i className="i i-edit_board" />

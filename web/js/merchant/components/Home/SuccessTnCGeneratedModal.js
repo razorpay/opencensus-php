@@ -21,8 +21,8 @@ const SuccessTnCGeneratedModal = ({ onCloseModal, data }) => {
               You can use this link to visit the page and edit the Terms and Conditions if required.
             </p>
             <div className="tnc-success__link">
-              <a href={data.link} target="_blank">
-                <span>{data.link}</span> <i class="i i-external-link"></i>
+              <a href={data.link} target="_blank" rel="noreferrer noopener">
+                <span>{data.link}</span> <i class="i i-external-link" />
               </a>
             </div>
             <p style={{ color: '#162f5661' }}>

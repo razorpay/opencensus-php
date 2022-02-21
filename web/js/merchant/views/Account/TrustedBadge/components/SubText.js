@@ -25,7 +25,7 @@ const SubText = (props) => {
           <a
             href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/"
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             onClick={() => {
               props.trackEvent('RTBKnowMoreClicked');
             }}
@@ -35,7 +35,7 @@ const SubText = (props) => {
           |{' '}
           <a
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             href="https://razorpay.com/trusted-badge/merchant-terms/"
             onClick={() => {
               props.trackEvent('RTBTermsClicked');
@@ -50,7 +50,7 @@ const SubText = (props) => {
           <a
             href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/"
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             onClick={() => {
               props.trackEvent('RTBKnowMoreClicked');
             }}

@@ -69,7 +69,7 @@ export default ({ onCloseClick, user }) => {
           <a
             href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
           >
             More details
           </a>

@@ -21,7 +21,7 @@ export const FAQ_DATA_NEO = [
         Since you are on NEO plan, you get ₹33L worth free payouts. After this you will also get 500
         free payouts every month. If you’re doing more than 500 payouts/month we offer competitive
         pricing that can be{' '}
-        <a href="https://razorpay.com/x/" target="_blank">
+        <a href="https://razorpay.com/x/" target="_blank" rel="noreferrer noopener">
           found here
         </a>
       </>
@@ -59,13 +59,11 @@ export const hasNeoCouponCode = (coupons = []) => {
 };
 
 export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
-  let pillType,
-    pillText,
-    content,
-    headState = '',
-    viewType = '',
-    title = '';
-  let viewDocumentsBTN = showNitroRXCAFlow ? (
+  let pillType, pillText, content;
+  let headState = '';
+  let viewType = '';
+  let title = '';
+  const viewDocumentsBTN = showNitroRXCAFlow ? (
     <a className="btn btn-primary--invert" onClick={GoToCaDocs}>
       View Documents
     </a>

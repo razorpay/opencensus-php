@@ -86,7 +86,7 @@ function BannerButton({
         className="btn get-started-button"
         target="_blank"
         href={partnerDetails.url}
-        rel="noreferrer"
+        rel="noreferrer noopener"
       >
         {partnerDetails.cta ? partnerDetails.cta : 'Get Started'} &nbsp;{' '}
         <i className="fa fa-angle-right" />

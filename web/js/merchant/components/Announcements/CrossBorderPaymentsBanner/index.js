@@ -61,7 +61,7 @@ export default React.memo(({ productName }) => {
         to={cta1Link}
         class="Button--secondary Button scheduled-btn-act btn-border"
         target="_blank"
-        rel="noreferrer"
+        rel="noreferrer noopener"
         onClick={track.onClickCTA1}
       >
         {cta1Text}

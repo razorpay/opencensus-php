@@ -236,7 +236,7 @@ const VerifyOtp = ({
                 <a
                   href="https://razorpay.com/privacy/"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   onClick={() => {
                     trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_consent_link'));
                     analyticsTrack({

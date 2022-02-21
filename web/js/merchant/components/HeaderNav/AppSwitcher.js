@@ -125,7 +125,7 @@ class AppSwitcher extends Component {
         key={app.name}
         onClick={() => this.handleClick(app.name)}
         className="item"
-        rel="noreferrer"
+        rel="noreferrer noopener"
       >
         <img className="icon" src={app.icon} alt={app.name} />
         <div className="info">

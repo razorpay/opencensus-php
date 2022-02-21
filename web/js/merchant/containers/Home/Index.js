@@ -1062,7 +1062,11 @@ export default class HomeContainer extends Component {
                           _user.isOrgAllowedFunctionality('external_links')
                         }
                       >
-                        <a href="https://razorpay.com/pricing" target="_blank" rel="noreferrer">
+                        <a
+                          href="https://razorpay.com/pricing"
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
                           <b>View T&#38;Cs</b>
                         </a>
                       </ShowWhen>

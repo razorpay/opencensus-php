@@ -75,7 +75,7 @@ const S0 = (props) => {
               marginTop: '40px',
             }}
             onClick={handleLearnMoreClick}
-            rel="noreferrer"
+            rel="noreferrer noopener"
           >
             Learn more about Partner Program <i className="i i-external-link " />
           </a>

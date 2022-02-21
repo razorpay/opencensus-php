@@ -43,10 +43,7 @@ function HelpSection({
       ) {
         rzpTicketSystem.setEnvironment('capital');
       }
-      CreateTicketEmitter.emit(
-        'create-ticket',
-        'tickets',
-      );
+      CreateTicketEmitter.emit('create-ticket', 'tickets');
 
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value = `${
@@ -68,6 +65,7 @@ function HelpSection({
           className="btn-link"
           href={isCashAdvanceProduct(product) ? CAPITAL_LINKS.ca_faqs : CAPITAL_LINKS.faqs}
           target="_blank"
+          rel="noreferrer noopener"
           onClick={() => {
             trackEvent("Right Info | View FAQ's");
           }}
@@ -82,6 +80,7 @@ function HelpSection({
   return (
     <div class="help-section">
       {instructions.map((instruction) => (
+        // eslint-disable-next-line react/jsx-key
         <div class="help-action-row">
           <div class="help-description-wrapper">
             {instruction.description && (

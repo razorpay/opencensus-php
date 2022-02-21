@@ -25,6 +25,7 @@ export default (brandColor) => {
         <article>
           <h2
             className="how-to-use-heading"
+            // eslint-disable-next-line no-sequences
             style={({ marginBottom: '10px' }, brandStyles.brandBorderLeft)}
           >
             How to use Razorpay with Magento
@@ -45,20 +46,28 @@ export default (brandColor) => {
               We also support the display of international currencies at the time of checkout on
               your Magento store. However, all pricing calculations and settlements are done in INR.
               To activate international payments, raise a request on our{' '}
-              <a href="https://razorpay.com/support/" target="_blank">
+              <a href="https://razorpay.com/support/" target="_blank" rel="noreferrer">
                 Support Portal
               </a>
             </p>
             <p>Currently, we support the following versions of Magento:</p>
             <ul>
               <li>
-                <a href="/docs/ecommerce-plugins/magento/1.x/" target="_blank">
+                <a
+                  href="/docs/ecommerce-plugins/magento/1.x/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
                   Magento 1.x
                 </a>{' '}
                 extension
               </li>
               <li>
-                <a href="/docs/ecommerce-plugins/magento/2.x/" target="_blank">
+                <a
+                  href="/docs/ecommerce-plugins/magento/2.x/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
                   Magento 2.x
                 </a>{' '}
                 extension

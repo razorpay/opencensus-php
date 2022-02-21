@@ -622,6 +622,7 @@ const businessModel = [
                 <a
                   href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   Privacy Policy
                 </a>
@@ -630,6 +631,7 @@ const businessModel = [
                 <a
                   href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   Terms & Conditions
                 </a>
@@ -638,6 +640,7 @@ const businessModel = [
                 <a
                   href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   Cancellation/Refund Policy
                 </a>
@@ -1651,6 +1654,7 @@ const uploadFields = [
                     <div className="dot" />
                     <a
                       href={url}
+                      rel="noreferrer noopener"
                       target="_blank"
                       className="link"
                       onClick={() => {
@@ -1871,6 +1875,7 @@ const uploadFields = [
         <a
           href="http://www.pdfjoiner.com"
           target="_blank"
+          rel="noreferrer noopener"
           onClick={() => trackLinkClick('pdfjoiner.com')}
         >
           pdfjoiner.com

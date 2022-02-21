@@ -1,6 +1,7 @@
-import PadImage from '../PadImage.js';
+import PadImage from '../PadImage';
 
 function Data(brandColor) {
+  // eslint-disable-next-line babel/new-cap
   const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
@@ -41,7 +42,7 @@ function Data(brandColor) {
               <li>
                 <div className="list-counter" style={brandStyles.listBg} />
                 Sign into your{' '}
-                <a href="https://www.shopify.in/" target="_blank">
+                <a href="https://www.shopify.in/" target="_blank" rel="noreferrer noopener">
                   Shopify store
                 </a>
                 .

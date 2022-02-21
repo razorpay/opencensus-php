@@ -1,6 +1,7 @@
-import PadImage from '../PadImage.js';
+import PadImage from '../PadImage';
 
 function Data(brandColor) {
+  // eslint-disable-next-line babel/new-cap
   const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
@@ -176,7 +177,11 @@ function Data(brandColor) {
             <ul>
               <li>
                 Log into your{' '}
-                <a href="https://dashboard.razorpay.com/#/access/signin" target="_blank">
+                <a
+                  href="https://dashboard.razorpay.com/#/access/signin"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
                   Razorpay Dashboard
                 </a>{' '}
                 and navigate to <strong>Settings</strong> → <strong>Webhooks</strong>.

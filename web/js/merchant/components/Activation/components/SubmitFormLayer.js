@@ -102,7 +102,7 @@ class SubmitFormLayer extends React.Component {
                   target="_blank"
                   className="highlight"
                   onClick={() => trackers && trackers.trackLinkClick('Terms of use')}
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Terms & Conditions
                 </a>
@@ -121,7 +121,7 @@ class SubmitFormLayer extends React.Component {
                   target="_blank"
                   className="highlight"
                   onClick={() => trackers && trackers.trackLinkClick('Merchant Agreement')}
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Merchant Agreement
                 </a>
@@ -140,7 +140,7 @@ class SubmitFormLayer extends React.Component {
                   target="_blank"
                   className="highlight"
                   onClick={() => trackers && trackers.trackLinkClick('Privacy Policy')}
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Privacy Policy
                 </a>

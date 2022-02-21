@@ -160,7 +160,7 @@ export default class SuccessModal extends React.Component {
                       target="_blank"
                       class="Button Button--primary--invert try-now-btn"
                       onClick={track.testButton}
-                      rel="noreferrer"
+                      rel="noreferrer noopener"
                     >
                       <i class="i i-play-arrow m-r" /> TEST
                     </a>

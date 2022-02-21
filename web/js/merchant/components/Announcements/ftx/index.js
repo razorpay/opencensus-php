@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { eventsLink, visitBanner } from './ga';
@@ -26,6 +27,7 @@ class FTXPassAnnouncement extends React.PureComponent {
           <a
             class="btn-link"
             target="_blank"
+            rel="noreferrer noopener"
             href={`https://razorpay.com/events/ftx/?source=dashboard&mid=${user.current}`}
             onClick={eventsLink}
           >

@@ -95,7 +95,7 @@ export default class StoresContainer extends React.Component {
                   class="m-r"
                   target="_blank"
                   href={store.entity.data.store_url}
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   onClick={track.storeLinkClick}
                 >
                   <span class="mr-5">

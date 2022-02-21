@@ -6,6 +6,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { EVENT_CATEGORY_DASHBOARD_HOME } from 'merchant/containers/Home/ga';
 
+// eslint-disable-next-line no-unused-vars
 @connect((state) => ({}), {
   ...ModalActions,
 })
@@ -21,7 +22,7 @@ export default class EarlyScheduledAnnouncement extends Component {
       >
         <span class="es-schedule-banner-text">
           Get your settlements on the same day automtically!{' '}
-          <a href="http://razorpay.com/settlement" target="_blank">
+          <a href="http://razorpay.com/settlement" target="_blank" rel="noreferrer noopener">
             Learn More
           </a>
         </span>

@@ -112,7 +112,7 @@ export const pageData = {
       info: {
         type: 'sub-text',
         text:
-          'Your payment checkout page can start displaying the badge at the click of the activate button. <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/" rel="noreferrer" target="_blank">Know More</a>',
+          'Your payment checkout page can start displaying the badge at the click of the activate button. <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/trusted-badge/" rel="noreferrer noopener" target="_blank">Know More</a>',
       },
     },
     order: ['main', 'requirements'],

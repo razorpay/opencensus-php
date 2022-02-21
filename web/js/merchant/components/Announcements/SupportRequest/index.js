@@ -32,7 +32,7 @@ export default function SupportRequest({ tickets }) {
                   href={`/app/ticket-support/rzpind/${firstTicket?.id}/${ticketType}/conversation`}
                   className="btn btn-primary"
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   Reply Now &gt;
                 </a>
@@ -47,7 +47,7 @@ export default function SupportRequest({ tickets }) {
               href="/app/ticket-support/tickets/agent"
               target="_blank"
               className="moreTickets"
-              rel="noreferrer"
+              rel="noreferrer noopener"
             >
               {tickets?.length - 1} More Requests &nbsp; &#8594;
             </a>

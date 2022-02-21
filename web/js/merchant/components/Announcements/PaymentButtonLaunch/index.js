@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
@@ -75,7 +76,13 @@ export default React.memo(({ productName }) => {
       card_id="payment-button-launch-banner"
     >
       <span class="display-inline">{bannerText}</span>
-      <a class="btn btn-link" href={cta2Link} target="_blank" onClick={track.onClickCTA2}>
+      <a
+        class="btn btn-link"
+        href={cta2Link}
+        target="_blank"
+        onClick={track.onClickCTA2}
+        rel="noreferrer noopener"
+      >
         {cta2Text}
       </a>{' '}
       <Link

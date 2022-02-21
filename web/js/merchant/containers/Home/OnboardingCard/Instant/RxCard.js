@@ -27,6 +27,7 @@ class RxCard extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // eslint-disable-next-line import/no-named-as-default-member
       hidden: !!LocalStorageService.getItem(props.lsKey),
     };
   }
@@ -65,7 +66,7 @@ class RxCard extends Component {
     const _settings = { ...settings };
     _settings[rxCaFlag] = '1'; // check if applied or not via this flag
 
-    let payload = {
+    const payload = {
       event_type: caReqEventType,
       event_properties: {
         interested_in_current_account: 1,
@@ -86,7 +87,7 @@ class RxCard extends Component {
       headers: {
         'Content-Type': 'application/json',
       },
-    }).then((res) => {
+    }).then(() => {
       merchantFetch({
         url: 'users',
         mode: 'live',
@@ -99,6 +100,7 @@ class RxCard extends Component {
   };
 
   handleClose = () => {
+    // eslint-disable-next-line import/no-named-as-default-member
     LocalStorageService.setItem(this.props.lsKey, 1);
     this.setState({
       hidden: true,
@@ -147,6 +149,7 @@ class RxCard extends Component {
                 <a
                   href="https://razorpay.com/x/current-accounts/"
                   target="_blank"
+                  rel="noreferrer noopener"
                   className="learn-more"
                 >
                   Learn more
@@ -186,6 +189,7 @@ class RxCard extends Component {
   }
 }
 
+// eslint-disable-next-line babel/new-cap
 export default RTracking({
   page: 'RxCaInterestHome',
 })(RxCard);

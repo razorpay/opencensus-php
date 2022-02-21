@@ -1,6 +1,6 @@
+/* eslint-disable react/jsx-key */
 import React, { Component } from 'react';
 import DataList from 'merchant/components/OnBoarding/Slides/DataList';
-import { CAPITAL_LINKS } from '../Loans/constants';
 import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import LeadDetails from './LeadDetails';
 import { withRouter } from 'react-router-dom';
@@ -195,6 +195,7 @@ class Onboarding extends Component {
                 className="m-l link"
                 href={'https://razorpay.com/capital/cash-advance/#faqs'}
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 <strong>Show FAQ's</strong>
                 <i className="i i-question-circle-o m-l" />

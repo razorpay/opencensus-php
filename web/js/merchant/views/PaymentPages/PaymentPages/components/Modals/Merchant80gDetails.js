@@ -161,7 +161,7 @@ export default class Merchant80gDetails extends React.Component {
                   <a
                     href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers"
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                   >
                     Sample 80G Receipt
                     <i class="i i-external-link" />

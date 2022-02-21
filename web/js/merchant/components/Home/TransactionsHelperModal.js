@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import { Link } from 'react-router-dom';
 
 import Group, { GroupItem } from 'common/ui/Group';
-import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
+import { ModalMask, Modal } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 
+// eslint-disable-next-line no-unused-vars
 @RTracking((state, props, args) => {
   return window.rzpQ.component('InstantActivationSuccess');
 })
@@ -20,7 +20,7 @@ export default class InstantActivationSuccess extends Component {
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.accept_payments_popup_action', {
       action: 'View_Products',
-    })
+    }),
   )
   handleProductsView() {
     const { onClose, showProductsModal, showTransactionsModal } = this.props;
@@ -37,10 +37,7 @@ export default class InstantActivationSuccess extends Component {
         <Modal className="transactions-helper" onClose={onClose}>
           <modal-header>
             <h1>Start accepting payments</h1>
-            <p>
-              You can accept payments from your customers using the following
-              methods
-            </p>
+            <p>You can accept payments from your customers using the following methods</p>
           </modal-header>
           <modal-body>
             <Group>
@@ -53,18 +50,16 @@ export default class InstantActivationSuccess extends Component {
                     <p>
                       <b>Accept payments on your website</b>
                     </p>
-                    <p>
-                      Integrate Razorpay onto your website. Want to know how to
-                      integrate?
-                    </p>
+                    <p>Integrate Razorpay onto your website. Want to know how to integrate?</p>
                     <ShowWhen
-                      additionalCondition={user =>
+                      additionalCondition={(user) =>
                         user.isOrgAllowedFunctionality('external_links')
                       }
                     >
                       <a
                         className="Button--secondary Button active"
                         target="_blank"
+                        rel="noreferrer noopener"
                         href="https://razorpay.com/docs"
                         onClick={() => {
                           track.trackIntegration();
@@ -89,12 +84,8 @@ export default class InstantActivationSuccess extends Component {
                 <p>
                   <b>Accept payments using products</b>
                 </p>
-                <p>
-                  You can receive Payment through Payment Links and Invoices
-                </p>
-                <Button.Secondary onClick={this.handleProductsView}>
-                  View products
-                </Button.Secondary>
+                <p>You can receive Payment through Payment Links and Invoices</p>
+                <Button.Secondary onClick={this.handleProductsView}>View products</Button.Secondary>
               </GroupItem>
             </Group>
           </modal-body>

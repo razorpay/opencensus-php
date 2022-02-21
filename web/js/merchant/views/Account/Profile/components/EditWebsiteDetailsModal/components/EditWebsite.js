@@ -8,18 +8,12 @@ import { required, lenientUrl } from 'common/utils/validators';
 const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
   ({ onSubmit, onCancel, handleSubmit }) => {
     return (
-      <form
-        class={`edit-website-details-form${
-          onCancel ? ' has-cancel-button' : ''
-        }`}
-      >
+      <form class={`edit-website-details-form${onCancel ? ' has-cancel-button' : ''}`}>
         <div class="form-group">
           <span class="text-muted">
             Your website/app should contain these pages:{' '}
             <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
               <strong>
                 About Us, Contact Us,{' '}
@@ -27,34 +21,35 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
                   class="btn-link"
                   href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   Privacy Policy
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a
                   class="btn-link"
                   href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   Terms & Conditions
-                </a>,{' '}
+                </a>
+                ,{' '}
                 <a
                   class="btn-link"
                   href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   Cancellation/Refund Policies
                 </a>
-              </strong>.
+              </strong>
+              .
             </ShowWhen>
             <ShowWhen
-              additionalCondition={user =>
-                !user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
             >
-              <strong>
-                Privacy Policy, Terms & Conditions, Cancellation/Refund
-                Policies.
-              </strong>
+              <strong>Privacy Policy, Terms & Conditions, Cancellation/Refund Policies.</strong>
             </ShowWhen>
           </span>
         </div>
@@ -80,7 +75,7 @@ const EditWebsite = reduxForm({ form: 'editWebsiteDetails' })(
         </div>
       </form>
     );
-  }
+  },
 );
 
 export default EditWebsite;

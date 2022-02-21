@@ -1,10 +1,11 @@
 import { connect } from 'react-redux';
+import React from 'react';
 
 @connect(
-  state => ({
+  (state) => ({
     config: state.config.config,
   }),
-  null
+  null,
 )
 export default class PreviewEmbedButton extends React.Component {
   state = {
@@ -34,12 +35,7 @@ export default class PreviewEmbedButton extends React.Component {
   }
 
   render() {
-    const {
-      url,
-      btnSize = '0',
-      btnLabel = 'Pay Now',
-      showPreviewLabel,
-    } = this.props;
+    const { url, btnSize = '0', btnLabel = 'Pay Now', showPreviewLabel } = this.props;
 
     let width;
     switch (btnSize) {
@@ -67,8 +63,7 @@ export default class PreviewEmbedButton extends React.Component {
             lineHeight: '18px',
             fontWeight: 600,
             fontSize: 14,
-            fontFamily:
-              'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
+            fontFamily: 'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
             wordBreak: 'break-word',
             borderRadius: 2,
             textAlign: 'center',
@@ -78,14 +73,12 @@ export default class PreviewEmbedButton extends React.Component {
             zIndex: 2,
           }}
           target="_blank"
+          rel="noreferrer noopener"
         >
           {this.state.textColor && btnLabel}
         </a>
         <div style={{ marginTop: 4, textAlign: 'center' }}>
-          <img
-            height="16px"
-            src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png"
-          />
+          <img height="16px" src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png" />
         </div>
       </span>
     );

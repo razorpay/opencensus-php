@@ -37,8 +37,8 @@ const MODAL_CONTENT = {
     background: 'pending',
   },
   KYC_CLARIFICATION_SUBMIT_MODAL: {
-    title: (args) => 'KYC under review',
-    subtitle: (args) => 'Clarifications successfully submitted',
+    title: () => 'KYC under review',
+    subtitle: () => 'Clarifications successfully submitted',
     body: (args) => (
       <div>
         <p>Great, thank you for providing requested clarifications!</p>
@@ -78,6 +78,7 @@ const ModalButtons = ({ args, modalType }) => {
           className="btn btn-default KYC__more_details"
           href="https://razorpay.freshdesk.com/a/solutions/articles/11000092582&sa=D&ust=1594198150522000&usg=AFQjCNHDpL3kI_n5NQwp8zP8yPBj7RszJQ"
           target="_blank"
+          rel="noreferrer noopener"
         >
           Know More
         </a>
@@ -106,9 +107,9 @@ const KYCStatusModal = ({ onClose, onGoToDashboard, user, modalType, activationD
   const args = {
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
     isUnregisteredBusiness: user.isUnregisteredBusiness,
-    onGoToDashboard: onGoToDashboard,
+    onGoToDashboard,
     isActivated: user.isActivated,
-    activationDuration: activationDuration,
+    activationDuration,
   };
 
   return (

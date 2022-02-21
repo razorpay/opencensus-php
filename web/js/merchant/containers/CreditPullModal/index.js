@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import moment from 'moment';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -12,6 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { states } from 'merchant/helpers/data';
 import * as MerchantActions from 'merchant/reducers/b-merchants';
 import * as ModalActions from 'merchant_common/reducers/modals';
+// eslint-disable-next-line no-duplicate-imports
 import bMerchantReducer from 'merchant/reducers/b-merchants';
 import CheckBoxField from 'common/ui/Forms/CheckboxField';
 import {
@@ -77,20 +79,20 @@ export default class CreditPullModal extends Component {
   }
 
   fireGAEvent = (eventPayload) => {
-    eventPayload['eventCategory'] = 'Dashboard - D2C';
+    eventPayload.eventCategory = 'Dashboard - D2C';
     window.rzpAnalytics(eventPayload);
   };
 
   savePhone = (newNumber) => {
-    let saveProps = { ...this.state.merchantData };
-    saveProps['contact_mobile'] = newNumber;
+    const saveProps = { ...this.state.merchantData };
+    saveProps.contact_mobile = newNumber;
     this.saveAndProceed(saveProps, newNumber);
   };
 
   save = (props) => {
-    let saveProps = { ...props };
+    const saveProps = { ...props };
     if (props.date_of_birth.hasOwnProperty('_isAMomentObject')) {
-      saveProps['date_of_birth'] = props.date_of_birth.format(this.dateFormatType);
+      saveProps.date_of_birth = props.date_of_birth.format(this.dateFormatType);
     }
     this.setState({
       merchantData: saveProps,
@@ -100,7 +102,7 @@ export default class CreditPullModal extends Component {
   };
 
   isValidDate = (current) => {
-    let yearsBefore = moment().subtract(18, 'years');
+    const yearsBefore = moment().subtract(18, 'years');
     return current.isBefore(yearsBefore);
   };
 
@@ -120,7 +122,7 @@ export default class CreditPullModal extends Component {
           this.openVerify(token, merchantId, mobile);
         },
       )
-      .catch((error) => {
+      .catch(() => {
         this.props.showNotification({
           type: 'error',
           message: 'Something went wrong',
@@ -129,7 +131,7 @@ export default class CreditPullModal extends Component {
       });
   };
 
-  verifyMobile = (token) => {
+  verifyMobile = () => {
     this.props.openModal({
       component: (
         <AskMobileNumber
@@ -221,11 +223,12 @@ export default class CreditPullModal extends Component {
   };
 
   sendReqForOtpConfirmation = (data, mobile, token, merchantId) => {
-    let payload = {
+    const payload = {
       otp: data.otp,
       token,
     };
-    payload['contact_mobile'] = parseInt(mobile);
+    // eslint-disable-next-line radix
+    payload.contact_mobile = parseInt(mobile);
     return merchantFetch({
       url: `d2c_bureau_details/${merchantId}/otp_submit`,
       method: 'POST',
@@ -233,18 +236,18 @@ export default class CreditPullModal extends Component {
     })
       .then(({ data }) => {
         clearTimeout(this.timer);
-        let updatedUser = new User(this.props.user);
+        const updatedUser = new User(this.props.user);
         return Promise.all([data, updatedUser.fetch()]);
       })
       .catch((err) => {
         this.handleOTPError(err);
-        throw null;
+        // throw new Error(null);
       });
   };
 
   handleOTPError = (errorResponse) => {
     const error = (errorResponse.errors || [])[0];
-    let gaPayload = {
+    const gaPayload = {
       eventAction: `Error`,
       eventLabel: error ? error : 'Some unexpected error occurred',
     };
@@ -255,6 +258,7 @@ export default class CreditPullModal extends Component {
 
   initialAlign = () => {
     //Hate doing this unfortunately the library doesn't provide any other way to do this.
+    // eslint-disable-next-line dot-notation
     if (this.props.initialValues['date_of_birth'] == null && this.dateContainer) {
       this.dateContainer.current.querySelector('div .rdtPrev span').click();
       setTimeout(() => {
@@ -270,9 +274,10 @@ export default class CreditPullModal extends Component {
       action: 'bureau_verify',
     };
     if (token) {
-      payload['token'] = token;
+      payload.token = token;
     }
-    payload['contact_mobile'] = parseInt(mobile);
+    // eslint-disable-next-line radix
+    payload.contact_mobile = parseInt(mobile);
     return ajax(
       {
         url: 'otp/send',
@@ -483,7 +488,11 @@ export default class CreditPullModal extends Component {
               <label htmlFor="consent" className="cap-consent col-md-9">
                 You hereby consent to Razorpay being appointed as your authorised representative to
                 receive your Credit Information from Experian for the purpose of Lending products
-                <a target="_blank" href="https://razorpay.com/capital/credit-report-terms">
+                <a
+                  target="_blank"
+                  href="https://razorpay.com/capital/credit-report-terms"
+                  rel="noreferrer noopener"
+                >
                   {' Terms & Conditions.'}
                 </a>
               </label>
@@ -522,7 +531,7 @@ export default class CreditPullModal extends Component {
   };
 
   close = () => {
-    let eventAction = 'Close';
+    const eventAction = 'Close';
     let eventLabel = '';
     if (this.addressChanged || this.mobileChanged || this.consentChanged) {
       eventLabel = `Closed after modifying: ${this.addressChanged ? 'address, ' : ''} ${
@@ -538,9 +547,10 @@ export default class CreditPullModal extends Component {
     this.props.closeModal();
   };
 
-  handleCheckboxChange = (event) => {
+  handleCheckboxChange = () => {
     this.consentChanged = true;
     this.setState({
+      // eslint-disable-next-line react/no-access-state-in-setstate
       hasAcceptedTerms: !this.state.hasAcceptedTerms,
     });
   };

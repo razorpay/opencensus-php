@@ -85,7 +85,7 @@ const AmountBasedModalContent = ({
                 <a
                   href={getCustomURL('https://razorpay.com/docs/payment-pages/goal-tracker/')}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                 >
                   documentation page <i className="i i-external-link ml-5" />
                 </a>

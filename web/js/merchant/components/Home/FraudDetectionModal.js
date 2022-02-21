@@ -16,7 +16,11 @@ const FraudDetectionModal = ({ onClose }) => {
               <p>We need some more information regarding your submitted details.</p>
               <p>
                 Please{' '}
-                <a href="https://razorpay.com/support/#request" target="_blank">
+                <a
+                  href="https://razorpay.com/support/#request"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
                   contact our support
                 </a>{' '}
                 and they will assist you further

@@ -127,7 +127,7 @@ export default class CheckoutRewardsIndex extends Component {
                           href="https://razorpay.com/checkout-rewards-merchant-terms/"
                           target="_blank"
                           className="btn btn-link"
-                          rel="noreferrer"
+                          rel="noreferrer noopener"
                         >
                           Merchant Terms
                         </a>

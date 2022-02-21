@@ -17,7 +17,7 @@ function Data(brandColor) {
         <p>
           The Razorpay patch on BUSY is Easy to set up for online collection of payments with
           Instant reconciliation. With{' '}
-          <a href="https://razorpay.com/payment-links/" target="_blank" rel="noreferrer">
+          <a href="https://razorpay.com/payment-links/" target="_blank" rel="noreferrer noopener">
             Razorpay Payment Links
           </a>{' '}
           , give your customers the convenience to pay you immediately via email, SMS, etc. You can

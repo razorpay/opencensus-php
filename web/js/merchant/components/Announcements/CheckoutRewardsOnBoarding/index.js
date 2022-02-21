@@ -1,6 +1,6 @@
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { getItem, setItem } from 'common/utils/localStorage';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -58,6 +58,7 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
           href="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
           target="_blank"
           className="know-more-link"
+          rel="noreferrer noopener"
         >
           Know More
         </a>

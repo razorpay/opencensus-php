@@ -10,8 +10,9 @@ export default class CreditPullAdditionalReport extends Component {
   }
 
   generateRowData = (reportData, label, key) => {
-    let rowData = [];
-    for (let iter in label) {
+    const rowData = [];
+    // eslint-disable-next-line guard-for-in
+    for (const iter in label) {
       rowData.push({
         desc: label[iter],
         value: reportData[key[iter]],
@@ -35,7 +36,7 @@ export default class CreditPullAdditionalReport extends Component {
               rowData={this.generateRowData(
                 this.props.report,
                 ['Active', 'Closed'],
-                ['active_accounts', 'closed_accounts']
+                ['active_accounts', 'closed_accounts'],
               )}
             />
           </div>
@@ -50,10 +51,7 @@ export default class CreditPullAdditionalReport extends Component {
               rowData={this.generateRowData(
                 this.props.report,
                 ['Secured', 'Un-secured'],
-                [
-                  'secured_account_outstanding_balance',
-                  'un_secured_account_outstanding_balance',
-                ]
+                ['secured_account_outstanding_balance', 'un_secured_account_outstanding_balance'],
               )}
             />
           </div>
@@ -63,15 +61,12 @@ export default class CreditPullAdditionalReport extends Component {
           <button
             className="btn btn-secondary btn-credit"
             onClick={() => {
+              // eslint-disable-next-line react/no-access-state-in-setstate
               this.setState({ moreInfo: !this.state.moreInfo });
             }}
           >
             More Credit Details{' '}
-            {
-              <i
-                className={`i i-chevron-${this.state.moreInfo ? 'up' : 'down'}`}
-              />
-            }
+            {<i className={`i i-chevron-${this.state.moreInfo ? 'up' : 'down'}`} />}
           </button>
         </div>
         <div className="col-md-8 foot-box">
@@ -86,6 +81,7 @@ export default class CreditPullAdditionalReport extends Component {
                   eventAction: 'Show FAQs',
                 });
               }}
+              rel="noreferrer noopener"
             >
               Show FAQ
             </a>

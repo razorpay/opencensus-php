@@ -11,6 +11,7 @@ module.exports = {
   ],
   // TODO: Uncomment later plugins: ['jsx-a11y'],
   rules: {
+    'no-shadow': 'off',
     'babel/camelcase': 'off',
     'import/no-extraneous-dependencies': 'off',
     'max-lines-per-function': 'off',

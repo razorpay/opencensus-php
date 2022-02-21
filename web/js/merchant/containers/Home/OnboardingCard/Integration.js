@@ -2,23 +2,12 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import { titleCase } from 'common/utils/rzp-utils';
-import LocalStorageService from 'common/utils/localStorage';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import ShowWhen from 'merchant/components/ShowWhen';
 
-import {
-  trackGoToKeyGen,
-  trackGoToDocumentation,
-  trackGoToPayments,
-} from './ga';
+import { trackGoToKeyGen, trackGoToDocumentation, trackGoToPayments } from './ga';
 
-const Icon = ({
-  mode,
-  keysGenerated,
-  paymentsMade,
-  hasKeyAccess,
-  businessWebsite,
-}) => {
+const Icon = ({ mode, keysGenerated, paymentsMade, hasKeyAccess, businessWebsite }) => {
   let className = '';
 
   if (mode === 'live' && !hasKeyAccess) {
@@ -56,7 +45,9 @@ class WrapperElement extends Component {
 
     return (stepNum === 2
       ? trackGoToDocumentation
-      : stepNum === 1 ? trackGoToKeyGen : trackGoToPayments)(stepNum, mode);
+      : stepNum === 1
+      ? trackGoToKeyGen
+      : trackGoToPayments)(stepNum, mode);
   }
 
   render() {
@@ -89,13 +80,12 @@ class WrapperElement extends Component {
       return (
         <React.Fragment>
           <ShowWhen
-            additionalCondition={user =>
-              user.isOrgAllowedFunctionality('external_links')
-            }
+            additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
           >
             <a
               href="https://razorpay.com/docs/payment-gateway/getting-started-guide/"
               target="_blank"
+              rel="noreferrer noopener"
               onClick={this.trackStep}
               {...otherProps}
             >
@@ -103,9 +93,7 @@ class WrapperElement extends Component {
             </a>
           </ShowWhen>
           <ShowWhen
-            additionalCondition={user =>
-              !user.isOrgAllowedFunctionality('external_links')
-            }
+            additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
           >
             {content}
           </ShowWhen>
@@ -115,10 +103,7 @@ class WrapperElement extends Component {
 
     return (
       <Link
-        to={
-          (((mode === 'live' && !hasKeyAccess) || !keysGenerated) && '/keys') ||
-          '/payments'
-        }
+        to={(((mode === 'live' && !hasKeyAccess) || !keysGenerated) && '/keys') || '/payments'}
         onClick={this.trackStep}
         {...otherProps}
       >
@@ -131,15 +116,7 @@ class WrapperElement extends Component {
   }
 }
 
-const Title = ({
-  mode,
-  children,
-  keysGenerated,
-  paymentsMade,
-  hasKeyAccess,
-  businessWebsite,
-  ...otherProps
-}) => {
+const Title = ({ mode, keysGenerated, paymentsMade, hasKeyAccess }) => {
   const formattedMode = titleCase(mode);
 
   let text = '';
@@ -157,15 +134,7 @@ const Title = ({
   return <span>{text}</span>;
 };
 
-const Text = ({
-  mode,
-  children,
-  keysGenerated,
-  hasKeyAccess,
-  businessWebsite,
-  paymentsMade,
-  ...otherProps
-}) => {
+const Text = ({ mode, keysGenerated, hasKeyAccess, businessWebsite, paymentsMade }) => {
   let text = '';
 
   if (mode === 'live' && !hasKeyAccess) {
@@ -186,6 +155,7 @@ const Text = ({
 };
 
 export default class IntegrationStep extends Component {
+  // eslint-disable-next-line no-useless-constructor
   constructor(props) {
     super(props);
   }
@@ -205,8 +175,10 @@ export default class IntegrationStep extends Component {
   }
 
   render() {
+    // eslint-disable-next-line one-var
     const { mode, hasKeyAccess, businessWebsite, integration } = this.props,
       { isLoading, keysGenerated, paymentsMade } = integration,
+      // eslint-disable-next-line no-unused-vars
       isIntegrated = keysGenerated && paymentsMade,
       stepNum = this.getStep();
 

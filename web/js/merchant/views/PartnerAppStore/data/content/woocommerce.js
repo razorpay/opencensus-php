@@ -1,6 +1,7 @@
-import PadImage from '../PadImage.js';
+import PadImage from '../PadImage';
 
 function Data(brandColor) {
+  // eslint-disable-next-line babel/new-cap
   const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
@@ -62,7 +63,11 @@ function Data(brandColor) {
             <h4>Install via the WordPress Plugin Directory</h4>
             <ol>
               <li>
-                <a href="https://wordpress.org/plugins/woo-razorpay/" target="_blank">
+                <a
+                  href="https://wordpress.org/plugins/woo-razorpay/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
                   Download the plugin
                 </a>{' '}
                 and install it from the WordPress Plugin Directory.
@@ -75,6 +80,7 @@ function Data(brandColor) {
                 <a
                   href="https://github.com/razorpay/razorpay-woocommerce/releases/latest"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   latest Source code zip file
                 </a>{' '}
@@ -91,14 +97,14 @@ function Data(brandColor) {
             <ol>
               <li>
                 Log into your{' '}
-                <a href="https://wordpress.com/log-in" target="_blank">
+                <a href="https://wordpress.com/log-in" target="_blank" rel="noreferrer noopener">
                   WordPress account
                 </a>{' '}
                 and activate the Razorpay plugin in the <strong>WordPress Plugin Manager</strong>.
               </li>
               <li>
                 Log into your{' '}
-                <a href="https://woocommerce.com/" target="_blank">
+                <a href="https://woocommerce.com/" target="_blank" rel="noreferrer noopener">
                   WooCommerce account
                 </a>{' '}
                 , navigate to <strong>Settings</strong> and click the{' '}
@@ -137,7 +143,11 @@ function Data(brandColor) {
             <ol>
               <li>
                 Log into your{' '}
-                <a href="https://dashboard.razorpay.com/#/access/signin" target="_blank">
+                <a
+                  href="https://dashboard.razorpay.com/#/access/signin"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
                   Razorpay Dashboard
                 </a>{' '}
                 and navigate to <strong>Settings</strong> → <strong>Webhooks</strong>.
@@ -169,6 +179,7 @@ function Data(brandColor) {
                           <a
                             href="/docs/webhooks/test/#on-an-application-running-on-localhost"
                             target="_blank"
+                            rel="noreferrer noopener"
                           >
                             test webhooks
                           </a>{' '}
@@ -187,7 +198,11 @@ function Data(brandColor) {
                       </li>
                       <li>
                         Select the required events from the list of <strong>Active Events</strong>.{' '}
-                        <a href="/docs/webhooks/webhook-payloads/" target="_blank">
+                        <a
+                          href="/docs/webhooks/webhook-payloads/"
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
                           Sample payloads for all events are available
                         </a>
                         .
