@@ -4200,6 +4200,69 @@ class Service extends Base\Service
         return $tags;
     }
 
+    public function bulkTagBatch(array $inputs)
+    {
+        $result = new Base\PublicCollection;
+
+        foreach ($inputs as $input)
+        {
+            $this->app['api.mutex']->acquireAndReleaseStrict(
+                'add_merchant_tag'.$input[Entity::MERCHANT_ID],
+                function() use ($input, $result)
+                {
+                    $idempotencyKey = $input[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY] ?? '';
+
+                    unset($input[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY]);
+
+                    $this->trace->info(TraceCode::MERCHANT_TAGS_BATCH_REQUEST, $input);
+
+                    try
+                    {
+                        (new Validator)->validateInput('bulk_tag_batch', $input);
+
+                        $tagFunction = $input['action']. 'Tag';
+
+                        $merchantId = $input['merchant_id'];
+
+                        $tagName = $input['tags'];
+
+                        $this->{$tagFunction}($merchantId, $tagName);
+
+                        $result->push([
+                            'idempotency_key'   => $idempotencyKey,
+                            'success'           => true,
+                        ]);
+                    }
+                    catch(\Throwable $t)
+                    {
+                        $this->trace->error(
+                            TraceCode::MERCHANT_TAGS_BATCH_EXCEPTION,
+                            [
+                                'merchant_id' => $input['merchant_id'],
+                                'tag_name'    => $input['tags'],
+                            ]);
+
+                        $result->push([
+                            'idempotency_key'   => $idempotencyKey,
+                            'success'           => false,
+                            'error'             => [
+                                Error::DESCRIPTION       => $t->getMessage(),
+                                Error::PUBLIC_ERROR_CODE => $t->getCode(),
+                            ]
+                        ]);
+                    }
+
+                });
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_BATCH_RESPONSE,
+            [
+            'response' => $result->toArrayWithItems(),
+          ]);
+
+        return $result->toArrayWithItems();
+    }
+
     public function getCapitalTags()
     {
         return Constants::$capitalMerchantTags;

@@ -378,6 +378,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE     => 'sometimes|numeric',
     ];
 
+    protected static $merchantCapitalTagsCreateRules = [
+        Entity::TYPE         => 'required|in:merchant_capital_tags',
+        Entity::FILE         => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID      => 'required_without:file',
+        Entity::NAME         => 'filled|string|max:255',
+        Entity::SCHEDULE     => 'sometimes|numeric',
+    ];
+
     protected static $iinNpciRupayCreateRules = [
         Entity::TYPE                 => 'required|custom',
         Entity::NAME                 => 'filled|string|max:255',
@@ -684,6 +692,12 @@ class Validator extends Base\Validator
         Header::EARLY_SETTLEMENT_TRIAL_DISABLE_DATE => 'required|string|custom',
         Header::EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT => 'sometimes|integer',
         Header::EARLY_SETTLEMENT_ES_PRICING         => 'required|integer'
+    ];
+
+    protected static $merchantCapitalTagsTypeRowRules = [
+        Header::MERCHANT_CAPITAL_TAGS_MERCHANT_ID => 'required|string|size:14',
+        Header::MERCHANT_CAPITAL_TAGS_ACTION      => 'required|in:insert,delete',
+        Header::MERCHANT_CAPITAL_TAGS_TAGS        => 'required'
     ];
 
     protected static $terminalNetbankingHdfcRules = [
@@ -2021,6 +2035,14 @@ class Validator extends Base\Validator
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('earlySettlementTrialTypeRow', $entry);
+        });
+    }
+
+    public function validateMerchantCapitalTagsEntries(array & $entries, array $params, ME $merchant)
+    {
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('merchantCapitalTagsTypeRow', $entry);
         });
     }
 

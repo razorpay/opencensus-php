@@ -1452,6 +1452,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function batchTagMerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkTagBatch($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getCapitalTags()
     {
         $response = $this->service()->getCapitalTags();

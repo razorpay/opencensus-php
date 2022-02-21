@@ -13401,6 +13401,15 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testBulkTagBatch()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $this->startTest();
+    }
+
     protected function assertFraudType($fraudType)
     {
         $merchantDetail = $this->getDbEntityById('merchant_detail', '10000000000000');

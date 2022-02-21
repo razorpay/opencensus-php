@@ -163,6 +163,17 @@ final class Constants
     const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
     const TRANSACTION_LIMIT_INCREASE_SUPPORT_DOCUMENT_URL_COMMENT   = 'Support Document (Invoice) URL: %sadmin/entity/ufh.files/live/file_%s';
 
+    //Merchant tags
+    const CAP_ES_0_DMT30  = 'CAP_ES_0_DMT30';
+    const CAP_ES_0_XCA    = 'CAP_ES_0_XCA';
+    const CAP_ES_0_PP     = 'CAP_ES_0_PP';
+    const CAP_ES_0_ENTPG  = 'CAP_ES_0_ENTPG';
+    const CAP_ES_0_SMEPG  = 'CAP_ES_0_SMEPG';
+    const CAP_ES_0_OTHER  = 'CAP_ES_0_OTHER';
+    const CAP_ES_STD_SC   = 'CAP_ES_STD_SC';
+    const CAP_ES_STD_OD   = 'CAP_ES_STD_OD';
+    const CAP_ES_STD_BOTH = 'CAP_ES_STD_BOTH';
+
 
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
@@ -186,7 +197,15 @@ final class Constants
 
     //Capital Tags assigned to merchants
     public static $capitalMerchantTags = [
-
+        self::CAP_ES_0_DMT30,
+        self::CAP_ES_0_XCA,
+        self::CAP_ES_0_PP,
+        self::CAP_ES_0_ENTPG,
+        self::CAP_ES_0_SMEPG,
+        self::CAP_ES_0_OTHER,
+        self::CAP_ES_STD_SC,
+        self::CAP_ES_STD_OD,
+        self::CAP_ES_STD_BOTH
     ];
 
     // Used in merchant activation elastic search flows

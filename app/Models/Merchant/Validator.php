@@ -255,6 +255,12 @@ class Validator extends Base\Validator
         'merchant_ids.*' => 'required|string|filled|size:14'
     ];
 
+    protected static $bulkTagBatchRules = [
+        'action'         => 'required|string|filled|max:10|in:insert,delete',
+        'tags'           => 'required|string|custom',
+        'merchant_id'    => 'required|string|size:14'
+    ];
+
     protected static $bulkAssignScheduleRules = [
         'schedule'       => 'required|array',
         'merchant_ids'   => 'required|array',
@@ -1786,6 +1792,21 @@ class Validator extends Base\Validator
                 [
                     Entity::PARTNER_TYPE => $partnerType,
                 ]);
+        }
+    }
+
+    public function validateTags(string $attribute, string $tags)
+    {
+        $tagArray = explode(",", $tags);
+
+        foreach ($tagArray as $tag)
+        {
+            $parsedTag = str_replace(' ','',$tag);
+
+            if(in_array($parsedTag, Constants::$capitalMerchantTags) === false)
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid tag new'.$parsedTag
+                );
         }
     }
 

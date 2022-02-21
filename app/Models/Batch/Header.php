@@ -1027,6 +1027,10 @@ class Header
     const EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT = 'amount_limit';
     const EARLY_SETTLEMENT_ES_PRICING         = 'es_pricing';
 
+    const MERCHANT_CAPITAL_TAGS_MERCHANT_ID = 'merchant_id';
+    const MERCHANT_CAPITAL_TAGS_ACTION      = 'action';
+    const MERCHANT_CAPITAL_TAGS_TAGS        = 'tags';
+
     const ICICI_ECOLLECT_REMITTING_BANK_UTR_NO      = 'REMITTING BANK UTR NO.';
     const ICICI_ECOLLECT_PAYMENT_TYPE               = 'PAYMENT TYPE';
     const ICICI_ECOLLECT_CREDIT_ACCOUNT_NO          = 'CREDIT ACCOUNT NO.';
@@ -3673,6 +3677,19 @@ class Header
                 self::EARLY_SETTLEMENT_TRIAL_DISABLE_DATE,
                 self::EARLY_SETTLEMENT_TRIAL_AMOUNT_LIMIT,
                 self::EARLY_SETTLEMENT_ES_PRICING,
+            ]
+        ],
+
+        Type::MERCHANT_CAPITAL_TAGS => [
+            self::INPUT => [
+                self::MERCHANT_CAPITAL_TAGS_MERCHANT_ID,
+                self::MERCHANT_CAPITAL_TAGS_ACTION,
+                self::MERCHANT_CAPITAL_TAGS_TAGS,
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_CAPITAL_TAGS_MERCHANT_ID,
+                self::MERCHANT_CAPITAL_TAGS_ACTION,
+                self::MERCHANT_CAPITAL_TAGS_TAGS,
             ]
         ],
 

@@ -10223,6 +10223,52 @@ return [
         ],
         'response' => [
             'content' => [
+                'CAP_ES_0_DMT30',
+                'CAP_ES_0_XCA',
+                'CAP_ES_0_PP',
+                'CAP_ES_0_ENTPG',
+                'CAP_ES_0_SMEPG',
+                'CAP_ES_0_OTHER',
+                'CAP_ES_STD_SC',
+                'CAP_ES_STD_OD',
+                'CAP_ES_STD_BOTH'
+            ],
+        ],
+    ],
+
+    'testBulkTagBatch' => [
+        'request'  => [
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'action'                        => 'insert',
+                    'tags'                          => 'CAP_ES_0_DMT30, CAP_ES_0_XCA',
+                    'idempotency_key'               => 'batch_10000000000000',
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'action'                        => 'insert',
+                    'tags'                          => 'CAP_ES_0_DMT30, CAP_ES_0_XCA',
+                    'idempotency_key'               => 'batch_10000000000001',
+                ]
+            ],
+            'url'     => '/merchants/tags/batch',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ]
+                ],
             ],
         ],
     ],

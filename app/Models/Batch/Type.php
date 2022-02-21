@@ -136,6 +136,8 @@ class Type
 
     const CAPITAL_MERCHANT_ELIGIBILITY_CONFIG = 'capital_merchant_eligibility_config';
 
+    const MERCHANT_CAPITAL_TAGS = 'merchant_capital_tags';
+
     const EARLY_SETTLEMENT_TRIAL = 'early_settlement_trial';
 
     const ECOLLECT_ICICI        = 'ecollect_icici';
@@ -242,6 +244,7 @@ class Type
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
+        self::MERCHANT_CAPITAL_TAGS,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::BANK_TRANSFER_EDIT,
@@ -355,6 +358,7 @@ class Type
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
+        self::MERCHANT_CAPITAL_TAGS,
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
     ];
@@ -454,6 +458,7 @@ class Type
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
+        self::MERCHANT_CAPITAL_TAGS,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::REFUND,
         self::RAW_ADDRESS,
@@ -491,6 +496,7 @@ class Type
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG,
         self::EARLY_SETTLEMENT_TRIAL,
+        self::MERCHANT_CAPITAL_TAGS,
         self::PAYMENT_LINK_V2,
         self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
@@ -584,6 +590,7 @@ class Type
         self::VIRTUAL_BANK_ACCOUNT               => Name::VIRTUAL_BANK_ACCOUNT_BATCH_UPLOAD,
         self::BANK_TRANSFER_EDIT                 => Name::BANK_TRANSFER_INSERT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
+        self::MERCHANT_CAPITAL_TAGS              => Name::MERCHANT_CAPITAL_TAGS_UPLOAD,
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
         self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN          => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
