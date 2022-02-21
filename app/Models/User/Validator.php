@@ -1089,14 +1089,18 @@ class Validator extends Base\Validator
 
         $now = Carbon::now()->getTimestamp();
 
-        if ($expiry < $now)
+        //If expiry and user token are not null, flow will proceed
+        if ((isset($expiry) === false) or
+            ($expiry < $now))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
         }
 
         $userToken = $user->getPasswordResetToken();
 
-        if ((empty($token) === true) or (hash_equals($userToken, $token) === false))
+        if ((isset($token) === false) or
+            (isset($userToken) === false) or
+            (hash_equals($userToken, $token) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
