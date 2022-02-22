@@ -445,7 +445,7 @@ return [
                 'method' => 'put',
                 'content'   => [
                     'card_networks' => [
-                        'AMEX' => 1,
+                        'AMEX' => '1',
                     ]
                 ]
             ],

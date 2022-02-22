@@ -89,7 +89,7 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForEmi($mcc);
         }
 
-        if(isset($input['card_networks']['AMEX']) === true)
+        if(isset($input['card_networks']['AMEX']) === true && $input['card_networks']['AMEX'] === '1')
         {
             (new Validator)->validateCategoryForAmexCardNetwork($mcc);
         }
