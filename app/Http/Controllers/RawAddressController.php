@@ -17,11 +17,4 @@ class RawAddressController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function uploadAddressesToKafka()
-    {
-        $response = $this->service()->uploadAddressesToKafka();
-        return ApiResponse::json([$response]);
-    }
-
 }

@@ -15,6 +15,7 @@ class KafkaMessageProcessor
     // Topic name constants to map job
     const API_BVS_EVENTS = 'api-bvs-validation-result-events';
     const ADDRESS_DEDUPE_EVENT = 'address-dedupe-response';
+    const RAW_ADDRESS_CONTACTS = 'raw-address-contacts';
 
     /** @var Application $app */
     protected $app;
@@ -111,6 +112,8 @@ class KafkaMessageProcessor
                 return new KafkaJobs\BvsValidationJob($payload['data'], $mode);
             case self::ADDRESS_DEDUPE_EVENT:
                 return new BulkUploadConsumer($payload, $mode);
+            case self::RAW_ADDRESS_CONTACTS:
+                return new RawAddressContactsConsumer($payload, $mode);
             default:
                 return null;
         }

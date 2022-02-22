@@ -75,19 +75,6 @@ class Service extends Base\Service
         return $this->create($input);
     }
 
-
-    public function uploadAddressesToKafka()
-    {
-        return (new BulkUploadClient())->uploadAddressesToKafka();
-    }
-
-    public function consumeAddressesFromKafkaTest(array $input)
-    {
-        (new BulkUploadClient())->pushKafkaMessageToDB($input);
-        return true;
-    }
-
-
     public function validateForAddressEntity(array $input)
     {
         //addressObject is created for validating the inputs for address Entity before sending for dedupe

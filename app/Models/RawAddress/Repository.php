@@ -10,7 +10,7 @@ class Repository  extends Base\Repository
 {
     protected $entity = 'raw_address';
 
-    public function fetchAllPendingContacts()
+    public function fetchPendingContacts()
     {
         $contactCol = $this->dbColumn(Entity::CONTACT);
         $statusCol    = $this->dbColumn(Entity::STATUS);
@@ -19,6 +19,7 @@ class Repository  extends Base\Repository
                     ->distinct()
                     ->select($contactCol)
                     ->where($statusCol, BulkUploadClient::STATUS_PENDING)
+                    ->limit(500)
                     ->get();
     }
 
@@ -48,6 +49,17 @@ class Repository  extends Base\Repository
                     ->select($merchantCol)
                     ->where($contactCol, $contact)
                     ->first();
+    }
+
+    public function updateStatus(array $contacts , string $status)
+    {
+        $contactCol = $this->dbColumn(Entity::CONTACT);
+        $statusCol    = $this->dbColumn(Entity::STATUS);
+
+        return $this->newQueryWithoutTimestamps()
+            ->whereIn($contactCol, $contacts)
+            ->update([$statusCol => $status]);
+
     }
 
 }

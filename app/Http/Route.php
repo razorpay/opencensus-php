@@ -279,7 +279,6 @@ class Route
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
         'raw_address_create_batch_service'        => ['post',     'raw_address/batch_service',                     'RawAddressController@postCreateBatch'                             ],
-        'raw_address_kafka_cron'                  => ['post',     'raw_address/kafka_upload',                      'RawAddressController@uploadAddressesToKafka'                      ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
 
         'fulfillment_order_update'                 => ['post',     'fulfillment_order/batch_service',             'FulfillmentOrderController@updateOrder'                             ],
@@ -4390,7 +4389,6 @@ class Route
         'onboard_old_accounts_to_ledger',
 
         'raw_address_create_batch_service',
-        'raw_address_kafka_cron',
 
         'fulfillment_order_update',
         //merchant action cron sends the notifications to the merchants which are suspended and tagged
@@ -11509,7 +11507,6 @@ class Route
 
             'dispute_deduction_reversal_cron',
 
-            'raw_address_kafka_cron',
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',

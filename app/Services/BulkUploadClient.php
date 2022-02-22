@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use App;
 
+use RZP\Jobs\Job;
 use RZP\Services\Kafka;
 use RZP\Trace\TraceCode;
 use RZP\Models\Address\Type;
@@ -13,35 +14,95 @@ use RZP\Models\RawAddress;
 use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
 
-class BulkUploadClient
+class BulkUploadClient extends Job
 {
     const ADDRESS_DEDUPE_REQUEST  = 'address-dedupe-request';
+    const RAW_ADDRESS_CONTACTS   = 'raw-address-contacts';
     const STATUS_PENDING         = 'pending';
     const STATUS_PROCESSING      = 'processing';
     const STATUS_PROCESSED       = 'processed';
     const STATUS_INVALID         = 'invalid';
 
-    private $trace;
+    protected $trace;
 
     public function __construct()
     {
+        parent::__construct();
         $this->trace = App::getFacadeRoot()['trace'];
     }
 
     /**
-     *Fetch all pending contacts
-     * Fetch all addresses for single contact form addresses and raw_addresses
-     * Group the address to contact and send to kafka
-     **/
-    public function uploadAddressesToKafka()
+     * Process the Raw Address Contacts
+     *
+     * @var string mode
+     * @return mixed
+     */
+    public function process(string $mode = null)
     {
-        $contacts = (new RawAddress\Repository())->fetchAllPendingContacts();
+        $this->mode = $mode;
+
+        parent::__construct($mode);
+
+        parent::handle();
+
+        while (true)
+        {
+            try
+            {
+                $response = $this->uploadContactsToKafka();
+                if ($response === false)
+                {
+                    $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PUSH_REQUEST, ["message" => "no more contacts."]);
+                    return;
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::ERROR_EXCEPTION, ["error" => $e->getMessage()]);
+            }
+        }
+    }
+
+    /**
+     *Fetch pending contacts
+     *Uploads to kafka
+     **/
+    public function uploadContactsToKafka()
+    {
+        $contacts = $this->repoManager->raw_address->fetchPendingContacts();
         $contactArray = $contacts->toArray();
-        $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PUSH_START,[$contactArray]);
-        foreach ($contactArray as $contact)
+
+        $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PUSH_START,["message"=>"contact push started"]);
+        if(count($contactArray) == 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            $topic =  env('APP_MODE', 'prod').'-'. self::RAW_ADDRESS_CONTACTS;
+
+            (new KafkaProducer($topic, stringify($contactArray)))->Produce();
+
+            $this->repoManager->raw_address->updateStatus($contactArray,self::STATUS_PROCESSING);
+        }
+        catch (\Exception $e)
+        {
+            // push to kafka failed
+            $this->trace->error(
+                TraceCode::RAW_ADDRESS_KAFKA_FAILED_COUNT,
+                ['error' => $e->getMessage()]
+            );
+        }
+        return true;
+    }
+
+    public function uploadAddressesToKafka(array $input)
+    {
+        foreach ($input as $contact)
         {
             $rawAddresses = (new RawAddress\Repository())->fetchRawAddressesForContact($contact['contact'],
-                                                                                       self::STATUS_PENDING);
+                                                                                       self::STATUS_PROCESSING);
 
             $customer = (new Customer\Repository())->findByContactAndMerchantId($contact['contact'],Account::SHARED_ACCOUNT);
 
@@ -101,7 +162,6 @@ class BulkUploadClient
         {
             try
             {
-                $this->updateStatus($address[RawAddress\Entity::ID], self::STATUS_PROCESSING);
                 $address['is_raw_address']=true;
                 array_push($json["addresses"],$address);
             }
@@ -110,8 +170,6 @@ class BulkUploadClient
                 $this->trace->info(TraceCode::RAW_ADDRESS_KAFKA_PAYLOAD_CONVERSION_FAILED,
                                    ["error"=>$e->getMessage()]);
 
-                $this->updateStatus($address[RawAddress\Entity::ID], self::STATUS_INVALID);
-                //update status as invalid
             }
         }
 
@@ -218,7 +276,11 @@ class BulkUploadClient
                 ]);
 
                 $customer = (new Customer\Repository())->findByContactAndMerchantId($firstAddress['contact'],Account::SHARED_ACCOUNT);
-                (new Address\Core)->create($customer, Type::CUSTOMER, $firstAddress,true);
+                if ($customer !== null){
+                    (new Address\Core)->create($customer, Type::CUSTOMER, $firstAddress,true);
+                }else {
+                    throw new \InvalidArgumentException("null customer");
+                }
             }
         }
         catch (\Exception $e)
