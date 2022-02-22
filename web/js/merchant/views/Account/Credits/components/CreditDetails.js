@@ -12,7 +12,7 @@ import {
   REFUND_CREDITS_FAILED,
 } from '../ga';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
-import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchantLA/reducers/credits';
+import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchant/reducers/credits';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
 import lazy from 'merchant/routes/LazyLoader';
