@@ -46,6 +46,7 @@ const Signin = () => {
   const [isFetchingOrgData, setFetchingOrgData] = useState(true);
 
   useEffect(() => {
+    // Only fetch org data if it's a banking url
     if (getHostName() === DEFAULT_ORG_DATA.hostname) {
       setOrgData(transformFetchOrgData(DEFAULT_ORG_DATA));
       setFetchingOrgData(false);
@@ -55,6 +56,11 @@ const Signin = () => {
     fetchOrg()
       .then((res) => {
         const response = transformFetchOrgData(res.data);
+        if (response.orgName === BANK_NAMES.KKBK) {
+          // Kotak bank's backgroundImageUrl is showing a blank white image
+          // thus we are removing it, which will result in fallback of .logo being in use
+          response.backgroundImgUrl = null;
+        }
         setOrgData(response);
         setFetchingOrgData(false);
       })

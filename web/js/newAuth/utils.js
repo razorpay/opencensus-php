@@ -24,6 +24,8 @@ export const BANK_NAMES = {
   JKB: 'jkb',
   /** https://bajaj.razorpay.com/signin */
   BAJAJ: 'bajaj',
+  /** https://kotak.razorpay.com/signin */
+  KKBK: 'KKBK',
 };
 
 export const getCookie = (name) => {
