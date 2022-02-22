@@ -2355,12 +2355,12 @@ return [
             'status_code' => 200
         ]
     ],
-    'testInternationalAllowOnly3ds'=>[
+    'testFailNon3dsInternational'=>[
         'request'  => [
             'url'     => '/features',
             'method'  => 'post',
             'content' => [
-                'names'       => ['intl_allow_only_3ds'],
+                'names'       => ['fail_non3ds_international'],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
             ]
@@ -2368,7 +2368,7 @@ return [
         'response' => [
             'content' => [
                 [
-                    'name' => 'intl_allow_only_3ds',
+                    'name' => 'fail_non3ds_international',
                     'entity_id' => '10000000000000',
                     'entity_type' => 'merchant',
                 ]

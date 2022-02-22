@@ -1179,7 +1179,7 @@ class Constants
     const SKIP_PAYOUT_EMAIL = 'skip_payout_email';
 
     const OFFLINE_PAYMENT_ON_CHECKOUT = 'offline_checkout';
-  
+
     // This feature is used to send public_order_id in err instead of order_id.
     const ORDER_RECEIPT_UNIQUE_ERR = 'order_receipt_unique_err';
 
@@ -1191,7 +1191,7 @@ class Constants
     /**
      * Feature flag to allow only 3ds enabled international transactions
      */
-    const INTL_ALLOW_ONLY_3DS = 'intl_allow_only_3ds';
+    const FAIL_NON3DS_INTERNATIONAL = 'fail_non3ds_international';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1645,7 +1645,7 @@ class Constants
         self::OFFLINE_PAYMENT_ON_CHECKOUT     => true,
         self::ORDER_RECEIPT_UNIQUE_ERR        => true,
         self::SUBM_QR_IMAGE_CONTENT           => true,
-        self::INTL_ALLOW_ONLY_3DS             => true,
+        self::FAIL_NON3DS_INTERNATIONAL       => true,
     ];
 
     // Entity type constants
