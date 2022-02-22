@@ -4,7 +4,6 @@ import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Mo
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import { EVENT_CATEGORY_DASHBOARD_HOME } from 'merchant/containers/Home/ga';
 
 // eslint-disable-next-line no-unused-vars
 @connect((state) => ({}), {
@@ -22,7 +21,7 @@ export default class EarlyScheduledAnnouncement extends Component {
       >
         <span class="es-schedule-banner-text">
           Get your settlements on the same day automtically!{' '}
-          <a href="http://razorpay.com/settlement" target="_blank" rel="noreferrer noopener">
+          <a href="http://razorpay.com/settlement" rel="noreferrer noopener" target="_blank">
             Learn More
           </a>
         </span>
@@ -30,12 +29,7 @@ export default class EarlyScheduledAnnouncement extends Component {
           class="pull-right"
           onClick={() => {
             this.props.openModal({
-              component: (
-                <ScheduledModal
-                  eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
-                  fromWhere="Home Announcement Banner"
-                />
-              ),
+              component: <ScheduledModal />,
               size: 'small',
               disableClose: true,
             });

@@ -18,23 +18,33 @@ import { trackOnDemandTabClick } from './trackEvents';
 import ShowWhen from 'merchant/components/ShowWhen';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 import SettlementsHeader from './components/SettlementsHeader';
+import { AsyncBtn } from 'common/new-ui/Button';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
+import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
+import { POST_ENABLE_TYPES } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
+import { getNoOfDaysAfterEsPartialEnable } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 
 const Settlements = ({
   user,
   merchantBalanceConfigs,
   current_balance,
   history = {},
+  location,
   fetchCurrentBalance,
   fetchSettlementConfig,
   fetchBankAccountChangeStatus,
+  openModal,
 }) => {
   const [settlementExists, setSettlementExists] = useState(true);
-  const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
+  const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
+  const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
+  const isPartialOndemandSettlementEnabled =
+    isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
 
   const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
     const settlementStatus = getSettlementStatus(user.current, callbackSettlementStatus);
@@ -49,16 +59,58 @@ const Settlements = ({
     trackIS.goToTabIS();
   };
 
+  const openEsAutomaticModalIfRoute = () => {
+    // checks if merchant is not live with any of es_automatic and partial es_automatic product
+    // and opens scheduled modal if pathname is /settlements/enable_automatic
+    if (
+      user &&
+      !user.isAutomaticSettlementEnabled &&
+      !user.isAutomaticSettlementRestricted &&
+      location.pathname === '/settlements/enable_automatic'
+    ) {
+      openModal({
+        component: <ScheduledModal />,
+        size: 'small',
+        disableClose: true,
+      });
+    }
+  };
+
   useEffect(() => {
     checkIfFirstEverSettlement();
     fetchCurrentBalance();
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
+
+    // opens scheduled modal if pathname is /settlements/enable_automatic
+    openEsAutomaticModalIfRoute();
   }, []);
 
   const cta1ClickHandler = () => {
     history?.push('/magic');
   };
+
+  const handleSettlementUnlockStatusClick = () => {
+    const diff = getNoOfDaysAfterEsPartialEnable();
+    const partialModalType = diff
+      ? diff <= 30
+        ? POST_ENABLE_TYPES.SAMEDAY_FULL_UNLOCK_STATUS
+        : POST_ENABLE_TYPES.SAMEDAY_FULL_FAILURE
+      : POST_ENABLE_TYPES.SAMEDAY_FULL_UNLOCK_STATUS;
+
+    openModal({
+      component: <ScheduledModal enabled postModalType={partialModalType} />,
+      size: 'small',
+      disableClose: true,
+    });
+  };
+
+  // View settlements unlock status button is only shown
+  // when merchant is live on partial es & partial es_automatic
+  const showViewUnlockStatus =
+    isPartialOndemandSettlementEnabled &&
+    !user.isAutomaticSettlementEnabled &&
+    user.isAutomaticSettlementRestricted;
 
   return (
     <>
@@ -119,7 +171,7 @@ const Settlements = ({
 
       <SettlementsHeader
         settlementExists={settlementExists}
-        esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+        esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
         checkIfFirstEverSettlement={checkIfFirstEverSettlement}
       />
 
@@ -134,6 +186,17 @@ const Settlements = ({
               Ondemand Settlements
             </NavLink>
           )}
+          {showViewUnlockStatus && (
+            <AsyncBtn.Transparent
+              style={{
+                position: 'absolute',
+                right: 20,
+              }}
+              onClick={handleSettlementUnlockStatusClick}
+            >
+              <i className="i i-info-outline" /> View Settlement Unlock Status
+            </AsyncBtn.Transparent>
+          )}
         </header>
         <content>
           <ErrorBoundary resetOnProps>
@@ -143,7 +206,7 @@ const Settlements = ({
                 render={() => (
                   <InstantSettlements
                     settlementExists={settlementExists}
-                    esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                    esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
                     checkIfFirstEverSettlement={checkIfFirstEverSettlement}
                   />
                 )}
@@ -153,7 +216,7 @@ const Settlements = ({
                 render={() => (
                   <SettlementsListContainer
                     settlementExists={settlementExists}
-                    esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                    esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
                     checkIfFirstEverSettlement={checkIfFirstEverSettlement}
                   />
                 )}
@@ -182,6 +245,7 @@ export default withRouter(
       fetchCurrentBalance: fnFetchCurrentBalance,
       fetchSettlementConfig: fnFetchSettlementConfig,
       fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
+      openModal: fnOpenModal,
     },
   )(Settlements),
 );

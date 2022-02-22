@@ -8,6 +8,7 @@ import Input from 'common/new-ui/Input';
 import { trackEsChurnReason, trackEsModalCloseAction } from '../../ga';
 import { trackSettleNowCloseReason, trackSettleNowConfirmClose } from '../../../trackEvents';
 import { bindActionCreators } from 'redux';
+import Nudge from './ScheduledModal/components/Nudge';
 
 class ModalCloseReasons extends Component {
   constructor(props) {
@@ -57,6 +58,8 @@ class ModalCloseReasons extends Component {
 
   render() {
     const { brief } = this.state;
+    const { user, openModal, closeOrigin } = this.props;
+
     return (
       <div class="reasons-close-modal">
         <ModalHeader
@@ -94,6 +97,8 @@ class ModalCloseReasons extends Component {
             onChange={this.handleBriefChange}
           />
         </div>
+
+        <Nudge user={user} openModal={openModal} closeOrigin={closeOrigin} />
 
         <div class="flex action-container">
           <Button.Transparent onClick={this.handleGoBackClick} class="go-back">

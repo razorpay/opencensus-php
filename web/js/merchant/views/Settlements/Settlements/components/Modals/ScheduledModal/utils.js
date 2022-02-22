@@ -1,0 +1,98 @@
+import ajax from 'merchant/utils/ajax';
+import moment from 'moment';
+import store from 'merchant/store';
+import { getItem, setItem } from 'common/utils/localStorage';
+
+export const getAutomaticSettlementTime = () => {
+  const currentHour = Number(moment().format('HH'));
+
+  if (currentHour < 17 && currentHour > 9) return '5 PM';
+  return '9 AM';
+};
+
+export const getDiscountPercentage = (pricingRate) => {
+  if (pricingRate <= 15) {
+    return 0;
+  }
+  return (((15 - pricingRate) / pricingRate) * 100).toFixed();
+};
+
+export const enableAutomaticSettlements = () =>
+  ajax(
+    {
+      url: 'es/scheduled',
+      method: 'POST',
+    },
+    {},
+    '/merchant/api',
+  );
+
+export const getInstantPricingPercentage = () => {
+  const payload = {
+    amount: 10000,
+    currency: 'INR',
+  };
+
+  return ajax(
+    {
+      url: '/settlement/ondemand/fees/dashboard',
+      method: 'GET',
+      data: payload,
+    },
+    {},
+    '/merchant/api',
+  );
+};
+
+export const getEsPartialAutomaticDateKey = () => {
+  const {
+    session: { user },
+  } = store.getState();
+
+  return `ENABLE_ES_PARTIAL_AUTOMATIC_DATE-${user.id}`;
+};
+
+export const setEnableEsPartialAutomaticDate = () => {
+  setItem(getEsPartialAutomaticDateKey(), moment().format('DD/MM/YYYY'));
+};
+
+export const getEnableEsPartialAutomaticDate = () => {
+  return getItem(getEsPartialAutomaticDateKey());
+};
+
+export const getNoOfDaysAfterEsPartialEnable = () => {
+  const enableDate = getEnableEsPartialAutomaticDate();
+  return enableDate && moment().diff(moment(enableDate, 'DD/MM/YYYY'), 'days');
+};
+
+export const getEsBannerKey = (bannerType) => {
+  const {
+    session: { user },
+  } = store.getState();
+
+  return `SEEN_ES_BANNER-${bannerType}-${user.id}`;
+};
+
+export const getEsBannerSeen = (bannerType) => {
+  return getItem(getEsBannerKey(bannerType));
+};
+
+export const setEsBannerSeen = (bannerType) => {
+  setItem(getEsBannerKey(bannerType), true);
+};
+
+export const getEsNudgeKey = (nudgeType) => {
+  const {
+    session: { user },
+  } = store.getState();
+
+  return `SEEN_ES_NUDGE-${nudgeType}-${user.id}`;
+};
+
+export const getEsNudgeSeen = (nudgeType) => {
+  return getItem(getEsNudgeKey(nudgeType));
+};
+
+export const setEsNudgeSeen = (nudgeType) => {
+  setItem(getEsNudgeKey(nudgeType), true);
+};

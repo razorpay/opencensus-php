@@ -2,15 +2,10 @@ import React from 'react';
 import Time from 'common/ui/Time';
 import moment from 'moment';
 
+import { NEW_BANNERS } from './banners/constants';
+
 const messageFactory = {
-  getEnableScheduledSettlements: () => ({
-    heading: 'Get your settlements on the same day automatically!',
-    description:
-      'You can get daily settlements on working days automatically without having to visit the dashboard each time.',
-    image: 'early-settlement-light-blue',
-    showEnableNowButton: true,
-    hideRightImages: true,
-  }),
+  getEnableScheduledSettlements: () => NEW_BANNERS.ENABLE_ES_AUTOMATIC,
   getSettlementWillBeSkipped: () => ({
     heading: 'Scheduled settlement will be skipped',
     description:
@@ -46,6 +41,8 @@ const messageFactory = {
     ),
     image: 'calendar',
   }),
+  getFullShiftSuccess: () => NEW_BANNERS.FULL_SHIFT_SUCCESS,
+  getFullShiftFailure: () => NEW_BANNERS.FULL_SHIFT_FAILURE,
 };
 
 export default messageFactory;

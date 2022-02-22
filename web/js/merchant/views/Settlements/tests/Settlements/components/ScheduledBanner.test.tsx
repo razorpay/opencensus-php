@@ -5,6 +5,26 @@ import { fireEvent, render, screen, waitFor } from 'test-utils';
 let shouldRestrictUser = false;
 let isAutomaticSettlementEnabledToggle = false;
 
+jest.mock('merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils', () => ({
+  __esModule: true,
+  // eslint-disable-next-line func-name-matching
+  getInstantPricingPercentage: () => {
+    return Promise.resolve({ data: null });
+  },
+  enableAutomaticSettlements: () => {
+    return Promise.resolve({ data: null });
+  },
+  getEnableEsPartialAutomaticDate: () => {
+    return '21/02/2022';
+  },
+  getNoOfDaysAfterEsPartialEnable: () => {
+    return 10;
+  },
+  getAutomaticSettlementTime: () => {
+    return '9 AM';
+  },
+}));
+
 const mockUserReducer = {
   get isAutomaticSettlementEnabled() {
     return isAutomaticSettlementEnabledToggle;
@@ -46,7 +66,7 @@ test('should render default texts', () => {
 test('should open modal automatically if openAutoModal is passed', () => {
   render(<App openAutoModal />, { showModal: true });
 
-  expect(screen.getByRole('button', { name: /Enable Early Settlement/i })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: /Enable Same-day Settlements/i })).toBeInTheDocument();
 });
 
 test('should open modal on clicking enable now', async () => {
@@ -56,7 +76,9 @@ test('should open modal on clicking enable now', async () => {
 
   // Check if modal is open
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: /Enable Early Settlement/i })).toBeInTheDocument(),
+    expect(
+      screen.getByRole('button', { name: /Enable Same-day Settlements/i }),
+    ).toBeInTheDocument(),
   );
 });
 
@@ -68,7 +90,9 @@ test('should restrict enable now button for restricted user', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Enable Now' }));
 
   await waitFor(() =>
-    expect(screen.queryByRole('button', { name: /Enable Early Settlement/i })).toBeInTheDocument(),
+    expect(
+      screen.queryByRole('button', { name: /Enable Same-day Settlements/i }),
+    ).toBeInTheDocument(),
   );
 });
 

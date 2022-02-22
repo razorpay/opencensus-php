@@ -15,14 +15,7 @@ class ScheduledBanner extends Component {
   openAutomatic = () => {
     trackEnableNow(this.props.location.pathname);
     this.props.openModal({
-      component: (
-        <ScheduledModal
-          eventCategory={this.props.eventCategory}
-          fromWhere={this.props.fromWhere}
-          onExit={this.props.onExit}
-          goBackToInitialModalView={this.openAutomatic}
-        />
-      ),
+      component: <ScheduledModal />,
       size: 'small',
       disableClose: true,
     });

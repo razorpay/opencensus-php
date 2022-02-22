@@ -7,6 +7,7 @@ import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 import { bindActionCreators } from 'redux';
+import SamedayUpselling from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Upselling';
 
 class SettlementDetail extends Component {
   handleContactSupport = () => {
@@ -40,6 +41,11 @@ class SettlementDetail extends Component {
   isBankAccountChanged = () => {
     return this.props.profile?.bankAccountChangeStatus;
   };
+
+  get showUpsellingBanner() {
+    const { user } = this.props;
+    return !user.isAutomaticSettlementEnabled && !user.isAutomaticSettlementRestricted;
+  }
 
   get onHoldTitle() {
     const user = this.props.user;
@@ -289,6 +295,8 @@ class SettlementDetail extends Component {
             </div>
           </div>
           <div className="settlement-detail-actions">{this.actionButtons}</div>
+
+          {this.showUpsellingBanner && <SamedayUpselling />}
         </div>
       </div>
     );

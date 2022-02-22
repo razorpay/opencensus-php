@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
-import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
+import {
+  closeModal as fnCloseModal,
+  openModal as fnOpenModal,
+} from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import ajax from 'merchant/utils/ajax';
@@ -19,7 +22,6 @@ import {
   trackEsAmountError,
   trackEsConfirm,
   trackEsAmountUpdated,
-  trackEsInfoHover,
 } from '../../ga';
 import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
@@ -28,10 +30,12 @@ import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
 import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
-import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import { setItem, getItem } from 'common/utils/localStorage';
 import { onDemandModalTrackEvents } from '../../../trackEvents';
 import { bindActionCreators } from 'redux';
+import Nudge from './ScheduledModal/components/Nudge';
+import SamedayUpselling from './ScheduledModal/components/Upselling';
+import { setEsNudgeSeen } from './ScheduledModal/utils';
+import { NUDGE_TYPES } from './ScheduledModal/constants';
 
 class OndemandModal extends Component {
   constructor(props) {
@@ -60,11 +64,6 @@ class OndemandModal extends Component {
       tax: 0,
       instantFee: 0,
       prefilledAmountUpdated: false,
-    };
-
-    this.inputTooltipRef = null;
-    this.setInputTooltipRef = (el) => {
-      this.inputTooltipRef = el;
     };
 
     this.updateFeeDebounced = debounce(this.updateFee, 300);
@@ -282,30 +281,11 @@ class OndemandModal extends Component {
 
     trackModalOpen(user.current);
     this.updateFee();
-    this.showInputTooltip();
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', this.escFunction);
   }
-
-  handleMouseOverTooltip = () => {
-    if (this.props.user.isFeatureEnabled('es_on_demand_restricted')) {
-      trackEsInfoHover();
-      onDemandModalTrackEvents.trackSettleNowInfoHover(this.props.fromWhere);
-    }
-  };
-
-  showInputTooltip = () => {
-    if (!getItem('es-ondemand-input-tooltip')) {
-      this.inputTooltipRef.classList.add('input-tooltip-custom');
-      setItem('es-ondemand-input-tooltip', true);
-    }
-  };
-
-  hideInputTooltip = () => {
-    this.inputTooltipRef.classList.remove('input-tooltip-custom');
-  };
 
   escFunction = (event) => {
     if (event.keyCode === 27) {
@@ -394,6 +374,11 @@ class OndemandModal extends Component {
         });
         this.props.fetchCurrentBalance();
         this.props.fetchOndemandRestrictions();
+
+        const { user } = this.props;
+        if (user.isOndemandSettlementEnabled && !user.isOndemandSettlementsRestricted) {
+          setEsNudgeSeen(NUDGE_TYPES.FULL_SUCCESS);
+        }
 
         if (this.props.checkIfFirstEverSettlement)
           this.props.checkIfFirstEverSettlement('settlementDone');
@@ -543,12 +528,12 @@ class OndemandModal extends Component {
 
   renderPreTransaction = () => {
     const { isLoadingBreakup, validAmount, errors, isSaving, amount, instantFee, tax } = this.state;
-    const { settlableAmount, currentBalance, fromWhere } = this.props;
+    const { user, settlableAmount, fromWhere, openModal } = this.props;
     return (
       <div class="onmdemand-modal">
         <ModalHeader
           class="header"
-          title="Instant Settlement"
+          title="Instant Settlements"
           onCloseClick={() => {
             this.handleCloseModal('Close Modal Screen 1');
             onDemandModalTrackEvents.trackSettleNowCloseClick(this.props.fromWhere);
@@ -556,8 +541,7 @@ class OndemandModal extends Component {
         />
         <div class="modal-body">
           <p>
-            Settle to your bank account instantly 24x7, <strong>even on Holidays!&nbsp;</strong>
-            Upcoming Settlements follow the existing schedule.
+            Settle to your bank account instantly, <strong>even on Holidays!&nbsp;</strong>
             <a
               class="btn-link"
               target="_blank"
@@ -574,7 +558,6 @@ class OndemandModal extends Component {
                 required={false}
                 addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
                 autoFocus={false}
-                onFocus={this.hideInputTooltip}
                 name="amount"
                 class="Input Input--Amount"
                 disabled={isSaving}
@@ -585,19 +568,6 @@ class OndemandModal extends Component {
                   onDemandModalTrackEvents.trackSettleAmountUpdated(fromWhere);
                 }}
               />
-              <span
-                onMouseEnter={this.handleMouseOverTooltip}
-                data-tooltip={`To help you get started, you can immediately settle up to ${getFormattedAmountNew(
-                  settlableAmount || currentBalance,
-                  true,
-                  'INR',
-                )}. Keep using Razorpay to increase and remove your limit`}
-                data-tooltip-position="top"
-                className="input-tooltip"
-                ref={this.setInputTooltipRef}
-              >
-                <i className="i i-info-outline" />
-              </span>
             </div>
             <div>
               {isLoadingBreakup && validAmount && <div class="loader" />}
@@ -614,6 +584,14 @@ class OndemandModal extends Component {
                 </div>
               )}
               {!validAmount && <div class="error-message">{errors[0]}</div>}
+
+              <Nudge
+                user={user}
+                openModal={openModal}
+                amount={amount}
+                settlableAmount={settlableAmount}
+              />
+
               <AsyncBtn.Primary
                 class="submit-btn"
                 disabled={isSaving || !validAmount || isLoadingBreakup}
@@ -660,13 +638,15 @@ class OndemandModal extends Component {
             closeModal={closeModal}
             hideCloseButton={() => this.setState({ hideCloseButton: true })}
           />
+
+          <SamedayUpselling showDiscount />
         </div>
       </div>
     );
   };
 
   render() {
-    const { goBackToInitialModalView } = this.props;
+    const { goBackToInitialModalView, openModal } = this.props;
     const { closeClicked, isSaved } = this.state;
     return (
       <div class="container-ondemand-modal">
@@ -680,6 +660,7 @@ class OndemandModal extends Component {
           <ModalCloseReasons
             goBackToInitialModalView={goBackToInitialModalView}
             closeOrigin="OnDemand"
+            openModal={openModal}
             eventCategory={this.props.eventCategory}
             fromWhere={this.props.fromWhere}
           />
@@ -702,6 +683,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
+      openModal: fnOpenModal,
       closeModal: fnCloseModal,
       fetchCurrentBalance,
       fetchOndemandRestrictions,
