@@ -3051,16 +3051,22 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
+                // Skip Scheduled payout
+                if ((isset($input[Payout\Entity::SCHEDULED_AT]) === true) and
+                    (empty($input[Payout\Entity::SCHEDULED_AT]) === false))
+                {
+                    return false;
+                }
+
                 // workflow payout skip
                 if ($this->isWorkflowEnabled === true)
                 {
                     $isEnabled = $this->merchant->isFeatureEnabled(Feature::WORKFLOW_VIA_PAYOUTS_MS);
 
-                    if ($isEnabled === true)
+                    if ($isEnabled === false)
                     {
-                        return true;
+                        return false;
                     }
-                    return false;
                 }
 
                 // batch payout check
