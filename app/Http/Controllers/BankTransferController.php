@@ -118,16 +118,11 @@ class BankTransferController extends Controller
 
         try
         {
-            $input = $this->modifyRblDataToEntity($input);
-            $provider = Provider::RBL;
+            $inputList = $this->modifyRblDataToEntity($input);
 
-//          manually config for JSW as the IFSC changed for JSW
-            if (substr($input['payee_account'], 0, 5) === 'VAJSW')
-            {
-                $provider = Provider::RBL_JSW;
-            }
+            $provider = $inputList['gateway_provider']['provider'];
 
-            $response = $this->service()->saveRequestAndProcess($input, $provider, false, Request::all());
+            $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
             /*
              * Commenting this as RBL doesn't have check on their end to restrict retry count.
              * In case the response is not 200, the retry is infinite.
@@ -345,19 +340,32 @@ class BankTransferController extends Controller
             $time = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
-        return [
-            'payee_account'  => $data['beneficiaryAccountNumber'],
-            'payee_ifsc'     => Provider::IFSC[Provider::RBL],
-            'payer_name'     => $data['senderName'],
-            'payer_account'  => $data['senderAccountNumber'],
-            'payer_ifsc'     => $data['senderIFSC'],
-            'mode'           => $mode,
-            'transaction_id' => $utr,
-            'time'           => $time,
-            'amount'         => number_format($data['amount'], 2, '.', ''),
-            'description'    => $data['senderInformation'] ?? null,
-            'narration'      => $data['UTRNumber'],
-        ];
+        $provider  = Provider::RBL;
+        $payeeIfsc = Provider::IFSC[Provider::RBL];
+
+        if (substr($data['beneficiaryAccountNumber'], 0, 5) === 'VAJSW')
+        {
+            $provider  = Provider::RBL_JSW;
+            $payeeIfsc = Provider::IFSC[Provider::RBL_JSW];
+        }
+
+        return array(
+            'input' => [
+                            'payee_account'  => $data['beneficiaryAccountNumber'],
+                            'payee_ifsc'     => $payeeIfsc,
+                            'payer_name'     => $data['senderName'],
+                            'payer_account'  => $data['senderAccountNumber'],
+                            'payer_ifsc'     => $data['senderIFSC'],
+                            'mode'           => $mode,
+                            'transaction_id' => $utr,
+                            'time'           => $time,
+                            'amount'         => number_format($data['amount'], 2, '.', ''),
+                            'description'    => $data['senderInformation'] ?? null,
+                            'narration'      => $data['UTRNumber'],
+                       ],
+            'gateway_provider' => [
+                            'provider'       => $provider,
+                        ]);
     }
 
     protected function modifyIciciDataToEntity($input)

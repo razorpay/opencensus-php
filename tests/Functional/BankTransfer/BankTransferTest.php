@@ -2192,6 +2192,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
         $this->assertEquals(343946, $bankTransfer['amount']);
+        $this->assertEquals(Provider::IFSC[Provider::RBL_JSW], $bankTransfer['payee_ifsc']);
 
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals(343946, $payment['amount']);
