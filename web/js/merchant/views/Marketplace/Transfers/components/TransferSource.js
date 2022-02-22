@@ -6,6 +6,8 @@ const URLS = {
 };
 
 export default function TransferSource({ source }) {
+  if (!source) return '-';
+
   let URL;
 
   Object.keys(URLS).forEach((key) => {

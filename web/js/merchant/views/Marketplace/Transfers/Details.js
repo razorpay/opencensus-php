@@ -42,7 +42,15 @@ export default class TransferDetailsContainer extends Component {
       return;
     }
 
-    this.props.fetchTransfer(transferId).then(() => this.props.fetchReversals(transferId));
+    this.props
+      .fetchTransfer(transferId)
+      .then(() => this.props.fetchReversals(transferId))
+      .catch((error) => {
+        this.props.showNotification({
+          type: 'error',
+          message: error.errors?.[0] || 'Failed to connect to the server',
+        });
+      });
   }
 
   componentWillMount() {
