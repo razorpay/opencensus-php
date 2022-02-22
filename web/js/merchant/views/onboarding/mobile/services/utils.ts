@@ -275,7 +275,7 @@ export function getDefaultSelectedDocs(context, type) {
   const defaultAdditionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]
     ? Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair])[0]
     : '';
-
+  let defaultDoc;
   let defaultSelectedDoc;
 
   switch (type) {
@@ -293,7 +293,8 @@ export function getDefaultSelectedDocs(context, type) {
       defaultSelectedDoc = Object.keys(BUSINESS_PROOF_TYPE_DOCS).filter(
         (key) => documents[key].value,
       );
-      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['gst_certificate'];
+      defaultDoc = !!context.gstin ? ['gst_certificate'] : ['shop_establishment_certificate'];
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : defaultDoc;
       break;
     default:
       defaultSelectedDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]

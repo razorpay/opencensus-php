@@ -1604,6 +1604,7 @@ const uploadFields = [
       this.sendErrorMessageToSegment(e, error);
     },
     _when: isBusinessProofTypeDocFieldVisible,
+    _autoRenderImpure: true,
     className: 'Input--vTop',
   },
   {

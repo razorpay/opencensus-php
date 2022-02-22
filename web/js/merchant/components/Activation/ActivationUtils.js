@@ -353,18 +353,25 @@ function doesHaveBusinessProofDocs(activation) {
   return businessType === 1;
 }
 
-function getDefaultBusinessProofDoc(activation) {
+function getDefaultBusinessProofDoc(activation, has_gstin) {
   let defaultBusinessProofDoc = '';
   const documents = activation.props.data.documents;
+  if (!has_gstin) {
+    has_gstin = activation.state.has_gstin;
+  }
   if (documents.msme_certificate && documents.msme_certificate.length) {
     defaultBusinessProofDoc = 'msme_certificate';
+  } else if (documents.gst_certificate && documents.gst_certificate.length) {
+    defaultBusinessProofDoc = 'gst_certificate';
   } else if (
     documents.shop_establishment_certificate &&
     documents.shop_establishment_certificate.length
   ) {
     defaultBusinessProofDoc = 'shop_establishment_certificate';
   } else {
-    defaultBusinessProofDoc = 'gst_certificate';
+    defaultBusinessProofDoc = !Number(has_gstin)
+      ? 'gst_certificate'
+      : 'shop_establishment_certificate';
   }
   return defaultBusinessProofDoc;
 }

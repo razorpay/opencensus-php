@@ -1711,8 +1711,16 @@ export default class ActivationWizard extends React.Component {
     /*
      * Step 2: If user marks no GSTIN from radio box
      * */
-    if (stateName === 'has_gstin' && fieldValue === '1') {
-      sideEffectFieldsToUpdate.gstin = '';
+    if (stateName === 'has_gstin') {
+      if (fieldValue === '1') {
+        sideEffectFieldsToUpdate.gstin = '';
+      }
+      if (doesHaveBusinessProofDocs(this)) {
+        // update business proof type
+        // Only applicable for Proprietorship businesses currently
+        const defaultBusinessProofDoc = getDefaultBusinessProofDoc(this, fieldValue);
+        this.setState({ business_proof_type: defaultBusinessProofDoc });
+      }
     } else if (stateName === 'has_url' && fieldValue === '0') {
       sideEffectFieldsToUpdate.business_website = '';
       sideEffectFieldsToUpdate.playstore_url = '';
@@ -2880,6 +2888,10 @@ export function ActivationField(field) {
     rest.socialMedia = dirty.social_media || social_media;
     rest.sendErrorMessageToSegment = this.sendErrorMessageToSegment;
     rest.isOnKYCTab = this.isOnKYCTab();
+  }
+
+  if (_name === 'business_proof_type') {
+    rest.value = this.state.business_proof_type;
   }
 
   if (typeof rest.onBlur === 'function') {
