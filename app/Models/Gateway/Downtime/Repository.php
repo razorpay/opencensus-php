@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Downtime;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Jobs\PaymentDowntime;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\EsRepository;
@@ -70,7 +71,7 @@ class Repository extends Base\Repository
     {
         parent::saveOrFail($entity, $options);
 
-        if (($this->sourcePresentinSources($entity)) === true) {
+        if (($this->isValidDowntimeSource($entity)) === true) {
             // Every update of gateway downtimes table should
             // queue a refresh of the payment downtimes table
             $paymentDowntimesEnabled = (bool)ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIMES, false);
@@ -242,7 +243,7 @@ class Repository extends Base\Repository
      *
      */
 
-    public function fetchCurrentAndFutureDowntimes(bool $withoutTerminal = false): PublicCollection
+    public function fetchCurrentAndFutureDowntimes(bool $withoutTerminal = false, bool $refreshRouterCache = false): PublicCollection
     {
         $query = $this->newQuery();
 
@@ -255,6 +256,14 @@ class Repository extends Base\Repository
         if ($withoutTerminal === true)
         {
             $query->whereNull(Entity::TERMINAL_ID);
+        }
+
+        if ($refreshRouterCache === true)
+        {
+
+            $query->where(Entity::GATEWAY,'!=',Entity::ALL);
+
+            $query->whereIn(Entity::METHOD , [Payment\Method::CARD,Payment\Method::UPI]);
         }
 
         return $query->get();
@@ -434,8 +443,10 @@ class Repository extends Base\Repository
      * @param $entity
      * @return bool
      */
-    protected function sourcePresentInSources($entity): bool
+    protected function isValidDowntimeSource($entity): bool
     {
+        //if the source is statuscake or vajra it is considered to be an invalid source
+        // and a refresh of payment downtimes table isn't required for downtimes with such source
         if ((empty($entity['source']) === false) and (isset($entity['source']) === true) and (in_array($entity['source'], $this->SOURCES) === true)) {
 
             return false;

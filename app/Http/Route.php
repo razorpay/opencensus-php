@@ -2638,8 +2638,11 @@ class Route
         'governor_optimizer_merchant_stats'         => ['post',      'optimizer/stats/merchant',                                                                              'GovernorController@proxy'              ],
 
         'gateway_downtime_for_payment'            => ['POST',     'router/gateway/downtimes',                                  'GatewayController@getGatewayDowntimeForRouter'             ],
-
-        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                  ],
+        'router_gateway_downtime_create'          => ['post',     'create_update_downtime',                                    'SmartRoutingController@proxy'                              ],
+        'router_gateway_downtime_delete'          => ['post',     'resolve_downtime',                                          'SmartRoutingController@proxy'                              ],
+        'router_gateway_downtime_fetch'           => ['post',     'fetch_downtime',                                            'SmartRoutingController@proxy'                              ],
+        'router_refresh_cron'                     => ['post',     'refresh_cache',                                             'SmartRoutingController@refreshCron'                        ],
+        'banking_account_create'                  => ['post',     'banking_accounts',                                          'BankingAccountController@create'                           ],
         'banking_account_create_dashboard'        => ['post',     'banking_accounts_dashboard',                                'BankingAccountController@createDashboard'                  ],
         'banking_account_create_dashboard_admin'  => ['post',     'banking_accounts_admin_dashboard',                          'BankingAccountController@createDashboard'                  ],
         'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
@@ -5913,6 +5916,12 @@ class Route
         'governor_optimizer_create_merchant',
         'governor_optimizer_update_merchant',
 
+        // cache downtime router routes
+        'router_gateway_downtime_create',
+        'router_gateway_downtime_delete',
+        'router_gateway_downtime_fetch',
+        'router_refresh_cron',
+
         'banking_account_create_admin',
         'banking_account_create_dashboard_admin',
 
@@ -7081,7 +7090,10 @@ class Route
         'governor_optimizer_create_merchant'       => Permission::CREATE_GATEWAY_RULE,
         'governor_optimizer_update_merchant'       => Permission::EDIT_GATEWAY_RULE,
 
-
+        'router_gateway_downtime_create'           => Permission::CREATE_GATEWAY_RULE,
+        'router_gateway_downtime_delete'           => Permission::DELETE_GATEWAY_RULE,
+        'router_gateway_downtime_fetch'            => Permission::VIEW_GATEWAY_RULE,
+        'router_refresh_cron'                     =>  Permission::VIEW_GATEWAY_RULE,
 
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
@@ -9873,6 +9885,11 @@ class Route
             'governor_update_rule_index_v1',
             'governor_update_rule_v1',
             'governor_update_template_v1',
+            // cache downtime router routes
+            'router_gateway_downtime_create',
+            'router_gateway_downtime_delete',
+            'router_gateway_downtime_fetch',
+            'router_refresh_cron',
             'gratis_postpaid_transactions',
             'group_create',
             'group_delete',

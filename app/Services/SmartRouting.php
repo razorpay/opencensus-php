@@ -4,10 +4,11 @@ namespace RZP\Services;
 
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Base\RepositoryManager;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
-
+use RZP\Models\Gateway\Downtime;
 class SmartRouting
 {
     const X_RAZORPAY_TASKID         = 'X-Razorpay-TaskId';
@@ -34,6 +35,12 @@ class SmartRouting
     protected $request;
 
     protected $app;
+
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
 
     protected $mode;
 
@@ -69,6 +76,11 @@ class SmartRouting
 
     const DELETE_GATEWAY_DOWNTIME_DATA = [
         'url'       => "/resolve_downtime",
+        'method'    => "POST"
+    ];
+
+    const REFRESH_CACHE_DOWNTIME_DATA = [
+        'url'       => "/refresh_cache",
         'method'    => "POST"
     ];
 
@@ -162,7 +174,7 @@ class SmartRouting
     }
 
 
-    protected function sendRequest($action, $data = null, $id = null, $params = null, $timeout = null)
+    public function sendRequest($action, $data = null, $id = null, $params = null, $timeout = null)
     {
         try
         {
@@ -442,5 +454,15 @@ class SmartRouting
             $function = "deleteOrFail";
             $this->deleteGatewayDowntimes($entity,$function);
         }
+    }
+
+    public function refreshSmartRoutingCache(){
+
+
+        $gatewayDowntimes = (new Downtime\Repository)->fetchCurrentAndFutureDowntimes(true,true);
+        $data = [
+            'gateway_downtime'          => $gatewayDowntimes,
+            ];
+        return $this->sendRequest(self::REFRESH_CACHE_DOWNTIME_DATA,$data,null,null,self::REQUEST_DOWNTIME_TIMEOUT);
     }
 }
