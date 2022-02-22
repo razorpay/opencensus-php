@@ -83,7 +83,7 @@ const RefundDetails = ({ items = [] }) => {
   );
 };
 
-export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
+const PaymentRefund = ({ payment, refunds, openRefundModal, onToggleClick = () => {} }) => {
   const paymentStatus = payment.status;
   const refundStatus = payment.refund_status;
   const refundAmount = payment.amount_refunded;
@@ -183,6 +183,11 @@ export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} })
       </div>
     );
   } else if (paymentStatus === 'refunded') {
+    const isDeductAtOnset =
+      payment?.disputes.items.filter((disp) => {
+        return disp.status !== 'lost' && disp.amount_deducted > 0;
+      }).length > 0;
+
     if (!refundStatus) {
       // Un captured refunds will be auto refunded
       return (
@@ -198,9 +203,16 @@ export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} })
         <div>
           <Definition>
             <span>Fully Refunded</span>
-            <span>
-              Fully Refunded in <NumRefunds refunds={refunds} />
-            </span>
+            {isDeductAtOnset ? (
+              <span>
+                This is a temporary debit. It will be reversed after the issuing bank closes the
+                chargeback in your favor.
+              </span>
+            ) : (
+              <span>
+                Fully Refunded in <NumRefunds refunds={refunds} />
+              </span>
+            )}
           </Definition>
           <ShowWhen additionalCondition={(user) => user.isPaymentsExtraRefundDetailsEnabled}>
             <RefundDetails items={refunds.items} />
@@ -221,3 +233,5 @@ export default ({ payment, refunds, openRefundModal, onToggleClick = () => {} })
 
   return null;
 };
+
+export default PaymentRefund;
