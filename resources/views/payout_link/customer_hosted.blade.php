@@ -188,7 +188,8 @@
         supportDetails: {
             supportPhone: '{{ $support_phone }}',
             supportEmail: '{{ $support_email }}',
-        }
+        },
+        keylessHeader: '{{ $keyless_header }}'
     };
 </script>
 <script src="{{ $banking_url }}/dist/payoutlinks.js"></script>

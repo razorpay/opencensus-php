@@ -280,7 +280,7 @@ class PayoutLinkController extends Controller
 
         $response->headers->set('Access-Control-Allow-Credentials' , 'true');
 
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     }
 
     public function get(string $id)

@@ -604,6 +604,8 @@ class PayoutLinks
 
         $merchant = $merchant ?: $this->repo->merchant->findOrFail($payoutLinkInfo[self::MERCHANT_ID]);
 
+        $keylessHeader = $this->getKeylessHeader($merchant->getId(), Mode::LIVE);
+
         if (key_exists('payouts', $payoutLinkInfo)
             && key_exists('count', $payoutLinkInfo['payouts']))
         {
@@ -696,6 +698,7 @@ class PayoutLinks
             'expired_at'                  => $expiredAt,
             'support_phone'               => $supportPhone,
             'support_email'               => $supportMail,
+            'keyless_header'              => $keylessHeader,
         ];
 
         return $data;
@@ -1759,6 +1762,7 @@ class PayoutLinks
             'expire_by'                   => 0,
             'expired_at'                  => 0,
             'support_phone'               => '',
+            'keyless_header'              => '',
         ];
 
         return $data;
@@ -1839,7 +1843,27 @@ class PayoutLinks
             'expireBy'                  => $hostedData['expire_by'],
             'expiredAt'                 => $hostedData['expired_at'],
             'supportDetails'            => $supportDetails,
+            'keylessHeader'             => $hostedData['keyless_header'],
         ];
+    }
+
+    protected function getKeylessHeader($merchantId, $mode)
+    {
+        $keylessHeader = null;
+
+        $isKeylessHeaderEnabled = $this->app['razorx']->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::KEYLESS_HEADER_POUTLK,
+            $mode
+        );
+
+        if ($isKeylessHeaderEnabled === 'on') {
+            $keylessHeader = $this->app['keyless_header']->get(
+                $merchantId,
+                $mode);
+        }
+
+        return $keylessHeader;
     }
 
 }

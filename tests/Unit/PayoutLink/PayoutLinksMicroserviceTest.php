@@ -363,7 +363,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletFeatureEnabled", "getEnvironment", "getKeylessHeader"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -373,6 +373,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn($bankingAccountMock);
         $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
+        $mock->method("getKeylessHeader")
+            ->willReturn(null);
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
         $this->assertTrue($data['allow_upi']);
@@ -398,7 +400,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -408,6 +410,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn($bankingAccountMock);
         $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
+        $mock->method("getKeylessHeader")
+            ->willReturn(null);
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
         $this->assertFalse($data['allow_amazon_pay']);
@@ -432,7 +436,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -442,6 +446,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn($bankingAccountMock);
         $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
+        $mock->method("getKeylessHeader")
+            ->willReturn(null);
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
         $this->assertFalse($data['allow_amazon_pay']);
@@ -469,7 +475,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled"))
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletFeatureEnabled", "getKeylessHeader"))
             ->getMock();
         $mock->method("makeRequest")
             ->willReturn($response);
@@ -479,6 +485,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn($bankingAccountMock);
         $mock->method("getAmazonPayWalletFeatureEnabled")
             ->willReturn(true);
+        $mock->method("getKeylessHeader")
+            ->willReturn(null);
 
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
@@ -984,7 +992,7 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
             ->disableOriginalConstructor()
-            ->setMethods(array('makeRequest', 'getEnvironment'))
+            ->setMethods(array('makeRequest', 'getEnvironment', 'getKeylessHeader'))
             ->getMock();
 
         $mock->method('makeRequest')
@@ -992,6 +1000,9 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock->method('getEnvironment')
             ->willReturn(Environment::TESTING);
+
+        $mock->method('getKeylessHeader')
+            ->willReturn(null);
 
         $data = $mock->getHostedPageData($payoutLinkId, $this->getMerchantEntity($merchantId));
 
@@ -1493,6 +1504,108 @@ class PayoutLinkMicroserviceTest extends TestCase
         $response['payout_link_response']['contact']['email'] = 'test@gmail.com';
         $response['payout_link_response']['contact']['contact'] = '+919090990909';
         return $response;
+    }
+
+    public function testGetHostedPageForKeylessHeaderEnabledMerchant()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
+
+        $response = $this->mockGetHostedResponseForPLWithExpiry();
+
+        $bankingAccountMock = $this->mockBankingAccount(Channel::YESBANK);
+
+        $this->enableRazorXTreatmentForKeylessHeader();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'getBankingAccountInfo', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method("getBankingAccountInfo")->willReturn($bankingAccountMock);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+
+        $this->assertContains('keyless_header', $data);
+
+        $this->assertNotNull($data['keyless_header']);
+    }
+
+    public function testGetHostedPageForKeylessHeaderDisabledMerchant()
+    {
+        $newMerchant = $this->fixtures->create('merchant');
+
+        $this->prepareBankingAccountData($newMerchant->getId());
+
+        $response = $this->mockGetHostedResponseForPLWithExpiry();
+
+        $bankingAccountMock = $this->mockBankingAccount(Channel::YESBANK);
+
+        $this->disableRazorXTreatmentForKeylessHeader();
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest', 'getBankingAccountInfo', 'allowUpi', 'allowAmazonPay', 'getEnvironment'))
+            ->getMock();
+        $mock->method('makeRequest')->willReturn($response);
+        $mock->method("getBankingAccountInfo")->willReturn($bankingAccountMock);
+        $mock->method('allowUpi')->willReturn(false);
+        $mock->method('allowAmazonPay')->willReturn(false);
+        $mock->method('getEnvironment')->willReturn(Environment::TESTING);
+
+        $data = $mock->getHostedPageData('poutlk_1000000000', $newMerchant);
+
+        $this->assertContains('keyless_header', $data);
+
+        $this->assertNull($data['keyless_header']);
+    }
+
+    protected function enableRazorXTreatmentForKeylessHeader()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->expects($this->any())->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::KEYLESS_HEADER_POUTLK)
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+    }
+
+    protected function disableRazorXTreatmentForKeylessHeader()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->expects($this->any())->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::KEYLESS_HEADER_POUTLK)
+                    {
+                        return 'off';
+                    }
+                    return 'on';
+                }));
     }
 
 }
