@@ -3,7 +3,7 @@ import styled, { keyframes } from 'styled-components';
 
 import { AsyncBtn } from 'common/new-ui/Button';
 import ScheduledModal from '..';
-import { POST_ENABLE_TYPES } from '../constants';
+import { NUDGE_TYPES, POST_ENABLE_TYPES } from '../constants';
 import { getEsNudgeSeen, getNoOfDaysAfterEsPartialEnable } from '../utils';
 
 const WobbleHorizontal = keyframes`
@@ -166,7 +166,7 @@ export default function Nudge({ user, amount, settlableAmount, closeOrigin, open
       : POST_ENABLE_TYPES.SAMEDAY_FULL_FAILURE
     : POST_ENABLE_TYPES.SAMEDAY_FULL_SHIFT_PROGRESS;
 
-  if (isFullOndemandSettlementEnabled && !closeOrigin && !getEsNudgeSeen('FULL-SUCCESS'))
+  if (isFullOndemandSettlementEnabled && !closeOrigin && !getEsNudgeSeen(NUDGE_TYPES.FULL_SUCCESS))
     return <Full openModal={openModal} modalType={modalType} />;
 
   if (isPartialOndemandSettlementEnabled && closeOrigin === 'OnDemand')
