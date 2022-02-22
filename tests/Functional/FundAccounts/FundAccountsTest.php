@@ -45,6 +45,21 @@ class FundAccountsTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetFundAccountForPayoutsService()
+    {
+        $this->fixtures->create('fund_account:bank_account', ['id' => '100000000000fa']);
+
+        $this->ba->appAuthTest($this->config['applications.payouts_service.secret']);
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $bankAccountId = $bankAccount['id'];
+
+        $this->assertEquals($bankAccountId, $response['bank_account']['id']);
+    }
+
     public function testFetchFundAccounts()
     {
         $this->fixtures->create('fund_account:bank_account', ['id' => '100000000001fa']);

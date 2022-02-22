@@ -24,6 +24,25 @@ return [
         ],
     ],
 
+    'testGetFundAccountForPayoutsService' => [
+        'request'  => [
+            'url'    => '/fund_accounts_internal/fa_100000000000fa',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
+            ],
+
+        ],
+        'response' => [
+            'content' => [
+                'id'           => 'fa_100000000000fa',
+                'entity'       => 'fund_account',
+                'active'       => true,
+                'account_type' => 'bank_account',
+            ],
+        ],
+    ],
+
     'testFetchFundAccounts' => [
         'request'  => [
             'url'    => '/fund_accounts',

@@ -508,9 +508,15 @@ class Entity extends Base\PublicEntity
             $accountAttributes = $this->account->toArrayFundAccount();
         }
 
-        // For now, don't expose the public id and entity attributes from any of the related entities
-        array_forget($accountAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
-
+        if (app('basicauth')->isPayoutService() === true)
+        {
+            array_forget($accountAttributes, Base\PublicEntity::ENTITY);
+        }
+        else
+        {
+            // For now, don't expose the public id and entity attributes from any of the related entities
+            array_forget($accountAttributes, [Base\PublicEntity::ID, Base\PublicEntity::ENTITY]);
+        }
         return $accountAttributes;
     }
 }
