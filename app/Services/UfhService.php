@@ -18,6 +18,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Constants\Entity as EntityConstants;
 
 use Razorpay\Ufh\Client as UfhClient;
 
@@ -66,6 +67,10 @@ class UfhService
 
     const BLACK_LISTED_FILE_TYPES_FOR_MERCHANTS_USERS = [
         Role::SUPPORT =>  Type::VALID_DOCUMENTS,
+    ];
+
+    const FULLY_ONBOARDED_CLOUDFRONT_NAMESPACES = [
+        EntityConstants::QR_CODE,
     ];
 
     protected $config;
@@ -147,10 +152,8 @@ class UfhService
                 $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable(
                     $this->merchantId, RazorxTreatment::PG_ONBOARDING_CLIENT_CLOUDFRONT_EXP);
 
-                $isExperimentEnabled |= (new MerchantCore())->isRazorxExperimentEnable(
-                    $this->merchantId, RazorxTreatment::QR_CODE_UFH_CLOUDFRONT_ONBOARDING);
-
-                if($isExperimentEnabled == true) {
+                if(($isExperimentEnabled == true) or
+                   (in_array($this->clientType, self::FULLY_ONBOARDED_CLOUDFRONT_NAMESPACES) == true)) {
                     $clientUsername = $this->clientType;
                 }
             }

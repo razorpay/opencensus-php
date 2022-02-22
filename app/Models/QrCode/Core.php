@@ -15,6 +15,7 @@ use RZP\Services\UfhService;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\Mock\UfhService as MockUfhService;
+use RZP\Constants\Entity as EntityConstants;
 
 
 class Core extends Base\Core
@@ -75,7 +76,9 @@ class Core extends Base\Core
 
         if($ufhServiceMock === false)
         {
-            $this->ufhService = new UfhService($this->app, $this->app['basicauth']->getMerchantId(), "qr_code");
+            $this->ufhService = new UfhService($this->app,
+                                               $this->app['basicauth']->getMerchantId(),
+                                               EntityConstants::QR_CODE);
         }
         else
         {
@@ -220,18 +223,6 @@ class Core extends Base\Core
         return $qrCode;
     }
 
-    private function isUfhExperimentEnabled($qrCode)
-    {
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(), RazorxTreatment::QR_CODE_UFH_CLOUDFRONT_ONBOARDING, $this->mode);
-
-        if ($variant !== 'on')
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     protected function generateQrCodeFile($qrCode)
     {
         $this->trace->info(TraceCode::QR_CODE_IMAGE_FILE_GENERATE, $qrCode->toArrayPublic());
@@ -254,22 +245,7 @@ class Core extends Base\Core
             $localFilePath = $this->generator->generateBharatQrCodeImage($qrCode);
         }
 
-        if($this->isUfhExperimentEnabled($qrCode) === true)
-        {
-            $this->saveQrCodeImageUsingUfh($localFilePath, $qrCode);
-            return;
-        }
-
-        $ext = Constants::QR_CODE_EXTENSION;
-
-        (new FileStore\Creator)
-            ->localFilePath($localFilePath)
-            ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
-            ->name($qrCode->getQrCodeFileName())
-            ->extension($ext)
-            ->entity($qrCode)
-            ->type(FileStore\Type::QR_CODE_IMAGE)
-            ->save();
+        $this->saveQrCodeImageUsingUfh($localFilePath, $qrCode);
     }
 
     private function saveQrCodeImageUsingUfh($localFilePath, $qrCode)
