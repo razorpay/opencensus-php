@@ -1295,6 +1295,8 @@ class Service extends Base\Service
 
             $response[Entity::METHODS] = (new Methods\Core)->getUpiMethodForMerchant($merchant);
 
+            $response[self::SEGMENT_DATA_MCC] = $this->merchant->getCategory();
+
             if ($supportDetails !== null)
             {
                 $supportDetails = $supportDetails->toArrayPublic();

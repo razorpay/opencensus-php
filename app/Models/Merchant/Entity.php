@@ -395,6 +395,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::CONVERT_CURRENCY,
         self::FEE_BEARER,
+        self::CATEGORY,
     ];
 
     protected $public = [
