@@ -135,7 +135,7 @@ class InternalStatus
 
     public static function exists(string $status): bool
     {
-        return defined(get_class() . '::' . strtoupper($status));
+        return in_array($status, self::$internalStatuses);
     }
 
     public static function getInternalStatuses()

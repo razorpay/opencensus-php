@@ -1799,6 +1799,50 @@ return [
         ],
     ],
 
+    'testDisputeEditInvalidInternalStatusValues' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'internal_status' => 'Represented',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "Represented is not a valid value for 'internal_status'",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeEditInvalidStatusValues' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'Under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "Not a valid dispute status: Under_review",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditDeductionSourceTypeAndId' => [
         'request' => [
             'method'  => 'post',

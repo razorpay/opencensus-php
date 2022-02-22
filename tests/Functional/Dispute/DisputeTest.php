@@ -1311,6 +1311,26 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * https://razorpay.slack.com/archives/C027FDDSZ0F/p1645077672501209?thread_ts=1645076375.052999&cid=C027FDDSZ0F
+     */
+    public function testDisputeEditInvalidInternalStatusValues()
+    {
+        $this->updateEditTestData();
+
+        $this->startTest();
+    }
+
+    /**
+     * https://razorpay.slack.com/archives/C027FDDSZ0F/p1645077672501209?thread_ts=1645076375.052999&cid=C027FDDSZ0F
+     */
+    public function testDisputeEditInvalidStatusValues()
+    {
+        $this->updateEditTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeEditDeductionSourceTypeAndId()
     {
         $this->updateEditTestData(['status' => 'lost', 'internal_status' => 'lost_merchant_not_debited']);
@@ -1815,6 +1835,8 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
     }
+
+
 
     public function testBulkDisputeEdit()
     {
