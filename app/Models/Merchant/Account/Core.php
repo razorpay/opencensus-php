@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\WebhookV2\Stork;
 
 class Core extends Merchant\Core
 {
@@ -114,6 +115,10 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        // since response from Stork during affected owners cache invalidation can come even before the above DB transaction
+        // completion, send cache invalidation request again. Jira - https://razorpay.atlassian.net/browse/PRTS-1085
+        $this->invalidateAffectedOwnersCache($subMerchant->getId());
 
         $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant);
 
@@ -221,6 +226,12 @@ class Core extends Merchant\Core
         return $this->repo
                     ->merchant
                     ->fetchSubmerchantsByAppIds($appIds, $input, $relations);
+    }
+
+    public function invalidateAffectedOwnersCache(string $merchantId)
+    {
+        (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
+        (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
     }
 
     protected function submitDetailsAndActivateIfApplicable(Merchant\Entity $partner, Merchant\Entity $subMerchant)

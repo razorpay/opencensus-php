@@ -12,7 +12,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
-use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
@@ -39,7 +38,9 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
-        $this->invalidateAffectedOwnersCache($account->getId());
+        // since response from Stork during affected owners cache invalidation can come even before the above DB transaction
+        // completion, send cache invalidation request again. Jira - https://razorpay.atlassian.net/browse/PRTS-1085
+        $accountCoreV1->invalidateAffectedOwnersCache($account->getId());
 
         $merchantDetails = $account->merchantDetail;
         $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $partner);
@@ -319,12 +320,6 @@ class Core extends Merchant\Core
         ];
 
         return $dimensions;
-    }
-
-    private function invalidateAffectedOwnersCache(string $merchantId)
-    {
-        (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
-        (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
     }
 
     /**
