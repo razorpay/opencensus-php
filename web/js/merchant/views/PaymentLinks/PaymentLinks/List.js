@@ -112,6 +112,8 @@ export default class PaymentLinksContainer extends ListContainer {
 
   fetchEntityList(params) {
     params.types = ['link', 'ecod'];
+    // exclude missed orders PLs as they will be displayed on a separate tab
+    params.source_not_in = 'missed_orders_plink';
     return this.props.fetchPaymentLinks(params);
   }
 
@@ -324,7 +326,6 @@ export default class PaymentLinksContainer extends ListContainer {
                 page: params.skip % params.count,
               }),
             );
-
             this.paginate(params);
           }}
         />
