@@ -2603,21 +2603,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT)
+        if ((isset($input[Entity::MERCHANT_ID]) === false))
         {
             throw new Exception\LogicException(
-                'EMI Terminals can only be added to shared merchant account',
-                null,
-                [
-                    'input' => $input
-                ]);
-        }
-
-        if ((isset($input[Entity::MERCHANT_ID]) === false) or
-            ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT))
-        {
-            throw new Exception\LogicException(
-                'EMI Terminals must be shared terminals',
+                'EMI Terminals must have merchant id',
                 null,
                 [
                     'input' => $input
