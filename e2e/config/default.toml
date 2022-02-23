@@ -6,3 +6,11 @@
     role = "owner"
     username = "rzp_test_10000000000000"
     password = "RANDOM_DASH_PASSWORD"
+
+[SubMerchant]
+    user = "7HQnhEQDgBIdlv"
+    role = "owner"
+    username = "rzp_test_10000000000000"
+    password = "RANDOM_DASH_PASSWORD"
+    rzp_super_key="rzp_test"
+    rzp_super_secret="DASHBOARD_AUTH_PASS_STAGING"
