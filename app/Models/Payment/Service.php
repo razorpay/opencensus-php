@@ -4762,7 +4762,7 @@ class Service extends Base\Service
         }
 
         $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
-        
+
         $successCount = 0;
         $failedCount = 0;
 

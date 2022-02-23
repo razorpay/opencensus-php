@@ -2,6 +2,7 @@
 
 namespace RZP\Models\CardMandate\MandateHubs\MandateHQ;
 
+use Crypt;
 use Carbon\Carbon;
 
 use RZP\Models\Card;
@@ -326,5 +327,40 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         $cardToken = $card->getCardVaultToken();
 
         return (new Card\CardVault)->getCardNumber($cardToken);
+    }
+
+    public function getRedirectResponseIfApplicable(CardMandate\Entity $cardMandate, Payment\Entity $payment)
+    {
+        if ($cardMandate->isCustomerConsentRequired() === false)
+        {
+            return null;
+        }
+
+        $mandateUrl = $cardMandate->getMandateSummaryUrl();
+
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            return [
+                'razorpay_payment_id' => $payment->getPublicId(),
+                'next'                => [
+                    [
+                        'action' => 'redirect',
+                        'url'    => $mandateUrl,
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'request'    => [
+                'url'     => $mandateUrl,
+                'method'  => 'get',
+                'content' => [],
+            ],
+            'version'    => 1,
+            'type'       => 'first',
+            'payment_id' => $payment->getPublicId(),
+            'gateway'    => Crypt::encrypt('mandate_hq__' . Carbon::now()->unix()),
+        ];
     }
 }

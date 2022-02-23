@@ -251,7 +251,12 @@ class Entity extends Base\PublicEntity
 
     public function shouldSaveAInputDetailsToCache()
     {
-        return $this->getMandateHub() === MandateHubs::MANDATE_HQ;
+        if (($this->getMandateHub() === MandateHubs::MANDATE_HQ) and ($this->isCustomerConsentRequired() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function isMandateApproved(): bool

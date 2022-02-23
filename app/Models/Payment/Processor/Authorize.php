@@ -235,13 +235,12 @@ trait Authorize
             }
        }
 
-        if (($ret !== null) and
-             ($payment->isCardMandateCreateApplicable() === false))
+        if ($ret !== null)
         {
             return $ret;
         }
 
-        return $this->processPaymentFinal($payment, $gatewayInput, $data, $ret);
+        return $this->processPaymentFinal($payment, $gatewayInput, $data);
     }
 
     protected function setSelectedTerminals(Payment\Entity $payment, array $gatewayInput)
@@ -355,7 +354,25 @@ trait Authorize
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
-            return null;
+            if ($payment->isCardMandateCreateApplicable() === true)
+            {
+                $this->processCardRecurringMandateInitialPaymentCreated($payment);
+
+                $token = $payment->localToken;
+
+                $cardMandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($token->cardMandate);
+
+                $redirectResponse = $cardMandateHub->getRedirectResponseIfApplicable($token->cardMandate, $payment);
+
+                if ($redirectResponse !== null)
+                {
+                    return $redirectResponse;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         $this->trace->info(
@@ -1026,7 +1043,7 @@ trait Authorize
         return $data;
     }
 
-    protected function processCardRecurringMandateInitialPaymentCreated(Payment\Entity $payment, $ret)
+    protected function processCardRecurringMandateInitialPaymentCreated(Payment\Entity $payment)
     {
         try
         {
@@ -1045,37 +1062,6 @@ trait Authorize
 
         $token->saveOrFail();
 
-        if ($cardMandate->isCustomerConsentRequired() === false)
-        {
-            return $ret;
-        }
-
-        $mandateUrl = $cardMandate->getMandateSummaryUrl();
-
-        if ($this->app['basicauth']->isPrivateAuth() === true)
-        {
-            return [
-                'razorpay_payment_id' => $payment->getPublicId(),
-                'next'                => [
-                    [
-                        'action' => 'redirect',
-                        'url'    => $mandateUrl,
-                    ],
-                ],
-            ];
-        }
-
-        return [
-            'request' => [
-                'url'     => $mandateUrl,
-                'method'  => 'get',
-                'content' => [],
-            ],
-            'version'    => 1,
-            'type'       => 'first',
-            'payment_id' => $payment->getPublicId(),
-            'gateway'    => Crypt::encrypt('mandate_hq__' . Carbon::now()->unix()),
-        ];
     }
 
     protected function processCardRecurringMandateAutoPaymentCreated(Payment\Entity $payment)
@@ -1099,7 +1085,7 @@ trait Authorize
         throw new Exception\LogicException('Should not be called for any payment other than Card Auto Recurring');
     }
 
-    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data, $ret): array
+    protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
@@ -1125,16 +1111,6 @@ trait Authorize
         if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)
         {
             return $this->processRecurringCreatedForUpi($payment, $data);
-        }
-
-        if ($payment->isCardMandateCreateApplicable() === true)
-        {
-            $resp = $this->processCardRecurringMandateInitialPaymentCreated($payment, $ret);
-
-            if ($resp !== null)
-            {
-                return $resp;
-            }
         }
 
         if ($payment->isCardMandateNotificationCreateApplicable() === true)
@@ -9898,7 +9874,8 @@ trait Authorize
             return 'fallback';
         }
 
-        if ($payment->isCardMandateCreateApplicable() === true)
+        if (($payment->isCardMandateRecurringInitialPayment() === true) and
+            ($payment->localToken->cardMandate->shouldSaveAInputDetailsToCache() === true))
         {
             return 'card_mandate';
         }

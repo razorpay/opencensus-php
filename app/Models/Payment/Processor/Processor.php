@@ -5278,8 +5278,7 @@ class Processor
         }
 
        // not sending gateway request while creating mandate
-        if (($payment->isCardMandateCreateApplicable() === true) and
-            ($this->app->mandateHQ->shouldSkipSummaryPage() === false))
+        if ($payment->isCardMandateCreateApplicable() === true)
         {
             return false;
         }
