@@ -22,6 +22,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Jobs\Settlement\TransactionMigrationPublish;
+use RZP\Constants\Country;
 
 class Core extends Base\Core
 {
@@ -280,6 +281,7 @@ class Core extends Base\Core
                     'remitter_info' => [
                         "remitter_name"    => $this->getRemitterName($payment),
                         "remitter_address" => $this->getRemitterAddress($payment),
+                        "remitter_country" => $this->getRemitterCountry($payment)
                     ],
                     'amount_meta'   => [
                         "conversion_amount"   => $this->getConversionAmount($payment, Currency::USD),
@@ -379,6 +381,27 @@ class Core extends Base\Core
         $address = $payment->fetchBillingAddress();
 
         return (empty($address)===false)?$address->formatAsText():null;
+    }
+
+    /**
+     * Returns Alpha-3 Country Code from address saved in 
+     * addresses table linked with payment entity.
+     * 
+     * @param Payment\Entity
+     * @return String | null
+     */
+
+    private function getRemitterCountry(Payment\Entity $payment)
+    {
+        $address = $payment->fetchBillingAddress();
+
+        if(empty($address) === true){
+            return null;
+        }
+
+        $country = $address->getCountry();
+
+        return Country::getCountryAlpha3Code($country);
     }
 
     private function getConversionAmount(Payment\Entity $payment, string $currency) {
