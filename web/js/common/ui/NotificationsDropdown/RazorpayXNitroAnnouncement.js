@@ -578,7 +578,7 @@ export const SubmissionSuccessfull = ({ handleClose }) => {
         <a
           href="https://razorpay.com/docs/razorpayx/current-account/"
           target="_blank"
-          rel="noreferrer"
+          rel="noreferrer noopener"
         >
           <Button.Primary class="btn btn-primary" type="button">
             View Documents Required

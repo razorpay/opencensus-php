@@ -79,7 +79,7 @@ const BaseDashboardBanner = React.memo(
         className="Button--secondary Button scheduled-btn-act btn-border"
         href={cta1Link}
         target={targetForCta1}
-        rel="noreferrer"
+        rel="noreferrer noopener"
       >
         {cta1Text}
       </a>
@@ -88,7 +88,7 @@ const BaseDashboardBanner = React.memo(
         className="Button--secondary Button scheduled-btn-act btn-border"
         onClick={handleCTA1Click}
         target={targetForCta1}
-        rel="noreferrer"
+        rel="noreferrer noopener"
       >
         {cta1Text}
       </a>
@@ -110,7 +110,7 @@ const BaseDashboardBanner = React.memo(
               href={cta2Link}
               className="Button--primary Button scheduled-btn-act btn-border"
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
             >
               {cta2Text}
             </a>

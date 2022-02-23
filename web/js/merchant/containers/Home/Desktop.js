@@ -539,6 +539,7 @@ class AnalyticsDesktop extends Component {
                 }}
                 to="/config"
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 here
               </Link>{' '}
@@ -586,6 +587,7 @@ class AnalyticsDesktop extends Component {
                 }}
                 to="/addfunds"
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 {' '}
                 Add Funds
@@ -616,6 +618,7 @@ class AnalyticsDesktop extends Component {
                 }}
                 to="/addfunds"
                 target="_blank"
+                rel="noreferrer noopener"
               >
                 {' '}
                 Add Funds

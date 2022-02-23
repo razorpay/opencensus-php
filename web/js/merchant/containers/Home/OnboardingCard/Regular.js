@@ -114,7 +114,7 @@ export default class OnboardingCard extends Component {
                   <span>
                     You are all set up. You may now <a onClick={this.closeOnboarding}>close this</a>{' '}
                     or view our{' '}
-                    <a href="https://razorpay.com/docs" target="_blank" rel="noreferrer">
+                    <a href="https://razorpay.com/docs" target="_blank" rel="noreferrer noopener">
                       documentation
                     </a>{' '}
                     from top right.

@@ -399,7 +399,7 @@ const ReminderNotEnabled = ({ type = '' }) => (
       Reminders is not set to payment links with {type} expiry date.
       <br />
       Set it up{' '}
-      <Link target="_blank" to="/reminders">
+      <Link target="_blank" to="/reminders" rel="noreferrer noopener">
         here
       </Link>
     </div>

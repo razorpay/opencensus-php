@@ -16,7 +16,7 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
         target="_blank"
         style={style}
         onClick={onClick}
-        rel="noreferrer"
+        rel="noreferrer noopener"
       >
         {title} &nbsp;
         <i className="i i-external-link" />
@@ -46,7 +46,7 @@ export function getCustomURL(url) {
 }
 
 export const DocLink = (props) => (
-  <a {...props} href={getCustomURL(props.href)}>
+  <a {...props} href={getCustomURL(props.href)} rel="noreferrer noopener">
     {props.children}
   </a>
 );

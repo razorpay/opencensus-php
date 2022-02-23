@@ -34,7 +34,7 @@ const renderFldgSideModal = () => {
           </div>
         )}
         <p className="text action-point">{action_point}</p>
-        <a href={redirectTo} target="_blank" rel="noreferrer">
+        <a href={redirectTo} target="_blank" rel="noreferrer noopener">
           <Button.Primary className="text cta" onClick={trackClickHandler}>
             {ctaText}
             <img src={UpRightLogo} alt="UpRightLogo" />

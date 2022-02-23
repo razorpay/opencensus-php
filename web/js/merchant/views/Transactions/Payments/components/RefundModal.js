@@ -519,7 +519,7 @@ class RefundModal extends Component {
                     Your account does not have sufficient balance to instantly refund this payment.
                     &nbsp;{' '}
                     <span>
-                      <Link to="/addfunds" target="_blank">
+                      <Link to="/addfunds" target="_blank" rel="noreferrer noopener">
                         Add Funds &nbsp; <i class="i i-external-link" />
                       </Link>
                     </span>

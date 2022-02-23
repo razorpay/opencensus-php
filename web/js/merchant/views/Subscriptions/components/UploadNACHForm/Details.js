@@ -20,6 +20,7 @@ export default function UploadNachFormDetails({
           return downloadSignedNACHFile();
         }}
         target="_blank"
+        rel="noreferrer noopener"
       >
         <i class="i i-file-attach" /> View Signed NACH Form
       </AsyncButton>

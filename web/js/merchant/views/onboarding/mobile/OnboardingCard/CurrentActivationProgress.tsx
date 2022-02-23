@@ -195,6 +195,7 @@ const CurrentActivationProgress: React.FC<
             <Link
               href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
               target="_blank"
+              rel="noreferrer noopener"
             >
               More details
             </Link>

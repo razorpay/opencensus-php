@@ -236,6 +236,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                       size="xsmall"
                       href="https://razorpay.com/privacy/"
                       target="_blank"
+                      rel="noreferrer noopener"
                       onClick={() => {}}
                     >
                       privacy policy

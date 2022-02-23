@@ -24,7 +24,7 @@ export default React.memo(({ fromWhere, bannerKey }) => {
       >
         <b>Try Now</b>
       </a>{' '}
-      <Link to="/app-store/zapier" target="_blank">
+      <Link to="/app-store/zapier" target="_blank" rel="noreferrer noopener">
         <strong>Learn More</strong>
       </Link>
     </AnnouncementBanner>

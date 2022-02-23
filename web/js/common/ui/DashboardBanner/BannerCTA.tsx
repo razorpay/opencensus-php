@@ -13,7 +13,7 @@ const BannerCTA = ({ clickHandler, url, label, isExternal, type }: CTA): React.R
         onClick={clickHandler}
         href={urlPath}
         target="_blank"
-        rel="noreferrer"
+        rel="noreferrer noopener"
       >
         {label}
       </a>

@@ -285,7 +285,7 @@ export default (props) => {
                       Reminders are not set for payment links.
                       <br />
                       Set it up{' '}
-                      <Link target="_blank" to="/reminders">
+                      <Link target="_blank" to="/reminders" rel="noreferrer noopener">
                         here
                       </Link>
                     </div>

@@ -313,6 +313,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                     size="xxsmall"
                     href={url}
                     target="_blank"
+                    rel="noreferrer noopener"
                     onClick={() => {
                       analyticsTrack({
                         objectName: 'SignUp',
@@ -590,7 +591,11 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                   </Text>
                   <Space margin={[2, 0, 0, 0]}>
                     <View>
-                      <Link href="https://www.ilovepdf.com/merge_pdf" target="_blank">
+                      <Link
+                        href="https://www.ilovepdf.com/merge_pdf"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
                         Go to PDF Merger.com
                       </Link>
                     </View>
@@ -1090,7 +1095,12 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
               )}
             <Text size="xsmall" align="center">
               By submitting these details you agree to our{' '}
-              <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">
+              <Link
+                href="https://razorpay.com/terms/"
+                target="_blank"
+                size="xsmall"
+                rel="noreferrer noopener"
+              >
                 terms and conditions
               </Link>
             </Text>

@@ -2605,6 +2605,7 @@ export default class ActivationWizard extends React.Component {
                   <a
                     className="text-primary"
                     target="_blank"
+                    rel="noreferrer noopener"
                     href="https://razorpay.com/terms/"
                     onClick={() => onAction && onAction.trackTnCClick()}
                   >

@@ -149,7 +149,11 @@ const OnboardingStepCard: React.FC<OnboardingStepCardPropsT> = ({
         <Space margin={[2, 0, 0, 0]}>
           <Flex justifyContent="center">
             <View>
-              <Link href="https://razorpay.com/docs/payment-gateway/settlements/" target="_blank">
+              <Link
+                href="https://razorpay.com/docs/payment-gateway/settlements/"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
                 <Button
                   size="small"
                   variant="tertiary"

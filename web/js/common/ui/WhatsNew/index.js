@@ -660,7 +660,7 @@ const NotificationCard = ({
                 onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
-                rel="noreferrer"
+                rel="noreferrer noopener"
               >
                 <b>
                   {btn.label} {isExternal && <i class="i i-external-link" />}

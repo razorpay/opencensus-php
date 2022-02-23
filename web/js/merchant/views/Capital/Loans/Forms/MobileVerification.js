@@ -107,9 +107,9 @@ class MobileVerification extends Component {
 
   handleSubmit = async () => {
     const { loanApplicationDetails } = this.props;
-    const { promoter_details } = loanApplicationDetails;
+    // const { promoter_details } = loanApplicationDetails;
 
-    const { applicant } = promoter_details.data;
+    // const { applicant } = promoter_details.data;
 
     const payload = {
       application_id: loanApplicationDetails.meta.data.application.id,
@@ -227,13 +227,23 @@ class MobileVerification extends Component {
                 <p className="otp-helper-text">
                   ◦ OTP is sent to{' '}
                   {loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number}
-                  <a className="text-primary m-l" target="_blank" onClick={() => this.goBack(true)}>
+                  <a
+                    className="text-primary m-l"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    onClick={() => this.goBack(true)}
+                  >
                     Change Number
                   </a>
                 </p>
                 <p className="otp-helper-text">
                   ◦ Didn’t receive an OTP?
-                  <a className="text-primary m-l" target="_blank" onClick={this.sendReqForOtp}>
+                  <a
+                    className="text-primary m-l"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    onClick={this.sendReqForOtp}
+                  >
                     Resend
                   </a>
                 </p>

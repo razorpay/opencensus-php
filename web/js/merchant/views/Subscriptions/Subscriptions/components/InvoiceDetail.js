@@ -146,6 +146,7 @@ export default class SubscriptionsInvoiceDetail extends Component {
                           <NavLink
                             to={`/invoices/${invoice.id}`}
                             target="_blank"
+                            rel="noreferrer noopener"
                             onClick={() => {
                               this.props.tracking.trackEvent(
                                 window.rzpQ.subscription().interaction('subscription.invoice.id'),

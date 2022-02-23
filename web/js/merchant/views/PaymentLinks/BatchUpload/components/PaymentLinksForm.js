@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { Link } from 'react-router-dom';
@@ -17,7 +18,7 @@ import { fetchReminders } from 'merchant/reducers/reminders';
 
 // TODO: Remove `paymentLinksRemindersSettings` setting to global level.
 @connect(
-  state => {
+  (state) => {
     return {
       user: state.session.user,
       reminders: state.reminders.reminders,
@@ -25,14 +26,14 @@ import { fetchReminders } from 'merchant/reducers/reminders';
   },
   {
     fetchReminders,
-  }
+  },
 )
 export default class extends React.Component {
   componentDidMount() {
     this.props.fetchReminders();
   }
 
-  handleChange = propName => (_, value) => {
+  handleChange = (propName) => (_, value) => {
     this.props.onChange(propName, value);
   };
 
@@ -41,9 +42,7 @@ export default class extends React.Component {
       return <PlaceholderLoader />;
     }
 
-    const type = this.props.user.isPaymentlinksV2Enabled
-      ? 'payment_link_v2'
-      : 'payment_link';
+    const type = this.props.user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
     const paymentLinksRemindersSettings =
       findBy(this.props.reminders.items, 'namespace', type) || {};
 
@@ -64,7 +63,7 @@ export default class extends React.Component {
     return (
       <span>
         Reminders are not set for payment links. Set it up{' '}
-        <Link target="_blank" to="/reminders">
+        <Link target="_blank" to="/reminders" rel="noreferrer noopener">
           here
         </Link>
       </span>
@@ -110,8 +109,7 @@ export default class extends React.Component {
 
         <p class="m-t">
           <i class="i i-info-circle m-r" />
-          Payment Links with SMS and Email will be sent once the batch is
-          created.
+          Payment Links with SMS and Email will be sent once the batch is created.
         </p>
       </div>
     );

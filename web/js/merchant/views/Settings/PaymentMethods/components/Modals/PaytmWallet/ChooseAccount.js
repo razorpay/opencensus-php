@@ -43,7 +43,7 @@ export const ChooseAccount = ({ values, setValues }) => {
           <div className="blue-bar" />
           <p>
             Register for a Paytm Business Account on{' '}
-            <a href="https://dashboard.paytm.com" rel="noreferrer">
+            <a href="https://dashboard.paytm.com" rel="noreferrer noopener">
               dashboard.paytm.com
             </a>{' '}
             and try later

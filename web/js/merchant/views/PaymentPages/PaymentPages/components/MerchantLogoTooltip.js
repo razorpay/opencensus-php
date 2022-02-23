@@ -1,3 +1,4 @@
+import React from 'react';
 import ReactDOM from 'react-dom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
@@ -23,6 +24,7 @@ class _MerchantLogoTooltip extends React.Component {
   };
 
   handleTooltip = () => {
+    // eslint-disable-next-line react/no-access-state-in-setstate
     this.setState({ show: !this.state.show });
   };
 
@@ -34,7 +36,12 @@ class _MerchantLogoTooltip extends React.Component {
           <Popover align="bottom" theme="dark" persistent>
             <PopoverBody>
               Add your logo for better conversions through the
-              <a target="_blank" href="/app/config" style={{ marginLeft: 4 }}>
+              <a
+                target="_blank"
+                href="/app/config"
+                style={{ marginLeft: 4 }}
+                rel="noreferrer noopener"
+              >
                 settings page. <i class="i i-external-link" />
               </a>
               <br />
@@ -48,5 +55,6 @@ class _MerchantLogoTooltip extends React.Component {
 }
 
 export default function MerchantLogoTooltip() {
+  // eslint-disable-next-line react/jsx-pascal-case
   return ReactDOM.createPortal(<_MerchantLogoTooltip />, document.getElementById('header-logo'));
 }

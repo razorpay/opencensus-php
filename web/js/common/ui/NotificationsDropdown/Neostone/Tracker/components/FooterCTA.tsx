@@ -4,7 +4,13 @@ import { getXBaseURL } from '../../common/utils';
 const FooterCTA = ({ footerLabel }) => {
   return (
     <div className="footer-cta">
-      <a type="button" className="Button--primary btn" target="__blank" href={`${getXBaseURL()}`}>
+      <a
+        type="button"
+        className="Button--primary btn"
+        target="__blank"
+        href={`${getXBaseURL()}`}
+        rel="noreferrer noopener"
+      >
         {footerLabel}
       </a>
       <a

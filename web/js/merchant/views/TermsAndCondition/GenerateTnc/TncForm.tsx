@@ -193,6 +193,7 @@ const TncForm: React.FC<FormScreenPropsT> = ({ setApiResponse }) => {
                       });
                     }}
                     target="_blank"
+                    rel="noreferrer noopener"
                   >
                     View Sample Page
                   </Link>

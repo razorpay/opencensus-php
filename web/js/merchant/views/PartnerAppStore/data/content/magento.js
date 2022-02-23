@@ -46,7 +46,7 @@ export default (brandColor) => {
               We also support the display of international currencies at the time of checkout on
               your Magento store. However, all pricing calculations and settlements are done in INR.
               To activate international payments, raise a request on our{' '}
-              <a href="https://razorpay.com/support/" target="_blank" rel="noreferrer">
+              <a href="https://razorpay.com/support/" target="_blank" rel="noreferrer noopener">
                 Support Portal
               </a>
             </p>

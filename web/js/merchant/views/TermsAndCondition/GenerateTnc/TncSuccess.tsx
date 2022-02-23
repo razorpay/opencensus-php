@@ -28,7 +28,7 @@ const TncSuccessLink: React.FC<TncSuccessLinkPropsT> = ({ history, data }) => {
           <View>
             <Flex alignItems="center" justifyContent="center">
               <View>
-                <TncLink href={data.link} target="_blank">
+                <TncLink href={data.link} target="_blank" rel="noreferrer noopener">
                   <Text size="medium" weight="bold" color="primary.800">
                     {data.link}
                   </Text>

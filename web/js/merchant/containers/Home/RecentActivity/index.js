@@ -246,6 +246,7 @@ class RecentActivity extends Component {
             <div className="pull-right">
               <Link
                 target="_blank"
+                rel="noreferrer noopener"
                 to={`/${selectedTab}`}
                 onClick={() => {
                   analyticsTrack({

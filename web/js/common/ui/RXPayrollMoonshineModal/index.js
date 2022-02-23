@@ -56,6 +56,7 @@ const RXPayrollMoonshineModal = ({ hideModal, tracking }) => {
               <a
                 href="http://payroll.razorpay.com/sso?utm_source=moonshine&utm_medium=pgdashboard"
                 target="_blank"
+                rel="noreferrer noopener"
                 class="btn btn-primary Button--primary Button"
                 onClick={trackCTAClick}
               >

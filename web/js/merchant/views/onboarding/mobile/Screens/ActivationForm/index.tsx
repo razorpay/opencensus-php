@@ -832,6 +832,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                 </CheckBoxStyle>
                 <TnCLink
                   target="_blank"
+                  rel="noreferrer noopener"
                   href="https://razorpay.com/terms/"
                   size="small"
                   weight="bold"

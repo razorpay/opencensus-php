@@ -17,11 +17,7 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import {
-  trackGoToLinks,
-  trackNoData,
-  trackError,
-} from 'merchant/containers/Home/ga';
+import { trackGoToLinks, trackNoData, trackError } from 'merchant/containers/Home/ga';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 
 import Mobile from './Mobile';
@@ -41,8 +37,8 @@ function getLevels(hierarchy, levels = []) {
   return levels;
 }
 
-const csvDateFormat = 'DD-MM-YYYY',
-  mobileAggKey = 'method';
+const csvDateFormat = 'DD-MM-YYYY';
+const mobileAggKey = 'method';
 
 @connect(null, { ...ModalActions, showNotification })
 class PaymentMethods extends Component {
@@ -74,8 +70,8 @@ class PaymentMethods extends Component {
       error: '',
     });
 
-    const { selectedAgg } = this.state,
-      { sectionTitle, analyticsFetch } = this.props;
+    const { selectedAgg } = this.state;
+    const { sectionTitle, analyticsFetch } = this.props;
 
     const requestId = ++this.requestId;
 
@@ -86,9 +82,9 @@ class PaymentMethods extends Component {
         aggType: aggType || selectedAgg.value,
         ...(this.props.isMobile && { groupBy: [mobileAggKey] }),
       }),
-      this.props.mode
+      this.props.mode,
     )
-      .then(resp => {
+      .then((resp) => {
         // dealyed response
         if (requestId !== this.requestId) {
           return null;
@@ -106,9 +102,9 @@ class PaymentMethods extends Component {
 
         if (!agg.result || agg.result.length === 0) {
           trackNoData(
-            `${sectionTitle} from ${startDate.format(
-              csvDateFormat
-            )} to ${endDate.format(csvDateFormat)}`
+            `${sectionTitle} from ${startDate.format(csvDateFormat)} to ${endDate.format(
+              csvDateFormat,
+            )}`,
           );
         }
 
@@ -119,7 +115,7 @@ class PaymentMethods extends Component {
 
         return resp;
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
 
         if (requestId !== this.requestId) {
@@ -128,16 +124,18 @@ class PaymentMethods extends Component {
 
         return API_ERROR;
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           return;
         }
 
+        // eslint-disable-next-line react/no-direct-mutation-state
         this.state.isLoading = false;
 
         if (data.error) {
           trackError(`Error while fetching data for Payment Methods`);
 
+          // eslint-disable-next-line react/no-direct-mutation-state
           this.state.error = data.error;
           this.props.showNotification({
             type: 'error',
@@ -146,21 +144,20 @@ class PaymentMethods extends Component {
           });
         }
 
+        // eslint-disable-next-line react/no-access-state-in-setstate
         this.setState({ ...this.state });
       });
   }
 
   onCSVData(csvUrl) {
-    const { startDate, endDate } = this.props,
-      { selectedAgg } = this.state;
+    const { startDate, endDate } = this.props;
+    const { selectedAgg } = this.state;
 
     this.setState({
       csvData: {
-        name: `Payment Insights, ${moment(startDate).format(
-          csvDateFormat
-        )} to ${moment(endDate).format(csvDateFormat)} ${
-          selectedAgg.text
-        }(Razorpay).csv`,
+        name: `Payment Insights, ${moment(startDate).format(csvDateFormat)} to ${moment(
+          endDate,
+        ).format(csvDateFormat)} ${selectedAgg.text}(Razorpay).csv`,
         url: csvUrl,
       },
     });
@@ -211,10 +208,10 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { data, error, levels, csvData, isLoading, selectedAgg } = this.state,
-      { startDate, endDate, sectionTitle, isMobile } = this.props,
-      levelsLength = levels.length,
-      hasNoData = !data || data.length === 0;
+    const { data, error, levels, csvData, isLoading, selectedAgg } = this.state;
+    const { startDate, endDate, sectionTitle, isMobile } = this.props;
+    const levelsLength = levels.length;
+    const hasNoData = !data || data.length === 0;
 
     if (isMobile) {
       const mobileComponentProps = {
@@ -251,10 +248,7 @@ class PaymentMethods extends Component {
                     onClick={() => {
                       trackBreadcrumbClick(level.data);
 
-                      return (
-                        index + 1 !== levelsLength &&
-                        this.onLevelChange(level.data)
-                      );
+                      return index + 1 !== levelsLength && this.onLevelChange(level.data);
                     }}
                   >
                     {level.name}
@@ -272,10 +266,7 @@ class PaymentMethods extends Component {
               />
             </div>
             <div className="panel-action-item">
-              <MoreOptionsButton
-                csvData={csvData}
-                sectionTitle={sectionTitle}
-              />
+              <MoreOptionsButton csvData={csvData} sectionTitle={sectionTitle} />
             </div>
           </div>
         </PanelTopbar>
@@ -295,6 +286,7 @@ class PaymentMethods extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
+              rel="noreferrer noopener"
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >

@@ -410,6 +410,7 @@ class Panel extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
+              rel="noreferrer noopener"
               to={`/${this.meta.index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() =>
                 trackGoToLinks(titleCase(this.meta.index), `${sectionTitle} | ${this.meta.title}`)

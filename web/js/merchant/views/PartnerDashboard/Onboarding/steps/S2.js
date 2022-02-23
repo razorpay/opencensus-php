@@ -162,6 +162,7 @@ const S2 = ({
                 handleOtherCTAClicks('Other Razorpay Products');
               }}
               target="_blank"
+              rel="noreferrer noopener"
               style={{
                 textDecoration: 'underline',
                 color: '#57666E',

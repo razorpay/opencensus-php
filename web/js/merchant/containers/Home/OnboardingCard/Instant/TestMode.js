@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchToMode from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
+// eslint-disable-next-line import/no-named-as-default
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
 import { showProductsModal } from 'merchant/reducers/home';
 import RTracking from 'react-tracking';
@@ -30,14 +31,8 @@ export default class TestMode extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const {
-        mode,
-        integration,
-        showProductsModal,
-        merchantId,
-        track,
-      } = nextProps,
-      { isLoading, keysGenerated, paymentsMade } = integration;
+    const { mode, integration, merchantId, track } = nextProps;
+    const { isLoading, keysGenerated, paymentsMade } = integration;
 
     let { title, status, content } = initialState;
 
@@ -53,6 +48,7 @@ export default class TestMode extends Component {
     } else if (isLoading) {
       status = possibleStatuses.loading;
     } else {
+      // eslint-disable-next-line no-lonely-if
       if (paymentsMade) {
         title = 'Test Mode Payments';
         content = (
@@ -67,20 +63,15 @@ export default class TestMode extends Component {
       } else if (!keysGenerated) {
         content = (
           <span>
-            <Link
-              to="/keys"
-              className="btn-link"
-              onClick={() => track.generateTestKeys()}
-            >
+            <Link to="/keys" className="btn-link" onClick={() => track.generateTestKeys()}>
               Generate Test Keys
             </Link>{' '}
             and use{' '}
             <TestProducts
-              onClick={() => (
-                track.viewTestProducts(), this.props.showProductsModal()
-              )}
+              // eslint-disable-next-line no-sequences
+              onClick={() => (track.viewTestProducts(), this.props.showProductsModal())}
             />
-            {' '}to find the right fit for your use-case
+            to find the right fit for your use-case
           </span>
         );
       } else {
@@ -89,12 +80,11 @@ export default class TestMode extends Component {
           <span>
             Create Test payments now. For details, Read{' '}
             <ShowWhen
-              additionalCondition={user =>
-                user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
             >
               <a
                 target="_blank"
+                rel="noreferrer noopener"
                 className="btn-link"
                 href="https://razorpay.com/docs"
               >
@@ -102,28 +92,21 @@ export default class TestMode extends Component {
               </a>{' '}
             </ShowWhen>
             <ShowWhen
-              additionalCondition={user =>
-                !user.isOrgAllowedFunctionality('external_links')
-              }
+              additionalCondition={(user) => !user.isOrgAllowedFunctionality('external_links')}
             >
               documentation{' '}
             </ShowWhen>
             or use{' '}
             <TestProducts
-              onClick={() => (
-                track.viewTestProducts(), this.props.showProductsModal()
-              )}
+              // eslint-disable-next-line no-sequences
+              onClick={() => (track.viewTestProducts(), this.props.showProductsModal())}
             />
           </span>
         );
       }
     }
 
-    if (
-      this.onActive &&
-      status !== this.state.status &&
-      status === possibleStatuses.active
-    ) {
+    if (this.onActive && status !== this.state.status && status === possibleStatuses.active) {
       this.onActive();
     }
 

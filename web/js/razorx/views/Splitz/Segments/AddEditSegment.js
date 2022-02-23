@@ -182,7 +182,7 @@ export default class AddEditSegment extends React.Component {
                     href="https://www.freeformatter.com/cron-expression-generator-quartz.html"
                     target="_blank"
                     style={{ color: 'blue' }}
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                   >
                     this link
                   </a>{' '}
@@ -191,7 +191,7 @@ export default class AddEditSegment extends React.Component {
                     href="https://docs.google.com/document/d/176KNlWrlDofaOGegwAUC9bCYlZ6F4b9FvSRHi7BcDDs"
                     target="_blank"
                     style={{ color: 'blue' }}
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                   >
                     Click here
                   </a>{' '}

@@ -101,6 +101,7 @@ export default class ReportHome extends React.PureComponent {
                 <NavLink
                   to="https://razorpay.com/docs/payment-gateway/dashboard-guide/reports/"
                   target="_blank"
+                  rel="noreferrer noopener"
                 >
                   here
                 </NavLink>
