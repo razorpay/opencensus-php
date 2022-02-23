@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Cron\Collectors;
 
 
+use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
@@ -14,7 +15,6 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
 {
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
-
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
             'args'                  => $this->args,
             'start_time'            => $startTime,
@@ -31,8 +31,16 @@ class BVSPartlyExecutedValidationsDataCollector extends TimeBoundDbDataCollector
             if ($tableName === TABLE::MERCHANT_DETAIL)
             {
                 $fieldName = $tableNameFieldName[1];
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'fieldName'  => $fieldName,
+                    'time_before_query' => Carbon::now(),
+                ]);
                 // list of merchant ids in the past 24 hours with entity status as null
                 $merchantIds = $this->repo->merchant_detail->filterNullFieldStatusMerchants($fieldName, $startTime, $endTime);
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    '$merchantIds'  => count($merchantIds),
+                    'time_after_query' => Carbon::now(),
+                ]);
                 $artefactIdentifierArr = (explode("-", $artefactIdentifier));
                 $artefact_type   = $artefactIdentifierArr[0];
                 $validation_unit = $artefactIdentifierArr[1];

@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\Cron;
 
+use RZP\Base\RuntimeManager;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BankDetailsNotSubmittedCronJob;
@@ -68,6 +69,8 @@ class Factory
             case "first-payment-offer-daily-notification":
                 return (new FirstPaymentOfferCronJob($input));
             case Constants::BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB:
+                // since a number of queries are fired ensure enough time is provided to complete them.
+                RuntimeManager::setMaxExecTime(900);
                 return (new BVSPartlyExecutedValidationCronJob($input));
         }
 
