@@ -221,7 +221,10 @@ class Base extends Core
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_FROM_JOB, $payload);
         $ledgerService = $this->app['ledger'];
         $ledgerService->setIdempotencyKey(Uuid::uuid1());
-        return $ledgerService->createJournal($payload, true);
+        $response = $ledgerService->createJournal($payload, true);
+
+        $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE_FROM_JOB, $response);
+        return $response;
     }
     /**
      * This function is used to call the Ledger service for any transactor event.

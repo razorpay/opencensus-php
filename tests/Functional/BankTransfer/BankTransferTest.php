@@ -3706,6 +3706,487 @@ class BankTransferTest extends TestCase
 
     }
 
+    // Test for ledger reverse shadow case when sync ledger retries are exhausted
+    public function testBankTransferProcessWithFieldsOnLiveModeWithLedgerReverseShadowSyncFailure()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturn([
+                "body" => [
+                    "id"                => "HNjsypA96SgJKJ",
+                    "created_at"        => "1623848289",
+                    "updated_at"        => "1632368730",
+                    "amount"            => "130.000000",
+                    "base_amount"       => "130.000000",
+                    "currency"          => "INR",
+                    "tenant"            => "X",
+                    "transactor_id"     => "bt_IwHCToefEWVgph",
+                    "transactor_event"  => "fund_loading_processed",
+                    "transaction_date"  => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id"          => "HNjsypHNXdSiei",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "HNjsypA96SgJKJ",
+                            "account_id"  => "GoRNyEuu9Hl0OZ",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "debit",
+                            "currency"    => "INR",
+                            "balance"     => ""
+                        ],
+                        [
+                            "id"          => "HNjsypHPOUlxDR",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "HNjsypA96SgJKJ",
+                            "account_id"  => "HN5AGgmKu0ki13",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "credit",
+                            "currency"    => "INR",
+                            "balance"     => "",
+                            'account_entities' => [
+                                'account_type'       => ['payable'],
+                                'fund_account_type'  => ['merchant_va'],
+                            ],
+                        ]
+                    ]
+                ]
+            ]);
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance1['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'ShrdVirtualAcc',
+                'type'           => 'virtual_account',
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => 'ShrdVirtualAcc',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+        $bankTransfersTxn = $this->getDbLastEntity('transaction', 'live');
+
+        // assert bankTransfer
+        $this->assertEquals('processed', $bankTransfersCreated['status']);
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersCreated['transaction_id']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+
+        // assert api transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersTxn['id']);
+        $this->assertEquals($bankTransfersCreated['id'], $bankTransfersTxn['entity_id']);
+        $this->assertEquals(5000000, $bankTransfersTxn['amount']);
+    }
+
+    // Test for ledger reverse shadow case when both sync and async failure from ledger
+    public function testBankTransferProcessWithFieldsOnLiveModeWithLedgerReverseShadowSyncAsyncFailure()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance1['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'ShrdVirtualAcc',
+                'type'           => 'virtual_account',
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => 'ShrdVirtualAcc',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+
+        // assert bankTransfer
+        $this->assertEquals('created', $bankTransfersCreated['status']);
+        $this->assertNull($bankTransfersCreated['transaction_id']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+    }
+
+    // Test for ledger reverse shadow case when sync failure and async status check no record from ledger
+    public function testBankTransferProcessWithFieldsOnLiveModeWithLedgerReverseShadowStatusCheckNoRecord()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(5)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'record_not_found',
+                    ],
+                ]
+            ));
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance1['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'ShrdVirtualAcc',
+                'type'           => 'virtual_account',
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => 'ShrdVirtualAcc',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+
+        // assert bankTransfer
+        $this->assertEquals('created', $bankTransfersCreated['status']);
+        $this->assertNull($bankTransfersCreated['transaction_id']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+    }
+
+    // Test for ledger reverse shadow case when sync failure and async status check no record from ledger and create success
+    public function testBankTransferProcessWithFieldsOnLiveModeWithLedgerReverseShadowPostStatusCheckSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // ledge response
+        $ledgerSuccessResponse = [
+            "body" => [
+                "id"                => "HNjsypA96SgJKJ",
+                "created_at"        => "1623848289",
+                "updated_at"        => "1632368730",
+                "amount"            => "130.000000",
+                "base_amount"       => "130.000000",
+                "currency"          => "INR",
+                "tenant"            => "X",
+                "transactor_id"     => "bt_SamplePayoutId4",
+                "transactor_event"  => "fund_loading_processed",
+                "transaction_date"  => "1611132045",
+                "ledger_entry" => [
+                    [
+                        "id"          => "HNjsypHNXdSiei",
+                        "created_at"  => "1623848289",
+                        "updated_at"  => "1623848289",
+                        "merchant_id" => "HN59oOIDACOXt3",
+                        "journal_id"  => "HNjsypA96SgJKJ",
+                        "account_id"  => "GoRNyEuu9Hl0OZ",
+                        "amount"      => "130.000000",
+                        "base_amount" => "130.000000",
+                        "type"        => "debit",
+                        "currency"    => "INR",
+                        "balance"     => "",
+                        'account_entities' => [
+                            'account_type'       => ['payable'],
+                            'fund_account_type'  => ['merchant_va'],
+                        ],
+                    ],
+                    [
+                        "id"          => "HNjsypHPOUlxDR",
+                        "created_at"  => "1623848289",
+                        "updated_at"  => "1623848289",
+                        "merchant_id" => "HN59oOIDACOXt3",
+                        "journal_id"  => "HNjsypA96SgJKJ",
+                        "account_id"  => "HN5AGgmKu0ki13",
+                        "amount"      => "130.000000",
+                        "base_amount" => "130.000000",
+                        "type"        => "credit",
+                        "currency"    => "INR",
+                        "balance"     => ""
+                    ]
+                ]
+            ]
+        ];
+        $mockLedger->shouldReceive('createJournal')
+            ->times(5)
+            ->andReturnUsing(
+                function () use($ledgerSuccessResponse) {
+                    static $counter = 0;
+                    switch ($counter++) {
+                        // 4th call is made from async job, which should succeed for this test
+                        case 4:
+                            return $ledgerSuccessResponse;
+                            break;
+                        default:
+                            // 0th-3rd call is made while sync retries, which should fail for this test
+                            throw new \Requests_Exception(
+                                'Unexpected response code received from Ledger service.',
+                                null,
+                                [
+                                    'status_code'   => 500,
+                                    'response_body' => [
+                                        'code' => 'invalid_argument',
+                                        'msg' => 'unknown',
+                                    ],
+                                ]
+                            );
+                            break;
+                    }
+                }
+            );
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'record_not_found',
+                    ],
+                ]
+            ));
+
+        $this->ba->yesbankAuth('live');
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '2224440041626905',
+        ]);
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance1['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'ShrdVirtualAcc',
+                'type'           => 'virtual_account',
+                'account_number' => '2224440041626905',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => 'ShrdVirtualAcc',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $accountNumber = $this->bankAccount['account_number'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferProcessWithFieldsOnLiveMode'];
+
+        $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
+
+        $this->startTest();
+
+        $bankTransfersCreated = $this->getDbLastEntity('bank_transfer', 'live');
+        $bankTransfersTxn = $this->getDbLastEntity('transaction', 'live');
+
+        // assert bankTransfer
+        $this->assertEquals('processed', $bankTransfersCreated['status']);
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersCreated['transaction_id']);
+        $this->assertEquals(5000000, $bankTransfersCreated['amount']);
+
+        // assert api transaction
+        $this->assertEquals('HNjsypA96SgJKJ', $bankTransfersTxn['id']);
+        $this->assertEquals($bankTransfersCreated['id'], $bankTransfersTxn['entity_id']);
+        $this->assertEquals(5000000, $bankTransfersTxn['amount']);
+    }
+
     public function testBankTransferProcessWithIncorrectPayeeAccountLength()
     {
         list($countOfPaymentsBeforeFundLoading,
