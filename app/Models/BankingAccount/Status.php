@@ -44,6 +44,7 @@ class Status
     const API_ONBOARDING_PENDING         = 'api_onboarding_pending';
     const API_ONBOARDING_INITIATED       = 'api_onboarding_initiated';
     const API_ONBOARDING_IN_PROGRESS     = 'api_onboarding_in_progress';
+    const DOCKET_DELIVERY_PENDING        = 'docket_delivery_pending';
     const NONE                           = 'none';
 
     // Sub-status for OPS Telephonic verification
@@ -238,6 +239,7 @@ class Status
     protected static $subStatuses = [
         self::NEEDS_CLARIFICATION_FROM_SALES,
         self::DOCS_WALK_THROUGH_PENDING,
+        self::DOCKET_DELIVERY_PENDING,
         self::MERCHANT_NOT_AVAILABLE,
         self::MERCHANT_PREPARING_DOCS,
         self::READY_TO_SEND_TO_BANK,
@@ -307,6 +309,7 @@ class Status
         ],
         self::PICKED => [
             self::NONE,
+            self::DOCKET_DELIVERY_PENDING,
             self::MERCHANT_NOT_AVAILABLE,
             self::MERCHANT_PREPARING_DOCS,
             self::READY_TO_SEND_TO_BANK,
