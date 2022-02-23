@@ -130,11 +130,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $recurringTokenPreDebitNotifyRules = [
-        'debit_at' => 'required|epoch:946684800,9223372036854775807',
-        'amount'   => 'required|integer|min_amount',
-        'purpose'  => 'sometimes|string|max:512',
-        'currency' => 'sometimes|string|in:INR',
-        'notes'    => 'sometimes|notes',
+        'debit_at'      => 'required|epoch:946684800,9223372036854775807',
+        'amount'        => 'required|integer|min_amount',
+        'purpose'       => 'sometimes|string|max:512',
+        'currency'      => 'sometimes|string|in:INR',
+        'notes'         => 'sometimes|notes',
+        'payment_id'    => 'sometimes|string',
     ];
 
     protected static $validateBulkLocalTokenisationRules = [

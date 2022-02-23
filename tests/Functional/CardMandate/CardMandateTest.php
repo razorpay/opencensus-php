@@ -2017,14 +2017,11 @@ class CardMandateTest extends TestCase
         ];
 
         $exception = false;
-        try
-        {
+        try {
             $this->makeRequestAndGetContent($request);
-        }
-        catch (Exception\BadRequestException $e)
-        {
+        } catch (Exception\BadRequestException $e) {
             $this->assertEquals(ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER, $e->getCode());
-            $this->assertArrayKeysExist($e->getData(),['payment_id','order_id','method']);
+            $this->assertArrayKeysExist($e->getData(), ['payment_id', 'order_id', 'method']);
             $this->assertEquals('Card mandate created for payment has been cancelled by user', $e->getMessage());
             $exception = true;
         }
@@ -2032,7 +2029,42 @@ class CardMandateTest extends TestCase
         $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
         $this->assertNotEmpty($cardMandate);
         $this->assertEquals('mandate_cancelled', $cardMandate->getStatus());
+    }
 
+    public function testPreDebitNotifyWithPaymentId()
+    {
+        $this->testCreateSplitAuthenticatePayment();
+
+        $token = $this->getDbLastEntity('token');
+
+        $request = [
+            "url" => "/tokens/" . $token->getPublicId() . "/pre_debit/notify",
+            "method" => "post",
+            "content" => [
+                'debit_at' => Carbon::now()->addDays(2)->timestamp,
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'purpose'  => 'test debit',
+                'payment_id' => 'pay12345',
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ]
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->mockCreatePreDebitNotification();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('notified', $response['status']);
+        $this->assertNotEmpty($response['id']);
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+
+        $this->assertNull($cardMandateNotification->reminder_id);
     }
 
     protected function mockGetMandateHubTerminal($terminal): void
@@ -2042,5 +2074,6 @@ class CardMandateTest extends TestCase
 
         $terminalSelectorMock->shouldReceive('GetTerminalForPayment')->andReturn($terminal);
     }
+
 }
 

@@ -126,9 +126,10 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             Timezone::IST);
 
         $currency = empty($input['currency']) ? Currency::INR : $input['currency'];
-
+        $payment_id = empty($input['payment_id']) ? null: $input['payment_id'];
         return [
             Constants::NOTIFICATION_TYPE              => Constants::NOTIFICATION_TYPE_PRE_DEBIT,
+            Constants::PAYMENT_ID                     => $payment_id,
             Constants::NOTIFICATION_PRE_DEBIT_DETAILS => [
                 Constants::NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT      => $input['amount'],
                 Constants::NOTIFICATION_PRE_DEBIT_DETAILS_PURPOSE     => $input['purpose'] ?? null,

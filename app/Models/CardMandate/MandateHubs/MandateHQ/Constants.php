@@ -64,6 +64,7 @@ class Constants
     const CAPTURED_AT         = 'captured_at';
 
     const NOTIFICATION_TYPE                          = 'type';
+    const PAYMENT_ID                                 = 'payment_id';
     const NOTIFICATION_PRE_DEBIT_DETAILS             = 'pre_debit_details';
     const NOTIFICATION_PRE_DEBIT_DETAILS_AMOUNT      = 'amount';
     const NOTIFICATION_PRE_DEBIT_DETAILS_PURPOSE     = 'purpose';
