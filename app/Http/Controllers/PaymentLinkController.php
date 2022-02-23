@@ -203,6 +203,15 @@ class PaymentLinkController extends Controller
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
+
+        if(($slugMetadata['entity'] === ViewType::PAYMENT_HANDLE)
+            && key_exists('payment_page_id', $slugMetadata) === false)
+        {
+            $payload = $this->service()->getPaymentHandlePreviewPage($slug, $slugMetadata[Entity::MERCHANT_ID]);
+
+            return View::make('payment_handle.hosted_with_udf',['data' => $payload]);
+        }
+
         // Sets api's mode & invokes view()
         Tracer::inSpan(['name' => 'payment_pages.hosted.pages.slug.set_mode'], function() use ($slugMetadata) {
             $this->ba->setModeAndDbConnection($slugMetadata['mode']);

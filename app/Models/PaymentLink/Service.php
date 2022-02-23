@@ -572,6 +572,21 @@ class Service extends Base\Service
         return $this->modifyResponseForPaymentHandle($paymentHandle);
     }
 
+    public function getPaymentHandlePreviewPage(string $slug, string $merchantId)
+    {
+        $input[Entity::SLUG]  = $slug;
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        $input[Entity::TITLE] = $merchant->getBillingLabel();
+
+        $this->modifyInputForPaymentHandle($input);
+
+        $viewPayload = $this->core->getAttributesForPaymentHandlePreview($input, $merchant, $slug);
+
+        return $viewPayload;
+    }
+
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)
     {
         $paymentPage = null;

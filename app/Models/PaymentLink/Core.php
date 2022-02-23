@@ -1058,6 +1058,39 @@ class Core extends Base\Core
         });
     }
 
+    public function getAttributesForPaymentHandlePreview(array $input, Merchant\Entity $merchant, string $slug): array
+    {
+        $paymentPage = (new Entity)->generateId();
+
+        $paymentPage->merchant()->associate($merchant);
+
+        $settings = $input[Entity::SETTINGS] ?? [];
+
+        $paymentPage->build($input);
+
+        $payload = (new ViewSerializer($paymentPage))->serializeForHosted();
+
+        $payload['is_preview'] = true;
+
+        $payload[Entity::SETTINGS][Entity::UDF_SCHEMA] = "[{\"name\":\"comment\",\"title\":\"Comment\",\"required\":true,\"type\":\"string\",\"options\":{},\"settings\":{\"position\":1}}]";
+
+        $payload['payment_link'][Entity::HANDLE_URL] = $this->paymentHandleHostedBaseUrl . '/' . $slug;
+
+        $payload['payment_link'][Entity::PAYMENT_PAGE_ITEMS] = [
+            Item\Entity::ITEM => [
+                Item\Entity::ID        => "item_0000000000",
+                Item\Entity::NAME      => "amount",
+                Item\Entity::CURRENCY  => "INR",
+                Item\Entity::TYPE      => "payment_page",
+            ],
+            PaymentPageItem\Entity::MIN_AMOUNT  => 100,
+            PaymentPageItem\Entity::SETTINGS    => [
+                PaymentPageItem\Entity::POSITION      => "0"
+            ],
+        ];
+        return $payload;
+    }
+
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
     {
         $settings[Entity::CHECKOUT_OPTIONS] = [
