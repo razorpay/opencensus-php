@@ -158,6 +158,11 @@ class Repository extends Base\Repository
         }
     }
 
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy($this->dbColumn(Entity::JOURNAL_ID), 'desc');
+    }
+
     /**
      * This array is used when a transaction is fetched via ledger flow.
      * @var array
