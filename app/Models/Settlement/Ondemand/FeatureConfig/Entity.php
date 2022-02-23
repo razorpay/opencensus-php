@@ -32,7 +32,7 @@ class Entity extends Base\PublicEntity
     const ATTEMPTS_LEFT                   = 'attempts_left';
 
     const DEFAULT_SETTLEMENTS_COUNT_LIMIT     = 1000000;
-    const DEFAULT_PERCENTAGE_OF_BALANCE_LIMIT = 50;
+    const DEFAULT_PERCENTAGE_OF_BALANCE_LIMIT = 60;
     const DEFAULT_PRICING_PERCENT             = 30;
     const DEFAULT_ES_PRICING_PERCENT          = 12;
     const DEFAULT_MAX_AMOUNT_LIMIT            = 1500000;
