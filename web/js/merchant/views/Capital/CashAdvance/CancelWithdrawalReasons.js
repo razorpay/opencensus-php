@@ -11,7 +11,7 @@ export default class CancelWithdrawalReasons extends Component {
     };
   }
 
-  handleReasonChange = e => {
+  handleReasonChange = (e) => {
     this.setState({ closeReason: e.target.value });
   };
 
@@ -22,14 +22,10 @@ export default class CancelWithdrawalReasons extends Component {
       eventAction,
       eventLabel: `
       Reason - ${this.state.closeReason}
-      ${
-        this.state.reasonDescription
-          ? `Description - ${this.state.reasonDescription}`
-          : ''
-      }
+      ${this.state.reasonDescription ? `Description - ${this.state.reasonDescription}` : ''}
       `,
     };
-    window.rzpAnalytics(analyticsPayload);
+    window.rzpAnalytics?.(analyticsPayload);
     this.props.onClose();
   };
 
@@ -38,15 +34,15 @@ export default class CancelWithdrawalReasons extends Component {
       <div className="reasons-close-modal">
         <ModalHeader class="header" title="Reason" onCloseClick={() => {}} />
         <div className="modal-body">
-          {this.props.closeReasons.map(choice => {
+          {this.props.closeReasons.map((choice) => {
             return (
-              <div key={'parent-choice-' + choice}>
-                <label key={'label-' + choice}>
+              <div key={`parent-choice-${choice}`}>
+                <label key={`label-${choice}`}>
                   <input
                     type="radio"
                     name="close-reason"
                     value={choice}
-                    key={'inp-choice' + choice}
+                    key={`inp-choice${choice}`}
                     onChange={this.handleReasonChange}
                   />
                   {choice}
@@ -58,7 +54,7 @@ export default class CancelWithdrawalReasons extends Component {
             <strong>Description</strong>
             <textarea
               value={this.state.reasonDescription}
-              onChange={e => {
+              onChange={(e) => {
                 this.setState({
                   reasonDescription: e.target.value,
                 });

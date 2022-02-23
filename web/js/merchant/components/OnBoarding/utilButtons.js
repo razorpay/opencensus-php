@@ -8,7 +8,7 @@ class FeatureEnableSliderButton extends React.PureComponent {
   onClickFeatureEnableSliderButton = (...args) => {
     const { props } = this;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: `Product Introduction (${props.feature})`,
       eventAction: `Page ${props.page} - Get Started CTA`,
     });
@@ -46,7 +46,7 @@ class NextButton extends React.PureComponent {
   onClickNext = (...args) => {
     const { props } = this;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: `Product Introduction (${props.feature})`,
       eventAction: `Page ${props.page} - Next CTA`,
     });
@@ -75,7 +75,7 @@ class SkipAndGetStartedButton extends React.PureComponent {
   onClickFeatureEnableButton = (...args) => {
     const { props } = this;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: `Product Introduction (${props.feature})`,
       eventAction: `Page ${props.page} - Skip and Get Started`,
     });

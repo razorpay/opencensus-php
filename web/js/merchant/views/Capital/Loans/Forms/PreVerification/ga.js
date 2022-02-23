@@ -1,5 +1,5 @@
 const track = (data) => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory: 'LOS - Bank Statement',
     ...data,
   });

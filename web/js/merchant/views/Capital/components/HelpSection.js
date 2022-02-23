@@ -21,7 +21,7 @@ function HelpSection({
   };
 
   const trackEvent = (eventAction) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - WCL LOS',
       eventAction,
       eventLabel: `${_getParentStepLabel(activeState)}:${

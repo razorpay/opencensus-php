@@ -150,7 +150,7 @@ class BatchValidateModal extends Component {
                           <strong
                             className="btn-link"
                             onClick={() => {
-                              window.rzpAnalytics({
+                              window.rzpAnalytics?.({
                                 eventCategory: `Batch ${titleCase(this.props.batchType)}`,
                                 eventAction: 'Setting -  upload modal',
                                 eventLabel: `Click to setting`,
@@ -208,7 +208,7 @@ class BatchValidateModal extends Component {
                 customers and improve trust by issuing refunds instantly. &nbsp;{' '}
                 <DocLink
                   onClick={() => {
-                    window.rzpAnalytics({
+                    window.rzpAnalytics?.({
                       eventCategory: `Batch ${titleCase(this.props.batchType)}`,
                       eventAction: 'Learn more - upload modal',
                       eventLabel: `Click to learn more`,

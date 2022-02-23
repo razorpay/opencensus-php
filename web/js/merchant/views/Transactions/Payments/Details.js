@@ -77,7 +77,7 @@ class PaymentDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window?.rzpAnalytics?.({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Payments',
         eventLabel: `payment_id=${id}`,
@@ -91,7 +91,7 @@ class PaymentDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window?.rzpAnalytics?.({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Payments',
         eventLabel: `payment_id=${id}`,
@@ -127,7 +127,7 @@ class PaymentDetailsContainer extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory,
       eventAction: 'Open Form - Capture',
       eventLabel: `payment_id=${payment.id}`,
@@ -163,7 +163,7 @@ class PaymentDetailsContainer extends Component {
           });
         },
         action: () => {
-          window.rzpAnalytics({
+          window.rzpAnalytics?.({
             eventCategory,
             eventAction: 'Capture - Payment',
             eventLabel: `payment_id=${payment.id}`,
@@ -278,7 +278,7 @@ class PaymentDetailsContainer extends Component {
   };
 
   onRefundModalMount = (payment) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Open Form - Refund',
       eventLabel: `payment_id=${payment.id}`,
@@ -286,7 +286,7 @@ class PaymentDetailsContainer extends Component {
   };
 
   onRefundModalUnmount = (payment) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Close Form - Refund',
       eventLabel: `payment_id=${payment.id}`,
@@ -301,7 +301,7 @@ class PaymentDetailsContainer extends Component {
     if (partial) {
       label.partial_payment_enabled = partial;
     }
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Refund - Payment',
       eventLabel: getKeysSeparatedByPipe(label),
@@ -310,7 +310,7 @@ class PaymentDetailsContainer extends Component {
   };
 
   onRefundDetailsToggleClick = (payment, speed_requested) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'See - Payment Refund Details',
       eventLabel: `payment_id=${payment.id}`,
@@ -319,7 +319,7 @@ class PaymentDetailsContainer extends Component {
   };
 
   viewSettlementOverview = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'View - Settlements Breakup',
       eventLabel: `Settled on`,

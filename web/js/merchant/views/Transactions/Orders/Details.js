@@ -29,7 +29,7 @@ class OrderDetailsContainer extends Component {
     this.isMagicCheckoutOrder(ordersListItems, id) ? fetchMagicCheckoutItem(id) : fetchItem(id);
 
     if (eventCategory) {
-      window?.rzpAnalytics?.({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Orders',
         eventLabel: `order_id=${id}`,
@@ -42,7 +42,7 @@ class OrderDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Orders',
         eventLabel: `order_id=${id}`,

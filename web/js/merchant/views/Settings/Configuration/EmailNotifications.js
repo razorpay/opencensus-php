@@ -140,7 +140,7 @@ class EmailNotifications extends Component {
   };
 
   analytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Email Notifications Addresses',
     });

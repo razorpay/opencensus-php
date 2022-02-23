@@ -52,7 +52,7 @@ const ondemandTrackers = () => {
 export const trackOndemand = ondemandTrackers();
 
 const trackGAEvents = (data) => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory: 'Day 1 ES',
     ...data,
   });

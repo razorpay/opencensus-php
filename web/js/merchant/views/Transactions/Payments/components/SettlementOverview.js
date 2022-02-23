@@ -7,7 +7,7 @@ function SettlementOverview({ payment }) {
         <Link
           to={`/settlements/${payment.transaction.settlement.id}`}
           onClick={() => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Settlement Revamp',
               eventAction: 'Click - Settlement ID',
               eventLabel: `Payments`,

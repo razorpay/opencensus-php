@@ -1,5 +1,5 @@
 const trackGAEvents = (data) => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory: 'LOS | Promoter Info',
     ...data,
   });

@@ -26,17 +26,19 @@ import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
 )
 class WithdrawalsRoot extends Component {
   state = {
+    // eslint-disable-next-line react/no-unused-state
     leadGenerated: false,
   };
 
   gaEventDispatcher = (eventObject) => {
     const { state: { eventCategory = null } = {} } = this.props.location;
+    // eslint-disable-next-line dot-notation
     eventObject['eventCategory'] = eventCategory ? eventCategory : 'Dashboard CA - Apply';
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   componentDidMount() {
-    const { fetchSeedData, user } = this.props;
+    const { user } = this.props;
 
     // fetchSeedData();
     const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
@@ -80,7 +82,7 @@ class WithdrawalsRoot extends Component {
       baseURL: apiUrl,
       headers: {
         sendImmediately: true,
-        Authorization: 'Basic ' + TSYS_AUTH_TOKEN,
+        Authorization: `Basic ${TSYS_AUTH_TOKEN}`,
         'Content-Type': 'application/json',
       },
       data: {
@@ -103,6 +105,7 @@ class WithdrawalsRoot extends Component {
 
   onRaiseRequest = () => {
     this.setState({
+      // eslint-disable-next-line react/no-unused-state
       leadGenerated: true,
     });
   };

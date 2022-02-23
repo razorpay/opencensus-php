@@ -317,7 +317,7 @@ class TransactionsContainer extends Component {
                       ),
                     });
 
-                    window.rzpAnalytics({
+                    window.rzpAnalytics?.({
                       eventCategory: 'Settlement Revamp',
                       eventAction: 'Know more - Next Settlement',
                       eventLabel: `Payments`,

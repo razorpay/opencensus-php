@@ -82,7 +82,7 @@ class EnableInstantRefundsModal extends Component {
               } Enable Normal Refund`
             : ' | Enable Instant Refund'
         }`;
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Instant Refund',
           eventAction: `Enable ${this.props.speed === 'normal' ? 'Normal' : 'Instant'} Refund`,
           eventLabel: label,
@@ -281,7 +281,7 @@ class EnableInstantRefundsModal extends Component {
                                 <strong
                                   class="pointer"
                                   onClick={() => {
-                                    window.rzpAnalytics({
+                                    window.rzpAnalytics?.({
                                       eventCategory: 'Dashboard - Instant Refund',
                                       eventAction: 'Contact Support',
                                       eventLabel: `Fee Modal | Contact Support`,
@@ -313,7 +313,7 @@ class EnableInstantRefundsModal extends Component {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {
-                    window.rzpAnalytics({
+                    window.rzpAnalytics?.({
                       eventCategory: 'Dashboard - Instant Refund',
                       eventAction: `Enable Normal Refund`,
                       eventLabel: `Learn More | Enable Normal Refund`,
@@ -342,7 +342,7 @@ class EnableInstantRefundsModal extends Component {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {
-                    window.rzpAnalytics({
+                    window.rzpAnalytics?.({
                       eventCategory: 'Dashboard - Instant Refund',
                       eventAction: `Enable Instant Refund`,
                       eventLabel: `Learn More | Enable Instant Refund`,

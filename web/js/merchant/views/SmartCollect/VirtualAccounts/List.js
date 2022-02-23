@@ -74,7 +74,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
   }
 
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Go To - Virtual Accounts',
     });
@@ -144,7 +144,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Smart Collect',
         eventAction: 'Search - Virtual Accounts',
         eventLabel: label,
@@ -155,7 +155,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Clear Search Params - Virtual Accounts',
     });

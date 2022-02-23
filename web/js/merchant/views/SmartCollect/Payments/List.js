@@ -20,7 +20,7 @@ import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collect
 @RTracking(() => window.rzpQ.component('VAPaymentsListContainer'))
 export default class VAPaymentsListContainer extends ListContainer {
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Go To - VA Payments',
     });
@@ -37,7 +37,7 @@ export default class VAPaymentsListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - VA Payments',
         eventAction: 'Search - Payments',
         eventLabel: label,
@@ -48,7 +48,7 @@ export default class VAPaymentsListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - VA Payments',
       eventAction: 'Clear Search Params - Payments',
     });

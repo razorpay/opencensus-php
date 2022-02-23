@@ -87,7 +87,7 @@ class OndemandModal extends Component {
 
   gaEventDispatcher = (eventObject) => {
     eventObject.eventCategory = this.props.eventCategory;
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   openConfirmSettlement = () => {

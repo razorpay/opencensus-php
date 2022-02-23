@@ -53,7 +53,7 @@ function batchActions({
           <button
             class="btn btn-xs btn-default btn-outline cancel-batch-btn"
             onClick={() => {
-              window.rzpAnalytics({
+              window.rzpAnalytics?.({
                 eventCategory: `Batch ${titleCase(batchType)}`,
                 eventAction: 'Cancel - List view',
                 eventLabel: `Click to upload file`,
@@ -156,7 +156,7 @@ class BatchList extends Component {
         />
       ),
     });
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Batch Refund',
       eventAction: 'Click to upload - List view',
       eventLabel: `Click to upload`,
@@ -274,7 +274,7 @@ class CancelConfirmation extends Component {
   };
   cancel = () => {
     this.setState({ loading: true });
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: `Batch ${titleCase(this.props.batch.type)}`,
       eventAction: 'Yes cancel - Cancel Modal',
       eventLabel: this.props.batch.status,

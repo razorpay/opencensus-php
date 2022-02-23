@@ -17,7 +17,7 @@ import { withRouter } from 'react-router-dom';
 import { closeModal } from 'merchant_common/reducers/modals';
 
 const trackMouseOver = () => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory: 'Dashboard - WCL LOS',
     eventAction: 'TOOLTIP | IFSC CODE',
     eventLabel: 'Cash-Advance Offer Approved',
@@ -67,7 +67,7 @@ class CashAdvanceApproved extends Component {
   render() {
     const { user, loanApplicationDetails } = this.props;
 
-    const { credit_offer_details, accepted_offer_details, meta } = loanApplicationDetails;
+    const { credit_offer_details, accepted_offer_details } = loanApplicationDetails;
 
     if (
       credit_offer_details.loading ||
@@ -186,7 +186,7 @@ class CashAdvanceApproved extends Component {
                       <i className="i i-info-outline" onMouseOver={trackMouseOver} />
                       <Popover align="top" theme="dark">
                         <PopoverBody>
-                          <div class="text-left">{TOOLTIP_DESCRIPTIONS['ifsc_code']}</div>
+                          <div class="text-left">{TOOLTIP_DESCRIPTIONS.ifsc_code}</div>
                         </PopoverBody>
                       </Popover>
                     </small>

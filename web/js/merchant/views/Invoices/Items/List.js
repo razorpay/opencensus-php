@@ -40,7 +40,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 })
 export default class ItemsListContainer extends ListContainer {
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Invoices',
       eventAction: 'Go To - Items',
     });
@@ -72,14 +72,14 @@ export default class ItemsListContainer extends ListContainer {
   }
 
   itemFormOnMount = (item) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Open Form - ${item ? 'Edit' : 'New'} Item`,
     });
   };
 
   itemFormOnUnmount = (item) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Close Form - ${item ? 'Edit' : 'New'} Item`,
     });
@@ -113,7 +113,7 @@ export default class ItemsListContainer extends ListContainer {
   highlightRowAndClose = (item, prevItem) => {
     this.props.luminateRow(item.id);
     this.props.closeModal();
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Submit Form - ${prevItem ? 'Edit' : 'New'} Item`,
       eventLabel: getKeysSeparatedByPipe(item),

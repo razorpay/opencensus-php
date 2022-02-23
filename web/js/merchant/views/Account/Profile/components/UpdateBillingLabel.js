@@ -128,7 +128,7 @@ export default class UpdateBillingLabel extends PureComponent {
     if (value != '') {
       isValid = true;
     }
-    this.setState({ [name]: value, isValid: isValid });
+    this.setState({ [name]: value, isValid });
   };
 
   onSaveClicked = () => {
@@ -145,7 +145,7 @@ export default class UpdateBillingLabel extends PureComponent {
       },
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Brand Name',
       eventAction: 'Save brand name clicked',
       eventLabel: `${user.id}`,
@@ -175,6 +175,7 @@ export default class UpdateBillingLabel extends PureComponent {
           properties: {
             status: false,
             failureReason: e.errors[0],
+            // eslint-disable-next-line no-undef
             newBrandName: billing_label,
             originalBrandName: this.state.billingLabel,
             ...getCommonAnalyticsProperties(window.rzp_user),

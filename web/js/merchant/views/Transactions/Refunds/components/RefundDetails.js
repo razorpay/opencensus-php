@@ -144,7 +144,7 @@ class PaymentDetailsContainer extends Component {
   }
 
   enableInstantRefunds = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Enable Now',
       eventLabel: `Refund detail page | Enable Now`,

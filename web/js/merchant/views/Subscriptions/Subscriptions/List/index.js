@@ -46,7 +46,7 @@ export default class SubscriptionsListContainer extends ListContainer {
   filterEle = React.createRef();
 
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Go To - Subscriptions',
     });
@@ -55,7 +55,7 @@ export default class SubscriptionsListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Subscriptions',
         eventAction: 'Search - Subscriptions',
         eventLabel: label,
@@ -65,7 +65,7 @@ export default class SubscriptionsListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Clear Search Params - Subscriptions',
     });

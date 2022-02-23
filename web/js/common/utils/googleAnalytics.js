@@ -3,7 +3,7 @@ const track = ({ eventCategory, eventAction, eventLabel, eventValue }) => {
     return;
   }
 
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory,
     eventAction,
     eventLabel,
@@ -26,7 +26,7 @@ export { setTrackData };
 export default track;
 
 export const trackFb = (event) => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     name: 'facebook',
     event,
   });
@@ -48,41 +48,41 @@ export const trackhubsContactUpdate = (data) => {
  */
 export const fireAnalyticsEvents = ({ ...data }) => {
   if (data.fbData) {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       name: 'facebook',
       event: data.fbData,
     });
   }
   if (data.bingData) {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       name: 'bing',
       event: data.bingData,
     });
   }
   if (data.liData) {
-    let event = {};
+    const event = {};
     event.conversionId = data.liData;
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       name: 'linkedIn',
       value: event,
     });
   }
   if (data.quoraData) {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       name: 'quora',
       event: data.quoraData,
     });
   }
   if (data.redditData) {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       name: 'reddit',
       event: data.redditData,
     });
   }
   if (data.twiData) {
-    let event = {};
+    const event = {};
     event.txn_id = data.twiData;
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       name: 'twitter',
       value: event,
     });

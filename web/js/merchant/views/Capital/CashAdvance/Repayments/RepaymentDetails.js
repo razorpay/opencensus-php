@@ -1,6 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 
 import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -47,8 +48,8 @@ class RepaymentDetails extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard CA - Withdraw';
-    window.rzpAnalytics(eventObject);
+    eventObject.eventCategory = 'Dashboard CA - Withdraw';
+    window.rzpAnalytics?.(eventObject);
   };
 
   componentDidMount() {
@@ -66,6 +67,7 @@ class RepaymentDetails extends Component {
     const {
       user,
       withdrawalConfigurationDetails,
+      // eslint-disable-next-line no-shadow
       fetchFunctionalWithdrawalConfigByMerchantID,
     } = this.props;
 
@@ -89,6 +91,7 @@ class RepaymentDetails extends Component {
         }
       });
 
+      // eslint-disable-next-line no-shadow
       const withdrawalsDetailsRequest = Array.from(withdrawalsIds).map((id) => {
         return withdrawals.fetchWithdrawalDetails({
           reference_type: 'ID',
@@ -214,6 +217,7 @@ class RepaymentDetails extends Component {
 
       const merchantKeys = Object.keys(merchants);
       const merchant = merchantKeys.find((merchantKey) => {
+        // eslint-disable-next-line no-shadow
         const current = merchants[merchantKey] || {};
         return current.id === creation_source_id;
       });
@@ -321,7 +325,7 @@ class RepaymentDetails extends Component {
     );
   };
 
-  getPayFailedRepaymentPrompt = (nextRepayment) => {
+  getPayFailedRepaymentPrompt = () => {
     return (
       <div>
         <strong>Next Automatic Repayment</strong>

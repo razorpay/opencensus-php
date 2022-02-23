@@ -41,7 +41,7 @@ class InstantRefundFee extends Component {
   }
 
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Minimal Fee',
       eventLabel: `${
@@ -104,7 +104,7 @@ class InstantRefundFee extends Component {
                       <strong
                         class="pointer"
                         onClick={() => {
-                          window.rzpAnalytics({
+                          window.rzpAnalytics?.({
                             eventCategory: 'Dashboard - Instant Refund',
                             eventAction: 'Contact Support',
                             eventLabel: `Custom Pricing Modal | Contact Support`,

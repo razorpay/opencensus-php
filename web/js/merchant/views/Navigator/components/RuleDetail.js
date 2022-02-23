@@ -2,7 +2,8 @@ import Spinner from 'common/ui/Spinner';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { withRouter, Link } from 'react-router-dom';
+import moment from 'moment';
+import { withRouter, Link, Redirect } from 'react-router-dom';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -12,15 +13,16 @@ import {
   reorderRules,
   changeRuleMode,
   fetchRules,
+  deleteRule,
 } from 'merchant/reducers/navigator/details';
 import Precondition from './Precondition';
 
 import ProviderRules from './ProviderRules';
-import { openModal, closeModal } from 'merchant_common/reducers/modals';
+// eslint-disable-next-line no-duplicate-imports
+import { openModal } from 'merchant_common/reducers/modals';
 import { ReorderRules } from './ReorderRule';
-import { rule } from './CreateRule';
 import PropTypes from 'prop-types';
-import { titleCase, deepClone } from 'common/utils/rzp-utils';
+import { deepClone } from 'common/utils/rzp-utils';
 import {
   TOTAL_RULE_LIMIT,
   getRuleStatus,
@@ -28,10 +30,8 @@ import {
   getRuleScore,
   total_live_rules,
   parameters,
-  createMappedProviders
+  createMappedProviders,
 } from './util';
-import { deleteRule } from '../../../reducers/navigator/details';
-import { Redirect } from 'react-router-dom';
 import DeactivateRule from './DeactivateRule';
 
 @withRouter
@@ -54,12 +54,12 @@ import DeactivateRule from './DeactivateRule';
   {
     ...ModalActions,
     ...NotificationsActions,
-    reorderRules: reorderRules,
-    fetchRule: fetchRule,
-    fetchRules: fetchRules,
-    deleteRule: deleteRule,
-    changeRuleMode: changeRuleMode,
-    openModal: openModal,
+    reorderRules,
+    fetchRule,
+    fetchRules,
+    deleteRule,
+    changeRuleMode,
+    openModal,
   },
 )
 export default class RuleDetail extends Component {
@@ -89,10 +89,12 @@ export default class RuleDetail extends Component {
         }
         rules[provider_priority].push(r);
       });
+      // eslint-disable-next-line react/no-unused-state
       this.setState({ rules });
     });
   };
 
+  // eslint-disable-next-line react/no-unused-state
   state = { rules: {}, redirect: null };
 
   deactivateRule = (cb) => {
@@ -123,7 +125,11 @@ export default class RuleDetail extends Component {
       return <Redirect to={this.state.redirect} />;
     }
     const { user, providers, terminalProviders } = this.props;
-    const MAPPED_PROVIDERS = createMappedProviders(user.isAddProviderEnabled, providers, terminalProviders);
+    const MAPPED_PROVIDERS = createMappedProviders(
+      user.isAddProviderEnabled,
+      providers,
+      terminalProviders,
+    );
 
     const rules = deepClone(this.props.rules);
     rules.forEach((r) => {
@@ -171,7 +177,7 @@ export default class RuleDetail extends Component {
                     </button>
                   ) : null}
 
-                  <Link to={'/optimizer/update-rule/' + this.props.rule.id}>
+                  <Link to={`/optimizer/update-rule/${this.props.rule.id}`}>
                     <button className="btn btn-primary edit-rule-btn">
                       {' '}
                       <i style={{ marginRight: '6px' }} className="i i-pencil-edit" />
@@ -297,7 +303,7 @@ export default class RuleDetail extends Component {
                                     action: () => {
                                       let promise;
                                       if (total_live_rules(rules).length >= TOTAL_RULE_LIMIT) {
-                                        promise = new Promise((resolve, reject) => {
+                                        promise = new Promise((resolve) => {
                                           this.deactivateRule((deactivated_rule) => {
                                             resolve(
                                               this.props
@@ -450,7 +456,7 @@ export default class RuleDetail extends Component {
   }
 
   enableInstantRefunds = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Enable Now',
       eventLabel: `Refund detail page | Enable Now`,

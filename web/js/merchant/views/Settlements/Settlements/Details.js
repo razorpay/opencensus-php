@@ -35,7 +35,7 @@ class SettlementDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Settlements',
         eventLabel: `settlement_id=${id}`,
@@ -47,7 +47,7 @@ class SettlementDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Settlements',
         eventLabel: `settlement_id=${id}`,

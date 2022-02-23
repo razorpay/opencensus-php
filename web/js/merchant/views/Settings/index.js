@@ -21,7 +21,7 @@ import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 const analyticsGoTo = (name) => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory: 'Dashboard - Settings',
     eventAction: `Go To - ${name}`,
   });

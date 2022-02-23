@@ -10,7 +10,7 @@ import track from '../track';
 export default class OnBoardingFeatures extends React.PureComponent {
   handleBackButton = () => {
     this.props.prev(() => {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: `Onboarding Card (${this.props.feature})`,
         eventAction: `Page ${this.props.active} - Back CTA`,
       });
@@ -66,7 +66,7 @@ class FeatureLink extends React.PureComponent {
   handleFeatureLink = () => {
     const { ga, url, page, feature, onClick } = this.props;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: `Onboarding Card (${feature})`,
       eventAction: `Page ${page} - ${ga}`,
     });

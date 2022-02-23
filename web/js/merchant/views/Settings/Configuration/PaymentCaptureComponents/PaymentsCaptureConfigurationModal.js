@@ -73,7 +73,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
       };
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Next',
       eventLabel: 'Entered value | Next',
@@ -98,7 +98,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
       };
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Skip',
       eventLabel: `${
@@ -115,7 +115,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
 
     this.props.createLateAuthConfig(this.state, this.props.captureType);
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Save and Close',
       eventLabel: `${capitalize(captureType)} - Select ${capitalize(
@@ -153,7 +153,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
   capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
   onTooltipHover = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Save and Close',
       eventLabel: `${capitalize('captureType')} - Select ${capitalize(

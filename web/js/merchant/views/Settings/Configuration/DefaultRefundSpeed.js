@@ -62,7 +62,7 @@ class DefaultRefundSpeed extends Component {
     };
   }
   analytics = (action) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - Instant Refunds`,
     });
@@ -374,7 +374,7 @@ class DefaultRefundSpeed extends Component {
                       <a
                         onClick={() => {
                           raiseTicket();
-                          window.rzpAnalytics({
+                          window.rzpAnalytics?.({
                             eventCategory: 'Dashboard - Instant Refund',
                             eventAction: 'Contact Support',
                             eventLabel: `Setting Page | Contact Support`,

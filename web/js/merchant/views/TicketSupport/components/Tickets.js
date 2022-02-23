@@ -40,7 +40,7 @@ export default class Tickets extends React.Component {
   };
 
   raiseTicket = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
       eventAction: 'write to us clicked',
       eventLabel: `Tickets`,
@@ -80,7 +80,7 @@ export default class Tickets extends React.Component {
         filter = null;
       }
       this.props.fetchSupportTickets(params, filter).then(() => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Ticket Dashboard',
           eventAction: 'support tickets fetched',
           eventLabel: `Tickets | Status:Success`,

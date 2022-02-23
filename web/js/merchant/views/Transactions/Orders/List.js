@@ -10,7 +10,7 @@ import { bindActionCreators } from 'redux';
 
 class OrdersListContainer extends ListContainer {
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Orders',
       eventAction: 'Go To - Orders',
     });
@@ -19,7 +19,7 @@ class OrdersListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Orders',
         eventAction: 'Search - Orders',
         eventLabel: label,
@@ -28,7 +28,7 @@ class OrdersListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Orders',
       eventAction: 'Clear Search Params - Orders',
     });

@@ -183,7 +183,7 @@ export default class PaymentLinkDetails extends Component {
           isPaymentLink
           customer={this.props.paymentlink.customer_details}
           onIssue={(notifyProps) => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Send - Payment Link',
               eventLabel: `payment_link_id=${this.props.paymentlink.id}`,
@@ -191,14 +191,14 @@ export default class PaymentLinkDetails extends Component {
             return this.notifyCustomer(this.props.paymentlink, notifyProps);
           }}
           onMount={() => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Open Form - Send Link',
               eventLabel: `payment_link_id=${this.props.paymentlink.id}`,
             });
           }}
           onUnmount={() => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Close Form - Send Link',
               eventLabel: `payment_link_id=${this.props.paymentlink.id}`,
@@ -240,13 +240,13 @@ export default class PaymentLinkDetails extends Component {
           .then((paymentlinkStatus) => {
             this.props.updatePLInReduxList({ data: paymentlinkStatus }, false);
 
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Submit Form - Cancel Payment Link',
               eventLabel: `payment_link_id=${paymentlinkStatus.id}`,
             });
 
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payment Links',
               eventAction: 'Close Form - Cancel Payment Link',
               eventLabel: `payment_link_id=${paymentlinkStatus.id}`,
@@ -281,14 +281,14 @@ export default class PaymentLinkDetails extends Component {
           });
       },
       onMount: () => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payment Links',
           eventAction: 'Open Form - Cancel Payment Link',
           eventLabel: `payment_link_id=${paymentlink.id}`,
         });
       },
       abort: () => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payment Links',
           eventAction: 'Close Form - Cancel Payment Link',
           eventLabel: `payment_link_id=${paymentlink.id}`,

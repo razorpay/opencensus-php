@@ -10,7 +10,7 @@ import CloseReasons from './CloseReasons';
 import { CLOSE_OPTIONS } from './CreditNotInterestedReasons';
 import ajax from 'merchant/utils/ajax';
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   closeModal,
   openModal,
   showNotification,
@@ -19,6 +19,7 @@ export default class CreditPullSuccess extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // eslint-disable-next-line react/no-unused-state
       moreInfo: false,
     };
     this.upperScore = 900;
@@ -64,8 +65,9 @@ export default class CreditPullSuccess extends Component {
   }
 
   generateRowData = (reportData, label, key) => {
-    let rowData = [];
-    for (let iter in label) {
+    const rowData = [];
+    // eslint-disable-next-line guard-for-in
+    for (const iter in label) {
       rowData.push({
         desc: label[iter],
         value: reportData[key[iter]],
@@ -78,8 +80,8 @@ export default class CreditPullSuccess extends Component {
     return <span>Credit Report</span>;
   };
 
-  handleInterest = consent => {
-    window.rzpAnalytics({
+  handleInterest = (consent) => {
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - D2C',
       eventAction: consent === 0 ? 'Not Interested' : 'Interested',
     });
@@ -93,7 +95,7 @@ export default class CreditPullSuccess extends Component {
         },
       },
       {},
-      '/merchant/api'
+      '/merchant/api',
     )
       .then(() => {
         if (consent === 0) {
@@ -131,7 +133,7 @@ export default class CreditPullSuccess extends Component {
           <ModalHeader
             title={this.titleGenerator()}
             onCloseClick={() => {
-              window.rzpAnalytics({
+              window.rzpAnalytics?.({
                 eventCategory: 'Dashboard - D2C',
                 eventAction: 'Closed from Score Screen w/o Interest',
               });
@@ -157,17 +159,21 @@ export default class CreditPullSuccess extends Component {
                 </div>
               </div>
             )}
-            <div className={`background-col ${!!this.props.ntcScore ? 'col-md-12 small-container' : 'col-md-8 rep-container'}`}>
+            <div
+              className={`background-col ${
+                !!this.props.ntcScore ? 'col-md-12 small-container' : 'col-md-8 rep-container'
+              }`}
+            >
               <div className="report-header">Congratulations</div>
               {!!this.props.ntcScore ? (
-                  <div className="report-body">
-                    Though we could not find any credit records on your name, you are still eligible for a loan.
-                    Please confirm your interest.
-                  </div>
+                <div className="report-body">
+                  Though we could not find any credit records on your name, you are still eligible
+                  Please confirm your interest.
+                </div>
               ) : (
                 <div className="report-body">
-                  Based on your credit history, You may be eligible for a loan.
-                  Please confirm your interest.
+                  Based on your credit history, You may be eligible for a loan. Please confirm your
+                  interest.
                 </div>
               )}
               <div className="report-actions">
@@ -176,7 +182,7 @@ export default class CreditPullSuccess extends Component {
                   text="Yes I'm interested"
                   onClick={() => this.handleInterest(1)}
                 />
-                <span>     </span>
+                <span> </span>
                 <AsyncButton
                   class="btn btn-secondary"
                   text="No, I'm not"
@@ -198,10 +204,7 @@ export default class CreditPullSuccess extends Component {
             </div>
             {!this.props.ntcScore && (
               <div>
-                <CreditPullAdditionalReport
-                  report={this.props.report}
-                  score={this.props.score}
-                />
+                <CreditPullAdditionalReport report={this.props.report} score={this.props.score} />
               </div>
             )}
             <div className="col-md-12 foot-box">

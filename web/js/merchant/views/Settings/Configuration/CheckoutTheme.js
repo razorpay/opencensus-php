@@ -167,7 +167,7 @@ class CheckoutTheme extends Component {
   };
 
   analytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Checkout Theme',
     });

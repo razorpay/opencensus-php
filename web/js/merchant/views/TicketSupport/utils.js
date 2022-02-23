@@ -78,7 +78,7 @@ export const getFormattedDate = (d) => {
 };
 
 export const raiseTicket = () => {
-  window.rzpAnalytics({
+  window.rzpAnalytics?.({
     eventCategory: 'Ticket Dashboard',
     eventAction: 'write to us clicked',
     eventLabel: `Tickets`,

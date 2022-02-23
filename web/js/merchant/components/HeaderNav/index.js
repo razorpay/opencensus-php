@@ -29,7 +29,7 @@ import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 const COUNT_TO_SHOW_MTU_OFFER = 5;
 
 const analyticsAction = (action) => {
-  window?.rzpAnalytics?.({
+  window.rzpAnalytics?.({
     eventCategory: 'Dashboard - Header',
     eventAction: action,
   });

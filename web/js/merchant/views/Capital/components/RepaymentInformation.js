@@ -13,7 +13,7 @@ function RepaymentInformation({ creditOffer, trackGAEvents = true, _fromWhere, p
   const trackMouseOver = () => {
     if (!trackGAEvents) return;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - WCL LOS',
       eventAction: 'TOOLTIP | Repayment Details',
       eventLabel: `${_fromWhere}`,

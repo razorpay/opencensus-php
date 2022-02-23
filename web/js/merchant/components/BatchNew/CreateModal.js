@@ -123,7 +123,7 @@ class BatchCreateModal extends Component {
                       *We charge minimal processing fee on instant refunds,{' '}
                       <strong
                         onClick={() => {
-                          window.rzpAnalytics({
+                          window.rzpAnalytics?.({
                             eventCategory: `Batch ${titleCase(this.props.batchType)}`,
                             eventAction: 'Check pricing - upload preview modal',
                             eventLabel: `Check pricing`,
@@ -186,7 +186,7 @@ class BatchCreateModal extends Component {
                 }
               });
               label = label.join(', ');
-              window.rzpAnalytics({
+              window.rzpAnalytics?.({
                 eventCategory: `Batch ${titleCase(this.props.batchType)}`,
                 eventAction: 'Issue Refund - upload preview modal',
                 eventLabel: `Click to upload file`,

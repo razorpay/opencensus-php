@@ -316,7 +316,7 @@ export default class AmountWithdraw extends React.Component {
 
   gaEventDispatcher = (eventObject) => {
     eventObject.eventCategory = 'Dashboard CA - Apply';
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   prefillData = () => {

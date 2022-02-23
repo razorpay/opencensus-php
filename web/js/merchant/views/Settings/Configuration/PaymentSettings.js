@@ -128,14 +128,14 @@ class PaymentSettings extends Component {
         const manualTimeoutValue = this.getTimeoutValue(body.manual);
         payload.config.capture_options.manual_expiry_period = manualTimeoutValue;
 
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payments Capture Settings',
           eventAction: 'Automatic Timeout',
           eventLabel: 'Setting Both Automatic & Manual Timeouts',
           timeoutValue: `Automatic - ${automaticTimeoutValue} - Manual - ${manualTimeoutValue}`,
         });
       } else {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payments Capture Settings',
           eventAction: 'Automatic Timeout',
           eventLabel: 'Setting Only Automatic Timeouts',
@@ -147,7 +147,7 @@ class PaymentSettings extends Component {
       const timeoutValue = this.getTimeoutValue(body.manual);
       payload.config.capture_options.manual_expiry_period = timeoutValue;
 
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payments Capture Settings',
         eventAction: 'Manual Timeout',
         eventLabel: 'Setting Timeout Value',
@@ -236,7 +236,7 @@ class PaymentSettings extends Component {
       ),
     });
     triggerHotjarRecording(`Capture_Setting`);
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Configure Now',
       eventLabel: 'Configure now - Onboarding - New User',
@@ -273,14 +273,14 @@ class PaymentSettings extends Component {
           />
         ),
       });
-      return window.rzpAnalytics({
+      return window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payments Capture Settings',
         eventAction: 'Done',
         eventLabel: 'Configure now - Capture Settings - Automatic Capture - Done',
       });
     }
     this.handleManualCaptureClick();
-    return window.rzpAnalytics({
+    return window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Done',
       eventLabel: 'Configure now - Capture Settings - Manual Capture - Done',
@@ -293,7 +293,7 @@ class PaymentSettings extends Component {
       if (authType === 'automatic') this.handleAutomaticCaptureClick();
       else this.handleManualCaptureClick();
 
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payments Capture Settings',
         eventAction: 'Done',
         eventLabel: 'Configure now - Automatic capture - Set Custom Timeout - Done',
@@ -322,7 +322,7 @@ class PaymentSettings extends Component {
         authType,
       );
 
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payments Capture Settings',
         eventAction: 'Done',
         eventLabel: 'Configure now - Automatic capture - Capture payments automatically - Done',
@@ -345,7 +345,7 @@ class PaymentSettings extends Component {
   automaticCaptureBack = () => {
     this.props.closeModal();
     this.configureNow();
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Back',
       eventLabel: 'Configure now - Automatic Capture - Back',
@@ -401,7 +401,7 @@ class PaymentSettings extends Component {
 
   handleContentToggle = (_) => {
     if (this.props.user.iscaptureSettingsRevampEnabled && this.state.isToggleActive === false) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payments Capture Settings v2',
         eventAction: 'Show Settings Details',
         eventLabel: 'Settings Details',
@@ -420,7 +420,7 @@ class PaymentSettings extends Component {
       this.props.user.iscaptureSettingsRevampEnabled &&
       this.state.isDetailsToggleActive === false
     ) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payments Capture Settings v2',
         eventAction: 'Show Details',
         eventLabel: 'Home page | Show Details',
@@ -443,7 +443,7 @@ class PaymentSettings extends Component {
       size: 'medium',
       component: <CaptureMode />,
     });
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Change',
       eventLabel: 'Change',
@@ -462,7 +462,7 @@ class PaymentSettings extends Component {
       },
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Know More',
       eventLabel: 'Know More',
@@ -703,7 +703,7 @@ class PaymentSettings extends Component {
                             onClick={() => {
                               this.handleCaptureInitiationDone('automatic');
                               triggerHotjarRecording(`Capture_Setting`);
-                              window.rzpAnalytics({
+                              window.rzpAnalytics?.({
                                 eventCategory: 'Dashboard - Payments Capture Settings',
                                 eventAction: 'Configure Now',
                                 eventLabel: 'Configure now - Automatic Capture - Returning User',
@@ -757,7 +757,7 @@ class PaymentSettings extends Component {
                             onClick={() => {
                               this.handleCaptureInitiationDone('manual');
                               triggerHotjarRecording(`Capture_Setting`);
-                              window.rzpAnalytics({
+                              window.rzpAnalytics?.({
                                 eventCategory: 'Dashboard - Payments Capture Settings',
                                 eventAction: 'Configure Now',
                                 eventLabel: 'Configure now - Manual Capture - Returning User',

@@ -35,7 +35,7 @@ const SettlementsBanner = (props) => {
   const handleContactSupport = () => {
     closeModal();
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'Contact Support',
       eventLabel: `Settlements`,

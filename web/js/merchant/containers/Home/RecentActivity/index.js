@@ -128,7 +128,7 @@ class RecentActivity extends Component {
   }
 
   enableInstantRefunds = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Enable Now',
       eventLabel: `Recent Activity | Enable Now`,

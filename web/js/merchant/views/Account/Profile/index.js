@@ -345,7 +345,7 @@ class Profile extends Component {
       .updateBillingLabel(data)
       .then((resp) => {
         if (resp.success) {
-          window.rzpAnalytics({
+          window.rzpAnalytics?.({
             eventCategory: 'Brand Name',
             eventAction: 'Save brand name success',
             eventLabel: `${this.props.user.id}`,
@@ -369,7 +369,7 @@ class Profile extends Component {
         return resp;
       })
       .catch((err) => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Brand Name',
           eventAction: 'Save brand name failure',
           eventLabel: `${this.props.user.id}`,
@@ -383,7 +383,7 @@ class Profile extends Component {
 
   openChangeBillingLabel = () => {
     const { user } = this.props;
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Brand Name',
       eventAction: 'Edit brand name clicked',
       eventLabel: `${user.id}`,
@@ -421,7 +421,7 @@ class Profile extends Component {
     const { bankAccount } = this.props.profile;
     const { user } = this.props;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Bank Account',
       eventAction: 'Bank account edit clicked',
       eventLabel: `${user.id}`,
@@ -469,7 +469,7 @@ class Profile extends Component {
       }
     }
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Bank Account',
       eventAction: 'Bank account save clicked',
       eventLabel: `${user.id}`,

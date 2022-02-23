@@ -35,7 +35,7 @@ class LoanEntity extends Component {
       context: { activeState },
     } = loanApplicationDetails;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - WCL LOS',
       eventAction: 'Application | Save&Close',
       eventLabel: `${this._getParentStepLabel(activeState)}:${
@@ -53,9 +53,10 @@ class LoanEntity extends Component {
       meta,
       context: { activeState },
     } = this.props.loanApplicationDetails;
+    // eslint-disable-next-line no-unused-vars
     const currentStatus = status || activeState;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - WCL LOS',
       eventAction: `Landing Steps | ${cta}`,
       eventLabel: `${subpage ? `${subpage} | ` : ''}${

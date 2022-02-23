@@ -13,7 +13,7 @@ import { bindActionCreators } from 'redux';
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
     if (window.rzpAnalytics) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Refunds',
         eventAction: 'Go To - Refunds',
       });
@@ -23,7 +23,7 @@ class RefundsListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0 && window.rzpAnalytics) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Refunds',
         eventAction: 'Search - Refunds',
         eventLabel: label,
@@ -33,7 +33,7 @@ class RefundsListContainer extends ListContainer {
 
   onClearAnalytics = () => {
     if (window.rzpAnalytics) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Refunds',
         eventAction: 'Clear Search Params - Refunds',
       });

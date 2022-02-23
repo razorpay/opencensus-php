@@ -113,7 +113,7 @@ export default class NewPlan extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     if (eventCategory) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Form - New Plan',
       });
@@ -124,7 +124,7 @@ export default class NewPlan extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     if (eventCategory) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Form - New Plan',
       });
@@ -143,7 +143,7 @@ export default class NewPlan extends Component {
         const eventCategory = getEventCategoryFromPath(closeUrl);
 
         if (eventCategory) {
-          window.rzpAnalytics({
+          window.rzpAnalytics?.({
             eventCategory,
             eventAction: 'Submit Form - New Plan',
             eventLabel: getKeysSeparatedByPipe(props),

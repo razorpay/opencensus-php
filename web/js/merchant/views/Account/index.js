@@ -67,7 +67,7 @@ const MyAccount = (props) => {
           >
             <NavLink
               onClick={() => {
-                window.rzpAnalytics({
+                window.rzpAnalytics?.({
                   eventCategory: 'Ticket Dashboard',
                   eventAction: 'Support tickets tab clicked',
                   eventLabel: `Tickets`,

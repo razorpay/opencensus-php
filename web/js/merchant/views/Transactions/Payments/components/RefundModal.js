@@ -152,7 +152,7 @@ class RefundModal extends Component {
     this.props.fetchMerchantBalance();
 
     if (!this.hasEnoughFunds()) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Issue Refund',
         eventLabel: `Add Funds | Default speed ${
@@ -167,7 +167,7 @@ class RefundModal extends Component {
         this.props.payment.instant_refund_support === true
       )
     ) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Issue Refund',
         eventLabel: `Instant Refund not supported | Default speed ${
@@ -177,7 +177,7 @@ class RefundModal extends Component {
     }
 
     if (this.props.transfers.items.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Issue Refund',
         eventLabel: `Route transfer | Default speed ${
@@ -203,7 +203,7 @@ class RefundModal extends Component {
     if (!partial) {
       data.amount = payment.amount - payment.amount_refunded;
     }
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Yes Refund',
       eventLabel: `${speedValue === 'normal' ? 'Normal' : 'Instant'} Refund | Default speed ${
@@ -248,7 +248,7 @@ class RefundModal extends Component {
           (!partial && is_unchecked && is_instant) ||
           (!partial && this.analytics.hover_breakup && is_unchecked && is_instant)
         ) {
-          window.rzpAnalytics({
+          window.rzpAnalytics?.({
             eventCategory: 'Dashboard - Instant Refund',
             eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
             eventLabel: label,
@@ -303,7 +303,7 @@ class RefundModal extends Component {
       return;
     }
     this.instant_refund = props.instant_refund;
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Click - Issue Refund',
       eventLabel: `payment_id=${this.props.payment.id}`,
@@ -339,7 +339,7 @@ class RefundModal extends Component {
             affirmativePendingLabel: 'Refunding...',
             abortLabel: "No, don't!",
             action: () => {
-              window.rzpAnalytics({
+              window.rzpAnalytics?.({
                 eventCategory: 'Dashboard - Payments',
                 eventAction: 'Refund - Payment',
                 eventLabel: `payment_id=${this.props.payment.id}`,
@@ -350,7 +350,7 @@ class RefundModal extends Component {
             },
           })
           .catch(() => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payments',
               eventAction: 'Click - Cancel Refund',
               eventLabel: `payment_id=${this.props.payment.id}`,
@@ -371,7 +371,7 @@ class RefundModal extends Component {
           affirmativePendingLabel: 'Refunding...',
           abortLabel: "No, don't!",
           action: () => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Payments',
               eventAction: 'Refund - Payment',
               eventLabel: `payment_id=${this.props.payment.id}`,
@@ -382,7 +382,7 @@ class RefundModal extends Component {
           },
         })
         .catch(() => {
-          window.rzpAnalytics({
+          window.rzpAnalytics?.({
             eventCategory: 'Dashboard - Payments',
             eventAction: 'Click - Cancel Refund',
             eventLabel: `payment_id=${this.props.payment.id}`,
@@ -640,7 +640,7 @@ class RefundModal extends Component {
 
   onInstantRefundCheckboxClick = (e) => {
     this.analytics.check_box = e.target.checked;
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: e.target.value ? 'Unchecked - Instant Refund' : 'Checked - Instant Refund',
       eventLabel: `payment_id=${this.props.payment.id}`,
@@ -649,7 +649,7 @@ class RefundModal extends Component {
   };
 
   onInstantRefundTooltipHover = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Hover - Instant Refund Tooltip',
       eventLabel: `payment_id=${this.props.payment.id}`,

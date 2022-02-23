@@ -50,7 +50,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Virtual Account',
         eventLabel: `virtual_account_id=${id}`,
@@ -63,7 +63,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Virtual Account',
         eventLabel: `virtual_account_id=${id}`,
@@ -90,13 +90,13 @@ export default class VirtualAccountDetailsContainer extends Component {
         this.props
           .closeVirtualAccount({ ...virtualaccount, status: 'closed' })
           .then(() => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Smart Collect',
               eventAction: 'Submit Form - Close Virtual Account',
               eventLabel: `virtual_account_id=${virtualaccount.id}`,
             });
 
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Smart Collect',
               eventAction: 'Close Form - Close Virtual Account',
               eventLabel: `virtual_account_id=${virtualaccount.id}`,
@@ -116,14 +116,14 @@ export default class VirtualAccountDetailsContainer extends Component {
             });
           }),
       onMount: () => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Smart Collect',
           eventAction: 'Open Form - Close Virtual Account',
           eventLabel: `virtual_account_id=${virtualaccount.id}`,
         });
       },
       abort: () => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Smart Collect',
           eventAction: 'Close Form - Close Virtual Account',
           eventLabel: `virtual_account_id=${virtualaccount.id}`,
@@ -138,7 +138,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Copy To Clipboard',
         eventLabel: `virtual_account_id${virtualaccount.id}`,
@@ -151,7 +151,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Form - Make Test Payment',
         eventLabel: `virtual_account_id=${id}`,
@@ -162,7 +162,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Form - Make Test Payment',
         eventLabel: `virtual_account_id=${id}`,
@@ -173,7 +173,7 @@ export default class VirtualAccountDetailsContainer extends Component {
     const { closeUrl } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Submit Form - Make Test Payment',
         eventLabel: getKeysSeparatedByPipe(params),

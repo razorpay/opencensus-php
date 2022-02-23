@@ -36,7 +36,7 @@ class ModalCloseReasons extends Component {
       eventLabel: `${closeReason} | ${brief}`,
       eventValue: brief,
     };
-    window.rzpAnalytics(analyticsPayload);
+    window.rzpAnalytics?.(analyticsPayload);
     trackEsChurnReason(user.current, `${closeReason}${brief ? ` | Description - ${brief}` : ''}`);
     trackEsModalCloseAction(user.current, true);
     if (closeOrigin === 'OnDemand') {

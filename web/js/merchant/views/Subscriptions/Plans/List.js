@@ -37,7 +37,7 @@ import analytics from '../analytics';
 )
 export default class PlansListContainer extends ListContainer {
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Go To - Plans',
     });
@@ -53,7 +53,7 @@ export default class PlansListContainer extends ListContainer {
     const label = getKeysSeparatedByPipe(params);
 
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Subscriptions',
         eventAction: 'Search - Plans',
         eventLabel: label,
@@ -63,7 +63,7 @@ export default class PlansListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Clear Search Params - Plans',
     });

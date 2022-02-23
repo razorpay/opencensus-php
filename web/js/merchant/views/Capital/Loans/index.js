@@ -99,7 +99,7 @@ export default class LoanApplicationOverview extends React.Component {
     eventObject.eventCategory = eventCategory
       ? eventCategory
       : GA_CATEGORY_BY_PRODUCT[this.getProductCode()];
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   componentDidMount() {

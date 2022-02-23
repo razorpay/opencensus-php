@@ -32,7 +32,7 @@ export default class PlanDetailsContainer extends Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     if (eventCategory) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Plans',
         eventLabel: `plan_id=${id}`,
@@ -44,7 +44,7 @@ export default class PlanDetailsContainer extends Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     if (eventCategory) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Plans',
         eventLabel: `plan_id=${id}`,

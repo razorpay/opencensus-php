@@ -162,7 +162,7 @@ class SettlementsListContainer extends ListContainer {
       location,
     } = this.props;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Go To - Settlements',
     });
@@ -191,7 +191,7 @@ class SettlementsListContainer extends ListContainer {
   onSearchAnalytics = (params) => {
     const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
         eventAction: 'Search - Settlements',
         eventLabel: label,
@@ -207,7 +207,7 @@ class SettlementsListContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Clear Search Params - Settlements',
     });
@@ -216,7 +216,7 @@ class SettlementsListContainer extends ListContainer {
   };
 
   settlementBreakupOnMount = (id) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Show - Settlement Breakup',
       eventLabel: `settlement_id=${id}`,
@@ -224,7 +224,7 @@ class SettlementsListContainer extends ListContainer {
   };
 
   settlementBreakupOnUnmount = (id) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Hide - Settlement Breakup',
       eventLabel: `settlement_id=${id}`,
@@ -302,7 +302,7 @@ class SettlementsListContainer extends ListContainer {
       component: <SettlementScheduleV2 />,
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'View Settlement Cycle',
       eventLabel: `Settlements`,

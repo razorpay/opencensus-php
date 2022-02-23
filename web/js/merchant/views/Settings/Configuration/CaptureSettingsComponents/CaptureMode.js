@@ -36,7 +36,7 @@ function CaptureMode(props) {
   const onClickNext = () => {
     const _tValue = parseInt(timeoutValue, 10);
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Next',
       eventLabel:

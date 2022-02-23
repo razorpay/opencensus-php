@@ -50,7 +50,7 @@ function SmsNotification({ currentUser, showNotification }) {
   }, []);
 
   const analytics = (action) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - SMS notifications`,
     });

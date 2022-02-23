@@ -25,7 +25,7 @@ class TakeATourButton extends Component {
           isTour: true,
         });
 
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: `Restart Tutorial (${this.props.feature})`,
           eventAction: `Need help? Take a Tour CTA `,
         });

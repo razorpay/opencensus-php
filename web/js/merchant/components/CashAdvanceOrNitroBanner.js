@@ -15,7 +15,7 @@ const EVENT_CATEGORY_CA_BANNER = 'Cash Advance Banner - Settlements';
 
 const gaCABannerEventDispatcher = (eventObject) => {
   eventObject.eventCategory = EVENT_CATEGORY_CA_BANNER;
-  window.rzpAnalytics(eventObject);
+  window.rzpAnalytics?.(eventObject);
 };
 
 const CashAdvanceOrNitroBanner = ({
@@ -109,7 +109,9 @@ const CashAdvanceOrNitroBanner = ({
   const getInternalCreditBalance = () => {
     if (!hasWithdrawalConfiguration) return 0;
     const internalBalance =
+      // eslint-disable-next-line radix
       parseInt(withdrawalConfigurationDetails.data.configuration.internal_credit_limit) -
+      // eslint-disable-next-line radix
       parseInt(withdrawalConfigurationDetails.data.principal_outstanding_balance || 0);
     return internalBalance > 0 ? internalBalance : 0;
   };
@@ -188,8 +190,11 @@ const CashAdvanceOrNitroBanner = ({
 
 CashAdvanceOrNitroBanner.propTypes = {
   user: PropTypes.object,
+  // eslint-disable-next-line react/no-typos
   fetchProducts: PropTypes.function,
+  // eslint-disable-next-line react/no-typos
   getApplications: PropTypes.function,
+  // eslint-disable-next-line react/no-typos
   fetchFunctionalWithdrawalConfigByMerchantID: PropTypes.function,
   loanApplicationDetails: PropTypes.object,
   history: PropTypes.object,

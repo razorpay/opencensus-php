@@ -84,7 +84,7 @@ class InstantRefundPricingTable extends Component {
                     <strong
                       class="pointer"
                       onClick={() => {
-                        window.rzpAnalytics({
+                        window.rzpAnalytics?.({
                           eventCategory: 'Dashboard - Instant Refund',
                           eventAction: 'Contact Support',
                           eventLabel: `Custom Pricing Modal | Contact Support`,

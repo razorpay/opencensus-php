@@ -727,7 +727,7 @@ class App extends Component {
   };
 
   switchMode = (mode, callback = () => {}) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Header',
       eventAction: 'Switch - Mode',
       eventLabel: mode,

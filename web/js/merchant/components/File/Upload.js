@@ -354,7 +354,7 @@ export default class FileUpload extends React.Component {
               this.state.isFileDraggedInside && 'Dropzone-cavity--highlight',
             )}
             onClick={() => {
-              window.rzpAnalytics({
+              window.rzpAnalytics?.({
                 eventCategory: `Batch ${titleCase(this.props.batchType)}`,
                 eventAction: 'Upload file -  upload modal',
                 eventLabel: `Click to upload file`,

@@ -76,7 +76,7 @@ export default class CreditPullAdditionalReport extends Component {
               target="_blank"
               href="https://razorpay.com/capital/credit-report-faq"
               onClick={() => {
-                window.rzpAnalytics({
+                window.rzpAnalytics?.({
                   eventCategory: 'Dashboard - D2C',
                   eventAction: 'Show FAQs',
                 });

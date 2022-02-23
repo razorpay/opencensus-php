@@ -78,13 +78,13 @@ function RefundSpeed(props) {
       label = `Change | Manual Capture | Next | Normal Refund | Save`;
     }
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Save',
       eventLabel: `${label}`,
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Capture Settings',
       eventLabel: ``,
@@ -129,7 +129,7 @@ function RefundSpeed(props) {
         props.fetchLateAuthConfig();
       })
       .catch((error) => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payments Capture Settings v2',
           eventAction: 'Error',
           eventLabel: `${error.errors}`,

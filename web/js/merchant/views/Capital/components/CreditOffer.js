@@ -58,7 +58,7 @@ const CreditOffer = ({
   const trackMouseOver = (type) => {
     if (!trackGAEvents) return;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - WCL LOS',
       eventAction: `TOOLTIP | ${type.toUpperCase()}`,
       eventLabel: `${_fromWhere}`,

@@ -4,7 +4,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   closeModal,
 })
 export default class CloseReasons extends Component {
@@ -15,7 +15,7 @@ export default class CloseReasons extends Component {
     };
   }
 
-  handleReasonChange = e => {
+  handleReasonChange = (e) => {
     this.setState({ closeReason: e.target.value });
   };
 
@@ -26,7 +26,7 @@ export default class CloseReasons extends Component {
       eventAction,
       eventLabel: `Reason - ${this.state.closeReason}`,
     };
-    window.rzpAnalytics(analyticsPayload);
+    window.rzpAnalytics?.(analyticsPayload);
     this.props.closeModal();
   };
 
@@ -41,15 +41,15 @@ export default class CloseReasons extends Component {
           }}
         />
         <div className="modal-body">
-          {this.props.closeReasons.map(choice => {
+          {this.props.closeReasons.map((choice) => {
             return (
-              <div key={'parent-choice-' + choice}>
-                <label key={'label-' + choice}>
+              <div key={`parent-choice-${choice}`}>
+                <label key={`label-${choice}`}>
                   <input
                     type="radio"
                     name="close-reason"
                     value={choice}
-                    key={'inp-choice' + choice}
+                    key={`inp-choice${choice}`}
                     onChange={this.handleReasonChange}
                   />
                   {choice}

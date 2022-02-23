@@ -168,7 +168,7 @@ class InstantSettlements extends ListContainer {
       component: <SettlementScheduleV2 />,
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'View Settlement Cycle',
       eventLabel: 'Settlements',

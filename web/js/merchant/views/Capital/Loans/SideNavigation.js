@@ -26,7 +26,7 @@ class SideNavigation extends Component {
     this.stepFound = false;
   }
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
+  componentDidUpdate() {
     this.stepFound = false;
   }
 
@@ -231,9 +231,9 @@ class SideNavigation extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] =
+    eventObject.eventCategory =
       GA_CATEGORY_BY_PRODUCT[this.props.loanApplicationDetails.meta.product];
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   getUserFlowConfiguration = () => {

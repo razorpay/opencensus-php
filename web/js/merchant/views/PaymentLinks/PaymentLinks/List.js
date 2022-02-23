@@ -137,7 +137,7 @@ export default class PaymentLinksContainer extends ListContainer {
     const label = getKeysSeparatedByPipe(params);
 
     if (label && label.length > 0) {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Payment Links',
         eventAction: 'Search - Payment Links',
         eventLabel: label,
@@ -155,7 +155,7 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   onClearAnalytics = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payment Links',
       eventAction: 'Clear Search Params - Payment Links',
     });
@@ -168,7 +168,7 @@ export default class PaymentLinksContainer extends ListContainer {
   };
 
   onCopy = ({ invoiceId, _text }) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payment Links',
       eventAction: 'Copy - Payment Link',
       eventLabel: `payment_link_id=${invoiceId}`,

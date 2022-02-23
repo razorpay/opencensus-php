@@ -103,7 +103,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Open Details - Subscriptions',
         eventLabel: `subscription_id=${id}`,
@@ -118,7 +118,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     const { closeUrl, id } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
     eventCategory &&
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Subscriptions',
         eventLabel: `subscription_id=${id}`,
@@ -395,7 +395,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
   };
 
   onCancellationModalMount = (id) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Open Form - Cancel Subscription',
       eventLabel: `subscription_id=${id}`,
@@ -403,7 +403,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
   };
 
   onCancellationModalUnmount = (id) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Close Form - Cancel Subscription',
       eventLabel: `subscription_id=${id}`,
@@ -412,7 +412,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
 
   onSubscriptionCancel = (id, type) => {
     type = type === '1' ? 'cancel_at_end_of_billing_cycle' : 'cancel_immediately';
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Subscriptions',
       eventAction: 'Submit Form - Cancel Subscription',
       eventLabel: `cancel_option=${type}`,
@@ -492,13 +492,13 @@ export default class SubscriptionDetailsContainer extends React.Component {
       action: () => {
         return paymentManualAttempt(subscriptionId, invoiceId)
           .then((response) => {
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Subscriptions',
               eventAction: 'Submit Form - Charge Now',
               eventLabel: `subscription_id=${subscriptionId}`,
             });
 
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Dashboard - Subscriptions',
               eventAction: 'Close Form - Charge Now',
               eventLabel: `subscription_id=${subscriptionId}`,
@@ -527,14 +527,14 @@ export default class SubscriptionDetailsContainer extends React.Component {
           });
       },
       onMount: () => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Subscriptions',
           eventAction: 'Open Form - Charge Now',
           eventLabel: `subscription_id=${subscriptionId}`,
         });
       },
       abort: () => {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Subscriptions',
           eventAction: 'Close Form - Charge Now',
           eventLabel: `subscription_id=${subscriptionId}`,

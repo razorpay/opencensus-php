@@ -25,7 +25,7 @@ export default class Ticket extends React.Component {
   }
 
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
       eventAction: 'ticket details fetched | Status: Success',
       eventLabel: `Tickets`,

@@ -63,7 +63,7 @@ function RefundMode(props) {
       label = 'Change | Automatic capture | Next | Capture Manually | Next';
     }
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Next',
       eventLabel: `${label}`,

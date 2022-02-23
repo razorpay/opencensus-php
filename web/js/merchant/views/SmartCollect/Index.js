@@ -43,7 +43,7 @@ export default class SmartCollectContainer extends React.Component {
   };
 
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Go To - Smart Collect',
     });

@@ -80,7 +80,7 @@ export default class CreditPullModal extends Component {
 
   fireGAEvent = (eventPayload) => {
     eventPayload.eventCategory = 'Dashboard - D2C';
-    window.rzpAnalytics(eventPayload);
+    window.rzpAnalytics?.(eventPayload);
   };
 
   savePhone = (newNumber) => {

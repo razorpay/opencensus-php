@@ -225,7 +225,7 @@ export default (props) => {
                     <CopyLink
                       url={paymentlink.short_url}
                       onCopy={() => {
-                        window.rzpAnalytics({
+                        window.rzpAnalytics?.({
                           eventCategory: 'Dashboard - Payment Links',
                           eventAction: 'Copy - Payment Link',
                           eventLabel: `payment_link_id=${paymentlink.id}`,

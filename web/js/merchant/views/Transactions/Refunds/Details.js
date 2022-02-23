@@ -17,7 +17,7 @@ class RefundDetailsContainer extends Component {
 
     if (nextProps.refund) {
       const { id } = nextProps;
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Refunds',
         eventAction: 'Open Details - Refunds',
         eventLabel: `refund_id=${id}`,
@@ -31,7 +31,7 @@ class RefundDetailsContainer extends Component {
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
     if (eventCategory)
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory,
         eventAction: 'Close Details - Refunds',
         eventLabel: `refund_id=${id}`,
@@ -39,7 +39,7 @@ class RefundDetailsContainer extends Component {
   }
 
   viewRefundHistory = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Refunds',
       eventAction: 'Open History - Refunds',
       eventLabel: `refund_id=${this.props.refund.id}`,

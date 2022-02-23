@@ -40,7 +40,7 @@ export default class Reply extends React.Component {
   track = (action, label) => {
     const { ticket } = this.props;
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
       eventAction: action,
       eventLabel: label,

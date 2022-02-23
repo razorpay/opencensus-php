@@ -35,7 +35,7 @@ class FlashCheckout extends Component {
   }
 
   analytics = (action) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - Flash Checkout`,
     });

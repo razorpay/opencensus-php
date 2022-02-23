@@ -37,7 +37,7 @@ class Withdrawals extends Component {
   gaEventDispatcher = (eventObject) => {
     const { state: { eventCategory = null } = {} } = this.props.location || {};
     eventObject.eventCategory = eventCategory ? eventCategory : 'Dashboard CA - Withdraw';
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   search = (filters) => {

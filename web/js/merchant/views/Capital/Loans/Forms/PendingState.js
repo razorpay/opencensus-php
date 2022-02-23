@@ -15,8 +15,8 @@ import getApplicationProgressPercentage from '../../utils/ProgressPercentageCalc
 }))
 class PendingState extends Component {
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = GA_CATEGORY_BY_PRODUCT[this.props.product];
-    window.rzpAnalytics(eventObject);
+    eventObject.eventCategory = GA_CATEGORY_BY_PRODUCT[this.props.product];
+    window.rzpAnalytics?.(eventObject);
   };
 
   _trackSupportClick = () => {

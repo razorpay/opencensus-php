@@ -60,7 +60,7 @@ class SettlementSchedule extends Component {
       };
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: this.state.showExample ? 'View Examples' : 'Hide Examples',
       eventLabel: `View settlement Cycle`,
@@ -91,7 +91,7 @@ class SettlementSchedule extends Component {
       component: <HolidayModal data={this.props.holidayList} />,
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'List of Bank Holidays',
       eventLabel: `View settlement Cycle`,
@@ -114,7 +114,7 @@ class SettlementSchedule extends Component {
               },
             });
             this.props.closeModal();
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Settlement Revamp',
               eventAction: 'Close',
               eventLabel: `Settlment Cycle`,
@@ -236,7 +236,7 @@ class SettlementSchedule extends Component {
                           ...getCommonAnalyticsProperties(window.rzp_user),
                         },
                       });
-                      window.rzpAnalytics({
+                      window.rzpAnalytics?.({
                         eventCategory: 'Settlement Revamp',
                         eventAction: 'Settlement Guide',
                         eventLabel: `View settlement Cycle`,

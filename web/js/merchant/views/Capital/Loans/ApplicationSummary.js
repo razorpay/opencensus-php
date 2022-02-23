@@ -144,7 +144,7 @@ class ApplicationSummary extends Component {
 
   gaEventDispatcher = (eventObject) => {
     eventObject.eventCategory = GA_CATEGORY_BY_PRODUCT[this.getProductCode()];
-    window.rzpAnalytics(eventObject);
+    window.rzpAnalytics?.(eventObject);
   };
 
   trackMouseOver = (type) => {

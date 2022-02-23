@@ -13,7 +13,7 @@ export default class OnBoardingLanding extends React.PureComponent {
   handleNexButton = () => {
     return this.props.next(() => {
       track.introductionNextSuccess(this.props.feature);
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: `Onboarding Card (${this.props.feature})`,
         eventAction: `Page ${this.props.active} - Next CTA`,
       });

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import moment from 'moment';
 
 import Amount from 'common/ui/Amount';
 import Spinner from 'common/ui/Spinner';
@@ -50,8 +51,8 @@ class WithdrawalDetails extends Component {
   };
 
   gaEventDispatcher = (eventObject) => {
-    eventObject['eventCategory'] = 'Dashboard CA - Withdraw';
-    window.rzpAnalytics(eventObject);
+    eventObject.eventCategory = 'Dashboard CA - Withdraw';
+    window.rzpAnalytics?.(eventObject);
   };
 
   componentWillMount() {
@@ -152,6 +153,7 @@ class WithdrawalDetails extends Component {
 
   getDueAmount = (withdrawalDetails, withdrawalConfigurationDetails) => {
     const { configuration } = withdrawalConfigurationDetails;
+    // eslint-disable-next-line radix
     const principal = parseInt(withdrawalDetails.amount);
     const {
       breakdownDetails: { principalRepaidSoFar, interestRepaidSoFar },
@@ -167,6 +169,7 @@ class WithdrawalDetails extends Component {
         ? moment(withdrawalDetails.due_date).diff(lastRepaid, 'days')
         : 0;
 
+    // eslint-disable-next-line radix
     const roi = parseInt(configuration.interest) / 100;
 
     const interest = (diffDays * roi * principal) / 100;
@@ -186,7 +189,6 @@ class WithdrawalDetails extends Component {
   shouldShowRepaymentDetails = () => {
     const {
       withdrawalDetails: { data },
-      id,
     } = this.props;
     return data.status !== STATUSES.FAILED && data.status !== STATUSES.REJECTED;
   };
@@ -194,7 +196,6 @@ class WithdrawalDetails extends Component {
   getLastRepaidDate = () => {
     const {
       withdrawalDetails: { data },
-      id,
     } = this.props;
 
     if (!data.repayments || (data.repayments && data.repayments.length === 0)) return '--';
@@ -360,6 +361,7 @@ class WithdrawalDetails extends Component {
                           </EntityDetailRow>
                         )}
                         <EntityDetailRow label="Rate of Interest">
+                          {/* eslint-disable-next-line radix */}
                           {parseInt(withdrawalConfigurationDetails.configuration.interest) / 100}%
                           per day
                         </EntityDetailRow>

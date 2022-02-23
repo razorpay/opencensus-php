@@ -6,7 +6,7 @@ import TicketBriefMessage from './TicketBriefMessage';
 import { STATUSES } from '../utils';
 export default class TicketBriefRevamped extends React.Component {
   componentDidMount() {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
       eventAction: 'ticket clicked',
       eventLabel: `Tickets`,

@@ -89,7 +89,7 @@ export default class Conversations extends React.Component {
   };
 
   track(action, label) {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
       eventAction: action,
       eventLabel: label,
@@ -349,7 +349,7 @@ export default class Conversations extends React.Component {
                       <Link
                         to={`/ticket-support/tickets/${ticketType}`}
                         onClick={() => {
-                          window.rzpAnalytics({
+                          window.rzpAnalytics?.({
                             eventCategory: 'Ticket Dashboard',
                             eventAction: 'view all tickets clicked',
                             eventLabel: `Tickets`,

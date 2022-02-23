@@ -197,7 +197,7 @@ class CongfigurationContainer extends Component {
 
     if (this.props.location.hash === '#instantrefunds') {
       if (!this.is_hash_loaded_once) {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Instant Refund',
           eventAction: 'Enable Now',
           eventLabel: `Announcement | Enable Now`,

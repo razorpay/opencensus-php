@@ -25,7 +25,7 @@ function WhatsappNotification({
   const [isWhatsappMid, setWhatsappMid] = useState(false);
 
   if (location.hash.startsWith('#whatsapp_enable') && whatsappEnableSection.current) {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Whatsapp Enable',
       eventAction: `Clicked ${location.hash}`,
       eventLabel: `Home`,
@@ -96,7 +96,7 @@ function WhatsappNotification({
   }, []);
 
   const analytics = (action) => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - WhatsApp notifications`,
     });

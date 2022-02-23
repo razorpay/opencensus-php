@@ -40,7 +40,7 @@ const BalanceDetails = (props) => {
       component: <SettlementDetail user={user} settlementAmount={settlement_amount.data} />,
     });
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'Know more - Next Settlement',
       eventLabel: `Settlements`,

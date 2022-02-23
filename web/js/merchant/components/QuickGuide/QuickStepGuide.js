@@ -1,3 +1,4 @@
+import React from 'react';
 import Button from 'common/new-ui/Button';
 
 import StepGuide from 'merchant/components/StepGuide';
@@ -30,7 +31,7 @@ export const QuickGuideCloseBtn = ({ isCompleted, onClick }) => (
 
 class QuickGuideStep extends React.Component {
   onClick = () => {
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: `Product QuickGuide (${this.props.feature})`,
       eventAction: `${this.props.step} Click`,
     });

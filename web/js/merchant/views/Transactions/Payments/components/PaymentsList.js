@@ -38,7 +38,7 @@ export default class PaymentsListContainer extends ListContainer {
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.
       if (window.rzpAnalytics) {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payments',
           eventAction: 'Go To - Payments',
         });
@@ -61,7 +61,7 @@ export default class PaymentsListContainer extends ListContainer {
       const label = getKeysSeparatedByPipe(params);
       if (label && label.length > 0) {
         if (window.rzpAnalytics) {
-          window.rzpAnalytics({
+          window.rzpAnalytics?.({
             eventCategory: 'Dashboard - Payments',
             eventAction: 'Search - Payments',
             eventLabel: label,
@@ -87,7 +87,7 @@ export default class PaymentsListContainer extends ListContainer {
     if (pathname && pathname.indexOf('route') < 0) {
       // Currently not tracking events from Route.
       if (window.rzpAnalytics) {
-        window.rzpAnalytics({
+        window.rzpAnalytics?.({
           eventCategory: 'Dashboard - Payments',
           eventAction: 'Clear Search Params - Payments',
         });

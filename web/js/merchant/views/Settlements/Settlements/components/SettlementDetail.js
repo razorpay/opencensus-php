@@ -13,7 +13,7 @@ class SettlementDetail extends Component {
   handleContactSupport = () => {
     this.props.closeModal();
 
-    window.rzpAnalytics({
+    window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
       eventAction: 'Contact Support',
       eventLabel: `Settlements`,
@@ -238,7 +238,7 @@ class SettlementDetail extends Component {
           title="Settlement Details"
           onCloseClick={() => {
             this.props.closeModal();
-            window.rzpAnalytics({
+            window.rzpAnalytics?.({
               eventCategory: 'Settlement Revamp',
               eventAction: 'Close - Next Settlement Modal',
               eventLabel: `Settlements`,

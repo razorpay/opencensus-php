@@ -143,7 +143,7 @@ function withInternationalConfig(WrappedComponent) {
     };
 
     analytics = (action) => {
-      window.rzpAnalytics({
+      window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Settings',
         eventAction: `${action} - International card payments`,
       });
