@@ -1,15 +1,15 @@
+import React from 'react';
 import { withRouter } from 'react-router-dom';
 
-import Alert from 'common/new-ui/Alert';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import EditorModal from '../components/EditorModal';
 import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
 
 import { getCurrency } from 'common/ui/Amount';
-import { classList, paiseToRupees } from 'common/utils/rzp-utils';
+import { paiseToRupees } from 'common/utils/rzp-utils';
 import { getPeriodLabel } from '../../../constants/billingCycle';
-import FieldOptionsDropdown, {
+import FieldOptionsDropdownWrapper, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import Button from 'common/new-ui/Button';
@@ -34,13 +34,13 @@ export default class BaseForm extends React.Component {
       return null;
     }
 
-    const selectedOption = this.props.plansOptions.find((plan) => plan.id === field.id);
+    const selectedOption = this.props.plansOptions.find((plan) => plan.id === field.plan_id);
 
     return selectedOption;
   }
 
   toggleSubmitBtn = () => {
-    let disableSubmit = !!this.formEl.querySelectorAll('.is-invalid').length;
+    const disableSubmit = !!this.formEl.querySelectorAll('.is-invalid').length;
 
     this.setState({ disableSubmit });
   };
@@ -110,7 +110,7 @@ export default class BaseForm extends React.Component {
 
     return (
       showDeleteOption && (
-        <FieldOptionsDropdown
+        <FieldOptionsDropdownWrapper
           trigger={
             <Button.Transparent>
               <i class="i i-ellipsis-v" />
@@ -123,7 +123,7 @@ export default class BaseForm extends React.Component {
               <div>Delete Field</div>
             </div>
           </OptionsItem>
-        </FieldOptionsDropdown>
+        </FieldOptionsDropdownWrapper>
       )
     );
   }
@@ -241,6 +241,8 @@ export default class BaseForm extends React.Component {
               if (val == 0) {
                 return 'Count must be atleast 1';
               }
+
+              return '';
             }}
           />
 
