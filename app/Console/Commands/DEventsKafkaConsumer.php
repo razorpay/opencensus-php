@@ -180,7 +180,7 @@ class DEventsKafkaConsumer extends Command
 
             return true;
         }
-        //Call Processor for processing the message.
+        // Call Processor for processing the message.
 
         $this->info('processing message from - '.
             $kafkaMessage->topic_name. ' topic with payload - '. $kafkaMessage->payload);
@@ -188,6 +188,13 @@ class DEventsKafkaConsumer extends Command
         $appMode = env('APP_MODE', 'prod');
 
         $topic = str_replace($appMode . '-', '', $kafkaMessage->topic_name);
+
+        $devstack_label = env('DEVSTACK_LABEL', '');
+
+        if ($devstack_label != '')
+        {
+            $topic = str_replace('-' . $devstack_label, '', $topic);
+        }
 
         $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode);
 
