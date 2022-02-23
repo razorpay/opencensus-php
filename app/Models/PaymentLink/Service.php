@@ -444,6 +444,8 @@ class Service extends Base\Service
 
             $this->modifyInputForPaymentHandle($input);
 
+            $this->core->precreatePaymentHandle($this->merchant);
+
             $response = $this->core->createPaymentHandle($input, $this->merchant, $this->user);
 
             return $this->modifyResponseForPaymentHandle($response);
