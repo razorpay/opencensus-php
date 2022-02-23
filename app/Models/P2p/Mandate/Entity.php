@@ -138,7 +138,6 @@ class Entity extends Base\Entity
         Entity::AMOUNT_RULE,
         Entity::PAYER,
         Entity::PAYEE,
-        Entity::CUSTOMER,
         Entity::TYPE,
         Entity::FLOW,
         Entity::RECURRING_TYPE,
@@ -146,13 +145,14 @@ class Entity extends Base\Entity
         Entity::RECURRING_RULE,
         Entity::STATUS,
         Entity::EXPIRE_AT,
+        Entity::CREATED_AT,
+        Entity::COMPLETED_AT,
         Entity::START_DATE,
         Entity::END_DATE,
         Entity::DESCRIPTION,
         Entity::IS_PENDING_COLLECT,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
-        Entity::INTERNAL_ERROR_CODE,
     ];
 
     /***************** SETTERS *****************/
@@ -209,11 +209,6 @@ class Entity extends Base\Entity
         if (isset($array[self::PAYEE]))
         {
             $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
-        }
-
-        if (isset($array[self::CUSTOMER]))
-        {
-            $array[self::CUSTOMER] = $this->getCustomer()->toArrayPublic();
         }
 
         return $array;

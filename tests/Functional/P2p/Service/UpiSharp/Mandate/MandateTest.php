@@ -11,11 +11,11 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Tests\P2p\Service\UpiSharp\TestCase;
 use RZP\Gateway\P2p\Upi\Sharp\Actions\UpiAction;
-use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
+use RZP\Tests\P2p\Service\Base\Traits\MandateTrait;
 
 class MandateTest extends TestCase
 {
-    use TransactionTrait;
+    use MandateTrait;
 
     public function testFetchAll()
     {

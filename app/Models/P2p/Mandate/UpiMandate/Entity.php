@@ -79,24 +79,14 @@ class Entity extends Base\Entity
     ];
 
     protected $public     = [
-        Entity::MANDATE_ID,
-        Entity::DEVICE_ID,
-        Entity::ACTION,
-        Entity::STATUS,
-        Entity::NETWORK_TRANSACTION_ID,
-        Entity::GATEWAY_TRANSACTION_ID,
-        Entity::GATEWAY_REFERENCE_ID,
         Entity::RRN,
         Entity::REF_ID,
         Entity::REF_URL,
         Entity::MCC,
+        Entity::NETWORK_TRANSACTION_ID,
         Entity::GATEWAY_ERROR_CODE,
         Entity::GATEWAY_ERROR_DESCRIPTION,
-        Entity::RISK_SCORES,
-        Entity::PAYER_ACCOUNT_NUMBER,
-        Entity::PAYER_IFSC_CODE,
-        Entity::GATEWAY_DATA,
-        Entity::UPDATED_AT,
+        Entity::CREATED_AT,
     ];
 
     protected $defaults   = [

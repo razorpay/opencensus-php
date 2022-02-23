@@ -90,26 +90,26 @@ class Core extends Base\Core
     }
 
     /**
-     * @param string $input
+     * @param string $id
      * @param false  $withTrashed
      * This is the method to fetch mandates from the system
      *
      * @return Entity
      * @throws RuntimeException
      */
-    public function fetch(string $input, $withTrashed = false): Base\Entity
+    public function fetch(string $id, $withTrashed = false): Base\Entity
     {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
         // construct a payload id to fetch mandate for
-        $content = [Entity::ID => $input];
+        $content = [Entity::ID => $id];
 
         // fetch mandate by id
         $mandateData = $this->pspxMandate->fetch($this->context(), $content);
 
         if (sizeof($mandateData) === 0)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ID, null,
-                $input);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $id);
         }
 
         // type cast to entity object
