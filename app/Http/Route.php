@@ -13764,6 +13764,11 @@ class Route
             $route->middleware('web');
         }
 
+        if ($this->isDashboardBackendRoute($name) === true)
+        {
+            $route->middleware('dashboard_response_headers');
+        }
+
         // Add the 'throttle' middleware to all routes, EXCEPT those defined in the `$skipThrottling` array
         if (in_array($name, self::$skipThrottling, true) === false)
         {
@@ -13985,5 +13990,23 @@ class Route
         $routeName = $this->app['request.ctx']->getRoute();
 
         return (in_array($routeName, self::ROUTES_THROUGH_MASTER_REPLICA, true) === true);
+    }
+
+    /**
+     * if route is being hit by dashboard backend
+     * @param $name
+     * @return bool
+     */
+    protected function isDashboardBackendRoute($name) : bool
+    {
+        if ((in_array($name, self::$internalApps['merchant_dashboard']) === true) or
+            (in_array($name, self::$internalApps['admin_dashboard']) === true) or
+            (in_array($name, self::$internalApps['dashboard_guest']) === true) or
+            (in_array($name, self::$internalApps['dashboard_internal']) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

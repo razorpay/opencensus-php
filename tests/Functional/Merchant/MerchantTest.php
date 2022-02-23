@@ -14404,6 +14404,48 @@ The same has been enabled for the account.
         $this->assertTrue($tokens['count'] > 0);
 
         $this->assertTrue(array_key_exists('country', $tokens['items'][0]['card']) === true);
+
+        return $response;
+    }
+
+    public function testGetCheckoutRouteWithTokenForCardCountryPublicAuthNoDashboardHeadersInResponse()
+    {
+        $response = $this->testGetCheckoutRouteWithTokenForCardCountry();
+
+        $headers = $response->headers->all();
+
+        $this->assertArrayNotHasKey('api-route-name', $headers);
+
+        $this->assertArrayNotHasKey('api-path-pattern', $headers);
+    }
+
+    public function testGetGstinProxyAuthDashboardHeadersInResponse()
+    {
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29AAGCR4375J1ZU'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'    => '/merchant/gst',
+            'method' => 'GET',
+        ];
+
+        $response = $this->sendRequest($request);
+
+        $headers = $response->headers->all();
+
+        $this->assertArrayHasKey('api-route-name', $headers);
+
+        $this->assertArrayHasKey('api-path-pattern', $headers);
+
+        $this->assertEquals('merchant_gst_fetch', $headers['api-route-name'][0]);
+
+        $this->assertEquals('merchant/gst', $headers['api-path-pattern'][0]);
     }
 
     protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate)

@@ -51,6 +51,7 @@ class Kernel extends HttpKernel
     protected $middlewarePriority = [
         // Route middleware
         Middleware\SaveApiDetailsForDocumentation::class,
+        Middleware\AddDashboardResponseHeaders::class,
         Middleware\DecodePassportJwt::class,
         Middleware\ProductIdentifier::class,
         Middleware\ProxySQL::class,
@@ -104,5 +105,6 @@ class Kernel extends HttpKernel
         'failure_interceptor'           => Middleware\FailureEventsInterceptor::class,
         'request_context'               => Middleware\RequestContextHandler::class,
         'request_log_handler'           => Middleware\RequestLogHandler::class,
+        'dashboard_response_headers'    => Middleware\AddDashboardResponseHeaders::class,
     ];
 }
