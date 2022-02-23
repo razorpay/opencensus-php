@@ -183,7 +183,6 @@ class Validator extends Base\Validator
         ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE                    => 'filled|integer',
         ConfigKey::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES                                => 'filled|array',
         ConfigKey::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE                    => 'filled|integer',
-        ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS                                      => 'array',
         ConfigKey::RZP_INTERNAL_ACCOUNTS                                               => 'array',
         ConfigKey::SUB_BALANCES_MAP                                                    => 'filled|array',
         ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS                                        => 'array',

@@ -25,6 +25,7 @@ class Purpose
     const INTER_ACCOUNT_PAYOUT = 'inter_account_payout';
     const RZP_FEES             = 'rzp_fees';
     const RZP_TAX_PAYMENT      = 'rzp_tax_pay';
+    const MERCHANT_ID          = 'merchant_id';
 
     protected static $default = [
         self::REFUND,
@@ -83,13 +84,15 @@ class Purpose
         {
             $merchantId = $merchant->getMerchantId();
 
-            // INTER_ACCOUNT_PAYOUT_MERCHANTS contains the map of account number to merchant_id for all the
-            // razorpay internal accounts
-            $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(
-                ['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
-            $arrMerchantId = array_values($accountNumberMerchantIdMap);
-
-            if (in_array($merchantId, $arrMerchantId,true) === true)
+            // RZP_INTERNAL_ACCOUNTS contains the list of razorpay internal accounts
+            $rzpInternalAccounts = (new AdminService)->getConfigKey(
+                ['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
+            $rzpInternalMerchantIds = [];
+            for ($i = 0; $i < count($rzpInternalAccounts); $i++)
+            {
+                array_push($rzpInternalMerchantIds, $rzpInternalAccounts[$i][self::MERCHANT_ID]);
+            }
+            if (in_array($merchantId, $rzpInternalMerchantIds,true) === true)
             {
                 $payout->setPurpose($trimmedPurpose);
                 $payout->setPurposeType(self::$finopsPurposeTypeMap[$trimmedPurpose]);
@@ -211,16 +214,19 @@ class Purpose
 
         $merchantId = $merchant->getId();
 
-        // INTER_ACCOUNT_PAYOUT_MERCHANTS contains the map of account number to merchant_id for all the
-        // razorpay internal accounts
-        $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(
-            ['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
-        $arrFinopsMerchantId = array_values($accountNumberMerchantIdMap);
+        // RZP_INTERNAL_ACCOUNTS contains the list of razorpay internal accounts
+        $rzpInternalAccounts = (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
+        $rzpInternalMerchantIds = [];
+        for ($i = 0; $i < count($rzpInternalAccounts); $i++)
+        {
+            array_push($rzpInternalMerchantIds, $rzpInternalAccounts[$i][self::MERCHANT_ID]);
+        }
 
         // array_merge cannot be used here because numeric keys in php arrays
         // can cause the function to give unexpected results.
 
-        if (in_array($merchantId, $arrFinopsMerchantId, true) === true)
+        if (in_array($merchantId, $rzpInternalMerchantIds, true) === true)
         {
             $all = $custom + $default + $finops;
         } else {

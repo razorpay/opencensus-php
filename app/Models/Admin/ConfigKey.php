@@ -261,11 +261,6 @@ class ConfigKey
 
     const ASYNC_ESCALATION_HANDLING_ENABLED = self::PREFIX . 'async_escalation_handling_enabled';
 
-    // This is a map between real account number to mid of all the razorpay internal accounts
-    // This is used to both get the mid based on real account number as well as the list of mids
-    // which belong to razorpay.
-    const INTER_ACCOUNT_PAYOUT_MERCHANTS = self::PREFIX . 'inter_account_payout_merchants';
-
     // This config contains the list of razorpay internal accounts with the following structure
     // [{"merchant_id": "sampleMerchant", "entity": "RZPX", "account_number": "100000000"}]
     // RZPX - Razorpay X, RSPL - Razorpay Private Limited
@@ -391,7 +386,6 @@ class ConfigKey
         self::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS,
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES,
         self::RBL_CA_BALANCE_UPDATE_LIMITS,
-        self::INTER_ACCOUNT_PAYOUT_MERCHANTS,
         self::RZP_INTERNAL_ACCOUNTS,
         self::SUB_BALANCES_MAP,
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,

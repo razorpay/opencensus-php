@@ -22,6 +22,7 @@ class Service extends Base\Service
     const TIME_TAKEN                   = 'time_taken';
     const INTERNAL_ENTITY_CREATE_MUTEX = 'internal_entity_create_%s';
     const MUTEX_LOCK_TIMEOUT           = 30;
+    const MERCHANT_ID                  = 'merchant_id';
     const ACCOUNT_NUMBER               = 'account_number';
     const TRANSACTOR_ID                = 'transactor_id';
     const TRANSACTOR_EVENT             = 'transactor_event';
@@ -38,6 +39,10 @@ class Service extends Base\Service
     const TYPE_CREDIT                  = 'credit';
     const TENANT                       = 'tenant';
     const X                            = 'X';
+
+    const RZP_ENTITY                   = 'entity';
+    const RZP_ENTITY_RZPX              = 'RZPX';
+    const RZP_ENTITY_RSPL              = 'RSPL';
 
     protected $ledgerService;
 
@@ -78,14 +83,22 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
         }
 
-        // INTER_ACCOUNT_PAYOUT_MERCHANTS contains mapping between real account number to mid mapping
-        $accountNumberMerchantIdMap = (new AdminService)->getConfigKey(['key' => ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS]);
-        if (isset($accountNumberMerchantIdMap[$bankAccount->getAccountNumber()]) === false)
+        // RZP_INTERNAL_ACCOUNTS contains list of internal accounts belonging to Razorpay
+        // Check if the account belongs to RZP Internal accounts and it's an RZPX Account
+        $beneMerchantId = "";
+        $rzpInternalAccounts = (new AdminService)->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
+        for ($i = 0; $i< count($rzpInternalAccounts); $i++) {
+            if (isset($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER])
+                && $rzpInternalAccounts[$i][self::ACCOUNT_NUMBER] === $bankAccount->getAccountNumber()
+                && $rzpInternalAccounts[$i][self::RZP_ENTITY] === self::RZP_ENTITY_RZPX) {
+                $beneMerchantId = $rzpInternalAccounts[$i][self::MERCHANT_ID];
+            }
+        }
+        if ($beneMerchantId === "")
         {
             // throw exception
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_MERCHANT_NOT_FOUND);
         }
-        $beneMerchantId = $accountNumberMerchantIdMap[$bankAccount->getAccountNumber()];
 
         // create an internal entity
         return $this->create([

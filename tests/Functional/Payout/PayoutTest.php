@@ -762,7 +762,13 @@ class PayoutTest extends OAuthTestCase
     {
         (new AdminService)->setConfigKeys(
             [
-                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000" => "10000000000000"]
+                ConfigKey::RZP_INTERNAL_ACCOUNTS => [
+                    [
+                        "merchant_id"    => "10000000000000",
+                        "account_number" => "10000000000000",
+                        "entity"         => "RZPX",
+                    ],
+                ],
             ]);
 
         $ledgerSnsPayloadArray = [];
@@ -838,7 +844,13 @@ class PayoutTest extends OAuthTestCase
     {
         (new AdminService)->setConfigKeys(
             [
-                ConfigKey::INTER_ACCOUNT_PAYOUT_MERCHANTS => ["10000000000000" => "10000000000000"]
+                ConfigKey::RZP_INTERNAL_ACCOUNTS => [
+                    [
+                        "merchant_id"    => "10000000000000",
+                        "account_number" => "10000000000000",
+                        "entity"         => "RZPX",
+                    ],
+                ],
             ]);
 
         $ledgerSnsPayloadArray = [];
