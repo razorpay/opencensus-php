@@ -18,6 +18,7 @@ class Constants
     const INDUSIND         = 'indusind';
     const ONECARD          = 'onecard';
     const RBL              = 'rbl';
+    const RBL_CORP         = 'rbl_corp';
     const SCBL             = 'scbl';
     const UPI_ICICI        = 'upi_icici';
     const UPI_MINDGATE     = 'upi_mindgate';
@@ -122,6 +123,7 @@ class Constants
             self::FEDERAL,
             self::BOB,
             self::RBL,
+            self::RBL_CORP,
             self::INDUSIND,
             self::OBC,
             self::CSB,
@@ -274,6 +276,7 @@ class Constants
             self::BDBL        => ['bdbl-netbanking-refunds@razorpay.com'],
             self::UCO         => ['uco-netbanking-refunds@razorpay.com'],
             self::HDFC_CORP   => [],
+            self::RBL_CORP    => [],
         ],
 
         Type::EMANDATE_REGISTER => [

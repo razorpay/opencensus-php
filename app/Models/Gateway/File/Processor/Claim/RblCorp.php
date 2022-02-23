@@ -3,7 +3,6 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -13,18 +12,18 @@ use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
-use RZP\Trace\TraceCode;
 
-class Rbl extends NetbankingBase
+class RblCorp extends NetbankingBase
 {
     use FileHandler;
 
     const FILE_NAME              = 'Rbl_Netbanking_Claims';
     const EXTENSION              = FileStore\Format::TXT;
-    const FILE_TYPE              = FileStore\Type::RBL_NETBANKING_CLAIM;
+    const FILE_TYPE              = FileStore\Type::RBL_CORP_NETBANKING_CLAIM;
     const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
-    const BANK_CODE              = IFSC::RATN;
     const BASE_STORAGE_DIRECTORY = 'Rbl/Claims/Netbanking/';
+
+    const BANKCODE = Payment\Processor\Netbanking::RATN_C;
 
     protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
@@ -35,10 +34,10 @@ class Rbl extends NetbankingBase
             $begin,
             $end,
             static::GATEWAY,
-            self::BANK_CODE,
+            static::BANKCODE,
             $statuses
         );
-        
+
         return $claims;
     }
 
@@ -49,9 +48,9 @@ class Rbl extends NetbankingBase
         foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
-                        $row['payment'][Payment\Entity::CREATED_AT],
-                        Timezone::IST)
-                        ->format('m-d-y h:m:s');
+                $row['payment'][Payment\Entity::CREATED_AT],
+                Timezone::IST)
+                ->format('m-d-y h:m:s');
 
             $paymentAmount = $this->getFormattedAmount($row['payment'][Payment\Entity::AMOUNT]);
 
