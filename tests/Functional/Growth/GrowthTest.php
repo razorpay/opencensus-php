@@ -179,7 +179,10 @@ class GrowthTest extends TestCase
     
     public function testFilterAndSyncEventsFromPinot()
     {
-        $this->mockGrowthTreatment([], [], 'filterAndSyncEventsFromPinot');
+        $input = [
+            'table_name' => 'growth_events_rxdashboard'
+        ];
+        $this->mockGrowthTreatment($input, [], 'filterAndSyncEventsFromPinot');
         
         $this->ba->cronAuth();
         

@@ -96,7 +96,8 @@ class GrowthController extends Controller
     public function filterAndSyncEventsFromPinot()
     {
         try {
-            $response = $this->app->growthService->filterAndSyncEventsFromPinot();
+            $parameters = Request::all();
+            $response = $this->app->growthService->filterAndSyncEventsFromPinot($parameters);
             $response = ApiResponse::json($response);
 
         } catch (\Throwable $e) {

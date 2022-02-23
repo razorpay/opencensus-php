@@ -163,6 +163,9 @@ return [
         'request'  => [
             'url'     => '/growth/assets/sync',
             'method'  => 'post',
+            'content' => [
+                'table_name' => 'growth_events_rxdashboard'
+            ]
         ],
         'response' => [
             'content' => []

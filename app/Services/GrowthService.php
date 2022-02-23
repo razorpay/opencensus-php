@@ -117,9 +117,9 @@ class GrowthService extends Base\Service
         return ["status_code" => "200"];
     }
 
-    public function filterAndSyncEventsFromPinot()
+    public function filterAndSyncEventsFromPinot($parameters)
     {
-        return $this->sendRequest([], self::FILTER_AND_SYNC_URL, Requests::POST);
+        return $this->sendRequest($parameters, self::FILTER_AND_SYNC_URL, Requests::POST);
     }
 
     /**
