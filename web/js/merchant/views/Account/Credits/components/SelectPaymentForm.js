@@ -27,7 +27,7 @@ function SelectPaymentForm({ closeModal, handleSubmit, pristine, destroy, handle
             component={RadioButton}
             name="paymentMethod"
             htmlValue="online_payment"
-            label="UPI/Netbanking"
+            label="UPI"
           />
         </div>
         <div className="form-group credit-method-radio">
