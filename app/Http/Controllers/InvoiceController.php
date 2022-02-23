@@ -469,17 +469,9 @@ class InvoiceController extends Controller
         $keylessHeader = null;
         if (empty($merchantId) === false)
         {
-            $is_keyless_header_enabled = $this->app->razorx->getTreatment(
+            $keylessHeader = $this->app['keyless_header']->get(
                 $merchantId,
-                Merchant\RazorxTreatment::KEYLESS_HEADER_INVOICE,
-                $mode
-            );
-
-            if ($is_keyless_header_enabled === "on") {
-                $keylessHeader = $this->app['keyless_header']->get(
-                    $merchantId,
-                    $mode);
-            }
+                $mode);
         }
 
         return View::make($view)

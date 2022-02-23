@@ -39,27 +39,6 @@ class InvoiceTest extends TestCase
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
-    protected function enableRazorXTreatmentForKeylessHeader()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment', 'getCachedTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->expects($this->any())->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
-                {
-                    if ($feature === RazorxTreatment::KEYLESS_HEADER_INVOICE)
-                    {
-                        return 'on';
-                    }
-                    return 'off';
-                }));
-    }
-
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceTestData.php';
@@ -78,8 +57,6 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('user', ['id' => '1000000000user']);
 
         $this->ba->privateAuth();
-
-        $this->enableRazorXTreatmentForKeylessHeader();
     }
 
     // ------------------------------------------------------------
@@ -3040,7 +3017,7 @@ class InvoiceTest extends TestCase
     public function testFetchIssuedLinkOlderThanSixMonths()
     {
         $this->mockRazorxTreatmentV2(RazorxTreatment::FAIL_OLD_INVOICE_ID_FETCH, 'on');
-        
+
         $this->testCreateIssuedLinkWithAmountAndDesc();
 
         $invoice = $this->getDbLastEntity('invoice');

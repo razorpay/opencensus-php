@@ -410,8 +410,6 @@ final class RazorxTreatment
     //Experiment for removal of extra fields in payment response
     const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';
 
-    const KEYLESS_HEADER_INVOICE = 'keyless_header_invoice';
-
     // Experiment for sending auth header for Stores
     const KEYLESS_HEADER_STORES = 'keyless_header_stores';
 
