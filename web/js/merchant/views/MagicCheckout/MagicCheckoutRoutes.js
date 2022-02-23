@@ -31,7 +31,7 @@ const routes = [
 
 export const isMagicCheckoutTabsEnabled = (user) =>
   routes.reduce(
-    (enabled, route) => (route.condition ? enabled || route.condition(user) : enabled),
+    (enabled, route) => (route.condition ? enabled || route.condition(user) : true),
     false,
   );
 
