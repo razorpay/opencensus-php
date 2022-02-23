@@ -106,6 +106,12 @@ class SubMerchantBatchUtility extends Base\Core
      */
     protected $settings = [];
 
+    /**
+     *  When mid is not passed in the input header file then batch service sends this static string to API as
+     *  request param. Due to this new sub-merchant account creation flow is breaking.
+     */
+    const STATIC_BATCH_MID  = '##merchant_id##';
+
     public function processSubMerchantEntry(array & $entry, array $configs)
     {
         /**
@@ -221,7 +227,7 @@ class SubMerchantBatchUtility extends Base\Core
     {
         $input = Helper::getSubMerchantInput($entry, $this->userId, $this->useMerchantEmailAsDummy);
 
-        if (empty($entry[Header::MERCHANT_ID]) === true)
+        if (empty($entry[Header::MERCHANT_ID]) === true or $entry[Header::MERCHANT_ID] === self::STATIC_BATCH_MID)
         {
             $subMerchantArray = $this->merchantService->createSubMerchant($input, $this->partner, PartnerConstants::BULK_ONBOARDING_ADMIN);
 
