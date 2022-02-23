@@ -209,6 +209,8 @@ class Core extends Base\Core
                 $reviewer = ['reviewer_name' => $activationDetail->getAssigneeName()];
             }
 
+            $bankingAccount = $bankingAccount->load('merchant');
+
             $mailer = new XProActivation(array_merge($bankingAccount->toArray(), $reviewer));
 
             Mail::queue($mailer);
@@ -681,8 +683,6 @@ class Core extends Base\Core
             // Updating BankingAccountActivation Details
             if (empty($activationDetailInput) === false)
             {
-                $this->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $activationDetailInput);
-
                 // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
                 $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity);
             }
@@ -698,13 +698,13 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    protected function checkAndSendFreshDeskEmailIfFormIsSubmitted(Entity $bankingAccount, array $activationDetailInput)
+    public function checkAndSendFreshDeskEmailIfFormIsSubmitted(Entity $bankingAccount, array $activationDetailInput)
     {
         if (isset($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP]) === true)
         {
             $declaration_step = ($bankingAccount->bankingAccountActivationDetails)->declaration_step;
 
-            if ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] === 1 and $declaration_step !== 1)
+            if ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] == 1 and $declaration_step !== 1)
             {
                 $this->notifyOpsAboutProActivation($bankingAccount);
             }

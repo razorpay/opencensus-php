@@ -447,6 +447,55 @@ class BankingAccountTest extends TestCase
         });
     }
 
+
+    public function testFreshDeskTicketforSalesAssistedFlow()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        Mail::fake();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccountId,
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+            return $mail->hasTo('x.support@razorpay.com');
+        });
+    }
+
     public function testCreateBankingAccountAndSubmitAgain()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -4966,6 +5015,51 @@ class BankingAccountTest extends TestCase
         $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $bankingAccountId, 'owner_type' => 'banking_account'], 'live');
 
         $this->assertNull($bvsValidation);
+    }
+
+    public function testFreshDeskTicketforSalesAssistedFlowFromAdminDashboard()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $activationDetail = ['activation_detail' => [
+            ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
+            ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
+            ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+            ActivationDetail\Entity::BUSINESS_PAN      => 'RZPA34243L']
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetail);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        Mail::assertQueued(XProActivation::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+            return $mail->hasTo('x.support@razorpay.com');
+        });
+
     }
 
     public function testUpdateActivationDetailForNeostoneFlowIfNameUpdated()

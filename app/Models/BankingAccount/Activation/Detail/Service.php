@@ -196,6 +196,9 @@ class Service extends Base\Service
         // This is available here only to handle updates in the following flows
         // - change in assignee team requires a comment
         // - update via batch service.
+
+        (new BankingAccount\Core())->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $input);
+
         $commentInput = $this->extractCommentInput($input);
 
         $callDateAndTime = $this->extractCallDateAndTime($input);
