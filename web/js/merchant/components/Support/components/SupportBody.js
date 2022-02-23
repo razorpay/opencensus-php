@@ -388,7 +388,9 @@ class SupportBody extends Component {
                 handleClick('click-to-call');
               }}
             >
-              <span>Click to call</span>
+              <span>
+                Click to call <span className="badge">Recommended</span>
+              </span>
               <small className="help-block">Click to call instantly</small>
             </li>
           </ShowWhen>
