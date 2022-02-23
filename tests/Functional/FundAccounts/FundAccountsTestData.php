@@ -707,6 +707,63 @@ return [
         ],
     ],
 
+    'testCreateWalletAccountFundAccountWithIncorrectAccountType' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'vpa' => [
+                    'address' => 'chirag@upi'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account type doesn\'t match the details provided',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundAccountWithIncorrectAccountType' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'bank_account',
+                'contact_id'    => 'cont_1000000contact',
+                'card'         => [
+                    'name'         => 'shk',
+                    'number'       => '4111111111111111',
+                    'expiry_month' => 4,
+                    'expiry_year'  => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Account type doesn\'t match the details provided',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateWalletAccountFundAccountPhoneNull' => [
         'request'  => [
             'content' => [

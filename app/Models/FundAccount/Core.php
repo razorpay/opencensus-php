@@ -1212,6 +1212,11 @@ class Core extends Base\Core
 
     public function constructWalletAccountFundAccountRequest(array $input)
     {
+        if (isset($input[Entity::WALLET]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Account type doesn\'t match the details provided');
+        }
+
         (new WalletAccountValidator)->setStrictFalse()
                         ->validateInput(WalletAccountValidator::BEFORE_CREATE_FUND_ACCOUNT_WALLET_ACCOUNT, $input[Entity::WALLET]);
 

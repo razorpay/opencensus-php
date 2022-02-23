@@ -94,6 +94,11 @@ class Validator extends Base\Validator
                     'input' => $input,
                 ]);
         }
+
+        if (isset($input[$input[Entity::ACCOUNT_TYPE]]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Account type doesn\'t match the details provided');
+        }
     }
 
     protected function validateCard($attribute, $value)

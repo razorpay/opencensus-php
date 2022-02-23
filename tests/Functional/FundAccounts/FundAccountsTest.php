@@ -455,6 +455,13 @@ class FundAccountsTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testCreateFundAccountWithIncorrectAccountType()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
     public function testCreateFundAccountBankAccountBeneficiaryNotRequired()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
@@ -577,6 +584,13 @@ class FundAccountsTest extends TestCase
         $this->assertNull($uniqueHash);
 
         Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateWalletAccountFundAccountWithIncorrectAccountType()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
     }
 
     public function testCreateWalletAccountFundAccountPhoneNull()
