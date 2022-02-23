@@ -30,6 +30,9 @@ const routes = [
 ];
 
 export const isMagicCheckoutTabsEnabled = (user) =>
-  routes.reduce((enabled, route) => enabled || route.condition(user), false);
+  routes.reduce(
+    (enabled, route) => (route.condition ? enabled || route.condition(user) : enabled),
+    false,
+  );
 
 export default routes;
