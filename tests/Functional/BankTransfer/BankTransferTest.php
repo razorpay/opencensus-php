@@ -2284,6 +2284,55 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_hdfc_ecms', $payment['gateway']);
     }
 
+    public function testHdfcFailVAOnValidation()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $order = $this->fixtures->create('order', ["amount" => 2000]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order)['receivers'][0];
+
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::FAIL_VA_ON_VALIDATION,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['Virtual_Account_No'] = $virtualAccount['account_number'];
+
+        $this->ba->hdfcEcmsAuth();
+
+
+        $responseData = $this->runRequestResponseFlow($testData);
+
+        $updatedVirtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(VirtualAccount\Status::CLOSED, $updatedVirtualAccount['status']);
+    }
+
+    public function testHdfcFailVAOnValidationWithoutFeatureFlag()
+    {
+        $this->fixtures->create('terminal:hdfc_ecms_bank_account_terminal');
+
+        $order = $this->fixtures->create('order', ["amount" => 2000]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order)['receivers'][0];
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['Virtual_Account_No'] = $virtualAccount['account_number'];
+
+        $this->ba->hdfcEcmsAuth();
+
+
+        $responseData = $this->runRequestResponseFlow($testData);
+
+        $updatedVirtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $this->assertEquals(VirtualAccount\Status::ACTIVE, $updatedVirtualAccount['status']);
+    }
+
     public function testIciciBankTransferCallbackInvalid()
     {
         $testData = $this->testData[__FUNCTION__];

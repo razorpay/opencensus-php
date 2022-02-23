@@ -378,6 +378,7 @@ class Validator extends Base\Validator
 
                 if ($paymentAmount <= 0)
                 {
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT,
                         Entity::AMOUNT,
@@ -390,6 +391,7 @@ class Validator extends Base\Validator
                 if (($order->merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false) and
                     ($orderAmountDue < $paymentAmount))
                 {
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
                         Entity::AMOUNT,
@@ -402,6 +404,7 @@ class Validator extends Base\Validator
                 if (($order->merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === false) and
                     ($orderAmountDue > $paymentAmount))
                 {
+
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
                         Entity::AMOUNT,

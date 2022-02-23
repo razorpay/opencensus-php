@@ -1157,6 +1157,13 @@ class Constants
     // Feature to take mutex lock on linked account ID before transfer processing.
     const TRANSFER_PROCESS_LA_MUTEX = 'transfer_process_la_mutex';
 
+
+    /**
+     * Feature flag to deactivate VA when checks fail
+     */
+    const FAIL_VA_ON_VALIDATION = "fail_va_on_validation";
+
+
     // This feature will be used to control the rollout of authorization via authz enforcer
     const AUTHORIZE_VIA_AUTHZ = 'authorize_via_authz';
 
@@ -1632,6 +1639,7 @@ class Constants
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
         self::TRANSFER_PROCESS_LA_MUTEX       => true,
+        self::FAIL_VA_ON_VALIDATION           => true,
         self::AUTHORIZE_VIA_AUTHZ             => true,
         self::SR_SENSITIVE_BUCKET_1           => true,
         self::SR_SENSITIVE_BUCKET_2           => true,

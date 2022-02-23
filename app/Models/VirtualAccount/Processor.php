@@ -423,7 +423,7 @@ abstract class Processor extends Base\Core
 
     private function createOrFetchSharedVirtualAccount()
     {
-        $this->virtualAccount = (new VirtualAccount\Core)->createOrFetchSharedVirtualAccount();
+        $this->virtualAccount = (new Core)->createOrFetchSharedVirtualAccount();
 
         return false;
     }
@@ -514,6 +514,8 @@ abstract class Processor extends Base\Core
                 if ($merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false &&
                     ($expectedAmount < $amountReceived))
                     {
+                        $this->clostVitualAccountIfApplicable($merchant, $this->virtualAccount);
+
                         $this->setUnexpectedReason($entity, StatusCode::HIGHER_PAYMENT_AMOUNT);
 
                         $this->trace->info(
@@ -522,9 +524,12 @@ abstract class Processor extends Base\Core
 
                         return true;
                     }
+
                     if ($merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === false &&
                     $expectedAmount > $amountReceived)
                 {
+                    $this->clostVitualAccountIfApplicable($merchant, $this->virtualAccount);
+
                     $this->setUnexpectedReason($entity, StatusCode::LOWER_PAYMENT_AMOUNT);
 
                     $this->trace->info(
@@ -565,6 +570,13 @@ abstract class Processor extends Base\Core
         }
 
         return false;
+    }
+
+    protected function clostVitualAccountIfApplicable($merchant, $virtualAccount) {
+        if ($merchant->org->isFeatureEnabled(Feature\Constants::FAIL_VA_ON_VALIDATION)) {
+
+            (new Core())->updateStatus($virtualAccount, Status::CLOSED);
+        }
     }
 
     protected function pushVaPaymentFailedDueToOrderAmountMismatchEventToLake(array $input, \Exception $ex)
@@ -742,7 +754,7 @@ abstract class Processor extends Base\Core
 
             if ($refundViaX === true)
             {
-                $this->virtualAccount = (new VirtualAccount\Core)->fetchSharedBankingVirtualAccount();
+                $this->virtualAccount = (new Core)->fetchSharedBankingVirtualAccount();
 
                 $this->trace->info(
                     TraceCode::RX_FUND_LOADING_FOR_ACCOUNT_NOT_FOUND_TRIGGERED_TO_COMMON_MERCHANT,
