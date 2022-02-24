@@ -9,7 +9,7 @@ import moment from 'moment';
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import AutoResizeTextarea from 'common/ui/Forms/AutoResizeTextarea';
-import { TypeAhead } from 'react-power-select';
+import { TypeAhead, PowerSelect } from 'react-power-select';
 
 import Spinner from 'common/ui/Spinner';
 import InlineField from 'common/ui/Forms/InlineField';
@@ -22,9 +22,9 @@ import {
   capitalize,
   isAddressValid,
   calculateTax,
-  isBlank,
   getURLQueryParams,
   titleCase,
+  classList,
 } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -48,7 +48,6 @@ import { fetchGSTTaxes } from 'merchant/reducers/taxes';
 import * as InvoiceActions from 'merchant/reducers/invoices/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import { PowerSelect } from 'react-power-select';
 import { SingleDatePicker } from 'react-dates';
 import AddressSelectionModal from './components/AddressSelectionModal/index';
 import EditInvoiceLabelModal from './components/EditInvoiceLabel';
@@ -58,7 +57,6 @@ import InvoicesConfiguration from 'merchant/views/Invoices/Invoices/components/I
 import { luminateRow } from 'merchant/reducers/app';
 import {
   track,
-  trackLinkClick,
   trackClickDuplicateInvoice,
   trackSaveDuplicateInvoice,
   trackChangeCurrencySettings,
@@ -67,14 +65,14 @@ import {
 } from '../ga';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurrency';
-import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
+import { removeTaxForNonINRItems } from './helpers';
 
 function validate(values) {
-  let errors = {
+  const errors = {
     line_items: [],
   };
-  let lineItems = values.line_items.filter(
+  const lineItems = (values.line_items || []).filter(
     (item) => !!((item.item_id && item.item_id !== 'NULL') || item.id || item.name),
   );
 
@@ -111,7 +109,7 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   (state) => {
-    let customers = state.customers;
+    const customers = state.customers;
     return {
       session: state.session,
       customers: state.customers,
@@ -165,6 +163,7 @@ export default class InvoicesNewContainer extends Component {
   };
 
   constructor() {
+    // eslint-disable-next-line prefer-rest-params
     super(...arguments);
     const issue_date = moment().startOf('day');
     this.state = {
@@ -230,7 +229,7 @@ export default class InvoicesNewContainer extends Component {
         data.terms = data.terms || '';
 
         //removing ids from line_items
-        (data.line_items || []).map((line_item) => {
+        (data.line_items || []).forEach((line_item) => {
           if (line_item.id) {
             delete line_item.id;
           }
@@ -248,7 +247,7 @@ export default class InvoicesNewContainer extends Component {
 
   isPaymentLink(invoice) {
     if (invoice.type !== 'link') {
-      return;
+      return false;
     }
 
     this.props.history.replace('/paymentlinks');
@@ -258,7 +257,7 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Initializes the Invoice.
-   * @param {Invoice} invoice
+   * @param {Invoice} invoice the invoice object
    */
   _initialize(invoice) {
     this.props.initialize(invoice);
@@ -288,7 +287,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   setCustomerData(customerDetails) {
-    let customer =
+    const customer =
       this.props.customers.items &&
       this.props.customers.items.find((c) => c.id == customerDetails.id);
 
@@ -297,10 +296,8 @@ export default class InvoicesNewContainer extends Component {
         selectedCustomerDisplay: customer,
       });
 
-      let billingAddress, shippingAddress;
-
-      billingAddress = customerDetails.billing_address_id;
-      shippingAddress = customerDetails.shipping_address_id;
+      const billingAddress = customerDetails.billing_address_id;
+      const shippingAddress = customerDetails.shipping_address_id;
 
       this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
     }
@@ -324,7 +321,7 @@ export default class InvoicesNewContainer extends Component {
     let invoiceDataFromFetch;
     props = props || this.props;
 
-    let invoiceId = props.match.params.id;
+    const invoiceId = props.match.params.id;
     const searchQuery = getURLQueryParams(props.location.search);
     this.isIntentDuplicate = false;
     const isCreateFlowUXOptimizationEnabled =
@@ -334,7 +331,7 @@ export default class InvoicesNewContainer extends Component {
       promises.push(
         this.props.fetchInvoice(invoiceId).then((invoice) => {
           if (this.isPaymentLink(invoice)) {
-            return;
+            return null;
           }
 
           if (invoice.partial_payment) {
@@ -385,13 +382,13 @@ export default class InvoicesNewContainer extends Component {
     });
 
     Promise.all(promises)
-      .then(([customers, items, states, gst, invoice]) => {
+      .then(([, , _states, gst, invoice]) => {
         if (invoice) {
           this._initialize(invoice);
           invoiceDataFromFetch = invoice;
         }
 
-        let statesList = states && states.data && states.data.items;
+        const statesList = _states && _states.data && _states.data.items;
 
         this.setState({
           isLoading: false,
@@ -428,13 +425,12 @@ export default class InvoicesNewContainer extends Component {
   }
 
   getMerchantInfo() {
-    let user = this.props.session.user;
-    let merchant = user.merchants[user.current];
-    let logoUrl = this.props.config.logo_url;
+    const user = this.props.session.user;
+    const logoUrl = this.props.config.logo_url;
     let gstin = user.gstin;
-    let cin = user.company_cin;
+    const cin = user.company_cin;
 
-    let {
+    const {
       config: { invoice_label_field },
     } = this.props;
     let merchantAltBillingLabel = user.business_name || user.business_dba;
@@ -458,7 +454,6 @@ export default class InvoicesNewContainer extends Component {
     }
 
     this.setState({
-      merchant,
       merchantLogoUrl: logoUrl,
       merchantAltBillingLabel,
       merchantGSTIN: gstin,
@@ -467,18 +462,18 @@ export default class InvoicesNewContainer extends Component {
   }
 
   calculateItemsSubTotal() {
-    let lineItems = this.props.invoice_line_items || [];
+    const lineItems = this.props.invoice_line_items || [];
 
     // Apply taxes only if the merchant has a GSTIN and state of supply is selected;
-    let user = this.props.session.user;
-    let merchantGstin = user.gstin || user.p_gstin;
+    const user = this.props.session.user;
+    const merchantGstin = user.gstin || user.p_gstin;
 
     const applyTaxes = Boolean(merchantGstin) && Boolean(this.props.state_of_supply);
 
     // Get the cost of items without considering the tax on tax_exclusive items.
-    let subtotal = lineItems
+    const subtotal = lineItems
       .reduce((total, line_item) => {
-        let totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
+        const totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
 
         return total + totalAmt;
       }, 0)
@@ -489,7 +484,7 @@ export default class InvoicesNewContainer extends Component {
     if (applyTaxes) {
       totalTax = lineItems
         .reduce((total, line_item) => {
-          let totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
+          const totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
 
           // Add taxes
           let tax = 0;
@@ -508,9 +503,9 @@ export default class InvoicesNewContainer extends Component {
         .toFixed(2);
     }
 
-    let total = lineItems
+    const total = lineItems
       .reduce((_total, line_item) => {
-        let totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
+        const totalAmt = Number(line_item.quantity) * Number(line_item.amountInINR);
 
         let tax = 0;
         let cess = 0;
@@ -543,7 +538,7 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Sets the customer in props.
-   * @param {Customer} customer
+   * @param {Customer} customer the customer object
    */
   setCustomerInProps = (customer) => {
     this.props.change('customer.id', customer.id);
@@ -554,11 +549,11 @@ export default class InvoicesNewContainer extends Component {
   };
 
   /**
-   * Returns a clousure method to select customers.
+   * Returns a closure method to select customers.
    * @param {Boolean} updateAddress Whether or not addresses should be updated (an API call should be made to fetch addresses)
    * @param {Boolean} selectShippingAddress Whether or not to select shipping address.
    *
-   * @return {Function}
+   * @return {Function} Returns a closure method to select customers.
    *    @param {Customer} customer Selected/Created customer.
    *    @param {Boolean} shippingSameAsBilling whether or not shipping address to be used is the same as billing address. To be used for new customers.
    */
@@ -606,6 +601,7 @@ export default class InvoicesNewContainer extends Component {
    * @param {Boolean} selectShippingAddress Whether or not to select shipping address.
    * @param {Boolean} shippingSameAsBilling Is shipping address same as billing address.
    * @param {Boolean} autoselectPlaceOfSupply Whether or not to autoselect place of supply.
+   * @returns {Function} Returns a function which fetches the customers address
    */
   fetchCustomerAddresses = (
     customerID,
@@ -628,9 +624,8 @@ export default class InvoicesNewContainer extends Component {
         if (!response.success) return;
 
         // Set shipping and billing addresses based on their types.
-        let addresses = response.data.items;
-        let selected_billing;
-        let selected_shipping;
+        const addresses = response.data.items;
+        let selected_billing, selected_shipping;
 
         // If a billing address ID is given, try to set it as selected_billing.
         if (billingAddressID) {
@@ -758,7 +753,7 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Shows the Edit Customer modal.
-   * @param {DOMEvent} e
+   * @param {DOMEvent} e the dom event object
    */
   quickEditCustomer = (e) => {
     e && e.preventDefault();
@@ -773,8 +768,8 @@ export default class InvoicesNewContainer extends Component {
           onSave={this.selectCustomerAndCloseModal()}
           customer={this.props.customer}
           showGSTN={this.state.invoiceCurrency === 'INR'}
-          onBlur={(e) => {
-            this.trackCreateInvoice(`edit_customer_${e.target.name}`);
+          onBlur={(event) => {
+            this.trackCreateInvoice(`edit_customer_${event.target.name}`);
           }}
           onCloseClick={() => {
             this.trackCreateInvoice(`edit_customer_leave`);
@@ -819,8 +814,8 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Method to set the selected billing address.
-   * @param {Object} address
-   * @param {Boolean [Optional]} autoselectPlaceOfSupply Whether or not to autoselect place of supply.
+   * @param {Object} address the address object
+   * @param {Boolean} autoselectPlaceOfSupply Whether or not to autoselect place of supply.
    */
   selectBillingAddress = (address, autoselectPlaceOfSupply = true) => {
     this.setState(
@@ -845,7 +840,7 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Method to set the selected shipping address.
-   * @param {Object} address
+   * @param {Object} address the address object
    */
   selectShippingAddress = (address) => {
     this.setState({
@@ -858,7 +853,7 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Shows the Edit Invoice Label modal.
-   * @param {DOMEvent} e
+   * @param {DOMEvent} e the dom event object
    */
   showEditInvoiceLabelModal = (e) => {
     e.preventDefault();
@@ -867,7 +862,7 @@ export default class InvoicesNewContainer extends Component {
       eventAction: 'Change - Invoice Label',
     });
 
-    let {
+    const {
       session: { user },
       config: { invoice_label_field },
     } = this.props;
@@ -893,6 +888,7 @@ export default class InvoicesNewContainer extends Component {
   /**
    * Returns a handler to show Address Selection Modal.
    * @param {String} type One of "billing" and "shipping".
+   * @returns {void}
    */
   showSelectAddressModal = (type = 'billing') => (e) => {
     e.preventDefault();
@@ -904,15 +900,16 @@ export default class InvoicesNewContainer extends Component {
 
     type = type.toLowerCase();
 
-    let { selectedBillingAddress, selectedShippingAddress, addresses = [] } = this.state;
+    const { selectedBillingAddress, selectedShippingAddress, addresses = [] } = this.state;
 
-    let { customer } = this.props;
+    const { customer } = this.props;
 
     // Return if the customer is not yet selected.
     if (!customer) return;
 
     /**
      * Handler for when an address is created.
+     * @param {Object} address the address object
      */
     const onSave = (address) => {
       // Select address.
@@ -965,9 +962,9 @@ export default class InvoicesNewContainer extends Component {
 
             this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_county`);
           }}
-          onBlur={(e) => {
+          onBlur={(event) => {
             this.trackCreateInvoice(
-              `${type === 'billing' ? 'billing' : 'shipping'}_${e.target.value}`,
+              `${type === 'billing' ? 'billing' : 'shipping'}_${event.target.value}`,
             );
           }}
           onClickClose={() => {
@@ -984,18 +981,10 @@ export default class InvoicesNewContainer extends Component {
   };
 
   /**
-   * Callback for when an address is selected as the Default Address
-   * @param {Object} address
-   */
-  onSetDefaultAddress = (address) => {
-    // Do something with the address, make a n/w request or something.
-  };
-
-  /**
    * Prepares props to be saved.
    * Updates props in place and also returns them.
-   * @param {Object} props
-   * @return {Object}
+   * @param {Object} props props object
+   * @return {Object} returns modified props
    */
   prepareForSave = (props) => {
     const isExistingInvoice = props.id;
@@ -1124,8 +1113,8 @@ export default class InvoicesNewContainer extends Component {
       // Update invoice and then resend.
 
       return this._save(props)
-        .then((invoice) => {
-          let promises = [];
+        .then(() => {
+          const promises = [];
 
           if (notifyProps.email_notify) {
             promises.push(this.props.notifyCustomer(props, 'email'));
@@ -1135,7 +1124,7 @@ export default class InvoicesNewContainer extends Component {
           }
 
           return Promise.all(promises)
-            .then(([emailStatus, smsStatus]) => {
+            .then(() => {
               track({
                 eventAction: 'Resend - Invoice',
                 eventLabel: getKeysSeparatedByPipe(props),
@@ -1185,7 +1174,7 @@ export default class InvoicesNewContainer extends Component {
       return this.navigateToList();
     }
 
-    let invoice = this.props.invoice;
+    const invoice = this.props.invoice;
     this.context.confirm({
       header: 'Delete Invoice?',
       message: () => (
@@ -1223,10 +1212,12 @@ export default class InvoicesNewContainer extends Component {
           : this.navigateToList();
       },
     });
+
+    return null;
   };
 
   cancelInvoice = () => {
-    let invoice = this.props.invoice;
+    const invoice = this.props.invoice;
     this.context.confirm({
       header: 'Cancel Invoice?',
       message: () => (
@@ -1240,12 +1231,12 @@ export default class InvoicesNewContainer extends Component {
       action: () => {
         return this.props
           .cancelInvoice(invoice)
-          .then((invoice) => {
+          .then((_invoice) => {
             track({
               eventAction: 'Cancel - Invoice',
-              eventLabel: `invoice_id=${invoice.id}`,
+              eventLabel: `invoice_id=${_invoice.id}`,
             });
-            this.props.initialize(invoice);
+            this.props.initialize(_invoice);
             this.props.showNotification({
               type: 'success',
               message: 'Invoice cancelled!',
@@ -1261,8 +1252,8 @@ export default class InvoicesNewContainer extends Component {
     });
   };
 
-  addInternalNote = (props) => {
-    let invoice = this.props.invoice;
+  addInternalNote = () => {
+    const invoice = this.props.invoice;
     this.props.openModal({
       size: 'small',
       component: (
@@ -1313,22 +1304,22 @@ export default class InvoicesNewContainer extends Component {
   /**
    * Finds a state by it's code.
    * @param {Number} code State code
-   * @param {Array} states Array of state objects (this.state.states)
-   * @return {Object}
+   * @param {Array} _states Array of state objects (this.state.states)
+   * @return {Object} state object
    */
-  findStateByCode = (code, states) => states.find((o) => o.code === code);
+  findStateByCode = (code, _states) => _states.find((o) => o.code === code);
 
   /**
    * Finds a state by it's name.
    * @param {String} name State name
-   * @param {Array} state Array of state objects (this.state.states)
-   * @return {Object}
+   * @param {Array} _states Array of state objects (this.state.states)
+   * @return {Object} state object
    */
-  findStateByName = (name, states) => states.find((o) => o.name === name);
+  findStateByName = (name, _states) => _states.find((o) => o.name === name);
 
   /**
    * Sets Issue Date.
-   * @param {MomentObj} date
+   * @param {MomentObj} date moment date object
    * @param {Boolean} reset Whether or not to reset the time to 0000 hours.
    */
   pickIssueDate = (date, reset = true) => {
@@ -1346,7 +1337,7 @@ export default class InvoicesNewContainer extends Component {
      * unset expiry date.
      */
     if (expiry_date) {
-      let diff = date.diff(expiry_date, 'd', true);
+      const diff = date.diff(expiry_date, 'd', true);
       if (diff > 0) {
         expiry_date = null;
         this.props.change('expire_by', expiry_date);
@@ -1365,7 +1356,7 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Sets Expiry Date
-   * @param {MomentObj} date
+   * @param {MomentObj} date moment date object
    * @param {Boolean} reset Whether or not to reset the time to 0000 hours.
    */
   pickExpiryDate = (date, reset = true) => {
@@ -1387,8 +1378,8 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Returns false for all the dates after today.
-   * @param {MomentObj} date
-   * @return {Boolean}
+   * @param {MomentObj} date moment date object
+   * @return {Boolean} returns false for all the dates after today.
    */
   issueDateRange = (date) => {
     date = date.startOf('day');
@@ -1398,8 +1389,8 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Returns false for all the dates before today.
-   * @param {MomentObj} date
-   * @return {Boolean}
+   * @param {MomentObj} date moment date object
+   * @return {Boolean} returns false for all the dates before today.
    */
   expiryDateRange = (date) => {
     date = date.startOf('day');
@@ -1459,7 +1450,7 @@ export default class InvoicesNewContainer extends Component {
    * Methods to compare two dates.
    * @param {Moment} base Base date
    * @param {Moment} d Date to compare
-   * @return {Boolean}
+   * @return {Boolean} boolean after comparing dates
    */
   isDateAfter = (base, d) => base && d && base.diff(d, 'days', true) > 0.0;
   isDateBefore = (base, d) => base && d && base.diff(d, 'days', true) < 0.0;
@@ -1476,14 +1467,15 @@ export default class InvoicesNewContainer extends Component {
 
   /**
    * Updates the GST slabs based on the state of supply.
-   * @prop {State} stateOfSupply State of Supply
+   * @param {State} stateOfSupply State of Supply
+   * @returns {void}
    */
   updateGSTSlabs = (stateOfSupply) => {
-    let { merchantGSTIN, gst } = this.state;
+    const { merchantGSTIN, gst } = this.state;
 
     // If the merchant doesn't have a GSTIN, stop.
     if (!merchantGSTIN) {
-      return;
+      return null;
     }
 
     // If the state of supply is empty, clear slabs.
@@ -1494,7 +1486,7 @@ export default class InvoicesNewContainer extends Component {
     }
 
     // Get the merchant's state.
-    let merchantState = this.findStateByCode(merchantGSTIN.slice(0, 2), this.state.states);
+    const merchantState = this.findStateByCode(merchantGSTIN.slice(0, 2), this.state.states);
 
     // Get the applicable groups and slabs and set them in state.
     const gstSlabs = getGSTSlabs(
@@ -1507,6 +1499,8 @@ export default class InvoicesNewContainer extends Component {
     this.setState({
       gstSlabs,
     });
+
+    return null;
   };
 
   /**
@@ -1575,15 +1569,13 @@ export default class InvoicesNewContainer extends Component {
     const customerDetails = option;
 
     if (customerDetails) {
-      let customer =
+      const customer =
         this.props.customers.items &&
         this.props.customers.items.find((c) => c.id == customerDetails.id);
 
       if (customer) {
-        let billingAddress, shippingAddress;
-
-        billingAddress = customerDetails.billing_address_id;
-        shippingAddress = customerDetails.shipping_address_id;
+        const billingAddress = customerDetails.billing_address_id;
+        const shippingAddress = customerDetails.shipping_address_id;
 
         this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
       }
@@ -1600,7 +1592,7 @@ export default class InvoicesNewContainer extends Component {
 
         this.setState({ customersList });
       })
-      .catch((err) => {
+      .catch(() => {
         this.setState({ customersList: null });
       });
   }
@@ -1614,7 +1606,6 @@ export default class InvoicesNewContainer extends Component {
       const val = target.value;
 
       if (val.length < 2) {
-        this.setState({ accountsList: null });
         return;
       }
 
@@ -1629,22 +1620,22 @@ export default class InvoicesNewContainer extends Component {
       invoice,
       session: { user },
     } = this.props;
-    let { selectedCustomerDisplay } = this.state;
+    const { selectedCustomerDisplay } = this.state;
 
     const hasCustomerSelected = customer && customer.id;
 
-    let isTestMode = this.props.session.mode === 'test';
-    let isNew = !invoice.id;
-    let status = invoice.status;
-    let isDraft = status === 'draft';
-    let isIssued = status === 'issued';
-    let isPaid = status === 'paid';
-    let isPartiallyPaid = status === 'partially_paid';
-    let isCancelled = status === 'cancelled';
-    let isExpired = status === 'expired';
-    let locked = isPartiallyPaid || isPaid || isExpired || isCancelled;
+    const isTestMode = this.props.session.mode === 'test';
+    const isNew = !invoice.id;
+    const status = invoice.status;
+    const isDraft = status === 'draft';
+    const isIssued = status === 'issued';
+    const isPaid = status === 'paid';
+    const isPartiallyPaid = status === 'partially_paid';
+    const isCancelled = status === 'cancelled';
+    const isExpired = status === 'expired';
+    const locked = isPartiallyPaid || isPaid || isExpired || isCancelled;
 
-    let invoiceTotal = this.calculateInvoiceTotal();
+    const invoiceTotal = this.calculateInvoiceTotal();
 
     // Merchant Address object used to show the address in footer.
     const merchantAddress = {
@@ -1657,9 +1648,6 @@ export default class InvoicesNewContainer extends Component {
 
     const {
       gstSlabs,
-      issue_date,
-      expiry_date,
-      paymentDueDaysPending = 0,
       merchantGSTIN,
       merchantCIN,
       selectedBillingAddress,
@@ -2273,7 +2261,7 @@ export default class InvoicesNewContainer extends Component {
                   </div>
                 </div>
 
-                <ShowWhen additionalCondition={(user) => user.isAllowedEdit('invoices')}>
+                <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('invoices')}>
                   <div class="col-md-4 col-sm-4 invoices--side">
                     {!locked && (
                       <div class="inv__cta">
@@ -2481,7 +2469,7 @@ export default class InvoicesNewContainer extends Component {
                     )}
 
                     <ShowWhen
-                      additionalCondition={(user) => locked && user.isAllowedEdit('invoices')}
+                      additionalCondition={(_user) => locked && _user.isAllowedEdit('invoices')}
                     >
                       <div class="inv__cta">
                         <div class="btn-group-vertical">{duplicateInvoiceButton}</div>
@@ -2504,38 +2492,3 @@ export default class InvoicesNewContainer extends Component {
     );
   }
 }
-
-const removeTaxForNonINRItems = (props, invoiceCurrency) => {
-  const updatedProps = { ...props };
-
-  if (invoiceCurrency !== 'INR') {
-    updatedProps.currency = invoiceCurrency;
-
-    updatedProps.line_items = updatedProps.line_items.map((item) => {
-      delete item.taxes;
-      delete item.tax_ids;
-      delete item.tax_inclusive;
-      delete item.tax_rate;
-
-      return item;
-    });
-  }
-
-  updatedProps.line_items = updatedProps.line_items.map((item) => {
-    const currency = (item.selectedItem && item.selectedItem.currency) || item.currency;
-
-    if (invoiceCurrency !== currency) {
-      delete item.item_id;
-
-      return {
-        ...item,
-        currency: invoiceCurrency,
-        deleteTaxId: true,
-        addName: true,
-      };
-    }
-    return item;
-  });
-
-  return updatedProps;
-};
