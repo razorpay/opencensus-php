@@ -105,10 +105,6 @@ class BusinessType
         self::NGO,
         self::PARTNERSHIP
     ];
-    
-    protected static $ValidateGSTINBusinessType = [
-        self::PROPRIETORSHIP
-    ];
 
     public static $ValidateCINBusinessType = [
         self::PRIVATE_LIMITED,
@@ -286,7 +282,7 @@ class BusinessType
 
         $businessTypeName = self::getKeyFromIndex($businessTypeValue);
 
-        return in_array($businessTypeName, self::$ValidateGSTINBusinessType, true);
+        return in_array($businessTypeName, self::$businessTypeBuckets[self::REGISTERED], true);
     }
 
     public static function isCinVerificationEnableBusinessTypes($businessType): bool
