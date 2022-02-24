@@ -865,13 +865,25 @@ class OAuthBearerAuthTest extends OAuthTestCase
     //Testing oauth related functionality to support slack app for X
     public function testSendOtpWithBearerAuth()
     {
-        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write']]);
+        $client = factory(Client\Entity::class)->create(['environment' => 'dev']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'client_id' => $client->getId()], 'dev');
+
+        $this->fixtures->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
         $this->ba->oauthBearerAuth($accessToken);
 
         $this->fixtures->create('user', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
         $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
         $response = $this->startTest();
 

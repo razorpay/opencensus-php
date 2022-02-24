@@ -572,4 +572,9 @@ class Response
 
         return \Response::make($response);
     }
+
+    public function unauthorizedOauthAccessToRazorpayX()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_ACCESS_TO_RAZORPAYX_RESOURCE);
+    }
 }

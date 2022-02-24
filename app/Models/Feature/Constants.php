@@ -1195,6 +1195,8 @@ class Constants
      */
     const SUBM_QR_IMAGE_CONTENT    = 'subm_qr_image_content';
 
+    const RAZORPAYX_FLOWS_VIA_OAUTH = 'razorpayx_flows_via_oauth';
+  
     /**
      * Feature flag to allow only 3ds enabled international transactions
      */
@@ -1653,6 +1655,7 @@ class Constants
         self::OFFLINE_PAYMENT_ON_CHECKOUT     => true,
         self::ORDER_RECEIPT_UNIQUE_ERR        => true,
         self::SUBM_QR_IMAGE_CONTENT           => true,
+        self::RAZORPAYX_FLOWS_VIA_OAUTH       => true,
         self::FAIL_NON3DS_INTERNATIONAL       => true,
     ];
 
@@ -2358,6 +2361,11 @@ class Constants
             'feature'      => self::LEDGER_JOURNAL_READS,
             'display_name' => 'Ledger Journal Reads',
             'description'  => 'This feature, if enabled, will cause reporting to be served from ledger data',
+        ],
+        self::RAZORPAYX_FLOWS_VIA_OAUTH => [
+            'feature'      => self::RAZORPAYX_FLOWS_VIA_OAUTH,
+            'display_name' => 'Access to RazorpayX flows via oauth',
+            'description'  => 'This feature, if enabled, will allow access to RazorpayX exclusive flows via oauth',
         ],
     ];
 

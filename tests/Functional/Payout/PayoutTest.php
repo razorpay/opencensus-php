@@ -2686,6 +2686,12 @@ class PayoutTest extends OAuthTestCase
             'entity_type'   => 'application',
             'name'          => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
 
         $this->fixtures->user->createUserMerchantMapping([
@@ -2734,6 +2740,12 @@ class PayoutTest extends OAuthTestCase
             'entity_id'     => $client->application_id,
             'entity_type'   => 'application',
             'name'          => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
 
@@ -2796,6 +2808,11 @@ class PayoutTest extends OAuthTestCase
             'entity_id' => $client->application_id,
             'entity_type' => 'application',
             'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999],'owner', 'live');
 
@@ -2869,6 +2886,12 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'application',
             'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
 
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+
         $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
 
         $this->fixtures->user->createUserMerchantMapping([
@@ -2908,6 +2931,45 @@ class PayoutTest extends OAuthTestCase
         $this->assertPassportKeyExists('oauth.app_id');
     }
 
+    public function testUnauthorisedAccessToRazorpayXResourcesWithOauth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $user = $this->fixtures->on('live')->create('user');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $p = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->edit('payout', $p['id'],['user_id' => $user['id']]);
+
+        $client = factory(Client\Entity::class)->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['rx_read_write', 'read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id' => $client->application_id,
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000', 'contact_mobile' => 9999999999]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => '20000000000000',
+            'merchant_id' => '10000000000000',
+            'product'     => 'banking',
+            'role'        => 'owner'
+        ], 'live');
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithOtpBearerAuth()
     {
         $accessToken = $this->generateOAuthAccessToken(['scopes'    => ['read_write', 'rx_read_write']]);
@@ -2920,6 +2982,11 @@ class PayoutTest extends OAuthTestCase
             'entity_id' => '10000000000000',
             'entity_type' => 'application',
             'name'  => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'entity_type' => 'application',
+            'name'  => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';

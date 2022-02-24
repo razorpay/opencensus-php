@@ -393,6 +393,18 @@ class OAuth
         $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION_ID]);
         $this->ba->setUserRoleWithUserIdAndMerchantId($merchantId, $userId);
 
+        $isRazorpayXExclusiveRoute = $this->isBankingRoute();
+
+        $isApplicationAllowedForBankingRoutes = (new Feature\Service())->checkFeatureEnabled(Feature\Constants::APPLICATION,
+                                                            $response[OAuthToken::APPLICATION_ID],
+                                                Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH)['status'];
+
+        if ($isRazorpayXExclusiveRoute === true and
+            $isApplicationAllowedForBankingRoutes === false)
+        {
+            return ApiResponse::unauthorizedOauthAccessToRazorpayX();
+        }
+
         //Fetches partnerMerchantId from applicationId and adds to ba.
         $application = (new Repository())->findOrFail($response[OAuthToken::APPLICATION_ID]);
         $this->ba->setPartnerMerchantId($application->getMerchantId());
@@ -529,5 +541,18 @@ class OAuth
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
+    }
+
+    protected function isBankingRoute(): bool
+    {
+        $route = $this->router->currentRouteName();
+
+        //
+        // Fetch the scopes defined for the current route, including defaults
+        // like 'read_only' and 'read_write'
+        //
+        $routeScopes = OAuthScopes::getScopesForRoute($route);
+
+        return (count(array_diff($routeScopes, OAuthScopes::RAZORPAY_X_SCOPES)) == 0);
     }
 }

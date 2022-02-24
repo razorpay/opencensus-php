@@ -16,6 +16,8 @@ class OAuthScopes
     const RX_READ_ONLY = 'rx_read_only';
     const RX_READ_WRITE = 'rx_read_write';
 
+    const RAZORPAY_X_SCOPES = [self::RX_READ_ONLY, self::RX_READ_WRITE];
+
     const TALLY_READ_ONLY  = 'tally_read_only';
     const TALLY_READ_WRITE = 'tally_read_write';
 

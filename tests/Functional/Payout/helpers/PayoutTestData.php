@@ -16473,6 +16473,33 @@ return [
         ],
     ],
 
+    'testUnauthorisedAccessToRazorpayXResourcesWithOauth' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'method'  => 'GET',
+            'url'     => '/payouts',
+            'content' => [
+                'product' => 'banking',
+                'count'   => 10,
+                'expand'  => [
+                    'fund_account.contact',
+                    'user'
+                ]
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_ACCESS_TO_RAZORPAYX_RESOURCE
+                ]
+            ],
+            'status_code' => 401
+        ]
+    ],
+
     'testGetPayoutsWithBearerAuth' => [
         'request'  => [
             'server' => [
