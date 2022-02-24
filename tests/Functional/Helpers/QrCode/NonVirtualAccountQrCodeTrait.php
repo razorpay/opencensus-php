@@ -141,6 +141,13 @@ trait NonVirtualAccountQrCodeTrait
         return $response;
     }
 
+    private function makeUpiIciciPaymentInternal($request)
+    {
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function parseResponseXml(string $response): array
     {
         return (array) simplexml_load_string(trim($response));

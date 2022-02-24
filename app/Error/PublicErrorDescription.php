@@ -502,6 +502,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';
 
     const SERVER_ERROR_UPI_TRANSFER_PROCESSING_FAILED                           = 'Upi transfer processing failed';
+    const SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED                             = 'Qr payment processing failed';
 
     const BAD_REQUEST_CARD_INVALID_DATA                                         = 'Payment failed as card details (CVV or expiry date) are incorrect. Please check and try again';
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';

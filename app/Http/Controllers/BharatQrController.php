@@ -21,7 +21,7 @@ class BharatQrController extends Controller
                 // logs only first 6 and last 4, mask remaining
                 $inputTrace['mpan'] =  (new MpanEntity)->getMaskedMpan($inputTrace['mpan']);
             }
-            
+
             unset($inputTrace['customer_name'], $inputTrace['MERCHANT_PAN']);
         }
 
@@ -67,6 +67,20 @@ class BharatQrController extends Controller
         }
 
         $response = $this->service()->processPayment($input, $gateway);
+
+        return ApiResponse::json($response);
+    }
+
+    public function processBharatQrPaymentInternal(string $gateway)
+    {
+        $this->trace->info(
+            TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST_INTERNAL,
+            [
+                'input'   => Request::all(),
+                'gateway' => $gateway,
+            ]);
+
+        $response = $this->service()->processPaymentInternal(Request::all(), $gateway);
 
         return ApiResponse::json($response);
     }

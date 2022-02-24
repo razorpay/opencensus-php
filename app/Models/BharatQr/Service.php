@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BharatQr;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Gateway\Sharp;
@@ -58,40 +59,9 @@ class Service extends Base\Service
 
         try
         {
-            $terminalDetails = null;
-
-            // In some cases, for decrypting the s2s callback response, we need to fetch secrets from the terminal and
-            // not use the common secret present in config. For such cases, we fetch the corresponding terminal using
-            // the details present in the callback response.
-            if (method_exists($gatewayClass, 'getTerminalDetailsFromCallbackIfApplicable') === true)
-            {
-                $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($input);
-            }
-
-            $terminal = null;
-
-            if ($terminalDetails !== null)
-            {
-                $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
-
-                $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
-            }
-
-            $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
-
-            $qrData = $gatewayResponse['qr_data'];
-
-            (new Validator)->validateInput('gateway_response', $qrData);
-
-            $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
-
-            $this->determineAndSetModeForQr($qrCodeId, $gateway);
-
-            $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+            [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse($input, $gatewayClass, $gateway);
 
             $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
-
-            $terminal = $terminal ?: $this->getTerminal($gatewayResponse['qr_data']);
 
             $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 
@@ -114,6 +84,13 @@ class Service extends Base\Service
             return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
 
+        $valid = $this->processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest);
+
+        return $gatewayClass->getBharatQrResponse($valid, $input);
+    }
+
+    private function processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest)
+    {
         $isQrCodeV2 = $this->isNonVAQrCodePayment($gatewayResponse);
 
         if ($isQrCodeV2 === true)
@@ -125,9 +102,128 @@ class Service extends Base\Service
             $valid = $this->core->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
         }
 
-        $response = $gatewayClass->getBharatQrResponse($valid, $input);
+        return $valid;
+    }
 
-        return $response;
+    private function getTerminalAndGatewayReponse($input, $gatewayClass, $gateway)
+    {
+        $terminalDetails = null;
+
+        // In some cases, for decrypting the s2s callback response, we need to fetch secrets from the terminal and
+        // not use the common secret present in config. For such cases, we fetch the corresponding terminal using
+        // the details present in the callback response.
+        if (method_exists($gatewayClass, 'getTerminalDetailsFromCallbackIfApplicable') === true)
+        {
+            $terminalDetails = $gatewayClass->getTerminalDetailsFromCallbackIfApplicable($input);
+        }
+
+        $terminal = null;
+
+        if ($terminalDetails !== null)
+        {
+            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+
+            $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
+        }
+
+        $gatewayResponse = $gatewayClass->preProcessServerCallback($input, true);
+
+        $qrData = $gatewayResponse['qr_data'];
+
+        (new Validator)->validateInput('gateway_response', $qrData);
+
+        $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
+
+        $this->determineAndSetModeForQr($qrCodeId, $gateway);
+
+        $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
+
+        $terminal = $terminal ?: $this->getTerminal($gatewayResponse['qr_data']);
+
+        return [$terminal, $gatewayResponse];
+    }
+
+    public function processPaymentInternal($input, $gateway)
+    {
+        $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $qrPaymentRequest = null;
+
+        try
+        {
+            [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse(json_encode($input), $gatewayClass, $gateway);
+
+            $isQrCodeV2 = $this->isNonVAQrCodePayment($gatewayResponse);
+
+            $qrPayment = $this->findQrPayment($gatewayResponse['qr_data'], $isQrCodeV2);
+
+            if ($qrPayment !== null)
+            {
+                return $this->getQrPaymentResponseInternal($qrPayment);
+            }
+
+            $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+
+            $valid = $this->processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest);
+
+            if ($valid === true)
+            {
+                $qrPayment = $this->findQrPayment($gatewayResponse['qr_data'], $isQrCodeV2);
+
+                if ($qrPayment !== null)
+                {
+                    return $this->getQrPaymentResponseInternal($qrPayment);
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+
+            if ($qrPaymentRequest !== null)
+            {
+                (new QrPaymentRequest\Service())->update($qrPaymentRequest, null, null,
+                                                         $ex->getMessage(), QrPaymentRequest\Type::BHARAT_QR);
+
+            }
+
+            return $this->getQrPaymentResponseInternal(null, $ex->getMessage());
+        }
+
+        return $this->getQrPaymentResponseInternal(null, $qrPaymentRequest->getFailureReason());
+    }
+
+    private function getQrPaymentResponseInternal($qrPayment = null, $errorMessage = null)
+    {
+        if ($qrPayment !== null)
+        {
+            $payment = $qrPayment->payment;
+
+            $response = ['payment' => $payment->toArrayRecon()];
+
+            $response['refunds'] = $payment->refunds->toArrayRecon();
+
+            return $response;
+        }
+        else
+        {
+            throw new Exception\ServerErrorException($errorMessage, ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
+        }
+    }
+
+    private function findQrPayment($gatewayQrData, $isQrCodeV2)
+    {
+        if ($isQrCodeV2 === true)
+        {
+            return $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($gatewayQrData[GatewayResponseParams::PROVIDER_REFERENCE_ID],
+                                                                                         $gatewayQrData[GatewayResponseParams::GATEWAY],
+                                                                                         $gatewayQrData[GatewayResponseParams::AMOUNT]);
+        }
+        else
+        {
+            return $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($gatewayQrData[GatewayResponseParams::PROVIDER_REFERENCE_ID],
+                                                                              $gatewayQrData[GatewayResponseParams::AMOUNT]);
+        }
     }
 
     private function isNonVAQrCodePayment($gatewayResponse)

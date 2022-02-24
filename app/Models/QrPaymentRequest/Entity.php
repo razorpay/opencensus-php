@@ -76,9 +76,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_REFERENCE);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getQrCodeId()
     {
         return $this->getAttribute(self::QR_CODE_ID);
+    }
+
+    public function isCreated()
+    {
+        return $this->getAttribute(self::IS_CREATED);
     }
 
     public function setRequestSource($requestSource)
@@ -180,6 +190,7 @@ class Entity extends Base\PublicEntity
                 break;
 
             case 'reconciliate_via_batch_service':
+            case 'payment_callback_bharatqr_internal':
                 $requestSource = [
                     'source'        => 'file',
                     'request_from'  => 'bank',

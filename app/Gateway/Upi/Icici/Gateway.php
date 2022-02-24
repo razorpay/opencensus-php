@@ -1145,7 +1145,8 @@ class Gateway extends Base\Gateway
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
         if ((($decoded !== null) and (isset($decoded[Fields::UMN]) === true)) or
-            ($routeName === 'upi_transfer_process_internal'))
+            (($routeName === 'upi_transfer_process_internal') or
+             ($routeName === 'payment_callback_bharatqr_internal')))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
         }

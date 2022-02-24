@@ -4,6 +4,7 @@ namespace Functional\QrCode;
 
 use Carbon\Carbon;
 use RZP\Models\Order;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
@@ -12,6 +13,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
@@ -601,6 +603,101 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(1, $qrPayment['expected']);
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessIciciQrPaymentInternal()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $response = $this->makeUpiIciciPaymentInternal($request);
+
+        $payment     = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+    }
+
+    public function testProcessIciciQrPaymentInternalDuplicate()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $requestInternal = $this->testData['testProcessIciciQrPaymentInternal'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $requestInternal['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $requestInternal['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+        $response = $this->makeUpiIciciPaymentInternal($requestInternal);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+    }
+
+    public function testProcessIciciQrPaymentInternalQrNotFound()
+    {
+        $requestInternal = $this->testData['testProcessIciciQrPaymentInternal'];
+
+        $requestInternal['content']['merchantTranId'] = 'qwertyuiop1234qrv2';
+
+        $response = $this->makeUpiIciciPaymentInternal($requestInternal);
+
+        $payment = $this->getDbLastEntity('payment', 'live');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('refunded', $response['payment']['status']);
+
+        $this->assertArrayHasKey('refunds', $response);
+
+        $this->assertEquals($response['payment']['id'], $response['refunds'][0]['payment_id']);
+        $this->assertEquals($response['payment']['amount'], $response['refunds'][0]['amount']);
+    }
+
+    public function testProcessIciciQrPaymentInternalTerminalNotFound()
+    {
+        $requestInternal = $this->testData['testProcessIciciQrPaymentInternal'];
+
+        $requestInternal['content']['merchantId'] = '1234567';
+
+        $this->expectException(ServerErrorException::class);
+
+        $this->expectExceptionCode(ErrorCode::SERVER_ERROR_QR_PAYMENT_PROCESSING_FAILED);
+
+        $this->expectExceptionMessage('Terminal should not be null here');
+
+        $this->makeUpiIciciPaymentInternal($requestInternal);
     }
 
     public function testQrPaymentWithDisabledUpiMethod()

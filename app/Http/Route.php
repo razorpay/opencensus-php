@@ -599,6 +599,7 @@ class Route
         'set_channel_action'                       => ['put',      'set_channel/{channel}/{action}',                 'FundTransferAttemptController@setChannelState',                    ],
         'get_channel_action'                       => ['get',      'get_channel_state',                              'FundTransferAttemptController@getChannelState',                    ],
         'gateway_payment_callback_bharatqr'        => ['post',     'payment/callback/bharatqr/{gateway}',            'BharatQrController@processBharatQrPayment'                         ],
+        'payment_callback_bharatqr_internal'       => ['post',     'payment/callback/bharatqr/{gateway}/internal',   'BharatQrController@processBharatQrPaymentInternal'                 ],
         'bharat_qr_pay_test'                       => ['post',     'bharatqr/pay/test',                              'BharatQrController@processBharatQrTestPayment'                     ],
         'gateway_payment_validate_bharatqr'        => ['post',     'payment/validate/bharatqr/{gateway}',            'BharatQrController@processBharatQrValidatePayment'                 ],
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
@@ -3867,6 +3868,7 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'upi_transfer_process_internal',
+        'payment_callback_bharatqr_internal',
         'm2m_referral_link_get_public',
         'payout_links_customer_hosted_page_data',
         'payout_links_customer_hosted_page_demo_data',
@@ -12132,6 +12134,7 @@ class Route
         'recon' => [
             'payment_create_upi_unexpected',
             'upi_transfer_process_internal',
+            'payment_callback_bharatqr_internal',
             'payment_upi_authorize_failed',
         ]
     ];
