@@ -19,6 +19,7 @@ class Upi
     const ACBX = 'ACBX';
     const ACUX = 'ACUX';
     const ADBX = 'ADBX';
+    const ADCC = 'ADCC';
     const AGVX = 'AGVX';
     const AIRP = 'AIRP';
     const ALLA = 'ALLA';
@@ -248,6 +249,7 @@ class Upi
         self::ACBX,
         self::ACUX,
         self::ADBX,
+        self::ADCC,
         self::AGVX,
         self::AIRP,
         self::ALLA,
