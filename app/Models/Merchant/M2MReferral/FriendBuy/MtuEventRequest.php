@@ -41,7 +41,7 @@ class MtuEventRequest extends FriendBuyRequest
 
         $this->orderId = $m2mEntity->getId();
 
-        $this->name = $m2mEntity->getValueFromMetaData(M2MConstants::FIRST_NAME);
+        $this->name = substr($m2mEntity->getValueFromMetaData(M2MConstants::FIRST_NAME), 0, 32);
 
     }
 

@@ -25,7 +25,7 @@ class SignUpEventRequest extends FriendBuyRequest
 
         $this->referralCode = $m2mEntity->getValueFromMetaData(M2MConstants::REFERRAL_CODE);
 
-        $this->name = $m2mEntity->getValueFromMetaData(M2MConstants::FIRST_NAME);
+        $this->name = substr($m2mEntity->getValueFromMetaData(M2MConstants::FIRST_NAME), 0, 32);
 
         return $this;
     }
