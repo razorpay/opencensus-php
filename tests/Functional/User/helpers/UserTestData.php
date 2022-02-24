@@ -3014,6 +3014,33 @@ return [
         ],
     ],
 
+    'testSendOtpLimitForUpdateContactMobileExceeded' => [
+        'request'   => [
+            'url'     => '/users/contact/sendotp',
+            'method'  => 'post',
+            'content' => [
+                'contact_mobile' => '9876543210',
+                'otp_auth_token' => 'otp_auth_token',
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard-User-id' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SMS_OTP_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SMS_OTP_FAILED,
+        ],
+    ],
+
     'testLimitForUpdateContactMobileExceeded' => [
         'request'   => [
             'url'     => '/users/contact/sendotp',

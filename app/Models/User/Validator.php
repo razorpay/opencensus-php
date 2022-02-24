@@ -1162,4 +1162,24 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_LIMIT_FOR_UPDATE_CONTACT_MOBILE_EXCEEDED);
         }
     }
+
+    public function validateSendOtpLimitNotExceeded(Entity $user)
+    {
+        $app = App::getFacadeRoot();
+        $redis = $app['redis']->Connection('mutex_redis');
+
+        $fullKey = Constants::THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_PREFIX.$user->getId();
+        $index = $redis->incr($fullKey);
+
+        if ($index === 1)
+        {
+            $redis->expire($fullKey, Constants::THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_LIMIT_TTL);
+        }
+
+        if ($index > Constants::THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_LIMIT)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SMS_OTP_FAILED);
+        }
+    }
 }

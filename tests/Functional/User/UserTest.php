@@ -4348,6 +4348,27 @@ class UserTest extends TestCase
         $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 2);
     }
 
+    public function testSendOtpLimitForUpdateContactMobileExceeded()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
+
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $redis->set(
+            Constants::THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_PREFIX.$user['id'],
+            Constants::THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_LIMIT
+        );
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+
+        $this->startTest();
+
+    }
+
     public function testLimitForUpdateContactMobileExceeded()
     {
         $user = $this->fixtures->create('user');

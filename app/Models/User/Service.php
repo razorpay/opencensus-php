@@ -1761,11 +1761,14 @@ class Service extends Base\Service
      *
      * @param array $input
      * @return mixed
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestValidationFailureException|BadRequestException
      */
     public function sendOtpForContactMobileUpdate(array $input)
     {
         $user = $this->user;
+
+        // rate limit 9 send OTP attempts very 1800 s for a user
+        $this->validator->validateSendOtpLimitNotExceeded($user);
 
         $cacheKey = $this->getThrottleContactMobileCacheKey($user);
 

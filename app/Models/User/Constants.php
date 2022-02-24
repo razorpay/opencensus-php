@@ -310,8 +310,11 @@ class Constants
 
     const CHANGE_PASSWORD_RATE_LIMIT_SUFFIX         = '_change_password_count';
 
-    const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX = 'update_contact_mobile_attempts_%s';
-    const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT            = 3;
+    const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX       = 'update_contact_mobile_attempts_%s';
+    const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT                  = 3;
+    const THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_PREFIX        = 'update_contact_mobile_send_otp_attempts:';
+    const THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_LIMIT         = 9;
+    const THROTTLE_UPDATE_CONTACT_MOBILE_SEND_OTP_LIMIT_TTL     = 1800;
 
     const RESET_PASSWORD_RATE_LIMIT_SUFFIX          = '_reset_password_count';
 
