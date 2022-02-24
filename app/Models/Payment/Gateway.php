@@ -4187,6 +4187,11 @@ class Gateway
             ],
         ];
 
+        if(($gateway === self::ENACH_NPCI_NETBANKING) and ($payment['recurring_type'] === 'initial'))
+        {
+            return true;
+        }
+
         if($payment !== null && in_array($gateway, array_keys($acquirerGateways), true))
         {
             $gateways = $acquirerGateways[$gateway];
