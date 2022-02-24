@@ -102,7 +102,7 @@ const VerifyOtp = ({
             setCaptchaValue('');
             setScreen('');
           } else if (errorCode === 'NO_PROVIDER_ERROR' || errorCode === 'INTERNAL_SERVER_ERROR') {
-            handleDownTimeError();
+            handleDownTimeError(res.data);
           }
         }
         if (res.data.code) {
@@ -112,7 +112,7 @@ const VerifyOtp = ({
             setScreen('');
             setCaptchaValue('');
           } else if (res.data.code === 'unavailable') {
-            handleDownTimeError();
+            handleDownTimeError(res.data);
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
@@ -142,9 +142,8 @@ const VerifyOtp = ({
           setIsApiCall(false);
           if (apiError === 'INVALID_SESSION_ID') {
             setScreen('');
-          }
-          if (apiError.includes('Internal Server Error')) {
-            handleDownTimeError();
+          } else if (apiError.includes('Internal Server Error')) {
+            handleDownTimeError(err);
           }
         }
         trackEvent(

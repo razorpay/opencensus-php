@@ -71,14 +71,17 @@ const EAadhar = ({
     );
   };
 
-  const handleDownTimeError = () => {
+  const handleDownTimeError = (resData = {}) => {
     mobileLinkedOnChange(false);
     trackEvent(window.rzpQ.onbr().initiated('kyc.e_aadhar_downtime_fallback'));
     analyticsTrack({
       objectName: 'kyc',
       actionName: 'e aadhar downtime fallback initiated',
       screen: 'Documents',
-      ...analyticsProperties,
+      properties: {
+        ...resData,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
     setScreen('ProviderError');
   };

@@ -119,13 +119,13 @@ const GetOtpScreen = ({
             res.data.error_code === 'NO_PROVIDER_ERROR' ||
             res.data.error_code === 'INTERNAL_SERVER_ERROR'
           ) {
-            handleDownTimeError();
+            handleDownTimeError(res.data);
           }
         }
         if (res.data.code) {
           setError(res.data.code);
           if (res.data.code === 'unavailable') {
-            handleDownTimeError();
+            handleDownTimeError(res.data);
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
@@ -153,7 +153,7 @@ const GetOtpScreen = ({
           const apiError = err.errors[0];
           setError(apiError);
           if (apiError.includes('Internal Server Error')) {
-            handleDownTimeError();
+            handleDownTimeError(err);
           }
         }
         trackEvent(
@@ -196,9 +196,8 @@ const GetOtpScreen = ({
           setError(errorCode);
           if (errorCode === 'INVALID_AADHAAR_NUMBER' || errorCode === 'INVALID_CAPTCHA') {
             setCaptchaValue('');
-          }
-          if (errorCode === 'NO_PROVIDER_ERROR' || errorCode === 'INTERNAL_SERVER_ERROR') {
-            handleDownTimeError();
+          } else if (errorCode === 'NO_PROVIDER_ERROR' || errorCode === 'INTERNAL_SERVER_ERROR') {
+            handleDownTimeError(res.data);
           }
         }
         if (res.data.code) {
@@ -206,7 +205,7 @@ const GetOtpScreen = ({
           if (res.data.code === 'invalid_argument') {
             setCaptchaValue('');
           } else if (res.data.code === 'unavailable') {
-            handleDownTimeError();
+            handleDownTimeError(res.data);
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
@@ -236,9 +235,8 @@ const GetOtpScreen = ({
           setError(apiError);
           if (apiError === 'INVALID_SESSION_ID') {
             setCaptchaValue('');
-          }
-          if (apiError.includes('Internal Server Error')) {
-            handleDownTimeError();
+          } else if (apiError.includes('Internal Server Error')) {
+            handleDownTimeError(err);
           }
         }
         trackEvent(
