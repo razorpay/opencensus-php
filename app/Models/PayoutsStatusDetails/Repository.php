@@ -16,7 +16,7 @@ class Repository extends Base\Repository
         $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
                         ->select(Entity::REASON)
                         ->where($idColumn,$id)
-                        ->get();
+                        ->first();
 
         if($result !== null)
         {

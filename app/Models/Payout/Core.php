@@ -759,7 +759,7 @@ class Core extends Base\Core
                     $lastStatusDetails = $this->repo->payouts_status_details->fetchStatusReasonFromStatusDetailsId($lastId);
 
                     // stores status details in case unique status details has come
-                    if (($statusDetails[Attempt\Entity::REASON]) !== $lastStatusDetails[0]['reason'])
+                    if (($statusDetails[Attempt\Entity::REASON]) !== $lastStatusDetails['reason'])
                     {
                         (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
                         // fire webhook if experiment is on
