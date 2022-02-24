@@ -63,6 +63,11 @@ class Factory
                     case Detail\BusinessType::PUBLIC_LIMITED:
                     case Detail\BusinessType::LLP:
                         return new CertificateOfIncorporationOcr($merchant, $merchantDetails, $document);
+
+                    case Detail\BusinessType::NGO:
+                    case Detail\BusinessType::TRUST:
+                    case Detail\BusinessType::SOCIETY:
+                        return new TrustSocietyNgoBusinessCertificateOcr($merchant, $merchantDetails, $document);
                 }
                 break;
 

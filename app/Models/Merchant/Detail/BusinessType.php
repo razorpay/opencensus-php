@@ -327,4 +327,13 @@ class BusinessType
             self::LLP
         ];
     }
+
+    public static function getTrustSocietyNgoBusinessCertificateApplicableBusinessTypes()
+    {
+        return [
+            self::NGO,
+            self::TRUST,
+            self::SOCIETY
+        ];
+    }
 }

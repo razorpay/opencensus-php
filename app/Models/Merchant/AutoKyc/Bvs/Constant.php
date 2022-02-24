@@ -95,14 +95,15 @@ class Constant
     const ON        = 'on';
 
     // Config names
-    const PERSONAL_PAN_OCR                 = 'personal_pan_ocr';
-    const BUSINESS_PAN_OCR                 = 'business_pan_ocr';
-    const COMMON_MANUAL_VERIFICATION       = 'common_manual_verification';
-    const GST_CERTIFICATE_OCR_CONFIG       = 'gst_in_ocr';
-    const MSME_OCR                         = 'msme_ocr';
-    const SHOP_ESTABLISHMENT_OCR           = 'shop_establishment_ocr';
-    const PARTNERSHIP_DEED_OCR             = 'partnership_deed_ocr';
-    const CERTIFICATE_OF_INCORPORATION_OCR = 'certificate_of_incorporation_ocr';
+    const PERSONAL_PAN_OCR                              = 'personal_pan_ocr';
+    const BUSINESS_PAN_OCR                              = 'business_pan_ocr';
+    const COMMON_MANUAL_VERIFICATION                    = 'common_manual_verification';
+    const GST_CERTIFICATE_OCR_CONFIG                    = 'gst_in_ocr';
+    const MSME_OCR                                      = 'msme_ocr';
+    const SHOP_ESTABLISHMENT_OCR                        = 'shop_establishment_ocr';
+    const PARTNERSHIP_DEED_OCR                          = 'partnership_deed_ocr';
+    const CERTIFICATE_OF_INCORPORATION_OCR              = 'certificate_of_incorporation_ocr';
+    const TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE_OCR    = 'trust_society_ngo_business_certificate_ocr';
 
     const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
@@ -125,20 +126,21 @@ class Constant
     const STATUS          = 'status';
 
     // Artefact types in BVS
-    const PERSONAL_PAN                  = 'personal_pan';
-    const AADHAAR                       = 'aadhaar';
-    const CIN                           = 'cin';
-    const GSTIN                         = 'gstin';
-    const VOTERS_ID                     = 'voters_id';
-    const PASSPORT                      = 'passport';
-    const LLP_DEED                      = 'llp_deed';
-    const BUSINESS_PAN                  = 'business_pan';
-    const SHOP_ESTABLISHMENT            = 'shop_establishment';
-    const GST_CERTIFICATE               = 'gst_certificate';
-    const MSME                          = 'msme';
-    const COMMON                        = 'common';
-    const PARTNERSHIP_DEED              = 'partnership_deed';
-    const CERTIFICATE_OF_INCORPORATION  = 'certificate_of_incorporation';
+    const PERSONAL_PAN                           = 'personal_pan';
+    const AADHAAR                                = 'aadhaar';
+    const CIN                                    = 'cin';
+    const GSTIN                                  = 'gstin';
+    const VOTERS_ID                              = 'voters_id';
+    const PASSPORT                               = 'passport';
+    const LLP_DEED                               = 'llp_deed';
+    const BUSINESS_PAN                           = 'business_pan';
+    const SHOP_ESTABLISHMENT                     = 'shop_establishment';
+    const GST_CERTIFICATE                        = 'gst_certificate';
+    const MSME                                   = 'msme';
+    const COMMON                                 = 'common';
+    const PARTNERSHIP_DEED                       = 'partnership_deed';
+    const CERTIFICATE_OF_INCORPORATION           = 'certificate_of_incorporation';
+    const TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE = 'trust_society_ngo_business_certificate';
 
     // Company Search in BVS
     const COMPANY_SEARCH    = 'company_search';
@@ -182,6 +184,12 @@ class Constant
             self::PROOF_INDEX     => '1',
             self::VALIDATION_UNIT => Constants::PROOF,
             self::CONFIG_NAME     => self::CERTIFICATE_OF_INCORPORATION_OCR
+        ],
+        self::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE => [
+            self::ARTEFACT_TYPE   => self::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE,
+            self::PROOF_INDEX     => '1',
+            self::VALIDATION_UNIT => Constants::PROOF,
+            self::CONFIG_NAME     => self::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE_OCR
         ],
         Type::GST_CERTIFICATE             => [
             self::ARTEFACT_TYPE   => self::GSTIN,
@@ -267,29 +275,30 @@ class Constant
     ];
 
     public const ARTEFACT_STATUS_ATTRIBUTE_MAPPING = [
-        Constant::PERSONAL_PAN . '-' . BvsValidationConstants::IDENTIFIER       => [Table::MERCHANT_DETAIL, Entity::POI_VERIFICATION_STATUS],
-        Constant::BUSINESS_PAN . '-' . BvsValidationConstants::IDENTIFIER       => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_VERIFICATION_STATUS],
-        Constant::BANK_ACCOUNT . '-' . BvsValidationConstants::IDENTIFIER       => [Table::MERCHANT_DETAIL, Entity::BANK_DETAILS_VERIFICATION_STATUS],
-        Constant::CIN . '-' . BvsValidationConstants::IDENTIFIER                => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
-        Constant::LLP_DEED  . '-' . BvsValidationConstants::IDENTIFIER          => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
-        Constant::CIN  . '-' . BvsValidationConstants::PROOF                    => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
-        Constant::LLP_DEED  . '-' . BvsValidationConstants::PROOF               => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
-        Constant::GSTIN  . '-' . BvsValidationConstants::IDENTIFIER             => [Table::MERCHANT_DETAIL, Entity::GSTIN_VERIFICATION_STATUS],
-        Constant::SHOP_ESTABLISHMENT . '-' . BvsValidationConstants::IDENTIFIER => [Table::MERCHANT_DETAIL, Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS],
-        Constant::BANK_ACCOUNT . '-' . BvsValidationConstants::PROOF            => [Table::MERCHANT_DETAIL, Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS],
-        Constant::PERSONAL_PAN . '-' . BvsValidationConstants::PROOF            => [Table::MERCHANT_DETAIL, Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS],
-        Constant::BUSINESS_PAN . '-' . BvsValidationConstants::PROOF            => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS],
-        Constant::MSME . '-' . BvsValidationConstants::PROOF                    => [Table::MERCHANT_DETAIL, Entity::MSME_DOC_VERIFICATION_STATUS],
-        Constant::MSME . '-' . BvsValidationConstants::IDENTIFIER               => [Table::MERCHANT_DETAIL, Entity::MSME_DOC_VERIFICATION_STATUS],
-        Constant::SHOP_ESTABLISHMENT . '-' . BvsValidationConstants::PROOF      => [Table::MERCHANT_VERIFICATION_DETAIL, VerificationConstant::SHOP_ESTABLISHMENT, "doc"],
-        Constant::GSTIN . '-' . BvsValidationConstants::PROOF                   => [Table::MERCHANT_VERIFICATION_DETAIL, VerificationConstant::GSTIN, "doc"],
-        Constant::PARTNERSHIP_DEED . '-' . BvsValidationConstants::PROOF        => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::PARTNERSHIP_DEED, "doc"],
-        Constant::PARTNERSHIP_DEED . '-' . BvsValidationConstants::IDENTIFIER   => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::PARTNERSHIP_DEED, "number"],
-        Constant::AADHAAR . '-' . BvsValidationConstants::IDENTIFIER            => [Table::STAKEHOLDER, StakeholderEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS],
-        Constant::VOTERS_ID . '-' . BvsValidationConstants::IDENTIFIER          => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
-        Constant::PASSPORT . '-' . BvsValidationConstants::IDENTIFIER           => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
-        Constant::VOTERS_ID . '-' . BvsValidationConstants::PROOF               => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
-        Constant::PASSPORT . '-' .  BvsValidationConstants::PROOF               => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS]
+        Constant::PERSONAL_PAN . '-' . BvsValidationConstants::IDENTIFIER                             => [Table::MERCHANT_DETAIL, Entity::POI_VERIFICATION_STATUS],
+        Constant::BUSINESS_PAN . '-' . BvsValidationConstants::IDENTIFIER                             => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_VERIFICATION_STATUS],
+        Constant::BANK_ACCOUNT . '-' . BvsValidationConstants::IDENTIFIER                             => [Table::MERCHANT_DETAIL, Entity::BANK_DETAILS_VERIFICATION_STATUS],
+        Constant::CIN . '-' . BvsValidationConstants::IDENTIFIER                                      => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::LLP_DEED . '-' . BvsValidationConstants::IDENTIFIER                                 => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::CIN . '-' . BvsValidationConstants::PROOF                                           => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::LLP_DEED . '-' . BvsValidationConstants::PROOF                                      => [Table::MERCHANT_DETAIL, Entity::CIN_VERIFICATION_STATUS],
+        Constant::GSTIN . '-' . BvsValidationConstants::IDENTIFIER                                    => [Table::MERCHANT_DETAIL, Entity::GSTIN_VERIFICATION_STATUS],
+        Constant::SHOP_ESTABLISHMENT . '-' . BvsValidationConstants::IDENTIFIER                       => [Table::MERCHANT_DETAIL, Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS],
+        Constant::BANK_ACCOUNT . '-' . BvsValidationConstants::PROOF                                  => [Table::MERCHANT_DETAIL, Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS],
+        Constant::PERSONAL_PAN . '-' . BvsValidationConstants::PROOF                                  => [Table::MERCHANT_DETAIL, Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS],
+        Constant::BUSINESS_PAN . '-' . BvsValidationConstants::PROOF                                  => [Table::MERCHANT_DETAIL, Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS],
+        Constant::MSME . '-' . BvsValidationConstants::PROOF                                          => [Table::MERCHANT_DETAIL, Entity::MSME_DOC_VERIFICATION_STATUS],
+        Constant::MSME . '-' . BvsValidationConstants::IDENTIFIER                                     => [Table::MERCHANT_DETAIL, Entity::MSME_DOC_VERIFICATION_STATUS],
+        Constant::SHOP_ESTABLISHMENT . '-' . BvsValidationConstants::PROOF                            => [Table::MERCHANT_VERIFICATION_DETAIL, VerificationConstant::SHOP_ESTABLISHMENT, "doc"],
+        Constant::GSTIN . '-' . BvsValidationConstants::PROOF                                         => [Table::MERCHANT_VERIFICATION_DETAIL, VerificationConstant::GSTIN, "doc"],
+        Constant::PARTNERSHIP_DEED . '-' . BvsValidationConstants::PROOF                              => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::PARTNERSHIP_DEED, "doc"],
+        Constant::PARTNERSHIP_DEED . '-' . BvsValidationConstants::IDENTIFIER                         => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::PARTNERSHIP_DEED, "number"],
+        Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE . '-' . BvsValidationConstants::PROOF        => [Table::MERCHANT_VERIFICATION_DETAIL, Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE, "doc"],
+        Constant::AADHAAR . '-' . BvsValidationConstants::IDENTIFIER                                  => [Table::STAKEHOLDER, StakeholderEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS],
+        Constant::VOTERS_ID . '-' . BvsValidationConstants::IDENTIFIER                                => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::PASSPORT . '-' . BvsValidationConstants::IDENTIFIER                                 => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::VOTERS_ID . '-' . BvsValidationConstants::PROOF                                     => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::PASSPORT . '-' . BvsValidationConstants::PROOF                                      => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
     ];
 
 }

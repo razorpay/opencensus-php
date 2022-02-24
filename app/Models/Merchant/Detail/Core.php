@@ -3556,6 +3556,8 @@ class Core extends Base\Core
                 case BusinessType::PRIVATE_LIMITED:
                 case BusinessType::PUBLIC_LIMITED:
                 case BusinessType::LLP:
+                case BusinessType::TRUST:
+                case BusinessType::SOCIETY:
                     return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
             }
         }
@@ -3665,32 +3667,24 @@ class Core extends Base\Core
 
             $conditions = $this->fetchAutoKycConditionsForNoDoc($merchantDetails);
 
-            $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_FOR_NO_DOC,[
+            $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_FOR_NO_DOC, [
                 'merchant_id'   => $merchantDetails->getId(),
                 'business_type' => $businessType,
             ]);
         }
-        else if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
-        {
-            return false;
-        }
         else
         {
-            $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
-        }
-
-        if ($businessType === BusinessType::PARTNERSHIP and $merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
-        {
-            $isExperimentEnabledForPartnershipBiz = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-                                                                                                  RazorxTreatment::AUTO_KYC_PARTNERSHIP);
-
-            if($isExperimentEnabledForPartnershipBiz === false)
+            if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
             {
                 return false;
             }
+            else
+            {
+                $conditions = AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType];
+            }
         }
 
-        return (new Parser)->parse($conditions, function($key, $condition) use ($merchantDetails) {
+        $autoKycDone = (new Parser)->parse($conditions, function($key, $condition) use ($merchantDetails) {
 
             $entity = $condition[AutoKyc\Constants::ENTITY];
             $in     = $condition[AutoKyc\Constants::IN];
@@ -3705,7 +3699,43 @@ class Core extends Base\Core
                     return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in);
             }
         });
+
+        if ($this->isAutoKycEnabled($merchantDetails) === false)
+        {
+            return false;
+        }
+
+        return $autoKycDone;
     }
+
+    private function isAutoKycEnabled($merchantDetails)
+    {
+        if ($merchantDetails->getBusinessType() === BusinessType::PARTNERSHIP
+            and $merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
+        {
+            $isExperimentEnabledForPartnershipBiz = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                                                                                                  RazorxTreatment::AUTO_KYC_PARTNERSHIP);
+
+            if ($isExperimentEnabledForPartnershipBiz === false)
+            {
+                return false;
+            }
+        }
+
+        if ($merchantDetails->getBusinessType() === BusinessType::TRUST
+            or $merchantDetails->getBusinessType() === BusinessType::SOCIETY)
+        {
+            $isExperimentEnabledForTrustSocietyAutoKyc = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                                                                                                       RazorxTreatment::AUTO_KYC_TRUST_SOCIETY);
+
+            if ($isExperimentEnabledForTrustSocietyAutoKyc === false)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     private function fetchAutoKycConditionsForNoDoc(Entity $merchantDetails)
     {

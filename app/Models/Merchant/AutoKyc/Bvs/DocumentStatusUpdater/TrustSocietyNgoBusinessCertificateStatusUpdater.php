@@ -19,7 +19,7 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
  * @package RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater
  */
 
-class CertificateOfIncorporationStatusUpdater extends VerificationDetailStatusUpdater
+class TrustSocietyNgoBusinessCertificateStatusUpdater extends VerificationDetailStatusUpdater
 {
     protected $entity;
 
@@ -27,10 +27,10 @@ class CertificateOfIncorporationStatusUpdater extends VerificationDetailStatusUp
      * DefaultStatusUpdate constructor.
      *
      * @param MerchantEntity $merchant
-     * @param Detail\Entity  $merchantDetails
-     * @param Entity         $consumedValidation
-     * @param string         $entity
+     * @param Entity $consumedValidation
+     * @param string $entity
      */
+
     public function __construct(MerchantEntity $merchant,
                                 Detail\Entity $merchantDetails,
                                 Entity $consumedValidation,
@@ -42,4 +42,5 @@ class CertificateOfIncorporationStatusUpdater extends VerificationDetailStatusUp
 
         $this->verificaationDetailValidationUnit=MVD\Constants::DOC;
     }
+
 }

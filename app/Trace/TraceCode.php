@@ -17,6 +17,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const COI_EXPERIMENT                                        = 'COI_EXPERIMENT';
 
+    const TRUST_SOCIETY_NGO_EXPERIMENT                          = 'TRUST_SOCIETY_NGO_EXPERIMENT';
+
     const CREDITS_EXPIRE_REQUEST                                = 'CREDITS_EXPIRE_REQUEST';
     /*
      * Payment component error messages

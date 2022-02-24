@@ -148,7 +148,27 @@ class Constants
             ]
         ],
 
-        BusinessType::LLP => [
+        BusinessType::TRUST    => [
+            Operator:: AND => [
+                Entity::POI_VERIFICATION_STATUS             => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS     => self::COMPANY_PAN_CONDITION,
+                Entity::POA_VERIFICATION_STATUS             => self::POA_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS    => self::DEFAULT_CONDITION,
+                'trust_society_ngo_business_certificate|doc'=> self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+            ]
+        ],
+
+        BusinessType::SOCIETY    => [
+            Operator:: AND => [
+                Entity::POI_VERIFICATION_STATUS             => self::POI_CONDITION,
+                Entity::COMPANY_PAN_VERIFICATION_STATUS     => self::COMPANY_PAN_CONDITION,
+                Entity::POA_VERIFICATION_STATUS             => self::POA_CONDITION,
+                Entity::BANK_DETAILS_VERIFICATION_STATUS    => self::DEFAULT_CONDITION,
+                'trust_society_ngo_business_certificate|doc'=> self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+            ]
+        ],
+
+        BusinessType::LLP  => [
             Operator:: AND => [
                 Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
                 Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,

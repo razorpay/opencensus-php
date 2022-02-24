@@ -19,7 +19,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Config\Gstin;
  *
  * @package RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater
  */
-class PartnershipDeedOcrStatusUpdater extends BaseStatusUpdater
+class PartnershipDeedOcrStatusUpdater extends VerificationDetailStatusUpdater
 {
     protected $entity;
 
@@ -36,70 +36,11 @@ class PartnershipDeedOcrStatusUpdater extends BaseStatusUpdater
                                 Entity $consumedValidation,
                                 string $entity=E::MERCHANT_DETAIL)
     {
-        parent::__construct($merchant,$merchantDetails, $consumedValidation);
+        parent::__construct($merchant,$merchantDetails, $consumedValidation,$entity);
 
-        $this->entity = $entity;
+        $this->verificationDetailArtefactType=$this->artefactType;
+
+        $this->verificaationDetailValidationUnit=MVD\Constants::DOC;
     }
 
-    public function updateValidationStatus(): void
-    {
-        $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
-            $this->merchantId,
-            $this->artefactType,
-            $this->validationUnit,
-            Constant::MERCHANT
-        );
-
-        if (empty($validation) === false)
-        {
-            $documentValidationStatus = $this->getDocumentValidationStatus($validation);
-
-            $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
-                $this->merchant->getId(),
-                $this->artefactType,
-                MVD\Constants::DOC
-            );
-
-            $verificationDetail->setAttribute(MVD\Entity::STATUS, $documentValidationStatus);
-
-            $this->repo->merchant_verification_detail->saveOrFail($verificationDetail);
-
-            //
-            // if $documentValidationStatus is null then don't send any metrics
-            //
-            if (empty($documentValidationStatus) === false)
-            {
-                $verificationMetrics = [
-                    Constant::ARTEFACT_TYPE                     => $this->artefactType,
-                    Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $documentValidationStatus
-                ];
-
-                $this->trace->count(Detail\Metric::VALIDATION_STATUS_BY_ARTEFACT_TOTAL, $verificationMetrics);
-            }
-
-            $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS, [
-                'merchant_id'                  => $this->merchantDetails->getId(),
-                'artefact_type'                => $this->artefactType,
-                'document_verification_status' => $documentValidationStatus,
-                'bvs_validation_id'            => $this->consumedValidationId
-            ]);
-        }
-
-        $this->sendConsumedValidationResultEvent();
-    }
-
-    public function updateStatusToPending(): void
-    {
-        $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
-            $this->merchant->getId(),
-            $this->artefactType,
-            MVD\Constants::DOC
-        );
-
-        $verificationDetail->setAttribute(MVD\Entity::STATUS, Constants::PENDING);
-    }
-    public function canUpdateMerchantContext(): bool
-    {
-        return true;
-    }
 }

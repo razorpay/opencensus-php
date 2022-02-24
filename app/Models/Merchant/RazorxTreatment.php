@@ -29,6 +29,12 @@ final class RazorxTreatment
     //Razorx treatment constant, allows system to call bvs for certificate of incorporation verification.
     const AUTO_KYC_COI = "auto_kyc_coi";
 
+    //Razorx treatment constant, allows system to call bvs for trust society ngo business certificate verification.
+    const TRUST_SOCIETY_NGO_BVS_VALIDATION = "trust_society_ngo_bvs_validation";
+
+    //Razorx treatment constant, allows system to call bvs for trust and society autokyc.
+    const AUTO_KYC_TRUST_SOCIETY = "auto_kyc_trust_society";
+
     //Razorx treatment constant, allows system to auto populate gst number from pan.
     const BVS_GET_GST_DETAILS = "bvs_get_gst_details";
 

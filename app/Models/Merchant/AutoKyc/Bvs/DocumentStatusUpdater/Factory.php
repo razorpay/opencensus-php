@@ -96,6 +96,9 @@ class Factory
             case Constant::CERTIFICATE_OF_INCORPORATION:
                 return new CertificateOfIncorporationStatusUpdater($merchant,$merchantDetails, $validation);
 
+            case Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE:
+                return new TrustSocietyNgoBusinessCertificateStatusUpdater($merchant,$merchantDetails, $validation);
+
             case Constant::COMMON:
                 return new NullStatusUpdater($merchant,$merchantDetails, $validation);
 
