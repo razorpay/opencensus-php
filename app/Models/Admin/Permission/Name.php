@@ -906,6 +906,9 @@ class Name
     const RELAY_READ_WRITE_PERMISSION = 'relay_permission_read_write';
 
     const MANAGE_CAMPAIGNHQ_OPERATIONS          = 'manage_campaignhq_operations';
+    const MERCHANT_GET_OAUTH_TOKEN              = 'merchant_get_oauth_token';
+
+
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

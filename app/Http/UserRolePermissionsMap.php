@@ -142,6 +142,7 @@ class UserRolePermissionsMap
                  Permission::COUPON_VALIDATE,
 
                  Permission::ADD_MERCHANT_EMAIL,
+                 Permission::MERCHANT_GET_OAUTH_TOKEN,
              ],
 
              BankingRole::ADMIN => [

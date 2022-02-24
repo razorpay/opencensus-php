@@ -72,6 +72,19 @@ class OAuthTokenTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testGetAllTokensForBankingRoute()
+    {
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $this->setAuthServiceMockDetail(
+            'tokens',
+            'GET',
+            $requestParams);
+
+        $this->startTest();
+    }
+
     public function testRevokeToken()
     {
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();

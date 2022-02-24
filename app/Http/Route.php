@@ -7523,6 +7523,7 @@ class Route
         // Payment Fraud
         'get_fraud_attributes'                              => Permission::GET_FRAUD_ATTRIBUTES,
         'save_payment_fraud'                                => Permission::SAVE_PAYMENT_FRAUD,
+        'oauth_token_fetch_multiple'                        =>Permission::MERCHANT_GET_OAUTH_TOKEN,
     ];
 
     public static $bankingRoutePermissions = [
@@ -7872,6 +7873,7 @@ class Route
         'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,
         'merchant_patch_purpose_code'         => Permission::EDIT_MERCHANT,
         'user_fetch_purpose_code'             => '*',
+        'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
     ];
 
     public static $direct = [
