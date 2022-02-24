@@ -115,6 +115,7 @@ class BankLocation
         [13.046358,80.242001], // RBL Bank Ltd, Sai Kalyani Tower, Accord Business Center Chennai
         [28.569316,77.321705], // RBL Bank Ltd  P7  Sector18 Noida
         [28.472291,77.072436], // RBL Bank Ltd  Ground Floor  Block A Gurgaon
+        [28.472583,77.514336], // RBL Bank Ltd, Shop No. 19,20,21,22,26
         [23.098866,77.503974], // RBL Bank Ltd Plot No 1  Ward No 12 Mandidip
         [15.851802,75.116037], // RBL Bank Ltd, 2677/2512/IB, N C Yaligar Building Munavalli
         [13.624194,79.428681], // RBL Bank Ltd D NO: 231/2  PLOT NO: 87 Tirupati
