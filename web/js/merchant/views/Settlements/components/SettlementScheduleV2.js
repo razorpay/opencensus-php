@@ -34,8 +34,6 @@ const SettlementScheduleV2 = (props) => {
   const showScheduleInfoCommunication = () => {
     // If atleast one schedule name has T we should communicate the info about T
     if (!specialScheduleNames.includes(schedules?.refund?.default.toLowerCase())) return true;
-    if (!specialScheduleNames.includes(schedules?.reversal?.default.toLowerCase())) return true;
-    if (!specialScheduleNames.includes(schedules?.transfer?.default.toLowerCase())) return true;
     return false;
   };
 
@@ -62,19 +60,11 @@ const SettlementScheduleV2 = (props) => {
                 </div>
               </li>
             )}
-            {(schedules?.refund?.default ||
-              schedules?.reversal?.default ||
-              schedules?.transfer?.default) && (
+            {schedules?.refund?.default && (
               <li>
                 Other Settlement cycle
                 {schedules?.refund?.default && (
                   <EntitySchedule entityType="refunds" schedule={schedules.refund.default} />
-                )}
-                {schedules?.reversal?.default && (
-                  <EntitySchedule entityType="reversals" schedule={schedules.reversal.default} />
-                )}
-                {schedules?.transfer?.default && (
-                  <EntitySchedule entityType="transfers" schedule={schedules.transfer.default} />
                 )}
                 {showScheduleInfoCommunication() && (
                   <div className="schedule-info">
