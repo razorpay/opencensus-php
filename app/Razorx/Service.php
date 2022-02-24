@@ -246,6 +246,7 @@ class Service extends Base\Service
             'disable_msme_upload',
             'adharEkyc_for_reg_businessTypes',
             'rx_search_enhancement_phase1',
+            'rx_slack_integration_gtm'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
