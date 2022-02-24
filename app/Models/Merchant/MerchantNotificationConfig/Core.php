@@ -185,8 +185,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::MERCHANT_NOTIFICATION_CONFIG_ENABLE_SUCCESSFUL,
                            [
                                'merchant_notification_config' => $updatedEntity->toArray(),
-                           ]
-        );
+                           ]);
 
         return $updatedEntity;
     }
@@ -209,8 +208,7 @@ class Core extends Base\Core
                 null,
                 [
                     'existing_merchant_notification_config_ids' => $queueableIds,
-                ]
-            );
+                ]);
         }
     }
 
@@ -223,39 +221,103 @@ class Core extends Base\Core
      */
     protected function implodeContactsForDB(array &$input)
     {
-        if (array_key_exists(Entity::NOTIFICATION_EMAILS, $input))
-        {
-            $inputEmailIds    = $input[Entity::NOTIFICATION_EMAILS];
-            $distinctEmailIds = array_unique($inputEmailIds);
+        $this->checkIfInputIsValid($input);
 
-            if (count($distinctEmailIds) !== count($inputEmailIds))
-            {
-                throw new BadRequestValidationFailureException('DUPLICATE_EMAIL_ID',
-                                                               null,
-                                                               [
-                                                                   'input_email_ids' => $inputEmailIds
-                                                               ]
-                );
-            }
+        $this->checkIfThereAreDuplicateContactsInInput($input);
+
+        if (array_key_exists(Entity::NOTIFICATION_EMAILS, $input) === true)
+        {
             $input[Entity::NOTIFICATION_EMAILS] = implode(',', $input[Entity::NOTIFICATION_EMAILS]);
         }
 
-        if (array_key_exists(Entity::NOTIFICATION_MOBILE_NUMBERS, $input))
+        if(array_key_exists(Entity::NOTIFICATION_MOBILE_NUMBERS, $input) === true)
+        {
+            $input[Entity::NOTIFICATION_MOBILE_NUMBERS] = implode(',', $input[Entity::NOTIFICATION_MOBILE_NUMBERS]);
+        }
+    }
+
+    protected function checkIfInputIsValid(array &$input)
+    {
+        // unset any empty string if present in mobile number field
+        $emailIds = [];
+        $mobileNumbers = [];
+
+        if(array_key_exists(Entity::NOTIFICATION_MOBILE_NUMBERS, $input) === true)
+        {
+            foreach($input[Entity::NOTIFICATION_MOBILE_NUMBERS] as $key => $number)
+            {
+                $number = trim($number);
+
+                if(empty($number) === false)
+                {
+                   $mobileNumbers[] = $number;
+                }
+            }
+            $input[Entity::NOTIFICATION_MOBILE_NUMBERS] = $mobileNumbers;
+        }
+
+        //unset any empty string if present in email id field
+        if(array_key_exists(Entity::NOTIFICATION_EMAILS, $input) === true)
+        {
+            foreach($input[Entity::NOTIFICATION_EMAILS] as $key => $emailId)
+            {
+                $emailId = trim($emailId);
+
+                if (empty($emailId === false))
+                {
+                   $emailIds[] = $emailId;
+                }
+            }
+
+            $input[Entity::NOTIFICATION_EMAILS] = $emailIds;
+        }
+
+        if ((empty($input[Entity::NOTIFICATION_MOBILE_NUMBERS]) === true) and
+            (empty($input[Entity::NOTIFICATION_EMAILS]) === true))
+        {
+            throw new BadRequestValidationFailureException('BOTH_EMAIL_AND_MOBILE_FIELDS_CANNOT_BE_EMPTY',
+                                                           null,
+                                                           [
+                                                               'input' => $input
+                                                           ]);
+        }
+    }
+
+    protected function checkIfThereAreDuplicateContactsInInput($input)
+    {
+        if (empty($input[Entity::NOTIFICATION_MOBILE_NUMBERS]) === false)
         {
             $inputMobileNumbers    = $input[Entity::NOTIFICATION_MOBILE_NUMBERS];
             $distinctMobileNumbers = array_unique($inputMobileNumbers);
 
+            // throw a validation error if duplicate numbers are passed.
+            // better than ignoring duplicates, as a correct mobile number may have gotten replaced by a duplicate
             if (count($inputMobileNumbers) !== count($distinctMobileNumbers))
             {
-                throw new BadRequestValidationFailureException('DUPLICATE_MOBILE_NUMBER',
+                throw new BadRequestValidationFailureException('DUPLICATE_CONTACT_DETAILS_FOUND',
                                                                null,
                                                                [
                                                                    'input_mobile_numbers' => $inputMobileNumbers
                                                                ]
                 );
             }
+        }
 
-            $input[Entity::NOTIFICATION_MOBILE_NUMBERS] = implode(',', $input[Entity::NOTIFICATION_MOBILE_NUMBERS]);
+        if (empty($input[Entity::NOTIFICATION_EMAILS]) === false)
+        {
+            $inputEmailIds    = $input[Entity::NOTIFICATION_EMAILS];
+            $distinctEmailIds = array_unique($inputEmailIds);
+
+            // throw a validation error if duplicate email ids are passed.
+            // better than ignoring duplicates, as a correct email id may have gotten replaced by a duplicate
+            if (count($inputEmailIds) !== count($distinctEmailIds))
+            {
+                throw new BadRequestValidationFailureException('DUPLICATE_CONTACT_DETAILS_FOUND',
+                                                               null,
+                                                               [
+                                                                   'input_email_ids' => $inputEmailIds
+                                                               ]);
+            }
         }
     }
 }

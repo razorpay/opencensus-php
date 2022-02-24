@@ -80,6 +80,34 @@ class MerchantNotificationConfigTest extends TestCase
         );
     }
 
+    public function testCreateMerchantNotificationConfigWithNotificationTypeAndWithoutMobileNumbersAsAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $content = &$this->testData[__FUNCTION__]['request']['content'];
+
+        $expectedConfigEntity = [
+            Entity::MERCHANT_ID                 => '10000000000000',
+            Entity::NOTIFICATION_EMAILS         => implode(',', $content[Entity::NOTIFICATION_EMAILS]),
+            Entity::NOTIFICATION_MOBILE_NUMBERS => '',
+            Entity::NOTIFICATION_TYPE           => $content[Entity::NOTIFICATION_TYPE]
+        ];
+
+        $this->assertArraySelectiveEquals(
+            $expectedConfigEntity,
+            $this->getDbLastEntity('merchant_notification_config')->toArray()
+        );
+    }
+
+    public function testCreateMerchantNotificationConfigWithoutMobileAndEmail()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateDuplicateMerchantNotificationConfigWithNotificationTypeAsAdmin()
     {
         $this->testCreateMerchantNotificationConfigWithNotificationTypeAsAdmin();
@@ -135,6 +163,28 @@ class MerchantNotificationConfigTest extends TestCase
         $testData                   = &$this->testData[__FUNCTION__];
         $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
         $this->startTest();
+    }
+
+    public function testUpdateMerchantNotificationConfigWithNoEmailIdsAsAdmin()
+    {
+        $config = $this->testCreateMerchantNotificationConfigAsAdmin();
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/admin/merchants/10000000000000/merchant_notification_configs/' . $config['id'];
+        $this->startTest();
+
+        $content = &$this->testData[__FUNCTION__]['request']['content'];
+
+        $expectedConfigEntity = [
+            Entity::MERCHANT_ID                 => '10000000000000',
+            Entity::NOTIFICATION_EMAILS         => '',
+            Entity::NOTIFICATION_MOBILE_NUMBERS => implode(',', $content[Entity::NOTIFICATION_MOBILE_NUMBERS]),
+        ];
+
+        $this->assertArraySelectiveEquals(
+            $expectedConfigEntity,
+            $this->getDbLastEntity('merchant_notification_config')->toArray()
+        );
     }
 
     public function testUpdateNotificationMobileNumbersForMerchantNotificationConfigAsAdminWithIncorrectMobileNumber()

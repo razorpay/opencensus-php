@@ -5,7 +5,6 @@ namespace RZP\Services\FTS;
 use Mail;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant\MerchantNotificationConfig\NotificationType;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\Event\Entity;
@@ -14,6 +13,8 @@ use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payout\DowntimeNotification;
 use RZP\Models\Payout\Service as PayoutService;
+use RZP\Models\Merchant\MerchantNotificationConfig\NotificationType;
+use RZP\Models\Merchant\MerchantNotificationConfig\Entity as ConfigEntity;
 
 class ChannelNotification
 {
@@ -85,6 +86,18 @@ class ChannelNotification
 
     protected function sendEmail($result, $toEmailIds)
     {
+        if (empty($toEmailIds) === true)
+        {
+            // this means no email ids available for the mid
+            $this->trace->info(TraceCode::FTS_DOWNTIME_NOTIFY_EMAIL_SKIPPED,
+                               [
+                                   ConfigEntity::NOTIFICATION_EMAILS => $toEmailIds
+                               ]);
+            return;
+        }
+
+        $toEmailIds = (is_array($toEmailIds) === true) ? $toEmailIds : explode(',', $toEmailIds);
+
         $template = $this->getTemplate($result, NotificationMode::MODE_EMAIL);
 
         $params = $this->getParams($result);
@@ -156,6 +169,19 @@ class ChannelNotification
 
     protected function processSms($result, $contacts)
     {
+        if(empty($contacts) === true)
+        {
+            // this can only happen if we have no mobile numbers for that mid
+            $this->trace->info(TraceCode::FTS_DOWNTIME_NOTIFY_SMS_SKIPPED,
+                               [
+                                   ConfigEntity::NOTIFICATION_MOBILE_NUMBERS => $contacts
+                               ]);
+
+            return;
+        }
+
+        $contacts = is_array($contacts) === true ? $contacts : explode(',', $contacts);
+
         $template = $this->getTemplate($result, NotificationMode::MODE_SMS);
 
         $params = $this->getParams($result);
@@ -272,9 +298,7 @@ class ChannelNotification
         {
             $this->sendEmail($processedResult, $config->getNotificationEmails());
 
-            $contactList = explode(',', $config->getNotificationMobileNumbers());
-
-            $this->processSms($processedResult, $contactList);
+            $this->processSms($processedResult, $config->getNotificationMobileNumbers());
 
             $this->processWebhook($result, $config->getMerchantId());
         }

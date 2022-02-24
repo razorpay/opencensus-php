@@ -72,6 +72,58 @@ return [
         ],
 
     ],
+
+    'testCreateMerchantNotificationConfigWithNotificationTypeAndWithoutMobileNumbersAsAdmin' => [
+        'request'  => [
+            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
+            'method'  => 'POST',
+            'content' => [
+                'notification_type'           => 'fund_loading_downtime',
+                'notification_emails'         => ['sagnik1@razorpay.com', 'sagnik2@gmail.com'],
+                'notification_mobile_numbers' => [],
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'notification_type'           => 'fund_loading_downtime',
+                'notification_emails'         => ['sagnik1@razorpay.com', 'sagnik2@gmail.com'],
+                'notification_mobile_numbers' => [],
+                'config_status'               => 'enabled',
+            ]
+        ],
+
+    ],
+
+    'testCreateMerchantNotificationConfigWithoutMobileAndEmail' => [
+        'request'   => [
+            'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
+            'method'  => 'POST',
+            'content' => [
+                'notification_type'           => 'fund_loading_downtime',
+                'notification_emails'         => [],
+                'notification_mobile_numbers' => [],
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'BOTH_EMAIL_AND_MOBILE_FIELDS_CANNOT_BE_EMPTY'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateDuplicateMerchantNotificationConfigWithNotificationTypeAsAdmin' => [
         'request'  => [
             'url'     => '/admin/merchants/10000000000000/merchant_notification_configs',
@@ -233,6 +285,28 @@ return [
                 'notification_type'           => 'bene_bank_downtime',
                 'notification_emails'         => ['pullak.barik@razorpay.com', 'pullak10@gmail.com'],
                 'notification_mobile_numbers' => ['9876543012', '9876767121', '8123479788', '7532400000'],
+                'config_status'               => 'enabled',
+            ],
+        ],
+    ],
+
+    'testUpdateMerchantNotificationConfigWithNoEmailIdsAsAdmin' => [
+        'request'  => [
+            'url'     => '/merchant_notification_configs',
+            'method'  => 'PATCH',
+            'content' => [
+                'notification_emails' => [],
+                'notification_mobile_numbers' => ["8145800000"],
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'notification_type'           => 'bene_bank_downtime',
+                'notification_emails'         => [],
+                'notification_mobile_numbers' => ['8145800000'],
                 'config_status'               => 'enabled',
             ],
         ],

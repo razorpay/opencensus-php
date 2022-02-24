@@ -120,12 +120,30 @@ class Entity extends Base\PublicEntity
     // Mutators and Public Setters
     public function setPublicNotificationEmailsAttribute(array &$attributes)
     {
-        $attributes[self::NOTIFICATION_EMAILS] = explode(',', $this->getNotificationEmails());
+        $emails = $this->getNotificationEmails();
+
+        if (empty($emails) === true)
+        {
+            $attributes[self::NOTIFICATION_EMAILS] = [];
+        }
+        else
+        {
+            $attributes[self::NOTIFICATION_EMAILS] = explode(',', $emails);
+        }
     }
 
     public function setPublicNotificationMobileNumbersAttribute(array &$attributes)
     {
-        $attributes[self::NOTIFICATION_MOBILE_NUMBERS] = explode(',', $this->getNotificationMobileNumbers());
+        $numbers = $this->getNotificationMobileNumbers();
+
+        if (empty($numbers) === true)
+        {
+            $attributes[self::NOTIFICATION_MOBILE_NUMBERS] = [];
+        }
+        else
+        {
+            $attributes[self::NOTIFICATION_MOBILE_NUMBERS] = explode(',', $numbers);
+        }
     }
     // End of Mutators and Public Setters
 }
