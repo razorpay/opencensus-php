@@ -944,6 +944,8 @@ trait Refund
      * Process refund on a payment that has Marketplace transfers
      *
      * @param array $input
+     *
+     * @throws \Exception
      */
     public function processRefundWithTransfers(array $input)
     {
@@ -957,11 +959,13 @@ trait Refund
 
         try
         {
-            $this->repo->transaction(function() use ($input)
+            $refunds = $this->repo->transaction(function() use ($input)
             {
-                $this->processReversals($input['reversals']);
+                $refunds = $this->processReversals($input['reversals']);
 
                 unset($input['reversals']);
+
+                return $refunds;
             });
 
             (new TransferMetric)->pushReversalSuccessMetrics();
@@ -971,6 +975,23 @@ trait Refund
             (new TransferMetric)->pushReversalFailedMetrics($e);
 
             throw $e;
+        }
+
+        try
+        {
+            // Dispatch refunds to scrooge
+            foreach ($refunds as $refund)
+            {
+                $this->callRefundFunctionOnScrooge($refund);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
+            );
         }
     }
 
@@ -2161,17 +2182,7 @@ trait Refund
                 $this->updatePaymentRefunded();
             });
 
-            $gateway = $this->refund->getGateway();
-
-            // TODO: Remove for Scrooge
-            if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
-            {
-                $this->callRefundFunctionOnScrooge($this->refund, $data);
-            }
-            else
-            {
-                $this->callRefundFunctionOnApi($this->refund, $payment, $data);
-            }
+            $this->callRefundFunctionOnScrooge($this->refund, $data);
 
             // send notification to merchant/customer, this is outside transaction
             // as we don't want to reverse the actions if mail sending fails
@@ -2220,30 +2231,6 @@ trait Refund
                 $data
             );
         }
-    }
-
-    protected function callRefundFunctionOnApi($refund, $payment, $data)
-    {
-        $refunded = $this->callRefundFunction($refund, $payment, $data);
-
-        // In some cases we get gateway response in a file the next day
-        if (Payment\Gateway::isSequenceNoBasedRefund($payment) === false)
-        {
-            $this->refund->setGatewayRefunded($refunded[Payment\Gateway::SUCCESS]);
-        }
-
-        $this->refund->incrementAttempts();
-
-        if ($refund->isProcessed() === true)
-        {
-            $this->setRefundReference1($refunded);
-        }
-
-        $this->setRefundReference3IfApplicable($payment);
-
-        // We don't want the transaction to fail if this
-        // save fails that's why keeping it outside.
-        $this->repo->saveOrFail($this->refund);
     }
 
     protected function callRefundFunction($refund, $payment, $data, $retry = false)
@@ -2708,7 +2695,7 @@ trait Refund
         // Slack thread for reference:
         // https://razorpay.slack.com/archives/CA66F3ACS/p1584100168218900?thread_ts=1584090894.210900&cid=CA66F3ACS
         //
-        if ($payment->getTerminalId() !== 'B2K2t8JD9z98vh')
+        if (($payment->getTerminalId() !== 'B2K2t8JD9z98vh') and (is_null($payment->terminal) === false))
         {
             $gatewayAcquirer = $payment->terminal->getGatewayAcquirer() ?? $payment->getGateway();
         }
@@ -3381,7 +3368,6 @@ trait Refund
         return (($refund->isRefundRequestedSpeedInstant() === true) and
                 ($payment->hasBeenCaptured() === true) and
                 ($payment->isDCC() === false) and
-                (in_array($payment->getGateway(), Payment\Gateway::$scroogeGateways, true) === true) and
                 ((in_array($payment->getMethod(), [
                     Payment\Method::CARD,
                     Payment\Method::UPI,

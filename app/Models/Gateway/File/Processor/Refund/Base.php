@@ -465,8 +465,7 @@ class Base extends BaseProcessor
      */
     protected function shouldRefundsBeFetchedFromScrooge()
     {
-        if ((Payment\Gateway::isScroogeGatewayAndMerchant(static::GATEWAY) === true) and
-            (in_array(static::GATEWAY, array_keys(Payment\Gateway::$scroogeFileBasedRefundGatewaysWithTimestamps), true) === true))
+        if (in_array(static::GATEWAY, array_keys(Payment\Gateway::$scroogeFileBasedRefundGatewaysWithTimestamps), true) === true)
         {
             $begin = $this->gatewayFile->getBegin();
             $end   = $this->gatewayFile->getEnd();

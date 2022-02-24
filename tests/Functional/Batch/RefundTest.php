@@ -234,7 +234,11 @@ class RefundTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund', $entries);
 
-        $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
+        $this->capturePayment($entries[0]['Payment Id'], 50000);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $this->gateway = $payment['gateway'];
 
         $refund = $this->refundPayment($entries[0]['Payment Id'], 4000);
 

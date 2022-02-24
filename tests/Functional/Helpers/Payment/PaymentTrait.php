@@ -126,6 +126,10 @@ trait PaymentTrait
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->gateway = $payment['gateway'];
+
         $refund = $this->refundPayment($payment['id'], $refundAmount);
 
         return $refund;
@@ -982,11 +986,7 @@ trait PaymentTrait
 
         $refund = $this->makeRequestAndGetContent($request);
 
-        // TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
-        {
-            $this->scroogeRefund($refund, $data);
-        }
+        $this->scroogeRefund($refund, $data);
 
         return $refund;
     }
@@ -1045,11 +1045,7 @@ trait PaymentTrait
             $this->assertEquals($amount, $refund['amount']);
         }
 
-        //TODO: remove merchant id check
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
-        {
-            $this->scroogeRefund($refund, $data);
-        }
+        $this->scroogeRefund($refund, $data);
 
         return $refund;
     }
@@ -1057,6 +1053,14 @@ trait PaymentTrait
     protected function scroogeRefund(array $refund, array $data = [])
     {
         $input = $this->getDefaultScroogeInputArray();
+
+        // sets gateway in the context if missing
+        if (empty($this->gateway) === true)
+        {
+            $payment = $this->getEntityById('payment', $refund['payment_id'], true);
+
+            $this->gateway = $payment['gateway'] ?? null;
+        }
 
         $input['gateway'] = $this->gateway;
         //
@@ -1290,19 +1294,16 @@ trait PaymentTrait
 
         $gateway = $gateway ?? $this->gateway;
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($gateway) === true)
+        $response['id'] = $response['refund_id'];
+        $response['payment_id'] = $paymentId;
+        $response['attempts'] = 1;
+
+        if (isset($data['amount']) === true)
         {
-            $response['id'] = $response['refund_id'];
-            $response['payment_id'] = $paymentId;
-            $response['attempts'] = 1;
-
-            if (isset($data['amount']) === true)
-            {
-                $response['amount'] = $data['amount'];
-            }
-
-            $this->scroogeRefund($response, $content);
+            $response['amount'] = $data['amount'];
         }
+
+        $this->scroogeRefund($response, $content);
 
         return $response;
     }
@@ -1340,10 +1341,7 @@ trait PaymentTrait
             return $refund;
         }
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
-        {
-            $this->scroogeRefund($refund);
-        }
+        $this->scroogeRefund($refund);
 
         return $refund;
     }
@@ -1400,10 +1398,7 @@ trait PaymentTrait
             return $data;
         }
 
-        if (Payment\Gateway::isScroogeGatewayAndMerchant($this->gateway) === true)
-        {
-            $this->scroogeRefund($this->getLastEntity('refund'));
-        }
+        $this->scroogeRefund($this->getLastEntity('refund'));
 
         return $data;
     }

@@ -21,11 +21,13 @@ trait Reversal
      * Fetches and refunds the transfer payment and
      * create a reversal for the transfer
      *
-     * @param Transfer\Entity  $transfer
-     * @param array            $input
-     * @param Merchant\Entity  $initiator Route Merchant / Linked Account initiating the reversal
+     * @param Transfer\Entity $transfer
+     * @param array $input
+     * @param Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
      *
-     * @return ReversalEntity
+     * @return array Containing reversal and refund entity in indexes 0 and 1 respectively
+     * @throws Exception\BadRequestException
+     * @throws Exception\LogicException
      */
     public function refundPaymentAndReverseTransfer(
         Transfer\Entity $transfer,
@@ -139,10 +141,14 @@ trait Reversal
     /**
      * Process reversal of transfers send in the `reversals` attribute
      *
-     * @param  array  $reversals
+     * @param array $reversals
+     *
+     * @return array of refunds created of corresponding reversals
      */
     protected function processReversals(array $reversals)
     {
+        $refunds = [];
+
         foreach ($reversals as $reversal)
         {
             if ($reversal['transfer'] instanceof Transfer\Entity)
@@ -163,7 +169,7 @@ trait Reversal
 
             unset($reversal['transfer']);
 
-            $this->mutex->acquireAndRelease(
+            $refund = $this->mutex->acquireAndRelease(
                 $transfer->getId(),
                 function() use ($transfer, $reversal)
                 {
@@ -182,9 +188,17 @@ trait Reversal
                         );
                     }
 
-                    $this->refundPaymentAndReverseTransfer($transfer, $reversal);
+                    $result = $this->refundPaymentAndReverseTransfer($transfer, $reversal);
+
+                    // result has reversal and refund entity in indexes 0 and 1 respectively
+                    // returning refund entity
+                    return $result[1] ?? null;
                 });
+
+            array_push($refunds , $refund);
         }
+
+        return $refunds;
     }
 
     /**

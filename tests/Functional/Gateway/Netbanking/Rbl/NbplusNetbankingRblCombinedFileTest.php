@@ -53,6 +53,10 @@ class NbplusNetbankingRblCombinedFileTest extends StaticCallbackNbplusGatewayTes
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
+        $paymentEntity1 =  $this->getLastEntity('payment', true);
+
+        $this->gateway = $paymentEntity1['gateway'];
+
         $this->refundPayment($transaction1['entity_id']);
 
         $paymentEntity1 = $this->getDbLastPayment();
@@ -66,6 +70,10 @@ class NbplusNetbankingRblCombinedFileTest extends StaticCallbackNbplusGatewayTes
         $this->fixtures->edit('transaction', $transaction2['id'], [
             'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
+
+        $paymentEntity2 = $this->getLastEntity('payment', true);
+
+        $this->gateway = $paymentEntity2['gateway'];
 
         $this->refundPayment($transaction2['entity_id'], 500);
 

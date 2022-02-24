@@ -595,13 +595,6 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
-
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
-        $this->assertNotNull($refund['processed_at']);
-        $this->assertEquals(1, $refund['attempts']);
-
-        $this->assertEquals($attempt['utr'], $refund['reference1']);
     }
 
     public function testBankTransferRefundYesbank()
@@ -627,12 +620,6 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
-
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
-        $this->assertNotNull($refund['processed_at']);
-        $this->assertEquals(1, $refund['attempts']);
-        $this->assertNotNull($attempt['utr']);
     }
 
     public function testBankTransferRefundYesbankTpvPayment()
@@ -920,13 +907,27 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        // IMPS refunds are permitted...
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
 
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $accountNumber,
+                    'beneficiary_name' => $this->bankAccount['name'],
+                    'ifsc_code'        => $this->bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
+
+        // IMPS refunds are permitted...
         // ...but they don't actually work
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Payment is refunded
@@ -984,13 +985,27 @@ class BankTransferTest extends TestCase
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
 
-        // IMPS refunds are permitted...
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
 
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $accountNumber,
+                    'beneficiary_name' => $this->bankAccount['name'],
+                    'ifsc_code'        => $this->bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
+
+        // IMPS refunds are permitted...
         // ...but they don't actually work
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Payment is refunded
@@ -1017,7 +1032,7 @@ class BankTransferTest extends TestCase
         // because payer bank acc now has an IFSC
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
 
         // IFSC updated for payer bank account
         $bankAccount = $this->getDbLastEntity('bank_account');
@@ -1066,7 +1081,21 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
+
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $accountNumber,
+                    'beneficiary_name' => $this->bankAccount['name'],
+                    'ifsc_code'        => $this->bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -1077,7 +1106,7 @@ class BankTransferTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Transaction is created for refund
@@ -1172,7 +1201,21 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
+
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $accountNumber,
+                    'beneficiary_name' => $this->bankAccount['name'],
+                    'ifsc_code'        => $this->bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -1183,7 +1226,7 @@ class BankTransferTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Transaction is created for refund
@@ -2038,7 +2081,22 @@ class BankTransferTest extends TestCase
 
         $this->processBankTransfer($accountNumber, $ifsc);
         $payment =  $this->getLastEntity('payment', true);
-        $this->refundPayment($payment['id'], 4000000);
+
+        $this->gateway = $payment['gateway'];
+
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $accountNumber,
+                    'beneficiary_name' => $this->bankAccount['name'],
+                    'ifsc_code'        => $this->bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
             $channel, Attempt\Purpose::REFUND, 0, Attempt\Type::REFUND);
@@ -2062,12 +2120,6 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
-
-        $refund = $this->getLastEntity('refund', true);
-        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
-        $this->assertNotNull($refund['processed_at']);
-        $this->assertEquals(1, $refund['attempts']);
-        $this->assertEquals($attempt['utr'], $refund['reference1']);
     }
 
     public function testBankTransferInsert()
@@ -2099,7 +2151,21 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
+
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $bankAccount['account_number'],
+                    'beneficiary_name' => $bankAccount['name'],
+                    'ifsc_code'        => $bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -2110,7 +2176,7 @@ class BankTransferTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Transaction is created for refund
@@ -4560,7 +4626,21 @@ class BankTransferTest extends TestCase
 
         $payment =  $this->getLastEntity('payment', true);
 
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
+
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $bankAccount['account_number'],
+                    'beneficiary_name' => $bankAccount['name'],
+                    'ifsc_code'        => $bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -4571,7 +4651,7 @@ class BankTransferTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Transaction is created for refund
@@ -4670,7 +4750,21 @@ class BankTransferTest extends TestCase
         // Enable foreign key checks
         DB::statement("SET foreign_key_checks = 1");
 
-        $this->refundPayment($payment['id'], 4000000);
+        $this->gateway = $payment['gateway'];
+
+        // For scrooge flow tests
+        $ftaData = [
+            'is_fta'   => true,
+            'fta_data' => [
+                'bank_account' => [
+                    'account_number'   => $accountNumber,
+                    'beneficiary_name' => $this->bankAccount['name'],
+                    'ifsc_code'        => $this->bankAccount['ifsc'],
+                ]
+            ]
+        ];
+
+        $this->refundPayment($payment['id'], 4000000, $ftaData);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
@@ -4681,7 +4775,7 @@ class BankTransferTest extends TestCase
         // Refund is created
         $refund = $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
 
         // Transaction is created for refund

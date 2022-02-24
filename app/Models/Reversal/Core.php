@@ -56,20 +56,21 @@ class Core extends Base\Core
      * Create a reversal for a Marketplace refund,
      * and a transaction that updates the Marketplace balance
      *
-     * @param  Transfer\Entity $transfer
-     * @param  Merchant\Entity $merchant
-     * @param  Refund\Entity   $refund
-     * @param array            $input
-     * @param Merchant\Entity  $initiator Route Merchant / Linked Account initiating the reversal
+     * @param Transfer\Entity $transfer
+     * @param Merchant\Entity $merchant
+     * @param Refund\Entity $refund
+     * @param array $input
+     * @param Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
      *
-     * @return Entity
+     * @return array
+     * @throws Exception\LogicException
      */
     public function createForMarketplaceRefund(
         Transfer\Entity $transfer,
         Merchant\Entity $merchant,
         Refund\Entity $refund,
         array $input,
-        Merchant\Entity $initiator = null): Entity
+        Merchant\Entity $initiator = null)
     {
         $this->trace->info(
             TraceCode::TRANSFER_REVERSAL_REQUEST,
@@ -108,7 +109,7 @@ class Core extends Base\Core
 
         $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
 
-        return $reversal;
+        return array($reversal, $refund);
     }
 
     /**
@@ -150,10 +151,13 @@ class Core extends Base\Core
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                $reversal = $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
+                return $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
                 {
-                    $reversal = (new Payment\Processor\Processor($merchant))
+                    $result = (new Payment\Processor\Processor($merchant))
                                     ->refundPaymentAndReverseTransfer($transfer, $input, $initiator);
+
+                    // result has reversal and refund entity in indexes 0 and 1 respectively
+                    $reversal = $result[0] ?? null;
 
                     $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
 
@@ -163,8 +167,6 @@ class Core extends Base\Core
 
                     return $reversal;
                 });
-
-                return $reversal;
             });
     }
 

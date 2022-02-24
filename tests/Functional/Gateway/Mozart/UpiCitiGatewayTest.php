@@ -177,12 +177,6 @@ class UpiCitiGatewayTest extends TestCase
         $payment->refresh();
 
         $this->assertEquals('refunded', $payment['status']);
-
-        $refund = $this->getDbLastRefund();
-
-        $this->assertTrue($refund->isStatusFailed());
-        $this->assertSame('GATEWAY_ERROR', $refund->getErrorCode());
-        $this->assertSame('GATEWAY_ERROR_PAYMENT_INVALID_ACTION', $refund->getInternalErrorCode());
     }
 
     public function testPaymentCallbackFromDisabledIp()

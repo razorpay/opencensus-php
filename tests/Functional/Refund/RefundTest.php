@@ -773,6 +773,8 @@ class RefundTest extends TestCase
         $this->refundPayment($payment['id'], '12000');
         $this->refundPayment($payment['id'], '8000');
 
+        $this->ba->privateAuth();
+
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['id'];
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
@@ -861,6 +863,8 @@ class RefundTest extends TestCase
         $this->refundPayment($payment['id'], 10000);
         $this->refundPayment($payment['id'], 20000);
 
+        $this->ba->privateAuth();
+
         $this->startTest($payment['id'], 30000);
     }
 
@@ -869,7 +873,9 @@ class RefundTest extends TestCase
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
+
+        $this->ba->privateAuth();
 
         $this->startTest($payment['id'], 100);
     }
@@ -941,6 +947,8 @@ class RefundTest extends TestCase
             ]);
 
         $this->assertNotNull($refund['id']);
+
+        $this->ba->privateAuth();
 
         $this->startTest($this->payment['public_id']); // attempt remaining amount less than INR 1
     }

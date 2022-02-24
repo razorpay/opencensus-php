@@ -1241,120 +1241,6 @@ class Gateway
         Gateway::ENACH_RBL,
     ];
 
-    /**
-     * Need to ensure that only those gateways which have
-     * verify implemented, are added in this array.
-     * This is only until the flow is complete from Scrooge.
-     * In the starting, we will only implement for APIs.
-     *
-     * TODO: reversal, emandate, bank transfer, netbanking etc type of gateways are not supported yet.
-     *
-     * @var array
-     */
-    public static $scroogeGateways = [
-        Payment\Gateway::AMEX,
-        Payment\Gateway::SHARP,
-        Payment\Gateway::HDFC,
-        Payment\Gateway::AXIS_MIGS,
-        Payment\Gateway::FIRST_DATA,
-        Payment\Gateway::CARD_FSS,
-        Payment\Gateway::CYBERSOURCE,
-        Payment\Gateway::UPI_ICICI,
-        Payment\Gateway::UPI_MINDGATE,
-        Payment\Gateway::HITACHI,
-        Payment\Gateway::WALLET_OLAMONEY,
-        Payment\Gateway::WALLET_JIOMONEY,
-        Payment\Gateway::UPI_AXIS,
-        Payment\Gateway::WALLET_PHONEPE,
-        Payment\Gateway::ATOM,
-        Payment\Gateway::UPI_AIRTEL,
-        Payment\Gateway::CARDLESS_EMI,
-        Payment\Gateway::WALLET_FREECHARGE,
-        Payment\Gateway::WALLET_AIRTELMONEY,
-        Payment\Gateway::WALLET_PAYZAPP,
-        Payment\Gateway::WALLET_PAYPAL,
-        Payment\Gateway::NETBANKING_SCB,
-        Payment\Gateway::WALLET_AMAZONPAY,
-        Payment\Gateway::WALLET_OPENWALLET,
-        Payment\Gateway::NETBANKING_VIJAYA,
-        Payment\Gateway::NETBANKING_OBC,
-        Payment\Gateway::NETBANKING_CANARA,
-        Payment\Gateway::NETBANKING_CORPORATION,
-        Payment\Gateway::NETBANKING_RBL,
-        Payment\Gateway::NETBANKING_CUB,
-        Payment\Gateway::NETBANKING_SIB,
-        Payment\Gateway::NETBANKING_ALLAHABAD,
-        Payment\Gateway::NETBANKING_BOB,
-        Payment\Gateway::NETBANKING_FEDERAL,
-        Payment\Gateway::NETBANKING_YESB,
-        Payment\Gateway::NETBANKING_INDUSIND,
-        Payment\Gateway::NETBANKING_CBI,
-        Payment\Gateway::NETBANKING_KVB,
-        Payment\Gateway::NETBANKING_IDFC,
-        Payment\Gateway::NETBANKING_ICICI,
-        Payment\Gateway::NETBANKING_AXIS,
-        Payment\Gateway::NETBANKING_EQUITAS,
-        Payment\Gateway::NETBANKING_IBK,
-        Payment\Gateway::NETBANKING_CSB,
-        Payment\Gateway::NETBANKING_SVC,
-        Payment\Gateway::NETBANKING_IDBI,
-        Payment\Gateway::NETBANKING_DCB,
-        Payment\Gateway::UPI_SBI,
-        Payment\Gateway::NETBANKING_HDFC,
-        Payment\Gateway::PAYSECURE,
-        Payment\Gateway::NETBANKING_KOTAK,
-        Payment\Gateway::NETBANKING_AUSF,
-        Payment\Gateway::NETBANKING_BDBL,
-        Payment\Gateway::NETBANKING_UCO,
-        Payment\Gateway::EBS,
-        Payment\Gateway::PAYTM,
-        Payment\Gateway::MPGS,
-        Payment\Gateway::MOBIKWIK,
-        Payment\Gateway::NETBANKING_AIRTEL,
-        Payment\Gateway::WALLET_MPESA,
-        Payment\Gateway::WALLET_PHONEPESWITCH,
-        Payment\Gateway::ISG,
-        Payment\Gateway::BILLDESK,
-        Payment\Gateway::BT_YESBANK,
-        Payment\Gateway::BT_KOTAK,
-        Payment\Gateway::BT_ICICI,
-        Payment\Gateway::BT_RBL,
-        Payment\Gateway::BT_RBL_JSW,
-        Payment\Gateway::NETBANKING_SBI,
-        Payment\Gateway::BT_HDFC_ECMS,
-        Payment\Gateway::NETBANKING_JSB,
-        Payment\Gateway::CRED,
-        Payment\Gateway::ENACH_RBL,
-        Payment\Gateway::NACH_CITI,
-        Payment\Gateway::NACH_ICICI,
-        Payment\Gateway::ENACH_NPCI_NETBANKING,
-        Payment\Gateway::PAYLATER,
-        Payment\Gateway::PAYLATER_ICICI,
-        Payment\Gateway::UPI_JUSPAY,
-        Payment\Gateway::NETBANKING_IOB,
-        Payment\Gateway::NETBANKING_FSB,
-        Payment\Gateway::NETBANKING_JKB,
-        Payment\Gateway::HDFC_DEBIT_EMI,
-        Payment\Gateway::CASHFREE,
-        Payment\Gateway::NETBANKING_UBI,
-        Payment\Gateway::PAYU,
-        Payment\Gateway::NETBANKING_PNB,
-        Payment\Gateway::NETBANKING_AUSF,
-        Payment\Gateway::UPI_YESBANK,
-        Payment\Gateway::NETBANKING_DLB,
-        Payment\Gateway::NETBANKING_TMB,
-        Payment\Gateway::CCAVENUE,
-        Payment\Gateway::NETBANKING_NSDL,
-        Payment\Gateway::BAJAJFINSERV,
-        Payment\Gateway::FULCRUM,
-        Payment\Gateway::TWID,
-        Payment\Gateway::CHECKOUT_DOT_COM,
-        Payment\Gateway::ZAAKPAY,
-        Payment\Gateway::PINELABS,
-        Payment\Gateway::EMERCHANTPAY,
-        Payment\Gateway::INGENICO,
-    ];
-
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
         Payment\Gateway::NETBANKING_VIJAYA      => 1575484200,
         Payment\Gateway::NETBANKING_OBC         => 1575484200,
@@ -1620,9 +1506,6 @@ class Gateway
         self::NACH_ICICI,
     ];
 
-    /**
-     * Every gateway in this list must also be a part of $scroogeGateways [that is onboarded in Scrooge] - since FTAs are initiated via Scrooge.
-     */
     const UPI_TRANSFER_REFUND_GATEWAYS = [
        self::UPI_MINDGATE,
        self::UPI_ICICI,
@@ -3279,11 +3162,6 @@ class Gateway
         return in_array($gateway, self::$upiIntentGateways, true);
     }
 
-    public static function getScroogeGateways(): array
-    {
-        return self::$scroogeGateways;
-    }
-
     public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
     {
         $pinAuthGateways = self::$gatewayAcquirerIfscMapping;
@@ -3310,20 +3188,6 @@ class Gateway
     public static function isNetbankingS2SRedirectGateway($gateway)
     {
         return in_array($gateway, self::$netbankingS2SRedirectGateways, true);
-    }
-
-    /**
-     * This function checks if given gateway is eligible for scrooge call.
-     * Merchant id is not being used currently, but keeping the support of enabling specific merchants only.
-     *
-     * @param $gateway
-     * @param $merchantId
-     * @return bool
-     *
-     */
-    public static function isScroogeGatewayAndMerchant(string $gateway = null, string $merchantId = null): bool
-    {
-        return (in_array($gateway, self::getScroogeGateways(), true) === true);
     }
 
     /**

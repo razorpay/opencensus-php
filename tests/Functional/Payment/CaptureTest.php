@@ -885,7 +885,9 @@ class CaptureTest extends TestCase
 
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
+
+        $this->ba->privateAuth();
 
         $this->payment = $payment;
 

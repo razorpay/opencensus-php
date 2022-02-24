@@ -1760,7 +1760,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
 
         $refund =  $this->getLastEntity('refund', true);
-        $this->assertEquals('initiated', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals($payment['id'], $refund['payment_id']);
 
         // Make a payment with right order amount

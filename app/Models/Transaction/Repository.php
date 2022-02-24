@@ -2529,54 +2529,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * Was used for data backfill activity.
-     * Check updateSettlementStatus() in Models\Transfer\Service.php for more.
-     *
-     * @param string $reversalId
-     * @param string $merchantId
-     * @return mixed
-     */
-//    public function getSettlementIdForReversal(string $reversalId, string $merchantId)
-//    {
-//        $refundIdColumn = $this->repo->refund->dbColumn(Refund\Entity::ID);
-//        $reversalIdColumn = $this->repo->refund->dbColumn(Refund\Entity::REVERSAL_ID);
-//
-//        $entityIdColumn = $this->repo->transaction->dbColumn(Entity::ENTITY_ID);
-//        $typeColumn = $this->repo->transaction->dbColumn(Entity::TYPE);
-//        $merchantIdColumn = $this->repo->transaction->dbColumn(Entity::MERCHANT_ID);
-//        $settlementIdColumn = $this->repo->transaction->dbColumn(Entity::SETTLEMENT_ID);
-//
-//        return $this->newQuery()
-//                    ->join(Table::REFUND, $entityIdColumn, $refundIdColumn)
-//                    ->select($settlementIdColumn)
-//                    ->where($typeColumn, 'refund')
-//                    ->where($merchantIdColumn, $merchantId)
-//                    ->where($reversalIdColumn, $reversalId)
-//                    ->pluck($settlementIdColumn)
-//                    ->pop();
-//    }
-
-    public function getSettlementIdForReversal(string $reversalId, string $merchantId)
-    {
-        $refundIdColumn = $this->repo->refund->dbColumn(Refund\Entity::ID);
-        $reversalIdColumn = $this->repo->refund->dbColumn(Refund\Entity::REVERSAL_ID);
-
-        $entityIdColumn = $this->repo->transaction->dbColumn(Entity::ENTITY_ID);
-        $typeColumn = $this->repo->transaction->dbColumn(Entity::TYPE);
-        $merchantIdColumn = $this->repo->transaction->dbColumn(Entity::MERCHANT_ID);
-        $settlementIdColumn = $this->repo->transaction->dbColumn(Entity::SETTLEMENT_ID);
-
-        return $this->newQuery()
-                    ->join(Table::REFUND, $entityIdColumn, $refundIdColumn)
-                    ->select($settlementIdColumn)
-                    ->where($typeColumn, 'refund')
-                    ->where($merchantIdColumn, $merchantId)
-                    ->where($reversalIdColumn, $reversalId)
-                    ->pluck($settlementIdColumn)
-                    ->pop();
-    }
-
     public function fetchFirstTransactionDetails(
         string $merchantId): array
     {
