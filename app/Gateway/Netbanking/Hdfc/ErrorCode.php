@@ -32,6 +32,8 @@ class ErrorCode
     const UNABLE_TO_CARRY_INSTRUCTION           = 'We are unable to carry out your instruction. Please contact the bank.';
     const ACCOUNT_NOT_ACTIVATED                 = 'Your account has not been activated for NetBanking. Please contact the Bank.';
     const DUPLICATE_TRANSACTION                 = 'Sorry, this is a duplicate transaction. A transaction with the same details has already been processed.';
+    const NOT_SUFFICIENT_BALANCE                = 'Hey! We regret to inform you that you do not have a sufficient balance in your account to complete this transaction.';
+
 
     protected static $errorMap = [
         self::TRANSFER_TERMINATED_BY_USER         => Error\ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
@@ -64,6 +66,7 @@ class ErrorCode
         self::UNABLE_TO_CARRY_INSTRUCTION         => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         self::ACCOUNT_NOT_ACTIVATED               => Error\ErrorCode::BAD_REQUEST_NETBANKING_USER_NOT_REGISTERED,
         self::DUPLICATE_TRANSACTION               => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
+        self::NOT_SUFFICIENT_BALANCE              => Error\ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
     ];
 
     public static function getApiErrorCode(string $error): string
