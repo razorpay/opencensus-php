@@ -131,7 +131,7 @@ class App extends Component {
   };
 
   // nosemgrep
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const user = window.rzp_user;
 
     // Init lumberjack
@@ -447,7 +447,7 @@ class App extends Component {
     }
   }
 
-  componentWillReceiveProps({ user, history, location, baseLocation, org }) {
+  UNSAFE_componentWillReceiveProps({ user, history, location, baseLocation, org }) {
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);

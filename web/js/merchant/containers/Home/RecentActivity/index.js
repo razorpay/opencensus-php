@@ -109,11 +109,11 @@ class RecentActivity extends Component {
     });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData(DEFAULT_PARAMS);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.windowWidth !== nextProps.windowWidth) {
       this.handleResize(nextProps);
     }

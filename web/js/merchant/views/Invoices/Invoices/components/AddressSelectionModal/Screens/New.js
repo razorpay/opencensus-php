@@ -110,7 +110,7 @@ export default class New extends Component {
     });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (!this.props.isInttCurrenciesEnabled) {
       let promises = [this.props.fetchStates()];
       this.setState({

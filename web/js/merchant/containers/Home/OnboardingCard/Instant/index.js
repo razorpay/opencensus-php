@@ -94,7 +94,7 @@ export default class OnboardingCardInstant extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.content && nextProps.windowWidth !== this.props.windowWidth) {
       this.setContentWidth(this.content.innerWidth);
     }

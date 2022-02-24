@@ -13,7 +13,7 @@ class Highcharts extends Component {
     );
   }
 
-  componentWillReceiveProps({ options }) {
+  UNSAFE_componentWillReceiveProps({ options }) {
     if (this.chart) {
       this.chart.update(options);
     }

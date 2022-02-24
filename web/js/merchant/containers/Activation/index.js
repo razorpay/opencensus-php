@@ -265,7 +265,7 @@ export default class ActivationContainer extends Component {
     }
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchActivationDetails(this.props.accountId);
   }
 

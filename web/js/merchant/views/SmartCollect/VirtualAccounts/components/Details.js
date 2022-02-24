@@ -43,7 +43,7 @@ export default class extends React.Component {
     isEditSingleVaMid: false,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // check edit_single_va_expiry MID feature
     this.props
       .fetchFeatureStatus(this.props.user.id, 'edit_single_va_expiry')

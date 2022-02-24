@@ -77,7 +77,7 @@ class PaymentSettings extends Component {
     this.props.fetchLateAuthConfig();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.lateAuthConfig.error) {
       this.props.showNotification({
         type: 'error',

@@ -54,7 +54,7 @@ class TransferNew extends Component {
     selectedAccount: null,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
     }
@@ -62,7 +62,7 @@ class TransferNew extends Component {
     this.props.fetchAccounts({});
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.onHold !== 'on_hold_until' && nextProps.holdUntil) {
       this.props.change('holdUntil', null);
     }

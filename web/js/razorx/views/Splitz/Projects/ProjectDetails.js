@@ -20,7 +20,7 @@ export default class ProjectDetails extends React.Component {
     this.fetch(this.props.projectId);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.projectId !== nextProps.projectId) {
       this.fetch(nextProps.projectId);
     }

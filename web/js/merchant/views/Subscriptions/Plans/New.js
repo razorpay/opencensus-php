@@ -70,7 +70,7 @@ export default class NewPlan extends Component {
 
   state = {};
   cloneOptions = { clone: '0' };
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
     }

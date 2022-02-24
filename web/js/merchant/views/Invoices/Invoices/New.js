@@ -306,7 +306,7 @@ export default class InvoicesNewContainer extends Component {
     }
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     const curSearchQuery = getURLQueryParams(this.props.location.search);
     const nextSearchQuery = getURLQueryParams(nextProps.location.search);
 
@@ -315,7 +315,7 @@ export default class InvoicesNewContainer extends Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.initInvoicePage();
   }
 
@@ -417,7 +417,7 @@ export default class InvoicesNewContainer extends Component {
     this.handleWindowClose();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const invoiceId = this.props.match.params.id;
     const nextInvoiceId = nextProps.match.params.id;
 

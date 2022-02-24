@@ -33,7 +33,7 @@ export default class LiveMode extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const {
         mode,
         instantActivation,

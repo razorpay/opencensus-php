@@ -431,7 +431,7 @@ export default class InvoiceLineItem extends React.Component {
     }
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.invoiceCurrency !== this.props.invoiceCurrency) {
       this.resetSelectedItemForChangingCurrency(nextProps);
     }

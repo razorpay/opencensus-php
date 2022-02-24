@@ -61,7 +61,7 @@ export default class PaymentLinkDetails extends Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchDataForPaymentLink();
   }
 
@@ -69,7 +69,7 @@ export default class PaymentLinkDetails extends Component {
     this.trackPaymentLinkDetailsView('pl.update.details_view');
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchDataForPaymentLink(nextProps.id);
     }

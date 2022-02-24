@@ -24,7 +24,7 @@ class NewKey extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const key = this.props.apiKey;
     if (key) {
       this.props.initialize({

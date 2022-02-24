@@ -42,7 +42,7 @@ export default class SubmerchantDetailsContainer extends Component {
     this.props.fetchSubmerchantWithProduct(this.props.id, this.props.appId, product);
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.getPannelData();
   }
 
@@ -52,7 +52,7 @@ export default class SubmerchantDetailsContainer extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     let product = PRODUCT_TYPE.PG;
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;

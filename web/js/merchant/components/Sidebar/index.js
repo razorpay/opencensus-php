@@ -68,7 +68,7 @@ export default class Sidebar extends Component {
   // populated with initial values
   routes = { ...BASE_ROUTES };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
   }
 
@@ -240,7 +240,7 @@ class PartnerSidebar extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const isPartnerRoute = this.isPartnerRoute(nextProps);
     if (isPartnerRoute !== this.state.partnerOpen) {
       this.setState({

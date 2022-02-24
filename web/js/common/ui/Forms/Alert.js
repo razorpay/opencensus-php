@@ -11,7 +11,7 @@ class Alert extends Component {
     this.close = ::this.close;
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.message && nextProps.message !== this.props.message) {
       this.setState({
         close: false,

@@ -69,7 +69,7 @@ export default class AddCustomer extends Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.props.customer) {
       this.props.initialize(this.props.customer);
     }

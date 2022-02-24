@@ -24,7 +24,7 @@ export default class CreditSubDetails extends Component {
     credit: null,
     isLoading: true,
   };
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const creditId = this.props.id;
 
     fetchCreditById(creditId).then((response) => {

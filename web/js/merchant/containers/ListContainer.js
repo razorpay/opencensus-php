@@ -64,11 +64,11 @@ export default class ListContainer extends Component {
   }
 
   // Do default search based on query params
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.defaultSearch(this.props.location.search);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (decodeURI(this.props.location.search) !== decodeURI(nextProps.location.search)) {
       this.defaultSearch(nextProps.location.search);
     }

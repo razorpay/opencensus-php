@@ -22,7 +22,7 @@ import { AmountTooltip } from 'common/ui/Amount';
 export default class CreateAddOnModal extends Component {
   state = {};
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { addon, subscriptionId, currency = 'INR' } = this.props;
 
     const initProps = {

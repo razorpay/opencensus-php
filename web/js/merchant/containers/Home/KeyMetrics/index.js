@@ -794,7 +794,7 @@ class KeyMetricsContainer extends Component {
       });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // eslint-disable-next-line no-multi-assign
     const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
 
@@ -887,7 +887,7 @@ class KeyMetricsContainer extends Component {
     trackBreakdownChange(selectedBreakdown);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { startDate, endDate, oldestTransactionDate } = nextProps;
 
     if (

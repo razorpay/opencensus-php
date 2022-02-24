@@ -129,7 +129,7 @@ class App extends Component {
     );
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;

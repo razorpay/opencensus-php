@@ -26,7 +26,7 @@ export default class AutoResizeTextarea extends Component {
     this.measureHeight();
   }
 
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     this.measureHeight();
   }
 

@@ -33,13 +33,13 @@ export default class VirtualAccountDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { id } = this.props;
     this.props.fetchItem(id);
     this.props.fetchVAPayments(id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
       this.props.fetchVAPayments(nextProps.id);

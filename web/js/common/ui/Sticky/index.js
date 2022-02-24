@@ -68,7 +68,7 @@ class Sticky extends Component {
     return this.toggleSticky(container.scrollTop);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { stickWhen, stickAt } = this.props;
 
     if (stickWhen !== nextProps.stickWhen || stickAt !== nextProps.stickAt) {

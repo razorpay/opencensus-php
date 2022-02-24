@@ -57,7 +57,7 @@ export default class PaymentPagesContainer extends ListContainer {
     track.init(this.props.tracking.trackEvent);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.paymentPages.length !== nextProps.paymentPages.length) {
       const newLength = nextProps.paymentPages.length;
 
@@ -72,7 +72,8 @@ export default class PaymentPagesContainer extends ListContainer {
       this.initPaymentPagesOnboarding(nextProps);
     }
 
-    super.componentWillReceiveProps(nextProps);
+    // eslint-disable-next-line babel/new-cap
+    super.UNSAFE_componentWillReceiveProps(nextProps);
   }
 
   /* Fetch all payment pages list to find whether first-time user */

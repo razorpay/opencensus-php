@@ -19,7 +19,7 @@ class FlashCheckout extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (!this.props.features.length && nextProps.features.length) {
       const fcEnabled = this.getFlashCheckoutFlag(nextProps.features);
 

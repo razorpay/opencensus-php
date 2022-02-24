@@ -16,7 +16,7 @@ import { fetchOpen as fetchOpenDisputes } from 'merchantLA/reducers/disputes/det
 export default class OpenDisputeAlert extends Component {
   state = { open: true };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     /* disabling fetching for a while */
     // this.props.fetchOpenDisputes();
   }

@@ -837,7 +837,7 @@ class KeyMetricsContainer extends Component {
       });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
 
     if (this.props.oldestTransactionDate.value) {
@@ -929,7 +929,7 @@ class KeyMetricsContainer extends Component {
     trackBreakdownChange(selectedBreakdown);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { startDate, endDate, oldestTransactionDate } = nextProps;
 
     if (

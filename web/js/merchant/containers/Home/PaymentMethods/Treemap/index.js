@@ -113,7 +113,7 @@ export default class Treemap extends Component {
     return this.props.data && this.renderTreemap(this.props.data, this.props.isCurrency);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { data, currentLevel } = this.props;
 
     if (data !== nextProps.data) {

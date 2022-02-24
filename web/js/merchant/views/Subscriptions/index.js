@@ -82,7 +82,7 @@ class SubscriptionsController extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       nextProps.subscriptions.loading !== this.props.subscriptions.loading ||
       nextProps.subscriptions.loading != this.props.subscriptions.loading

@@ -81,7 +81,7 @@ export default class WysiwygDescription extends React.PureComponent {
     this.QUILL = null;
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     if (this.props.description !== nextProps.description && !this.props.isPageDirty && this.QUILL) {
       if (nextProps.description) {
         this.QUILL.setContents(JSON.parse(nextProps.description).value);

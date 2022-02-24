@@ -70,7 +70,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     return this.paymentMethod === 'nach';
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchRegistrationLink(this.props.id);
   }
 
@@ -78,7 +78,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
     trackOpenAuthLink();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchRegistrationLink(nextProps.id);
     }

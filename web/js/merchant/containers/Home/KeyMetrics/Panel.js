@@ -186,7 +186,7 @@ class Panel extends Component {
     );
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.showGroupingByPtfm !== this.props.showGroupingByPtfm) {
       this.setVisibleGroups(nextProps.showGroupingByPtfm);
     }

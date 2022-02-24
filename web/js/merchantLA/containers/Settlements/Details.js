@@ -6,11 +6,11 @@ import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 
 @connect(state => state.settlement, SettlementActions)
 export default class SettlementDetailsContainer extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
     }

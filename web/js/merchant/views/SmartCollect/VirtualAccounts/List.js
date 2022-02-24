@@ -66,9 +66,9 @@ const EmptyComponent = () => (
 )
 @RTracking(() => window.rzpQ.component('VirtualAccountsListContainer'))
 export default class VirtualAccountsListContainer extends ListContainer {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // TODO: Don't call below when feature is disbaled
-    super.componentWillMount();
+    super.UNSAFE_componentWillMount();
 
     this.initVAOnboarding();
   }
@@ -88,7 +88,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.loading != this.props.loading) {
       this.initVAOnboarding(nextProps);
     }

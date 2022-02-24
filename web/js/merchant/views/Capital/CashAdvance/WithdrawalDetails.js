@@ -55,7 +55,7 @@ class WithdrawalDetails extends Component {
     window.rzpAnalytics?.(eventObject);
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { fetchFunctionalWithdrawalConfigByMerchantID, user } = this.props;
 
     fetchFunctionalWithdrawalConfigByMerchantID({

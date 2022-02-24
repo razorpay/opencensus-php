@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
+// eslint-disable-next-line react/no-unsafe
 export default class Collapsible extends Component {
   static defaultProps = {
     defaultOpen: false,
@@ -15,7 +16,7 @@ export default class Collapsible extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.hasOwnValue) {
       this.setState({
         open: !!nextProps.value,
@@ -33,6 +34,7 @@ export default class Collapsible extends Component {
 
   toggle = () => {
     this.setState({
+      // eslint-disable-next-line react/no-access-state-in-setstate
       open: !this.state.open,
     });
   };
@@ -58,18 +60,14 @@ export default class Collapsible extends Component {
         {props.childrenPosition === 'top' && this.renderBody()}
         <header class="Collapsible--title" onClick={this.onToggleClick}>
           <span>{this.renderTitle()}</span>
-          <i
-            class={classList(
-              `i-arrow-${state.open ? 'up' : 'down'}`,
-              'pull-right'
-            )}
-          />
+          <i class={classList(`i-arrow-${state.open ? 'up' : 'down'}`, 'pull-right')} />
         </header>
         {props.childrenPosition === 'bottom' && this.renderBody()}
       </div>
     );
   }
 
+  // eslint-disable-next-line consistent-return
   checkForValue = () => {
     if (this.props.hasOwnProperty('value')) {
       return true;

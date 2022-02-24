@@ -35,7 +35,7 @@ export default class PowerDropdown extends React.Component {
         : '',
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps !== this.props) {
       this.el && this.valid();
     }

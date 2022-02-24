@@ -444,7 +444,7 @@ export default class LoanApplicationOverview extends React.Component {
     return loanApplicationDetails.meta.configuration.ui;
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const nextProduct = CAPITAL_PRODUCT_NAME_CODE_MAP[nextProps.match.params.product];
     if (this.getProductCode() !== nextProduct) {
       this.initApplication(nextProduct);

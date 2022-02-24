@@ -45,7 +45,7 @@ class CongfigurationContainer extends Component {
     isPaypalMid: false,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchFeatures(this.props.user.current).catch((err) => {
       this.props.showNotification({
         type: 'error',

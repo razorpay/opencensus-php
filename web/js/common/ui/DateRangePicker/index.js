@@ -138,11 +138,11 @@ class DateRangePicker extends Component {
     });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.updatePresets();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.presets !== this.props.presets) {
       this.updatePresets(nextProps.presets);
     }

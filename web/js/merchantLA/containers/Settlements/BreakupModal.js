@@ -11,7 +11,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
   ...ModalActions,
 })
 export default class BreakdownModal extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchBreakupDetails({
       id: this.props.settlementId,
     });

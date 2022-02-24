@@ -26,7 +26,7 @@ export default class ExperimentDetails extends React.Component {
     this.fetch(this.props.experimentId);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.experimentId !== nextProps.experimentId) {
       this.fetch(nextProps.experimentId);
     }

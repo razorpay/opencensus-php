@@ -24,7 +24,7 @@ import User from './User';
   }
 )
 export default class TeamContainer extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.props.merchant.userRole === 'linked_account_owner') {
       this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
     }

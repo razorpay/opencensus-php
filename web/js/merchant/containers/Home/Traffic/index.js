@@ -190,7 +190,7 @@ class Traffic extends Component {
       });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.getData();
   }
 
@@ -205,7 +205,7 @@ class Traffic extends Component {
     );
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { startDate, endDate } = nextProps;
     const props = this.props;
 

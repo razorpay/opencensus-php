@@ -51,7 +51,11 @@ jobs:
 
       - name: ESLint PR Check
         # Don't run check on revert PRs
-        if: ${{ !startsWith(steps.branch-name.outputs.current_branch, 'revert-') }}
+        if: |
+          !(
+            startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
+            startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
+          )
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
           npm ci

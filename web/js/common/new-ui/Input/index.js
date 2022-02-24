@@ -215,7 +215,7 @@ export default class Field extends React.Component {
   }
 
   // Will be called only in cases of impure-component fields
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const curPropsKey = Object.keys(this.props);
     const nextPropsKey = Object.keys(nextProps);
 

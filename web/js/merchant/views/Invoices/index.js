@@ -54,7 +54,7 @@ export default class InvoicesContainer extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       nextProps.invoices.loading !== this.props.invoices.loading ||
       nextProps.items.loading !== this.props.items.loading

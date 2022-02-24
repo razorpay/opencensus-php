@@ -39,7 +39,7 @@ export default class ActivationCard extends Component {
     );
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const {
         instantActivation,
         isSubmitted,

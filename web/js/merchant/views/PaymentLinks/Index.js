@@ -71,7 +71,7 @@ class PaymentLinksContainer extends React.Component {
     this.setState({ showPopup });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.paymentlinks.loading !== this.props.paymentlinks.loading) {
       this.initPaymentLinksOnboarding(nextProps);
     }

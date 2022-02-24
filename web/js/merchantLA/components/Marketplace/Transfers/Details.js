@@ -62,7 +62,7 @@ const SettlementText = ({ data, transfer }) => {
 export default class TransferDetails extends Component {
   state = { ...initialState };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const transfer = nextProps.transfer;
 
     initialState = {

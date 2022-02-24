@@ -20,7 +20,7 @@ export default class GroupDetails extends React.Component {
     this.fetch(this.props.groupId);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.groupId !== nextProps.groupId) {
       this.fetch(nextProps.groupId);
     }

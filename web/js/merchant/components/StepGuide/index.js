@@ -32,7 +32,7 @@ export default class StepGuide extends React.Component {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.activeStep != this.props.activeStep) {
       this.setState({
         activeStep: nextProps.activeStep,

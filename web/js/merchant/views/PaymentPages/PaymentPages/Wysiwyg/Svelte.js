@@ -39,7 +39,7 @@ export default class Svelte extends React.Component {
     this._svelteInstance && this._svelteInstance.destroy();
   }
 
-  // componentWillReceiveProps() {
+  // UNSAFE_componentWillReceiveProps() {
   //   // const newData = {}; // Update application data
   //   // this._svelteInstanceinstance.set(newData);
   // }

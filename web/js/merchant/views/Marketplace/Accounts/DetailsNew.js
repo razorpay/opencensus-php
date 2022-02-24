@@ -210,11 +210,11 @@ export default class Details extends Component {
       });
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }

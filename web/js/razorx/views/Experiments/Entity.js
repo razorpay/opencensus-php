@@ -12,7 +12,7 @@ export default class extends React.Component {
     this.fetch(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetch(nextProps.id);
     }

@@ -383,7 +383,7 @@ export default class HomeContainer extends Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // to style react-power-selct specific to this tab
     document.body.className += bodyClass;
 

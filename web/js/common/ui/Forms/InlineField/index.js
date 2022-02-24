@@ -7,7 +7,7 @@ import { Field, formValueSelector } from 'redux-form';
   state,
 }))
 class InlineField extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.selector = formValueSelector(this.props.formName);
   }
 

@@ -57,7 +57,7 @@ export class BtnGroup extends Component {
     return this.props.onChange && this.props.onChange(value);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.state.value !== nextProps.value) {
       this.setState({ value: nextProps.value });
     }

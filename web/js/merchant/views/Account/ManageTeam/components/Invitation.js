@@ -25,7 +25,7 @@ let ROLES = without(roles, rolesList.OWNER);
 })
 @reduxForm({})
 export default class EditInvitation extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.initialize({
       role: this.props.invite.role,
     });

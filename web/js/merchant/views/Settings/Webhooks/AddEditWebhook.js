@@ -30,7 +30,7 @@ class webhookForm extends Component {
     eventsError: false,
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     let eventValues = {};
     let eventGroupValues = {};
 
@@ -56,7 +56,7 @@ class webhookForm extends Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { webhook, userData } = this.props;
 
     if (webhook) {

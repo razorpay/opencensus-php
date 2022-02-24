@@ -49,7 +49,7 @@ export default class extends React.Component {
     return state;
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const isEdit = !!this.props.data;
 
     if (!isEdit) {

@@ -111,7 +111,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     formItemsBackup: [],
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchEntity(this.props.id, true);
 
     // Preload Social media image
@@ -121,7 +121,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     this.fetchIfIntentDuplicate();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchEntity(nextProps.id);
       this.props.closeModal();
@@ -157,7 +157,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     const nextTheme =
       nextProps.paymentPageEntity &&
       nextProps.paymentPageEntity.settings &&

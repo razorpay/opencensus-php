@@ -28,7 +28,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 )
 @reduxForm({})
 export default class EditUser extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.initialize({
       role: this.props.user.role,
     });

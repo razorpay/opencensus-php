@@ -24,7 +24,7 @@ import track from './track';
 export default class CreateQRCode extends React.Component {
   isModalView = !!this.props.onClose;
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     track.init({
       track: this.props.tracking.trackEvent,
     });

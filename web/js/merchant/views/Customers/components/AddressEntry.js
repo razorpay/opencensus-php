@@ -70,7 +70,7 @@ export default class AddressEntry extends React.Component {
    * Props might be updated from the parent. Update state as well.
    * @param {Object} nextProps
    */
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     let { address } = nextProps;
 
     if (address) {

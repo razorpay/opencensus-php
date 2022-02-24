@@ -17,7 +17,7 @@ class ApplicationContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchApplications();
     this.props.fetchConnectedApplications();
   }

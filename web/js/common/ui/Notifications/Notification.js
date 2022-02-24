@@ -25,7 +25,7 @@ class Notification extends Component {
     }, this.props.closeTimeout);
   }
 
-  componentWillUpdate(nextProps) {
+  UNSAFE_componentWillUpdate(nextProps) {
     if (nextProps.hidePrevious) {
       clearTimeout(this.timerId);
       this.close();

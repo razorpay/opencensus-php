@@ -18,7 +18,7 @@ export default class WorkflowRequestsList extends Component {
     workflows: null,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     return adminGet('live/workflows?count=100').then(data => {
       const workflows = data.items.filter(
         i => i.name.toLowerCase().indexOf('razorx') > -1

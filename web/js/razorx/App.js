@@ -24,7 +24,7 @@ import SplitzSegments from 'razorx/views/Splitz/Segments';
 
 @withRouter
 export default class RazorXApp extends React.Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     loadCodeEditor();
   }
 

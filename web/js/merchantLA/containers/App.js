@@ -68,7 +68,7 @@ export default class App extends Component {
     this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // Event Based method to lock dashboard screen
     const user = window.rzp_user;
     const self = this;
@@ -148,7 +148,7 @@ export default class App extends Component {
     initLumberjack();
   }
 
-  componentWillReceiveProps({ user, history }) {
+  UNSAFE_componentWillReceiveProps({ user, history }) {
     if (user.isAuthenticated) {
       let role = user.userRole;
       this.redirectToRoute(role);

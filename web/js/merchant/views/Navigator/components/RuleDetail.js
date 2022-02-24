@@ -73,7 +73,7 @@ export default class RuleDetail extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.getRule(nextProps.id);
     }

@@ -30,7 +30,7 @@ export default class TestMode extends Component {
     this.state = initialState;
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { mode, integration, merchantId, track } = nextProps;
     const { isLoading, keysGenerated, paymentsMade } = integration;
 
@@ -87,6 +87,7 @@ export default class TestMode extends Component {
                 rel="noreferrer noopener"
                 className="btn-link"
                 href="https://razorpay.com/docs"
+                rel="noreferrer noopener"
               >
                 documentation
               </a>{' '}

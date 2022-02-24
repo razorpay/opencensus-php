@@ -30,7 +30,7 @@ class GSTDetails extends Component {
 
   GSTSection = React.createRef(null);
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchGST();
   }
 

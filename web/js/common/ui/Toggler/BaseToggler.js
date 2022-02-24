@@ -2,7 +2,7 @@ import { Component } from 'react';
 import AsyncButton from 'react-async-button';
 
 export default class BaseToggler extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setState({ show: this.props.show });
   }
 

@@ -330,7 +330,7 @@ class Tooltip extends Component {
     this.bindEvents();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.persistent !== this.props.persistent) {
       if (nextProps.persistent) {
         this.showTooltip();

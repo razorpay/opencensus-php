@@ -68,7 +68,7 @@ class Profile extends Component {
 
   static contextType = TwoFactorVerificationContext;
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchUser().then((reponse) => {
       const user = reponse.data;
       if (!user.current) {
@@ -150,7 +150,7 @@ class Profile extends Component {
     return [rolesList.ADMIN, rolesList.OWNER].indexOf(this.props.user.role) > -1;
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.refreshUser(nextProps.user);
   }
 

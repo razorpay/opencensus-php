@@ -44,7 +44,7 @@ export default class OfferIndex extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.offers.loading !== this.props.offers.loading) {
       this.initOffersOnboarding(nextProps);
     }

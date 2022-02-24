@@ -69,7 +69,7 @@ class DefaultRefundSpeed extends Component {
   };
   hovered = false;
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // check paypal org feature
     if (this.props.org?.features.indexOf('enable_refunds') > -1) {
       this.setState({

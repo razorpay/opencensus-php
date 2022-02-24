@@ -13,11 +13,11 @@ class VABatchDetails extends React.Component {
     batchDetails: {},
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchBatchDetail(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchBatchDetail(nextProps.id);
     }

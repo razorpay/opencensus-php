@@ -71,11 +71,11 @@ export default class TokenDetailsContainer extends Component {
     return this.props.entity.method === 'upi' && this.props.user.isUPICAWEnabled;
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchToken(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchToken(nextProps.id);
     }

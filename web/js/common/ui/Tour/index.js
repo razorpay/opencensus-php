@@ -20,11 +20,11 @@ class Tour extends Component {
     this.onStepChange = this.onStepChange.bind(this);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setActiveTour(this.props);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.setActiveTour(nextProps);
   }
 

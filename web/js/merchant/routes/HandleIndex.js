@@ -1,5 +1,5 @@
 export default class HandleIndex extends React.Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.props.location.hash) {
       const location = this.props.location;
       const path = location.hash.replace(/#\/?app\/?/, '') || 'dashboard';

@@ -12,11 +12,11 @@ import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
 @connect(state => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
 export default class CommissionsDailyEntity extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData(Number(this.props.timestamp));
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.timestamp !== nextProps.timestamp) {
       this.fetchData(Number(nextProps.timestamp));
     }

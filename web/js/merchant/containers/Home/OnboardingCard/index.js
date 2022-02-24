@@ -34,13 +34,13 @@ export default class OnboardingCard extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.payments.loading && !nextProps.payments.loading) {
       this.onFetchPayments(nextProps.payments.items);
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     let params = {};
 
     const { user, mode } = this.props,

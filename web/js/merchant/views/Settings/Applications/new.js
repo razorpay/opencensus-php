@@ -70,7 +70,7 @@ class NewApplicationForm extends Component {
     details: {},
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const id = this.props.match.params.id;
     if (!id) return;
     this.setState({ edit: true });
@@ -126,7 +126,7 @@ class NewApplicationForm extends Component {
       });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.setState({ edit: !!nextProps.match.params.id });
   }
 

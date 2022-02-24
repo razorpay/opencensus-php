@@ -14,13 +14,13 @@ import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
   { fetchItem, fetchSubscriptions },
 )
 export default class PlanDetailsContainer extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchItem(this.props.id).then(() => {
       this.props.fetchSubscriptions(this.props.entity);
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id).then(() => {
         this.props.fetchSubscriptions(nextProps.entity);

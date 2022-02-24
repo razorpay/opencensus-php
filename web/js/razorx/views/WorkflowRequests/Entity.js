@@ -22,7 +22,7 @@ export default class RequestEntity extends Component {
 
   state = {};
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     extendObservable(this, { pending: true });
     const { id } = this.props.match.params;
 

@@ -18,7 +18,7 @@ export default class SegmentDetails extends React.Component {
     this.fetch(this.props.segmentId);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.segmentId !== nextProps.segmentId) {
       this.fetch(nextProps.segmentId);
     }

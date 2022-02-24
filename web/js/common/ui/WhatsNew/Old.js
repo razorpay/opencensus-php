@@ -71,7 +71,7 @@ class WhatsNewOld extends Component {
   notificationsRefsList = [];
   id = this.props.user.current;
 
-  componentWillMount = () => {
+  UNSAFE_componentWillMount = () => {
     this.props.fetchAnnouncements({ fromWhere: 'home' });
     this.setLastReadTS();
   };
@@ -447,7 +447,7 @@ class WhatsNewOld extends Component {
     const { totalUnread } = this.state;
     const hasUnread = !!totalUnread;
     /* to show icon for both mweb and dweb so commented that code as of now */
-    /* 
+    /*
       if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
         return (
           <>

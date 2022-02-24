@@ -92,7 +92,7 @@ export default class AddItem extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     let promises = [this.props.fetchTaxes(), this.props.fetchGSTTaxes()];
 
     this.setState({
@@ -129,7 +129,7 @@ export default class AddItem extends Component {
     this.props.onUnmount && this.props.onUnmount(this.props.item);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.updateTaxRadioSection(nextProps);
   }
 

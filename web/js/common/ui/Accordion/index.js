@@ -33,13 +33,13 @@ export default class Accordion extends Component {
     this.setState({ items });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.expandedKey !== nextProps.expandedKey) {
       this.setExpandedTab(nextProps);
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setExpandedTab();
   }
 

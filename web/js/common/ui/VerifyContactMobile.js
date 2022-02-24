@@ -52,7 +52,7 @@ export default class VerifyContactMobile extends React.Component {
     });
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.triggerOtp();
   }
 

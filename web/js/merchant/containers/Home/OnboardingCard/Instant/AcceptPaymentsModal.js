@@ -43,7 +43,7 @@ export default class AcceptPayments extends Component {
     }
   }
 
-  componentWillReceiveProps({ shouldShow, showProducts }) {
+  UNSAFE_componentWillReceiveProps({ shouldShow, showProducts }) {
     if (shouldShow !== this.state.showTransactionsHelper) {
       this.setState({ showTransactionsHelper: shouldShow });
     }

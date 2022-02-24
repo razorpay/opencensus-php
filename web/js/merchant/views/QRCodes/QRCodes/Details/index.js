@@ -61,7 +61,7 @@ export default class QRCodeDetailsContainer extends React.Component {
     track.open();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchQRCodeDetails(nextProps.id);
       this.fetchPayments(nextProps.id);

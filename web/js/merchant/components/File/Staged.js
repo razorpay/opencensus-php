@@ -12,7 +12,7 @@ const getFileTypeIcon = (fileName) => {
 
 // If same name file is uploaded to another FileUpload component, name will help React to distinguish
 export default class Staged extends React.Component {
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       nextProps.uploadedBytes !== this.props.uploadedBytes &&
       document.getElementById(`${this.props.name}--progress`)

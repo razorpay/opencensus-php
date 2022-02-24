@@ -20,7 +20,7 @@ const findDispute = (disputes = [], disputeId) =>
 class DisputeDetailsContainer extends Component {
   state = {};
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { isDisputePresentmentEnabled } = this.props.user;
 
     this.loadDispute(this.props.id);
@@ -29,7 +29,7 @@ class DisputeDetailsContainer extends Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.id !== this.props.id) {
       this.loadDispute(nextProps.id);
     }

@@ -35,7 +35,7 @@ export default class InvoicesOnboarding extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { invoiceLabelField } = this.props;
   }
 

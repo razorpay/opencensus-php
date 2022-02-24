@@ -25,7 +25,7 @@ import { trackSettingsEvents } from '../ga';
   }
 )
 export default class SettingsContainer extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchPartnerApplication();
   }
 

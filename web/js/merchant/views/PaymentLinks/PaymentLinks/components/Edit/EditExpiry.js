@@ -17,7 +17,7 @@ export default class EditExpiry extends React.Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.value * 1000 !== this.state.expire_by) {
       this.setState(this.resetState(nextProps));
     }

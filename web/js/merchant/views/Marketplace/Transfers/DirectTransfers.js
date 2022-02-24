@@ -51,7 +51,7 @@ export default class DirectTransfers extends React.Component {
 
   isModalView = !!this.props.onClose;
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (typeof window.hj === 'function') {
       window.hj('trigger', 'route_direct_transfers');
       window.hj('tagRecording', ['route_direct_transfers']);

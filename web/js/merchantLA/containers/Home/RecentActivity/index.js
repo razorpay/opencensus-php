@@ -109,11 +109,11 @@ export default class RecentActivity extends Component {
     this.props.fetchSettlements(params);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData({ count: 5 });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.windowWidth !== nextProps.windowWidth) {
       this.handleResize(nextProps);
     }

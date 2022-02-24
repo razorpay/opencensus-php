@@ -8,11 +8,11 @@ import SettlementBreakupModal from 'merchant/views/Settlements/Settlements/compo
 import { bindActionCreators } from 'redux';
 
 class SettlementDetailsContainer extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
     }

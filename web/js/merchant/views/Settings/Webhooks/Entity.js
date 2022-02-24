@@ -45,7 +45,7 @@ class WebhookEntity extends Component {
     });
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchWebhook({
       id: this.props.id,
     });

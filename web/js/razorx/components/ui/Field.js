@@ -144,7 +144,7 @@ export class Switch extends Component {
     prevent(e);
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.hasOwnProperty('value')) {
       this.setState({ checked: this.enabledValue == nextProps.value });
     }
@@ -200,7 +200,7 @@ class SearchableSelect extends Component {
     }, 5);
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.defaultValue && nextProps.defaultValue !== this.state.selectedOption.value) {
       this.setState({
         selectedOption: this.getDefaultOption(nextProps),

@@ -16,7 +16,7 @@ class Overlay extends Component {
     this.layout();
   }
 
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     this.layout();
   }
 

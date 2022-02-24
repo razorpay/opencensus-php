@@ -85,7 +85,7 @@ class WhatsNew extends Component {
   notificationsRefsList = [];
   id = this.props.user.current;
 
-  componentWillMount = () => {
+  UNSAFE_componentWillMount = () => {
     this.props.fetchAnnouncements({ fromWhere: 'home' });
     this.setLastReadTS();
   };

@@ -19,7 +19,7 @@ import OnBoarding, { getIsQRCodesEnabled, getIsAllowedResetQRCodesOnBoarding } f
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 class QRCodeContainer extends React.Component {
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.qr_codes.loading !== this.props.qr_codes.loading) {
       this.initOnboarding(nextProps);
     }

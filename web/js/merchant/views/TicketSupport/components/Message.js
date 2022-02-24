@@ -18,7 +18,7 @@ export default class Message extends React.Component {
     showCompleteReply: this.props.showExpandedReply,
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.showExpandedReply) {
       this.setState({ showCompleteReply: true });
     }

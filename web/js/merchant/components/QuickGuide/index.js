@@ -92,7 +92,7 @@ export default (params) => {
       }
     }
 
-    componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps) {
       const data = nextProps[DATA_POINTS[DATA_POINTS.length - 1]];
       if (data && data.items.length) {
         if (typeof window.hj === 'function') {

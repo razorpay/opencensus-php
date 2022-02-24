@@ -53,12 +53,12 @@ export default class TransferDetailsContainer extends Component {
       });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData(this.props.id);
     this.checkSecView(this.props);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }

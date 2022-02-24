@@ -31,7 +31,7 @@ class UpdateContactMobile extends React.Component {
     this.contactMobile = props.contactMobile;
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.triggerVerificationOtp();
   }
 

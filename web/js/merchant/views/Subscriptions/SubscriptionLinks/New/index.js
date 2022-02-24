@@ -75,7 +75,7 @@ export default class NewSubscriptionLink extends React.Component {
   };
   isMobileDevice = isMobileDevice();
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchDataForSubscription();
   }
 

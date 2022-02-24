@@ -31,7 +31,7 @@ export default class IssueInvoiceConfirmModal extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const customer = this.props.customer;
     if (customer) {
       this.props.initialize({

@@ -41,7 +41,7 @@ import DashboardBanner from '../../../common/ui/DashboardBanner';
   },
 )
 export default class PaymentButtonsContainer extends React.Component {
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.paymentbuttons.loading !== this.props.paymentbuttons.loading) {
       this.initPaymentButtonsOnboarding(nextProps);
     }

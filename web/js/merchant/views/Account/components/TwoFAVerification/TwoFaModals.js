@@ -110,7 +110,7 @@ class AskMobileNumber extends Component {
     return this.props.onSubmit(data);
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     //handling the use case where the number should be empty
     if (this.props.blank) {
       this.props.change('contact_mobile', '');

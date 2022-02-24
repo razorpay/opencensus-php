@@ -38,7 +38,7 @@ export default class NotificationsDropdown extends Component {
   state = {};
   id = this.props.user.current;
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     let notifications = window.notifications || [];
 
     //sort notifications in most recent order using start_timestamp

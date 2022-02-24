@@ -70,7 +70,7 @@ export default class CreditPullModal extends Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchBMerchant();
     this.fireGAEvent({
       eventAction: `Click - Check credit score`,

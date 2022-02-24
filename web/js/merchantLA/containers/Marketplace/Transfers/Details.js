@@ -25,12 +25,12 @@ class TransferDetailsContainer extends Component {
     this.props.fetchTransfer(transferId).then(() => this.props.fetchReversals(transferId));
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData(this.props.id);
     this.checkSecView(this.props);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }

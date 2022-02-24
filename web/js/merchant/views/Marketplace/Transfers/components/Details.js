@@ -123,7 +123,7 @@ export default class TransferDetails extends Component {
     this.onEdit = this.onEdit.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const transfer = nextProps.transfer;
 
     initialState = {

@@ -58,12 +58,12 @@ export default class PaymentButtonDetails extends React.Component {
     track.detailsStart();
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchEntity(this.entityId);
     this.fetchEntityPayments(this.entityId);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const nextPropsEntityId = nextProps.id || nextProps.match.params.id;
     if (this.entityId !== nextPropsEntityId) {
       this.fetchEntity(nextPropsEntityId);

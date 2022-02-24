@@ -103,11 +103,11 @@ export default class Content extends Component {
     );
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setBaseLocation(this.props.location);
   }
 
-  componentWillReceiveProps(props) {
+  UNSAFE_componentWillReceiveProps(props) {
     this.setBaseLocation(props.location);
     this.showSliderView();
   }

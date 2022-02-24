@@ -109,13 +109,13 @@ class MainNavLink extends Component {
     return this.props.activePageName === label || this.isActivePath(location);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.baseLocation && this.isActivePath(nextProps.baseLocation, nextProps.to)) {
       this.props.setActivePageName(nextProps.label);
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.isActivePath()) {
       this.props.setActivePageName(this.props.label);
     }

@@ -79,7 +79,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
     };
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     track.lj.init({
       track: this.props.tracking.trackEvent,
       clone: this.isIntentDuplicate,

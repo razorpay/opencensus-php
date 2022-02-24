@@ -50,14 +50,14 @@ export default class extends React.Component {
     createdByUser: null,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchEntity(this.entityId);
     this.fetchEntityPayments(this.entityId);
 
     track.init(this.props.tracking.trackEvent);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const nextPropsEntityId = nextProps.id || nextProps.match.params.id;
     if (this.entityId !== nextPropsEntityId) {
       this.fetchEntity(nextPropsEntityId);

@@ -80,7 +80,7 @@ class HeaderNav extends Component {
     this.fetchMTUOfferConfigDetails();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.location.hash !== this.props.location.hash) {
       if (nextProps.location.hash === '#profile_dropdown') {
         toggleDropdown();

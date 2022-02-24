@@ -8,7 +8,7 @@ import { withRouter } from 'react-router-dom';
 const DEFAULT_MAX_FILTER_COUNT_DESKTOP = 8;
 const DEFAULT_MAX_FILTER_COUNT_MOBILE = 2;
 
-/* 
+/*
   Default max filter count value added for destop as well as mobile
   implemented a new prop maxMwebFiltersLength for accepting custom
   value for mobile filter length else default value is set
@@ -31,12 +31,12 @@ class ListFilter extends Component {
   }
 
   // populate the search filters based on query params
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.initSearchForm(this.props);
   }
 
   // update search query
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (decodeURI(this.props.location.search) !== decodeURI(nextProps.location.search)) {
       this.initSearchForm(nextProps);
     }

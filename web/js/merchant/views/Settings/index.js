@@ -41,7 +41,7 @@ class Settings extends Component {
     isConnectedAppsFound: false,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchAddWebsiteWorkflowStatus().then(({ data }) => {
       this.setState({
         isWebsiteInWorkflow: data,

@@ -102,7 +102,7 @@ export default class ReversalModal extends Component {
     confirm: PropTypes.func,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const transfer = this.props.transfer;
 
     this.props.initialize({

@@ -38,7 +38,7 @@ export default class OnboardingCard extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     const { mode, integration } = nextProps;
     const { keysGenerated, paymentsMade } = integration;
 

@@ -48,11 +48,11 @@ class FilterDropdown extends Component {
     return onFilterChange && onFilterChange(selectedItem);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.populateValues(this.props.filters, this.props.selectedFilters);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.populateValues(nextProps.filters, nextProps.selectedFilters);
   }
 

@@ -15,7 +15,7 @@ export default class EditStock extends React.Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.totalStock !== this.state.totalStock) {
       this.setState(this.resetState(nextProps));
     }

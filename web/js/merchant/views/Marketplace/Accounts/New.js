@@ -50,7 +50,7 @@ export default class AddAccount extends Component {
     errors: null,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const { accountData, user } = this.props;
     let email = null;
     //check whether the LA has its own email or not

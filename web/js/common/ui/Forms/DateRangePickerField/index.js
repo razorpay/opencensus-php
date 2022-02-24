@@ -22,7 +22,7 @@ export default class DateRangePickerField extends Component {
     this.id = `drp-${numInstances++}`;
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.onDatesChange({
       from: this.state.from.unix(),
       to: this.state.to.unix(),
@@ -58,7 +58,7 @@ export default class DateRangePickerField extends Component {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     let startDate = this.state.from,
       endDate = this.state.to;
 

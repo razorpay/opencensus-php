@@ -68,7 +68,7 @@ class BatchUploadContainer extends Component {
     }
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     merchantFetch({
       url: 'merchant/token',
       method: 'post',

@@ -6,11 +6,11 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { bindActionCreators } from 'redux';
 
 class InstantSettlementDetails extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchItem(this.props.id);
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
     }

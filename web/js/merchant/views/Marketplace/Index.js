@@ -60,7 +60,7 @@ class MarketplaceContainer extends React.Component {
     this.fetchDataForMarketPlaceOnboarding();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       nextProps.transfers.loading !== this.props.transfers.loading ||
       nextProps.accounts.loading !== this.props.accounts.loading

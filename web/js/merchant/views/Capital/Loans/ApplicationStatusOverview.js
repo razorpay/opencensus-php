@@ -94,7 +94,7 @@ class ApplicationStatusOverview extends Component {
     }
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       this.props.loanApplicationDetails.meta.product !==
       nextProps.loanApplicationDetails.meta.product

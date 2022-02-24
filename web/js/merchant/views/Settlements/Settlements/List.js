@@ -121,7 +121,7 @@ class SettlementsListContainer extends ListContainer {
     /* eslint-enable */
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (
       nextProps.location.hash !== this.props.location.hash &&
       nextProps.location.hash === '#requestearlyaccess'

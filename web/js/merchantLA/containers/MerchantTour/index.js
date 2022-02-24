@@ -21,7 +21,7 @@ export default class MerchantTour extends Component {
     isTourInterrupted: false,
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.isTourVisible !== nextProps.isTourVisible) {
       nextProps.isTourVisible ? this.showTour() : this.closeTour();
     }

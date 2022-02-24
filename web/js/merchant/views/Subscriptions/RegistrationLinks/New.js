@@ -202,7 +202,7 @@ export default class NewRegistrationLink extends React.Component {
     );
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchDataForRegistrationLinks();
   }
 

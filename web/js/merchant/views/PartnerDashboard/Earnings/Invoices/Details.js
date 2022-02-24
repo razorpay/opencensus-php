@@ -25,7 +25,7 @@ import { fetchCommissionInvoiceDetails } from 'merchant/reducers/commissionInvoi
   }
 )
 class InvoiceDetails extends Component {
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchCommissionInvoiceDetails(this.props.id);
   }
 

@@ -44,7 +44,7 @@ class ActivationCard extends Component {
     );
   };
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     let { status, content, title } = initialState;
     const { onActive, track, user } = nextProps;
     const { limitBreach } = this.props;

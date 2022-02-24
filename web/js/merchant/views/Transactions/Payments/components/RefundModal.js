@@ -119,7 +119,7 @@ class RefundModal extends Component {
     }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const payment = this.props.payment;
 
     if (this.props.user.isMarketplaceEnabled) {

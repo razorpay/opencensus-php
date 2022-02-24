@@ -19,7 +19,7 @@ export default class ReversalDetailsContainer extends Component {
     this.props.fetchReversal(reversalId);
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.fetchData(this.props.id);
   }
 
@@ -31,7 +31,7 @@ export default class ReversalDetailsContainer extends Component {
     gaEvents.trackCloseDetails();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchData(nextProps.id);
     }

@@ -10,7 +10,7 @@ export default class Clipboard extends Component {
     this.selectValue = ::this.selectValue;
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (document.execCommand) {
       this.supported = true;
     }

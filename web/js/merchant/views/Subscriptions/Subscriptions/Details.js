@@ -125,7 +125,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
       });
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.id && this.fetchSubscriptionDetails(this.props.id);
     this.checkSecView(); // Reset view
     this.props.invoice_id && this.fetchInvoice(this.props.invoice_id);
@@ -140,7 +140,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
     );
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.fetchSubscriptionDetails(nextProps.id);
     }

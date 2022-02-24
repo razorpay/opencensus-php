@@ -85,7 +85,7 @@ export default class UpdateSubscriptionLink extends React.Component {
     };
   }
 
-  componentWillMount = async () => {
+  UNSAFE_componentWillMount = async () => {
     const plans = await this.props.fetchPlans({ count: 100 });
     await this.props.fetchItems({ count: 100, type: 'addon' });
 

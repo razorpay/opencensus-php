@@ -40,7 +40,7 @@ const languageOptions = [
 class CheckoutTheme extends Component {
   state = { brandColor: this.props.config.brand_color };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.props.fetchLocale();
 
     const script = document.createElement('script');

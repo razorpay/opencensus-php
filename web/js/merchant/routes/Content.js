@@ -600,7 +600,7 @@ export default class Content extends Component {
     );
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.setBaseLocation(this.props.location);
     this.toggleRasieTicketModal(this.props);
   }
@@ -609,7 +609,7 @@ export default class Content extends Component {
     this.listenTrackEvents();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     this.setBaseLocation(nextProps.location);
     this.showSliderView();
 

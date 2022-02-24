@@ -27,7 +27,7 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
     this.selectedOffer = getSelectedOffer(offers.items, fields);
   }
 
-  componentWillReceiveProps({ plans, fields, offers }) {
+  UNSAFE_componentWillReceiveProps({ plans, fields, offers }) {
     this.plans = getPlans(plans);
     this.selectedPlan = getSelectedPlan(this.plans, fields);
     this.selectedOffer = getSelectedOffer(offers.items, fields);

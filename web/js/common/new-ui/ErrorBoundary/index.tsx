@@ -54,7 +54,7 @@ class ErrorBoundary extends Component<Props, State> {
     this.setState({ error, info, eventId: errorService.lastEventId() });
   }
 
-  componentWillReceiveProps() {
+  UNSAFE_componentWillReceiveProps() {
     if (this.props.resetOnProps) {
       this.setState({ error: false, info: null });
     }

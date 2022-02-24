@@ -82,7 +82,7 @@ export default class PaymentButtonCreate extends React.Component {
     activeTabIndex: 0,
   };
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     // Always reset the data initially
     if (!this.props.id) {
       this.resetPageData();
@@ -101,7 +101,7 @@ export default class PaymentButtonCreate extends React.Component {
     this.initTracker();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.closeModal();
 

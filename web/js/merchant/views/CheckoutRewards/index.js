@@ -46,7 +46,7 @@ export default class CheckoutRewardsIndex extends Component {
     );
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.rewards.loading !== this.props.rewards.loading) {
       this.initRewardsOnboarding(nextProps);
     }

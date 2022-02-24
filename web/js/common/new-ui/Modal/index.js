@@ -11,7 +11,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 export class ModalMask extends React.PureComponent {
   state = {};
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     if (this.props.isBlur) this.toggleBlur(true);
   }
 

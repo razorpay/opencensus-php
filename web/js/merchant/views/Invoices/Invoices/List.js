@@ -40,8 +40,8 @@ import { track, trackSearchFilterForInternational } from '../ga';
   { ...InvoiceActions, handleProductQuickGuide },
 )
 export default class InvoicesListContainer extends ListContainer {
-  componentWillMount() {
-    super.componentWillMount();
+  UNSAFE_componentWillMount() {
+    super.UNSAFE_componentWillMount();
 
     this.setState({ loadingAllList: true });
     this.fetchAllEntityList();
