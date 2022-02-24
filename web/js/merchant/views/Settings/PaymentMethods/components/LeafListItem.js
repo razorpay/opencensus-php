@@ -10,6 +10,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   createMerchantInstrumentRequest,
   cancelMerchantInstrumentRequest,
+  reinitiateMerchantInstrumentRequest,
   fetchMerchantInstruments,
   fetchRequestedInstruments,
   getIirDiscrepancies,
@@ -222,6 +223,63 @@ class LeafListItem extends React.Component {
       .catch(() => {});
   };
 
+  handleReinitiateRequest = (instrument) => {
+    const { leafInstrument } = this.props;
+    this.tracker('instrument', 'reinitiated', 'settings', {
+      instrumentName: instrument.name,
+      method: leafInstrument.name,
+    });
+    this.context
+      .confirm({
+        header: 'Are you sure?',
+        message: `Are you certain you want to reinitiate request for ${instrument.name}?`,
+        affirmativeLabel: 'Yes',
+        abortLabel: 'No',
+        action: () => {
+          this.tracker('instrument reinitiate confirmation popup', 'clicked', 'settings', {
+            actionName: 'Yes',
+            instrumentName: instrument.name,
+            method: leafInstrument.name,
+          });
+          this.props
+            .reinitiateMerchantInstrumentRequest(instrument.merchant_instrument_request_id)
+            .then((d) => {
+              if (d.success) {
+                this.props.showNotification({
+                  type: 'success',
+                  message: `Request for ${instrument.name} reinitiated successfully`,
+                });
+                this.tracker('instrument reinitiate', 'result', 'settings', {
+                  instrumentName: instrument.name,
+                  method: leafInstrument.name,
+                  status: 'Success',
+                });
+              }
+            })
+            .catch(({ errors }) => {
+              this.props.showNotification({
+                type: 'error',
+                message: errors[0],
+              });
+              this.tracker('instrument reinitiate', 'result', 'settings', {
+                instrumentName: instrument.name,
+                method: leafInstrument.name,
+                status: 'Failure',
+                failureReason: errors[0],
+              });
+            });
+        },
+        abort: () => {
+          this.tracker('instrument reinitiate confirmation popup', 'clicked', 'settings', {
+            actionName: 'No',
+            instrumentName: instrument.name,
+            method: leafInstrument.name,
+          });
+        },
+      })
+      .catch(() => {});
+  };
+
   handleRaiseRequest = (instrument) => {
     this.tracker('Raise Request from Instrument Dashboard', 'clicked', 'settings', {
       actionName: 'No',
@@ -247,6 +305,7 @@ class LeafListItem extends React.Component {
       action_required: 'action-required status',
       activated_action_required: 'activated-action-required status',
       greyed: 'btn btn-primary disabled',
+      reinitiated: 'requested status',
     };
     const getListClass = (status, path) => {
       if ([REJECTED, ACTION_REQUIRED].includes(status)) {
@@ -267,6 +326,7 @@ class LeafListItem extends React.Component {
     const statusPopoverText = {
       activated: 'Payment method active on your checkout',
       requested: 'Payment method has been requested',
+      reinitiated: 'Payment method has been reinitiated',
       pending: 'Your request has been forwarded for approval',
       rejected: 'Your request has been rejected',
       action_required: 'Action required on your end to complete the process',
@@ -290,8 +350,9 @@ class LeafListItem extends React.Component {
       }
     };
 
-    const shouldRaiseRequest =
-      [ACTION_REQUIRED, REJECTED].includes(instrument.status) && instrument.comment;
+    const shouldRaiseRequest = instrument.status === REJECTED && instrument.comment;
+    const shouldReinitiateRequest =
+      instrument.status === ACTION_REQUIRED && !instrument.should_show_smart_dashboard_flow;
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -334,6 +395,14 @@ class LeafListItem extends React.Component {
             {shouldRaiseRequest && (
               <button className="btn btn-link" onClick={() => this.handleRaiseRequest(instrument)}>
                 Raise Request
+              </button>
+            )}
+            {shouldReinitiateRequest && (
+              <button
+                className="btn btn-link"
+                onClick={() => this.handleReinitiateRequest(instrument)}
+              >
+                Reinitiate request
               </button>
             )}
             {instrument.status === REQUESTED && (
@@ -469,6 +538,7 @@ const mapDispatchToProps = (dispatch) => {
     {
       createMerchantInstrumentRequest,
       cancelMerchantInstrumentRequest,
+      reinitiateMerchantInstrumentRequest,
       showNotification,
       openModal,
       closeModal,

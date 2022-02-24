@@ -13,6 +13,7 @@ const FETCH_ALL_MERCHANT_INSTRUMENTS = 'FETCH_ALL_MERCHANT_INSTRUMENTS';
 const FETCH_REQUESTED_MERCHANT_INSTRUMENTS = 'FETCH_REQUESTED_MERCHANT_INSTRUMENTS';
 const CREATE_INSTRUMENT_REQUEST = 'CREATE_INSTRUMENT_REQUEST';
 const CANCEL_INSTRUMENT_REQUEST = 'CANCEL_INSTRUMENT_REQUEST';
+const REINITIATE_INSTRUMENT_REQUEST = 'REINITIATE_INSTRUMENT_REQUEST';
 const SET_LOADING = 'SET_LOADING';
 const GET_DISCREPANCY_CATEGORIES = 'GET_DISCREPANCY_CATEGORIES';
 const GET_IIR_DISCREPANCIES = 'GET_IIR_DISCREPANCIES';
@@ -78,6 +79,18 @@ export const cancelMerchantInstrumentRequest = (id) => {
     }),
   };
 };
+
+export const reinitiateMerchantInstrumentRequest = (id) => {
+  return {
+    type: REINITIATE_INSTRUMENT_REQUEST,
+    payload: merchantFetch({
+      url: `merchant_instrument_request/${id}`,
+      method: 'patch',
+      data: { status: 'reinitiated' },
+    }),
+  };
+};
+
 export const setLoading = () => {
   return {
     type: SET_LOADING,
@@ -986,6 +999,11 @@ export default function instrumentRequestsReducer(state = initialState, action) 
 
         if (['action_required', 'rejected', 'activated_action_required'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
+          lodashset(
+            stateClone,
+            `${path}.should_show_smart_dashboard_flow`,
+            s.should_show_smart_dashboard_flow,
+          );
         }
         if (s.status === 'greyed') {
           lodashset(stateClone, `${path}.fade_comment`, s.fade_comment);
@@ -1047,6 +1065,26 @@ export default function instrumentRequestsReducer(state = initialState, action) 
       });
       if (cancelLeafIndex !== -1) {
         lodashset(stateClone, `${pathToCancel}.status`, action.payload.data.status);
+        return stateClone;
+      }
+      return state;
+    }
+    case `${REINITIATE_INSTRUMENT_REQUEST}::SUCCESS`: {
+      let reinitiateLeafIndex, pathToReinitiate;
+      const stateClone = cloneDeep(state);
+      stateClone.leafInstrument.leafList.every((leaf, index) => {
+        reinitiateLeafIndex = leaf.list.findIndex((_) => {
+          return _.slug.includes(action.payload.data.instrument.split('.').pop());
+        });
+
+        if (reinitiateLeafIndex !== -1) {
+          pathToReinitiate = `leafInstrument.leafList[${index}].list[${reinitiateLeafIndex}]`;
+          return false;
+        }
+        return true;
+      });
+      if (reinitiateLeafIndex !== -1) {
+        lodashset(stateClone, `${pathToReinitiate}.status`, action.payload.data.status);
         return stateClone;
       }
       return state;

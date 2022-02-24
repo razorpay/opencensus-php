@@ -6,13 +6,15 @@ import { ACTION_REQUIRED } from '../../constants';
 import Clarifications from '../Modals/Clarifications';
 
 const RejectedAndActionRequired = (props) => {
+  const { instrument } = props;
   const {
-    instrument,
-    user: { isSmartDashboardActive },
-  } = props;
-  const { status, merchant_instrument_request_id, comment } = instrument;
+    status,
+    merchant_instrument_request_id: mirId,
+    comment,
+    should_show_smart_dashboard_flow,
+  } = instrument;
 
-  const handleUpdateForm = (mirId) => {
+  const handleUpdateForm = () => {
     return props.openModal({
       component: (
         <Clarifications
@@ -35,12 +37,10 @@ const RejectedAndActionRequired = (props) => {
         width="15px"
       />
       <p>
-        {isSmartDashboardActive && status === ACTION_REQUIRED && !comment ? (
+        {should_show_smart_dashboard_flow && status === ACTION_REQUIRED ? (
           <>
             <span>We need more information to proceed further with the application,</span>{' '}
-            <a onClick={() => handleUpdateForm(merchant_instrument_request_id)}>
-              update Request Form.
-            </a>
+            <a onClick={handleUpdateForm}>update Request Form.</a>
           </>
         ) : (
           comment
