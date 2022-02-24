@@ -16,6 +16,7 @@ use RZP\Models\PayoutLink\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PayoutLink\Validator;
 use Illuminate\Support\Facades\Mail;
+use Razorpay\Edge\Passport\Passport;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Batch\Type as BatchType;
 use RZP\Exception\BadRequestException;
@@ -1251,6 +1252,8 @@ class PayoutLinks
         $headers['Content-Type'] = 'application/json';
 
         $headers['X-Task-ID'] = $this->app['request']->getId();
+
+        $headers[Passport::PASSPORT_JWT_V1] = $this->app['basicauth']->getPassportJwt($this->baseUrl);
 
         $options = [
             'auth' => [
