@@ -188,4 +188,26 @@ class Service extends Base\Service
 
         return $hostnames->toArray();
     }
+
+    public function validateEntityOrgId(array $entity):bool // validating the org id
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        if(empty($orgId) === false)
+        {
+            $orgId = Entity::verifyIdAndSilentlyStripSign($orgId);
+        }
+
+        if((empty($orgId)) or ($orgId === Entity::RAZORPAY_ORG_ID))
+        {
+            return true;
+
+        }
+        else if($entity['org_id'] === $orgId )
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

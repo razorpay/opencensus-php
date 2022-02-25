@@ -4435,6 +4435,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const ACTIVE_DB_CONNECTIONS                                 = 'ACTIVE_DB_CONNECTIONS';
 
+    const ENTITY_ORG_ID                                         = 'ENTITY_ORG_ID';
     // Rendering Preferences / Options
     const OPTIONS_CREATE_REQUEST                                = 'OPTIONS_CREATE_REQUEST';
     const OPTIONS_CREATED                                       = 'OPTIONS_CREATED';
@@ -6329,6 +6330,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BULK_REGENERATE_API_KEYS                          =  'BULK_REGENERATE_API_KEYS';
     const SKIP_ORG_DATA_IN_RESPONSE                         = 'SKIP_ORG_DATA_IN_RESPONSE';
 
+    const TERMINAL_ORG_HEADERS_EXCEPTION                    = 'TERMINAL_ORG_HEADERS_EXCEPTION';
     //FIRS Document Processor Job
     const FIRS_DOCUMENT_PROCESSOR_JOB_INIT      = 'FIRS_DOCUMENT_PROCESSOR_JOB_INIT';
     const FIRS_DOCUMENT_PROCESSOR_JOB_FAILED    = 'FIRS_DOCUMENT_PROCESSOR_JOB_FAILED';

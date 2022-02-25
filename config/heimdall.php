@@ -316,6 +316,10 @@ return [
                 'description' => 'Ability to view a terminal',
                 'assignable' => true,
             ],
+            Permission::VIEW_TERMINAL_EXTERNAL_ORG          =>  [
+                'description' => 'Ability to view a terminal from outside the org',
+                'assignable' => true,
+            ],
             Permission::INCREASE_TRANSACTION_LIMIT          => [
                 'assignable'  => true,
                 'workflow'    => true,

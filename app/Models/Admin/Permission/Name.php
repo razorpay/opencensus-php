@@ -99,6 +99,7 @@ class Name
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
     const VIEW_TERMINAL                       = 'view_terminal';
+    const VIEW_TERMINAL_EXTERNAL_ORG          = 'view_terminal_external_org';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const PAYMENTS_BATCH_CREATE_TERMINALS_BULK = "payments_batch_create_terminals_bulk";

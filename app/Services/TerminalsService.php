@@ -795,6 +795,28 @@ class TerminalsService
         ];
     }
 
+    public function getTerminalServiceOrgHeaders():array
+    {
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $orgId = $this->app['basicauth']->getOrgId();
+
+            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            return [
+                'X-Dashboard-Admin-OrgId'   => $orgId,
+            ];
+        }
+        else if($this->app['basicauth']->isProxyAuth() === true)
+        {
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            return [
+                'X-Dashboard-Merchant-OrgId'    => $merchant->getOrgId(),
+            ];
+        }
+        return [];
+    }
     protected function getRequestMultipart($input)
     {
         $multipart = [

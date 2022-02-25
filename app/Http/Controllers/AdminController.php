@@ -15,6 +15,7 @@ use RZP\Models\Report;
 use RZP\Models\Terminal;
 use RZP\Services\Stork;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class AdminController extends Controller
 {
@@ -63,12 +64,27 @@ class AdminController extends Controller
 
             $path = "v1/admin/terminals/" . $id;
 
+            try
+            {
+                $headers = $this->app['terminals_service']->getTerminalServiceOrgHeaders();
+            }
+            catch (\Exception $e)
+            {
+                $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::TERMINAL_ORG_HEADERS_EXCEPTION, [
+                    'message' => $e->getMessage(),
+                    'location' => 'getTerminalById',
+                ]);
+            }
+
+            $this->trace->info(TraceCode::ENTITY_ORG_ID, [
+                'headers' => $headers,
+            ]);
             //Increasing the timeout value to 40 Seconds as terminals api default timeout is 30 seconds.
             $options = [];
             $options['timeout'] = 30;
             $options['connect_timeout'] = 10;
 
-            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path,$options);
+            $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path, $options, $headers);
 
             return ApiResponse::json($response);
         }
