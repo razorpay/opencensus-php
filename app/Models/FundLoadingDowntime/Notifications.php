@@ -424,7 +424,7 @@ class Notifications
 
             if($key < (count($this->downtimeInformation[Constants::DURATIONS_AND_MODES]) - 1))
             {
-                $params['modes' . strval($key + 1)] .= ' &';
+                $params['modes' . strval($key + 1)] .= ' and';
             }
         }
 
