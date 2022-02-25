@@ -50,4 +50,14 @@ class VendorPortalController extends Controller
     {
         return $this->service->getOcrData($vendorInviteId, $ocrId, $this->ba->getUser());
     }
+
+    public function getVendorPreferences(string $vendorInviteId)
+    {
+        return $this->service->getVendorPreferences($this->ba->getUser(), $vendorInviteId);
+    }
+
+    public function updateVendorPreferences(string $vendorInviteId)
+    {
+        return $this->service->updateVendorPreferences($this->ba->getUser(), $this->input, $vendorInviteId);
+    }
 }

@@ -988,6 +988,8 @@ class UserRolesScope
             'vendor_portal_invites_list'                           => [Role::VENDOR],
             'vendor_portal_upload_invoice'                         => [Role::VENDOR],
             'vendor_portal_get_ocr_data'                           => [Role::VENDOR],
+            'vendor_portal_get_vendor_preferences'                 => [Role::VENDOR],
+            'vendor_portal_update_vendor_preferences'              => [Role::VENDOR],
             'x_apps_get_all_settings'                              => [Role::OWNER, Role::ADMIN],
             'x_apps_add_or_update_settings'                        => [Role::OWNER, Role::ADMIN],
             'virtual_account_banking_fetch_multiple'               => [Role::OWNER, Role::ADMIN],

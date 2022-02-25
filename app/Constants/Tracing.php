@@ -139,6 +139,8 @@ class Tracing
             'x_apps_get_all_settings',
             'x_apps_add_or_update_settings',
             'invite_to_vendor_portal',
+            'vendor_portal_get_vendor_preferences',
+            'vendor_portal_update_vendor_preferences',
 
             // accounting-payouts API routes
             'accounting_payouts_integration_status',

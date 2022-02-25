@@ -165,4 +165,32 @@ return [
             ],
         ],
     ],
+
+    'testGetVendorPreferences' => [
+        'request'  => [
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => 'VendPortalUser',
+            ],
+            'url'    => '/vendor-portal/invite/invite1/preferences',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testUpdateVendorPreferences' => [
+        'request'  => [
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => 'VendPortalUser',
+            ],
+            'url'    => '/vendor-portal/invite/invite1/preferences',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

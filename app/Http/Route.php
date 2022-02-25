@@ -1551,7 +1551,8 @@ class Route
         'vendor_invoice_create'                    => ['post',     'vendor-portal/invite/{vendor_invite_id}/invoices',                     'VendorPortalController@createVendorInvoice'      ],
         'vendor_portal_upload_invoice'             => ['post',     'vendor-portal/invite/{vendor_invite_id}/upload-invoice',               'VendorPortalController@uploadInvoice'            ],
         'vendor_portal_get_ocr_data'               => ['get',      'vendor-portal/invite/{vendor_invite_id}/get-ocr-data/{ocr_id}',        'VendorPortalController@getOcrData'               ],
-
+        'vendor_portal_get_vendor_preferences'     => ['get',      'vendor-portal/invite/{vendor_invite_id}/preferences',                  'VendorPortalController@getVendorPreferences'     ],
+        'vendor_portal_update_vendor_preferences'  => ['post',     'vendor-portal/invite/{vendor_invite_id}/preferences',                  'VendorPortalController@updateVendorPreferences'  ],
 
         // Routes common to x-apps
         'x_apps_get_all_settings'                  => ['get',     'x-apps/settings/',                          'XAppsController@getAllSettings'                                          ],
@@ -5118,6 +5119,8 @@ class Route
         'vendor_portal_invoice_get_signed_url',
         'vendor_portal_upload_invoice',
         'vendor_portal_get_ocr_data',
+        'vendor_portal_get_vendor_preferences',
+        'vendor_portal_update_vendor_preferences',
 
         // Apps routes
         'x_apps_get_all_settings',
@@ -7690,6 +7693,8 @@ class Route
         'vendor_portal_invites_list'                   => Permission::VENDOR_PORTAL_PERMISSION,
         'vendor_portal_upload_invoice'                 => Permission::VENDOR_PORTAL_PERMISSION,
         'vendor_portal_get_ocr_data'                   => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_get_vendor_preferences'         => Permission::VENDOR_PORTAL_PERMISSION,
+        'vendor_portal_update_vendor_preferences'      => Permission::VENDOR_PORTAL_PERMISSION,
         'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'invite_to_vendor_portal'                      => Permission::INVITE_VENDOR,
@@ -9216,6 +9221,8 @@ class Route
             'vendor_portal_list_tds_categories',
             'vendor_portal_upload_invoice',
             'vendor_portal_get_ocr_data',
+            'vendor_portal_get_vendor_preferences',
+            'vendor_portal_update_vendor_preferences',
             'vendor_invoice_get_by_id',
             'vendor_portal_invoice_get_signed_url',
             'vendor_portal_invites_list',
@@ -12746,6 +12753,8 @@ class Route
         'vendor_portal_list_tds_categories',
         'vendor_portal_upload_invoice',
         'vendor_portal_get_ocr_data',
+        'vendor_portal_get_vendor_preferences',
+        'vendor_portal_update_vendor_preferences',
         'vendor_invoice_get_by_id',
         'vendor_portal_invoice_get_signed_url',
         'vendor_portal_invites_list',

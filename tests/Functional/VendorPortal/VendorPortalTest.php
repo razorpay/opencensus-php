@@ -184,4 +184,30 @@ class VendorPortalTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetVendorPreferences()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('getVendorPreferences')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getVendorPreferences');
+    }
+
+    public function testUpdateVendorPreferences()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPortal\Service');
+
+        $vpMock->shouldReceive('updateVendorPreferences')->andReturn([]);
+
+        $this->app->instance('vendor-portal', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('updateVendorPreferences');
+    }
 }
