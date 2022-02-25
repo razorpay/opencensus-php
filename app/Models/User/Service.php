@@ -231,7 +231,8 @@ class Service extends Base\Service
             Entity::EMAIL                      => $user[Entity::EMAIL] ?? null,
             Entity::VISITOR_ID                 => $visitorId,
             Merchant\Constants::PARTNER_INTENT => $partnerIntent,
-            'is_m2m_referral'                  => $isM2MReferral
+            'is_m2m_referral'                  => $isM2MReferral,
+            'phone'                            => $user[Entity::CONTACT_MOBILE] ?? ""
 
         ];
 

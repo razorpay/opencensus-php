@@ -21,7 +21,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->whereBetween(Entity::CREATED_AT, [$startTime, $endTime])
             ->get()
-            ->pluck(Entity::ID)
             ->toArray();
     }
 }
