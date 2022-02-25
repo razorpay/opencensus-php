@@ -16,15 +16,6 @@ class CommissionInvoiceController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFixInvoicesStatus()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->fixInvoicesStatus($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function changeStatus($id)
     {
         $input = Request::all();

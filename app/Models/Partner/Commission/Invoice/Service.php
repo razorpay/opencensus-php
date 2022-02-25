@@ -33,11 +33,6 @@ class Service extends Base\Service
         return (new Core)->clearOnHoldForInvoiceBulk($input);
     }
 
-    public function fixInvoicesStatus(array $input)
-    {
-        return (new Core)->fixInvoicesStatus($input);
-    }
-
     public function fetch($id)
     {
         $params = [

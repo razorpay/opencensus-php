@@ -26,7 +26,6 @@ use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\Partner\Commission\Invoice as PartnerCommissionInvoice;
 
 class Core extends Base\Core
 {
@@ -254,35 +253,6 @@ class Core extends Base\Core
         $paiseInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
 
         return [$currencySymbol, $rupeesInAmount, $paiseInAmount];
-    }
-
-    public function fixInvoicesStatus(array $input) {
-        $count = 50;
-        $after_id = null;
-        $fixed_invoices = array();
-
-        $ids = isset($input[Constants::INVOICE_IDS]) ? $input[Constants::INVOICE_IDS] : null;
-
-        $invoices = $this->repo->commission_invoice->fetchApprovedInvoices($ids, $count, $after_id);
-
-        while($invoices->count() > 0) {
-            foreach($invoices as $invoice) {
-                $this->trace->info(TraceCode::COMMISSION_INVOICE_UPDATE_STATUS, [
-                    'invoice_id' => $invoice->getId(),
-                ]);
-
-                $data = (new PartnerCommissionInvoice\Core)->convertMonthAndYearToTimeStamp($invoice->getMonth(), $invoice->getYear());
-                $data[Constants::INVOICE_ID] = $invoice->getId();
-
-                CommissionTdsSettlement::dispatch($this->mode, $invoice->merchant->getId(), $data);
-
-                array_push($fixed_invoices, $invoice->getId());
-            }
-            $after_id = $invoice->getId();
-            $invoices = $this->repo->commission_invoice->fetchApprovedInvoices($ids, $count, $after_id);
-        }
-
-        return $fixed_invoices;
     }
 
     public function triggerWorkflowActionIfApplicable(Entity $invoice, Merchant\Entity $merchant)

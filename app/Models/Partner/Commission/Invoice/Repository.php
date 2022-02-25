@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Partner\Commission\Invoice;
 
-use Carbon\Carbon;
-
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -33,32 +30,5 @@ class Repository extends Base\Repository
                     ->where(Entity::YEAR, '=', $year)
                     ->where(Entity::MONTH, '=', $month)
                     ->get();
-    }
-
-    public function fetchApprovedInvoices($ids = null, $limit = null, $afterId = null)
-    {
-        $timestamp = Carbon::createFromDate(2022, 1, 25, Timezone::IST)->startOfDay()->getTimestamp();
-
-        $query = $this->newQuery()
-                    ->where(Entity::UPDATED_AT, '<', $timestamp)
-                    ->whereIn(Entity::STATUS, [Status::APPROVED])
-                    ->orderBy(Entity::ID);
-
-        if (empty($limit) === false)
-        {
-            $query->take($limit);
-        }
-
-        if (empty($afterId) === false)
-        {
-            $query->where(Entity::ID, '>', $afterId);
-        }
-
-        if (empty($ids) === false)
-        {
-            $query->whereIn(Entity::ID, $ids);
-        }
-
-        return $query->get();
     }
 }
