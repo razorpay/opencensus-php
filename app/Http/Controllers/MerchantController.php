@@ -106,6 +106,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateLinkedAccountBankAccount(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateLinkedAccountBankAccount($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postSwitchProductMerchant()
     {
         $this->service()->switchProductMerchant();

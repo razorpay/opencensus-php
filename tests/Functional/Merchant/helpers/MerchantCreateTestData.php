@@ -1135,6 +1135,105 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountOnProxyAuth' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'post',
+            'content' => [
+                'name'      => 'Bobby Fischer',
+                'account'   => true,
+                'email'     => 'bobby.fischer@chess.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'merchant',
+                'name'      => 'Bobby Fischer',
+                'email'     => 'bobby.fischer@chess.com',
+                'activated' => false,
+                'live'      => false,
+            ],
+        ],
+    ],
+
+    'testUpdateBankAccountForNotActivatedLinkedAccount' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'class'                 => 'BAD_REQUEST',
+                    'internal_error_code'   => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT_FOR_LINKED_ACCOUNT_NOT_ACTIVATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testUpdateBankAccountForActivatedLinkedAccount' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'            => 'activated',
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+    ],
+
+    'testUpdateBankAccountForLinkedAccountWithoutFeature' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'class'                 => 'BAD_REQUEST',
+                    'internal_error_code'   => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE_FEATURE_NOT_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testUpdateBankAccountForLinkedAccountWithPennyTesting' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'            => 'verification_pending',
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+    ],
+
     'testLinkedAccountDashboardAccessAlreadyGiven' => [
         'request' => [
             'url' => '/la-merchants/config',

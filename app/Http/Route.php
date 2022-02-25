@@ -1740,6 +1740,7 @@ class Route
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
         'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
         'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
+        'linked_account_update_bank_account'       => ['post',     'linked_accounts/{id}/bank_account',              'MerchantController@updateLinkedAccountBankAccount'                 ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_otp_register'                        => ['post',     'users/register/otp',                             'UserController@registerUserWithOtp'                                ],
@@ -5214,6 +5215,7 @@ class Route
         'linked_account_create_batch',
         'payment_transfer_batch',
         'transfer_create_reversal_batch',
+        'linked_account_update_bank_account',
         'reward_activate_or_deactivate',
         'reward_fetch',
         'fetch_trusted_badge_status',
@@ -8531,6 +8533,7 @@ class Route
             'link_stakeholder_documents_v2',
             'linked_account_create_batch',
             'payment_transfer_batch',
+            'linked_account_update_bank_account',
             'list_low_balance_config',
             'list_merchant_notification_config',
             'loc_service',

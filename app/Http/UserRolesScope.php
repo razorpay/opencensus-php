@@ -632,6 +632,7 @@ class UserRolesScope
             'link_account_documents_v2'                            => [Role::OWNER, Role::ADMIN],
             'link_stakeholder_documents_v2'                        => [Role::OWNER, Role::ADMIN],
             'linked_account_create_batch'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
+            'linked_account_update_bank_account'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             'list_low_balance_config'                              => [Role::OWNER, Role::ADMIN],
             'list_merchant_notification_config'                    => [Role::OWNER, Role::ADMIN],
             'merchant_activation_business_details'                 => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],

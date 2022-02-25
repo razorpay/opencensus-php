@@ -620,9 +620,15 @@ class Validator extends Base\Validator
         'fee'    => 'required|integer',
     ];
 
+    protected static $laBankAccountUpdateRules = [
+        'beneficiary_name'          => 'required|string|between:4,120',
+        'account_number'            => 'required|alphanum|between:5,35',
+        'ifsc_code'                 => 'required|alphanum|size:11',
+    ];
+
     protected static $merchantWorkflowClarificationRules = [
         Constants::MERCHANT_WORKFLOW_CLARIFICATION          => 'required|string',
-        Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS     => 'sometimes|array'
+        Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS     => 'sometimes|array',
     ];
 
     public function validateSmartDashboardMerchantEditInput(array $input)

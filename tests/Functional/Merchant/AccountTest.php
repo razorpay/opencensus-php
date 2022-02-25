@@ -109,6 +109,68 @@ class AccountTest extends TestCase
         $this->assertEquals('acc_' . $accountId, $account['id']);
     }
 
+    public function testUpdateBankAccountForLinkedAccount()
+    {
+        $this->fixtures->merchant->addFeatures('la_bank_account_update');
+
+        $response = $this->runRequestResponseFlow($this->testData['createLinkedAccount']);
+
+        $id = $response['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/linked_accounts/' . $id . '/bank_account';
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->assertEquals('Emma Stone', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('123412341234', $bankAccount['account_number']);
+
+        $this->assertEquals('SBIN0000004', $bankAccount['ifsc_code']);
+
+        $linkedAccount = $this->getDbLastEntity('merchant');
+
+        $this->assertFalse($linkedAccount['hold_funds']);
+    }
+
+    public function testUpdateBankAccountForLinkedAccountWithPennyTesting()
+    {
+        $this->markTestSkipped();
+
+        $this->fixtures->merchant->addFeatures(['la_bank_account_update', 'route_la_penny_testing']);
+
+        $response = $this->runRequestResponseFlow($this->testData['createLinkedAccount']);
+
+        $id = $response['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/linked_accounts/' . $id . '/bank_account';
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->assertEquals('Emma Stone', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('123412341234', $bankAccount['account_number']);
+
+        $this->assertEquals('SBIN0000004', $bankAccount['ifsc_code']);
+
+        $linkedAccount = $this->getDbLastEntity('merchant');
+
+        $this->assertTrue($linkedAccount['hold_funds']);
+
+        $this->assertEquals('linked_account_penny_testing', $linkedAccount['hold_funds_reason']);
+    }
+
     public function testRetrieveAccount()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account');

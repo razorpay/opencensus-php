@@ -6421,6 +6421,136 @@ class Core extends Base\Core
         }
     }
 
+    public function updateLinkedAccountBankAccount(string $id, array $input)
+    {
+        //
+        // Changing bank account details on test mode is
+        // pointless, hence we are forcing live mode here.
+        // Dashboard may implement a tooltip to mention this.
+        //
+        $this->setModeAndDefaultConnection(Mode::LIVE);
+
+        $linkedAccount = $this->repo->account->findOrFail($id);
+
+        if ((empty($linkedAccount) === true) or
+            ($linkedAccount->getParentId() !== $this->merchant->getId()))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_ID_DOES_NOT_EXIST,
+                'linked_account_id',
+                [
+                    'linked_account_id'     => $id,
+                    'la.parent_id'          => $linkedAccount->getParentId(),
+                    'parent_merchant_id'    => $this->merchant->getId(),
+                ]
+            );
+        }
+
+        //
+        // If a linked account is not activated, bank account is
+        // not present yet. Hence, there is no question of update.
+        //
+        if ($linkedAccount->isActivated() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_CANNOT_UPDATE_BANK_ACCOUNT_FOR_LINKED_ACCOUNT_NOT_ACTIVATED,
+                'linked_account_id',
+                [
+                    'linked_account_id' => $id,
+                    'activated'         => $linkedAccount->getActivated(),
+                ]
+            );
+        }
+
+        //
+        // Bank account update without penny testing is synchronous. But the penny testing flow is
+        // asynchronous and linked account funds are put on hold during the same. If bank account update
+        // is requested while the previous penny testing flow is still not complete, we'll throw this error.
+        //
+        if ($linkedAccount->getHoldFundsReason() === Constants::LINKED_ACCOUNT_PENNY_TESTING)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANK_ACCOUNT_UPDATE_ALREADY_IN_PROGRESS,
+                'linked_account_id',
+                [
+                    'linked_account_id' => $id,
+                ]
+            );
+        }
+
+        $bankAccountCore = new BankAccount\Core();
+
+        $data = $bankAccountCore->buildBankAccountArrayFromMerchantDetail($linkedAccount->merchantDetail, true);
+
+        $data = array_merge($data, $input);
+
+        //
+        // LA funds need to be put on hold before initiating penny testing so that no new
+        // settlements are created after the merchant has requested for a bank account change.
+        //
+        $this->transaction(function () use ($linkedAccount, $bankAccountCore, $data)
+        {
+            $linkedAccount->setHoldFundsReason(Constants::LINKED_ACCOUNT_PENNY_TESTING);
+
+            $this->repo->saveOrFail($linkedAccount);
+
+            (new Service())->edit($linkedAccount->getId(), [Entity::HOLD_FUNDS => true]);
+
+            //
+            // This will propagate the bank account change to the new settlements service as well.
+            // The old settlements service (in api) reads bank account details from the bank_accounts table
+            // in the api DB. The new settlements service reads bank account details from the bank_accounts
+            // table in the settlements DB. Hence, it is necessary to maintain the changes at both places.
+            //
+            $bankAccountCore->createOrChangeBankAccount($data, $linkedAccount, false, false);
+        });
+
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true)
+        {
+            $this->initiatePennyTestingForLinkedAccount($linkedAccount);
+
+            // ToDo: Should not send hardcoded status. Use getCombinedActivationStatusForLinkedAccounts() instead, after backfilling bank_details_verification_status column.
+            // https://github.com/razorpay/api/pull/26779#discussion_r806820311
+            return array_merge(['status' => Account\Constants::VERIFICATION_PENDING], $input);
+        }
+
+        //
+        // To ensure we have the latest hold_funds_reason.
+        //
+        $linkedAccount->reload();
+
+        if ($linkedAccount->getHoldFundsReason() === Constants::LINKED_ACCOUNT_PENNY_TESTING)
+        {
+            $linkedAccount->setHoldFunds(false);
+
+            $this->repo->account->saveOrFail($linkedAccount);
+        }
+
+        // ToDo: Should not send hardcoded status. Use getCombinedActivationStatusForLinkedAccounts() instead, after backfilling bank_details_verification_status column.
+        // https://github.com/razorpay/api/pull/26779#discussion_r806820311
+        return array_merge(['status' => Account\Constants::ACTIVATED], $input);
+    }
+
+    protected function initiatePennyTestingForLinkedAccount($linkedAccount)
+    {
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_INITIATE_PENNY_TESTING_FOR_BANK_ACCOUNT_UPDATE,
+            [
+                'linked_account_id'     => $linkedAccount->getId(),
+                'parent_merchant_id'    => $linkedAccount->getParentId(),
+                'initiator'             => 'merchant',
+            ]
+        );
+
+        $merchantDetailCore = new Detail\Core();
+
+        $merchantDetailCore->publicAttemptPennyTesting($linkedAccount->merchantDetail, $linkedAccount, true);
+
+        $merchantDetailCore->publicTriggerValidationRequests($linkedAccount, $linkedAccount->merchantDetail);
+
+        $this->repo->saveOrFail($linkedAccount->merchantDetail);
+    }
+
     public function sendPartnerLeadInfoToSalesforce(string $merchantId, string $partnerId, string $product, array $extraData = [])
     {
         $merchantId = Account\Entity::SilentlyStripSign($merchantId);

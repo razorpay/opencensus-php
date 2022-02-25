@@ -1559,6 +1559,121 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateBankAccountForNotActivatedLinkedAccount()
+    {
+        $this->markTestSkipped('Test was not passing on CI because the error code data wasn\'t getting fetched from error-mapping-module repo correctly.');
+
+        $this->fixtures->merchant->addFeatures(['marketplace', 'la_bank_account_update']);
+
+        $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $id = $response['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateBankAccountForActivatedLinkedAccount()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'la_bank_account_update']);
+
+        $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $id = $response['id'];
+
+        // ToDo: Activate linked account properly by passing bank account details.
+        $this->fixtures->merchant->activate($id);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->assertEquals('Bobby Fischer Junior', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('987698769876', $bankAccount['account_number']);
+
+        $this->assertEquals('SBIN0000003', $bankAccount['ifsc_code']);
+
+        $linkedAccount = $this->getDbLastEntity('merchant');
+
+        $this->assertFalse($linkedAccount['hold_funds']);
+    }
+
+    public function testUpdateBankAccountForLinkedAccountWithoutFeature()
+    {
+        $this->markTestSkipped('Test was not passing on CI because the error code data wasn\'t getting fetched from error-mapping-module repo correctly.');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $id = $response['id'];
+
+        // ToDo: Activate linked account properly by passing bank account details.
+        $this->fixtures->merchant->activate($id);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateBankAccountForLinkedAccountWithPennyTesting()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'la_bank_account_update', 'route_la_penny_testing']);
+
+        $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $id = $response['id'];
+
+        // ToDo: Activate linked account properly by passing bank account details.
+        $this->fixtures->merchant->activate($id);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+
+        $this->runRequestResponseFlow($testData);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+
+        $this->assertEquals('Bobby Fischer Junior', $bankAccount['beneficiary_name']);
+
+        $this->assertEquals('987698769876', $bankAccount['account_number']);
+
+        $this->assertEquals('SBIN0000003', $bankAccount['ifsc_code']);
+
+        $linkedAccount = $this->getDbLastEntity('merchant');
+
+        $this->assertTrue($linkedAccount['hold_funds']);
+
+        $this->assertEquals('linked_account_penny_testing', $linkedAccount['hold_funds_reason']);
+    }
+
     public function testBackFillMerchantId()
     {
         $this->ba->adminAuth();

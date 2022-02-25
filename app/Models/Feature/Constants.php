@@ -768,6 +768,7 @@ class Constants
 
     const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
     const TRANSFER_FAILED_WEBHOOK           = 'transfer_failed_webhook';
+    const LA_BANK_ACCOUNT_UPDATE            = 'la_bank_account_update';
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
 
@@ -1515,6 +1516,7 @@ class Constants
         self::ORG_SECOND_FACTOR_AUTH         => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::TRANSFER_FAILED_WEBHOOK         => true,
+        self::LA_BANK_ACCOUNT_UPDATE          => true,
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
         self::REWARD_MERCHANT_DASHBOARD       => true,
@@ -2090,6 +2092,11 @@ class Constants
         self::TRANSFER_FAILED_WEBHOOK => [
             'feature'       => self::TRANSFER_FAILED_WEBHOOK,
             'display_name'  => 'transfer.failed webhook',
+            'documentation' => '',
+        ],
+        self::LA_BANK_ACCOUNT_UPDATE => [
+            'feature'       => self::LA_BANK_ACCOUNT_UPDATE,
+            'display_name'  => 'la_bank_account_update',
             'documentation' => '',
         ],
         self::PAYPAL_GTM_NOTIFICATION  => [

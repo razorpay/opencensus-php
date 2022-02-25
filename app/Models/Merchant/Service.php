@@ -199,6 +199,8 @@ class Service extends Base\Service
 
     const LINKED_ACCOUNT_CREATE = 'linked_account_create_%s';
 
+    const LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE = 'linked_account_bank_account_update_%s';
+
     protected $mutex;
 
     protected $featureService;
@@ -501,6 +503,41 @@ class Service extends Base\Service
         );
 
         return $input;
+    }
+
+    public function updateLinkedAccountBankAccount(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_UPDATE_BANK_ACCOUNT_REQUEST,
+            [
+                'linked_account_id'     => Account\Entity::verifyIdAndStripSign($id),
+                'parent_merchant_id'    => $this->merchant->getId(),
+                'initiator'             => 'merchant',
+            ]
+        );
+
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::LA_BANK_ACCOUNT_UPDATE) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE_FEATURE_NOT_ENABLED,
+                null,
+                [
+                    'parent_merchant_id'    => $this->merchant->getId(),
+                    'linked_account_id'     => $id,
+                    'feature'               => FeatureConstants::LA_BANK_ACCOUNT_UPDATE,
+                ]
+            );
+        }
+
+        (new Validator())->validateInput('la_bank_account_update', $input);
+
+        return $this->mutex->acquireAndReleaseStrict(
+            sprintf(self::LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE, $id),
+            function () use ($id, $input)
+            {
+                return $this->core()->updateLinkedAccountBankAccount($id, $input);
+            }
+        );
     }
 
      /**
