@@ -293,6 +293,7 @@ class UserRolesScope
             'payment_handle_availability'              => [Role::OWNER, Role::ADMIN],
             'payment_handle_get'                       => [Role::OWNER, Role::ADMIN],
             'payment_handle_suggestion'                => [Role::OWNER, Role::ADMIN],
+            'payment_handle_amount_encryption'         => [Role::OWNER, Role::ADMIN],
 
             'patch_dispute_contest_by_id'              => Role::READER_ROLES,
             'post_dispute_accept_by_id'                => Role::READER_ROLES,

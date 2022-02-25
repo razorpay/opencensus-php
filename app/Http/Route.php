@@ -1150,6 +1150,7 @@ class Route
         'payment_handle_availability'              => ['get',      'payment_handle/{slug}/exists',                            'PaymentLinkController@handleExists'                       ],
         'payment_handle_get'                       => ['get',      'payment_handle',                                          'PaymentLinkController@getPaymentHandle'                   ],
         'payment_handle_suggestion'                => ['get',      'payment_handle/suggestion',                               'PaymentLinkController@suggestionPaymentHandle'            ],
+        'payment_handle_amount_encryption'         => ['post',     'payment_handle/custom_amount',                            'PaymentLinkController@encryptAmountForPaymentHandle'      ],
 
         // end of payment page section
 
@@ -4912,6 +4913,7 @@ class Route
         'payment_handle_availability',
         'payment_handle_get',
         'payment_handle_suggestion',
+        'payment_handle_amount_encryption',
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'webhook_fire',
@@ -8840,6 +8842,7 @@ class Route
             'payment_handle_availability',
             'payment_handle_get',
             'payment_handle_suggestion',
+            'payment_handle_amount_encryption',
             'payment_payout',
             'payment_redirect_3ds',
             'payment_redirect_3ds_get',
@@ -10436,6 +10439,7 @@ class Route
             'payment_handle_get',
             'payment_handle_availability',
             'payment_handle_suggestion',
+            'payment_handle_amount_encryption',
             'payment_payout',
             'payment_redirect_3ds',
             'payment_redirect_3ds_get',

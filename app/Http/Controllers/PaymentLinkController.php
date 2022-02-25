@@ -6,6 +6,7 @@ use View;
 use Request;
 use ApiResponse;
 use RZP\Trace\Tracer;
+use RZP\Constants\Entity as E;
 use Illuminate\Http\Request  as CurrentRequest;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentLink\Entity;
@@ -146,10 +147,12 @@ class PaymentLinkController extends Controller
      */
     public function view(string $id)
     {
+        $input = Request::all();
+
         try {
             // Fetch view name and payload
-            [$view, $payload] = Tracer::inSpan(['name' => 'payment_page.controller.view'], function() use ($id) {
-                return $this->service()->getViewNameAndPayload($id);
+            [$view, $payload] = Tracer::inSpan(['name' => 'payment_page.controller.view'], function() use ($id, $input) {
+                return $this->service()->getViewNameAndPayload($id, $input);
             });
 
             // If request had an error string, append that to the payload separately for view to consume
@@ -203,9 +206,11 @@ class PaymentLinkController extends Controller
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
+        $slugViewType = array_get($slugMetadata, Entity::VIEW_TYPE);
 
-        if(($slugMetadata['entity'] === ViewType::PAYMENT_HANDLE)
-            && key_exists('payment_page_id', $slugMetadata) === false)
+        if (($slugMetadata['entity'] === E::PAYMENT_LINK) and
+            ($slugViewType === ViewType::PAYMENT_HANDLE) and
+            (key_exists('id', $slugMetadata) === false))
         {
             $payload = $this->service()->getPaymentHandlePreviewPage($slug, $slugMetadata[Entity::MERCHANT_ID]);
 
@@ -418,6 +423,15 @@ class PaymentLinkController extends Controller
     public function createPaymentHandle()
     {
         $response = $this->service()->createPaymentHandleV2();
+
+        return ApiResponse::json($response);
+    }
+
+    public function encryptAmountForPaymentHandle()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->encryptAmountForPaymentHandle($input);
 
         return ApiResponse::json($response);
     }

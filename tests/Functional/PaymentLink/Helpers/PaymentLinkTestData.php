@@ -3141,6 +3141,22 @@ return [
         ]
     ],
 
+    'testPaymentHandleEncryptCustomAmount' => [
+        'request'  => [
+            'url'   => '/payment_handle/custom_amount',
+            'method'=> 'post',
+            'content' => [
+                'amount' => '100'
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'encrypted_amount' => 'GJTihh0TE3BLUUz12vhIgQ%3D%3D'
+            ]
+        ]
+
+    ],
+
     'testUpdatePageWithGoalTrackerInactiveAndEndDatePastShouldNotThrowValidationError' => [
         'request' => [
             'url'     => '/payment_pages/pl_100000000000pl',

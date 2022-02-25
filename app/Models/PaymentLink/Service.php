@@ -3,8 +3,10 @@
 namespace RZP\Models\PaymentLink;
 
 use App;
+use phpseclib\Crypt\AES;
 use Razorpay\Trace\Logger as Trace;
 use Request;
+use RZP\Encryption\AESEncryption;
 use RZP\Error\Error;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Trace\TraceCode;
@@ -214,7 +216,7 @@ class Service extends Base\Service
         return [$view, $payload];
     }
 
-    public function getViewNameAndPayload(string $id)
+    public function getViewNameAndPayload(string $id, array $input)
     {
         /** @var Entity $paymentLink */
         $paymentLink = Tracer::inSpan(['name' => 'payment_page.hosted.find'], function() use ($id) {
@@ -239,6 +241,8 @@ class Service extends Base\Service
         $view = Tracer::inSpan(['name' => 'payment_page.hosted.get.template'], function() use ($paymentLink) {
             return $this->core->getHostedViewTemplate($paymentLink);
         });
+
+        $this->core->addCustomAmountForPaymentHandleIfRequired($viewPayload, $route, $input);
 
         $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL, $paymentLink->getMetricDimensions());
 
@@ -585,6 +589,13 @@ class Service extends Base\Service
         $viewPayload = $this->core->getAttributesForPaymentHandlePreview($input, $merchant, $slug);
 
         return $viewPayload;
+    }
+
+    public function encryptAmountForPaymentHandle(array $input): array
+    {
+        (new Validator)->validateInput('encryptAmountForPaymentHandle', $input);
+
+        return $this->core->encryptAmountForPaymentHandle($input);
     }
 
     protected function getPaymentLinkAndSetModeAndMerchant(string $id)

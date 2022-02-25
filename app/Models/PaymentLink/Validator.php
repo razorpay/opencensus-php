@@ -233,6 +233,14 @@ class Validator extends Base\Validator
     ];
 
     /**
+     * Rules to validate the payment handle encryption
+     * @var string
+     */
+    protected static $encryptAmountForPaymentHandleRules = [
+        Entity::AMOUNT => 'required|mysql_unsigned_int'
+    ];
+
+    /**
      * @var array fields for shiprocket
      */
     protected static $partnerShiprocketUdfs = [

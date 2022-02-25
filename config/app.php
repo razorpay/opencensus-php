@@ -341,6 +341,10 @@ return array(
         env('PAYMENT_STORE_HOSTED_BASE_URL'),
     ],
 
+    'payment_handle' => [
+        'secret' => env('PAYMENT_HANDLE_AMOUNT_SECRET')
+    ],
+
     'apps_default_sender_email_address' => env('APPS_DEFAULT_SENDER_EMAIL_ADDRESS'),
 
     'amount_difference_allowed_authorized' => ['EQ8AzfZip2meDu', 'FBYspBmKlWefX9'],

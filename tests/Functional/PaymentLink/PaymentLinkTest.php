@@ -2064,6 +2064,13 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentHandleEncryptCustomAmount()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     /**
      * @group pp_donation_goal_tracker
      */

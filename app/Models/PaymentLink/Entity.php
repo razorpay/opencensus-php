@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
     const URL                = 'url';
     const TEMPLATE_TYPE      = 'template_type';
     const HANDLE_URL         = 'handle_url';
+    const ENCRYPTED_AMOUNT   = 'encrypted_amount';
 
     const PAYMENT_PAGE_ITEMS   = 'payment_page_items';
     const PAYMENT_PAGE_ITEM_ID = 'payment_page_item_id';
@@ -59,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     const VIEW_TYPE_PAYMENT_HANDLE     = 'payment_handle';
     const NAME                         = 'name';
+
+    const PAYMENT_HANDLE_AMOUNT = 'payment_handle_amount';
 
     /**
      * Optional attribute: allows a custom view template ID to be defined

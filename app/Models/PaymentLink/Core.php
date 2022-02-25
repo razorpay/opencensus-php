@@ -4,6 +4,8 @@ namespace RZP\Models\PaymentLink;
 
 use Cache;
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
+use RZP\Encryption\AESEncryption;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
@@ -1091,6 +1093,15 @@ class Core extends Base\Core
         return $payload;
     }
 
+    public function getPaymentHandleCustomAmountEncryptionHeaders(): array
+    {
+        return $params = [
+            AESEncryption::MODE => AES::MODE_CBC,
+            AESEncryption::IV => '',
+            AESEncryption::SECRET => $this->app['config']['app']['payment_handle']['secret'],
+        ];
+    }
+
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
     {
         $settings[Entity::CHECKOUT_OPTIONS] = [
@@ -1252,6 +1263,54 @@ class Core extends Base\Core
         }
 
         $this->trace->count(Metric::PAYMENT_PAGE_RECEIPT_GENERATED, $paymentLink->getMetricDimensions());
+    }
+
+    public function addCustomAmountForPaymentHandleIfRequired(array & $payload, string $host, array $input)
+    {
+        if(isset($input[Entity::AMOUNT]) === true && $host === config('app.payment_handle_domain'))
+        {
+            $decryptedAmount = $this->decryptCustomAmountForPaymentHandle($input[Entity::AMOUNT]);
+
+            if($decryptedAmount === '')
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        Entity::AMOUNT => $input[Entity::AMOUNT],
+                        Entity::VIEW_TYPE => ViewType::PAYMENT_HANDLE
+                    ],
+                    'Amount not valid.');
+            }
+
+            $payload['data'][Entity::PAYMENT_HANDLE_AMOUNT] = $decryptedAmount;
+        }
+    }
+
+    public function encryptAmountForPaymentHandle(array $input): array
+    {
+        $params = $this->getPaymentHandleCustomAmountEncryptionHeaders();
+
+        $encryptedAmount = (new AESEncryption($params))->encrypt($input[Entity::AMOUNT]);
+
+        $encryptedAmount = base64_encode($encryptedAmount);
+
+        $encryptedAmount = urlencode($encryptedAmount);
+
+        return [Entity::ENCRYPTED_AMOUNT => $encryptedAmount];
+    }
+
+    public function decryptCustomAmountForPaymentHandle(string $encryptedAmount)
+    {
+        $params = $this->getPaymentHandleCustomAmountEncryptionHeaders();
+
+        $decryptedAmount = urldecode($encryptedAmount);
+
+        $decryptedAmount = base64_decode($decryptedAmount);
+
+        $decryptedAmount = (new AESEncryption($params))->decrypt($decryptedAmount);
+
+        return $decryptedAmount;
     }
 
     protected function getInvoiceCreateInput(Entity $paymentLink, Payment\Entity $payment): array
@@ -2502,8 +2561,9 @@ class Core extends Base\Core
             'fail_if_exists' => true,
             'metadata'       => [
                 'mode'          => $this->mode,
-                'entity'        => ViewType::PAYMENT_HANDLE,
-                'merchant_id'   => $merchantId
+                'entity'        => E::PAYMENT_LINK,
+                'view_type'     => ViewType::PAYMENT_HANDLE,
+                'merchant_id'   => $merchantId,
             ],
         ];
 
@@ -2574,9 +2634,10 @@ class Core extends Base\Core
 
         $newMetadata = [
             'mode'          => $this->mode,
-            'entity'        => ViewType::PAYMENT_HANDLE,
+            'entity'        => E::PAYMENT_LINK,
+            'view_type'     => ViewType::PAYMENT_HANDLE,
             'merchant_id'   => $this->merchant->getId(),
-            Entity::ID      => $paymentPageId
+            Entity::ID      => $paymentPageId,
         ];
 
         $input = json_encode(['metadata' => $newMetadata]);
