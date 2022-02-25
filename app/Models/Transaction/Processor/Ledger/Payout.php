@@ -302,6 +302,12 @@ class Payout extends Base
                 {
                     unset($payload[self::ADDITIONAL_PARAMS][self::FEE_ACCOUNTING]);
 
+                    // unset the key if its empty
+                    if (empty($payload[self::ADDITIONAL_PARAMS]))
+                    {
+                        unset($payload[self::ADDITIONAL_PARAMS]);
+                    }
+
                     $this->trace->info(TraceCode::CREDITS_REVERSE_FOR_LEDGER_PAYOUT_FOR_INSUFFICIENT_BALANCE,
                                        [
                                            'payout_id'      => $this->payout->getId(),
