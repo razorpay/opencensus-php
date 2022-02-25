@@ -83,8 +83,8 @@ class BankCodes
         Netbanking::DLXB_C => 'DL2',            // Dhanlakshmi Bank Corporate
         Netbanking::IBKL_C => 'IDC',            // IDBI Corporate
         Netbanking::ICIC_C => 'ICO',            // ICICI Corporate Banking
-        Netbanking::LAVB_C => 'LVC',            // Laxmi Vilas Bank - Corporate
-        Netbanking::LAVB_R => 'LVR',            // Laxmi Vilas Bank - Retail
+        Netbanking::LAVB_C => 'DBS',            // Laxmi Vilas Bank - Corporate -> Redirects to DBS Bank Ltd
+        Netbanking::LAVB_R => 'DBS',            // Laxmi Vilas Bank - Retail -> Redirects to DBS Bank Ltd
         Netbanking::PUNB_C => 'CPN',            // Punjab National Bank - Corporate
         Netbanking::PUNB_R => 'PNB',            // Punjab National Bank - Retail
         Netbanking::RATN_C => 'RTC',            // RBL Bank Limited Corporate

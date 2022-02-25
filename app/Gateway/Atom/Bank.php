@@ -59,7 +59,7 @@ class Bank
         IFSC::HDFC         => 1006,
         IFSC::ICIC         => 1002,
         Netbanking::BKID_C => 1012,     // Bank of India Corporate
-        Netbanking::LAVB_R => 1009,     // Lakshmi Vilas Bank
+        Netbanking::LAVB_R => 1047,     // Lakshmi Vilas Bank -> redirects to DBS Bank Ltd
         Netbanking::PUNB_R => 1049,     // Punjab National Bank[Retail]
     ];
 
