@@ -164,6 +164,15 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendCaLeadToFreshDesk()
+    {
+        $input = Request::all();
+
+        $data =  $this->service->sendCaLeadToFreshDesk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function sendRblApplicationInProgressLeadsToSalesForce()
     {
         $data =  $this->service->sendRblApplicationInProgressLeadsToSalesForce();

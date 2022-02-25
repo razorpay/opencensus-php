@@ -604,6 +604,32 @@ return [
         ],
     ],
 
+    'testSendCaLeadToFreshDesk' => [
+        'request'  => [
+            'url'     => '/bas/ca_lead_to_freshdesk',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID               => '10000000000000',
+                Constants::CA_PREFERRED_PHONE        => '33322323',
+                Constants::CA_PREFERRED_EMAIL        => 'abc@def.com',
+                'merchant_name'                      => 'test merchant',
+                'merchant_email'                     => 'test@test.com',
+                'merchant_phone'                     => '929292929',
+                'constitution'                       => 'PRIVATE_LIMITED',
+                'pincode'                            => '332332',
+                'sales_team'                         => 'SELF_SERVE',
+                'account_manager_name'               => 'test_name',
+                'account_manager_email'              => 'testemail@test.com',
+                'account_manager_phone'              => '33332222',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testSendRblApplicationInProgressLeadsToSalesForce' => [
         'request'  => [
             'url'     => '/cron/rbl/lead_to_salesforce',

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountService;
 
+use Mail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -17,6 +18,7 @@ use RZP\Models\Merchant\Detail;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Attribute\Group;
+use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
@@ -382,6 +384,74 @@ class Core extends Base\Core
 
         return ['success' => true];
     }
+
+    public function sendCaLeadToFreshDesk($input)
+    {
+        $this->trace->info(TraceCode::BAS_FRESHDESK_REQUEST);
+
+        /* @var Detail\Entity $merchantDetails*/
+        $merchantDetails = $this->repo->merchant_detail->findByPublicId($input[Constants::MERCHANT_ID]);
+
+        if(empty($input[Constants::CA_PREFERRED_EMAIL]) === true)
+        {
+            $input[Constants::CA_PREFERRED_EMAIL] = $merchantDetails->getContactEmail();
+        }
+
+        if(empty($input[Constants::CA_PREFERRED_PHONE]) === true)
+        {
+            $input[Constants::CA_PREFERRED_PHONE] = $merchantDetails->getContactMobile();
+        }
+
+        if (array_key_exists(Constants::ACCOUNT_MANAGER_NAME, $input) === false) {
+            $input[Constants::ACCOUNT_MANAGER_NAME] = "";
+        }
+
+        if (array_key_exists(Constants::ACCOUNT_MANAGER_EMAIL, $input) === false) {
+            $input[Constants::ACCOUNT_MANAGER_EMAIL] = "";
+        }
+
+        if (array_key_exists(Constants::ACCOUNT_MANAGER_PHONE, $input) === false) {
+            $input[Constants::ACCOUNT_MANAGER_PHONE] = "";
+        }
+
+        $this->notifyOpsAboutLead($input);
+
+        return ['success' => true];
+    }
+
+
+    /**
+     * This email is sent to ops to notify them about the interest merchant has shown in
+     * ICICI Current Account
+     *
+     */
+    public function notifyOpsAboutLead($input)
+    {
+        try
+        {
+            $mailer = new CurrentAccount($input);
+
+            Mail::queue($mailer);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_CA_ACTIVATION_NOTIFICATION,
+                [
+                    'merchant_id'              => $input[Constants::MERCHANT_ID],
+                    'message'                  => 'Mail Sent'
+                ]);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_CA_ACTIVATION_NOTIFICATION_FAILED,
+                [
+                    'error'              => $e->getMessage(),
+                ]);
+        }
+    }
+
 
     public function sendRblApplicationInProgressLeadsToSalesForce(): array
     {

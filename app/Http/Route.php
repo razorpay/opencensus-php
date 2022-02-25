@@ -2254,6 +2254,7 @@ class Route
         'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
         'external_bvs_validation_request'          => ['post',     'bas/bvs_validation',                             'BasController@initiateExternalBvsValidation'                       ],
         'bas_ca_lead_to_sales_force'               => ['post',     'bas/ca_lead_to_salesforce',                      'BasController@sendCaLeadToSalesForce'                              ],
+        'bas_ca_lead_to_freshdesk'                 => ['post',     'bas/ca_lead_to_freshdesk',                       'BasController@sendCaLeadToFreshDesk'                              ],
         'rbl_in_progress_lead_to_sales_force'      => ['post',     'cron/rbl/lead_to_salesforce',                    'BasController@sendRblApplicationInProgressLeadsToSalesForce'       ],
         'get_banking_account_slot_booking_details' => ['get',      'booking/slot',                                   'BasController@getSlotBookingDetailsForBankingAccountAndChannel'    ],
 
@@ -3889,6 +3890,7 @@ class Route
         'external_bvs_validation_request',
         'banking_account_activation_detail_slot_booking',
         'bas_ca_lead_to_sales_force',
+        'bas_ca_lead_to_freshdesk',
         'rbl_in_progress_lead_to_sales_force',
         'bas_banking_accounts_create',
         'banking_account_service_cron_routes',
@@ -12075,6 +12077,7 @@ class Route
             'external_bvs_validation_request',
             'banking_account_activation_detail_slot_booking',
             'bas_ca_lead_to_sales_force',
+            'bas_ca_lead_to_freshdesk',
             'bas_banking_accounts_create',
             'merchant_fetch_internal',
             'internal_merchant_fetch',

@@ -708,6 +708,11 @@ class Service extends Base\Service
         return $this->core()->sendCaLeadToSalesForce($input);
     }
 
+    public function sendCaLeadToFreshDesk($input)
+    {
+        return $this->core()->sendCaLeadToFreshDesk($input);
+    }
+
     public function sendRblApplicationInProgressLeadsToSalesForce(): array
     {
         return $this->core()->sendRblApplicationInProgressLeadsToSalesForce();

@@ -92,4 +92,10 @@ class Constants
     const CURRENT_ACCOUNT               = 'Current_Account';
 
     const CA_CHANNEL_NITRO              = 'NITRO';
+
+    const ACCOUNT_MANAGER_NAME          = 'account_manager_name';
+
+    const ACCOUNT_MANAGER_EMAIL         = 'account_manager_email';
+
+    const ACCOUNT_MANAGER_PHONE         = 'account_manager_phone';
 }

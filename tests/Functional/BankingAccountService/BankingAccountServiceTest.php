@@ -5,7 +5,10 @@ namespace RZP\Tests\Functional\BankingAccountService;
 use App;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\Mail;
 use RZP\Error\ErrorCode;
+use RZP\Mail\BankingAccount\CurrentAccount;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\SalesForceClient;
 use RZP\Models\BankingAccount\Status;
 use RZP\Exception\BadRequestException;
@@ -799,6 +802,34 @@ class BankingAccountServiceTest extends TestCase
         $this->mockSalesForce('sendCaLeadDetails', 1);
 
         $this->startTest();
+    }
+
+    public function testSendCaLeadToFreshDesk()
+    {
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test1@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'contact_mobile'             => '1234567890',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        Mail::fake();
+
+        $this->startTest();
+
+        Mail::assertQueued(CurrentAccount::class);
+
     }
 
     public function testSendRblApplicationInProgressLeadsToSalesForce()
