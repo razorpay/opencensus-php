@@ -27,7 +27,7 @@ class KycAccessConfirmed extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->data['merchant']['email']);
+        $this->to($this->data['partner']['email']);
 
         return $this;
     }

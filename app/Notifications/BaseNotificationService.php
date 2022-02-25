@@ -47,7 +47,5 @@ abstract class BaseNotificationService
         $this->trace = $this->app['trace'];
     }
 
-    protected abstract function getPayload();
-
     protected abstract function send();
 }

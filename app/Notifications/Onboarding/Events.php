@@ -6,7 +6,10 @@ namespace RZP\Notifications\Onboarding;
 
 class Events
 {
-    const PAYMENTS_ENABLED                            = 'PAYMENTS_ENABLED';
+    const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
+    const PARTNER_SUBMERCHANT_EVENTS_PREFIX = 'PARTNER_SUBMERCHANT_';
+
+    const PAYMENTS_ENABLED     = 'PAYMENTS_ENABLED';
     const UNREGISTERED_PAYMENTS_ENABLED               = 'UNREGISTERED_PAYMENTS_ENABLED';
     const UNREGISTERED_SETTLEMENTS_ENABLED            = 'UNREGISTERED_SETTLEMENTS_ENABLED';
     const REGISTERED_PAYMENTS_ENABLED                 = 'REGISTERED_PAYMENTS_ENABLED';
@@ -30,6 +33,13 @@ class Events
     const INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      = 'INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED';
     const L1_NOT_SUBMITTED_IN_1_HOUR                  = 'L1_NOT_SUBMITTED_IN_1_HOUR';
     const SIGNUP_STARTED_NOTIFY                       = 'SIGNUP_STARTED_NOTIFY';
+
+    // partner submerchant events
+    const PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    = 'PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS';
+    const PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              = 'PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION';
+    const PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED = 'PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED';
+    const PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   = 'PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED';
+    const PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 = 'PARTNER_SUBMERCHANT_PAYMENTS_ENABLED';
 
     const SMS_TEMPLATES = [
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
@@ -97,6 +107,12 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'emails.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'emails.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'emails.merchant.onboarding.funds_on_hold_reminder',
+
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'partner.submerchant.onboarding.activated_mcc_pending_success',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'partner.submerchant.onboarding.needs_clarification',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'partner.submerchant.onboarding.unregistered_settlements_enabled',
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'partner.submerchant.onboarding.registered_settlements_enabled',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'partner.submerchant.onboarding.payments_enabled',
     ];
 
     const EMAIL_SUBJECTS = [
@@ -108,5 +124,11 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => '[Urgent] Clarifications needed for continuity of your Razorpay account',
         self::FUNDS_ON_HOLD                               => '[Urgent] Settlements have been paused for your Razorpay account',
         self::FUNDS_ON_HOLD_REMINDER                      => '[Urgent] Settlements have been paused for your Razorpay account',
+
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'Your affiliate {merchantName} can now accept payments via Razorpay',
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'Your affiliate {merchantName}\'s KYC needs action',
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'Your affiliate {merchantName}\'s KYC is approved',
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'Your affiliate {merchantName} can now accept payments via Razorpay',
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'Your affiliate {merchantName} can now accept payments via Razorpay',
     ];
 }

@@ -4,7 +4,7 @@
 namespace RZP\Notifications\Onboarding;
 
 use Mail;
-use RZP\Exception;
+use RZP\Mail\Merchant\PartnerSubmerchantOnboardingEmail;
 use RZP\Models\Merchant\Constants;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -21,7 +21,88 @@ class EmailNotificationService extends BaseNotificationService
 
     public function send(): void
     {
-        $payload  = $this->getPayload();
+        if (strpos($this->event, Events::PARTNER_EVENTS_PREFIX) === 0)
+        {
+            $this->sendToPartner();
+        }
+        else
+        {
+            $this->sendToMerchant();
+        }
+    }
+
+    public function sendToPartner()
+    {
+        $merchant = $this->args[Constants::MERCHANT];
+        $org      = $this->getOrg($merchant);
+
+        $accessMaps = $this->app['repo']->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
+        $accessMaps = $accessMaps->filter(function ($value, $key) {
+            return ($value->entityOwner->isNonPurePlatformPartner() === true);
+        })->unique(function ($item) {return $item->entityOwner->getId();});
+
+        $partners = $accessMaps->map(function ($item) {return $item->entityOwner;});
+
+        if ($partners->isEmpty() === true) {
+            return;
+        }
+
+        if (strpos($this->event, Events::PARTNER_SUBMERCHANT_EVENTS_PREFIX) === 0)
+        {
+            $partners = $accessMaps->filter(function ($value, $key) {
+                return ($value->hasKycAccess() === true);
+            })->map(function ($item) {return $item->entityOwner;});
+        }
+
+        if ($partners->isEmpty() === true) {
+            return;
+        }
+
+        foreach ($partners as $partner)
+        {
+            $payload = [
+                DEConstants::PARTNER  => [
+                    MerchantEntity::ID    => $partner->getId(),
+                    MerchantEntity::NAME  => $partner->getName(),
+                    MerchantEntity::EMAIL => $partner->getEmail(),
+                ],
+                DEConstants::MERCHANT => [
+                    MerchantEntity::ID    => $merchant->getId(),
+                    MerchantEntity::NAME  => $merchant->getName(),
+                    MerchantEntity::EMAIL => $merchant->getEmail(),
+                ],
+                DEConstants::ORG => $org->toArray(),
+            ];
+
+            try {
+                $email = new PartnerSubmerchantOnboardingEmail($payload, $this->getTemplateMessage(), $this->getTemplateSubject());
+                Mail::queue($email);
+
+                $this->trace->info(
+                    TraceCode::PARTNER_SUBMERCHANT_ONBOARDING_EMAIL_SENT,
+                    [
+                        'merchant_id' => $merchant->getMerchantId(),
+                        'template'    => $this->getTemplateMessage(),
+                        'payload'     => $payload
+                    ]);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e,
+                    Trace::CRITICAL,
+                    TraceCode::PARTNER_SUBMERCHANT_ONBOARDING_EMAIL_FAILED,
+                    [
+                        'merchant_id' => $merchant->getMerchantId(),
+                        'template'    => $this->getTemplateMessage()
+                    ]
+                );
+            }
+        }
+    }
+
+    public function sendToMerchant(): void
+    {
+        $payload  = $this->getMerchantEmailPayload();
         $merchant = $this->args[Constants::MERCHANT];
         $org      = $this->getOrg($merchant);
 
@@ -67,7 +148,7 @@ class EmailNotificationService extends BaseNotificationService
         return $org;
     }
 
-    protected function getPayload()
+    protected function getMerchantEmailPayload()
     {
         $merchant = $this->args[Constants::MERCHANT];
         $org      = $this->getOrg($merchant);

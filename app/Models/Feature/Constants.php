@@ -2349,6 +2349,11 @@ class Constants
             'display_name'  => 'Enable FB analytics for One Click checkout',
             'documentation' => '',
         ],
+        self::PARTNER_SUB_KYC_ACCESS => [
+          'feature'       => self::PARTNER_SUB_KYC_ACCESS,
+          'display_name'  => 'Skip approval workflow to access submerchant Kyc',
+          'documentation' => '',
+      ],
         self::AUTHORIZE_VIA_AUTHZ => [
             'feature'       => self::AUTHORIZE_VIA_AUTHZ,
             'display_name'  => 'Enable authorization via authz enforcer',

@@ -40,6 +40,13 @@ class Handler extends BaseHandler
         Events::FIRST_PAYMENT_OFFER                         => [Channel::SMS, Channel::WHATSAPP],
         Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => [Channel::SMS, Channel::WHATSAPP],
         Events::SIGNUP_STARTED_NOTIFY                       => [Channel::SMS, Channel::WHATSAPP],
+
+        // partner submerchant email events
+        Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => [Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => [Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => [Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => [Channel::EMAIL],
+        Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => [Channel::EMAIL],
     ];
 
     private $activationStatus;
@@ -118,22 +125,27 @@ class Handler extends BaseHandler
             case Status::ACTIVATED_MCC_PENDING:
                 array_push($events, Events::ACTIVATED_MCC_PENDING_SUCCESS);
                 array_push($events, Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED);
+                array_push($events, Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS);
                 break;
             case Status::NEEDS_CLARIFICATION:
                 array_push($events, Events::NEEDS_CLARIFICATION);
+                array_push($events, Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION);
                 break;
             case Status::ACTIVATED:
                 if ($isUnregistered or ($activationStatus === Status::INSTANTLY_ACTIVATED))
                 {
                     array_push($events, Events::UNREGISTERED_SETTLEMENTS_ENABLED);
+                    array_push($events, Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED);
                 }
                 else
                 {
                     array_push($events, Events::REGISTERED_SETTLEMENTS_ENABLED);
+                    array_push($events, Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED);
                 }
                 break;
             case Status::INSTANTLY_ACTIVATED:
                     array_push($events, Events::PAYMENTS_ENABLED);
+                array_push($events, Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED);
                 break;
         }
 

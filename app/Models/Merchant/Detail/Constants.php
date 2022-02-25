@@ -77,6 +77,7 @@ class Constants
 
     // Email constants
     const MERCHANT             = 'merchant';
+    const PARTNER              = 'partner';
     const ORG                  = 'org';
     const HOSTNAME             = 'hostname';
     const CLARIFICATION_REASON = 'clarification_reason';
