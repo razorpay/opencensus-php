@@ -1154,7 +1154,8 @@ class Processor
         $input['payment_id'] = $payment->getPublicId();
 
         //adding this to redirecting to gateway via nbplus
-        if ($payment->getWallet() === CardlessEmi::ZESTMONEY)
+        if (($payment->getWallet() === CardlessEmi::ZESTMONEY) and
+            ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_ZESTMONEY)))
         {
             $terminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -2160,16 +2161,17 @@ class Processor
             return;
         }
 
-        if(Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway(), $payment) === true)
+        if(($payment->getWallet() === CardlessEmi::ZESTMONEY) and
+            ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_ZESTMONEY)))
         {
-            $gateway = $payment->getGateway();
+            $this->setPaymentService($payment, 'nbplusps');
 
-            if($gateway == Payment\Gateway::CARDLESS_EMI)
-            {
-                $gateway = $payment->getWallet();
-            }
+            return;
+        }
 
-            $featureFlag = "nb_" . $gateway . "_nbplus_merchant_whitelisting";
+        if(Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway()) === true)
+        {
+            $featureFlag = "nb_" . $payment->getGateway() . "_nbplus_merchant_whitelisting";
 
             $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
 

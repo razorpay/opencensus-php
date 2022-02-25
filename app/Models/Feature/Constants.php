@@ -1014,6 +1014,7 @@ class Constants
      * Feature flag to redirect user to the Gateway
      */
     const REDIRECT_TO_EARLYSALARY = 'redirect_to_earlysalary';
+    const REDIRECT_TO_ZESTMONEY   = 'redirect_to_zestmoney';
 
     /**
      * Feature flag to send Compliance changes in a request
@@ -1216,6 +1217,7 @@ class Constants
         self::GOOGLE_PAY_OMNICHANNEL,
         self::PHONEPE_INTENT,
         self::SAVE_VPA,
+        self::REDIRECT_TO_ZESTMONEY,
         self::DISABLE_NATIVE_CURRENCY,
         self::UPI_OTM,
         self::CHECKOUT_DISABLE_I18N,
@@ -1424,6 +1426,7 @@ class Constants
         self::BLOCK_OFFER_CREATION            => true,
         self::ENACH_INTERMEDIATE              => true,
         self::SAVE_VPA                        => true,
+        self::REDIRECT_TO_ZESTMONEY           => true,
         self::GENERATE_PARTNER_INVOICE        => true,
         self::AUTOMATED_COMM_PAYOUT           => true,
         self::OFFLINE_PAYMENTS                => true,
