@@ -1876,10 +1876,14 @@ class Route
         'customer_flagging_post_grievance_options' => ['options',  'customer_flagging/post_customer_grievance',      'RiskController@allowCors'                                          ],
         'toggle_whatsapp_notifications'            => ['post',     'admin/toggle_whatsapp_notification/{id}',        'AdminController@toggleWhatsappNotification'                        ],
 
-        //PurposeCode Route
+        //PurposeCode Merchant Routes
         'purpose_code_fetch'                       => ['get',      'purposecode',                                    'MerchantController@getPurposeCodeDetails'                          ],
         'merchant_patch_purpose_code'              => ['patch',    'merchants/purpose/code',                         'MerchantController@patchMerchantPurposeCode'                       ],
         'user_fetch_purpose_code'                  => ['get',      'users/purpose/code',                             'UserController@getInternationalUserDetails'                                     ],
+
+        //PurposeCode Admin Routes
+        'purpose_code_admin'                       => ['get',      'purpose/code',                                    'MerchantController@getPurposeCodeDetails'],
+        'admin_patch_purpose_code'                 => ['patch',    'purpose/code',                                    'MerchantController@patchAdminPurposeCode'],
 
         //Location Route
         'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],
@@ -6361,6 +6365,9 @@ class Route
         // Payment Fraud
         'get_fraud_attributes',
         'save_payment_fraud',
+
+        'admin_patch_purpose_code',
+        'purpose_code_admin',
     ];
 
     public static $routePermission = [
@@ -7528,7 +7535,12 @@ class Route
         // Payment Fraud
         'get_fraud_attributes'                              => Permission::GET_FRAUD_ATTRIBUTES,
         'save_payment_fraud'                                => Permission::SAVE_PAYMENT_FRAUD,
+        
         'oauth_token_fetch_multiple'                        =>Permission::MERCHANT_GET_OAUTH_TOKEN,
+
+        //Purpose code routes permission
+        'purpose_code_admin'                  => Permission::VIEW_MERCHANT,
+        'admin_patch_purpose_code'            => Permission::EDIT_MERCHANT,
     ];
 
     public static $bankingRoutePermissions = [
@@ -11158,6 +11170,8 @@ class Route
             'purpose_code_fetch',
             'merchant_patch_purpose_code',
             'user_fetch_purpose_code',
+            'purpose_code_admin',
+            'admin_patch_purpose_code',
 
             // metro
             'metro_project_create',

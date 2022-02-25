@@ -6878,4 +6878,50 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testAdminPurposeCodeDetailsFetch()
+    {
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'url' => '/purpose/code',
+                'method' => 'GET',
+                'content' => [],
+            ],
+            'response' => [
+                'content' => [],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
+
+    public function testAdminPurposeCodeDetailsPatch()
+    {
+        $merchant1 = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__] = [
+            'request' => [
+                'url' => '/purpose/code',
+                'method' => 'PATCH',
+                'content' => [
+                    'purpose_code' => 'P0103',
+                    'iec_code' => '1231234123',
+                    'merchant_id' => $merchant1->getId(),
+                ],
+            ],
+            'response' => [
+                'content' => [],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
 }

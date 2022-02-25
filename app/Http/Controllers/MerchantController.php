@@ -2600,6 +2600,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function patchAdminPurposeCode()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->patchAdminPurposeCode($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function putMerchantContact(string $id)
     {
         $input = Request::all();

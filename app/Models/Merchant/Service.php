@@ -9058,4 +9058,50 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    /**
+     * Updates merchant purpose code in merchants table along with its iec code in merchant_details table via admin action
+     * @param array $input
+     * @return bool[]
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     */
+    public function patchAdminPurposeCode(array $input)
+    {
+
+        $merchantFields[Merchant\Entity::PURPOSE_CODE] = $input['purpose_code'];
+        $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE] = $this->getIecCode($input);
+        $merchantId = $input['merchant_id'];
+    
+        $merchant =  $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+        (new Validator)->validateIecCode(
+            $merchantFields[Merchant\Entity::PURPOSE_CODE],
+            $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE],
+            $merchant->getBankIfsc()
+        );
+
+        if (!empty($merchantFields[Merchant\Entity::PURPOSE_CODE])) {
+            $merchant->edit($merchantFields);
+            $this->repo->merchant->saveOrFail($merchant);
+        }
+
+        if ($merchant->merchantDetail !== NULL and
+            !empty($merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE])
+        ) {
+            $merchant->merchantDetail->edit($merchantDetailsFields);
+            $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+        }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                Entity::ID => $merchant->getId(),
+                Entity::PURPOSE_CODE => $merchant->getPurposeCode(),
+                Merchant\Detail\Entity::IEC_CODE => $merchant->getIecCode(),
+            ]
+        );
+        
+        return ['success' => true];
+    }
 }
