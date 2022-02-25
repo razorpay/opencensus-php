@@ -1642,6 +1642,12 @@ class Core extends Base\Core
                                               ->subHours(4)
                                               ->getTimestamp();
 
+            $bankTimeBeforePostedDateForNonIFT = Carbon::createFromTimestamp(
+                                                       $basEntity->getPostedDate(),
+                                                   Timezone::IST)
+                                                       ->subWeek()
+                                                       ->getTimestamp();
+
             $startTime = microtime(true);
 
             /**
@@ -1748,8 +1754,10 @@ class Core extends Base\Core
 
         // we are checking both linked and unlinked payouts because debit row might have already been
         // processed.
-        $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumber(
+        $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumberinTimeRange(
             $bankTxnId,
+            $basEntity->getPostedDate(),
+            $bankTimeBeforePostedDateForNonIFT,
             $basEntity->getAmount(),
             $balance->getId());
 

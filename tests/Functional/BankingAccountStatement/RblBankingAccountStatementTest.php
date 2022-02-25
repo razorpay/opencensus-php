@@ -7366,6 +7366,117 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($externalEntries[1]['transaction_id'], $basEntries[2]['transaction_id']);
     }
 
+    /**
+     * In this test, we have 1 debit statement and 2 credit statements
+     * The first pair correspond to a reversal and the credit statement here is linked with cms ref no
+     * The 3rd statement although having same cms ref no as the payout, doesn't get linked
+     * because the payout was initiated before 1 week of its posted date and is masked as external
+     */
+    public function testRblAccountStatementWithSameCmsRefNoForNonIFTCreditMappingWithRange()
+    {
+        $channel = Channel::RBL;
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
+
+        $this->setupForRblPayout($channel, 104, FundTransfer\Mode::IMPS);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $attempt1 = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(590, $payout1['fees']);
+        $this->assertEquals(90, $payout1['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout1['pricing_rule_id']);
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status'       => 'initiated',
+                                                                 'amount'       => '104',
+                                                                 'utr'          => 'UTIBH20106341692',
+                                                                 'initiated_at' => '1641997970',
+                                                                 'created_at'   => '1642001570']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt1['id'], ['cms_ref_no' => 'S55959',
+                                                                                  'utr'        => 'UTIBH20106341692']);
+
+        $payout1->reload();
+
+        $this->fixtures->edit('balance', $payout1['balance_id'], ['balance' => 3000]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt1['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt1->reload();
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt1['status']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblDataResponse();
+
+        // changing data of txn1
+        $txn1 = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
+        $txn1['pstdDate'] = '2022-01-10T15:58:12.000';
+        $txn1['transactionSummary']['txnAmt']['amountValue'] = '1.04';
+        $txn1['transactionSummary']['txnDate'] = '2022-01-10T00:00:00.000';
+        $txn1['transactionSummary']['txnDesc'] = 'UTIBH20106341692-Vivek Karna HDFC';
+        $txn1['transactionSummary']['txnType'] = 'D';
+        $txn1['txnBalance']['amountValue'] = '2998.96';
+        $txn1['txnId'] = 'S55959';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn1;
+
+        // changing data of txn2
+        $txn2 = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1];
+        $txn2['pstdDate'] = '2022-01-18T15:50:12.000';
+        $txn2['transactionSummary']['txnAmt']['amountValue'] = '1.04';
+        $txn2['transactionSummary']['txnDate'] = '2022-01-18T00:00:00.000';
+        $txn2['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC';
+        $txn2['transactionSummary']['txnType'] = 'C';
+        $txn2['txnBalance']['amountValue'] = '3000.00';
+        $txn2['txnId'] = 'S55959';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1] = $txn2;
+
+        // changing data of txn3
+        $txn3 = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1];
+        $txn3['pstdDate'] = '2022-01-22T15:50:12.000';
+        $txn3['transactionSummary']['txnAmt']['amountValue'] = '1.04';
+        $txn3['transactionSummary']['txnDate'] = '2022-01-20T00:00:00.000';
+        $txn3['transactionSummary']['txnDesc'] = 'UTIBH20106341694 Vivek Karna HDFC';
+        $txn3['transactionSummary']['txnType'] = 'C';
+        $txn3['txnBalance']['amountValue'] = '3001.04';
+        $txn3['txnId'] = 'S55959';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][2] = $txn3;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $txn = $this->getDbLastEntity('transaction');
+        $external = $this->getDbLastEntity('external');
+        $reversal = $this->getDbLastEntity('reversal');
+        $payout1->reload();
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout1['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($payout1['transaction_id'], $basEntries[0]['transaction_id']);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($reversal['transaction_id'], $basEntries[1]['transaction_id']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[2]['transaction_id']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $txn['type']);
+        $this->assertEquals($txn['id'], $external['transaction_id']);
+    }
+
     /*
    * case - no existing reversal found trying to map via payout . 2 payouts with same cms ref no for ift mode
    */

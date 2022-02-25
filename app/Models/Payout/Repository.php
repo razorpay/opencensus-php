@@ -166,7 +166,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPayoutsFromCmsRefNumber($cmsRefNumber, $amount, $balanceId)
+    public function fetchPayoutsFromCmsRefNumberinTimeRange($cmsRefNumber,
+                                                 $txnDateTime,
+                                                 $txnDateTimeBefore,
+                                                 $amount,
+                                                 $balanceId)
     {
         $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
         $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
@@ -176,6 +180,7 @@ class Repository extends Base\Repository
         $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutModeColumn           = $this->repo->payout->dbColumn(Entity::MODE);
         $payoutsAmountColumn        = $this->repo->payout->dbColumn(Entity::AMOUNT);
+        $payoutInitiatedAtColumn    = $this->repo->payout->dbColumn(Payout\Entity::INITIATED_AT);
 
         $payoutAttrs = $this->dbColumn('*');
 
@@ -186,6 +191,7 @@ class Repository extends Base\Repository
                     ->where($ftaCmsRefNumColumn, $cmsRefNumber)
                     ->where($payoutsAmountColumn, $amount)
                     ->whereNotIn($payoutModeColumn, [Mode::IFT])
+                    ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
                     ->get();
     }
 
