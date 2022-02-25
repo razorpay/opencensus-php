@@ -58,7 +58,7 @@ class Service
             $redis = $this->app->redis->Connection('mutex_redis');
             $index = $redis->incr($fullKey);
 
-            if ($index === 1)
+            if ($index === 1 && $ttl >= 0)
             {
                 $redis->expire($fullKey, $ttl);
             }

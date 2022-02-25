@@ -96,6 +96,7 @@ class Constants
     const EMAIL_LOGIN_OTP_SEND_THRESHOLD = 5; // 5 times in 30 mins
 
     // login otp verification threshold
+    const LOGIN_OTP_VERIFICATION_TTL = -1;
     const LOGIN_OTP_VERIFICATION_THRESHOLD = 9;
 
     // email verification otp send ttl and threshold
@@ -309,6 +310,11 @@ class Constants
     const VERIFY_USER_ACTION                        = 'verify_user';
 
     const CHANGE_PASSWORD_RATE_LIMIT_SUFFIX         = '_change_password_count';
+    const SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX    = '_login_otp_send_count';
+    const TWO_FA_PASSWORD_RATE_LIMIT_SUFFIX         =  '_2fa_password_count';
+    const VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX        =  '_login_otp_verification_count';
+    const VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX = '_verification_otp_verification_count';
+    const SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX   = '_verification_otp_send_count';
 
     const THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX       = 'update_contact_mobile_attempts_%s';
     const THROTTLE_UPDATE_CONTACT_MOBILE_LIMIT                  = 3;
@@ -345,6 +351,41 @@ class Constants
             "redisTraceCode"            => TraceCode::CHANGE_PASSWORD_REDIS_ERROR,
             "redisErrorCode"            => ErrorCode::SERVER_ERROR_CHANGE_PASSWORD_REDIS_ERROR,
             "redisErrorDescription"     => "An error occurred while interacting with redis while changing the password.",
+        ],
+        self::SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::EMAIL_LOGIN_OTP_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR,
+            "redisErrorDescription"     => "An error occurred while interacting with redis on email otp login route.",
+        ],
+        self::TWO_FA_PASSWORD_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::LOGIN_2FA_PASSWORD_SUSPENDED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_2FA_LOGIN_PASSWORD_SUSPENDED,
+            "redisTraceCode"            => TraceCode::INCORRECT_2FA_PASSWORD_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR,
+            "redisErrorDescription"     => "An error occurred while interacting with redis on 2fa with password route.",
+        ],
+        self::VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::LOGIN_OTP_VERIFICATION_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR,
+            "redisErrorDescription"     => "An error occurred while interacting with redis on login otp verification route.",
+        ],
+        self::VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::VERIFY_OTP_VERIFICATION_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR,
+            "redisErrorDescription"     => "An error occurred while interacting with redis on email otp login verify route.",
+        ],
+        self::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX => [
+            "thresholdTraceCode"        => TraceCode::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+            "thresholdErrorCode"        => ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
+            "redisTraceCode"            => TraceCode::EMAIL_VERIFICATION_OTP_REDIS_ERROR,
+            "redisErrorCode"            => ErrorCode::SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR,
+            "redisErrorDescription"     => "'An error occurred while interacting with redis on email otp login route.'",
         ],
         self::RESET_PASSWORD_RATE_LIMIT_SUFFIX => [
             "thresholdTraceCode"        => TraceCode::RESET_PASSWORD_THRESHOLD_EXHAUSTED,

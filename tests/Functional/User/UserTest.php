@@ -3294,7 +3294,6 @@ class UserTest extends TestCase
         $this->startTest();
 
         $redis->del($user['id'].Constants::CHANGE_PASSWORD_RATE_LIMIT_SUFFIX);
-
     }
 
     public function testChangePasswordMatchesLastNPasswords()

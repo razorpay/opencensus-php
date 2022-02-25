@@ -1151,97 +1151,6 @@ class Core extends Base\Core
     }
 
     /**
-     * On successful verification of email otp for login, delete the email key.
-     * @param $email
-     * @throws Exception\ServerErrorException
-     */
-    protected function resetEmailLoginOtpSendLimit($email)
-    {
-        try
-        {
-            $email = $email . '_login_otp_send_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $redis->del($email);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::EMAIL_LOGIN_OTP_REDIS_ERROR,
-                ['key' => $email]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on email otp login verify route.',
-                ErrorCode::SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
-     * In redis set key=email & value=no. of otp sent to the email
-     * Expire the key in 30 mins.
-     * @param $email
-     * @return int
-     * @throws Exception\ServerErrorException
-     */
-    protected function incrementAndGetEmailLoginOtpSendCount($email): int
-    {
-        try
-        {
-            $email = $email . '_login_otp_send_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $index = $redis->incr($email);
-
-            if ($index === 1)
-            {
-                $redis->expire($email, Constants::EMAIL_LOGIN_OTP_SEND_TTL);
-            }
-
-            return $index;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::EMAIL_LOGIN_OTP_REDIS_ERROR,
-                ['key' => $email]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on email otp login route.',
-                ErrorCode::SERVER_ERROR_EMAIL_LOGIN_OTP_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
-     * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
-     * User will not be sent another OTP email for 30 mins.
-     * @param $email
-     * @throws Exception\ServerErrorException
-     * @throws BadRequestException
-     */
-    protected function checkEmailLoginOtpSendLimitExceeded($email)
-    {
-        $count = $this->incrementAndGetEmailLoginOtpSendCount($email);
-
-        if ($count > Constants::EMAIL_LOGIN_OTP_SEND_THRESHOLD)
-        {
-            $this->trace->info(TraceCode::EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED, ['email'=>$email]);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
-                null,
-                [
-                    'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_LOGIN_OTP_SEND_THRESHOLD_EXHAUSTED,
-                ]
-            );
-        }
-
-    }
-
-    /**
      * Send Login OTP to user Email
      * @param array $input
      * @param Entity $user
@@ -1253,7 +1162,12 @@ class Core extends Base\Core
     {
         $this->checkIfOtpLoginLocked($user);
 
-        $this->checkEmailLoginOtpSendLimitExceeded($input[Entity::EMAIL]);
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $input[Entity::EMAIL],
+            Constants::SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX,
+            Constants::EMAIL_LOGIN_OTP_SEND_TTL,
+            Constants::EMAIL_LOGIN_OTP_SEND_THRESHOLD
+        );
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::LOGIN_OTP_ACTION));
 
@@ -1463,65 +1377,6 @@ class Core extends Base\Core
     }
 
     /**
-     * On successful verification of email otp for login, delete the email key.
-     * @param $receiver
-     * @throws Exception\ServerErrorException
-     */
-    protected function resetLoginOtpVerificationLimit($receiver)
-    {
-        try
-        {
-            $receiver = $receiver . '_login_otp_verification_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $redis->del($receiver);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::LOGIN_OTP_VERIFICATION_REDIS_ERROR,
-                ['key' => $receiver]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on email otp login verify route.',
-                ErrorCode::SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR
-            );
-        }
-    }
-
-
-    /**
-     * In redis set key=email & value=no. of otp sent to the email
-     * Expire the key in 30 mins.
-     * @param $receiver
-     * @return int
-     * @throws Exception\ServerErrorException
-     */
-    protected function incrementAndGetLoginOtpVerificationCount($receiver): int
-    {
-        try
-        {
-            $receiver = $receiver . '_login_otp_verification_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            return $redis->incr($receiver);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::LOGIN_OTP_VERIFICATION_REDIS_ERROR,
-                ['key' => $receiver]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on login otp verification route.',
-                ErrorCode::SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
      * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
      * User will not be sent another OTP email for 30 mins.
      * @param $email
@@ -1530,7 +1385,15 @@ class Core extends Base\Core
      */
     protected function checkLoginOtpVerificationLimitExceeded($receiver, $loginMedium, $user)
     {
-        $count = $this->incrementAndGetLoginOtpVerificationCount($receiver);
+        $errorDescription = 'An error occurred while interacting with redis on login otp verification route.';
+
+        $count = LoginSignupRateLimit::incrementAndGetKeyCount(
+            $receiver, Constants::VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX,
+            Constants::LOGIN_OTP_VERIFICATION_TTL,
+            TraceCode::LOGIN_OTP_VERIFICATION_REDIS_ERROR,
+            ErrorCode::SERVER_ERROR_LOGIN_OTP_VERIFICATION_REDIS_ERROR,
+            $errorDescription
+        );
 
         if ($count > Constants::LOGIN_OTP_VERIFICATION_THRESHOLD)
         {
@@ -1559,7 +1422,7 @@ class Core extends Base\Core
                 $this->notifyUserAboutAccountLocked($user);
             }
 
-            $this->resetLoginOtpVerificationLimit($receiver);
+            LoginSignupRateLimit::resetKey($receiver, Constants::VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX);
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
@@ -1662,11 +1525,11 @@ class Core extends Base\Core
 
         $this->verifyLoginSignupOtp($receiver, $input, $user->getId());
 
-        $this->resetLoginOtpVerificationLimit($receiver);
+        LoginSignupRateLimit::resetKey($receiver, Constants::VERIFY_LOGIN_OTP_RATE_LIMIT_SUFFIX);
 
         if ($loginMedium === Constants::EMAIL)
         {
-            $this->resetEmailLoginOtpSendLimit($receiver);
+            LoginSignupRateLimit::resetKey($receiver, Constants::SEND_EMAIL_LOGIN_OTP_RATE_LIMIT_SUFFIX);
         }
 
         if (isset($input[Entity::CONTACT_MOBILE]) === true)
@@ -1694,75 +1557,20 @@ class Core extends Base\Core
     }
 
     /**
-     * On successful verification of email otp for login, delete the email key.
-     * @param $userId
-     * @throws Exception\ServerErrorException
-     */
-    protected function resetIncorrect2faPasswordAttempts($userId)
-    {
-        try
-        {
-            $user2FAPasswordCount = $userId . '_2fa_password_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $redis->del($user2FAPasswordCount);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::INCORRECT_2FA_PASSWORD_REDIS_ERROR,
-                ['key' => $userId]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on 2fa with password route.',
-                ErrorCode::SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
-     * @param $userId
-     * @return int|mixed
-     * @throws Exception\ServerErrorException
-     */
-    protected function incrementAndGetIncorrectPasswordCount($userId)
-    {
-        try
-        {
-            $user2FAPasswordCount = $userId . '_2fa_password_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $index = $redis->incr($user2FAPasswordCount);
-
-            if ($index === 1)
-            {
-                $redis->expire($user2FAPasswordCount, Constants::INCORRECT_LOGIN_TTL);
-            }
-
-            return $index;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::INCORRECT_2FA_PASSWORD_REDIS_ERROR,
-                ['key' => $userId]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on 2fa with password route.',
-                ErrorCode::SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
      * @param $userId
      * @throws Exception\ServerErrorException|BadRequestException
      */
     protected function check2faWithPasswordAttemptsExhausted($userId)
     {
-        $count = $this->incrementAndGetIncorrectPasswordCount($userId);
+        $errorDescription = 'An error occurred while interacting with redis on 2fa with password route.';
+
+        $count = LoginSignupRateLimit::incrementAndGetKeyCount(
+            $userId, Constants::TWO_FA_PASSWORD_RATE_LIMIT_SUFFIX,
+            Constants::INCORRECT_LOGIN_TTL,
+            TraceCode::INCORRECT_2FA_PASSWORD_REDIS_ERROR,
+            ErrorCode::SERVER_ERROR_2FA_INCORRECT_PASSWORD_REDIS_ERROR,
+            $errorDescription
+        );
 
         if ($count > Constants::INCORRECT_LOGIN_2FA_PASSWORD_THRESHOLD_COUNT)
         {
@@ -1813,102 +1621,11 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->resetIncorrect2faPasswordAttempts($userId);
+        LoginSignupRateLimit::resetKey($userId, Constants::TWO_FA_PASSWORD_RATE_LIMIT_SUFFIX);
 
         $this->trace->count(Metric::LOGIN_2FA_CORRECT_PASSWORD);
 
         return $this->get($user);
-    }
-
-    /**
-     * On successful verification of email otp for login, delete the email key.
-     * @param $email
-     * @throws Exception\ServerErrorException
-     */
-    protected function resetEmailVerificationOtpSendLimit($email)
-    {
-        try
-        {
-            $email = $email . '_verification_otp_send_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $redis->del($email);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::EMAIL_VERIFICATION_OTP_REDIS_ERROR,
-                ['key' => $email]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on email verification otp route.',
-                ErrorCode::SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
-     * In redis set key=email & value=no. of otp sent to the email
-     * Expire the key in 30 mins.
-     * @param $email
-     * @return int
-     * @throws Exception\ServerErrorException
-     */
-    protected function incrementAndGetEmailVerificationOtpSendCount($email): int
-    {
-        try
-        {
-            $email = $email . '_verification_otp_send_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $index = $redis->incr($email);
-
-            if ($index === 1)
-            {
-                $redis->expire($email, Constants::EMAIL_VERIFICATION_OTP_SEND_TTL);
-            }
-
-            return $index;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::EMAIL_VERIFICATION_OTP_REDIS_ERROR,
-                ['key' => $email]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on email otp login route.',
-                ErrorCode::SERVER_ERROR_EMAIL_VERIFICATION_OTP_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
-     * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
-     * User will not be sent another OTP email for 30 mins.
-     * @param $email
-     * @throws Exception\ServerErrorException
-     * @throws BadRequestException
-     */
-    protected function checkEmailVerificationOtpSendLimitExceeded($email)
-    {
-        $count = $this->incrementAndGetEmailVerificationOtpSendCount($email);
-
-        if ($count > Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD)
-        {
-            $this->trace->info(TraceCode::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED, ['email'=>$email]);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED,
-                null,
-                [
-                    'internal_error_code'    => ErrorCode::BAD_REQUEST_EMAIL_VERIFICATION_OTP_SEND_THRESHOLD_EXHAUSTED
-                ]
-            );
-        }
-
     }
 
     /** Send an otp to an email to verify it.
@@ -1931,7 +1648,12 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->checkEmailVerificationOtpSendLimitExceeded($input[Entity::EMAIL]);
+        LoginSignupRateLimit::validateKeyLimitExceeded(
+            $input[Entity::EMAIL],
+            Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX,
+            Constants::EMAIL_VERIFICATION_OTP_SEND_TTL,
+            Constants::EMAIL_VERIFICATION_OTP_SEND_THRESHOLD
+        );
 
         $input = array_merge($input, $this->getLoginSignupOtpPayload($input, Constants::VERIFY_USER_ACTION));
 
@@ -2175,71 +1897,6 @@ class Core extends Base\Core
     }
 
     /**
-     * On successful verification of email otp for login, delete the email key.
-     * @param $receiver
-     * @throws Exception\ServerErrorException
-     */
-    protected function resetVerifyOtpVerificationLimit($receiver)
-    {
-        try
-        {
-            $receiver = $receiver . '_verification_otp_verification_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $redis->del($receiver);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::VERIFY_OTP_VERIFICATION_REDIS_ERROR,
-                ['key' => $receiver]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on email otp login verify route.',
-                ErrorCode::SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR
-            );
-        }
-    }
-
-
-    /**
-     * In redis set key=email & value=no. of otp sent to the email
-     * Expire the key in 30 mins.
-     * @param $receiver
-     * @return int
-     * @throws Exception\ServerErrorException
-     */
-    protected function incrementAndGetVerifyOtpVerificationCount($receiver): int
-    {
-        try
-        {
-            $receiver = $receiver . '_verification_otp_verification_count';
-            $redis = $this->app->redis->Connection('mutex_redis');
-            $index = $redis->incr($receiver);
-            if ($index === 1)
-            {
-                $redis->expire($receiver, Constants::VERIFICATION_OTP_VERIFICATION_TTL);
-            }
-
-            return $index;
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::VERIFY_OTP_VERIFICATION_REDIS_ERROR,
-                ['key' => $receiver]);
-
-            throw new Exception\ServerErrorException(
-                'An error occurred while interacting with redis on login otp verification route.',
-                ErrorCode::SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR
-            );
-        }
-    }
-
-    /**
      * Check if no. of OTP emails sent to user for logging in has exceeded a threshold and throw an exception.
      * User will not be sent another OTP email for 30 mins.
      * @param $receiver
@@ -2250,7 +1907,15 @@ class Core extends Base\Core
      */
     protected function checkVerifyOtpVerificationLimitExceeded($receiver, $loginMedium, $userId)
     {
-        $count = $this->incrementAndGetVerifyOtpVerificationCount($receiver);
+        $errorDescription = 'An error occurred while interacting with redis on email otp login verify route.';
+
+        $count = LoginSignupRateLimit::incrementAndGetKeyCount(
+            $receiver, Constants::VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX,
+            Constants::VERIFICATION_OTP_VERIFICATION_TTL,
+            TraceCode::VERIFY_OTP_VERIFICATION_REDIS_ERROR,
+            ErrorCode::SERVER_ERROR_VERIFY_OTP_VERIFICATION_REDIS_ERROR,
+            $errorDescription
+        );
 
         if ($count > Constants::VERIFICATION_OTP_VERIFICATION_THRESHOLD)
         {
@@ -2336,12 +2001,13 @@ class Core extends Base\Core
 
         if (isset($input[Entity::EMAIL]))
         {
-            $this->resetEmailVerificationOtpSendLimit($receiver);
+            LoginSignupRateLimit::resetKey($receiver, Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
         }
 
-        $this->resetVerifyOtpVerificationLimit($receiver);
+        LoginSignupRateLimit::resetKey($receiver, Constants::VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
 
         $this->setContactMobileOrEmailVerify($input, $user);
+
 
         $this->trace->count(Metric::USER_LOGIN_COUNT, $dimensionsForUserLogin);
 
@@ -4898,10 +4564,10 @@ class Core extends Base\Core
 
         if (isset($input[Entity::EMAIL]))
         {
-            $this->resetEmailVerificationOtpSendLimit($email);
+            LoginSignupRateLimit::resetKey($email, Constants::SEND_EMAIL_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
         }
 
-        $this->resetVerifyOtpVerificationLimit($email);
+        LoginSignupRateLimit::resetKey($email, Constants::VERIFY_OTP_VERIFICATION_RATE_LIMIT_SUFFIX);
 
         $merchant = $this->merchant;
         $merchant_detail = $merchant->merchantDetail()->first();
