@@ -88,14 +88,6 @@ const CashAdvanceOrNitroBanner = ({
     });
   }
 
-  function handleApplyNowClick() {
-    gaCABannerEventDispatcher({
-      eventAction: 'Click Apply Now',
-      eventLabel: 'Clicks | Apply Now',
-    });
-    goToCashAdvance();
-  }
-
   function handleWithdrawFundsClick() {
     gaCABannerEventDispatcher({
       eventAction: 'Click Withdraw Funds',
@@ -120,12 +112,6 @@ const CashAdvanceOrNitroBanner = ({
 
   const isMerchantEligibile = user.isLOCEnabled && user.isLOSEnabled;
 
-  const showApplyNowBanner =
-    isMerchantEligibile &&
-    !user.isWithdrawFeatureEnabled &&
-    !hasMerchantApplied &&
-    !isApplicationsLoading;
-
   const showWithdrawNowBanner =
     isMerchantEligibile &&
     user.isWithdrawFeatureEnabled &&
@@ -134,24 +120,7 @@ const CashAdvanceOrNitroBanner = ({
     hasMerchantApplied &&
     !isApplicationsLoading;
 
-  if (showApplyNowBanner) {
-    return (
-      <AnnouncementBanner
-        card_id="apply-for-cash-advance-banner"
-        title="Need more money!"
-        theme="primary"
-      >
-        Apply for Cash Advance to withdraw additional money instantly whenever you need, day or
-        night!
-        <Button.Secondary
-          className="btn-border scheduled-btn-act ml-16"
-          onClick={handleApplyNowClick}
-        >
-          <strong>Apply Now</strong>
-        </Button.Secondary>
-      </AnnouncementBanner>
-    );
-  } else if (showWithdrawNowBanner) {
+  if (showWithdrawNowBanner) {
     return (
       <AnnouncementBanner card_id="withdraw-funds-banner" title="Need more money!" theme="primary">
         You have <Amount value={internalCreditBalance} className="ca-banner__withdraw-amount" />{' '}

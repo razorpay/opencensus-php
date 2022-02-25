@@ -5,7 +5,6 @@ import { NavLink } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
 import Spinner from 'common/ui/Spinner';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import FIRCBanner from 'merchant/components/Announcements/Firc';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -159,7 +158,6 @@ export default class ReportHome extends React.PureComponent {
             bannerKey={`zapier-integration-banner-${user.current}`}
           />
         </ShowWhen>
-        {user?.international && <FIRCBanner screen="reports" />}
         <tabbed-container>
           <header>
             <NavLink to="/reports">Reports</NavLink>

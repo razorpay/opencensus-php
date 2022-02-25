@@ -9,7 +9,6 @@ import {
 } from 'merchant/reducers/onboarding';
 import { fetchItems } from 'merchant/reducers/items';
 
-import FIRCBanner from 'merchant/components/Announcements/Firc';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Invoices from 'merchant/views/Invoices/Invoices/List';
 import Items from 'merchant/views/Invoices/Items/List';
@@ -114,7 +113,6 @@ export default class InvoicesContainer extends Component {
               bannerKey={`zapier-integration-banner-${user.current}`}
             />
           </ShowWhen>
-          {user?.international && <FIRCBanner screen="invoices" />}
         </div>
 
         <tabbed-container>
