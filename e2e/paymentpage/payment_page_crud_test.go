@@ -58,6 +58,50 @@ func validatePaymentPageRequest(request PaymentPageRequest) error {
 	}
 	return nil // request is valid so we return nil
 }
+
+func validatePaymentPageOrderRequest(request PaymentPageOrderRequest,requestPP PaymentPageRequest) error {
+	if request.LineItems[0].Amount>requestPP.PaymentPageItems[0].MaxAmount {
+		return errors.New("amount should not be greater than to payment page item max amount")
+	}
+	//if len(request.PaymentPageItems) == 0 {
+	//	return errors.New("The payment page items field is required.")
+	//}
+	//if !strings.Contains(request.PPSettings.PaymentSuccessRedirectURL, "https") {
+	//	return errors.New("The settings.payment success redirect url format is invalid.")
+	//}
+	//if request.PaymentPageItems[0].Stock==0{
+	//	return errors.New("The stock must be at least 1.")
+	//}
+	//if request.PaymentPageItems[0].Settings.Position<0{
+	//	return errors.New("The settings.position must be at least 0.")
+	//}
+	//if request.PaymentPageItems[0].Settings.Position>10000{
+	//	return errors.New("The settings.position may not be greater than 1000.")
+	//}
+	//if request.Currency != request.PaymentPageItems[0].Item.Currency {
+	//	return errors.New("payment page currency and payment page item currency should be same")
+	//}
+	//if request.Currency =="USD" && request.PaymentPageItems[0].MaxAmount<10 {
+	//	return errors.New("max_amount must be atleast USD 0.1")
+	//}
+	//if request.PaymentPageItems[0].MinAmount> request.PaymentPageItems[0].MaxAmount {
+	//	return errors.New("min amount should not be greater than max amount")
+	//}
+	//if request.PaymentPageItems[0].MinPurchase> request.PaymentPageItems[0].Stock {
+	//	return errors.New("min purchase should not be greater than stock")
+	//}
+	//if request.PaymentPageItems[0].MinAmount<100 {
+	//	return errors.New("min_amount must be atleast INR 1")
+	//}
+	//if !(request.PaymentPageItems[0].MaxAmount>0 && request.PaymentPageItems[0].MaxAmount<4294967295){
+	//	return errors.New("The max amount must be valid integer between 0 and 4294967295.")
+	//}
+	//if !(request.PaymentPageItems[0].Stock>0 && request.PaymentPageItems[0].Stock<4294967295){
+	//	return errors.New("The stock must be valid integer between 0 and 4294967295.")
+	//}
+	return nil // request is valid so we return nil
+}
+
 func (s *PaymentPageAPITestSuite) TestPaymentPageNegative(){
 	type errorTestCases struct {
 		description   string
@@ -504,20 +548,328 @@ func (s *PaymentPageAPITestSuite) TestPaymentPageNegative(){
 		})
 	}
 }
-
-func (s *PaymentPageAPITestSuite) TestPaymentPageCreate() {
-	var pptest map[string]json.RawMessage
-	dir, _ := os.Getwd()
-	pptest, _ = GetTestCases(dir + "/../paymentpage/payment_page_create.json")
-	var ppReq PaymentPageRequest
-	var ppRes PaymentPageResponse
-	//To do- Use Go lang table driven approach
-	for pos, _ := range pptest {
-		json.Unmarshal(pptest[pos], &ppReq)
-		ppRes = CreatePaymentPage(s.T(), ppReq)
-		verifyCreatedPP(s.T(), ppReq, ppRes)
+func (s *PaymentPageAPITestSuite) TestPaymentPageCreatePositive(){
+	type positiveTestCases struct {
+		description   string
+		input         PaymentPageRequest
+	}
+	ppitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+			Amount:      100,
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       1,
+		MinPurchase: 1,
+		MaxPurchase: 2,
+	}
+	ppitemus := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "USD",
+			Description: "test",
+			Type:        "payment_page",
+			Amount:      100,
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       1,
+		MinPurchase: 1,
+		MaxPurchase: 1,
+	}
+	ppitempos := []PaymentPageItems{ppitem}
+	ppitemusd := []PaymentPageItems{ppitemus}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "With Amount,Stock, Min and Max Purchase",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "Merchant Risk Service Title",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "Passport Passport Passport",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "Merchant Risk Service Description",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "test",
+				Description:    "Passport Passport Passport",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "USD Currency",
+			input: PaymentPageRequest{
+				Currency:       "USD",
+				Title:          "test",
+				Description:    "Passport Passport Passport",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitemusd,
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreatePaymentPage(s.T(), scenario.input)
+			verifyCreatedPP(s.T(), scenario.input, ppRes)
+		})
 	}
 }
+
+func (s *PaymentPageAPITestSuite) TestPaymentPageCreateOrderPositive(){
+	type positiveTestCases struct {
+		description   string
+		input         PaymentPageRequest
+	}
+	ppitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+			Amount:      100,
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       1,
+		MinPurchase: 1,
+		MaxPurchase: 2,
+	}
+	ppitemus := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+			Amount:      50000,
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       1,
+		MinPurchase: 1,
+		MaxPurchase: 1,
+	}
+	ppitempos := []PaymentPageItems{ppitem}
+	ppitemusd := []PaymentPageItems{ppitemus}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "With Amount,Stock, Min and Max Purchase",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "Merchant Risk Service Title",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "Passport Passport Passport",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "Merchant Risk Service Description",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "test",
+				Description:    "Passport Passport Passport",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "INR Currency",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Description:    "Passport Passport Passport",
+				Title:           "test title",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitemusd,
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			var ppOrderReq PaymentPageOrderRequest
+			ppRes := CreatePaymentPage(s.T(), scenario.input)
+			ppOrderRes := CreatePaymentPageOrder(s.T(), ppOrderReq, ppRes)
+			verifyCreatedPPOrder(s.T(), ppOrderRes)
+		})
+	}
+}
+func (s *PaymentPageAPITestSuite) TestPaymentPageCreateOrderNegative(){
+	type negativeTestCases struct {
+		description   string
+		input         PaymentPageRequest
+	}
+	ppitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Amount:      100,
+			Description: "test",
+			Type:        "payment_page",
+		},
+		Settings:    PPItemSettings{
+			Position: 10,
+		},
+		Stock:       10,
+		MinPurchase: 1,
+		MaxPurchase: 2,
+	}
+	ppitempos := []PaymentPageItems{ppitem}
+	for _, scenario := range []negativeTestCases{
+		{
+			description: "PP Item Negative Testing",
+			input: PaymentPageRequest{
+				Currency:       "INR",
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			var ppOrderReq PaymentPageOrderRequest
+			ppRes := CreatePaymentPage(s.T(), scenario.input)
+			l := make(map[LineItem]error)
+			lines := []LineItem{
+				{
+					PaymentPageItemID: ppRes.PaymentPageItems[0].ID,
+					Amount:            50,
+					Quantity:          0,
+				},
+				{
+					PaymentPageItemID: ppRes.PaymentPageItems[0].ID,
+					Amount:            50,
+				},
+				{
+					Amount:            50,
+				},
+			}
+			l[lines[0]]=errors.New("The quantity must be at least 1.")
+			l[lines[1]]=errors.New("amount should be equal to payment page item amount")
+			l[lines[2]]=errors.New("The payment page item id field is required.")
+			//l[lines[2]]=errors.New("amount should be equal to payment page item amount")
+			for _, i := range lines {
+				lineitems := ppOrderReq.LineItems
+				liness := append(lineitems, i)
+				ppOrderReq.LineItems = liness
+				ppRes := CreatePaymentPage(s.T(), scenario.input)
+				ppOrderReq.LineItems[0].PaymentPageItemID = ppRes.PaymentPageItems[0].ID
+				err := CreatePaymentPageOrderNegative(s.T(),ppOrderReq, ppRes)
+				assert.Equal(s.T(),err.Error.Description, l[i].Error())
+			}
+		})
+	}
+}
+
 func (s *PaymentPageAPITestSuite) TestPaymentPagePixelCreate() {
 	var pptest map[string]json.RawMessage
 	dir, _ := os.Getwd()
@@ -536,6 +888,9 @@ func verifyCreatedPP(t *testing.T, ppRequest PaymentPageRequest, ppResponse Paym
 	assert.Equal(t, ppRequest.Title, ppResponse.Title)
 	assert.NotEmptyf(t, ppResponse.ID, "PP did not created")
 	assert.Equal(t, ppRequest.Currency, ppResponse.Currency)
+}
+func verifyCreatedPPOrder(t *testing.T, ppResponse PaymentPageOrderResponse) {
+	assert.NotEmptyf(t, ppResponse.Order.ID, "PP Order did not created")
 }
 
 func TestPaymentPageAPI(t *testing.T) {

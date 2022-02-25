@@ -13,7 +13,6 @@ type PaymentPageRequest struct {
 	ViewType         string             `json:"view_type"`
 	PaymentPageItems []PaymentPageItems `json:"payment_page_items"`
 }
-
 type PPSettings struct {
 	UdfSchema                 string `json:"udf_schema"`
 	Theme                     string `json:"theme"`
@@ -25,7 +24,6 @@ type PPSettings struct {
 	PaymentSuccessRedirectURL string `json:"payment_success_redirect_url"`
 	AllowMultipleUnits		  string `json:"allow_multiple_units"`
 }
-
 type PaymentPageItems struct {
 	Item        Item      `json:"item,omitempty"`
 	Settings    PPItemSettings `json:"settings,omitempty"`
@@ -35,15 +33,13 @@ type PaymentPageItems struct {
 	MinAmount   int       `json:"min_amount,omitempty"`
 	MaxAmount   int       `json:"max_amount,omitempty"`
 }
-
 type Item struct {
 	Name        string `json:"name"`
 	Currency    string `json:"currency"`
-	Amount      int    `json:"amount"`
+	Amount      int    `json:"amount,omitempty"`
 	Description string `json:"description"`
 	Type        string `json:"type"`
 }
-
 type PPItemSettings struct {
 	Position int `json:"position"`
 }

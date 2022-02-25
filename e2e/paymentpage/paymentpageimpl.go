@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/razorpay/api/e2e"
 	"net/http"
 	"testing"
@@ -20,4 +21,40 @@ func CreatePaymentPage(t *testing.T, paymentPageReq PaymentPageRequest) PaymentP
 		Status(http.StatusOK).Body()
 	json.Unmarshal([]byte(obj.Raw()), &paymentPageRes)
 	return paymentPageRes
+}
+
+// Create PaymentPageOrder
+func CreatePaymentPageOrder(t *testing.T, paymentPageOrderReq PaymentPageOrderRequest,paymentPageRes PaymentPageResponse) PaymentPageOrderResponse {
+	Initialize(t)
+	var ppOrderRes PaymentPageOrderResponse
+	lineitems := paymentPageOrderReq.LineItems
+	line := LineItem{
+		PaymentPageItemID: paymentPageRes.PaymentPageItems[0].ID,
+		Amount:            paymentPageRes.PaymentPageItems[0].Item.Amount,
+		Quantity:          1,
+	}
+	liness := append(lineitems, line)
+	paymentPageOrderReq.LineItems = liness
+	obj := paymentPageHost.POST(fmt.Sprintf("/v1/payment_pages/%s/order",paymentPageRes.ID)).
+		WithBasicAuth(e2e.Config.PaymentPage.Username, e2e.Config.PaymentPage.Password).
+		WithHeader("Content-Type","application/json").
+		WithJSON(paymentPageOrderReq).
+		Expect().
+		Status(http.StatusOK).Body()
+	json.Unmarshal([]byte(obj.Raw()), &ppOrderRes)
+	return ppOrderRes
+}
+
+func CreatePaymentPageOrderNegative(t *testing.T, paymentPageOrderReq PaymentPageOrderRequest,paymentPageRes PaymentPageResponse) ErrorResponse {
+	Initialize(t)
+	var ppOrderRes ErrorResponse
+
+	obj := paymentPageHost.POST(fmt.Sprintf("/v1/payment_pages/%s/order",paymentPageRes.ID)).
+		WithBasicAuth(e2e.Config.PaymentPage.Username, e2e.Config.PaymentPage.Password).
+		WithHeader("Content-Type","application/json").
+		WithJSON(paymentPageOrderReq).
+		Expect().
+		Status(http.StatusBadRequest).Body()
+	json.Unmarshal([]byte(obj.Raw()), &ppOrderRes)
+	return ppOrderRes
 }
