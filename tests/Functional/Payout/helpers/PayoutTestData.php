@@ -704,7 +704,7 @@ return [
                     'account_type' => 'bank_account',
                     'bank_account' => [
                         'name'           => 'Sagnik Saha',
-                        'ifsc'           => 'UTBI0TFRM42',
+                        'ifsc'           => 'LAVB0000159',
                         'account_number' => '3434000111000'
                     ],
                     'contact'      => [
@@ -737,7 +737,7 @@ return [
                     "entity"       => "fund_account",
                     "account_type" => "bank_account",
                     "bank_account" => [
-                        "ifsc"           => "PUNB0221320",
+                        "ifsc"           => "DBSS0IN0159",
                         "name"           => "Sagnik Saha",
                         "notes"          => [],
                         "account_number" => "3434000111000"
