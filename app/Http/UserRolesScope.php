@@ -92,7 +92,7 @@ class UserRolesScope
             'merchant_edit_config_logo'             => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_fetch_config'                 => Role::allExceptPaymentLinkRoles(),
             'merchant_fetch_referrals'              => Role::allExceptPaymentLinkRoles(),
-            'merchant_edit_config'                  => Role::allExceptSellerAppRole(),
+            'merchant_edit_config'                  => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::OPERATIONS],
             'merchant_sub_create'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'merchant_replace_key'                  => [Role::OWNER, Role::ADMIN],
             'merchant_add_bank_account'             => [Role::OWNER, Role::ADMIN],
