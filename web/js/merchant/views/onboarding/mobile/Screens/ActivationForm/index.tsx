@@ -75,7 +75,7 @@ const TnCLink = styled(Link)`
 
 const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const { status: activationStatus, data, postData, refetch } = useActivation();
-  const { user, experiments } = useApp();
+  const { user, experiments, submerchantId } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const isContactDetailsCompleted = useActivationFormState(
     (state) => state.isContactDetailsCompleted,
@@ -156,6 +156,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         show_activation_form_full_view: 'true',
         experiment_name: 'show_activation_form_full_view',
+        submerchant_id: submerchantId,
       },
     });
   }, []);
@@ -245,6 +246,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       actionName: 'Submitted',
       screen: 'home page',
       toCleverTap: true,
+      properties: {
+        submerchant_id: submerchantId,
+      },
     });
     postData({ activation_form_milestone: 'L1' })
       .then((res) => {
@@ -315,6 +319,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             screen: 'home page',
             properties: {
               Status: 'sucess',
+              submerchant_id: submerchantId,
             },
             toCleverTap: true,
           });
@@ -373,6 +378,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       screen: 'home page',
       properties: {
         tab: startCase(activeTabId),
+        submerchant_id: submerchantId,
       },
       toCleverTap: true,
     });
@@ -490,7 +496,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     }
   };
   const onBack = () => {
-    history.push('/onboarding/steps');
+    if (submerchantId) {
+      history.push(`/partners/submerchants/onboarding/acc_${submerchantId}/steps`);
+    } else {
+      history.push('/onboarding/steps');
+    }
   };
 
   const isL1AllTabComplete =
@@ -511,6 +521,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         filed_tab_details: 'Contact Details',
         tab_filled: 'yes',
+        submerchant_id: submerchantId,
       },
     });
   }
@@ -523,6 +534,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         filed_tab_details: 'Business Overview',
         tab_filled: 'yes',
+        submerchant_id: submerchantId,
       },
     });
   }
@@ -535,6 +547,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         filed_tab_details: 'Business Details',
         tab_filled: 'yes',
+        submerchant_id: submerchantId,
       },
     });
   }
@@ -547,6 +560,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         filed_tab_details: 'Bank Details',
         tab_filled: 'yes',
+        submerchant_id: submerchantId,
       },
     });
   }
@@ -559,6 +573,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       properties: {
         filed_tab_details: 'Document',
         tab_filled: 'yes',
+        submerchant_id: submerchantId,
       },
     });
   }
@@ -747,6 +762,8 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                       experiments.isL2AllowedForPoiInitiated)
                   ) {
                     setIsSaveAndExitModalOpen(true);
+                  } else if (submerchantId) {
+                    history.push('/partners/submerchants');
                   } else {
                     history.push('/dashboard');
                   }

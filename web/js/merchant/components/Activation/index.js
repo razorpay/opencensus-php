@@ -130,7 +130,6 @@ const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
 @connect(
   (state) => ({
     session: state.session,
-    user: state.session.user,
   }),
   {
     showNotification,
@@ -390,6 +389,7 @@ export default class ActivationWizard extends React.Component {
             tracking.trackEvent(
               window.rzpQ.onbr().initiated('kyc.upload_document', {
                 name: filename,
+                submerchant_id: this.props.submerchantId,
               }),
             );
             this.props.trackEventsAction({
@@ -398,6 +398,7 @@ export default class ActivationWizard extends React.Component {
               screen: 'KYC Document',
               properties: {
                 location: 'Activation page',
+                submerchant_id: this.props.submerchantId,
               },
             });
             this.sendInputToSegment({
@@ -453,6 +454,7 @@ export default class ActivationWizard extends React.Component {
         screen: 'KYC Document',
         properties: {
           tab: this.mainTabs[this.state.activeTab],
+          submerchant_id: this.props.submerchantId,
         },
         toCleverTap: true,
       });
@@ -491,6 +493,7 @@ export default class ActivationWizard extends React.Component {
       screen: 'KYC Document',
       properties: {
         tab: this.mainTabs[this.state.activeTab],
+        submerchant_id: this.props.submerchantId,
       },
       toCleverTap: true,
     });
@@ -512,6 +515,7 @@ export default class ActivationWizard extends React.Component {
           isGstinSync: isGstinSyncFlowEnabled,
           isLlpinSync: isLlpinSyncFlowEnabled,
           isCinSync: isCinSyncFlowEnabled,
+          submerchant_id: this.props.submerchantId,
         },
       });
     }
@@ -616,6 +620,7 @@ export default class ActivationWizard extends React.Component {
       properties: {
         'CTA Label': 'Save',
         'Modal Label': 'KYC Form',
+        submerchant_id: this.props.submerchantId,
       },
     });
     const tracker = () =>
@@ -654,6 +659,7 @@ export default class ActivationWizard extends React.Component {
           error: error,
           fieldLabel: fieldLabel,
           tab: this.mainTabs[this.state.activeTab],
+          submerchant_id: this.props.submerchantId,
         },
       });
       this.props.tracking.trackEvent(
@@ -674,6 +680,7 @@ export default class ActivationWizard extends React.Component {
       properties: {
         'Card Title': 'none',
         'Element Type': 'Form',
+        submerchant_id: this.props.submerchantId,
         ...properties,
       },
     });
@@ -685,6 +692,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Clicked',
       screen: 'home page',
       properties: {
+        submerchant_id: this.props.submerchantId,
         ...properties,
       },
     });
@@ -696,6 +704,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Selected',
       screen: 'home page',
       properties: {
+        submerchant_id: this.props.submerchantId,
         ...properties,
       },
     });
@@ -708,6 +717,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Clicked',
       screen: 'home page',
       properties: {
+        submerchant_id: this.props.submerchantId,
         tab: this.mainTabs[currenActiveTab],
       },
       toCleverTap: true,
@@ -718,6 +728,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Clicked',
       screen: 'home page',
       properties: {
+        submerchant_id: this.props.submerchantId,
         'CTA Label': 'Save & Next',
         'Modal Label': 'KYC Form',
       },
@@ -779,6 +790,7 @@ export default class ActivationWizard extends React.Component {
       actionName: 'Clicked',
       screen: 'KYC Document',
       properties: {
+        submerchant_id: this.props.submerchantId,
         tab: this.mainTabs[tabId],
       },
       toCleverTap: true,
@@ -1547,7 +1559,11 @@ export default class ActivationWizard extends React.Component {
           `rzp_onboarding--${this.props.user.current}--clarification_submitted`,
           true,
         );
-        this.props.history.replace('/');
+        if (this.props.submerchantId) {
+          this.props.history.replace('/partners');
+        } else {
+          this.props.history.replace('/');
+        }
       }
       return response;
     } catch (err) {
@@ -2084,6 +2100,7 @@ export default class ActivationWizard extends React.Component {
       properties: {
         show_activation_form_full_view: 'true',
         experiment_name: 'show_activation_form_full_view',
+        submerchant_id: this.props.submerchantId,
       },
     });
     this.saveCurrentTab();
@@ -2187,6 +2204,7 @@ export default class ActivationWizard extends React.Component {
         actionName: 'Failed',
         screen: 'KYC Bank screen',
         properties: {
+          submerchant_id: this.props.submerchantId,
           bvs_attempt_count: this.props.bvsApiCount,
         },
         toLumberjack: false,
@@ -2205,6 +2223,7 @@ export default class ActivationWizard extends React.Component {
         actionName: 'success',
         screen: 'submit screen',
         properties: {
+          submerchant_id: this.props.submerchantId,
           bvs_attempt_count: this.props.bvsApiCount,
         },
         toLumberjack: false,
@@ -2299,7 +2318,12 @@ export default class ActivationWizard extends React.Component {
 
     let showRxCA = false;
     // show the option on KYC form for PG users who've experiment enabled
-    if (FORM_TABS[activeTab] === bankAccountTabName && !this.isSourceRX && this.isRxCaExpEnabled) {
+    if (
+      FORM_TABS[activeTab] === bankAccountTabName &&
+      !this.isSourceRX &&
+      this.isRxCaExpEnabled &&
+      !this.props.submerchantId
+    ) {
       showRxCA = true;
     }
     // track hubspot event
@@ -2624,6 +2648,7 @@ export default class ActivationWizard extends React.Component {
             this.isAllTabsValid() && (
               <main className={classList('overlay-container', isFormLocked && 'main--full')}>
                 <SubmitFormLayer
+                  submerchantId={this.props.submerchantId}
                   closeActivationForm={() => {
                     this.goto(FORM_TABS.length - 1);
                   }}
@@ -2651,6 +2676,7 @@ export default class ActivationWizard extends React.Component {
 
           {/* Form Footer, to show actions btns / saving state */}
           <Footer
+            submerchantId={this.props.submerchantId}
             isActivationFormFullView={this.props.location.pathname === '/kyc'}
             isSaving={this.state.isSaving}
             defaultMsg={this.state.defaultMsg}
@@ -2675,6 +2701,7 @@ export default class ActivationWizard extends React.Component {
             isCheck={this.state.ischeck}
             fetchData={this.props.fetchMerchantDetails}
             onCheckboxChange={this.onCheckboxChange}
+            submitted={this.props.user.submitted}
           />
         </div>
       </div>

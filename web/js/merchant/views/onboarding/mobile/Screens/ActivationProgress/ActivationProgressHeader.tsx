@@ -23,7 +23,7 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
 }) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
   const { data } = useActivation();
-  const { experiments } = useApp();
+  const { experiments, submerchantId } = useApp();
   const isDedupe =
     checkIfDedupe({
       ...data,
@@ -46,14 +46,20 @@ const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: numbe
             {!(!data.activation_form_milestone && experiments.isActivationFormFullView) && (
               <Space padding={[0.5, 0]}>
                 <Link
-                  onClick={() =>
-                    !data.submitted &&
-                    !isDedupe &&
-                    (data.poi_verification_status !== 'initiated' ||
-                      experiments.isL2AllowedForPoiInitiated)
-                      ? setIsSaveAndExitModalOpen(true)
-                      : history.push('/dashboard')
-                  }
+                  onClick={() => {
+                    if (
+                      !data.submitted &&
+                      !isDedupe &&
+                      (data.poi_verification_status !== 'initiated' ||
+                        experiments.isL2AllowedForPoiInitiated)
+                    ) {
+                      setIsSaveAndExitModalOpen(true);
+                    } else if (submerchantId) {
+                      history.push('/partners/submerchants');
+                    } else {
+                      history.push('/dashboard');
+                    }
+                  }}
                   size="xsmall"
                   weight="bold"
                   color="primary.800"

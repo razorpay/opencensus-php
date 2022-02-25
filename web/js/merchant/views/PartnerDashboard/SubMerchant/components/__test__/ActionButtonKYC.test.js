@@ -128,7 +128,7 @@ describe('<ActionButtonKYC /> ', () => {
         </ThemeProvider>
       </Router>,
     );
-    expect(screen.getByText('Resend KYC request')).toBeInTheDocument();
+    expect(screen.getByText('Rejected Multiple times')).toBeInTheDocument();
     const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });

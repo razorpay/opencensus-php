@@ -42,7 +42,6 @@ export default class ActivationContainer extends Component {
       gstinDetails: null,
       isActivationFormLoading: false,
       showWelcomeBanner: false,
-      submerchantId: props.submerchantId && props.submerchantId.replace('acc_', ''),
       shouldBlockMerchantKYC: false,
       partnerActivationData: null,
     };
@@ -139,7 +138,7 @@ export default class ActivationContainer extends Component {
         url: 'merchant/activation',
         // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
         mode: !!accountId ? this.props.session.mode : 'live',
-        accountId: accountId || this.state.submerchantId,
+        accountId: accountId,
       }),
       !accountId && merchantFetch('merchant/activation/business_categories'),
       !isLiteOnboarding && !this.isSourceRX && merchantFetch('merchant/aov-config'),
@@ -307,14 +306,12 @@ export default class ActivationContainer extends Component {
       gstinDetails,
       isActivationFormLoading,
       showWelcomeBanner,
-      submerchantId,
       partnerActivationData,
       shouldBlockMerchantKYC,
     } = this.state;
     const { user } = this.props;
     const commonProps = {
       accountId: this.props.accountId,
-      submerchantId,
       fetchActivationDetails: this.fetchActivationDetails,
       updateActivationData: this.updateActivationData,
       data,

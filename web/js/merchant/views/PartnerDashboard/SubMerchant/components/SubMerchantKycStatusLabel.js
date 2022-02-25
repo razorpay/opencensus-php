@@ -19,7 +19,11 @@ const statusMap = {
 //   "token_expiry"
 // } || null
 
-const SubMerchantKycStatusLabel = ({ activation_status = null, kyc_access = null }) => {
+const SubMerchantKycStatusLabel = ({
+  activation_status = null,
+  kyc_access = null,
+  isSubMerchantKYCAccess,
+}) => {
   // May need to re-assign in future
   // eslint-disable-next-line prefer-const
   let customLabelStyle = null;
@@ -59,6 +63,10 @@ const SubMerchantKycStatusLabel = ({ activation_status = null, kyc_access = null
     description = ``;
   }
 
+  if (isSubMerchantKYCAccess) {
+    description = ``;
+  }
+
   const getLabelStyle = () => {
     if (customLabelStyle) {
       return customLabelStyle;
@@ -74,7 +82,7 @@ const SubMerchantKycStatusLabel = ({ activation_status = null, kyc_access = null
       return 'Activated';
     }
     if (activation_status === null) {
-      return 'Not Submitted';
+      return 'Pending Completion';
     }
     return titleCase(activation_status);
   };
@@ -105,5 +113,6 @@ SubMerchantKycStatusLabel.propTypes = {
     rejection_count: PropTypes.number.isRequired,
     token_expiry: PropTypes.number.isRequired,
   }),
+  isSubMerchantKYCAccess: PropTypes.bool,
 };
 export default SubMerchantKycStatusLabel;

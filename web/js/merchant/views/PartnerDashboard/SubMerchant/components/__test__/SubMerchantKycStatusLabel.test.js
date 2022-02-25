@@ -6,7 +6,7 @@ import moment from 'moment';
 describe('<SubMerchantKycStatusLabel />', () => {
   test("Partner didn't request SubM", () => {
     render(<SubMerchantKycStatusLabel />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
   });
 
   test('SubM  approval pending', () => {
@@ -22,7 +22,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
       },
     };
     render(<SubMerchantKycStatusLabel {...props} />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
     expect(screen.getByText('Waiting for Merchant approval')).toBeInTheDocument();
   });
 
@@ -38,7 +38,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
       },
     };
     render(<SubMerchantKycStatusLabel {...props} />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
     expect(screen.getByText('Request expired')).toBeInTheDocument();
   });
 
@@ -54,7 +54,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
       },
     };
     render(<SubMerchantKycStatusLabel {...props} />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
     expect(screen.getByText('Rejected by merchant once')).toBeInTheDocument();
   });
 
@@ -70,7 +70,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
       },
     };
     render(<SubMerchantKycStatusLabel {...props} />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
     expect(screen.getByText('Rejected by merchant twice')).toBeInTheDocument();
   });
 
@@ -86,7 +86,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
       },
     };
     render(<SubMerchantKycStatusLabel {...props} />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
     expect(screen.getByText('Rejected by merchant thrice')).toBeInTheDocument();
   });
 
@@ -102,7 +102,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
       },
     };
     render(<SubMerchantKycStatusLabel {...props} />);
-    expect(screen.getByText('Not Submitted')).toBeInTheDocument();
+    expect(screen.getByText('Pending Completion')).toBeInTheDocument();
     expect(screen.getByText('Request approved by Merchant')).toBeInTheDocument();
   });
 
@@ -122,7 +122,7 @@ describe('<SubMerchantKycStatusLabel />', () => {
     expect(screen.getByText('Activated')).toBeInTheDocument();
 
     // checking if not exist
-    expect(screen.queryByText('Not Submitted')).toBeNull();
+    expect(screen.queryByText('Pending Completion')).toBeNull();
     expect(screen.queryByText('Request approved by Merchant')).toBeNull();
   });
 });

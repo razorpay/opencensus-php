@@ -14,6 +14,7 @@ const DetailsAction = ({
   activation_status = null,
   kyc_access = null,
   submerchant,
+  isSubMerchantKYCAccess,
   history,
   ...props
 }) => {
@@ -26,7 +27,7 @@ const DetailsAction = ({
   let btnText = 'Request for KYC access';
   let pendingState = 'Sending KYC access request...';
 
-  let title = ' You can request to perform KYC access';
+  let title = 'You can send request for KYC access';
   const waitingApprovalImg = '/dist/css/assets/partner-dashboard/waiting-approval.png';
   const defaultImg = '/dist/css/assets/partner-dashboard/req-by-email-1.png';
   let image = defaultImg;
@@ -106,6 +107,7 @@ const DetailsAction = ({
     btnText = 'Resend KYC request';
     if (rejection_count >= 3) {
       isHidden = true;
+      title = 'You can not send request for KYC access';
       description =
         'Merchant has rejected your KYC access request multiple times. Now, only the merchant can perform their KYC through their merchant dashboard';
     }
@@ -115,6 +117,14 @@ const DetailsAction = ({
     ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(activation_status)
   ) {
     return null;
+  }
+
+  if (isSubMerchantKYCAccess) {
+    title = 'You can perform Merchant KYC';
+    description = '';
+    btnText = 'Perform KYC';
+    pendingState = 'Opening KYC form ...';
+    onClickAction = openKYCForm;
   }
   return (
     <div className="details-action-container">

@@ -8,6 +8,7 @@ export default function usePartnerActivation(): any {
   const snackbar = useSnackbar();
   const {
     user: { isIndependentPartnerKYCEnabled },
+    submerchantId,
   } = useApp();
   let partnerActivationStatus: null | string = null;
   const { data: merchantActivationData } = useActivation();
@@ -16,7 +17,7 @@ export default function usePartnerActivation(): any {
   const { data }: any = useQuery(
     `partnerActivationDetails`,
     async () => {
-      if (!isIndependentPartnerKYCEnabled) {
+      if (!isIndependentPartnerKYCEnabled || submerchantId) {
         return null;
       }
       const fetchPartnerActivationDetails = await fetch({

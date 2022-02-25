@@ -919,6 +919,12 @@ class App extends Component {
     };
   };
 
+  getSubMerchantId = () => {
+    const regex = /\/partners\/submerchants\/onboarding\/acc_(.+)\//g;
+    const found = regex.exec(this.props.location.pathname);
+    return found && found[1] ? found[1] : '';
+  };
+
   render() {
     const {
       user,
@@ -935,6 +941,7 @@ class App extends Component {
     const isPartnerModeEnabled = this.state.isPartnerModeEnabled;
     const currentMode = isPartnerModeEnabled ? partnerMode : mode;
     const currentModeFormatted = isPartnerModeEnabled ? partnerModeFormatted : modeFormatted;
+    const submerchantId = this.getSubMerchantId();
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -947,6 +954,7 @@ class App extends Component {
           experiments: this.getOnboardingExperiment(),
           org,
           mode,
+          submerchantId,
         }}
       >
         <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>

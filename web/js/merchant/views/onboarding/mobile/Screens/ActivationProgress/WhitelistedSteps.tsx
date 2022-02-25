@@ -40,7 +40,7 @@ const WhitelistedSteps: React.FC<
   isCinVerificationFailed,
 }) => {
   const { data, postData } = useActivation();
-  const { user, experiments } = useApp();
+  const { user, experiments, submerchantId } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
   const {
     isContactDetailsCompleted,
@@ -74,7 +74,11 @@ const WhitelistedSteps: React.FC<
 
   const onClick = (step) => {
     setActiveTabId(step);
-    history.push('/onboarding/form');
+    if (submerchantId) {
+      history.push(`/partners/submerchants/onboarding/acc_${submerchantId}/form`);
+    } else {
+      history.push('/onboarding/form');
+    }
   };
 
   const submitL1 = () => {

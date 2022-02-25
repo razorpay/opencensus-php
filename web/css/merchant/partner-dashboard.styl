@@ -121,6 +121,13 @@
     width: 300px;
     height: 50px;
   }
+
+  .btn-toolbar{
+    @media(max-width: 470px){
+      margin-left: -4px !important;
+      margin-bottom: 8px;
+    }
+  } 
 }
 
 .SelectBox.SelectBox-partner-dashboard
@@ -183,6 +190,8 @@
       td:nth-child(4)
         align-items: flex-start;
 
+  .rzp-popover.rzp-tooltip 
+    white-space: normal;
   .data-table
     th
       text-align: center;
@@ -205,8 +214,8 @@
 
       .no-description
         display: flex;
-        flex-direction: column;
         align-items: center;
+        justify-content: center;
         padding: 8px 0px;
     
   .reseller-kyc-experiment-disabled
@@ -235,6 +244,8 @@
   padding-bottom: 70px;
 
 .action-kyc-request
+  button 
+    width: 160px;
   white-space: nowrap;
   display: flex;
   justify-content: center;
@@ -242,6 +253,15 @@
 .action-kyc-request-disable
   opacity: 30%;
   pointer-events: none;
+.action-kyc-request-full-rejected
+  button 
+    background: #D12D2D1A;
+    border: 1px solid #f05050;
+    &:hover
+      background: #D12D2D1A;
+      border: 1px solid #f05050;
+    div
+      color: $textDangerColor
 
 .submerchant-details-action
   display: flex;

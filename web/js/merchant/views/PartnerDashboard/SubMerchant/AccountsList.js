@@ -92,27 +92,6 @@ const activationStatus = {
     ),
 };
 
-const activationStatus_NEW = {
-  title: (
-    <Fragment>
-      Activation Status&nbsp;
-      <span>
-        <i class="i i-info-circle" />
-        &nbsp;
-        <PopoverComponent align="top" theme="dark">
-          <PopoverBody>Current status of merchant's activation request</PopoverBody>
-        </PopoverComponent>
-      </span>
-    </Fragment>
-  ),
-  value: (submerchant) => (
-    <SubMerchantKycStatusLabel
-      activation_status={submerchant.details.activation_status}
-      kyc_access={submerchant.kyc_access}
-    />
-  ),
-};
-
 const settlementStatus = {
   title: (
     <Fragment>
@@ -190,6 +169,13 @@ const appId = {
 @RTracking(() => window.rzpQ.component('ProductSubMerchantsList'))
 class ProductSubMerchantsList extends ListContainer {
   state = {};
+
+  constructor(props) {
+    super(props);
+
+    // if this feature is enabled - allows partner to perform submerchant kyc without requesting them
+    this.isSubMerchantKYCAccess = this.props.user.isFeatureEnabled('partner_sub_kyc_access');
+  }
 
   searchAnalytics = () => {
     const searchQuery = QueryString.parse(this.props.location.search);
@@ -284,8 +270,33 @@ class ProductSubMerchantsList extends ListContainer {
         kyc_access={submerchant.kyc_access}
         submerchant={submerchant}
         trackUserEvent={this.trackUserEvent}
+        isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
       />
     ),
+  };
+
+  getActivationStatus_NEW = () => {
+    return {
+      title: (
+        <Fragment>
+          Activation Status&nbsp;
+          <span>
+            <i class="i i-info-circle" />
+            &nbsp;
+            <PopoverComponent align="top" theme="dark">
+              <PopoverBody>Current status of merchant's activation request</PopoverBody>
+            </PopoverComponent>
+          </span>
+        </Fragment>
+      ),
+      value: (submerchant) => (
+        <SubMerchantKycStatusLabel
+          activation_status={submerchant.details.activation_status}
+          kyc_access={submerchant.kyc_access}
+          isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
+        />
+      ),
+    };
   };
 
   handleAddMerchant = () => {
@@ -509,7 +520,7 @@ class ProductSubMerchantsList extends ListContainer {
           id,
           email,
           ...appIdColumn,
-          activationStatus_NEW,
+          this.getActivationStatus_NEW(),
           this.actions,
           // settlementStatus,
           addedOn,

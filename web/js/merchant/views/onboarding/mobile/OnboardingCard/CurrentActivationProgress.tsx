@@ -31,13 +31,17 @@ const CurrentActivationProgress: React.FC<
     showProductModal?: any;
   }
 > = ({ data, escalation, history, referee, showProductModal }) => {
-  const { user, experiments } = useApp();
+  const { user, experiments, submerchantId } = useApp();
   const trackEvents = useTrackEvents();
   const isReferredMerchant = referee?.status === 'signup';
   const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
 
   const onCTAClick = () => {
-    history.push('/onboarding/steps');
+    if (submerchantId) {
+      history.push(`/partners/submerchants/onboarding/acc_${submerchantId}/steps`);
+    } else {
+      history.push('/onboarding/steps');
+    }
     trackEvents({
       objectName: `${isL1Submitted(data.activation_form_milestone) ? 'L2' : 'L1'} Form`,
       actionName: 'initiated',
@@ -68,7 +72,11 @@ const CurrentActivationProgress: React.FC<
   };
 
   const goToNcFlow = () => {
-    history.push(activationFormUrl);
+    if (submerchantId) {
+      history.push(`/partners/submerchants/acc_${submerchantId}/activation`);
+    } else {
+      history.push(activationFormUrl);
+    }
   };
 
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;

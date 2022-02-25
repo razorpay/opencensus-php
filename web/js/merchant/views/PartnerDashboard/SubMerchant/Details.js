@@ -34,6 +34,13 @@ import { isMobileAndTablet } from 'common/utils/rzp-utils';
 export default class SubmerchantDetailsContainer extends Component {
   state = {};
 
+  constructor(props) {
+    super(props);
+
+    // if this feature is enabled - allows partner to perform submerchant kyc without requesting them
+    this.isSubMerchantKYCAccess = this.props.user.isFeatureEnabled('partner_sub_kyc_access');
+  }
+
   getPannelData = () => {
     let product = PRODUCT_TYPE.PG;
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
@@ -158,6 +165,7 @@ export default class SubmerchantDetailsContainer extends Component {
           onInviteMerchant={this.handleInviteClick}
           onResendInvite={this.handleResendInvite}
           product={this.state.product}
+          isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
         />
       </div>
     );

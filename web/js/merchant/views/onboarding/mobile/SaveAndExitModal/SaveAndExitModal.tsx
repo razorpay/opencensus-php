@@ -7,6 +7,7 @@ import Link from '@razorpay/commander-shield/src/shared/Link';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { Modal, ModalBody } from 'common/components/Modal';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { useApp } from 'common/context/App';
 
 export interface ExitPopupProps {
   onClose: () => void;
@@ -27,6 +28,9 @@ const ExitPopup: React.FC<ExitPopupProps> = ({
   closeable = false,
 }) => {
   const trackEvents = useTrackEvents();
+  const { submerchantId } = useApp();
+  const defaultDashboardLink = submerchantId ? '/app/partners/submerchants' : '/app/dashboard';
+
   useEffect(() => {
     trackEvents({
       objectName: 'Modal CTA',
@@ -90,7 +94,11 @@ const ExitPopup: React.FC<ExitPopupProps> = ({
           </Button>
           <Space margin={[2, 0, 0, 0]}>
             <View>
-              <Link href={exitToDashBoardLink ? exitToDashBoardLink : '/app/dashboard'}>
+              <Link
+                href={
+                  exitToDashBoardLink && !submerchantId ? exitToDashBoardLink : defaultDashboardLink
+                }
+              >
                 Exit to dashboard
               </Link>
             </View>

@@ -40,12 +40,22 @@ let SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking, trackEvents }) => (
 
 SubmitL1Form = connect(null, { ...EventActions })(SubmitL1Form);
 
-let SubmitKYCForm = ({ isAllTabsValid, tracking, toggleSubmitLayer, trackEvents }) => (
+let SubmitKYCForm = ({
+  isAllTabsValid,
+  tracking,
+  toggleSubmitLayer,
+  trackEvents,
+  submerchantId,
+}) => (
   <Button.Primary
     disabled={!isAllTabsValid}
     onClick={() => {
       tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.save_documents'));
-      tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.submit_form'));
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('kyc.submit_form', {
+          submerchant_id: submerchantId,
+        }),
+      );
       toggleSubmitLayer();
       trackEvents({
         objectName: 'SignUp',
@@ -80,6 +90,7 @@ let FooterCheckBox = ({
   onAction,
   fetchData,
   trackEvents,
+  submitted,
 }) => {
   const fetchMerchantData = (isChecked) => {
     if (isChecked) {
@@ -107,7 +118,7 @@ let FooterCheckBox = ({
         activeTab == 2 &&
         !isL1Submitted &&
         user.isSyncExperimentEnabled &&
-        !user.submitted
+        !submitted
       }
     >
       <div className="subfooter">
@@ -171,6 +182,7 @@ const Footer = ({
   fetchData,
   onCheckboxChange,
   isActivationFormFullView,
+  submerchantId,
 }) => {
   const buttons = [];
 
@@ -212,6 +224,7 @@ const Footer = ({
         isAllTabsValid={isAllTabsValid()}
         toggleSubmitLayer={toggleSubmitLayer}
         tracking={tracking}
+        submerchantId={submerchantId}
       />,
     );
   }

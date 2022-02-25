@@ -10,6 +10,7 @@ const ActionButtonKYC = ({
   submerchant,
   history,
   trackUserEvent,
+  isSubMerchantKYCAccess,
 }) => {
   const submerchantId = submerchant?.id;
 
@@ -17,6 +18,7 @@ const ActionButtonKYC = ({
   const token_expiry = moment.unix(kyc_access?.token_expiry);
   const rejection_count = kyc_access?.rejection_count;
   let isDisabled = false;
+  let isFullRejected = false;
   let btnText = 'Request for KYC';
 
   const openSidePannel = () => {
@@ -70,6 +72,20 @@ const ActionButtonKYC = ({
   if (state === 'rejected') {
     btnText = 'Resend KYC request';
     action = openSidePannel;
+    if (rejection_count >= 3) {
+      isFullRejected = true;
+      btnText = 'Rejected Multiple times';
+    }
+  }
+  if (activation_status === 'needs_clarification') {
+    btnText = 'Resubmit KYC details';
+    action = openKYCForm;
+  }
+  if (isSubMerchantKYCAccess) {
+    btnText = 'Perform KYC';
+    action = openKYCForm;
+    isFullRejected = false;
+    isDisabled = false;
   }
 
   if (
@@ -77,8 +93,11 @@ const ActionButtonKYC = ({
   ) {
     return null;
   }
+  const disabledClass = isDisabled ? 'action-kyc-request-disable' : '';
+  const fullRejectClass = isFullRejected ? 'action-kyc-request-full-rejected' : '';
+
   return (
-    <div className={`action-kyc-request ${isDisabled ? 'action-kyc-request-disable' : ''}`}>
+    <div className={`action-kyc-request ${disabledClass} ${fullRejectClass}`}>
       <Button variant="secondary" size="small" onClick={action}>
         {btnText}
       </Button>
@@ -94,6 +113,7 @@ ActionButtonKYC.propTypes = {
     token_expiry: PropTypes.number.isRequired,
   }),
   submerchant: PropTypes.object,
+  isSubMerchantKYCAccess: PropTypes.bool,
 };
 
 export default withRouter(ActionButtonKYC);

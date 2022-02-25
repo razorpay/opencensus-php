@@ -182,6 +182,12 @@ const PlanNew = lazy(() =>
 const ActivationContainer = lazy(() =>
   import(/* webpackChunkName: "MerchantActivation" */ 'merchant/containers/Activation'),
 );
+const SubmerchantActivationContainer = lazy(() =>
+  import(
+    /* webpackChunkName: "SubMerchantActivation" */ 'merchant/views/PartnerDashboard/SubMerchant/KYC/submerchantContainer'
+  ),
+);
+
 const ActivationFullViewContainer = lazy(() =>
   import(
     /* webpackChunkName: "MerchantActivationNativeView" */ 'merchant/containers/Activation/ActivationNativeView'
@@ -493,7 +499,7 @@ const entityModalsMap = {
     additionalCondition: (user) => user.isAllowedView('stores') && user.isStoresEnabled,
   },
   '/partners/submerchants/:submerchantId(acc_.+)/activation': {
-    component: ActivationContainer,
+    component: SubmerchantActivationContainer,
     additionalCondition: (user) => user.isSubMerchantKycResellerEnabled,
   },
 };

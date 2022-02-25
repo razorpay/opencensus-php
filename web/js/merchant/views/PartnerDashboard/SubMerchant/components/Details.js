@@ -29,6 +29,7 @@ export default (props) => {
     isReseller,
     getPannelData,
     trackUserEvent,
+    isSubMerchantKYCAccess,
   } = props;
 
   const contact_mobile = submerchant?.user?.contact_mobile;
@@ -55,8 +56,8 @@ export default (props) => {
               {submerchant.user && (
                 <div class="btn-toolbar pull-right">
                   <AsyncButton
-                    text="Resend Invite"
-                    pendingText="Sending..."
+                    text="Invite Again"
+                    pendingText="Sending Invite..."
                     class="btn btn-primary btn-sm"
                     onClick={onResendInvite}
                   />
@@ -92,6 +93,7 @@ export default (props) => {
                       <SubMerchantKycStatusLabel
                         activation_status={submerchant.details.activation_status}
                         kyc_access={submerchant.kyc_access}
+                        isSubMerchantKYCAccess={isSubMerchantKYCAccess}
                       />
                     ) : // old ui
                     submerchant.details && submerchant.details.activation_status ? (
@@ -178,6 +180,7 @@ export default (props) => {
                     submerchant={submerchant}
                     getPannelData={getPannelData}
                     trackUserEvent={trackUserEvent}
+                    isSubMerchantKYCAccess={isSubMerchantKYCAccess}
                   />
                 )}
               </div>

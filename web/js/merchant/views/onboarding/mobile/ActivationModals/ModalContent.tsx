@@ -42,7 +42,7 @@ export const getModalContent = (
   dedupeStatus: string | undefined,
 ) => {
   /* eslint-disable react-hooks/rules-of-hooks */
-  const { user, experiments } = useApp();
+  const { user, experiments, submerchantId } = useApp();
   const trackEvents = useTrackEvents();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
@@ -128,7 +128,7 @@ export const getModalContent = (
         <Button
           onClick={() => {
             sendSegmentEventFromButton(Message.POI_INITIATED.buttonText);
-            location.href = '/';
+            location.href = submerchantId ? '/app/partners/submerchants' : '/';
           }}
           block
         >
@@ -149,7 +149,7 @@ export const getModalContent = (
           <Button
             onClick={() => {
               sendSegmentEventFromButton(Message.PAYMENT_ENABLE.buttonText);
-              location.href = '/';
+              location.href = submerchantId ? '/app/partners/submerchants' : '/';
             }}
             block
           >
@@ -164,7 +164,9 @@ export const getModalContent = (
                     closeModal();
                     sendFormSegment();
                     sendSegmentEventFromButton(Message.PAYMENT_ENABLE.secondryButtonText);
-                    location.href = '/app/onboarding/steps';
+                    location.href = submerchantId
+                      ? `/app/partners/submerchants/onboarding/acc_${submerchantId}/steps`
+                      : '/app/onboarding/steps';
                   }}
                 >
                   {Message.PAYMENT_ENABLE.secondryButtonText}
@@ -186,7 +188,10 @@ export const getModalContent = (
             closeModal();
             sendFormSegment();
             sendSegmentEventFromButton(Message.PAYMENT_DISABLE.buttonText);
-            history.push('/onboarding/steps');
+            const url = submerchantId
+              ? `/partners/submerchants/onboarding/acc_${submerchantId}/steps`
+              : '/onboarding/steps';
+            history.push(url);
           }}
           block
         >
@@ -220,7 +225,7 @@ export const getModalContent = (
         <Button
           onClick={() => {
             sendSegmentEventFromButton('Back To Dashboard');
-            location.href = '/';
+            location.href = submerchantId ? '/app/partners/submerchants' : '/';
           }}
           block
         >
@@ -308,7 +313,10 @@ export const getModalContent = (
             onClick={() => {
               closeModal();
               sendSegmentEventFromButton(Message.NC.buttonText);
-              history.push(activationFormUrl);
+              const formUrl = submerchantId
+                ? `partners/submerchants/${submerchantId}/activation`
+                : activationFormUrl;
+              history.push(formUrl);
             }}
             icon="link"
             iconAlign="right"

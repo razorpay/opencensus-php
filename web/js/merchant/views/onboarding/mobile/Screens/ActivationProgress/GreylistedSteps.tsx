@@ -32,7 +32,7 @@ const GreylistedSteps: React.FC<
 }) => {
   const { data, postData } = useActivation();
   const { data: configData } = useConfigDetails('onboarding');
-  const { user, experiments } = useApp();
+  const { user, experiments, submerchantId } = useApp();
   const {
     isContactDetailsCompleted,
     isBusinessOverviewCompleted,
@@ -60,11 +60,19 @@ const GreylistedSteps: React.FC<
 
   const onClick = (step: string) => {
     setActiveTabId(step);
-    history.push('/onboarding/form');
+    if (submerchantId) {
+      history.push(`/partners/submerchants/onboarding/acc_${submerchantId}/form`);
+    } else {
+      history.push('/onboarding/form');
+    }
   };
 
   const goToNcFlow = () => {
-    history.push(activationFormUrl);
+    if (submerchantId) {
+      history.push(`/partners/submerchants/acc_${submerchantId}/activation`);
+    } else {
+      history.push(activationFormUrl);
+    }
   };
 
   const closeModal = () => {

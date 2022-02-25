@@ -11,8 +11,16 @@ import {
   getDefaultSelectedDocs,
 } from '../services/utils';
 
-export const postActivation = (data) =>
-  fetch<any>({ url: 'merchant/activation', method: 'POST', data, mode: 'live' });
+export const postActivation = (data, accountId) =>
+  fetch<any>({
+    url: 'merchant/activation',
+    method: 'POST',
+    data,
+    mode: 'live',
+    headers: {
+      'X-Razorpay-Account': accountId,
+    },
+  });
 
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
@@ -30,25 +38,43 @@ export const getRequestData = (prevDetails, updatedDetails) => {
   return reqData;
 };
 
-export const saveFile = ({ formData, progressTracker }) =>
+export const saveFile = ({ formData, progressTracker, accountId }) =>
   fetch<any>({
     url: 'merchant/documents/upload',
     method: 'POST',
     mode: 'live',
     data: formData,
     onUploadProgress: progressTracker,
+    headers: {
+      'X-Razorpay-Account': accountId,
+    },
   });
 
-export const deleteFile = (curDoc) =>
-  fetch<any>({ url: `merchant/documents/doc_${curDoc.id}`, method: 'DELETE', mode: 'live' });
+export const deleteFile = (curDoc, accountId) =>
+  fetch<any>({
+    url: `merchant/documents/doc_${curDoc.id}`,
+    method: 'DELETE',
+    mode: 'live',
+    headers: {
+      'X-Razorpay-Account': accountId,
+    },
+  });
 
 export default function useActivation() {
   const snackbar = useSnackbar();
-  const { experiments } = useApp();
+  const { experiments, submerchantId: accountId } = useApp();
+  // passing account id in headers to load submerchant's activation form in partner's dashboard account
+  const cacheKey = accountId ? `activation_${accountId}` : `activation`;
   const { status, data, refetch } = useQuery(
-    'activation',
+    cacheKey,
     async () => {
-      const response = await fetch<any>({ url: 'merchant/activation', mode: 'live' });
+      const response = await fetch<any>({
+        url: 'merchant/activation',
+        mode: 'live',
+        headers: {
+          'X-Razorpay-Account': accountId,
+        },
+      });
       const formattedData = activationFormatter(response, experiments);
       return formattedData;
     },
@@ -62,35 +88,54 @@ export default function useActivation() {
   );
 
   const queryCache = useQueryCache();
-  const [postData] = useMutation(postActivation, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result, experiments);
-      queryCache.setQueryData('activation', formattedData);
+  const [postData] = useMutation(
+    (formData: any) => {
+      return postActivation(formData, accountId);
     },
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    {
+      onSuccess: (result) => {
+        const formattedData = activationFormatter(result, experiments);
+        queryCache.setQueryData(cacheKey, formattedData);
+      },
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
-  });
+  );
 
-  const [documentUpload] = useMutation(saveFile, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result, experiments);
-      queryCache.setQueryData('activation', formattedData);
+  const [documentUpload] = useMutation(
+    ({ formData, progressTracker }: any) => {
+      return saveFile({
+        formData,
+        progressTracker,
+        accountId,
+      });
     },
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    {
+      onSuccess: (result) => {
+        const formattedData = activationFormatter(result, experiments);
+        queryCache.setQueryData(cacheKey, formattedData);
+      },
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
-  });
+  );
 
-  const [documentDelete] = useMutation(deleteFile, {
-    onSuccess: (result) => {
-      const formattedData = activationFormatter(result, experiments);
-      queryCache.setQueryData('activation', formattedData);
+  const [documentDelete] = useMutation(
+    (curDoc: any) => {
+      return deleteFile(curDoc, accountId);
     },
-    onError: (err: any) => {
-      if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+    {
+      onSuccess: (result) => {
+        const formattedData = activationFormatter(result, experiments);
+        queryCache.setQueryData(cacheKey, formattedData);
+      },
+      onError: (err: any) => {
+        if (err?.response?.errors) snackbar.error(err.response.errors[0]);
+      },
     },
-  });
+  );
 
   const setContactDetailsCompleted = useActivationFormState(
     (state) => state.setContactDetailsCompleted,

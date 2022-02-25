@@ -16,6 +16,7 @@ export interface AppContextTypes {
   org: orgT;
   mode: ModeT;
   setMode?: (mode: ModeT) => void;
+  submerchantId?: string;
 }
 
 const AppContext = createContext<AppContextTypes | undefined>(undefined);

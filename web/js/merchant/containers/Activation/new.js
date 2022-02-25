@@ -33,7 +33,7 @@ const POLLING_COUNTER_LIMIT = 5;
  * 3. Partner Dashboard -> Submerchant KYC
  * @props {onClose, Function, optional}. Without this modal would not be opened. Also, this would be used to close the modal
  * @props {accountId, String, optional}. Needed if the ActivationWizard is opened for Linked Account
- * @props {submerchantId} for Submerchant KYC from Partner dashboard
+ * @props {submerchantId} for Submerchant KYC from Partner dashboard - submerchantContainer.js
  * */
 @RTracking(() => window.rzpQ.component('ActivationContainer'))
 @withRouter
@@ -162,6 +162,7 @@ export default class ActivationContainer extends React.Component {
   };
 
   updateSession(data) {
+    // submerchantId received from submerchantContainer.js
     const { session, accountId } = this.props;
 
     // Update data
@@ -256,14 +257,18 @@ export default class ActivationContainer extends React.Component {
   };
 
   fetchMerchantDetails = async () => {
-    const response = await merchantFetch({ url: 'merchant/activation', mode: 'live' });
+    const response = await merchantFetch({
+      url: 'merchant/activation',
+      mode: 'live',
+      accountId: this.props.accountId || this.props.submerchantId,
+    });
     this.updateSession(response.data);
     return response;
   };
 
   submitForm = ({ data }) => {
-    if (this.props.user.isInstantActivationEnabled) {
-      const { user } = this.props;
+    const { user, accountId, submerchantId } = this.props;
+    if (user.isInstantActivationEnabled) {
       const isL1Done = user.activation_form_milestone;
 
       const objectName = isL1Done ? 'L2 form' : 'L1 form';
@@ -273,24 +278,26 @@ export default class ActivationContainer extends React.Component {
         actionName: 'Submitted',
         screen: 'home page',
         toCleverTap: true,
+        properties: {
+          submerchant_id: submerchantId,
+        },
       });
 
       return merchantFetch({
         url: 'merchant/activation',
         method: 'post',
-        mode: !!this.props.accountId ? this.props.session.mode : 'live',
+        mode: !!accountId ? this.props.session.mode : 'live',
         data: {
           activation_form_milestone:
-            this.props.user.instantActivation.isL1Submitted ||
-            this.props.accountId ||
-            this.props.user.activation_form_milestone === 'L2'
+            user.instantActivation.isL1Submitted ||
+            accountId ||
+            user.activation_form_milestone === 'L2'
               ? 'L2'
               : 'L1',
           ...data,
         },
-        accountId: this.props.accountId || this.props.submerchantId,
+        accountId: accountId || submerchantId,
         // accountId for linked_accounts. Axios auto-ignore undefined keys in options
-        // submerchantId for submerchant KYC
       })
         .then((response) => {
           this.props.trackEvents({
@@ -299,6 +306,7 @@ export default class ActivationContainer extends React.Component {
             screen: 'home page',
             properties: {
               Status: 'success',
+              submerchant_id: submerchantId,
             },
           });
 
@@ -321,6 +329,9 @@ export default class ActivationContainer extends React.Component {
               objectName: 'act submit form success',
               actionName: 'clicked',
               screen: 'home page',
+              properties: {
+                submerchant_id: submerchantId,
+              },
             });
           }
 
@@ -335,13 +346,12 @@ export default class ActivationContainer extends React.Component {
           //render loader if poi status is initiated and post 20sec fetch data to check poi status.
           //if poi status verified open instant activation modal otherwise reload the page.
           if (
-            !this.props.accountId &&
-            !this.props.submerchantId &&
+            !accountId &&
             response?.data?.activation_form_milestone === 'L1' &&
             response?.data?.poi_verification_status === 'initiated' &&
             ['11', '2'].includes(response?.data?.business_type) &&
             response?.data?.activation_flow !== 'greylist' &&
-            this.props.user.isAutoPLEnabled
+            user.isAutoPLEnabled
           ) {
             if (!this.props.isModalView) {
               this.props.openModal({
@@ -374,13 +384,14 @@ export default class ActivationContainer extends React.Component {
                   this.updateSession(res.data);
                   if (!this.props.isModalView) this.props.closeModal();
                   else this.props.setActivationFormLoadingState(); //false loading state
-                  if (this.props.user.autoOpenL2Form && res?.data && !res.data.activated) {
+                  if (user.autoOpenL2Form && res?.data && !res.data.activated) {
                     this.props.trackEvents({
                       objectName: 'Auto Open L2 form on not instantly activated',
                       actionName: 'displayed',
                       screen: 'home page',
                       properties: {
                         loginL1Experiment: 'auto open L2 form on not instantly activated',
+                        submerchant_id: submerchantId,
                       },
                     });
                     this.setState({
@@ -395,7 +406,7 @@ export default class ActivationContainer extends React.Component {
                   if (!this.props.isModalView) this.props.closeModal();
                   else this.props.setActivationFormLoadingState(); //false loading state
                   // if poi status not changed reload the page
-                  this.props.history.replace(`/`);
+                  this.goToDashboard();
                 }
                 this.props.trackEvents({
                   objectName: 'poi verification status',
@@ -403,13 +414,14 @@ export default class ActivationContainer extends React.Component {
                   screen: 'home page',
                   properties: {
                     poi_status: res?.data?.poi_verification_status,
+                    submerchant_id: submerchantId,
                   },
                 });
               });
             }, 9000);
           } else {
             if (
-              this.props.user.autoOpenL2Form &&
+              user.autoOpenL2Form &&
               !this.props.accountId &&
               response?.data &&
               !response.data.activated
@@ -420,6 +432,7 @@ export default class ActivationContainer extends React.Component {
                 screen: 'home page',
                 properties: {
                   loginL1Experiment: 'auto open L2 form on not instantly activated',
+                  submerchant_id: submerchantId,
                 },
               });
               this.updateSession(response.data);
@@ -432,7 +445,7 @@ export default class ActivationContainer extends React.Component {
             if (response?.data?.activated && isTestMode) {
               localStorage.setItem(`rzp_mode--${this.props.user.current}`, 'live');
               this.props.updateSession({ mode: 'live' });
-              if (!this.props.user.isAutoPLEnabled) {
+              if (!user.isAutoPLEnabled) {
                 this.props.showNotification({
                   type: 'success',
                   message: 'You have switched to live mode, transact now!',
@@ -459,6 +472,7 @@ export default class ActivationContainer extends React.Component {
             properties: {
               status: 'failure',
               errorMessage: err.errors,
+              submerchant_id: submerchantId,
             },
           });
         });
@@ -469,7 +483,7 @@ export default class ActivationContainer extends React.Component {
         // For accountId, mode must be respected, otherwise accountId in Headers would be ignored in api.
         mode: !!this.props.accountId ? this.props.session.mode : 'live',
         data: { submit: 1 },
-        accountId: this.props.accountId || this.props.submerchantId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
+        accountId: this.props.accountId, // accountId for linked_accounts. Axios auto-ignore undefined keys in options
       })
         .then((response) => {
           if (!response.data.can_submit) {
@@ -715,7 +729,11 @@ export default class ActivationContainer extends React.Component {
   };
 
   goToDashboard = () => {
-    this.props.history.replace(`/`);
+    if (this.props.submerchantId) {
+      this.props.history.replace(`/partners`);
+    } else {
+      this.props.history.replace(`/`);
+    }
   };
 
   handleUIUpdate = () => {
@@ -740,7 +758,7 @@ export default class ActivationContainer extends React.Component {
     if (this.hasGstinLLpinCinSyncFlow && !submitted) {
       this.startPollingCounter();
     }
-    this.props.sendEventsForSubMerchantView(
+    this.props?.sendEventsForSubMerchantView?.(
       window.rzpQ
         .routeActions()
         .initiated('route.linked_account.activate_account.bank_account_details'),
@@ -751,6 +769,7 @@ export default class ActivationContainer extends React.Component {
       screen: 'home page',
       properties: {
         'Modal Label': 'KYC Form',
+        submerchant_id: this.props.submerchantId,
       },
     });
   }
@@ -786,6 +805,15 @@ export default class ActivationContainer extends React.Component {
     clearInterval(this.intervalTimer);
   }
 
+  getWizardUser() {
+    if (this.props.submerchantId) {
+      // submerchantUser received from submerchantContainer.js
+      return this.props.submerchantUser;
+    } else {
+      return this.props.user;
+    }
+  }
+
   /*
    * 1. For linked account form, only spinner or Activation wizard.
    * 2. For main account form, spinner, Welcome Screen, Activation wizard and Success screens are shown.
@@ -801,18 +829,19 @@ export default class ActivationContainer extends React.Component {
       gstinDetails,
       isModalView,
       isActivationFormLoading,
+      user,
     } = this.props;
     let content, modalClass;
 
     if (!accountId && this.state.showSuccessScreen) {
-      if (!this.props.user.showInstantActivation) {
+      if (!user.showInstantActivation) {
         modalClass = 'Activation--success';
         content = <SuccessScreen />;
       } else {
         this.props.showKYCStatusModal({
           modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
         });
-        this.props.history.replace(`/`);
+        this.goToDashboard();
         content = null;
       }
     } else if (!accountId && !this.state.isFormTouched && !this.state.openWizard) {
@@ -824,6 +853,7 @@ export default class ActivationContainer extends React.Component {
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
+          submerchantId={this.props.submerchantId}
           data={data}
           clarificationReasons={clarificationReasons}
           ref={(refId) => (this.wizard = refId)}
@@ -848,6 +878,7 @@ export default class ActivationContainer extends React.Component {
           bvsApiCount={this.state.bvsApiCount}
           fetchBankVerificationAttemptCount={this.getBankVerificationAttemptCount}
           partnerActivationData={this.props.partnerActivationData}
+          user={this.getWizardUser()}
         />
       );
     }
@@ -865,7 +896,7 @@ ActivationContainer.MODAL_MASK_CLASS = 'Activation';
 /*
  * Success screen is shown only when the user has submitted the form. It's not shown in linked account activation but only main form.
  * */
-const SuccessScreen = ({ formName = 'Activation Form' }) => {
+export const SuccessScreen = ({ formName = 'Activation Form' }) => {
   function clickConfig(e) {
     trackGoToConfig();
   }
@@ -901,7 +932,7 @@ const SuccessScreen = ({ formName = 'Activation Form' }) => {
 /*
  * Welcome screen is shown only when the user has not started filling the form. It's not shown in linked account activation but only main form.
  * */
-const WelcomeScreen = ({ openWizard }) => {
+export const WelcomeScreen = ({ openWizard }) => {
   return (
     <div class="Activation--welcome">
       <h3> Get Started with Activation</h3>
@@ -925,7 +956,7 @@ const WelcomeScreen = ({ openWizard }) => {
 /*
  * Check if user filled any of the fields to be filled on fresh form
  * * */
-function isFormTouched(data) {
+export function isFormTouched(data) {
   if (!data) {
     return false;
   }
@@ -945,7 +976,7 @@ function isFormTouched(data) {
   return isDirty;
 }
 
-const InstantActivationLoadingState = ({ contactName }) => {
+export const InstantActivationLoadingState = ({ contactName }) => {
   return (
     <div className="activation-loader">
       <div className="spin-btn extra-large extra-width visible activation-spinner"></div>
