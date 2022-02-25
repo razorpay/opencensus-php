@@ -101,13 +101,13 @@ class ReconService
 
         if ($url == self::BULK_RULE_URL and in_array($method, $allowed_methods))
         {
-            $data['rule_file_path'] = $this->uploadBulkRuleFile($input);
+            $data->rule_file_path = $this->uploadBulkRuleFile($input);
             unset($input[self::FILE]);
         }
 
         if ($url == self::FILE_TYPE_URL and in_array($method, $allowed_methods))
         {
-            $data['sample_file_path'] = $this->uploadSampleFile($input);
+            $data->sample_file_path = $this->uploadSampleFile($input);
             unset($input[self::FILE]);
         }
 
