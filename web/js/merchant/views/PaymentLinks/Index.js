@@ -7,7 +7,6 @@ import { RZPFeatures } from 'merchant/helpers/data';
 
 import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
-import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
@@ -215,13 +214,6 @@ class PaymentLinksContainer extends React.Component {
                 Know more
               </DocLink>
             </AnnouncementBanner>
-          </ShowWhen>
-          <ShowWhen
-            additionalCondition={(user) =>
-              !user.isPLSwitchEnabled && !user.isPartOfAiSensyBannerExperiment
-            }
-          >
-            <PaymentButtonLaunchBanner productName="PaymentLinks" />
           </ShowWhen>
 
           <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
