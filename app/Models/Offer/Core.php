@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Offer;
 
+use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Exception;
 use RZP\Models\Emi;
@@ -298,13 +299,17 @@ class Core extends Base\Core
 
         $offerIds = array_column($offers, Entity::ID);
 
-        // Find the created_at value of the oldest offer to ensure we only scan
-        // data from that date for calculating offer usages.
-        $oldestCreatedAtTimeStamp = min(array_column($offers, Entity::CREATED_AT) ?: [0]);
+        // We will be scanning only last one-month data to calculate offer usage.
+        // We will re-look this strategy when we build v2 of affordability widget
+        // where we might include SR rate of offer & other such parameters.
+        $oneMonthAgo = Carbon::today()->subMonth()->getTimestamp();
 
-        $offerUsages = $this->repo->offer->getOffersUsage($offerIds, $oldestCreatedAtTimeStamp);
+        $offerUsages = $this->getOffersUsage($offerIds, $merchantId, $oneMonthAgo);
 
-        array_multisort($offerUsages, SORT_DESC, $offers);
+        usort($offers, static function ($offer1, $offer2) use($offerUsages) {
+            // Sort Descending
+            return $offerUsages[$offer2['id']] <=> $offerUsages[$offer1['id']];
+        });
 
         foreach ($offers as &$offer) {
             $offer = Arr::only($offer, Entity::getVisibleForAffordability());
@@ -318,6 +323,34 @@ class Core extends Base\Core
         $offers = $this->repo->offer->fetchSharedOffers();
 
         return $offers;
+    }
+
+    /**
+     * Fetches the usage of each offer.
+     * An offer is considered as used if it has been associated with an authorized payment.
+     *
+     * @param string[] $offerIds     The list of offer ids whose usage needs to be calculated
+     * @param string   $merchantId   The primary key of the merchant to whom these offers belong to
+     * @param int      $minCreatedAt The epoch timestamp post which data needs to be scanned
+     *
+     * @return array
+     */
+    public function getOffersUsage(array $offerIds, string $merchantId, int $minCreatedAt): array
+    {
+        if (empty($offerIds)) {
+            return [];
+        }
+
+        $offersUsage = $this->repo->payment->getOffersUsage($offerIds, $merchantId, $minCreatedAt);
+
+        // Initialize offer ids which haven't been used yet with a zero (0).
+        foreach ($offerIds as $id) {
+            if (!array_key_exists($id, $offersUsage)) {
+                $offersUsage[$id] = 0;
+            }
+        }
+
+        return $offersUsage;
     }
 
     protected function shouldApplySharedOffer(

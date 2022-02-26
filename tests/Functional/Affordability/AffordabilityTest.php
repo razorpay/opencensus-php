@@ -2,14 +2,16 @@
 
 namespace RZP\Tests\Functional\Affordability;
 
-use RZP\Models\Feature\Constants;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Offer\Entity as OfferEntity;
+use RZP\Models\Offer\EntityOffer\Entity as EntityOfferEntity;
 use RZP\Models\Order\ProductType;
-use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -216,38 +218,25 @@ class AffordabilityTest extends TestCase
         $offer1->saveOrFail();
         $offer1->refresh();
 
-        $offer2 = $offer = $this->fixtures->create('offer:wallet', $offerAttributes);
+        $offer2 = $this->fixtures->create('offer:wallet', $offerAttributes);
         $offer2->saveOrFail();
         $offer2->refresh();
 
-        $offer3 = $offer = $this->fixtures->create('offer:emi_subvention', $offerAttributes);
+        $offer3 = $this->fixtures->create('offer:emi_subvention', $offerAttributes);
         $offer3->saveOrFail();
         $offer3->refresh();
 
-        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods([ 'getDataFromDataLake'])
-            ->getMock();
-
-        $prestoServiceData = [
-            [
-                'offer_id' => $offer1->getId(),
-                'offer_usage' => 100,
-            ],
-            [
-                'offer_id' => $offer2->getId(),
-                'offer_usage' => 200,
-            ],
-            [
-                'offer_id' => $offer3->getId(),
-                'offer_usage' => 150,
-            ],
+        $offersUsageData = [
+            $offer1->getId() => 1,
+            $offer2->getId() => 3,
+            $offer3->getId() => 2,
         ];
 
-        $prestoService->method( 'getDataFromDataLake')
-            ->willReturn($prestoServiceData);
-
-        $this->app->instance('datalake.presto', $prestoService);
+        foreach ($offersUsageData as $offerId => $count) {
+            for ($i = 0; $i < $count; $i++) {
+                $this->createPaymentAndEntityOfferEntities(Account::TEST_ACCOUNT, $offerId);
+            }
+        }
 
         $visible = OfferEntity::getVisibleForAffordability();
         $offerItems = [
@@ -282,26 +271,16 @@ class AffordabilityTest extends TestCase
         $offer2->saveOrFail();
         $offer2->refresh();
 
-        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods([ 'getDataFromDataLake'])
-            ->getMock();
-
-        $prestoServiceData = [
-            [
-                'offer_id' => $offer1->getId(),
-                'offer_usage' => 100,
-            ],
-            [
-                'offer_id' => $offer2->getId(),
-                'offer_usage' => 200,
-            ],
+        $offersUsageData = [
+            $offer1->getId() => 1,
+            $offer2->getId() => 2,
         ];
 
-        $prestoService->method( 'getDataFromDataLake')
-            ->willReturn($prestoServiceData);
-
-        $this->app->instance('datalake.presto', $prestoService);
+        foreach ($offersUsageData as $offerId => $count) {
+            for ($i = 0; $i < $count; $i++) {
+                $this->createPaymentAndEntityOfferEntities(Account::TEST_ACCOUNT, $offerId);
+            }
+        }
 
         $visible = OfferEntity::getVisibleForAffordability();
         $offerItems = [
@@ -387,5 +366,24 @@ class AffordabilityTest extends TestCase
 
         $this->assertCount(1, $response['entities']['offers']['items']);
         $this->assertNotEquals('card', $response['entities']['offers']['items'][0]['payment_method']);
+    }
+
+    protected function createPaymentAndEntityOfferEntities(string $merchantId, string $offerId)
+    {
+        $yesterday = Carbon::yesterday()->getTimestamp();
+
+        $payment = $this->fixtures->create('payment', [
+            PaymentEntity::MERCHANT_ID => $merchantId,
+            PaymentEntity::AUTHORIZED_AT => $yesterday,
+            PaymentEntity::CREATED_AT => $yesterday,
+        ]);
+
+        $this->fixtures->create('entity_offer', [
+            EntityOfferEntity::ENTITY_ID => $payment->getId(),
+            EntityOfferEntity::ENTITY_TYPE => 'payment',
+            EntityOfferEntity::ENTITY_OFFER_TYPE => 'offer',
+            EntityOfferEntity::OFFER_ID => $offerId,
+            EntityOfferEntity::CREATED_AT => $yesterday,
+        ]);
     }
 }

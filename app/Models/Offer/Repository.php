@@ -5,7 +5,6 @@ namespace RZP\Models\Offer;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
-use RZP\Constants\Entity as Constants;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Offer\SubscriptionOffer\Entity as SubscriptionOfferEntity;
@@ -39,35 +38,6 @@ class Repository extends Base\Repository
         Entity::EMI_SUBVENTION,
         Entity::IINS,
     ];
-
-    /** @var string SQL Query used by getOffersUsage() method to fetch usage of each offer. */
-    protected $offerUsageSql = <<<'EOT'
-SELECT
-  eo.offer_id,
-  COUNT(*) AS offer_usage
-FROM
-  hive.realtime_hudi_api.payments AS p
-  INNER JOIN hive.realtime_hudi_api.entity_offer AS eo ON p.id = (
-    IF (
-      eo.entity_type = '%s'
-      AND coalesce(eo.entity_offer_type, '%s') = '%s',
-      eo.entity_id
-    )
-  )
-WHERE
-  p.authorized_at IS NOT NULL
-  AND eo.offer_id IN (
-    %s
-  )
-  AND p.created_date >= '%s'
-  AND eo.created_date >= '%s'
-GROUP BY
-  eo.offer_id
-ORDER BY
-  offer_usage DESC
-LIMIT
-  %d
-EOT;
 
     /**
      * Fetches all active offers for a given merchant.
@@ -200,63 +170,6 @@ EOT;
             ->where(Entity::ACTIVE, '=', true)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->get();
-    }
-
-    /**
-     * Fetches the usage of each offer from Presto DB.
-     * An offer is considered as used if it has been associated with an authorized payment.
-     *
-     * @param string[] $offerIds     The list of offer ids whose usage needs to be calculated
-     * @param int      $minCreatedAt created_at value of the oldest offer in the given offer ids
-     *
-     * @return array
-     */
-    public function getOffersUsage(array $offerIds, int $minCreatedAt = 0): array
-    {
-        if (empty($offerIds)) {
-            return [];
-        }
-
-        $ids = "'" . implode("', '", $offerIds) . "'";
-        $limit = count($offerIds);
-        $entityType = Constants::PAYMENT;
-        $entityOfferType = Constants::OFFER;
-
-        if ($minCreatedAt === 0 ) {
-            // Scan only last 1-year data
-            $minCreatedAt = Carbon::today()->subYear()->getTimestamp();
-        }
-
-        $createdDate = Carbon::createFromTimestamp($minCreatedAt)->toDateString();
-
-        $sql = sprintf(
-            $this->offerUsageSql,
-            $entityType,
-            $entityOfferType,
-            $entityOfferType,
-            $ids,
-            $createdDate,
-            $createdDate,
-            $limit
-        );
-
-        $result = app('datalake.presto')->getDataFromDataLake($sql);
-
-        $offersUsage = [];
-        // Flatten the result from 2D to 1D array.
-        foreach ($result as $row) {
-            $offersUsage[$row['offer_id']] = $row['offer_usage'];
-        }
-        // Initialize offer ids which haven't been used yet with a zero (0).
-        if (count($offerIds) !== count($offersUsage)) {
-            foreach ($offerIds as $id) {
-                if (!array_key_exists($id, $offersUsage)) {
-                    $offersUsage[$id] = 0;
-                }
-            }
-        }
-
-        return $offersUsage;
     }
 
     /**

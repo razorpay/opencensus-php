@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use DB;
 use App;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use RZP\Constants\Es;
 use RZP\Base\Common;
 use Database\Connection;
@@ -1720,6 +1721,51 @@ class Repository extends Base\Repository
                       ->having('payment_count', '>=', 1);
 
         return $query->pluck('payment_count', 'offer_id')->toArray();
+    }
+
+    /**
+     * Fetches the usage of each offer.
+     * An offer is considered as used if it has been associated with an authorized payment.
+     *
+     * @param array  $offerIds
+     * @param string $merchantId
+     * @param int    $minCreatedAt
+     *
+     * @return array
+     */
+    public function getOffersUsage(array $offerIds, string $merchantId, int $minCreatedAt): array
+    {
+        $paymentAuthorizedAtColumn = $this->dbColumn(Entity::AUTHORIZED_AT);
+        $paymentCreatedAtCol       = $this->dbColumn(Entity::CREATED_AT);
+        $paymentIdCol              = $this->dbColumn(Entity::ID);
+        $paymentMerchantIdCol      = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $entityOfferTable              = $this->repo->entity_offer->getTableName();
+        $entityOfferEntityIdCol        = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_ID);
+        $entityOfferEntityTypeCol      = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_TYPE);
+        $entityOfferEntityOfferTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_OFFER_TYPE);
+        $entityOfferOfferIdCol         = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
+        $entityOfferCreatedAtCol       = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::CREATED_AT);
+
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->select(DB::raw("$entityOfferOfferIdCol, count(*) AS offer_usage"))
+            ->join($entityOfferTable, $paymentIdCol, '=', $entityOfferEntityIdCol)
+            ->whereNotNull($paymentAuthorizedAtColumn)
+            ->where($paymentMerchantIdCol, '=', $merchantId)
+            ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+            ->where(static function (Builder $query) use($entityOfferEntityOfferTypeCol) {
+                // The NULL check over here is for legacy reasons & is required
+                // for scanning data older than '2020-12-17'
+                $query->whereNull($entityOfferEntityOfferTypeCol)
+                    ->orWhere($entityOfferEntityOfferTypeCol, '=', 'offer');
+            })
+            ->where($paymentCreatedAtCol, '>=', $minCreatedAt)
+            ->where($entityOfferCreatedAtCol, '>=', $minCreatedAt)
+            ->whereIn($entityOfferOfferIdCol, $offerIds)
+            ->groupBy($entityOfferOfferIdCol)
+            ->limit(count($offerIds));
+
+        return $query->pluck('offer_usage', 'offer_id')->toArray();
     }
 
     public function fetchByPublicVaIdAndMerchant(string $virtualAccountId, Merchant\Entity $merchant)
