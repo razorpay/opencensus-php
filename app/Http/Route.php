@@ -2968,6 +2968,8 @@ class Route
         'patch_iir_discrepancy_by_id'             => ['patch',     'terminals/proxy/iir_discrepancies/{id}',                                   'TerminalController@proxyV2TerminalService' ],
         'fetch_iir_discrepancies_of_mir'          => ['get',       'terminals/proxy/merchant_instrument_request/{id}/iir_discrepancies',       'TerminalController@proxyV2TerminalService' ],
         'create_iir_discrepancy_answer'           => ['post',      'terminals/proxy/iir_discrepancy_answers',                                  'TerminalController@proxyV2TerminalService' ],
+        'create_static_discrepancy'               => ['post',      'terminals/proxy/discrepancy',                                              'TerminalController@proxyV2TerminalService' ],
+        'edit_static_discrepancy'                 => ['patch',     'terminals/proxy/discrepancy/{id}',                                              'TerminalController@proxyV2TerminalService' ],
 
         'create_promotions_events'                => ['post',      'promotions/events',                                        'PromotionEventController@create'],
 
@@ -6154,6 +6156,8 @@ class Route
         'create_iir_discrepancy',
         'create_iir_discrepancy_bulk',
         'fetch_iir_discrepancies_of_iir',
+        'create_static_discrepancy',
+        'edit_static_discrepancy',
         'fetch_iir_discrepancies_for_merchant',
         'patch_iir_discrepancy_by_id',
 
@@ -7355,7 +7359,8 @@ class Route
         'fetch_iir_discrepancies_of_iir'              => Permission::VIEW_IIR_DISCREPANCY,
         'fetch_iir_discrepancies_for_merchant'        => Permission::VIEW_IIR_DISCREPANCY,
         'patch_iir_discrepancy_by_id'                 => Permission::CREATE_IIR_DISCREPANCY,
-
+        'create_static_discrepancy'                   => Permission::CREATE_DISCREPANCY,
+        'edit_static_discrepancy'                     => Permission::CREATE_DISCREPANCY,
 
         // gateway credential
         'terminals_proxy_create_gateway_credential'   => Permission::CREATE_GATEWAY_CREDENTIAL,
@@ -10333,6 +10338,8 @@ class Route
             'create_iir_discrepancy',
             'create_iir_discrepancy_bulk',
             'fetch_iir_discrepancies_of_iir',
+            'create_static_discrepancy',
+            'edit_static_discrepancy',
             'fetch_iir_discrepancies_for_merchant',
             'patch_iir_discrepancy_by_id',
             'payment_acknowledge',

@@ -376,6 +376,8 @@ class UserRolesScope
             'mir_instruments_get'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'get_discrepancy_list'                          => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'get_discrepancy_list_merchant'                 => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
+            'create_static_discrepancy'                     => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
+            'edit_static_discrepancy'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'fetch_iir_discrepancies_of_mir'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'create_iir_discrepancy_answer'                 => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'oauth_application_fetch_partner'               => [Role::ADMIN, Role::OWNER, Role::MANAGER,],

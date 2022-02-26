@@ -634,6 +634,7 @@ class Name
 
     const VIEW_IIR_DISCREPANCY                = 'view_iir_discrepancy';
     const CREATE_IIR_DISCREPANCY              = 'create_iir_discrepancy';
+    const CREATE_DISCREPANCY                  = 'create_discrepancy';
 
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';

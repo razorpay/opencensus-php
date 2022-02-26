@@ -827,6 +827,24 @@ class InstrumentRequestProxyTest extends TestCase
                 self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::GET,
                 self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => '',
             ],
+            [   // create static discrepancy
+                self::REQUEST       => [
+                    'url'       => '/terminals/proxy/discrepancy',
+                    'method'    => \Requests::POST
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/discrepancy',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => '',
+            ],
+            [   // Edit static discrepancy
+                self::REQUEST       => [
+                    'url'       => '/terminals/proxy/discrepancy/123321',
+                    'method'    => \Requests::PATCH
+                ],
+                self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/discrepancy/123321',
+                self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::PATCH,
+                self::EXPECTED_REQUEST_CONTENT_TERMINALS_SERVICE   => '',
+            ],
             [   // get all iir_discrepancies of a merchant
                 self::REQUEST       => [
                     'url'       => '/terminals/proxy/merchants/100000000000000/iir_discrepancies',

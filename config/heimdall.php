@@ -1758,6 +1758,10 @@ return [
             Permission::CREATE_IIR_DISCREPANCY    =>  [
                 'description'   => 'Create IIR Discrepancy',
                 'assignable'    => true,
+            ],
+            Permission::CREATE_DISCREPANCY    =>  [
+                'description'   => 'Create Static Discrepancy',
+                'assignable'    => true,
             ]
         ],
 
