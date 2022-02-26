@@ -184,6 +184,17 @@ class Constants
         Entity::COMPANY_PAN_NAME
     ];
 
+    const DOCUMENTS_LIST_FOR_NEEDS_CLARIFICATION_NOTIFICATION = [
+        'Partnership deed in pdf format',
+        'CA professional certificate',
+        'Clarity on the business model and products/services offered by you',
+        'Certificate of incorporation',
+        'Website must be live with all the sections updated - About us, Contact us, Refund/Cancellation policy, Terms and Conditions, Privacy policy',
+        'Business Proof: Kindly provide us all the pages of the Trust deed in pdf format',
+        'Reseller agreement or bulk purchase invoice',
+        'Other'
+    ];
+
     // Using this blacked listed banks to block bank account details
     // update in merchant details
     const BLACKLISTED_BANKS = [];

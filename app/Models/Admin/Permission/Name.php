@@ -401,6 +401,9 @@ class Name
     const EXECUTE_MERCHANT_DISABLE_INTERNATIONAL_BULK = 'execute_merchant_disable_international_bulk';
     const EXECUTE_MERCHANT_ENABLE_INTERNATIONAL_BULK  = 'execute_merchant_enable_international_bulk';
 
+    // Admin Dashboard Send Request Activation Documents Notification
+    const SEND_REQUEST_ACTIVATION_DOCUMENTS_NOTIFICATION = 'send_request_activation_documents_notification';
+
     // Admin Dashboard Reports
     const VIEW_ADMIN_REPORTS                  = 'view_admin_reports';
 

@@ -275,6 +275,11 @@ class Validator extends Base\Validator
         Constants::COMPANY_CIN => ['required', 'regex:/^([A-Z|a-z]{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})$/'],
     ];
 
+    protected static $sendWhatsappNotificationRules = [
+        'ticket_id' => 'required|string',
+        'documents' => 'required|array',
+     ];
+
     protected static $activationEmailRules = [
         'email'                 => 'sometimes|email|max:255',
     ];

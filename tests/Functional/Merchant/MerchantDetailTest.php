@@ -28,6 +28,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Document\Source;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -2104,6 +2105,85 @@ We look forward to transacting with you!
     public function testMerchantsMtuUpdateLiveTransactionFailure()
     {
         $this->ba->mtuLambdaAuth();
+
+        $this->startTest();
+    }
+
+    public function testSendRequestDocumentWhatsappNotificationFailure()
+    {
+        $this->ba->adminAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkOptInStatusForWhatsapp($storkMock, '1234567890');
+
+        $ticketDetails["fd_instance"] = 'rzpsol';
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'contact_mobile'    => '1234567890'
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0013',
+            'ticket_id'      => '123',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testSendRequestDocumentWhatsappNotification()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockStorkForRequestDocumentWhatsappNotification();
+
+        $this->mockRazorX(__FUNCTION__, RazorxTreatment::NEEDS_CLARIFICATION_REQUEST_DOCUMENT_NOTIFICATION, 'on', '10000000000000');
+
+        $ticketDetails["fd_instance"] = 'rzpind';
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'contact_mobile'    => '1234567890'
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', [
+            'id'             => 'razorpayid0013',
+            'ticket_id'      => '123',
+            'merchant_id'    => '10000000000000',
+            'type'           => 'support_dashboard',
+            'ticket_details' => $ticketDetails,
+        ]);
+
+        $this->startTest();
+    }
+
+    protected function mockStorkForRequestDocumentWhatsappNotification()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkOptInStatusForWhatsapp($storkMock, '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock, 'Hi {1},
+Thanks for choosing Razorpay. There are a few requirements that need to be completed before we can activate your account.
+- {2}
+- {3}
+- {4}
+Please share the links/proofs by replying to this ticket - {5}.
+Regards,
+Team Razorpay', '1234567890');
+    }
+
+    public function testGetRequestDocumentList()
+    {
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -5658,6 +5738,33 @@ You can now start accepting payments from https://www.example.com.
 -Team Razorpay',
             '1234567890'
         );
+    }
+
+    protected function expectStorkOptInStatusForWhatsapp($storkMock, $destination): void
+    {
+        $storkMock->shouldReceive('optInStatusForWhatsapp')
+                  ->times(1)
+                  ->with(
+                      Mockery::on(function ($mode)
+                      {
+                          return true;
+                      }),
+                      Mockery::on(function ($actualReceiver) use($destination)
+                      {
+                          if ($actualReceiver !== $destination)
+                          {
+                              return false;
+                          }
+                          return true;
+                      }),
+                      Mockery::on(function ($input)
+                      {
+                          return true;
+                      }))
+                  ->andReturnUsing(function ()
+                  {
+                      return ['consent_status' => true];
+                  });
     }
 
     protected function expectStorkWhatsappRequest($storkMock, $text, $destination): void

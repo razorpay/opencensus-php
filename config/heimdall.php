@@ -224,6 +224,9 @@ return [
                 'assignable' => true,
                 'workflow'   => true
             ],
+            Permission::SEND_REQUEST_ACTIVATION_DOCUMENTS_NOTIFICATION => [
+                'assignable' => true
+            ],
             Permission::EDIT_MERCHANT_TAGS                  => '',
             Permission::EDIT_MERCHANT_FEATURES              => [
                 'assignable' => true,

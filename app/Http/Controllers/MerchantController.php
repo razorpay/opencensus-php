@@ -1149,6 +1149,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function sendWhatsappNotification($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->sendWhatsappNotification($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getRequestDocumentList()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->getRequestDocumentList($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function uploadMerchant()
     {
         $input = Request::all();

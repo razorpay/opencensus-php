@@ -1530,6 +1530,76 @@ return [
         ],
     ],
 
+    'testGetRequestDocumentList' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/merchant/activation/whatsapp_notification_document_list'
+        ],
+        'response' => [
+            'content' => [
+                'count' => 8,
+                'items' => [
+                    'Partnership deed in pdf format',
+                    'CA professional certificate',
+                    'Clarity on the business model and products/services offered by you',
+                    'Certificate of incorporation',
+                    'Website must be live with all the sections updated - About us, Contact us, Refund/Cancellation policy, Terms and Conditions, Privacy policy',
+                    'Business Proof: Kindly provide us all the pages of the Trust deed in pdf format',
+                    'Reseller agreement or bulk purchase invoice',
+                    'Other'
+                ],
+            ],
+        ],
+    ],
+
+    'testSendRequestDocumentWhatsappNotification' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchant/activation/10000000000000/send_whatsapp_notification',
+            'content' => [
+                'ticket_id' => '123',
+                'documents' => [
+                    'doc_1',
+                    'doc_2',
+                    'doc_3',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testSendRequestDocumentWhatsappNotificationFailure' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/merchant/activation/10000000000000/send_whatsapp_notification',
+            'content' => [
+                'ticket_id' => '123',
+                'documents' => [
+                    'doc_1',
+                    'doc_2',
+                    'doc_3',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER,
+        ],
+    ],
+
     'testBulkEditMerchantAttributes' => [
         'request' => [
             'method' => 'POST',

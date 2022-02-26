@@ -41,8 +41,10 @@ use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Credits as Credits;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
+use RZP\Notifications\AdminDashboard\Events;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Services\Segment as SegmentAnalytics;
+use RZP\Notifications\AdminDashboard\Handler;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
@@ -67,6 +69,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
+use RZP\Models\Merchant\FreshdeskTicket\Entity as FDTicketEntity;
 use RZP\Models\Merchant\Invoice\Service as MerchantInvoiceService;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
@@ -809,6 +812,59 @@ class Service extends Base\Service
     public function uploadMerchant(array $input)
     {
         return (new Upload\Core)->uploadMerchant($input);
+    }
+
+    public function sendWhatsappNotification($id, array $input): array
+    {
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($id);
+
+            $status = $this->app['stork_service']->optInStatusForWhatsapp(
+                $this->mode,
+                $merchant->merchantDetail->getContactMobile(),
+                'api.' . $this->mode . '.admin_dashboard'
+            );
+
+            if (array_key_exists('consent_status', $status) === false || $status['consent_status'] === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_OPT_OUT_WHATSAPP_NOTIFICATION);
+            }
+        }
+        catch (Exception\TwirpException $e)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_NOT_FOUND);
+        }
+
+        $ticketEntity = (new Merchant\FreshdeskTicket\Service())->getTicketRzpEnitity(
+            $input[Merchant\FreshdeskTicket\Entity::TICKET_ID],
+            Merchant\FreshdeskTicket\Type::SUPPORT_DASHBOARD,
+            $id, Merchant\FreshdeskTicket\Constants::RZPIND
+        );
+
+        if ($ticketEntity === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER);
+        }
+
+        (new Handler([
+            'ticket'   => $ticketEntity,
+            'documents'=> $input['documents'],
+        ]))->sendForEvent(Events::NEEDS_CLARIFICATION);
+
+        return [
+            'success' => true
+        ];
+    }
+
+    public function getRequestDocumentList(array $input): array
+    {
+        return [
+            'count' => count(\RZP\Models\Merchant\Detail\Constants::DOCUMENTS_LIST_FOR_NEEDS_CLARIFICATION_NOTIFICATION),
+            'items' => \RZP\Models\Merchant\Detail\Constants::DOCUMENTS_LIST_FOR_NEEDS_CLARIFICATION_NOTIFICATION,
+        ];
     }
 
     public function editMerchantDetails($id, array $input)

@@ -690,6 +690,9 @@ class Route
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_coupons_apply'                   => ['post',     'merchant/activation/coupons/apply',              'MerchantController@postApplyCoupon'                                               ],
 
+        'merchant_activation_send_notification'         => ['post',     'merchant/activation/{id}/send_whatsapp_notification',     'MerchantController@sendWhatsappNotification'         ],
+        'merchant_activation_get_request_document_list' => ['get',      'merchant/activation/whatsapp_notification_document_list', 'MerchantController@getRequestDocumentList'           ],
+
         // Api for creating merchant using raw file
         'merchant_upload'                          => ['post',     'merchant/upload',                                'MerchantController@uploadMerchant'                ],
 
@@ -5624,6 +5627,8 @@ class Route
         'iin_upload',
         'merchant_actions',
         'merchant_activation_update',
+        'merchant_activation_send_notification',
+        'merchant_activation_get_request_document_list',
         'merchant_upload',
         'merchant_activation_upload_file_admin',
         'merchant_beneficiary_file',
@@ -6561,6 +6566,8 @@ class Route
         'admin_fetch_entity_by_id'                 => Permission::VIEW_ALL_ENTITY,
         'external_admin_fetch_entity_by_id'        => Permission::EXTERNAL_ADMIN_VIEW_ALL_ENTITY,
         'merchant_activation_update'               => Permission::EDIT_MERCHANT,
+        'merchant_activation_send_notification'    => Permission::SEND_REQUEST_ACTIVATION_DOCUMENTS_NOTIFICATION,
+        'merchant_activation_get_request_document_list' => Permission::SEND_REQUEST_ACTIVATION_DOCUMENTS_NOTIFICATION,
         'increase_transaction_limit_self_serve'    => Permission::INCREASE_TRANSACTION_LIMIT,
         'merchant_upload'                          => Permission::UPLOAD_MERCHANT,
         'merchant_assign_pricing'                  => Permission::EDIT_MERCHANT_PRICING,
@@ -10031,6 +10038,8 @@ class Route
             'merchant_activation_status_change_log',
             'merchant_activation_status_partner',
             'merchant_activation_update',
+            'merchant_activation_send_notification',
+            'merchant_activation_get_request_document_list',
             'merchant_activation_update_partner',
             'merchant_activation_update_website',
             'merchant_activation_update_website_status',

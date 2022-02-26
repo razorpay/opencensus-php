@@ -559,6 +559,24 @@ class Service extends Base\Service
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity, $type);
     }
 
+    public function getTicketRzpEnitity($ticketId, $type, $merchantId, $fdInstance)
+    {
+        $tickets = $this->repo->merchant_freshdesk_tickets->fetch([
+            Entity::TYPE => $type,
+            Entity::TICKET_ID => $ticketId,
+        ], $merchantId);
+
+        foreach ($tickets as $ticket)
+        {
+            if ($ticket->getFdInstance() == $fdInstance)
+            {
+                return $ticket;
+            }
+        }
+
+        return null;
+    }
+
     public function getTicket($id, array $input, $type): array
     {
         $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
@@ -1335,7 +1353,7 @@ class Service extends Base\Service
         {
             $input[Constants::TICKET_STATUS] = TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING);
         }
-        
+
         $input = $this->modifyRequestForCapital($input);
 
         $this->getGroupIdForTicketInput($input);

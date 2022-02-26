@@ -344,6 +344,8 @@ final class RazorxTreatment
     // Experiment to decide whether to send support related notifications on whatsapp
     const WHATSAPP_SUPPORT_NOTIFICATIONS = 'whatsapp_support_notifications';
 
+    const NEEDS_CLARIFICATION_REQUEST_DOCUMENT_NOTIFICATION = 'needs_clarification_request_document_notification';
+
     // Experiment to decide whether to send support related notifications on sms
     const SMS_SUPPORT_NOTIFICATIONS = 'sms_support_notifications';
 

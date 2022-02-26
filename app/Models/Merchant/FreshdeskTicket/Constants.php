@@ -180,5 +180,8 @@ class Constants
 
     const FRESHDESK_DEFAULT_PAGE_SIZE        = 30;
 
+    //DASHBOARD URLS
+    const SUPPORT_TICKET_DASHBOARD_URL = 'app/ticket-support/%s/%s/agent/conversation';
+
     const MERCHANT_PLUGIN_TAG       = 'plugin_merchant';
 }

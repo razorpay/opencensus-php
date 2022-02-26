@@ -1408,6 +1408,7 @@ class PublicErrorDescription
     const RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS                                 = 'Reserve Balance creation is already in progress';
     const BAD_REQUEST_RESERVE_BALANCE_TICKET_NOT_FOUND                               = 'Reserve Balance creation ticket not found';
     const FRESHDESK_TICKET_ALREADY_EXISTS                                            = 'Freshdesk ticket for Reserve Balance creation already exists';
+    const BAD_REQUEST_USER_OPT_OUT_WHATSAPP_NOTIFICATION                             = 'Requested User has opt out whats app notifications';
     const BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND                                     = 'Freshdesk ticket not found';
     const BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED                                   = 'Failed to fetch customer tickets';
     const BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER                                  = 'No ticket found for the given customer';
