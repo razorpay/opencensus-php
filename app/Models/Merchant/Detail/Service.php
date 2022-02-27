@@ -256,6 +256,12 @@ class Service extends Base\Service
                 $merchantDetails->setContactEmail($input[Merchant\Entity::EMAIL]);
                 $this->repo->saveOrFail($merchantDetails);
             });
+
+            $properties = [
+                'email' => $input[Merchant\Entity::EMAIL]
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
         }
 
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);

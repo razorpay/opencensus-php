@@ -134,7 +134,15 @@ class Activate extends Base\Core
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
 
-        (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
+        $phResponse = (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
+
+        if(empty($phResponse) === false) {
+            $properties = [
+                'ph_url' => $phResponse['url']
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
+        }
 
         //to be removed once hold funds issue is resolved
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
@@ -210,7 +218,15 @@ class Activate extends Base\Core
         (new Core)->createBalanceConfig($merchantBalance, 'live');
 
 
-        (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
+        $phResponse = (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
+
+        if(empty($phResponse) === false) {
+            $properties = [
+                'ph_url' => $phResponse['url']
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
+        }
 
         $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED, [
             'merchant_id'   => $merchant->getId()
