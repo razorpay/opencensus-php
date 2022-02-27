@@ -4,12 +4,14 @@ namespace RZP\Models\Merchant\Invoice;
 
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Reversal\Entity as ReversalEntity;
@@ -438,6 +440,7 @@ class Processor extends Base\Core
                                            );
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'banking_invoice_' . $type,
                 'banking_payout_fee_amount',
                 $bankingPayoutsFeeAmount,
@@ -454,6 +457,7 @@ class Processor extends Base\Core
                                          );
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'banking_invoice_' . $type,
                 'banking_FAV_fee_amount',
                 $bankingFAVsFeeAmount,
@@ -476,6 +480,7 @@ class Processor extends Base\Core
                 );
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'banking_invoice_' . $type,
                 'banking_failed_payout_fee_amount',
                 $bankingFailedPayoutsFeeAmount,
@@ -491,6 +496,7 @@ class Processor extends Base\Core
                     $this->endTimestamp);
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'banking_invoice_' . $type,
                 'banking_reversal_fee_amount',
                 $bankingReversalsFeeAmount,
@@ -534,6 +540,7 @@ class Processor extends Base\Core
                                          $type);
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'pg_invoice_' . $type,
                 'payment_fee_amount',
                 $paymentFeeAmount,
@@ -552,6 +559,7 @@ class Processor extends Base\Core
                                             $this->endTimestamp);
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'pg_invoice_' . $type,
                 'validation_fee_amount',
                 $validationFeeAmount,
@@ -570,6 +578,7 @@ class Processor extends Base\Core
                                              $this->endTimestamp);
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'pg_invoice_' . $type,
                 'transaction_fee_amount',
                 $transactionFeeAmount,
@@ -588,6 +597,7 @@ class Processor extends Base\Core
                                         $this->endTimestamp);
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'pg_invoice_' . $type,
                 'refund_fee_amount',
                 $refundFeeAmount,
@@ -609,6 +619,7 @@ class Processor extends Base\Core
                                                 $this->endTimestamp);
 
             $this->logMerchantInvoiceResult(
+                $type,
                 'pg_invoice_' . $type,
                 'refund_reversal_fee_amount',
                 $refundReversalFeeAmount,
@@ -640,7 +651,7 @@ class Processor extends Base\Core
         }
     }
 
-    protected function logMerchantInvoiceResult($type, $step, $result, $balanceId)
+    protected function logMerchantInvoiceResult($item, $type, $step, $result, $balanceId)
     {
         $this->trace->info(
             TraceCode::MERCHANT_INVOICE_QUERY_RESULT,
@@ -651,6 +662,22 @@ class Processor extends Base\Core
                 'balance_id'  => $balanceId,
                 'result'      => empty($result) === false ? $result->getAttributes() : $result,
             ]);
+
+        //throw exception if query returns null
+        if((empty($result) === true) and ($this->isPGInvoiceType($item) === true))
+        {
+            $errorData = [
+                'merchant_id' => $this->merchantId,
+                'type'        => $type,
+                'step'        => $step,
+                'balance_id'  => $balanceId,
+            ];
+            $errorMessage = 'Query returns null';
+            //send slack alert
+            (new SlackNotification)->send($errorMessage, $errorData, null, null, Entity::P0_PP_ALERTS);
+
+            throw new Exception\RuntimeException('Query returns null', $errorData);
+        }
     }
 
     protected function isInvoiceTypeOfPayment(string $type)
@@ -661,6 +688,11 @@ class Processor extends Base\Core
     protected function isInvoiceTypeOfRefund(string $type)
     {
         return (in_array($type, [Type::INSTANT_REFUNDS], true) === true);
+    }
+
+    protected function isPGInvoiceType(string $type)
+    {
+        return (in_array($type, Type::getAllPrimaryBalanceTypes()) === true);
     }
 
     /**

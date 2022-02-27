@@ -203,7 +203,10 @@ return array(
         'x-alerts'               => 'CJD6RKF5Z',
 
         // ledger alerts channel
-        'platform-ledger-alerts' => 'C01FW2MTBMZ'
+        'platform-ledger-alerts' => 'C01FW2MTBMZ',
+
+        // p0_pp_alert
+        'p0_pp_alerts'           => 'C02661NA20G'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,
