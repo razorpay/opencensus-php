@@ -5127,7 +5127,7 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi() === true)
         {
-            if (($payment->isRequiredToCreateNewTokenAlways($token) === true) and
+            if (($payment->isRequiredToCreateNewTokenAlways($token, $this->isPreferredRecurring($input)) === true) and
                 ($this->getRecurringTypeFromToken($payment, $token, $input) === Payment\RecurringType::INITIAL))
             {
                 $token = (new Token\Core)->cloneToken($token);
@@ -5455,7 +5455,7 @@ trait Authorize
                 }
             }
 
-            if ($payment->isRequiredToCreateNewTokenAlways() === true)
+            if ($payment->isRequiredToCreateNewTokenAlways(null, $this->isPreferredRecurring($input)) === true)
             {
                 $validateExisting = false;
             }

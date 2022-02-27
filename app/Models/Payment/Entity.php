@@ -4802,7 +4802,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->cardMandateNotification !== null;
     }
 
-    public function isRequiredToCreateNewTokenAlways($token = null): bool
+    public function isRequiredToCreateNewTokenAlways($token = null, $isPreferredRecurring = false): bool
     {
         // for auto payment, card mandate notification will be present
         if ($this->cardMandateNotification !== null)
@@ -4816,7 +4816,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $card = $token->card;
         }
 
-        if (($this->isCardRecurring() === true) and
+        if ((($this->isCardRecurring() === true or ($this->isCard() and $isPreferredRecurring))) and
             ($card !== null) and
             ($card->iinRelation !== null) and
             ($card->iinRelation->isCardMandateApplicable($this->merchant) === true))

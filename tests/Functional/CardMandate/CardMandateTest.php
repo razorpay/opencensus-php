@@ -1004,6 +1004,44 @@ class CardMandateTest extends TestCase
         $this->assertNotEquals($payment->getTokenId(), $token->getId());
     }
 
+    public function testCreateCardMandatePaymentWithFailedTokenWithPreferredRecurring()
+    {
+        $this->mandateConfirm = 'false';
+
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        try {
+            $this->makeRequestAndGetContent($request);
+        } catch (\Exception $e)
+        {}
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+
+        $token = $payment->localToken;
+
+        $request['content']['recurring'] = 'preferred';
+
+        $this->mandateConfirm = 'true';
+
+        $this->makeRequestAndGetContent($request);
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+        $this->assertNotEquals($payment->getTokenId(), $token->getId());
+    }
+
     public function testCreateCardMandateForUSDCurrencyPayment()
     {
         $this->mockCheckBin();
