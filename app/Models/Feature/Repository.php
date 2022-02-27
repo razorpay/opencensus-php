@@ -102,15 +102,21 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    /**
+     * Get a list a merchant ids that have the given features enabled.
+     *
+     * @param string[] $featureNames
+     *
+     * @return string[]
+     */
     public function findMerchantIdsHavingFeatures(array $featureNames): array
     {
-        /** @var PublicCollection $featureEntities */
-        $featureEntities = $this->findMerchantsHavingFeatures($featureNames);
-
-        $merchantIds = $featureEntities->pluck(Entity::ENTITY_ID)
-                                       ->toArray();
-
-        return $merchantIds;
+        return $this->newQuery()
+            ->select(Entity::ENTITY_ID)
+            ->whereIn(Entity::NAME, $featureNames)
+            ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+            ->pluck(Entity::ENTITY_ID)
+            ->toArray();
     }
 
     public function fetchMerchantIdsWithFeatureInChunks(string $featureName, $skip, $limit)

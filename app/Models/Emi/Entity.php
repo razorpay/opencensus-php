@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Bank;
 use RZP\Models\Card;
 use RZP\Models\Base\Traits\ExternalOwner;
+use RZP\Models\Merchant\Account;
 
 class Entity extends Base\PublicEntity
 {
@@ -188,6 +189,18 @@ class Entity extends Base\PublicEntity
     public function getIssuerNameAttribute(): string
     {
         return $this->getIssuerName();
+    }
+
+    /**
+     * Check whether this emi plan is a shared/global emi plan.
+     *
+     * @return bool
+     */
+    public function isShared(): bool
+    {
+        $merchantId = $this->getAttribute(self::MERCHANT_ID);
+
+        return ($merchantId === Account::SHARED_ACCOUNT);
     }
 
     /**

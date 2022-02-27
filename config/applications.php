@@ -1186,7 +1186,10 @@ return [
     ],
 
     'affordability' => [
+        'mock'   => env('AFFORDABILITY_SERVICE_MOCK', true),
         'secret' => env('AFFORDABILITY_SECRET'),
+        'service_secret' => env('AFFORDABILITY_SERVICE_SECRET'),
+        'url'    => env('AFFORDABILITY_SERVICE_URL'),
     ],
 
     'trusted_badge' => [

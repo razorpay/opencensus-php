@@ -101,7 +101,7 @@ class AffordabilityTest extends TestCase
 
         $this->ba->affordabilityInternalAppAuth();
 
-        $this->fixtures->merchant->addFeatures([Constants::AFFORDABILITY_WIDGET]);
+        $this->fixtures->merchant->addFeatures([Constants::AFFORDABILITY_WIDGET], Account::TEST_ACCOUNT);
     }
 
     public function testFeatureDisabledOnAffordabilityWidget()
@@ -119,7 +119,7 @@ class AffordabilityTest extends TestCase
 
     public function testPaylaterOnAffordabilityWidget()
     {
-        $this->fixtures->merchant->enablePayLater('10000000000000');
+        $this->fixtures->merchant->enablePayLater(Account::TEST_ACCOUNT);
         $response = $this->startTest();
 
         $this->assertTrue($response['enabled']);
@@ -128,17 +128,16 @@ class AffordabilityTest extends TestCase
 
     public function testEmiOnAffordabilityWidget()
     {
-        $this->fixtures->merchant->enableEMi('10000000000000');
-        $this->fixtures->emiPlan->create(
-            [
-                'id'          => '10101010101312',
-                'merchant_id' => '10000000000000',
-                'bank'        => 'HDFC',
-                'type'        => 'credit',
-                'rate'        => 1200,
-                'min_amount'  => 300000,
-                'duration'    => 3,
-            ]);
+        $this->fixtures->merchant->enableEmi(Account::TEST_ACCOUNT);
+        $this->fixtures->emiPlan->create([
+            'id'          => '10101010101312',
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'bank'        => 'HDFC',
+            'type'        => 'credit',
+            'rate'        => 1200,
+            'min_amount'  => 300000,
+            'duration'    => 3,
+        ]);
 
         $expectedEmiResponse = [
             'HDFC' => [
@@ -162,7 +161,7 @@ class AffordabilityTest extends TestCase
 
     public function testCardlessEmiOnAffordabilityWidget()
     {
-        $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+        $this->fixtures->merchant->enableCardlessEmi(Account::TEST_ACCOUNT);
 
         $response = $this->startTest();
 
@@ -172,19 +171,18 @@ class AffordabilityTest extends TestCase
 
     public function testAffordabilityWidgetSuite()
     {
-        $this->fixtures->merchant->enablePaylater('10000000000000');
-        $this->fixtures->merchant->enableEmi('10000000000000');
-        $this->fixtures->emiPlan->create(
-            [
-                'id'          => '10101010101312',
-                'merchant_id' => '10000000000000',
-                'bank'        => 'HDFC',
-                'type'        => 'credit',
-                'rate'        => 1200,
-                'min_amount'  => 300000,
-                'duration'    => 3,
-            ]);
-        $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+        $this->fixtures->merchant->enablePaylater(Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->enableEmi(Account::TEST_ACCOUNT);
+        $this->fixtures->emiPlan->create([
+            'id'          => '10101010101312',
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'bank'        => 'HDFC',
+            'type'        => 'credit',
+            'rate'        => 1200,
+            'min_amount'  => 300000,
+            'duration'    => 3,
+        ]);
+        $this->fixtures->merchant->enableCardlessEmi(Account::TEST_ACCOUNT);
 
         $response = $this->startTest();
 

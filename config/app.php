@@ -176,6 +176,7 @@ return array(
         // RZP\Providers\AuthServiceProvider::class,
         RZP\Providers\FirstServiceProvider::class,
         RZP\Services\ApiServiceProvider::class,
+        RZP\Providers\AffordabilityServiceProvider::class,
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
         RZP\Providers\OpenCensusProvider::class,

@@ -51,6 +51,21 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Get the active key entities for the given list of merchant ids.
+     *
+     * @param array $merchantIds
+     *
+     * @return Base\PublicCollection|null
+     */
+    public function getActiveKeysForMerchants(array $merchantIds): ?Base\PublicCollection
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->notExpired()
+            ->get();
+    }
+
+    /**
      * @param  string      $merchantId
      * @return Entity|null
      */
