@@ -116,12 +116,14 @@ class Core extends Base\Core
      * Create and process a reversal on a transfer
      * Also process refund to the customer if cutomer_refund flag is present in input
      *
-     * @param  Transfer\Entity $transfer
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Merchant\Entity $initiator Route Merchant / Linked Account initiating the reversal
+     * @param Transfer\Entity $transfer
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity|null $initiator Route Merchant / Linked Account initiating the reversal
      *
      * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
     public function reverseForTransferAndCustomerRefund(
@@ -151,10 +153,11 @@ class Core extends Base\Core
 
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                return $this->repo->transaction(function () use ($transfer, $input, $merchant, $initiator)
+                $paymentProcessor = (new Payment\Processor\Processor($merchant));
+
+                $result = $this->repo->transaction(function () use ($paymentProcessor, $transfer, $input, $merchant, $initiator)
                 {
-                    $result = (new Payment\Processor\Processor($merchant))
-                                    ->refundPaymentAndReverseTransfer($transfer, $input, $initiator);
+                    $result = $paymentProcessor->refundPaymentAndReverseTransfer($transfer, $input, $initiator);
 
                     // result has reversal and refund entity in indexes 0 and 1 respectively
                     $reversal = $result[0] ?? null;
@@ -165,8 +168,29 @@ class Core extends Base\Core
 
                     (new Transfer\Metric)->pushReversalSuccessMetrics();
 
-                    return $reversal;
+                    return $result;
                 });
+
+                // Dispatch refunds to scrooge
+                try
+                {
+                    $refund = $result[1] ?? null;
+
+                    $paymentProcessor->callRefundFunctionOnScrooge($refund);
+                }
+                catch (\Throwable $e)
+                {
+                    // Ignoring exception to prevent flow breakage.
+                    // We have necessary replay measures in place for misses
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::REFUND_QUEUE_SCROOGE_DISPATCH_FAILED
+                    );
+                }
+
+                // Return reversal entity
+                return $result[0] ?? null;
             });
     }
 
