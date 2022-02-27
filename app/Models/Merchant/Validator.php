@@ -1170,6 +1170,10 @@ class Validator extends Base\Validator
      * 2. The partner is of type aggregator and has the feature allowing optional emails
      * 3. The merchant is not a partner but has aggregator feature (for backward compatibility)
      *
+     * Submerchant can be created with an existing email if
+     * 1. it's a linked account creation request
+     * 2. there is no linked account associated with the email ID associated with the same parent id
+     *
      * @param  array $input
      * @param  bool  $linkedAccount
      *
@@ -1183,10 +1187,102 @@ class Validator extends Base\Validator
         }
         else
         {
-            $this->validateInput('unique_email', array_only($input, 'email'));
+            $merchant = $this->entity;
+            $experimentIsOn = (new Core())->isRazorxExperimentEnable(
+                $merchant->getId(), RazorxTreatment::ALLOW_LINKED_ACCOUNT_CREATION_FOR_EXISTING_EMAILS
+            );
+
+            if (($linkedAccount === true) and ($experimentIsOn === true))
+            {
+                $this->validateExistingLinkedAccountWithRequestingMerchant($input[Entity::EMAIL]);
+            }
+            else
+            {
+                $this->validateInput('unique_email', array_only($input, Entity::EMAIL));
+            }
         }
 
-        $this->validateInput('edit_name', array_only($input, 'name'));
+        $this->validateInput('edit_name', array_only($input, Entity::NAME));
+    }
+
+    /**
+     * Check that if merchant entities exist for an email.
+     * If they do, check that none of them is a linked account with parent ID same as the MID
+     * of the requesting merchant.
+     * @todo FR 4a of PRTS 1030; raise from a separate PR
+     * @param string $email
+     * @throws Exception\BadRequestException
+     */
+    protected function validateExistingLinkedAccountWithRequestingMerchant(string $email)
+    {
+        $requestingMerchant     = $this->entity;
+        $app                    = App::getFacadeRoot();
+        $merchantRepo           = app('repo')->merchant;
+        $merchantsForEmail      = $merchantRepo->fetchByEmailAndOrgId($email, $requestingMerchant->getOrgId());
+
+        if($merchantsForEmail->count() > 0)
+        {
+//            $disallow_feature = $requestingMerchant->isFeatureEnabled(
+//                Feature\Constants::DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS
+//            );
+//
+//            if($disallow_feature === true)
+//            {
+//                throw new Exception\BadRequestException(
+//                    ErrorCode::BAD_REQUEST_DISABLE_LINKED_ACCOUNT_CREATION_DUPLICATE_EMAIL_ENABLED
+//                );
+//            }
+            foreach ($merchantsForEmail as $merchant)
+            {
+                if ($merchant->isLinkedAccount() === true)
+                {
+                    if($merchant->getParentId() === $requestingMerchant->getId())
+                    {
+                        $app['trace']->info(
+                            TraceCode::LINKED_ACCOUNT_CREATE_FAILURE, [
+                                "errorCode" => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+                                "email" => $email,
+                            ]
+                        );
+
+                        $description = PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS . $merchant->getParentId();
+
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+                            Entity::EMAIL,
+                            ["merchant_id" => $merchant->getId(), "parent_id" => $merchant->getParentId()],
+                            $description
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string $emailId
+     * @param string $orgId
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateUniqueEmailExceptLinkedAccount(string $emailId, string $orgId)
+    {
+        $merchantRepo = app('repo')->merchant;
+        $merchantsForEmail = $merchantRepo->fetchByEmailAndOrgId($emailId, $orgId);
+
+        if($merchantsForEmail->count() > 0)
+        {
+            foreach ($merchantsForEmail as $merchant)
+            {
+                if ($merchant->isLinkedAccount() === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+                        Entity::EMAIL,
+                        ["merchant_id" => $merchant->getId()]
+                    );
+                }
+            }
+        }
     }
 
     protected function validateEmptyEmailFlow(array $input, bool $linkedAccount)

@@ -466,4 +466,7 @@ final class RazorxTreatment
     // Experiment to disable status update going to payout service via api
     // payout service will be consuming status independently from kafka
     const DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE = 'disable_status_update_to_payout_service';
+
+    // Experiment to allow linked account creation with existing email id
+    const ALLOW_LINKED_ACCOUNT_CREATION_FOR_EXISTING_EMAILS = 'allow_linked_account_creation_for_existing_emails';
 }

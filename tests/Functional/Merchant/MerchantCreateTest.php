@@ -1252,8 +1252,6 @@ class MerchantCreateTest extends TestCase
 
         $this->ba->proxyAuth();
 
-        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
-
         $this->testData[__FUNCTION__]['request']['content']['email'] = $user['email'];
 
         $account = $this->startTest();
@@ -1266,6 +1264,8 @@ class MerchantCreateTest extends TestCase
         $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
 
         $this->assertEquals(1, $users->count());
+
+        $this->assertEquals($user['id'], $users->first()->user_id);
 
         $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
     }
@@ -1960,6 +1960,276 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($this->merchantId, $liveConfig['entity_id']);
         $this->assertEquals($this->merchantId, $testConfig['entity_id']);
 
+    }
+
+//    TODO: FR 4a of PRTS 1030; raise from a separate PR
+//    public function testCreateLinkedAccountForExistingEmailsFlagPresentForMerchantDisallowingIt()
+//    {
+//
+//    }
+
+    /**
+     * given: there are merchants with dashboard access for a given email (i.e. there is an associated user)
+     * when: a merchant tries to add a linked account without dashboard access
+     * then: Linked Account should be created
+     */
+    public function testCreateLinkedAccountForExistingEmailsWithoutDashboardAccess()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $existingMerchant = $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingMerchant['email'];
+        $this->testData[__FUNCTION__]['response']['content']['email'] = $existingMerchant['email'];
+
+        $account = $this->startTest();
+
+        // no users have access to newly created linked account merchant
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+        $this->assertEquals(0, $users->count());
+
+        // check that there are two merchants with the same email
+        $merchants = DB::table('merchants')->where('email', '=', $existingMerchant['email'])->get();
+        $this->assertEquals(2, $merchants->count());
+    }
+
+    /**
+     * given: there are merchants with dashboard access for a given email (i.e. there is an associated user)
+     * when: a merchant tries to add a linked account with dashboard access
+     * then: linked account should be created and MappedToAccount email should be sent to the user email
+     */
+    public function testCreateLinkedAccountForExistingEmailsWithDashboardAccess()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        Mail::fake();
+
+        $existingMerchant = $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
+
+        $existingUser = $this->fixtures->create('user', ['email' => 'test2@razorpay.com']);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'merchant_id' => $existingMerchant['id'],
+            'user_id' => $existingUser['id'],
+            'role' => Role::OWNER
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingMerchant['email'];
+        $this->testData[__FUNCTION__]['response']['content']['email'] = $existingMerchant['email'];
+
+        $account = $this->startTest();
+
+        // exactly 1 user has access to newly created linked account merchant with LINKED_ACCOUNT_OWNER role
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+        $this->assertEquals(1, $users->count());
+        $this->assertEquals($existingUser['id'], $users->first()->user_id);
+        $this->assertEquals(Role::LINKED_ACCOUNT_OWNER, $users->first()->role);
+
+        // check that there are two merchants with the same email
+        $merchants = DB::table('merchants')->where('email', '=', $existingMerchant['email'])->get();
+        $this->assertEquals(2, $merchants->count());
+
+        // Check that the MappedToAccount email is sent
+        Mail::assertQueued(MappedToAccount::class, function ($mail) use ($existingUser)
+        {
+            return $mail->hasTo($existingUser['email']);
+        });
+    }
+
+    /**
+     * given: there are linked account merchants without dashboard access for a given email
+     * when: a merchant tries to add a linked account without dashboard access
+     * then: i. linked account should be created
+     */
+    public function testCreateLinkedAccountForExistingEmailWithoutDashboardAccessHavingExistingLinkedAccount()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $existingParentMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000001',
+            'email' => 'test1@razorpay.com'
+        ]);
+
+        $existingLAMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => $existingParentMerchant['id']
+        ]);
+
+        $this->ba->proxyAuth();
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
+        $this->testData[__FUNCTION__]['response']['content']['email'] = $existingLAMerchant['email'];
+
+        $account = $this->startTest();
+
+        // no users have access to newly created linked account merchant
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+        $this->assertEquals(0, $users->count());
+
+        // check that there are two merchants with the same email
+        $merchants = DB::table('merchants')->where('email', '=', $existingLAMerchant['email'])->get();
+        $this->assertEquals(2, $merchants->count());
+    }
+
+    /**
+     * given: there are linked account merchants without dashboard access for a given email
+     * when: a merchant tries to add a linked account with dashboard access
+     * then: i. linked account should be created
+     *       ii. LinkedAccountUserAccess password reset email should be sent
+     *       iii. Other linked account should not be accessible
+     */
+    public function testCreateLinkedAccountForExistingEmailWithDashboardAccessHavingExistingLinkedAccount()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+        Mail::fake();
+
+        $existingParentMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000001',
+            'email' => 'test1@razorpay.com'
+        ]);
+
+        $existingLAMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => $existingParentMerchant['id']
+        ]);
+
+        $this->ba->proxyAuth();
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
+        $this->testData[__FUNCTION__]['response']['content']['email'] = $existingLAMerchant['email'];
+
+        $account = $this->startTest();
+
+        // no users have access to newly created linked account merchant
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $account['id'])->get();
+        $this->assertEquals(1, $users->count());
+
+        // check that there are two merchants with the same email
+        $merchants = DB::table('merchants')->where('email', '=', $existingLAMerchant['email'])->get();
+        $this->assertEquals(2, $merchants->count());
+
+        // password reset mail should be sent to newly created user
+        Mail::assertQueued(LinkedAccountUserAccess::class, function ($mail) use ($account)
+        {
+            return $mail->hasTo($account['email']);
+        });
+    }
+
+    /**
+     * given: there are linked account merchants without dashboard access for a given email with some parent id
+     * when: a merchant having MID same as the parent id tries to add a linked account for the same email
+     * then: i. linked account should not be created
+     */
+    public function testCreateLinkedAccountForExistingEmailsOtherLinkedAccountExistsForSameParent()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $existingLAMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->ba->proxyAuth();
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
+
+        $this->startTest();
+    }
+
+    /**
+     * given: there are two linked accounts with the same email, both have dashboard access
+     * when: dashboard access of one is revoked
+     * then: it should not affect dashboard access for the other one
+     */
+    public function testLinkedAccountDashboardAccessRevokeDoesNotAffectOtherUsers()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $user = $this->fixtures->create('user', ['email' => 'test2@razorpay.com']);
+
+        $existingLAMerchant1 = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $existingLAMerchant2 = $this->fixtures->create('merchant', [
+            'id' => '10000000000003',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $existingLAMerchant1['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $existingLAMerchant2['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $existingLAMerchant1['id'];
+
+        $this->startTest();
+
+        // access taken for one linked account
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $existingLAMerchant1['id'])->get();
+        $this->assertEquals(0, $users->count());
+
+        // access retained for another one
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $existingLAMerchant2['id'])->get();
+        $this->assertEquals(1, $users->count());
+    }
+
+    /**
+     * given: there are two linked accounts with the same email, both do not have dashboard access
+     * when: dashboard access to one is granted
+     * then:  it should not affect dashboard access for the other one
+     */
+    public function testLinkedAccountDashboardAccessAllowDoesNotAffectOtherUsers()
+    {
+        $this->mockRazorxTreatment();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $existingLAMerchant1 = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $existingLAMerchant2 = $this->fixtures->create('merchant', [
+            'id' => '10000000000003',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $existingLAMerchant1['id'];
+
+        $this->startTest();
+
+        // access granted for one linked account
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $existingLAMerchant1['id'])->get();
+        $this->assertEquals(1, $users->count());
+
+        // no access for another one
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $existingLAMerchant2['id'])->get();
+        $this->assertEquals(0, $users->count());
     }
 
 

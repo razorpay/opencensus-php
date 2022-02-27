@@ -1204,6 +1204,11 @@ class Constants
      */
     const FAIL_NON3DS_INTERNATIONAL = 'fail_non3ds_international';
 
+    /**
+     * Feature flag disables a merchant from creating linked accounts with existing emails
+     */
+    const DISALLOW_LINKED_ACCOUNT_WITH_DUPLICATE_EMAILS = 'disallow_linked_account_with_duplicate_emails';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,

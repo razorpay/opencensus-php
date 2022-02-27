@@ -1735,6 +1735,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBMERCHANT_CREATE_REQUEST                            = 'SUBMERCHANT_CREATE_REQUEST';
     const LINKED_ACCOUNT_BUILD_ENTITY                           = 'LINKED_ACCOUNT_BUILD_ENTITY';
     const LINKED_ACCOUNT_SAVE_ENTITY                            = 'LINKED_ACCOUNT_SAVE_ENTITY';
+    const LINKED_ACCOUNT_CREATE_FAILURE                         = 'LINKED_ACCOUNT_CREATE_FAILURE';
     const PARTNERSHIP_SUBMERCHANT_SIGNUP                        = 'PARTNERSHIP_SUBMERCHANT_SIGNUP';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST                  = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
     const MERCHANT_LIVE_ENABLE_REQUEST                          = 'MERCHANT_LIVE_ENABLE_REQUEST';

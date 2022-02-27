@@ -140,6 +140,63 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * given: linked account exists for an email without dashboard access
+     * when: user tries to register as normal merchant with the same email
+     * then: user should be able to register
+     */
+    public function testRegisterWithDuplicateEmailWhenLinkedAccountExistsWithoutDashboardAccess()
+    {
+        $existingLAMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
+        $this->testData[__FUNCTION__]['response']['content']['email'] = $existingLAMerchant['email'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $newMerchant = $this->startTest();
+
+        // the newly created user should have access only to the new merchant
+        $users = DB::table('merchant_users')->where('merchant_id', '=', $newMerchant['id'])->get();
+        $this->assertEquals(1, $users->count());
+
+        // check that there are two merchants with the same email
+        $merchants = DB::table('merchants')->where('email', '=', $existingLAMerchant['email'])->get();
+        $this->assertEquals(2, $merchants->count());
+    }
+
+    /**
+     * given: linked account exists for an email with dashboard access
+     * when: user tries to register as normal merchant with the same email
+     * then: user should not be able to register
+     */
+    public function testRegisterWithDuplicateEmailFailsWhenLinkedAccountExistsWithDashboardAccess()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'test2@razorpay.com']);
+
+        $existingLAMerchant = $this->fixtures->create('merchant', [
+            'id' => '10000000000002',
+            'email' => 'test2@razorpay.com',
+            'parent_id' => '10000000000000'
+        ]);
+
+        $this->fixtures->create('user:user_merchant_mapping', [
+            'user_id'     => $user['id'],
+            'merchant_id' => $existingLAMerchant['id'],
+            'role'        => Role::LINKED_ACCOUNT_OWNER,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $existingLAMerchant['email'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testRegisterWithOauthPayload()
     {
         $this->ba->dashboardGuestAppAuth();

@@ -22,7 +22,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The email has already been taken.',
+                    'description' => PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
                 ],
             ],
             'status_code' => 400,
@@ -837,7 +837,6 @@ return [
             'url'     => '/submerchants',
             'method'  => 'POST',
             'content' => [
-                'id'               => '7gcKngYfqyDMjN',
                 'name'             => 'Linked Account Name',
                 'account'          => true,
                 'dashboard_access' => true,
@@ -845,7 +844,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'    => '7gcKngYfqyDMjN',
                 'name'  => 'Linked Account Name',
             ],
         ],
@@ -1481,6 +1479,132 @@ return [
                 'merchant_name' => "SubMerchantone",
                 'merchant_email' => "merch1@razorpay.com",
                 'Status' => "success",
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountForExistingEmailsWithoutDashboardAccess' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'email'            => 'dynamically generated',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountForExistingEmailsWithDashboardAccess' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'email'            => 'dynamically generated',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+                'dashboard_access' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountForExistingEmailWithoutDashboardAccessHavingExistingLinkedAccount' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'email'            => 'dynamically generated',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountForExistingEmailWithDashboardAccessHavingExistingLinkedAccount' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'email'            => 'dynamically generated',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+                'dashboard_access' => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'  => 'Linked Account Name',
+            ],
+        ],
+    ],
+
+    'testCreateLinkedAccountForExistingEmailsOtherLinkedAccountExistsForSameParent' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'email'            => 'dynamically generated',
+                'name'             => 'Linked Account Name',
+                'account'          => true,
+                'dashboard_access' => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS.'10000000000000',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_EMAIL_ALREADY_EXISTS,
+        ],
+    ],
+
+    'testLinkedAccountDashboardAccessRevokeDoesNotAffectOtherUsers' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => false,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testLinkedAccountDashboardAccessAllowDoesNotAffectOtherUsers' => [
+        'request' => [
+            'url' => '/la-merchants/config',
+            'method' => 'post',
+            'content' => [
+                'dashboard_access' => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'success' => true,
             ],
         ],
     ],

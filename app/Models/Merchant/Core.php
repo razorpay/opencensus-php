@@ -134,7 +134,9 @@ class Core extends Base\Core
 
         if (isset($input['email']) === true)
         {
-            $merchant->getValidator()->validateInput('unique_email', array_only($input, 'email'));
+            (new Merchant\Validator())->validateUniqueEmailExceptLinkedAccount(
+                $input[Entity::EMAIL], $input[Entity::ORG_ID]
+            );
         }
         $merchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
