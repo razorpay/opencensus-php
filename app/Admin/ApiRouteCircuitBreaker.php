@@ -68,7 +68,7 @@ class ApiRouteCircuitBreaker
 
         $this->routeMethod    = strtolower($method);
 
-        $this->routePath      = $path;
+        $this->routePath      = strtok($path, '?');
 
         $this->cache          = $this->app['cache'];
 
@@ -296,13 +296,33 @@ class ApiRouteCircuitBreaker
      */
     protected function matchPathPattern($pathPattern, $path)
     {
+        $optionals = $this->extractOptionalParameters($pathPattern);
+
+        $whereAs = [];
+
+        if (strpos($pathPattern, '{path?}') !== false)
+        {
+            $whereAs = ['path' => '.*'];
+        }
+
         $pathPattern = preg_replace(self::PREG_REPLACE_REGEX_FOR_PATH_MATCH, self::PREG_REPLACE_WITH_FOR_PATH_MATCH, $pathPattern); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
 
-        $route = new Route($pathPattern);
+        $route = new Route($pathPattern, $optionals, $whereAs, ['utf8' => true]);
 
         $path = '/' . $path;
 
         return preg_match($route->compile()->getRegex(), rawurldecode($path)) === 1;
+    }
+
+    /**
+     * @param $pathPattern
+     * @return array
+     */
+    protected function extractOptionalParameters($pathPattern)
+    {
+        preg_match_all('/\{(\w+?)\?\}/', $pathPattern, $matches);
+
+        return isset($matches[1]) ? array_fill_keys($matches[1], null) : [];
     }
 
     protected function getCircuitBreaker()
