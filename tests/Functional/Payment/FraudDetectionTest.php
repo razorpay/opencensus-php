@@ -234,9 +234,9 @@ class FraudDetectionTest extends TestCase
         );
     }
 
-    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false)
+    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false, $unregisteredBusiness = false)
     {
-        if ($mobileSignUpTest === false)
+        if (($mobileSignUpTest === false) and ($unregisteredBusiness === false))
         {
             $this->mockRaven();
         }
@@ -247,10 +247,17 @@ class FraudDetectionTest extends TestCase
 
         $merchant_phone = '9999999999';
         $merchant_id = '10000000000000';
-        $this->fixtures->create('merchant_detail', [
+
+        $merchantDetailData = [
             'merchant_id'    => $merchant_id,
-            'contact_mobile' => $merchant_phone
-        ]);
+            'contact_mobile' => $merchant_phone,
+        ];
+
+        if ($unregisteredBusiness === true) {
+            $merchantDetailData['business_type'] = "2";
+        }
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
         $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
 
@@ -316,6 +323,14 @@ class FraudDetectionTest extends TestCase
                                                             'id' => '1234',
                                                         ]);
         }
+
+        else if ($unregisteredBusiness === true)
+        {
+            $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
+                    [],
+                    [], 0);
+        }
+
         else
         {
             $this->expectFreshdeskRequestAndRespondWith('tickets/outbound_email', 'post',
@@ -344,7 +359,11 @@ class FraudDetectionTest extends TestCase
             $riskEntity['reason']
         );
 
-        if ($mobileSignUpTest === false)
+        if ($unregisteredBusiness === true) {
+            $this->assertNoRavenRequest();
+        }
+
+        else if ($mobileSignUpTest === false)
         {
             $this->assertRavenRequest(function($input) use ($merchant_id, $merchant_phone, $testDomain)
             {
@@ -385,8 +404,7 @@ class FraudDetectionTest extends TestCase
             Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
             $riskEntity['reason']
         );
-
-        if ($mobileSignUpTest === false)
+        if (($mobileSignUpTest === false) or ($unregisteredBusiness === true))
         {
             $this->assertNoRavenRequest();
         }
@@ -400,6 +418,12 @@ class FraudDetectionTest extends TestCase
     public function testFraudDetectedByShieldWebsiteMismatchMobileSignup()
     {
         $this->runFraudDetectedByShieldWebsiteMismatch(true);
+    }
+
+    # Test case for validating that no alerts are being sent in case of Unregistered Business Type for the merchant
+    public function testFraudDetectedByShieldWebsiteMismatchUnregisteredBusiness()
+    {
+        $this->runFraudDetectedByShieldWebsiteMismatch(false, true);
     }
 
     public function testFraudNotDetectedByShield()

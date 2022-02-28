@@ -57,6 +57,13 @@ class Notify
                 return;
             }
 
+            $isUnregisteredBusiness = $merchant->merchantDetail->isUnregisteredBusiness();
+
+            if (($fraudType === Constants::DOMAIN_MISMATCH) and $isUnregisteredBusiness === true)
+            {
+                return;
+            }
+
             if (RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
             {
                 $fraudType = sprintf('%s_mobile_signup', $fraudType);
