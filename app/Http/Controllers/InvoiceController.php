@@ -428,6 +428,7 @@ class InvoiceController extends Controller
             if (strtolower($variant) === 'on')
             {
                 unset($data['merchant']['pan']);
+                unset($data['invoice']['customer_details']);
             }
 
             $view = 'invoice.auth_link';
