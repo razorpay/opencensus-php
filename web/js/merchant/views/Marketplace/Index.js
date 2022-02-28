@@ -23,7 +23,6 @@ import PaymentsList from 'merchant/views/Marketplace/Payments/List';
 import ReversalsList from 'merchant/views/Marketplace/Reversals/List';
 import TransfersList from 'merchant/views/Marketplace/Transfers/List';
 import BatchesList from 'merchant/views/Marketplace/Batch/List';
-import ShowWhen from 'merchant/components/ShowWhen';
 
 import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
@@ -151,11 +150,9 @@ class MarketplaceContainer extends React.Component {
             <NavLink to="/route/transfers">Transfers</NavLink>
             <NavLink to="/route/reversals">Reversals</NavLink>
             <NavLink to="/route/accounts">Accounts</NavLink>
-            <ShowWhen additionalCondition={(_user) => _user.isRouteBatchUploadEnabled}>
-              <NavLink to="/route/batchuploads">
-                Batch Upload <span class="badge bg-success">NEW</span>
-              </NavLink>
-            </ShowWhen>
+            <NavLink to="/route/batchuploads">
+              Batch Upload <span class="badge bg-success">NEW</span>
+            </NavLink>
           </header>
 
           <TestModeBanner />
