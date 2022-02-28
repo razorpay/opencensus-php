@@ -121,6 +121,7 @@ export const isPasswordUXImprovementEnabled = () => {
  * window.isTestEnv is set by QA env
  * or else this can be passed via URL param as well
  * Eg: https://dashboard.qa.razorpay.in/signin?isTestEnv=true
+ * Eg: https://dashboard.qa.razorpay.in/signup?isTestEnv=true
  * In both case signin captcha will be skipped.
  * @returns {boolean}.
  */
