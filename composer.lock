@@ -4,8 +4,79 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0dcf9da6b62352ba660589e1a97eb35",
+    "content-hash": "f5bdecb684173dcbaf8a833f33b73089",
     "packages": [
+        {
+            "name": "ackintosh/ganesha",
+            "version": "1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ackintosh/ganesha.git",
+                "reference": "81fd03809d014a46a4988998d2c6370818a9b3a1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ackintosh/ganesha/zipball/81fd03809d014a46a4988998d2c6370818a9b3a1",
+                "reference": "81fd03809d014a46a4988998d2c6370818a9b3a1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1.0",
+                "psr/http-message": "~1.0"
+            },
+            "require-dev": {
+                "ext-memcached": "~3.1",
+                "ext-mongodb": "~1.6",
+                "ext-redis": "~5.1",
+                "guzzlehttp/guzzle": "~6.5",
+                "php-coveralls/php-coveralls": "~2.0",
+                "php-vcr/php-vcr": "^1.4.5",
+                "php-vcr/phpunit-testlistener-vcr": "~3.2.1",
+                "phpunit/phpunit": "^7.5.19",
+                "predis/predis": "^1.1",
+                "symfony/http-client": "^4.3|^5.0",
+                "symfony/yaml": "^3.0|^4.0|^5.0",
+                "vimeo/psalm": "*"
+            },
+            "suggest": {
+                "ext-memcached": "Allows the usage of MemcachedAdapter",
+                "ext-mongodb": "Allows the usage of MongoDBAdapter",
+                "ext-redis": "Allows the usage of RedisAdapter with Redis, RedisArray and RedisCluster",
+                "guzzlehttp/guzzle": "Allows the usage of the Guzzle Middleware",
+                "symfony/http-client": "Allows the usage of the Ganesha HttpClient"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ackintosh\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "akihito.nakano",
+                    "email": "sora.akatsuki@gmail.com"
+                }
+            ],
+            "description": "PHP implementation of Circuit Breaker pattern",
+            "keywords": [
+                "circuit breaker",
+                "error handling",
+                "fault tolerance",
+                "guzzle middleware",
+                "microservices"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/ackintosh",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-06-01T21:49:08+00:00"
+        },
         {
             "name": "apache/thrift",
             "version": "0.11.0",

@@ -42,6 +42,10 @@ class ApiRequestAny
 
     const RAZORPAY_ACCOUNT_HEADER       = 'X-Razorpay-Account';
 
+    const API_ROUTE_NAME_HEADER         = 'Api-Route-Name';
+
+    const API_ROUTE_PATH_PATTERN_HEADER = 'Api-Path-Pattern';
+
     const CONTENT_TYPE_JSON             = 'application/json';
 
     const CONTENT_TYPE_FORM             = 'application/x-www-form-urlencoded';
@@ -453,6 +457,20 @@ class ApiRequestAny
         $httpCode = null;
         $method = $method ?? Request::method();
 
+        try
+        {
+            $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($path, $method);
+
+            $apiRouteCircuitBreaker->validateRouteCircuitIsOpen($path, $method);
+        }
+        catch(\Exception $e)
+        {
+            Trace::info(TraceCode::API_CIRCUIT_BREAKER_EXCEPTION, [
+                'message'     => $e->getMessage(),
+                'line_number' => $e->getLine()
+            ]);
+        }
+
         $spanOptions = (new ApiRequestSpan($this->client))::getRequestSpanOptions(ApiUrl::getApiBaseUrl().$path);
 
         // In some cases (for instance dashboard merchant searches)
@@ -499,6 +517,24 @@ class ApiRequestAny
             }
 
             $response = $client->json();
+
+            try
+            {
+                $apiRouteName     = $client->getHeader(self::API_ROUTE_NAME_HEADER);
+
+                $apiPathPattern   = $client->getHeader(self::API_ROUTE_PATH_PATTERN_HEADER);
+
+                $apiRouteCircuitBreaker->saveApiRouteDetails($apiRouteName, $apiPathPattern);
+
+                $apiRouteCircuitBreaker->success();
+            }
+            catch(\Exception $e)
+            {
+                Trace::info(TraceCode::API_CIRCUIT_BREAKER_EXCEPTION, [
+                    'message'     => $e->getMessage(),
+                    'line_number' => $e->getLine()
+                ]);
+            }
 
             $httpCode = $client->getStatusCode();
 
@@ -602,12 +638,26 @@ class ApiRequestAny
         // client should at least log for all server errors received from API.
         if ($exception !== null)
         {
+
+            $data = [
+                'message'           => $e->getMessage(),
+                'api_status_code'   => $httpCode,
+            ];
+
             Trace::error(
                 TraceCode::API_REQUEST_FAILURE,
-                [
-                    'message'           => $e->getMessage(),
-                    'api_status_code'   => $httpCode,
+                $data);
+            try
+            {
+                $apiRouteCircuitBreaker->failure($data);
+            }
+            catch(\Exception $e)
+            {
+                Trace::info(TraceCode::API_CIRCUIT_BREAKER_EXCEPTION, [
+                    'message'     => $e->getMessage(),
+                    'line_number' => $e->getLine()
                 ]);
+            }
         }
 
         return [$errors, null, $httpCode];
