@@ -79,6 +79,55 @@ class UpiAirtelReconTest extends TestCase
         );
     }
 
+    /**
+     * Test setting of rrn using MIS data.
+     * rrn is set as empty while creating entity.
+     * rrn is present in mis file
+     * rrn of upi entity is saved as rrn of MIS file and same is asserted.
+     */
+    public function testPaymentReconciliationWithoutRrnInUpi()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // rrn is set as empty
+        $rrn = '';
+
+        $this->makeUpiAirtelPaymentsSince($createdAt, $rrn, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->mockReconContentFunction(function (&$content) use ($payment)
+        {
+            if ($content['Till ID'] === $payment['id'])
+            {
+                $content = [];
+            }
+        });
+
+        $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiAirtel');
+
+        $this->paymentReconAsserts($payment->toArray());
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiAirtel',
+                'status'          => Status::PROCESSED,
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
     public function testUpiAirtelRefundRecon()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
@@ -238,13 +287,15 @@ class UpiAirtelReconTest extends TestCase
 
         $this->assertEquals(true, $updatedPayment['gateway_captured']);
 
+        $gatewayEntity = $this->getDbEntity('upi', ['payment_id' => $updatedPayment['id']]);
+
+        $this->assertEquals('22712135190', $gatewayEntity['npci_reference_id']);
+
+        $this->assertEquals($gatewayEntity['npci_reference_id'], $updatedPayment['reference16']);
+
         $gatewayEntity = $this->getDbEntity('mozart', ['payment_id' => $updatedPayment['id']]);
 
         $data = json_decode($gatewayEntity['raw'], true);
-
-        $this->assertEquals($data['rrn'], '22712135190');
-
-        $this->assertEquals($data['rrn'], $updatedPayment['reference16']);
 
         $this->assertEquals($data['gatewayTransactionId'], 'FT2022712537204137');
 
@@ -275,7 +326,7 @@ class UpiAirtelReconTest extends TestCase
     {
         for ($i = 0; $i < $count; $i++)
         {
-            $payments[] = $this->doUpiAirtelPayment();
+            $payments[] = $this->doUpiAirtelPayment($rrn);
 
             $upiEntity = $this->getDbLastEntity('upi');
 
@@ -290,7 +341,7 @@ class UpiAirtelReconTest extends TestCase
         return $payments;
     }
 
-    private function doUpiAirtelPayment()
+    private function doUpiAirtelPayment(string $rrn)
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),
@@ -320,7 +371,7 @@ class UpiAirtelReconTest extends TestCase
                 'amount' => $payment['amount'],
                 'raw' => json_encode(
                     [
-                        'rrn' => '22712135190',
+                        'rrn' => $rrn,
                         'type' => 'MERCHANT_CREDITED_VIA_PAY',
                         'amount' => $payment['amount'],
                         'status' => 'payment_successful',

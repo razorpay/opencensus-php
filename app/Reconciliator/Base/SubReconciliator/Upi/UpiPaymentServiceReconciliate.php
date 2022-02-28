@@ -30,7 +30,7 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             return null;
         }
 
-        parent::updateAndFetchGatewayPayment();
+        return parent::updateAndFetchGatewayPayment();
     }
 
     /**

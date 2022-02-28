@@ -21,6 +21,38 @@ class Repository extends Base\Repository
         Entity::MERCHANT_REFERENCE      => 'sometimes|string|max:50',
     );
 
+    public function findByPaymentIdAndActionOrFail($paymentId, $action)
+    {
+        $entity = parent::findByPaymentIdAndActionOrFail($paymentId, $action);
+
+        // We need to populate the npci_reference_id field from mozart entity
+        // if it is not set in UPI entity.
+        if (($entity instanceof Entity) and
+            ($entity->getGateway() === Payment\Gateway::UPI_AIRTEL) and
+            (empty($entity->getNpciReferenceId())) === true)
+        {
+            $mozartEntity = $this->repo->mozart->findByPaymentIdAndActionOrFail($paymentId, $action)->toArray();
+
+            // rrn is stored in raw column of mozart entity.
+            if (isset($mozartEntity['raw']) === false)
+            {
+                return $entity;
+            }
+
+            // raw column is stored in json format.
+            $rawData = json_decode($mozartEntity['raw'], true);
+
+            if (empty($rawData['rrn']) === false)
+            {
+                $entity->setNpciReferenceId($rawData['rrn']);
+
+                $this->repo->saveOrFail($entity);
+            }
+        }
+
+        return $entity;
+    }
+
     public function fetchGatewayPaymentIdByPaymentId($paymentId)
     {
         return $this->newQuery()

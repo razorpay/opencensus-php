@@ -599,4 +599,59 @@ class UpiAirtelGatewayTest extends TestCase
 
         $this->testUnexpectedPaymentSuccess();
     }
+
+    /**
+     * Resolves npci_reference_id of Upi entity from mozart entity if empty.
+     */
+    public function testResolveUpiRrnUsingMozartEntity()
+    {
+        $attributes = [
+            'terminal_id'       => $this->sharedTerminal->getId(),
+            'method'            => 'upi',
+            'amount'            => $this->payment['amount'],
+            'base_amount'       => $this->payment['amount'],
+            'amount_authorized' => $this->payment['amount'],
+            'status'            => 'captured',
+            'gateway'           => $this->gateway,
+            'authorized_at'     => time(),
+        ];
+
+        $payment = $this->fixtures->create('payment', $attributes);
+
+        $rrn = '22712135190';
+
+        $this->fixtures->create(
+            'mozart',
+            array(
+                'payment_id'    => $payment['id'],
+                'action'        => 'authorize',
+                'gateway'       => 'upi_airtel',
+                'amount'        => $payment['amount'],
+                'raw'           => json_encode(
+                    [
+                        'rrn'   => $rrn,
+                    ]
+                )
+            )
+        );
+
+        $gatewayEntity = $this->fixtures->create('upi', [
+            'payment_id' => $payment->getId(),
+            'action' => 'authorize',
+            'gateway' => 'upi_airtel',
+            'npci_reference_id' => '',
+        ]);
+
+        $this->assertEmpty($gatewayEntity->getNpciReferenceId());
+
+        $upi = $this->app['repo']->upi->findByPaymentIdAndActionOrFail($gatewayEntity->getPaymentId(), 'authorize');
+
+        $this->assertArraySubset([
+            UpiEntity::ACTION  => 'authorize',
+            UpiEntity::GATEWAY => 'upi_airtel',
+            UpiEntity::NPCI_REFERENCE_ID => $rrn,
+        ], $upi->toArray());
+
+        return $payment;
+    }
 }
