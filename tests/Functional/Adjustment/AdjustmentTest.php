@@ -1181,6 +1181,439 @@ class AdjustmentTest extends TestCase
         Queue::assertPushed(Transactions::class);
     }
 
+    public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncFailureAndAsyncSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturn([
+                "body" => [
+                    "id"                => "sampleJournlID",
+                    "created_at"        => "1623848289",
+                    "updated_at"        => "1632368730",
+                    "amount"            => "130.000000",
+                    "base_amount"       => "130.000000",
+                    "currency"          => "INR",
+                    "tenant"            => "X",
+                    "transactor_id"     => "adj_IwHCToefEWVgph",
+                    "transactor_event"  => "positive_adjustment_processed",
+                    "transaction_date"  => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id"          => "HNjsypHNXdSiei",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "sampleJournlID",
+                            "account_id"  => "GoRNyEuu9Hl0OZ",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "debit",
+                            "currency"    => "INR",
+                            "balance"     => ""
+                        ],
+                        [
+                            "id"          => "HNjsypHPOUlxDR",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "sampleJournlID",
+                            "account_id"  => "HN5AGgmKu0ki13",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "credit",
+                            "currency"    => "INR",
+                            "balance"     => "",
+                            'account_entities' => [
+                                'account_type'       => ['payable'],
+                                'fund_account_type'  => ['merchant_va'],
+                            ],
+                        ]
+                    ]
+                ]
+            ]);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+        $newAdjustmentsTxn = $this->getDbLastEntity('transaction', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
+        $this->assertEquals('sampleJournlID', $newAdjustments['transaction_id']);
+        $this->assertEquals(250000, $newAdjustments['amount']);
+
+        // assert api transaction
+        $this->assertEquals('sampleJournlID', $newAdjustmentsTxn['id']);
+        $this->assertEquals($newAdjustments['id'], $newAdjustmentsTxn['entity_id']);
+        $this->assertEquals(250000, $newAdjustmentsTxn['amount']);
+        $this->assertEquals(250000, $newAdjustmentsTxn['credit']);
+    }
+
+    public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncAsyncFailure()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::CREATED, $newAdjustments['status']);
+        $this->assertNull($newAdjustments['transaction_id']);
+        $this->assertEquals(250000, $newAdjustments['amount']);
+    }
+
+    public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowStatusCheckNoRecord()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(5)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'record_not_found',
+                    ],
+                ]
+            ));
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::CREATED, $newAdjustments['status']);
+        $this->assertNull($newAdjustments['transaction_id']);
+        $this->assertEquals(250000, $newAdjustments['amount']);
+    }
+
+    public function testForPositiveAdjustmentCreationOnLiveModeWhenLedgerReverseShadowPostStatusCheckSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // ledge response
+        $ledgerSuccessResponse = [
+            "body" => [
+                "id"                => "sampleJournlID",
+                "created_at"        => "1623848289",
+                "updated_at"        => "1632368730",
+                "amount"            => "130.000000",
+                "base_amount"       => "130.000000",
+                "currency"          => "INR",
+                "tenant"            => "X",
+                "transactor_id"     => "adj_SamplePayoutId4",
+                "transactor_event"  => "positive_adjustment_processed",
+                "transaction_date"  => "1611132045",
+                "ledger_entry" => [
+                    [
+                        "id"          => "HNjsypHNXdSiei",
+                        "created_at"  => "1623848289",
+                        "updated_at"  => "1623848289",
+                        "merchant_id" => "HN59oOIDACOXt3",
+                        "journal_id"  => "sampleJournlID",
+                        "account_id"  => "GoRNyEuu9Hl0OZ",
+                        "amount"      => "130.000000",
+                        "base_amount" => "130.000000",
+                        "type"        => "debit",
+                        "currency"    => "INR",
+                        "balance"     => "",
+                        'account_entities' => [
+                            'account_type'       => ['payable'],
+                            'fund_account_type'  => ['merchant_va'],
+                        ],
+                    ],
+                    [
+                        "id"          => "HNjsypHPOUlxDR",
+                        "created_at"  => "1623848289",
+                        "updated_at"  => "1623848289",
+                        "merchant_id" => "HN59oOIDACOXt3",
+                        "journal_id"  => "sampleJournlID",
+                        "account_id"  => "HN5AGgmKu0ki13",
+                        "amount"      => "130.000000",
+                        "base_amount" => "130.000000",
+                        "type"        => "credit",
+                        "currency"    => "INR",
+                        "balance"     => ""
+                    ]
+                ]
+            ]
+        ];
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(5)
+            ->andReturnUsing(
+                function () use($ledgerSuccessResponse) {
+                    static $counter = 0;
+                    switch ($counter++) {
+                        // 4th call is made from async job, which should succeed for this test
+                        case 4:
+                            return $ledgerSuccessResponse;
+                            break;
+                        default:
+                            // 0th-3rd call is made while sync retries, which should fail for this test
+                            throw new \Requests_Exception(
+                                'Unexpected response code received from Ledger service.',
+                                null,
+                                [
+                                    'status_code'   => 500,
+                                    'response_body' => [
+                                        'code' => 'invalid_argument',
+                                        'msg' => 'unknown',
+                                    ],
+                                ]
+                            );
+                            break;
+                    }
+                }
+            );
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'record_not_found',
+                    ],
+                ]
+            ));
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForPositiveAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+        $newAdjustmentsTxn = $this->getDbLastEntity('transaction', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
+        $this->assertEquals('sampleJournlID', $newAdjustments['transaction_id']);
+        $this->assertEquals(250000, $newAdjustments['amount']);
+
+        // assert api transaction
+        $this->assertEquals('sampleJournlID', $newAdjustmentsTxn['id']);
+        $this->assertEquals($newAdjustments['id'], $newAdjustmentsTxn['entity_id']);
+        $this->assertEquals(250000, $newAdjustmentsTxn['amount']);
+        $this->assertEquals(250000, $newAdjustmentsTxn['credit']);
+    }
+
     public function testLedgerSnsForNegativeAdjustmentCreationOnLiveMode()
     {
         // No Ledger SNS call because the feature isn't enabled
@@ -1329,6 +1762,290 @@ class AdjustmentTest extends TestCase
         $this->assertNull($newAdjustments['transaction_id']);
 
         Queue::assertPushed(Transactions::class);
+    }
+
+    public function testForNegativeAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncFailureAndAsyncSuccess()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andReturn([
+                "body" => [
+                    "id"                => "sampleJournlID",
+                    "created_at"        => "1623848289",
+                    "updated_at"        => "1632368730",
+                    "amount"            => "130.000000",
+                    "base_amount"       => "130.000000",
+                    "currency"          => "INR",
+                    "tenant"            => "X",
+                    "transactor_id"     => "adj_IwHCToefEWVgph",
+                    "transactor_event"  => "negative_adjustment_processed",
+                    "transaction_date"  => "1611132045",
+                    "ledger_entry" => [
+                        [
+                            "id"          => "HNjsypHNXdSiei",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "sampleJournlID",
+                            "account_id"  => "GoRNyEuu9Hl0OZ",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "credit",
+                            "currency"    => "INR",
+                            "balance"     => ""
+                        ],
+                        [
+                            "id"          => "HNjsypHPOUlxDR",
+                            "created_at"  => "1623848289",
+                            "updated_at"  => "1623848289",
+                            "merchant_id" => "HN59oOIDACOXt3",
+                            "journal_id"  => "sampleJournlID",
+                            "account_id"  => "HN5AGgmKu0ki13",
+                            "amount"      => "130.000000",
+                            "base_amount" => "130.000000",
+                            "type"        => "debit",
+                            "currency"    => "INR",
+                            "balance"     => "",
+                            'account_entities' => [
+                                'account_type'       => ['payable'],
+                                'fund_account_type'  => ['merchant_va'],
+                            ],
+                        ]
+                    ]
+                ]
+            ]);
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForNegativeAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+        $newAdjustmentsTxn = $this->getDbLastEntity('transaction', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::PROCESSED, $newAdjustments['status']);
+        $this->assertEquals('sampleJournlID', $newAdjustments['transaction_id']);
+        $this->assertEquals(-250000, $newAdjustments['amount']);
+
+        // assert api transaction
+        $this->assertEquals('sampleJournlID', $newAdjustmentsTxn['id']);
+        $this->assertEquals($newAdjustments['id'], $newAdjustmentsTxn['entity_id']);
+        $this->assertEquals(250000, $newAdjustmentsTxn['amount']);
+        $this->assertEquals(250000, $newAdjustmentsTxn['debit']);
+    }
+
+    public function testForNegativeAdjustmentCreationOnLiveModeWhenLedgerReverseShadowSyncAsyncFailure()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForNegativeAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::CREATED, $newAdjustments['status']);
+        $this->assertNull($newAdjustments['transaction_id']);
+        $this->assertEquals(-250000, $newAdjustments['amount']);
+    }
+
+    public function testForNegativeAdjustmentCreationOnLiveModeWhenLedgerReverseShadowStatusCheckNoRecord()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        // forcing async retry after all sync retry failures
+        $mockLedger->shouldReceive('createJournal')
+            ->times(4)
+            ->andThrow(new \Requests_Exception(
+                'Unexpected response code received from Ledger service.',
+                null,
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'unknown',
+                    ],
+                ]
+            ));
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+            ->times(1)
+            ->andThrow(new \RZP\Exception\RuntimeException(
+                'Unexpected response code received from Ledger service.',
+                [
+                    'status_code'   => 500,
+                    'response_body' => [
+                        'code' => 'invalid_argument',
+                        'msg' => 'record_not_found',
+                    ],
+                ]
+            ));
+
+        $countOfAdjustmentsBeforeTest = count($this->getDbEntities('adjustment', [], 'live'));
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'account_number' => 'ABC123PQR',
+                'merchant_id'    => '10000000000000',
+                'balance'        => 280000
+            ]);
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        // Need to create a Banking Account since we send this data to ledger in ledger calls
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balance['id'],
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->adminAuth('live');
+
+        $this->testData[__FUNCTION__] = $this->testData['testLedgerSnsForNegativeAdjustmentCreationOnLiveMode'];
+
+        $this->startTest();
+
+        $adjustmentsCreated = $this->getDbEntities('adjustment', [], 'live');
+
+        $countOfAdjustmentsAfterTest = count($adjustmentsCreated);
+
+        $this->assertEquals($countOfAdjustmentsAfterTest, $countOfAdjustmentsBeforeTest+1);
+
+        $newAdjustments = $this->getDbLastEntity('adjustment', 'live');
+
+        // assert api adjustment
+        $this->assertEquals(Status::FAILED, $newAdjustments['status']);
+        $this->assertNull($newAdjustments['transaction_id']);
+        $this->assertEquals(-250000, $newAdjustments['amount']);
     }
 
     public function testAddAdjustmentOnCapitalBalance()
