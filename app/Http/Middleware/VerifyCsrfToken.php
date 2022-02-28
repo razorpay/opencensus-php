@@ -77,7 +77,7 @@ class VerifyCsrfToken extends BaseVerifier
                 return $next($request);
             }
             else
-            {   
+            {
                 if (
                     $this->isReading($request) or
                     $this->runningUnitTests() or
@@ -90,7 +90,7 @@ class VerifyCsrfToken extends BaseVerifier
                 else
                 {
                     return Response::json(
-                        $this->getErrorResponseForGraphQlClients());
+                        $this->getErrorResponseForGraphQlClients($request));
                 }
             }
         }
@@ -111,14 +111,17 @@ class VerifyCsrfToken extends BaseVerifier
         }
     }
 
-    private function getErrorResponseForGraphQlClients()
+    private function getErrorResponseForGraphQlClients($request)
     {
         $baseAppUrl = config('app.url');
-        
+
         app('trace')->info(TraceCode::UNAUTHORISED_BACKTRACE, [
-            'backtrace' => debug_backtrace(10),
+            'backtrace'                  => debug_backtrace(10),
+            'token_match_cookie_result'  => $this->tokensMatchCookie($request),
+            'tokens_match_result'        => $this->tokensMatch($request),
+            'hash_equals_result'         => $this->logTokensMatch($request),
         ]);
-        
+
         return [
             'errors'    => [
                 [
@@ -184,4 +187,33 @@ class VerifyCsrfToken extends BaseVerifier
 
         return false;
     }
+
+    private function logTokensMatch($request)
+    {
+        $sessionToken = $request->session()->token();
+
+        $token = $request->input('_token') ?: $request->header('X-CSRF-TOKEN');
+
+        if (! $token && $header = $request->header('X-XSRF-TOKEN')) {
+            $token = $this->encrypter->decrypt($header);
+        }
+
+        if (! is_string($sessionToken) || ! is_string($token)) {
+            return false;
+        }
+
+        app('trace')->info(TraceCode::TOKEN_MATCH_TRACE, [
+            'session_token'      => md5($sessionToken ?? ''),
+            '_token'             => md5($request->input('_token') ?? ''),
+            'x_csrf_token'       => md5($request->header('X-CSRF-TOKEN') ?? ''),
+            'x_xsrf_token'       => md5($request->header('X-XSRF-TOKEN') ?? ''),
+            'token'              => md5($token ?? ''),
+            'hash_equals_result' => hash_equals($sessionToken, $token),
+            '_request_identifier'=> $request->input('_request_identifier') ?? '',
+            'xsrf_token_cookie'  => md5($request->cookie('XSRF-TOKEN') ?? '')
+        ]);
+
+        return hash_equals($sessionToken, $token);
+    }
+
 }

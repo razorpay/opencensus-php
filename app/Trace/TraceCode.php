@@ -102,6 +102,8 @@ class TraceCode
 
     const MISMATCHED_VERIFY_TOKEN                   = 'MISMATCHED_VERIFY_TOKEN';
 
+    const TOKEN_MATCH_TRACE                         = 'TOKEN_MATCH_TRACE';
+
     const UNAUTHORISED_BACKTRACE                    = 'UNAUTHORISED_BACKTRACE';
 
     const DEBUG_MERCHANT_TRUTHY_VALUE               = 'DEBUG_MERCHANT_TRUTHY_VALUE';
