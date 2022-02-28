@@ -20,7 +20,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import { getMobileOperatingSystem } from 'common/utils/rzp-utils';
-import { getItem, setItem } from 'common/utils/localStorage';
+import { getItem } from 'common/utils/localStorage';
 import { DocLink } from 'merchant/components/DocsLink';
 import OnBoarding, {
   getIsPaymentLinksEnabled,
@@ -162,40 +162,6 @@ class PaymentLinksContainer extends React.Component {
       <React.Fragment>
         <div className="banner-container">
           <DashboardBanner />
-          <ShowWhen
-            additionalCondition={(user) =>
-              user.isPartOfAiSensyBannerExperiment &&
-              !getItem(`payment-links-on-whatsapp-banner-${user.current}`)
-            }
-          >
-            <AnnouncementBanner
-              title="Payment links on Whatsapp"
-              theme="primary"
-              card_id="payment-links-on-whatsapp-banner"
-              canBeClosed={true}
-              onClose={() => {
-                setItem(`payment-links-on-whatsapp-banner-${user.current}`, 1);
-              }}
-            >
-              Now automatically send payment links from your Whatsapp handle with our partner app -
-              AiSensy{' '}
-              <a
-                href="https://m.aisensy.com/razorpay-whatsapp-integration/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="Button--primary Button scheduled-btn-act btn-border"
-              >
-                Get Started
-              </a>{' '}
-              <a
-                href="https://www.youtube.com/watch?v=cuNLNF6Pi8I"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Watch video
-              </a>
-            </AnnouncementBanner>
-          </ShowWhen>
           <ShowWhen additionalCondition={(user) => user.missedOrderPLBanner}>
             <AnnouncementBanner
               title="Introducing Retry Links"

@@ -326,9 +326,6 @@ export default class User {
   get isMagicCheckoutEnabled() {
     return this.isFeatureEnabled('one_cc_merchant_dashboard') && this.isOrgRZP;
   }
-  get isSuperCheckoutEnabledFeatureFLag() {
-    return this.isFeatureEnabled('one_cc_merchant_dashboard');
-  }
 
   get isBulkAddressUploadEnabled() {
     return this.getExpStatus('magic_bulk_address_live');
@@ -600,10 +597,6 @@ export default class User {
 
   get isNitroFormFillEnabled() {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
-  }
-
-  get isPartOfAiSensyBannerExperiment() {
-    return getSplitzExperimentVariant('ai_sensy_banner')?.variables?.result === 'on';
   }
 
   get isPartOfZapierIntegrationExperiment() {

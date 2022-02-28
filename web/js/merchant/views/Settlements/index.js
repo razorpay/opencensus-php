@@ -7,7 +7,6 @@ import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import SettlementsListContainer from './Settlements/List';
 import InstantSettlements from './InstantSettlements/InstantSettlements';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import BaseDashboardBanner from '../../../common/ui/DashboardBanner/BaseDashboardBanner';
 import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import UltraCampaignBanner from 'merchant/components/Announcements/UltraCampaignBanner';
@@ -33,7 +32,6 @@ const Settlements = ({
   user,
   merchantBalanceConfigs,
   current_balance,
-  history = {},
   location,
   fetchCurrentBalance,
   fetchSettlementConfig,
@@ -85,10 +83,6 @@ const Settlements = ({
     // opens scheduled modal if pathname is /settlements/enable_automatic
     openEsAutomaticModalIfRoute();
   }, []);
-
-  const cta1ClickHandler = () => {
-    history?.push('/magic');
-  };
 
   const handleSettlementUnlockStatusClick = () => {
     const diff = getNoOfDaysAfterEsPartialEnable();
@@ -150,16 +144,6 @@ const Settlements = ({
 
         <CashAdvanceOrNitroBanner productName="Settlements" />
 
-        <ShowWhen additionalCondition={() => user.isSuperCheckoutEnabledFeatureFLag}>
-          <BaseDashboardBanner
-            title="Introducing Magic Checkout"
-            bannerText="Unlock Growth for your E-commerce business. Get 100% RTO protection and upto 20% higher order conversion rates."
-            bannerId="SuperCheckout-November-BetaLaunch"
-            cta1Text="Get Early Access"
-            productName="Settlements"
-            cta1ClickHandler={cta1ClickHandler}
-          />
-        </ShowWhen>
         <DashboardBanner />
         <ShowWhen additionalCondition={(usr) => usr.isUltraCampaignBannerEnabled}>
           <UltraCampaignBanner productName="Settlements" />
