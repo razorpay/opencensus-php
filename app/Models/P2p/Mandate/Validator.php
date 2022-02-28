@@ -35,6 +35,7 @@ class Validator extends Base\Validator
             Entity::AMOUNT_RULE                     => 'string|' . $amountRules,
             Entity::PAYER_ID                        => 'string',
             Entity::PAYEE_ID                        => 'string',
+            Entity::BANK_ACCOUNT_ID                 => 'string',
             Entity::TYPE                            => 'string',
             Entity::FLOW                            => 'string',
             Entity::MODE                            => 'string|' . $modes,
@@ -55,6 +56,8 @@ class Validator extends Base\Validator
             Entity::ERROR_DESCRIPTION               => 'string',
             Entity::COMPLETED_AT                    => 'epoch|',
             Entity::EXPIRE_AT                       => 'epoch|' . $expireAt,
+            Entity::REVOKED_AT                      => 'epoch',
+            Entity::CYCLES_COMPLETED                => 'integer',
         ];
 
         return $rules;
@@ -108,5 +111,34 @@ class Validator extends Base\Validator
             'max:' . Carbon::now()->addDays(45)->getTimestamp();
 
         return $expireAtRule;
+    }
+
+    public function makeCreateRules()
+    {
+        return $this->makeRules([
+            Entity::TYPE                         => 'required',
+            Entity::FLOW                         => 'required',
+            Entity::MODE                         => 'required',
+            Entity::PAYER_ID                     => 'required',
+            Entity::PAYEE_ID                     => 'required',
+            Entity::BANK_ACCOUNT_ID              => 'required',
+            Entity::AMOUNT                       => 'required',
+            Entity::AMOUNT_RULE                  => 'required',
+            Entity::CURRENCY                     => 'required',
+            Entity::RECURRING_RULE               => 'sometimes',
+            Entity::RECURRING_TYPE               => 'sometimes',
+            Entity::RECURRING_VALUE              => 'sometimes',
+            Entity::DESCRIPTION                  => 'sometimes',
+            Entity::GATEWAY                      => 'sometimes',
+            Entity::STATUS                       => 'required',
+            Entity::INTERNAL_STATUS              => 'required',
+            Entity::UMN                          => 'sometimes',
+            Entity::EXPIRE_AT                    => 'sometimes',
+            Entity::START_DATE                   => 'sometimes',
+            Entity::END_DATE                     => 'sometimes',
+            Entity::GATEWAY_DATA                 => 'sometimes',
+            Entity::ACTION                       => 'sometimes',
+            Entity::CYCLES_COMPLETED             => 'required',
+        ]);
     }
 }

@@ -2,10 +2,10 @@
 
 namespace RZP\Models\P2p\Mandate;
 
-use Exception;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\P2p\BankAccount;
 use RZP\Exception\LogicException;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
@@ -16,6 +16,8 @@ use RZP\Exception\BadRequestException;
  */
 class Core extends Base\Core
 {
+    private $pspxMandate;
+
     public function __construct()
     {
         parent::__construct();
@@ -23,9 +25,31 @@ class Core extends Base\Core
         $this->pspxMandate = $this->app['pspx_mandate'];
     }
 
-    public function create(array $input): Base\Entity
+    /**
+     * @param $mandateInput
+     * @param $upiInput
+     *
+     * @return Entity
+     * @throws RuntimeException
+     */
+    public function create($mandateInput, $upiInput): Entity
     {
-        throw new RuntimeException('Not implemented, Core Implementation is on the way');
+        $this->build($mandateInput);
+
+        (new UpiMandate\Core)->build($upiInput);
+
+        $pspxInput = [
+            Entity::MANDATE => $mandateInput,
+            Entity::UPI     => $upiInput,
+        ];
+
+        $mandateArray = $this->pspxMandate->create($this->context(), $pspxInput);
+
+        $mandate = new Entity($mandateArray);
+
+        $this->fillProperties($mandate, $mandateArray);
+
+        return $mandate;
     }
 
     /**
@@ -64,29 +88,6 @@ class Core extends Base\Core
         }
 
         return $updatedMandate;
-    }
-
-    /**
-     * Set the non fillable properties to mandate entity from pspx response array
-     *
-     * @param Entity $mandate
-     * @param array  $mandateArray
-     */
-    private function fillProperties(Entity $mandate, array $mandateArray)
-    {
-        $mandate->setId($mandateArray[Entity::ID]);
-
-        $mandate->setCreatedAt($mandateArray[Entity::CREATED_AT]);
-
-        $core  = new Vpa\Core;
-        $payer = ($core)->find($mandateArray[Entity::PAYER_ID], false);
-        $payee = ($core)->find($mandateArray[Entity::PAYEE_ID], false);
-
-        $customer = $this->context()->getDevice()->customer;
-
-        $mandate->setPayee($payee);
-        $mandate->setPayer($payer);
-        $mandate->setCustomer($customer);
     }
 
     /**
@@ -172,5 +173,37 @@ class Core extends Base\Core
         $output[PublicCollection::ITEMS] = $collection->toArray();
 
         return $collection;
+    }
+
+    /**
+     * Set the non fillable properties to mandate entity from pspx response array
+     *
+     * @param Entity $mandate
+     * @param array $mandateArray
+     */
+    private function fillProperties(Entity $mandate, array $mandateArray)
+    {
+        $mandate->setId($mandateArray[Entity::ID]);
+
+        $mandate->setCreatedAt($mandateArray[Entity::CREATED_AT]);
+
+        $vpaCore = new Vpa\Core;
+        $payer = ($vpaCore)->find($mandateArray[Entity::PAYER_ID], false);
+        $payee = ($vpaCore)->find($mandateArray[Entity::PAYEE_ID], false);
+
+        $baCore = new BankAccount\Core;
+        $bankAccount = ($baCore)->find($mandateArray[Entity::BANK_ACCOUNT_ID], false);
+
+        $customer = $this->context()->getDevice()->customer;
+
+        $upi = new UpiMandate\Entity($mandateArray[Entity::UPI]);
+
+        $upi->associateMandate($mandate);
+
+        $mandate->setUpi($upi);
+        $mandate->setPayee($payee);
+        $mandate->setPayer($payer);
+        $mandate->setBankAccount($bankAccount);
+        $mandate->setCustomer($customer);
     }
 }

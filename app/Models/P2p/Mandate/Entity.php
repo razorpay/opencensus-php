@@ -5,12 +5,15 @@ namespace RZP\Models\P2p\Mandate;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\Customer;
+use RZP\Models\P2p\BankAccount;
 
 /**
  * Class Entity
  *
  * @property Vpa\Entity $payer
  * @property Vpa\Entity $payee
+ * @property UpiMandate\Entity $upi
+ *
  * @package RZP\Models\P2p\Mandate
  */
 class Entity extends Base\Entity
@@ -27,8 +30,10 @@ class Entity extends Base\Entity
     const HANDLE              = 'handle';
     const AMOUNT              = 'amount';
     const AMOUNT_RULE         = 'amount_rule';
+    const CURRENCY            = 'currency';
     const PAYER_ID            = 'payer_id';
     const PAYEE_ID            = 'payee_id';
+    const BANK_ACCOUNT_ID     = 'bank_account_id';
     const TYPE                = 'type';
     const FLOW                = 'flow';
     const MODE                = 'mode';
@@ -48,6 +53,8 @@ class Entity extends Base\Entity
     const ERROR_DESCRIPTION   = 'error_description';
     const COMPLETED_AT        = 'completed_at';
     const EXPIRE_AT           = 'expire_at';
+    const REVOKED_AT          = 'revoked_at';
+    const CYCLES_COMPLETED    = 'cycles_completed';
 
     /************** Input  Properties ************/
 
@@ -55,6 +62,7 @@ class Entity extends Base\Entity
     const CUSTOMER           = 'customer';
     const PAYER              = 'payer';
     const PAYEE              = 'payee';
+    const BANK_ACCOUNT       = 'bank_account';
     const UPI                = 'upi';
     const IS_PENDING_COLLECT = 'is_pending_collect';
 
@@ -79,8 +87,14 @@ class Entity extends Base\Entity
         Entity::FLOW,
         Entity::MODE,
         Entity::AMOUNT,
+        Entity::AMOUNT_RULE,
+        Entity::CURRENCY,
         Entity::PAYER_ID,
         Entity::PAYEE_ID,
+        Entity::BANK_ACCOUNT_ID,
+        Entity::RECURRING_TYPE,
+        Entity::RECURRING_VALUE,
+        Entity::RECURRING_RULE,
         Entity::EXPIRE_AT,
         Entity::ACTION,
         Entity::UMN,
@@ -93,6 +107,8 @@ class Entity extends Base\Entity
         Entity::GATEWAY_DATA,
         Entity::IS_PENDING_COLLECT,
         Entity::COMPLETED_AT,
+        Entity::REVOKED_AT,
+        Entity::CYCLES_COMPLETED,
     ];
 
     protected $visible = [
@@ -102,9 +118,11 @@ class Entity extends Base\Entity
         Entity::CUSTOMER_ID,
         Entity::AMOUNT,
         Entity::AMOUNT_RULE,
+        Entity::CURRENCY,
         Entity::GATEWAY,
         Entity::PAYER_ID,
         Entity::PAYEE_ID,
+        Entity::BANK_ACCOUNT_ID,
         Entity::CUSTOMER,
         Entity::PAYER,
         Entity::PAYEE,
@@ -129,6 +147,8 @@ class Entity extends Base\Entity
         Entity::INTERNAL_ERROR_CODE,
         Entity::COMPLETED_AT,
         Entity::EXPIRE_AT,
+        Entity::REVOKED_AT,
+        Entity::CYCLES_COMPLETED,
     ];
 
     protected $public = [
@@ -136,6 +156,7 @@ class Entity extends Base\Entity
         Entity::ID,
         Entity::AMOUNT,
         Entity::AMOUNT_RULE,
+        Entity::CURRENCY,
         Entity::PAYER,
         Entity::PAYEE,
         Entity::TYPE,
@@ -153,6 +174,9 @@ class Entity extends Base\Entity
         Entity::IS_PENDING_COLLECT,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
+        Entity::UMN,
+        Entity::REVOKED_AT,
+        Entity::CYCLES_COMPLETED,
     ];
 
     /***************** SETTERS *****************/
@@ -160,7 +184,7 @@ class Entity extends Base\Entity
     /**
      * @param array $array
      */
-    public function setPublicEntityAttribute(array &$array)
+    public function setPublicEntityAttribute(array & $array)
     {
         $array[self::ENTITY] = 'customer.mandate';
     }
@@ -186,6 +210,16 @@ class Entity extends Base\Entity
     }
 
     /**
+     * @param BankAccount\Entity $bankAccount
+     *
+     * @return mixed|Entity
+     */
+    public function setBankAccount(BankAccount\Entity $bankAccount)
+    {
+        return $this->setAttribute(self::BANK_ACCOUNT, $bankAccount);
+    }
+
+    /**
      * @param Customer\Entity $customer
      *
      * @return mixed|Entity
@@ -195,11 +229,31 @@ class Entity extends Base\Entity
         return $this->setAttribute(self::CUSTOMER, $customer);
     }
 
+    /**
+     * @param UpiMandate\Entity $upi
+     *
+     * @return mixed|Entity
+     */
+    public function setUpi(UpiMandate\Entity $upi)
+    {
+        return $this->setAttribute(self::UPI, $upi);
+    }
+
     /***************** GETTERS *****************/
+
+    /**
+     * @return mixed
+     */
+    public function getCustomer()
+    {
+        return $this->getAttribute(self::CUSTOMER);
+    }
 
     public function toArrayPublic()
     {
         $array = parent::toArrayPublic();
+
+        $array[self::UPI] = $this->upi->toArrayPublic();
 
         if (isset($array[self::PAYER]))
         {
@@ -212,13 +266,5 @@ class Entity extends Base\Entity
         }
 
         return $array;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getCustomer()
-    {
-        return $this->getAttribute(self::CUSTOMER);
     }
 }

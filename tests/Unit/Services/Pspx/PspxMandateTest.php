@@ -38,6 +38,7 @@ class PspxMandateTest extends TestCase
         Entity::AMOUNT_RULE                   => 'EXACT',
         Entity::PAYER_ID                      => 'CustomerVpa001',
         Entity::PAYEE_ID                      => 'CustomerVpa002',
+        Entity::BANK_ACCOUNT_ID               => 'ALC01bankAc001',
         Entity::TYPE                          => 'collect',
         Entity::FLOW                          => 'debit',
         Entity::MODE                          => 'default',
@@ -53,6 +54,8 @@ class PspxMandateTest extends TestCase
         Entity::END_DATE                      => 0,
         Entity::ACTION                        => 'incomingMandate',
         Entity::GATEWAY_DATA                  => [],
+        Entity::REVOKED_AT                    => null,
+        Entity::CYCLES_COMPLETED              => 0,
         Entity::UPI                           => []
     );
 
@@ -67,22 +70,30 @@ class PspxMandateTest extends TestCase
     {
         $this->setContext();
 
-        $input = array(
-            Entity::AMOUNT              => 100,
-            Entity::AMOUNT_RULE         => 'EXACT',
-            Entity::RECURRING_VALUE     => 3,
-            Entity::RECURRING_TYPE      => 'MONTHLY',
-            Entity::RECURRING_RULE      => 'BEFORE',
-            Entity::START_DATE          => Carbon::now()->getTimestamp(),
-            Entity::END_DATE            => Carbon::now()->addYear()->getTimestamp(),
-        );
+        $input = [
+            Entity::MANDATE => [
+                Entity::AMOUNT              => 100,
+                Entity::AMOUNT_RULE         => 'EXACT',
+                Entity::RECURRING_VALUE     => 3,
+                Entity::RECURRING_TYPE      => 'MONTHLY',
+                Entity::RECURRING_RULE      => 'BEFORE',
+                Entity::START_DATE          => Carbon::now()->getTimestamp(),
+                Entity::END_DATE            => Carbon::now()->addYear()->getTimestamp(),
+            ],
+            Entity::UPI => [
+                UpiMandateEntity::NETWORK_TRANSACTION_ID => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
+                UpiMandateEntity::GATEWAY_TRANSACTION_ID => 'SeYMXtJ6YSym4A6RgRemZd03IXxcbfbKmwK',
+                UpiMandateEntity::GATEWAY_REFERENCE_ID   => '911416196085',
+            ],
+        ];
 
-        $expectedResult = array_merge($this->entitySkeleton, $input);
+        $expectedResult = array_merge($this->entitySkeleton, $input[Entity::MANDATE]);
+        $expectedResult[Entity::UPI] = array_merge($this->upiEntitySkeleton, $input[Entity::UPI]);
 
         // Because these fields are taken from context
         $expectedResult[Entity::CUSTOMER_ID] = $this->context->getDevice()->getCustomerId();
         $expectedResult[Entity::DEVICE_ID]   = $this->context->getDevice()->getId();
-        $expectedResult[Entity::MERCHANT_ID]   = $this->context->getClient()->getId();
+        $expectedResult[Entity::MERCHANT_ID] = $this->context->getClient()->getId();
 
         $response = $this->pspxMandate->create($this->context, $input);
 
@@ -94,11 +105,8 @@ class PspxMandateTest extends TestCase
         $this->assertMandateData($response);
 
         unset($response[Entity::ID]);
-
         unset($response[Entity::CREATED_AT]);
-
         unset($response[Entity::UPDATED_AT]);
-
         unset($response[Entity::DELETED_AT]);
 
         $this->assertSame($expectedResult, $response);
@@ -112,7 +120,7 @@ class PspxMandateTest extends TestCase
 
         $response = $this->pspxMandate->fetch($this->context , array_only($mandate, Entity::ID));
 
-        $this->assertMandateData($response);
+        $this->assertSame($mandate, $response);
     }
 
     public function testFetchAll()
@@ -120,7 +128,6 @@ class PspxMandateTest extends TestCase
         $this->setContext();
 
         $this->pspxMandate->create($this->context, []);
-
         $this->pspxMandate->create($this->context, []);
 
         $response = $this->pspxMandate->fetchAll($this->context);
@@ -142,17 +149,19 @@ class PspxMandateTest extends TestCase
 
         $mandate[Entity::RECURRING_TYPE] = RecurringType::BIMONTHLY;
 
-        $response = $this->pspxMandate->update($this->context, $mandate);
+        $update = [
+            Entity::ID              => $mandate[Entity::ID],
+            Entity::RECURRING_TYPE  => RecurringType::BIMONTHLY,
+        ];
+
+        $response = $this->pspxMandate->update($this->context, $update);
 
         $this->assertIsArray($response);
 
-        foreach ($response as $key=>$value)
-        {
-            if($mandate[Entity::ID] == $response[$key][Entity::MANDATE][Entity::ID])
-            {
-                $this->assertSame($mandate[Entity::AMOUNT_RULE], $response[$key][Entity::MANDATE][Entity::AMOUNT_RULE]);
-            }
-        }
+        $this->assertSame($update[Entity::RECURRING_TYPE], $response[Entity::RECURRING_TYPE]);
+
+        $expectedMandate = array_merge($mandate, $update);
+        $this->assertSame($expectedMandate, $response);
     }
 
     public function testDelete()
@@ -201,18 +210,13 @@ class PspxMandateTest extends TestCase
         // Assert response has id key, and it is not empty
         $this->assertArrayHasKey(Entity::ID, $response);
         $this->assertTrue(empty($response[Entity::ID]) === false);
-        unset($response[Entity::ID]);
 
         // Assert response has created_at key and it's value is an integer
         $this->assertArrayHasKey(Entity::CREATED_AT, $response);
         $this->assertIsInt($response[Entity::CREATED_AT]);
-        unset($response[Entity::CREATED_AT]);
 
         // Assert response has updated_at key and it's value is an integer
         $this->assertArrayHasKey(Entity::UPDATED_AT, $response);
         $this->assertIsInt($response[Entity::UPDATED_AT]);
-        unset($response[Entity::UPDATED_AT]);
-
-        unset($response[Entity::DELETED_AT]);
     }
 }

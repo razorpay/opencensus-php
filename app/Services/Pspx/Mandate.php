@@ -117,8 +117,7 @@ class Mandate extends Service
      */
     private function getPayloadArray(Context $context, array $input): array
     {
-        return [
-            Entity::MANDATE => $input,
+        return array_merge($input, [
             'context' => [
                 'type'              => $context->getContextType(),
                 'client'            => $context->getClient()->toArray(),
@@ -126,6 +125,6 @@ class Mandate extends Service
                 Context::MODE       => $context->getMode(),
                 Context::DEVICE     => $context->getDevice()->toArray(),
             ],
-        ];
+        ]);
     }
 }

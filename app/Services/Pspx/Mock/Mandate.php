@@ -38,6 +38,7 @@ class Mandate extends BaseMandate
         MandateEntity::AMOUNT_RULE                   => 'EXACT',
         MandateEntity::PAYER_ID                      => 'CustomerVpa001',
         MandateEntity::PAYEE_ID                      => 'CustomerVpa002',
+        MandateEntity::BANK_ACCOUNT_ID               => 'ALC01bankAc001',
         MandateEntity::TYPE                          => 'collect',
         MandateEntity::FLOW                          => 'debit',
         MandateEntity::MODE                          => 'default',
@@ -53,6 +54,8 @@ class Mandate extends BaseMandate
         MandateEntity::END_DATE                      => 0,
         MandateEntity::ACTION                        => 'incomingMandate',
         MandateEntity::GATEWAY_DATA                  => [],
+        MandateEntity::CYCLES_COMPLETED              => 0,
+        MandateEntity::REVOKED_AT                    => null,
         MandateEntity::UPI                           => []
     );
 
@@ -131,12 +134,14 @@ class Mandate extends BaseMandate
     {
         $mandateInput = isset($input[MandateEntity::MANDATE]) ? $input[MandateEntity::MANDATE] : [];
         $contextInput = isset($input[MandateEntity::CONTEXT]) ? $input[MandateEntity::CONTEXT] : [];
+        $upiInput     = isset($input[MandateEntity::UPI]) ? $input[MandateEntity::UPI] : [];
 
         $mandate = array_merge($mandateInput, [
             MandateEntity::ID              => MandateEntity::generateUniqueId(),
             MandateEntity::CREATED_AT      => Carbon::now()->getTimestamp(),
             MandateEntity::UPDATED_AT      => Carbon::now()->getTimestamp(),
             MandateEntity::DELETED_AT      => null,
+            MandateEntity::UPI             => array_merge($this->upiEntitySkeleton, $upiInput),
         ]);
 
         if (empty($contextInput) === false)
@@ -159,15 +164,15 @@ class Mandate extends BaseMandate
      */
     private function mockFetchMandate(array $input): array
     {
-        $container = $this->getContainer();
+        $mandates = $this->getContainer();
 
-        if (count($container) > 0)
+        if (count($mandates) > 0)
         {
-            foreach ($container as $key => $value)
+            foreach ($mandates as $mandate)
             {
-                if($input[MandateEntity::MANDATE][MandateEntity::ID] === $container[$key][MandateEntity::ID])
+                if($input[MandateEntity::ID] === $mandate[MandateEntity::ID])
                 {
-                    return $container[$key];
+                    return $mandate;
                 }
             }
         }
@@ -180,7 +185,7 @@ class Mandate extends BaseMandate
      *
      * @return array
      */
-    private function mockFetchAllMandate(): array
+    private function mockFetchAllMandate($payload): array
     {
         $container = $this->getContainer();
 
@@ -201,21 +206,25 @@ class Mandate extends BaseMandate
      */
     private function mockUpdateMandate(array $input): array
     {
-        $container = $this->getContainer();
+        $mandates = $this->getContainer();
 
-        foreach ($container as $key => $value)
+        unset($input[MandateEntity::CONTEXT]);
+
+        foreach ($mandates as $index => $mandate)
         {
-            if($input[MandateEntity::MANDATE][MandateEntity::ID] === $container[$key][MandateEntity::ID])
+            if ($mandate[MandateEntity::ID] === $input[MandateEntity::ID])
             {
-                unset($container[$key]);
+                $updatedMandate = array_merge($mandate, $input);
 
-                array_push($container, $input);
+                $mandates[$index] = $updatedMandate;
 
-                \Cache::put(self::CACHE_KEY, $container);
+                \Cache::put(self::CACHE_KEY, $mandates);
+
+                return $this->getContainer()[$index];
             }
         }
 
-        return $this->getContainer();
+        return [];
     }
 
     /**
@@ -227,22 +236,22 @@ class Mandate extends BaseMandate
      */
     private function mockDeleteMandate(array $input)
     {
-        $container = $this->getContainer();
+        $mandates = $this->getContainer();
 
-        if (empty($container) === true)
+        if (empty($mandates) === true)
         {
             return [];
         }
 
-        foreach ($container as $key => $value)
+        foreach ($mandates as $index => $mandate)
         {
-            if($input[MandateEntity::MANDATE][MandateEntity::ID] === $container[$key][MandateEntity::ID])
+            if($input[MandateEntity::ID] === $mandate[MandateEntity::ID])
             {
-                $deletedRecord = $container[$key];
+                $deletedRecord = $mandate;
 
-                unset($container[$key]);
+                unset($mandates[$index]);
 
-                \Cache::put(self::CACHE_KEY, $container);
+                \Cache::put(self::CACHE_KEY, $mandates);
             }
         }
 

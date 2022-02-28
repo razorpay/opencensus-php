@@ -3,13 +3,31 @@
 namespace RZP\Models\P2p\Mandate;
 
 use RZP\Models\P2p\Base;
-use RZP\Models\P2p\Mandate\Status;
 
 /**
  *   * @property Core $core
  */
 class Processor extends Base\Processor
 {
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function incomingCollect(array $input): array
+    {
+        $this->initialize(Action::INCOMING_COLLECT, $input);
+
+        $mandateInput = $this->input->bag(Entity::MANDATE);
+        $upiInput     = $this->input->bag(Entity::UPI);
+
+        new Properties($this->context(), $this->action, $mandateInput);
+
+        $mandate = $this->core->create($mandateInput->toArray(), $upiInput->toArray());
+
+        return $mandate->toArrayPublic();
+    }
+
     public function initiateAuthorize(array $input): array
     {
         $this->initialize(Action::INITIATE_AUTHORIZE, $input);

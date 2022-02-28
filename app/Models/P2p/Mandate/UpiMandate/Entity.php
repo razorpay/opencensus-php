@@ -3,6 +3,7 @@
 namespace RZP\Models\P2p\Mandate\UpiMandate;
 
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Mandate;
 
 /**
  * Class Entity for upi mandates
@@ -122,4 +123,16 @@ class Entity extends Base\Entity
         Entity::PAYER_IFSC_CODE           => 'string',
         Entity::GATEWAY_DATA              => 'array',
     ];
+
+    /***************** RELATIONS *****************/
+
+    public function mandate()
+    {
+        return $this->belongsTo(Mandate\Entity::class);
+    }
+
+    public function associateMandate(Mandate\Entity $entity)
+    {
+        $this->mandate()->associate($entity);
+    }
 }

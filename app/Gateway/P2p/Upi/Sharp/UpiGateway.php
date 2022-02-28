@@ -115,6 +115,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             Mandate\Entity::MODE                    => Mandate\Mode::DEFAULT,
             Mandate\Entity::AMOUNT                  => $content[Fields::AMOUNT],
             Mandate\Entity::AMOUNT_RULE             => $content[Fields::AMOUNT_RULE] ?? 'EXACT',
+            Mandate\Entity::CURRENCY                => 'INR',
             Mandate\Entity::DESCRIPTION             => $content[Fields::TRANSACTION_NOTE] ?? 'no remarks',
             Mandate\Entity::RECURRING_RULE          => $content[Fields::RECUR_TYPE] ?? '',
             Mandate\Entity::RECURRING_TYPE          => $content[Fields::RECUR] ?? '',

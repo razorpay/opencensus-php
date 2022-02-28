@@ -383,6 +383,7 @@ class Entity
     const P2P_UPI_TRANSACTION    = 'p2p_upi_transaction';
     const P2P_CLIENT             = 'p2p_client';
     const P2P_MANDATE            = 'p2p_mandate';
+    const P2P_UPI_MANDATE        = 'p2p_upi_mandate';
 
     // P2P Gateways
     const P2P_UPI_AXIS           = 'p2p_upi_axis';
