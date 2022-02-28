@@ -987,6 +987,16 @@ class EventCode
         'name'  => 'bin.api.initiation'
     ];
 
+    const BIN_HEADLESS_ENABLED = [
+        'group' => 'edit_bin',
+        'name'  => 'bin.headless.enabled'
+    ];
+
+    const BIN_HEADLESS_DISABLED = [
+        'group' => 'edit_bin',
+        'name'  => 'bin.headless.disabled'
+    ];
+
     const ERROR_RESPONSE              = [
         'group' => 'error_response',
         'name'  => 'error.response'

@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Card\IIN\Flow;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -437,6 +438,22 @@ trait HeadlessOtp
                 ]
             );
         }
+
+        $iinEntity = $this->app['repo']->iin->find($iin);
+
+        if ($flow === Payment\AuthType::HEADLESS_OTP)
+        {
+            $this->app['diag']->trackIINEvent(
+                EventCode::BIN_HEADLESS_DISABLED,
+                $iinEntity,
+                null,
+                [
+                    'iin' => $iin,
+                    'payment_id' => $payment->getPublicId(),
+                    'disable_reason' => $code
+                ]);
+        }
+
 
         (new IIN\Service)->disableIinFlow($iin, $flow);
     }

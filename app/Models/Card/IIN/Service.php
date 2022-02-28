@@ -513,6 +513,8 @@ class Service extends Base\Service
 
                 $mergedValues = array_merge($existingValues, $input[$key]);
 
+                $this->pushIINFlowEventIfApplicable($existingValues, $mergedValues, $key, $iin);
+
                 $input[$key] = $mergedValues;
             }
         }
@@ -534,6 +536,42 @@ class Service extends Base\Service
                 return MandateHub::getEnabledMandateHubs($iin->getMandateHubs());
             default:
                 throw new Exception\LogicException('Unknown mutator key : ' . $mutatorKey);
+        }
+    }
+
+    protected function pushIINFlowEventIfApplicable(array $oldValues, $newValues, $key, Entity $iin)
+    {
+        if ($key !== Entity::FLOWS)
+        {
+            return;
+        }
+
+        if ((isset($oldValues[Flow::HEADLESS_OTP]) === true) && (isset($newValues[Flow::HEADLESS_OTP]) === true))
+        {
+            if ($oldValues[Flow::HEADLESS_OTP] !== $newValues[Flow::HEADLESS_OTP])
+            {
+                if ($newValues[Flow::HEADLESS_OTP] === 1)
+                {
+                    $this->app['diag']->trackIINEvent(
+                        EventCode::BIN_HEADLESS_ENABLED,
+                        $iin,
+                        null,
+                        [
+                            'iin' => $iin->getIin()
+                        ]);
+                }
+                else
+                {
+                    $this->app['diag']->trackIINEvent(
+                        EventCode::BIN_HEADLESS_DISABLED,
+                        $iin,
+                        null,
+                        [
+                            'iin' => $iin->getIin(),
+                            'disable_reason' => 'manual'
+                        ]);
+                }
+            }
         }
     }
 
