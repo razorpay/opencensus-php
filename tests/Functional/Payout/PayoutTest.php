@@ -8509,7 +8509,7 @@ class PayoutTest extends OAuthTestCase
             'content' => [
                 'status'                => 'reversed',
                 'failure_reason'        => 'payout reversed at bank',
-                'fts_fund_account_id'   => '12345',
+                'fts_fund_account_id'   => '     12345',
                 'fts_account_type'      => 'NODAL',
             ]
         ];
@@ -8600,6 +8600,112 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('nodal', $ledgerSnsPayloadArray[2]['identifiers']['fts_account_type']);
         $this->assertEquals($reversalCreated->transaction->getId(), $ledgerSnsPayloadArray[2]['api_transaction_id']);
         $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[2]['identifiers']['banking_account_id']);
+    }
+
+    // In this case we will update payout status from initiated
+    // to reversed and assert that we send payout failed to
+    // ledger
+    public function testUpdatePayoutStatusManuallyToReversedLedger()
+    {
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $payout->reload();
+
+        $fta->reload();
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status'                => 'reversed',
+                'failure_reason'        => 'manually marked as failed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('reversed', $payout->getStatus());
+
+        // Assert that payout failure reason was also updated.
+        $this->assertEquals('manually marked as failed', $payout['failure_reason']);
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status.
+        $this->assertEquals('reversed', $fta->getStatus());
+
+        $payoutCreated = $this->getDbLastEntity('payout');
+
+        $reversalCreated = $this->getDbLastEntity('reversal');
+
+        // Since there are multiple events within the flow,
+        // following is a list of events in the order in which they occur in the test flow
+        $transactorTypeArray = [
+            'payout_initiated',
+            'payout_failed'
+        ];
+
+        // The first 1 events pass the payout Ids, the reversal event passes the reversal Id
+        $transactorIdArray = [
+            $payoutCreated->getPublicId(),
+            $reversalCreated->getPublicId()
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['identifiers'] = json_decode($ledgerRequestPayload['identifiers'], true);
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals('1062', $ledgerRequestPayload['commission']);
+            $this->assertEquals('162', $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+        }
+
+        //
+        // Assertions for fts_fund_account_id and fts_account_type
+        // also for banking_account_id and api_transaction_id
+        //
+
+        $ledgerSnsPayloadArray[0]['identifiers'] = json_decode($ledgerSnsPayloadArray[0]['identifiers'], true);
+        $ledgerSnsPayloadArray[1]['identifiers'] = json_decode($ledgerSnsPayloadArray[1]['identifiers'], true);
+
+        // fts_fund_account_id and fts_account_type are not passed in payout initiated payload
+        // We send the payout's transaction ID as api_transaction_id
+        $this->assertArrayNotHasKey('fts_fund_account_id', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertArrayNotHasKey('fts_account_type', $ledgerSnsPayloadArray[0]['identifiers']);
+        $this->assertEquals($payoutCreated->transaction->getId(), $ledgerSnsPayloadArray[0]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[0]['identifiers']['banking_account_id']);
+
+        // fts_fund_account_id and fts_account_type are not passed in payout failed payload
+        // We send the reversal's transaction ID as api_transaction_id
+        $this->assertEquals($reversalCreated->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
+        $this->assertEquals($this->bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
     }
 
     // check trimming in payout creation.

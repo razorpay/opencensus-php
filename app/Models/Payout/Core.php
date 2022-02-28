@@ -3548,9 +3548,11 @@ class Core extends Base\Core
 
         $ftaFailureReason  = $input[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        $ftsFundAccountId = $input[Attempt\Constants::FTS_FUND_ACCOUNT_ID] ?? null;
+        $ftsFundAccountId = (empty($input[Attempt\Constants::FTS_FUND_ACCOUNT_ID]) === true) ?
+            null : trim($input[Attempt\Constants::FTS_FUND_ACCOUNT_ID]) ;
 
-        $ftsAccountType = $input[Attempt\Constants::FTS_ACCOUNT_TYPE] ?? null;
+        $ftsAccountType = (empty($input[Attempt\Constants::FTS_ACCOUNT_TYPE]) === true) ?
+            null : trim($input[Attempt\Constants::FTS_ACCOUNT_TYPE]) ;
 
         $payoutValidator = $payout->getValidator();
 
@@ -3568,12 +3570,15 @@ class Core extends Base\Core
                 break;
 
             case Status::REVERSED:
+                $ftsStatus = $this->getFTSStatusBasedOnPayoutStatus($payout, $status, $ftsSourceInformation);
+
                 $this->handlePayoutReversed(
                     $payout,
                     $ftaFailureReason,
                     null,
                     null,
-                    $ftsSourceInformation);
+                    $ftsSourceInformation,
+                    $ftsStatus);
                 break;
 
             case Status::FAILED:
@@ -3718,6 +3723,30 @@ class Core extends Base\Core
             [
                 Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => $queuedPayoutsPaginationData
             ]);
+    }
+
+    protected function getFTSStatusBasedOnPayoutStatus(Entity $payout,
+                                                       string $status,
+                                                       array $ftsSourceInformation = null)
+    {
+        // Context - For manual routes (for transition from initiated to reversed) we will modify
+        // fts status to failed or reversed based on fts info passed
+        // and send payout.failed to ledger in such cases
+        // This is to avoid sending payout.processed and payout.reversed to ledger
+        if (($payout->getStatus() === Status::INITIATED) and
+            ($status === Status::REVERSED))
+        {
+            if (($ftsSourceInformation[Attempt\Constants::FTS_ACCOUNT_TYPE] !== null) and
+            ($ftsSourceInformation[Attempt\Constants::FTS_FUND_ACCOUNT_ID] !== null))
+            {
+                return Status::REVERSED;
+            }
+            else
+            {
+                return Status::FAILED;
+            }
+        }
+        return null;
     }
 
     protected function checkOrUpdateChannelToPayoutAndTransaction(Entity $payout,
