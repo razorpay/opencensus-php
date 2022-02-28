@@ -44,7 +44,7 @@ interface GetOTPPropsT {
   otp: string;
   aadharError: string;
   disabled: boolean;
-  handleDownTimeError: () => void;
+  handleDownTimeError: (data) => void;
 }
 
 const GetOTP: React.FC<GetOTPPropsT> = ({
@@ -67,17 +67,20 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
   const [fetchCaptcha] = useMutation(generateCaptcha, {
     onSuccess: (response) => {
       setCaptcha(response.captcha_image);
+      setTimeout(() => {
+        handleDownTimeError(response);
+      }, 3000);
       if (
         response?.error_code === 'NO_PROVIDER_ERROR' ||
         response?.error_code === 'INTERNAL_SERVER_ERROR' ||
         response?.code === 'unavailable'
       ) {
-        handleDownTimeError();
+        handleDownTimeError(response);
       }
     },
     onError: (err: { response: { errors: Array<string> } }) => {
       if (err.response.errors[0].includes('Internal Server Error')) {
-        handleDownTimeError();
+        handleDownTimeError(err.response);
       }
     },
   });
@@ -108,15 +111,15 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           response.error_code === 'NO_PROVIDER_ERROR' ||
           response.error_code === 'INTERNAL_SERVER_ERROR'
         ) {
-          handleDownTimeError();
+          handleDownTimeError(response);
         }
       } else if (response?.code === 'unavailable') {
-        handleDownTimeError();
+        handleDownTimeError(response);
       }
     },
     onError: (err: { response: { errors: Array<string> } }) => {
       if (err.response.errors[0].includes('Internal Server Error')) {
-        handleDownTimeError();
+        handleDownTimeError(err.response);
       }
     },
   });

@@ -20,7 +20,7 @@ interface VerifyOtpPropsT {
   setAadharInputError: (data: string) => void;
   aadharNumber: string;
   inputCaptcha: string;
-  handleDownTimeError: () => void;
+  handleDownTimeError: (data) => void;
 }
 
 const verifyAadhar = async (data) => {
@@ -89,15 +89,15 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           response.error_code === 'NO_PROVIDER_ERROR' ||
           response.error_code === 'INTERNAL_SERVER_ERROR'
         ) {
-          handleDownTimeError();
+          handleDownTimeError(response);
         }
       } else if (response?.code === 'unavailable') {
-        handleDownTimeError();
+        handleDownTimeError(response);
       }
     },
     onError: (err: { response: { errors: Array<string> } }) => {
       if (err.response.errors[0].includes('Internal Server Error')) {
-        handleDownTimeError();
+        handleDownTimeError(err.response);
       }
     },
   });

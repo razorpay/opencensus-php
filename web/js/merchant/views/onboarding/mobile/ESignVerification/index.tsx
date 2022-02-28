@@ -49,7 +49,7 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
     setHasOTP(otpInput);
   };
 
-  const handleDownTimeError = () => {
+  const handleDownTimeError = (resData = {}) => {
     goToNextScreen({ nextScreen: 'AadharError' });
     showAddressProofDoc();
     postData({ stakeholder: { aadhaar_linked: 0 } });
@@ -58,6 +58,9 @@ const ESignVerification = ({ disabled = false, showAddressProofDoc }: ESignProps
       actionName: 'e aadhar downtime fallback',
       eventAction: 'initiated',
       screen: 'Documents',
+      properties: {
+        ...resData,
+      },
     });
   };
 
