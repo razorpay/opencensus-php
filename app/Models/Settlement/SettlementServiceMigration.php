@@ -68,6 +68,10 @@ class SettlementServiceMigration
                 '6aAnMAFmYpY8Ps' =>	'FaBmFOVrSxuon3',
                 'F8rIlU86u40T5U' =>	'FaBo58vbIwuJbq',
                 'FaaE8UTF0BkMjX' =>	'FZiLhQXkTuUkIi',
+                'Fc53TUJT3yOLCo' => 'Fc4sKjBrNH4ATl',
+                'GCx1lJpppoXTXG' => 'GBk1QuCe1bANtI',
+                'FZivDneoLFhJaE' => 'IuCaAEToxkiH2l',
+                'GdLNkaDChUHMCY' => 'IuCd5oVT4srsTQ',
             ],
             'test' => [
                 'Exelo4dBIBNb7w' =>	'FVW4076gpnontA',
@@ -118,6 +122,10 @@ class SettlementServiceMigration
                 '6aAnMAFmYpY8Ps' =>	'FaBmFN7468bc0m',
                 'F8rIlU86u40T5U' =>	'FaBo58ziGxpCpw',
                 'FaaE8UTF0BkMjX' =>	'FZiI5V59gdLg3r',
+                'Fc53TUJT3yOLCo' => 'Fc4sKotXXl09a0',
+                'GCx1lJpppoXTXG' => 'GBkX2MtoXXLz9p',
+                'FZivDneoLFhJaE' => 'IuCaACli1rIQGq',
+                'GdLNkaDChUHMCY' => 'IuCd5rBhur3dDb',
             ]
         ];
 
