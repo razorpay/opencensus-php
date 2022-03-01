@@ -100,7 +100,7 @@ class Core extends Base\Core
 
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
-    const DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS = 30;
+    const DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS = 15;
 
     const DEFAULT_BENE_BANK_STATUS = 'resolved';
 
