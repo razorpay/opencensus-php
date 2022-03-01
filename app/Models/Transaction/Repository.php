@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\Common;
 use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
@@ -2324,6 +2325,18 @@ class Repository extends Base\Repository
                 $contact = $fa->source;
                 $serialized[Statement\Entity::CONTACT_NAME] = $contact->getName();
                 $serialized[Statement\Entity::CONTACT_EMAIL] = $contact->getEmail();
+                $serialized[Statement\Entity::CONTACT_PHONE] = $contact->getContact();
+                $serialized[Statement\Entity::FUND_ACCOUNT_NUMBER] = $fa->getAccountDestinationAsText(false);
+                $serialized[Common::NOTES] = $entity->source->getNotes()->toArray();
+
+                $serialized[Common::NOTES] = array_map(
+                    function ($key, $value)
+                    {
+                        return compact('key', 'value');
+                    },
+                    array_keys($serialized[Common::NOTES]),
+                    $serialized[Common::NOTES]
+                );
             }
         }
 

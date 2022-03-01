@@ -207,12 +207,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
-    public function getAccountDestinationAsText(): string
+    public function getAccountDestinationAsText($mask_content = true): string
     {
         switch ($this->getAccountType())
         {
             case Type::BANK_ACCOUNT:
-                return mask_except_last4($this->account->getAccountNumber());
+                return $mask_content === true ?
+                    mask_except_last4($this->account->getAccountNumber()) : $this->account->getAccountNumber();
 
             case Type::VPA:
                 return $this->account->getAddress();

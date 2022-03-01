@@ -26,6 +26,8 @@ class EsRepository extends Base\EsRepository
         Entity::NAME,
         Entity::EMAIL,
         Entity::CONTACT,
+        Entity::CONTACT_PS,
+        Entity::EMAIL_PS,
     ];
 
     public function buildQueryForActive(array &$query, bool $value)
@@ -43,8 +45,26 @@ class EsRepository extends Base\EsRepository
         if (empty($value) == true) {
             return;
         }
-        // email.raw is the non-indexed format of email specifically for the case of exact match
+
         $this->addTermFilter($query, Entity::EMAIL_RAW, $value);
+    }
+
+    public function buildQueryForContactPs(array &$query, string $value)
+    {
+        if (empty($value) == true) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_NUMBER_PARTIAL_SEARCH, $value);
+    }
+
+    public function buildQueryForEmailPs(array &$query, string $value)
+    {
+        if (empty($value) == true) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_EMAIL_PARTIAL_SEARCH, strtolower($value));
     }
 
 }

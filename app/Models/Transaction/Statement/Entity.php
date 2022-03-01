@@ -33,6 +33,15 @@ class Entity extends Transaction\Entity
     const MODE            = 'mode';
     const FUND_ACCOUNT_ID = 'fund_account_id';
     const UTR             = 'utr';
+    const NOTES           = 'notes';
+
+    //ES Fund account number search
+    const FUND_ACCOUNT_NUMBER  = 'fund_account_number';
+
+    //Partial Search
+    const CONTACT_PHONE_PS  = 'contact_phone_ps';
+    const CONTACT_EMAIL_PS  = 'contact_email_ps';
+
 
     //Input key to support search using adjustment_id
     const ADJUSTMENT_ID   = 'adjustment_id';
@@ -41,6 +50,7 @@ class Entity extends Transaction\Entity
 
     //Used Exclusively for the ES raw searching of Email
     const CONTACT_EMAIL_RAW = 'contact_email.raw';
+    const CONTACT_EMAIL_PARTIAL_SEARCH = 'contact_email.partial_search';
 
     protected $entity = 'statement';
 

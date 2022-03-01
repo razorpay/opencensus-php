@@ -1487,6 +1487,8 @@ class Repository extends Base\Repository
         $serialized[Entity::CONTACT_NAME]  = $contact->getName();
         $serialized[Entity::CONTACT_EMAIL] = $contact->getEmail();
         $serialized[Entity::CONTACT_TYPE]  = $contact->getType();
+        $serialized[Entity::CONTACT_PHONE] = $contact->getContact();
+        $serialized[Entity::FUND_ACCOUNT_NUMBER] = $fa->getAccountDestinationAsText(false);
 
         if ($entity->payoutSources !== null && $entity->payoutSources->count() > 0)
         {

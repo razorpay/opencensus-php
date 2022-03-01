@@ -32,6 +32,10 @@ class Fetch extends Transaction\Fetch
             EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
             // EsRepository::SEARCH_HITS => 'sometimes|boolean',
             Entity::ADJUSTMENT_ID     => 'sometimes|public_id|size:18',
+            Entity::NOTES             => 'sometimes|notes_fetch',
+            Entity::FUND_ACCOUNT_NUMBER => 'sometimes|string',
+            Entity::CONTACT_PHONE_PS  => 'sometimes|string',
+            Entity::CONTACT_EMAIL_PS  => 'sometimes|string',
         ],
     ];
 
@@ -52,7 +56,11 @@ class Fetch extends Transaction\Fetch
             // EsRepository::SEARCH_HITS,
             Entity::MODE,
             Entity::TYPE,
-            Entity::ADJUSTMENT_ID
+            Entity::ADJUSTMENT_ID,
+            Entity::NOTES,
+            Entity::FUND_ACCOUNT_NUMBER,
+            Entity::CONTACT_PHONE_PS,
+            Entity::CONTACT_EMAIL_PS,
         ],
         AuthType::PROXY_AUTH => [
              Entity::ACTION,
@@ -71,6 +79,10 @@ class Fetch extends Transaction\Fetch
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
         EsRepository::QUERY,
+        Entity::CONTACT_PHONE_PS,
+        Entity::CONTACT_EMAIL_PS,
+        Entity::NOTES,
+        Entity::FUND_ACCOUNT_NUMBER,
         // EsRepository::SEARCH_HITS,
     ];
 

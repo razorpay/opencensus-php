@@ -168,6 +168,11 @@ class Entity extends Base\PublicEntity
     const NONE  = 'none';
     const EMPTY = 'empty';
 
+    //Partial Search
+    const CONTACT_PHONE_PS       = 'contact_phone_ps';
+    const CONTACT_EMAIL_PS         = 'contact_email_ps';
+    const FUND_ACCOUNT_NUMBER  = 'fund_account_number';
+
     // Additional input/output attributes
     const CONTACT_NAME  = 'contact_name';
     const CONTACT_PHONE = 'contact_phone';
@@ -256,6 +261,7 @@ class Entity extends Base\PublicEntity
 
     // Used exclusively for Elasticsearch queries
     const CONTACT_EMAIL_RAW = 'contact_email.raw';
+    const CONTACT_EMAIL_PARTIAL_SEARCH = 'contact_email.partial_search';
 
     // Constants for fee_type field
     const FREE_PAYOUT = 'free_payout';

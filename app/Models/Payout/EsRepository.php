@@ -27,6 +27,10 @@ class EsRepository extends Base\EsRepository
         Entity::REVERSED_AT,
         Entity::METHOD,
         Entity::MODE,
+        Entity::NOTES . '.value',
+        Entity::FUND_ACCOUNT_NUMBER,
+        Entity::CONTACT_PHONE_PS,
+        Entity::CONTACT_EMAIL_PS,
     ];
 
     /**
@@ -38,6 +42,7 @@ class EsRepository extends Base\EsRepository
         Entity::BALANCE_ID,
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
+        Entity::CONTACT_PHONE,
         Entity::REVERSED_AT,
         Entity::CONTACT_TYPE,
         Entity::PRODUCT,
@@ -48,6 +53,8 @@ class EsRepository extends Base\EsRepository
         Entity::STATUS,
         Entity::SOURCE_TYPE,
         Entity::CREATED_AT,
+        Entity::NOTES,
+        Entity::FUND_ACCOUNT_NUMBER,
     ];
 
     protected function buildQueryForReversedFrom(array & $query, $value)
@@ -86,6 +93,24 @@ class EsRepository extends Base\EsRepository
         }
 
         $this->addTermFilter($query, Entity::CONTACT_EMAIL_RAW, $value);
+    }
+
+    public function buildQueryForContactPhonePs(array &$query, string $value)
+    {
+        if (empty($value) == true) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_PHONE, $value);
+    }
+
+    public function buildQueryForContactEmailPs(array &$query, string $value)
+    {
+        if (empty($value) == true) {
+            return;
+        }
+
+        $this->addTermFilter($query, Entity::CONTACT_EMAIL_PARTIAL_SEARCH, strtolower($value));
     }
 
     protected function buildQueryForSourceTypeExclude(array & $query, $value)

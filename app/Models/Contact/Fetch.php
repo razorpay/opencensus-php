@@ -27,6 +27,8 @@ class Fetch extends Base\Fetch
             self::EXPAND_EACH         => 'filled|string|in:fund_accounts',
             EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
+            Entity::CONTACT_PS        => 'sometimes|string',
+            Entity::EMAIL_PS          => 'sometimes|string',
         ],
         AuthType::ADMIN_AUTH => [
             Entity::BATCH_ID            => 'sometimes|string|min:14|max:20',
@@ -47,6 +49,8 @@ class Fetch extends Base\Fetch
             self::EXPAND_EACH,
             EsRepository::QUERY,
             EsRepository::SEARCH_HITS,
+            Entity::CONTACT_PS,
+            Entity::EMAIL_PS,
         ],
         AuthType::PROXY_AUTH => [
             Entity::ID,
@@ -58,6 +62,8 @@ class Fetch extends Base\Fetch
         Entity::NAME,
         Entity::EMAIL,
         Entity::CONTACT,
+        Entity::CONTACT_PS,
+        Entity::EMAIL_PS,
         EsRepository::QUERY,
         EsRepository::SEARCH_HITS,
     ];

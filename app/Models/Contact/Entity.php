@@ -56,6 +56,14 @@ class Entity extends Base\PublicEntity
     const EMAIL_RAW = 'email.raw';
     const CONTACT_RX_RETRY_COUNT = '2';
 
+    //Partial Search
+    const CONTACT_PS       = 'contact_ps';
+    const EMAIL_PS         = 'email_ps';
+
+    //Partial search used in ES
+    const CONTACT_EMAIL_PARTIAL_SEARCH = 'email.partial_search';
+    const CONTACT_NUMBER_PARTIAL_SEARCH = 'contact.partial_search';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
