@@ -36,6 +36,7 @@ class Entity extends LedgerEntry\Entity
     const UTR             = 'utr';
     const CREDIT          = 'credit';
     const DEBIT           = 'debit';
+    const POSTED_AT       = 'posted_at';
 
     //Input key to support search using adjustment_id
     const ADJUSTMENT_ID   = 'adjustment_id';
