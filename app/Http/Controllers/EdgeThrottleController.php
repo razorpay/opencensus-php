@@ -249,6 +249,7 @@ class EdgeThrottleController extends Controller
         return $this->finalizeResponse($response, [
             'id',
             'rule',
+            'action',
             'key',
             'config',
             'created_at',
@@ -274,6 +275,7 @@ class EdgeThrottleController extends Controller
         return $this->finalizeResponse($response, [
             'id',
             'rule',
+            'action',
             'key',
             'config',
             'created_at',
@@ -317,6 +319,7 @@ class EdgeThrottleController extends Controller
             'id',
             'rule',
             'key',
+            'action',
             'config',
             'created_at',
             'updated_at',
