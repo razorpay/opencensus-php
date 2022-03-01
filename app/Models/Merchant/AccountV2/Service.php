@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Account\Action;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 class Service extends Merchant\Service
 {
@@ -14,21 +16,30 @@ class Service extends Merchant\Service
 
     public function createAccountV2(array $input): array
     {
-        $account = $this->core()->createAccountV2($this->merchant, $input);
+        $account = Tracer::inspan(['name' => HyperTrace::CREATE_ACCOUNT_V2_CORE], function () use ($input) {
+
+            return $this->core()->createAccountV2($this->merchant, $input);
+        });
 
         return $this->getResponseObject()->getAccountResponse($account);
     }
 
     public function fetchAccountV2(string $accountId): array
     {
-        $account = $this->core()->fetchAccountV2($accountId);
+        $account = Tracer::inspan(['name' => HyperTrace::FETCH_ACCOUNT_V2_CORE], function () use ($accountId) {
+
+            return $this->core()->fetchAccountV2($accountId);
+        });
 
         return $this->getResponseObject()->getAccountResponse($account);
     }
 
     public function editAccountV2(string $accountId, array $input): array
     {
-        $account = $this->core()->editAccountV2($this->merchant, $accountId, $input);
+        $account = Tracer::inspan(['name' => HyperTrace::EDIT_ACCOUNT_V2_CORE], function () use ($accountId, $input) {
+
+            return $this->core()->editAccountV2($this->merchant, $accountId, $input);
+        });
 
         return $this->getResponseObject()->getAccountResponse($account);
     }
@@ -53,7 +64,10 @@ class Service extends Merchant\Service
 
         $account = $this->repo->merchant->findOrFail($accountId);
 
-        $account = $accountCoreV1->action($account, $input, false);
+        $account = Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_DISABLE], function () use ($accountCoreV1, $account, $input) {
+
+            return $accountCoreV1->action($account, $input, false);
+        });
 
         $merchantDetails = $account->merchantDetail;
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Stakeholder;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
 use RZP\Models\Address;
 use RZP\Trace\TraceCode;
@@ -11,6 +12,7 @@ use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Trace\Tracer;
 
 
 class Core extends Base\Core
@@ -58,7 +60,12 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_STAKEHOLDER_ALREADY_EXISTS);
         }
 
-        return $this->saveStakeholder(null, $merchantId, $input);
+        $stakeholder = Tracer::inspan(['name' => HyperTrace::SAVE_STAKEHOLDER], function () use ($merchantId, $input) {
+
+            return $this->saveStakeholder(null, $merchantId, $input);
+        });
+
+        return $stakeholder;
     }
 
     public function saveStakeholder($id, string $merchantId, array $input, string $rule='edit'): Entity
@@ -72,15 +79,24 @@ class Core extends Base\Core
 
             $merchantDetailCore  = new Detail\Core;
 
-            $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $merchantDetailInput);
+            Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function () use ($accountV2Validator, $merchant, $merchantDetailInput) {
+
+                $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $merchantDetailInput);
+            });
 
             if (empty($merchantDetailInput) === false)
             {
-                $merchantDetailCore->saveMerchantDetails($merchantDetailInput, $merchant);
+                Tracer::inspan(['name' => HyperTrace::SAVE_MERCHANT_DETAILS], function () use ($merchantDetailCore, $merchantDetailInput, $merchant) {
+
+                    $merchantDetailCore->saveMerchantDetails($merchantDetailInput, $merchant);
+                });
 
                 $merchantDetails = $merchant->merchantDetail;
 
-                $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($merchantDetailInput, $merchant);
+                Tracer::inspan(['name' => HyperTrace::UPDATE_NC_FIELDS_ACKNOWLEDGED], function () use ($accountV2Core, $merchantDetailInput, $merchant) {
+
+                    $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($merchantDetailInput, $merchant);
+                });
 
                 AutoUpdateMerchantProducts::dispatch(Product\Status::STAKEHOLDER_SOURCE, $merchant, $merchantDetails);
             }
@@ -88,16 +104,24 @@ class Core extends Base\Core
 
             $stakeholderInput = Helper::getStakeholderInput($input);
 
-            if (empty($id) === false)
-            {
-                $stakeholder = $this->repo->stakeholder->findByIdAndMerchantId($id, $merchantId);
-            }
-            else
-            {
-                $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
-                $stakeholder = $this->createOrFetchStakeholder($merchantDetails);
-            }
-            $this->editStakeholder($stakeholder, $stakeholderInput, $rule);
+            $stakeholder = Tracer::inspan(['name' => HyperTrace::CREATE_OR_FETCH_STAKEHOLDER], function () use ($id, $merchantId, $merchant, $merchantDetailCore) {
+
+                if (empty($id) === false)
+                {
+                    $stakeholder = $this->repo->stakeholder->findByIdAndMerchantId($id, $merchantId);
+                }
+                else
+                {
+                    $merchantDetails = $merchantDetailCore->getMerchantDetails($merchant);
+                    $stakeholder = $this->createOrFetchStakeholder($merchantDetails);
+                }
+                return $stakeholder;
+            });
+
+            Tracer::inspan(['name' => HyperTrace::EDIT_STAKEHOLDER], function () use ($stakeholder, $stakeholderInput, $rule) {
+
+                $this->editStakeholder($stakeholder, $stakeholderInput, $rule);
+            });
 
             return $stakeholder;
         });
@@ -121,7 +145,10 @@ class Core extends Base\Core
             'id'          => $id,
         ]);
 
-        return $this->saveStakeholder($id, $merchantId, $input);
+        return Tracer::inspan(['name' => HyperTrace::SAVE_STAKEHOLDER], function () use ($id, $merchantId, $input) {
+
+            return $this->saveStakeholder($id, $merchantId, $input);
+        });
     }
 
     public function editStakeholder(Entity $stakeholder, $input, $rule='edit')

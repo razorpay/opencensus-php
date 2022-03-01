@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\Stakeholder;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
+use RZP\Trace\Tracer;
 
 class Service extends Base\Service
 {
@@ -15,11 +17,17 @@ class Service extends Base\Service
 
         Account\Entity::verifyIdAndStripSign($accountId);
 
-        $stakeholder = $this->core()->create($accountId, $input);
+        $stakeholder = Tracer::inspan(['name' => HyperTrace::CREATE_STAKEHOLDER_V2_CORE], function () use ($accountId, $input) {
+
+            return $this->core()->create($accountId, $input);
+        });
 
         $dimensions = $this->getStakeholderMetricDimensions();
 
-        $publicResponse = (new Response)->createResponse($stakeholder);
+        $publicResponse = Tracer::inspan(['name' => HyperTrace::STAKEHOLDER_CREATE_RESPONSE], function () use ($stakeholder) {
+
+            return (new Response)->createResponse($stakeholder);
+        });
 
         $this->trace->count(Metric::STAKEHOLDER_V2_CREATE_SUCCESS_TOTAL, $dimensions);
 
@@ -35,9 +43,15 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($id);
         Account\Entity::verifyIdAndStripSign($accountId);
 
-        $stakeholder = $this->core()->fetch($accountId, $id);
+        $stakeholder = Tracer::inspan(['name' => HyperTrace::FETCH_STAKEHOLDER_V2_CORE], function () use ($accountId, $id) {
 
-        $publicResponse = (new Response)->createResponse($stakeholder);
+            return $this->core()->fetch($accountId, $id);
+        });
+
+        $publicResponse = Tracer::inspan(['name' => HyperTrace::STAKEHOLDER_CREATE_RESPONSE], function () use ($stakeholder) {
+
+            return (new Response)->createResponse($stakeholder);
+        });
 
         $dimensions = $this->getStakeholderMetricDimensions();
 
@@ -56,11 +70,17 @@ class Service extends Base\Service
 
         Account\Entity::verifyIdAndStripSign($accountId);
 
-        $stakeholders = $this->core()->fetchAll($accountId);
+        $stakeholders = Tracer::inspan(['name' => HyperTrace::FETCH_ALL_STAKEHOLDER_V2_CORE], function () use ($accountId) {
+
+            return $this->core()->fetchAll($accountId);
+        });
 
         $dimensions = $this->getStakeholderMetricDimensions();
 
-        $publicResponse = (new Response)->createListResponse($stakeholders);
+        $publicResponse = Tracer::inspan(['name' => HyperTrace::STAKEHOLDER_CREATE_RESPONSE], function () use ($stakeholders) {
+
+            return (new Response)->createListResponse($stakeholders);
+        });
 
         $this->trace->count(Metric::STAKEHOLDER_V2_FETCH_ALL_SUCCESS_TOTAL, $dimensions);
 
@@ -78,9 +98,15 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($id);
         Account\Entity::verifyIdAndStripSign($accountId);
 
-        $stakeholder = $this->core()->update($accountId, $id, $input);
+        $stakeholder = Tracer::inspan(['name' => HyperTrace::UPDATE_STAKEHOLDER_V2_CORE], function () use ($accountId, $id, $input) {
 
-        $publicResponse = (new Response)->createResponse($stakeholder);
+            return $this->core()->update($accountId, $id, $input);
+        });
+
+        $publicResponse = Tracer::inspan(['name' => HyperTrace::STAKEHOLDER_CREATE_RESPONSE], function () use ($stakeholder) {
+
+            return (new Response)->createResponse($stakeholder);
+        });
 
         $dimensions = $this->getStakeholderMetricDimensions();
 

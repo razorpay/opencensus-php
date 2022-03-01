@@ -102,8 +102,7 @@ use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
-use RZP\Constants\
-{Mode, Product, Entity as CE, Environment};
+use RZP\Constants\{HyperTrace, Mode, Product, Entity as CE, Environment};
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
@@ -383,7 +382,10 @@ class Service extends Base\Service
             }
         }
 
-        $output =  $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input, $optimizeCreationFlow);
+        $output = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function () use ($merchant, $isLinkedAccount, $input, $optimizeCreationFlow) {
+
+            return $this->createSubMerchantAndSetRelations($merchant, $isLinkedAccount, $input, $optimizeCreationFlow);
+        });
 
         $data = [
             'status'       => 'success',
@@ -5577,11 +5579,14 @@ class Service extends Base\Service
 
         unset($input['allow_reversals']);
 
-        /** @var  Core */
-        $merchantCore = $this->core();
+        $subMerchant = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_CORE], function () use ($input, $merchant, $isLinkedAccount, $optimizeCreationFlow) {
 
-        /** @var Entity */
-        $subMerchant = $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $optimizeCreationFlow);
+            /** @var  Core */
+            $merchantCore = $this->core();
+
+            /** @var Entity */
+            return $merchantCore->createSubMerchant($input, $merchant, $isLinkedAccount, false, $optimizeCreationFlow);
+        });
 
         $newUser = null;
 
@@ -5643,38 +5648,42 @@ class Service extends Base\Service
         unset($input['account']);
         unset($input[Entity::PRODUCT]);
 
-        if($optimizeCreationFlow === false)
-        {
-            [$subMerchant, $newUser, $createdNew] = $this->repo->transactionOnLiveAndTest(function() use (
-                $input,
-                $merchant,
-                $isLinkedAccount,
-                $ownerId,
-                $product
-            ) {
-                return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, false);
-            });
-        }
-        else
-        {
-            [$subMerchant, $newUser, $createdNew] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, true);
-        }
+        list($subMerchant, $newUser, $createdNew) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function () use ($optimizeCreationFlow, $input, $merchant, $isLinkedAccount, $ownerId, $product) {
+
+            if ($optimizeCreationFlow === false) {
+                [$subMerchant, $newUser, $createdNew] = $this->repo->transactionOnLiveAndTest(function () use (
+                    $input,
+                    $merchant,
+                    $isLinkedAccount,
+                    $ownerId,
+                    $product
+                ) {
+                    return $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, false);
+                });
+            } else {
+                [$subMerchant, $newUser, $createdNew] = $this->createSubMerchantAndSetRelationsInternal($input, $merchant, $isLinkedAccount, $ownerId, $product, true);
+            }
+            return [$subMerchant, $newUser, $createdNew];
+        });
 
         if ($merchant->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
         {
             $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
         }
 
-        // Sends email to marketplace LA dashboard enabled users.
-        if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
-        {
-            (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
-        }
-        else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
-                 ($merchant->canCommunicateWithSubmerchant() === true))
-        {
-            $this->communicateSubMerchantCreation($subMerchant, $merchant, $product, $newUser, $createdNew);
-        }
+        Tracer::inspan(['name' => HyperTrace::SEND_MAIL_TO_SUBMERCHANT], function () use ($merchant, $isLinkedAccount, $newUser, $subMerchant, $createdNew, $product) {
+
+            // Sends email to marketplace LA dashboard enabled users.
+            if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
+            {
+                (new User\Service)->sendAccountLinkedCommunicationEmail($newUser, $subMerchant, $createdNew);
+            }
+            else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
+                     ($merchant->canCommunicateWithSubmerchant() === true))
+            {
+                $this->communicateSubMerchantCreation($subMerchant, $merchant, $product, $newUser, $createdNew);
+            }
+        });
 
         return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
     }

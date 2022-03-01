@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Product\Config;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Feature;
@@ -14,6 +15,7 @@ use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Trace\Tracer;
 
 class PaymentsGeneralConfig extends Base\Service
 {
@@ -286,7 +288,10 @@ class PaymentsGeneralConfig extends Base\Service
 
         $accountV2Validator = (new AccountV2\Validator());
 
-        $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
+        Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function () use ($accountV2Validator, $merchant, $input) {
+
+            $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
+        });
 
         $this->merchantDetailCore->saveMerchantDetails($input, $merchant);
 

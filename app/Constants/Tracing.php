@@ -266,6 +266,17 @@ class Tracing
             // Partner routes
             'merchant_bulk_onboarding_admin',
 
+            //Onboarding APIs
+            'account_create_v2',
+            'account_fetch_v2',
+            'account_edit_v2',
+            'account_delete_v2',
+
+            'stakeholder_create_v2',
+            'stakeholder_update_v2',
+            'stakeholder_fetch_v2',
+            'stakeholder_fetch_all_v2',
+
             // used by frontend-graphql
             'banking_accounts_list',
             'contact_list',

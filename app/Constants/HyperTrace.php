@@ -53,4 +53,43 @@ class HyperTrace
     const QR_PAYMENT_FETCH_MULTIPLE_PAYMENTS                    = 'qrv2_qr_payment.fetchMultiplePayments';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_CODE_ID                = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_PAYMENT_ID             = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';
+
+    /*Onboarding APIs traces names*/
+    const CREATE_ACCOUNT_V2                                    = 'account_v2.create.service';
+    const CREATE_ACCOUNT_V2_CORE                               = 'account_v2.create.core';
+    const ACCOUNT_V2_INVALIDATE_CACHE                          = 'account_v2.create.core.invalidate_cache';
+    const CREATE_SUBMERCHANT_ENTITIES                          = 'create_submerchant_entities';
+    const CREATE_SUBMERCHANT_AND_SET_RELATIONS                 = 'create_submerchant_and_set_relations';
+    const SEND_MAIL_TO_SUBMERCHANT                             = 'send_mail_to_submerchant';
+    const VALIDATE_PARTNER_ACCESS                              = 'validate_partner_access';
+    const FILL_SUBMERCHANT_DETAILS                             = 'fill_submerchant_details';
+    const FETCH_ACCOUNT_V2                                     = 'account_v2.fetch';
+    const FETCH_ACCOUNT_V2_CORE                                = 'account_v2.fetch.core';
+    const EDIT_ACCOUNT_V2                                      = 'account_v2.edit';
+    const EDIT_ACCOUNT_V2_CORE                                 = 'account_v2.edit.core';
+    const DELETE_ACCOUNT_V2                                    = 'account_v2.delete';
+    const ACCOUNT_V2_DISABLE                                   = 'account_v2.delete.disable';
+
+    const CREATE_STAKEHOLDER_V2                                 = 'stakeholder_v2.create.service';
+    const CREATE_STAKEHOLDER_V2_CORE                            = 'stakeholder_v2.create.core';
+    const STAKEHOLDER_CREATE_RESPONSE                           = 'stakeholder_v2.create_response';
+    const FETCH_STAKEHOLDER_V2                                  = 'stakeholder_v2.fetch.service';
+    const FETCH_STAKEHOLDER_V2_CORE                             = 'stakeholder_v2.fetch.core';
+    const FETCH_ALL_STAKEHOLDER_V2                              = 'stakeholder_v2.fetch_all.service';
+    const FETCH_ALL_STAKEHOLDER_V2_CORE                         = 'stakeholder_v2.fetch_all.core';
+    const UPDATE_STAKEHOLDER_V2                                 = 'stakeholder_v2.update.service';
+    const UPDATE_STAKEHOLDER_V2_CORE                            = 'stakeholder_v2.update.core';
+
+    const CREATE_OR_FETCH_STAKEHOLDER                           = 'create_or_fetch_stakeholder';
+    const SAVE_STAKEHOLDER                                      = 'save_stakeholder';
+    const EDIT_STAKEHOLDER                                      = 'save_stakeholder.edit';
+    const SAVE_MERCHANT_DETAILS                                 = 'save_stakeholder.save_merchant_details';
+    const UPDATE_NC_FIELDS_ACKNOWLEDGED                         = 'update_nc_fields_acknowledged';
+    const VALIDATE_NC_RESPONDED_IF_APPLICABLE                   = 'validate_nc_responded_if_applicable';
+
+    /*Partnerships traces names*/
+    const CREATE_SUBMERCHANT_SERVICE                           = 'create_submerchant.service';
+    const CREATE_SUBMERCHANT_CORE                              = 'create_submerchant.core';
+
+
 }

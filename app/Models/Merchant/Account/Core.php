@@ -3,13 +3,15 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Exception;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 class Core extends Merchant\Core
 {
@@ -181,25 +183,25 @@ class Core extends Merchant\Core
 
     public function validatePartnerAccess(Merchant\Entity $partner, $accountId = null)
     {
-        $partner->getValidator()->validateIsAggregatorPartner($partner);
+        Tracer::inspan(['name' => HyperTrace::VALIDATE_PARTNER_ACCESS], function () use ($partner, $accountId) {
+            $partner->getValidator()->validateIsAggregatorPartner($partner);
 
-        if ($accountId !== null)
-        {
-            Entity::verifyIdAndSilentlyStripSign($accountId);
+            if ($accountId !== null) {
+                Entity::verifyIdAndSilentlyStripSign($accountId);
 
-            $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
+                $isMapped = $this->isMerchantManagedByPartner($accountId, $partner->getId());
 
-            if ($isMapped === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
-                    null,
-                    [
-                        'account_id' => $accountId,
-                        'partner_id' => $partner->getId(),
-                    ]);
+                if ($isMapped === false) {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                        null,
+                        [
+                            'account_id' => $accountId,
+                            'partner_id' => $partner->getId(),
+                        ]);
+                }
             }
-        }
+        });
     }
 
     /**

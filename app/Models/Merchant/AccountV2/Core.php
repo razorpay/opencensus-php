@@ -7,17 +7,19 @@ use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
+use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 class Core extends Merchant\Core
 {
@@ -31,6 +33,8 @@ class Core extends Merchant\Core
 
         (new Validator)->validateInput('create_account', $input);
 
+        $account = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_ENTITIES], function () use ($input, $partner) {
+
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
@@ -38,9 +42,14 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
+            return $account;
+        });
+
+        Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_INVALIDATE_CACHE], function () use ($accountCoreV1, $account) {
         // since response from Stork during affected owners cache invalidation can come even before the above DB transaction
         // completion, send cache invalidation request again. Jira - https://razorpay.atlassian.net/browse/PRTS-1085
         $accountCoreV1->invalidateAffectedOwnersCache($account->getId());
+        });
 
         $merchantDetails = $account->merchantDetail;
         $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $partner);
@@ -95,8 +104,11 @@ class Core extends Merchant\Core
         }
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId, $subMerchantDetails)
         {
-            $subMerchant = $this->fillSubMerchant($accountId, $input);
-            $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+            $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $accountId) {
+                $subMerchant = $this->fillSubMerchant($accountId, $input);
+                $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+                return $subMerchant;
+            });
 
             $this->upsertMerchantEmails($subMerchant, $input);
 
@@ -121,11 +133,19 @@ class Core extends Merchant\Core
         $subMerchantCreateInput = InputHelper::getSubMerchantCreateInput($input);
 
         // this creates only test balance
-        $subMerchantArray = (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT, true);
+        $subMerchantArray = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_SERVICE], function () use ($subMerchantCreateInput, $partner) {
+
+            return (new Merchant\Service)->createSubMerchant($subMerchantCreateInput, $partner, PartnerConstants::ADD_ACCOUNT, true);
+        });
+
         $subMerchantId    = Entity::verifyIdAndStripSign($subMerchantArray[Entity::ID]);
 
-        $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
-        $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+        $subMerchant = Tracer::inspan(['name' => HyperTrace::FILL_SUBMERCHANT_DETAILS], function () use ($input, $subMerchantId) {
+
+            $subMerchant = $this->fillSubMerchant($subMerchantId, $input);
+            $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+            return $subMerchant;
+        });
 
         $this->upsertMerchantEmails($subMerchant, $input);
 
@@ -175,7 +195,10 @@ class Core extends Merchant\Core
 
         $merchantDetailsCore = new Detail\Core;
 
-        (new Validator())->validateNeedsClarificationRespondedIfApplicable($subMerchant, $detailInput);
+        Tracer::inspan(['name' => HyperTrace::VALIDATE_NC_RESPONDED_IF_APPLICABLE], function () use ($subMerchant, $detailInput) {
+
+            (new Validator())->validateNeedsClarificationRespondedIfApplicable($subMerchant, $detailInput);
+        });
 
         $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
 
