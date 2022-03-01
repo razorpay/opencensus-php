@@ -235,7 +235,8 @@ return [
                     'ifsc_code'      => 'UBIN0805165'
                 ],
                 'checkout'        => [
-                    'flash_checkout' => false
+                    'flash_checkout' => false,
+                    'logo'           => 'http://google.com/logo.jpeg'
                 ],
                 'payment_methods' => [
                     'wallet' => [
@@ -265,7 +266,8 @@ return [
                     ],
                     'checkout'        => [
                         'theme_color'    => '#FFFFFF',
-                        'flash_checkout' => false
+                        'flash_checkout' => false,
+                        'logo'           => 'http://google.com/logo.jpeg'
                     ],
                     'refund'          => [
                         'default_refund_speed' => 'normal'

@@ -33,6 +33,7 @@ class Validator extends Base\Validator
     protected static $checkoutRules = [
         Util\Constants::THEME_COLOR    => 'sometimes|regex:(^#[0-9a-fA-F]{6}$)',
         Util\Constants::FLASH_CHECKOUT => 'sometimes|boolean',
+        Util\Constants::LOGO           => 'sometimes|max:2000',
     ];
 
     protected static $refundRules = [
