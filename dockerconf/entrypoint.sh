@@ -33,8 +33,8 @@ fi
 echo "$(date) Copy dashboard vhost"
 cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
 
-echo "setting max_input_vars to 5000"
-sed -ie "s/; max_input_vars =.*/max_input_vars = 5000/g" /etc/php7/php.ini
+echo "setting max_input_vars to 2000"
+sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php7/php.ini
 
 export PATH=$PATH:/app/
 
