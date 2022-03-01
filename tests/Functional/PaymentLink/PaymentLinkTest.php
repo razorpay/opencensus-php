@@ -2254,6 +2254,69 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @group nocode_invalid_character
+     * @return void
+     */
+    public function testUpdatePaymentPageWithInvalidCharacterInTitleThrowsError()
+    {
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_invalid_character
+     * @return void
+     */
+    public function testUpdatePaymentPageWithInvalidCharacterInDescriptionThrowsError()
+    {
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_invalid_character
+     * @return void
+     */
+    public function testUpdatePaymentPageWithInvalidCharacterInPaymentSuccessMessageThrowsError()
+    {
+        $this->createPaymentLink();
+        $this->createPaymentPageItem();
+
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_invalid_character
+     * @return void
+     */
+    public function testCreatePaymentPageWithInvalidCharacterInTitleThrowsError()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_invalid_character
+     * @return void
+     */
+    public function testCreatePaymentPageWithInvalidCharacterInDescriptionThrowsError()
+    {
+        $this->startTest();
+    }
+
+    /**
+     * @group nocode_invalid_character
+     * @return void
+     */
+    public function testCreatePaymentPageWithInvalidCharacterInPaymentSuccessMessageThrowsError()
+    {
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function setupPartnerWebhookSettingTestCase(array $webhookSettings, bool $validUdf = true)

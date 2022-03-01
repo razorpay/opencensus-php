@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
-        Entity::TITLE           => 'required|string|min:3|max:40',
+        Entity::TITLE           => 'required|string|min:3|max:40|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30', // need to call validate slug separately for regex validation
@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS                 => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE                   => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL         => 'nullable|url',
-        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE              => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE              => 'nullable|string|min:5|max:2048|utf8',
         Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS                     => 'array',
         Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL                 => 'string|max:20',
         Entity::SETTINGS . '.' . Entity::PP_BUTTON_DISABLE_BRANDING           => 'nullable|string|in:0,1',
@@ -72,7 +72,7 @@ class Validator extends Base\Validator
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
         Entity::TIMES_PAYABLE   => 'sometimes|mysql_unsigned_int|min:1|nullable|custom',
         Entity::RECEIPT         => 'string|min:3|max:40|nullable',
-        Entity::TITLE           => 'string|min:3|max:40',
+        Entity::TITLE           => 'string|min:3|max:40|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
         Entity::SLUG            => 'filled|min:4|max:30|custom',
@@ -86,7 +86,7 @@ class Validator extends Base\Validator
         Entity::SETTINGS . '.' . Entity::ALLOW_MULTIPLE_UNITS         => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::ALLOW_SOCIAL_SHARE           => 'nullable|string|in:0,1',
         Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_REDIRECT_URL => 'nullable|url',
-        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048',
+        Entity::SETTINGS . '.' . Entity::PAYMENT_SUCCESS_MESSAGE      => 'nullable|string|min:5|max:2048|utf8',
         Entity::SETTINGS . '.' . Entity::CHECKOUT_OPTIONS             => 'array',
         Entity::SETTINGS . '.' . Entity::PAYMENT_BUTTON_LABEL         => 'string|max:20',
         Entity::SETTINGS . '.' . Entity::PP_BUTTON_DISABLE_BRANDING   => 'nullable|string|in:0,1',
