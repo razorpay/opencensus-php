@@ -28,7 +28,7 @@ class CardlessEmi
         self::EARLYSALARY  => 300000, // Rs. 3000
         self::ZESTMONEY    => 90000,  // Rs. 900
         self::FLEXMONEY    => 300000, // Rs. 3000
-        self::WALNUT369    => 9900,   // Rs. 99
+        self::WALNUT369    => 90000,  // Rs. 900
         self::SEZZLE       => 20000,  // Rs. 200
         self::BARB         => 500000, // Rs. 5000
         self::HDFC         => 500000, // Rs. 5000

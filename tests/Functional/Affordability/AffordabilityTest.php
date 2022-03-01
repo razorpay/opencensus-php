@@ -60,7 +60,7 @@ class AffordabilityTest extends TestCase
         ],
         'walnut369' => [
             'enabled' => true,
-            'min_amount' => 9900,
+            'min_amount' => 90000,
         ],
         'sezzle' => [
             'enabled' => true,
