@@ -6456,6 +6456,11 @@ trait Authorize
         return $this->processAuthorizeResponse($payment);
     }
 
+    /*
+    All the recurring payment should not go via sync flow because in recurring payment
+    If tokenisation is failing we are not proceeding with payment capture and displaying the
+    failure msg right away in the checkout.
+    */
     protected function migrateTokenIfApplicable($payment, $callbackData)
     {
         try
@@ -6477,8 +6482,7 @@ trait Authorize
 
             // migration to be done only when user has given consent to save the card
             // this check "$token->isRecurring()" will be removed once consent changes for recurring will go live
-            if (($token->hasBeenAcknowledged() === false) and
-                ($token->isRecurring() === false))
+            if ($token->hasBeenAcknowledged() === false)
             {
                 return;
             }
@@ -6493,7 +6497,7 @@ trait Authorize
 
             // this if code block to be removed once we onboard other networks
             if (($card->isRupay() === false) and
-                ($payment->isRecurring() === true))
+                ($token->isRecurring() === true))
             {
                 return;
             }

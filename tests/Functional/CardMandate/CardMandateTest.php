@@ -905,6 +905,7 @@ class CardMandateTest extends TestCase
             'network' => "RuPay",
         ]);
 
+
         $this->mockCheckBin();
 
         $this->mockCardVaultWithMigrateToken();
@@ -920,6 +921,8 @@ class CardMandateTest extends TestCase
         $paymentInp['_']['library'] = 'razorpayjs';
 
         $paymentInp['recurring'] = 1;
+
+        $paymentInp['save'] = 1;
 
         $paymentInp['amount'] = 800000;
 

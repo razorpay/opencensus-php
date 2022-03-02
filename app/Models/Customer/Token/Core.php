@@ -1170,8 +1170,6 @@ class Core extends Base\Core
         });
 
         $this->eventCardRecurringTokenStatus($token, $previousStatus);
-
-        $this->notifyAppsTokenStatus($token, RecurringStatus::CANCELLED);
     }
 
     /**
