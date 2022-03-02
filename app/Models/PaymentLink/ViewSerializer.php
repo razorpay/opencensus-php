@@ -40,9 +40,6 @@ class ViewSerializer extends Base\Core
      * @var Merchant\Entity
      */
     protected $merchant;
-    const RAZORX_FOOTER_EXPERIMENT = 'pp_hostedpage_new_footer';
-
-
     const RAZORX_ASTERIX_EXPERIMENT = 'pp_hostedpage_asterisk';
 
     public function __construct(Entity $paymentLink)
@@ -120,12 +117,6 @@ class ViewSerializer extends Base\Core
     {
         $mode = $this->mode ?? Mode::LIVE;
 
-        $footerVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            self::RAZORX_FOOTER_EXPERIMENT,
-            $mode
-        );
-
         $asterixVariant = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
             self::RAZORX_ASTERIX_EXPERIMENT,
@@ -152,7 +143,6 @@ class ViewSerializer extends Base\Core
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'branding_variant' => 'control',
-            'footer_variant'   => $footerVariant,
             'asterix_variant'  => $asterixVariant,
             'contact_optional' => $contactOptional,
             'email_optional'   => $emailOptional,
