@@ -24,6 +24,7 @@ import NitroCCCampaignModal from 'common/ui/OffersForYou/components/NitroCCCampa
 import NitroICICIModal from '../../../merchant/components/Announcements/NitroICICIBanner/NitroICICIModal';
 import NitroMidmarketRemarketingModal from '../../../merchant/components/Announcements/NitroMMRemarketingBanner/NitroMidmarketRemarketingModal';
 import NitroICICINewSegmentModal from '../../../merchant/components/Announcements/NitroICICINewSegmentsBanner/NitroICICINewSegmentModal';
+import UltraCampaginModal from '../../../merchant/components/Announcements/UltraCampagin/UltraCampaginModal';
 
 const BENEFITS = {
   other: [
@@ -335,7 +336,8 @@ export const nitroCampaignId = () => {
 
 export const getCampaignID = () => {
   const user = getUser();
-
+  if (user.isUCCapitalCardsOnlyCampaignEnabled) return 'Ultra_ExclusiveOffer_Card';
+  if (user.isUCCapitalLOCOnlyCampaignEnabled) return 'Ultra_ExclusiveOffer_LOC';
   if (user.isICICILinkedCAEnabled) return 'Nitro_ICICIConnected';
   if (user.isProjectKeystoneCorporateCardsEnabled) return 'Nitro_Keystone_Card';
   if (user.isProjectKeystoneCashAdvanceEnabled) return 'Nitro_Keystone_CashAdvance';
@@ -349,6 +351,13 @@ export const getCampaignID = () => {
   if (user.isNewNitroICICIPlusCardOfferCampaignEnabled) return 'Nitro_ICICIPlusCardOffer';
   if (user.isNewNitroICICIBaseCampaignEnabled) return 'Nitro_Base';
   return nitroCampaignId(user).version;
+};
+
+export const getProductName = () => {
+  const user = getUser();
+  if (user.isUCCapitalLOCOnlyCampaignEnabled) return 'LOC';
+  if (user.isProjectNitroCorporateCard || user.isUCCapitalCardsOnlyCampaignEnabled) return 'CARDS';
+  else return 'Current_Account';
 };
 
 const selector = formValueSelector('customerDetails');
@@ -727,7 +736,7 @@ class DetailView extends React.Component {
       event_type: caReqEventType,
       event_properties: {
         interested_in_current_account: 1,
-        product_name: user.isProjectNitroCorporateCard ? 'CARDS' : 'Current_Account',
+        product_name: getProductName(),
         source: 'Project Nitro',
         Campaign_ID: getCampaignID(),
         form_version: user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
@@ -806,6 +815,17 @@ class DetailView extends React.Component {
         <NitroICICINewSegmentModal
           user={this.props.user}
           save={this.save}
+          tracking={this?.props?.tracking}
+        />
+      );
+    if (
+      this?.props?.user?.isUCCapitalCardsOnlyCampaignEnabled ||
+      this?.props?.user?.isUCCapitalLOCOnlyCampaignEnabled
+    )
+      return (
+        <UltraCampaginModal
+          user={this?.props?.user}
+          save={this?.save}
           tracking={this?.props?.tracking}
         />
       );

@@ -345,4 +345,16 @@ export default {
     // prod experiment id
     'Iw2TWM0yRhXrWI',
   ],
+  ultra_campagin_capital_cards_only: [
+    // prod experiment id
+    'IzNDbBZJkmum9p',
+  ],
+  ultra_campagin_loc_only: [
+    // prod experiment id
+    'IzNBx4JjPFch8E',
+  ],
+  ultra_campagin_capital_cards_and_loc_both: [
+    // prod experiment id
+    'Izqj4llwT0wcZq',
+  ],
 };

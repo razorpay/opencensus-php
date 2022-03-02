@@ -592,6 +592,22 @@ export default class User {
     );
   }
 
+  get isUCCapitalCardsOnlyCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('ultra_campagin_capital_cards_only')?.variables?.result === 'on' ||
+      getSplitzExperimentVariant('ultra_campagin_capital_cards_and_loc_both')?.variables?.result ===
+        'capital_cards'
+    );
+  }
+
+  get isUCCapitalLOCOnlyCampaignEnabled() {
+    return (
+      getSplitzExperimentVariant('ultra_campagin_loc_only')?.variables?.result === 'on' ||
+      getSplitzExperimentVariant('ultra_campagin_capital_cards_and_loc_both')?.variables?.result ===
+        'capital_loc'
+    );
+  }
+
   get isNitroFormFillEnabled() {
     return getSplitzExperimentVariant('nitro_form_ab_experiment')?.variables?.result === 'on';
   }
