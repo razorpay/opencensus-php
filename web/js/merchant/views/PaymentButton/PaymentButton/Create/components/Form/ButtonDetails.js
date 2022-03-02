@@ -21,7 +21,7 @@ import {
 } from 'merchant/reducers/paymentbuttons/create';
 import track from '../../track';
 
-export const maxLengthForButtonLabel = 20;
+export const maxLengthForButtonLabel = 16;
 
 @connect(
   (state) => ({

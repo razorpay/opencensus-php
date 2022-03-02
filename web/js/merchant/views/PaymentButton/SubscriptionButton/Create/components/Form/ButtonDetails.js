@@ -1,8 +1,9 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import PropTypes from 'prop-types';
 import Form from 'common/new-ui/Form';
-import Input, { Label, Description } from 'common/new-ui/Input';
+import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
 
@@ -14,7 +15,7 @@ import {
 } from 'merchant/reducers/subscriptionButtons/create';
 import track from '../../track';
 
-export const maxLengthForButtonLabel = 20;
+export const maxLengthForButtonLabel = 16;
 
 @connect(null, {
   updatePaymentButtonData,
@@ -39,7 +40,7 @@ export default class ButtonDetails extends React.Component {
   }
 
   handleSubmit = (formData) => {
-    const { title, button_text, button_theme, currency, amount } = formData;
+    const { title, button_text, button_theme } = formData;
 
     const data = {
       title,
@@ -93,7 +94,7 @@ export default class ButtonDetails extends React.Component {
 
     setTimeout(() => {
       const form = this.formEl;
-      let disableSubmit = form && !!form.querySelectorAll('.is-invalid').length;
+      const disableSubmit = form && !!form.querySelectorAll('.is-invalid').length;
 
       if (this.state.disableSubmit !== disableSubmit) {
         this.setState({ disableSubmit });
@@ -110,9 +111,7 @@ export default class ButtonDetails extends React.Component {
   setRefFormEl = (el) => (this.formEl = el);
 
   render() {
-    const { subscriptionButtonId, subscriptionButtonEntity, isEditExistingId } = this.props;
-
-    const currency = subscriptionButtonEntity.currency;
+    const { subscriptionButtonId, subscriptionButtonEntity } = this.props;
 
     return (
       <Form
@@ -138,6 +137,7 @@ export default class ButtonDetails extends React.Component {
               if (val.length > 40) {
                 return 'Title cannot be more than 40 characters';
               }
+              return '';
             }}
             autoFocus={!subscriptionButtonId}
             required
@@ -160,6 +160,7 @@ export default class ButtonDetails extends React.Component {
               if (val.length > maxLengthForButtonLabel) {
                 return `Maximum ${maxLengthForButtonLabel} characters are allowed`;
               }
+              return '';
             }}
             onBlur={track.lj.trackButtonLabel}
           />
