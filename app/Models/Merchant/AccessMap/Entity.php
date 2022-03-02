@@ -122,4 +122,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::HAS_KYC_ACCESS, false);
     }
+
+    public function setEntityId(string $entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
 }

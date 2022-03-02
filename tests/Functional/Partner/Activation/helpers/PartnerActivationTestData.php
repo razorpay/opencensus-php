@@ -591,5 +591,5 @@ return [
                 'failedItems' => [],
             ],
         ],
-    ],
+    ]
 ];

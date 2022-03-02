@@ -1941,5 +1941,19 @@ return [
                 'count' => 10
             ]
         ]
+    ],
+    'testAggregatorToResellerBulkUpdate' => [
+        'request' => [
+            'content' => [
+                'merchant_ids'   => [
+                    '10000000000000'
+                ],
+            ],
+            'url'     => '/merchant/migrate_aggregator_to_reseller/bulk',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => []
+        ]
     ]
 ];

@@ -454,4 +454,32 @@ class Core extends Base\Core
 
         return $applicationById;
     }
+
+    /**
+     * This function updates the application for all configs associated with provided existing application id.
+     *
+     * @param $existingAppId // ApplicationId associated with Partner config
+     * @param $appId  // ApplicationId to update the partner config
+     *
+     * @return array
+     */
+    public function updateApplicationsForPartnerConfigs(string $existingAppId, string $appId)
+    {
+        $configs = $this->repo->partner_config->fetchAllConfigForApps([$existingAppId]);
+
+        foreach($configs as $config)
+        {
+            if ($config->getOriginId() === $existingAppId)
+            {
+                $config->setOriginId($appId);
+            }
+
+            if ($config->getEntityId() === $existingAppId)
+            {
+                $config->setEntityId($appId);
+            }
+        }
+
+        $this->repo->saveOrFailCollection($configs);
+    }
 }

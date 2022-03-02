@@ -200,6 +200,16 @@ class Entity extends PublicEntity
         $this->setAttribute(self::ORIGIN_TYPE, $originType);
     }
 
+    public function setOriginId($originId)
+    {
+        $this->setAttribute(self::ORIGIN_ID, $originId);
+    }
+
+    public function setEntityId($entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
     // --------------------- GENERATORS ---------------------
     public function generateRevisitAt(array $input)
     {

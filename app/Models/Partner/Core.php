@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner;
 
+use App;
 use Razorpay\OAuth;
 
 use Carbon\Carbon;

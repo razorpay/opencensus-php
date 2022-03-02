@@ -250,4 +250,12 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_OWNER_ID, $partnerId)
                     ->exists();
     }
+
+    public function getAllMappingsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
+                    ->get();
+    }
 }

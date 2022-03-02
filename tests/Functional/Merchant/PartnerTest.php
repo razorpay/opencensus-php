@@ -42,6 +42,7 @@ class PartnerTest extends OAuthTestCase
     const DUMMY_APP_ID_3         = '11111RandomApp';
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const DEFAULT_SUBMERCHANT_ID = '10000000000009';
+    const RZP_ORG                = '100000razorpay';
 
     protected function setUp(): void
     {
@@ -2683,6 +2684,19 @@ class PartnerTest extends OAuthTestCase
         $partnerActivationEntitiesAfterMigration = $this->getDbEntities('partner_activation');
 
         $this->validatePartnerActivation($partnerActivationEntitiesAfterMigration, "activated");
+    }
+
+    public function testAggregatorToResellerBulkUpdate()
+    {
+        $merchantId = '10000000000000';
+
+        $this->setUpNonPurePlatformPartner();
+
+        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
     private function validatePartnerActivation($partnerActivationEntities, $activationStatus)

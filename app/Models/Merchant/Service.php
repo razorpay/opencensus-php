@@ -8997,6 +8997,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function bulkConvertAggregatorToResellerPartner(array $input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        return $this->core()->bulkConvertAggregatorToResellerPartner($merchantIds);
+    }
+
     public function trackBalanceEvent($input)
     {
         $merchantId = $this->merchant->getId();

@@ -67,6 +67,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Mail\Merchant\PartnerOnBoarded;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Mail\Payout\Payout as PayoutMail;
+use RZP\Jobs\AggregatorToResellerUpdateJob;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Comment\Core as CommentCore;
@@ -97,6 +98,10 @@ use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Mail\Merchant\CreditsAdditionSuccess;
 use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
+use RZP\Models\Merchant\MerchantApplications\Core as MerchantApplicationsCore;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
+use RZP\Models\Merchant\WebhookV2\Stork;
+use RZP\Models\Partner\Config\Core as PartnerConfigCore;
 
 class Core extends Base\Core
 {
@@ -6609,5 +6614,105 @@ class Core extends Base\Core
         $isSubMerchant = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
 
         return !$isSubMerchant;
+    }
+
+    public function bulkConvertAggregatorToResellerPartner(array $merchantIds)
+    {
+        $traceInfo = ['merchant_ids' => $merchantIds];
+
+        $this->trace->info(TraceCode::BULK_CONVERT_AGGREGATOR_TO_RESELLER_REQUEST, $traceInfo);
+
+        AggregatorToResellerUpdateJob::dispatch($merchantIds);
+
+        $this->trace->info(TraceCode::BULK_CONVERT_AGGREGATOR_TO_RESELLER_SUCCESS, $traceInfo);
+    }
+
+    public function updateAggregatorToReseller(string $merchantId)
+    {
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutexKey = Constants::AGGREGATOR_TO_RESELLER_UPDATE.$merchantId;
+
+        return $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($merchantId)
+            {
+                return $this->processUpdateAggregatorToReseller($merchantId);
+            },
+            Constants::AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT,
+            ErrorCode::BAD_REQUEST_AGGREGATOR_TO_RESELLER_MIGRATION_IN_PROGRESS);
+    }
+
+    private function processUpdateAggregatorToReseller(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        if ($merchant === null || $merchant->isAggregatorPartner() === false)
+        {
+            $this->trace->info(
+                TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_PARTNER,
+                ['merchant_id' => $merchantId]);
+
+            return;
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        {
+            $merchantApplicationsCore = new MerchantApplicationsCore();
+
+            $managedAppId = $merchantApplicationsCore->getMerchantAppIds($merchant->getId(), [MerchantApplicationsEntity::MANAGED])[0];
+
+            $existingAppIds = $merchantApplicationsCore->getMerchantAppIds($merchant->getId());
+
+            $app = $this->createPartnerApp($merchant);
+
+            $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], MerchantApplicationsEntity::REFERRED);
+
+            $this->trace->info(TraceCode::AGGREGATOR_TO_RESELLER_APPLICATION_CREATED, [
+                    'old_application_ids' => $existingAppIds,
+                    'new_application_id' => $app[OAuthApp\Entity::ID]
+                ]
+            );
+
+            foreach ($existingAppIds as $existingAppId)
+            {
+                $managedApp = ($managedAppId === $existingAppId);
+
+                $this->updateExistingApplicationMappings($merchant->getId(), $existingAppId, $app[OAuthApp\Entity::ID], $managedApp);
+            }
+
+            $this->deletePartnerAppForIds($merchant->getId(), $existingAppIds);
+
+            $merchant->setPartnerType(Constants::RESELLER);
+
+            $this->repo->merchant->saveOrFail($merchant);
+        });
+    }
+
+    private function updateExistingApplicationMappings(string $merchantId, string $existingAppId, string $updatedAppId, bool $managedApp = false)
+    {
+        if ($managedApp === true)
+        {
+            (new PartnerConfigCore())->updateApplicationsForPartnerConfigs($existingAppId, $updatedAppId);
+        }
+
+        (new AccessMap\Core())->updateApplicationsByEntityIdAndEntityOwnerId($existingAppId, $merchantId, $updatedAppId);
+
+        $this->updateWebhooksForApplication($existingAppId, $updatedAppId);
+    }
+
+    private function updateWebhooksForApplication(string $existingAppId, string $updatedAppId)
+    {
+        (new Stork('live'))->updateOwnerForWebhooks($existingAppId, $updatedAppId);
+
+        (new Stork('test'))->updateOwnerForWebhooks($existingAppId, $updatedAppId);
+    }
+
+    public function deletePartnerAppForIds(string $merchantId, array $appIds)
+    {
+        foreach ($appIds as $appId)
+        {
+            app('authservice')->deleteApplication($appId, $merchantId);
+        }
     }
 }

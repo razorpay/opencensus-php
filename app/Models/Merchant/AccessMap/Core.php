@@ -450,6 +450,17 @@ class Core extends Base\Core
         return $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds($merchantId, $finalAppIds, 'application');
     }
 
+    public function updateApplicationsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId, string $newAppId)
+    {
+        $accessMaps = $this->repo->merchant_access_map->getAllMappingsByEntityIdAndEntityOwnerId($entityId, $entityOwnerId);
+
+        foreach ($accessMaps as $accessMap) {
+            $accessMap->setEntityId($newAppId);
+        }
+
+        $this->repo->saveOrFailCollection($accessMaps);
+    }
+
     public function isSubMerchant(string $merchantId)
     {
         $merchant = $this->repo->merchant_access_map->getByMerchantId($merchantId);

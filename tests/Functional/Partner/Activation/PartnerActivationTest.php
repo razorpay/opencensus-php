@@ -35,6 +35,8 @@ class PartnerActivationTest extends OAuthTestCase
 
     const MERCHANT_ID_2 = '2cXSLlUU8V9sXl';
 
+    const RZP_ORG  = '100000razorpay';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PartnerActivationTestData.php';

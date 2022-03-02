@@ -444,6 +444,7 @@ trait PartnerTrait
         $accessMap = $this->fixtures->create(
             'merchant_access_map',
             [
+                'id'              => 'J00dqRlTeStNzb',
                 'merchant_id'     => $submerchantId,
                 'entity_id'       => $appIds[0],
                 'entity_type'     => 'application',

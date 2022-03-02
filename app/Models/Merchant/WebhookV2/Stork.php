@@ -404,4 +404,37 @@ class Stork
             $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_INVALIDATE_CACHE_FAILED);
         }
     }
+
+    public function updateOwnerForWebhooks(string $existingOwnerId, string $ownerId)
+    {
+        $webhooks = $this->list($existingOwnerId)['items'];
+
+        $this->trace->info(
+            TraceCode::STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ,
+            ['webhooks' => $webhooks]
+        );
+
+        foreach ($webhooks as $webhook)
+        {
+            $events = [];
+
+            foreach ($webhook['subscriptions'] as $value)
+            {
+                if (array_key_exists($value['eventmeta']['name'], $events) === true)
+                {
+                    $events[$value['eventmeta']['name']] = true;
+                }
+            }
+
+            $input = [
+                'owner_id' => $ownerId,
+                'owner_type' => 'application',
+                'url' => $webhook['url'],
+                'events' => $events
+            ];
+
+            $this->delete($webhook['id'], $existingOwnerId);
+//            $this->create($input);
+        }
+    }
 }
