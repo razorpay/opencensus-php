@@ -474,6 +474,18 @@ function escape_html_attribute(string $str)
     }, $str);
 }
 
+if (! function_exists('print_jssafe_json')) {
+    /**
+     * Prints JSON data safe to be included inside a javascript block
+     *
+     * @param $obj input value to be converted to json
+     */
+    function print_jssafe_json($obj)
+    {
+        echo json_encode($obj, JSON_HEX_QUOT|JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS);
+    }
+}
+
 if (! function_exists('checkRequestTimeout'))
 {
     /**

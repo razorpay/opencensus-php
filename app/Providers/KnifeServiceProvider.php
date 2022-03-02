@@ -14,8 +14,13 @@ class KnifeServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        //@TODO shift consumers to @json directive and remove @html_attr
         Blade::directive('html_attr', function ($expression) {
             return "<?php echo escape_html_attribute($expression); ?>";
+        });
+
+        Blade::directive('json', static function ($expression) {
+            return "<?php print_jssafe_json($expression); ?>";
         });
     }
 
