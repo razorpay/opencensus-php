@@ -18,8 +18,15 @@ class XSegmentClient extends SegmentAnalyticsClient
     }
 
     public function sendEventToSegment(string $eventName, Merchant\Entity $merchant = null){
-
         try {
+
+            $this->trace->info(TraceCode::XSEGMENT_EVENT_DISPATCH,
+                [
+                    'merchant_id' => $merchant['id']?? null,
+                    'user_id'     => $user['id']?? null,
+                    'event_name'  => $eventName
+                ]);
+
             if (empty($merchant) === true) {
                 $merchant = $this->app['basicauth']->getMerchant();
             }

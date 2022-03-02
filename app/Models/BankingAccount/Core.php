@@ -2192,27 +2192,30 @@ class Core extends Base\Core
 
     public function sendNotificationAfterCAActivation(Entity $bankingAccount){
 
-        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true) {
-
-            $merchant = $bankingAccount->merchant;
-
+        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
+        {
             $payload = ['ca_channel' => Entity::Neostone];
 
             $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE, Event::INFO, $payload);
-
-            if (empty($merchant) === false) {
-                $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
-            } else {
-                $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
-                    [
-                        'event_name' => SegmentEvent::CA_ACTIVATED,
-                    ]);
-            }
         }
         else
         {
             $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
             $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+        }
+
+        $merchant = $bankingAccount->merchant;
+
+        if (empty($merchant) === false)
+        {
+            $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
+                [
+                    'event_name' => SegmentEvent::CA_ACTIVATED,
+                ]);
         }
     }
 }
