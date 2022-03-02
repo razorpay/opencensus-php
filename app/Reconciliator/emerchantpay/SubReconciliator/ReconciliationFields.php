@@ -4,17 +4,15 @@ namespace RZP\Reconciliator\emerchantpay\SubReconciliator;
 
 class ReconciliationFields
 {
-    const APPROVED = 'Approved';
-    const REFUND = 'Refund';
-    const SALE = 'Sale';
+    const SALE_APPROVED = 'Sale Approved';
+    const REFUND_APPROVED = 'Refund Approved';
 
     const TRANSACTION_DATE_AND_TIME = 'transaction_date_time';
     const MERCHANT_NAME = 'merchant_name';
     const MERCHANT_TRANSACTION_ID = 'merchant_transaction_id';
     const TRANSACTION_TYPE = 'transaction_type';
-    const STATUS = 'status';
+    const TRANSACTION_AMOUNT = 'transaction_amount';
     const TRANSACTION_CURRENCY = 'transaction_currency';
-    const AMOUNT = 'amount';
     const BILLING_CURRENCY = 'billing_currency';
     const BILLING_AMOUNT = 'billing_amount';
     const PROCESSING_TO_BILLING_CURRENCY_EXCHANGE_RATE = 'processing_to_billing_currency_exchange_rate';

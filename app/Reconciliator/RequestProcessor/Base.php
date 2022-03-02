@@ -249,7 +249,7 @@ class Base extends Core
         self::NETBANKING_BDBL          => ['imps.dispute@bandhanbank.com'],
         self::NETBANKING_UCO           => ['hoe_banking.calcutta@ucobank.co.in'],
         self::CARDLESS_EMI_EARLYSALARY => [],
-        self::EMERCHANTPAY             => ['finance@emerchantpay.com'],
+        self::EMERCHANTPAY             => ['aithal@emerchantpay.com'],
         self::NETBANKING_HDFC_CORP     => [],
 
         // Used when someone from the team needs to send the

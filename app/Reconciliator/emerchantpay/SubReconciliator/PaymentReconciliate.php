@@ -20,9 +20,9 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentStatus(array $row)
     {
-        $status = $row[ReconciliationFields::STATUS];
+        $transactionType = $row[ReconciliationFields::TRANSACTION_TYPE];
 
-        if ($status === ReconciliationFields::APPROVED)
+        if ($transactionType === ReconciliationFields::SALE_APPROVED)
         {
             return Status::CAPTURED;
         }
@@ -81,11 +81,11 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentAmount(array $row)
     {
-        if (empty($row[ReconciliationFields::AMOUNT]) === true)
+        if (empty($row[ReconciliationFields::TRANSACTION_AMOUNT]) === true)
         {
             return null;
         }
 
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::AMOUNT]/100);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
     }
 }

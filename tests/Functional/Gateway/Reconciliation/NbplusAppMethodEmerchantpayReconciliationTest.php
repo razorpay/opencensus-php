@@ -173,7 +173,7 @@ class NbplusAppMethodEmerchantpayReconciliationTest extends NbPlusPaymentService
         $data[] = $this->testData['testEmerchantpayPaymentSuccessRecon'];
 
         $data[0]['Merchant Transaction Id'] = $payment['id'];
-        $data[0]['Amount'] = '45211';
+        $data[0]['Transaction Amount'] = '45211';
 
         $file = $this->writeToExcelFile($data, 'Sale Approved', 'files/filestore');
 

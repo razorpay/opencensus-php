@@ -9,7 +9,7 @@ use RZP\Models\Payment\Refund\Status;
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const NA = 'not_applicable';
-    const COLUMN_REFUND_AMOUNT = ReconciliationFields::AMOUNT;
+    const COLUMN_REFUND_AMOUNT = ReconciliationFields::TRANSACTION_AMOUNT;
 
     const BLACKLISTED_COLUMNS = [];
 
@@ -20,10 +20,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getReconRefundStatus(array $row)
     {
-        $paymentType = $row[ReconciliationFields::TRANSACTION_TYPE];
-        $approvalStatus = $row[ReconciliationFields::STATUS];
+        $transactionType = $row[ReconciliationFields::TRANSACTION_TYPE];
 
-        if ($paymentType === ReconciliationFields::REFUND && $approvalStatus === ReconciliationFields::APPROVED)
+        if ($transactionType === ReconciliationFields::REFUND_APPROVED)
         {
             return Status::PROCESSED;
         }
@@ -85,11 +84,11 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        if (empty($row[ReconciliationFields::AMOUNT]) === true)
+        if (empty($row[ReconciliationFields::TRANSACTION_AMOUNT]) === true)
         {
             return null;
         }
 
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::AMOUNT]/100);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::TRANSACTION_AMOUNT]);
     }
 }
