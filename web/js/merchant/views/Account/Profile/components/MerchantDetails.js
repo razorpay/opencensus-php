@@ -282,6 +282,8 @@ const MerchantDetails = ({
       !['open', 'approved'].includes(workflows.increase_transaction_limit?.workflow_status)) &&
     isMerchantAllowedToEditLimit();
 
+  const isActivated = user.activation_status === 'activated';
+
   return (
     <div class="list-group details-row-container">
       <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
@@ -639,11 +641,13 @@ const MerchantDetails = ({
             value={() => (
               <div>
                 <Amount value={user.merchant.max_payment_amount} currency="INR" />
-                {isWorkflowChangeAllowed(increaseTxnLimitWorkflow) && showTransactionLimitEdit && (
-                  <Button.Transparent onClick={onUpdateTransactionLimitClick}>
-                    <i class="i i-edit p-l" />
-                  </Button.Transparent>
-                )}
+                {isWorkflowChangeAllowed(increaseTxnLimitWorkflow) &&
+                  showTransactionLimitEdit &&
+                  isActivated && (
+                    <Button.Transparent onClick={onUpdateTransactionLimitClick}>
+                      <i className="i i-edit p-l" />
+                    </Button.Transparent>
+                  )}
               </div>
             )}
           />
