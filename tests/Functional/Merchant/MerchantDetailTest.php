@@ -5420,6 +5420,53 @@ Team Razorpay',
         });
     }
 
+    public function testUpdateMerchantContactWithOwnerHavingRoleForPrimaryAndBanking()
+    {
+        Mail::fake();
+
+        [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "1234567890"]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'user_id'     => $userId,
+            'merchant_id' => $merchantId,
+            'role'        => 'owner',
+            'product'     => 'banking'
+        ]);
+
+        $testData = &$this->testData['testUpdateMerchantContactWithWorkflow'];
+
+        $testData['request']['url'] = "/merchants/$merchantId/mobile";
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        [$merchantId, $workflowActionId] = $this->assertWorkflowDataForUpdateMerchantContact($merchantId, $userId,
+            PermissionName::UPDATE_MOBILE_NUMBER,
+            "1234567890", "1234567890");
+
+        $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('1234567890', $data['old_contact_number']);
+
+            $this->assertEquals('8722627189', $data['new_contact_number']);
+
+            $this->assertEquals('emails.merchant.update_merchant_contact_from_admin', $mail->view);
+
+            $mail->hasTo($merchant['email']);
+
+            return true;
+        });
+    }
+
     public function testUpdateBusinessWebsiteWorkflowApprove()
     {
         Mail::fake();

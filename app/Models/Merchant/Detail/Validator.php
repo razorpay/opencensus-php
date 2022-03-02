@@ -784,18 +784,21 @@ class Validator extends Base\Validator
     {
         $validOldMobileNumberFormats = (new PhoneBook($oldNumber))->getMobileNumberFormats();
 
-        $merchantCountForAllMobileNumberFormats = $merchant->users()
-                                                           ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
-                                                           ->whereIn(Entity::CONTACT_MOBILE, $validOldMobileNumberFormats)
-                                                           ->count();
+        $userIdsForAllMobileNumberFormats = $merchant->users()
+                                                     ->where(Merchant\Detail\Entity::ROLE, '=', DetailConstants::OWNER)
+                                                     ->whereIn(Entity::CONTACT_MOBILE, $validOldMobileNumberFormats)
+                                                     ->pluck('id')
+                                                     ->toArray();
 
-        if($merchantCountForAllMobileNumberFormats > 1)
+        $userCountForAllMobileNumberFormats = count(array_unique($userIdsForAllMobileNumberFormats));
+
+        if($userCountForAllMobileNumberFormats > 1)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MULTI_OWNER_ACCOUNTS_ASSOCIATED);
         }
 
-        if($merchantCountForAllMobileNumberFormats === 0)
+        if($userCountForAllMobileNumberFormats === 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NO_OWNER_ACCOUNTS_ASSOCIATED);
