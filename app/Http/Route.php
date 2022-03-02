@@ -2532,6 +2532,7 @@ class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
+        'transaction_statement_fetch_multiple_for_banking' => ['get',   'transactions_banking',                      'StatementController@listForBanking'                                      ],
         'credit_repayment_transaction_create'      => ['post',     'credit_repayments/transaction',                  'TransactionController@createCreditRepaymentTransaction'            ],
         'capital_transaction_create'               => ['post',     'capital_balances/transaction',                   'TransactionController@createCapitalTransaction'                    ],
         'capital_multiple_transaction_create'      => ['post',     'capital_balances/multi_transactions',            'TransactionController@createMultipleCapitalTransactions'           ],
@@ -5323,6 +5324,7 @@ class Route
 
         //payout status reason mapping
         'payout_status_to_reason_mapping',
+        'transaction_statement_fetch_multiple_for_banking',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -7558,7 +7560,7 @@ class Route
         // Payment Fraud
         'get_fraud_attributes'                              => Permission::GET_FRAUD_ATTRIBUTES,
         'save_payment_fraud'                                => Permission::SAVE_PAYMENT_FRAUD,
-        
+
         'oauth_token_fetch_multiple'                        =>Permission::MERCHANT_GET_OAUTH_TOKEN,
 
         //Purpose code routes permission
@@ -7752,6 +7754,7 @@ class Route
         'oauth_app_webhook_create'                     => Permission::CREATE_WEBHOOK,
         'transaction_statement_fetch'                  => Permission::VIEW_TRANSACTION_STATEMENT,
         'transaction_statement_fetch_multiple'         => Permission::VIEW_TRANSACTION_STATEMENT,
+        'transaction_statement_fetch_multiple_for_banking'   => Permission::VIEW_TRANSACTION_STATEMENT,
         'invitation_create'                            => Permission::CREATE_INVITATION,
         'invitation_fetch_by_token'                    => Permission::VIEW_INVITATION,
         'invitation_resend'                            => Permission::RESEND_INVITATION,
@@ -9133,6 +9136,7 @@ class Route
             'token_fetch_vpa',
             'transaction_statement_fetch',
             'transaction_statement_fetch_multiple',
+            'transaction_statement_fetch_multiple_for_banking',
             'transfer_create',
             'transfer_create_reversal',
             'transfer_edit',
@@ -12681,6 +12685,7 @@ class Route
         //transaction related routes
         'transaction_statement_fetch',
         'transaction_statement_fetch_multiple',
+        'transaction_statement_fetch_multiple_for_banking',
 
         //accounting integration routes for tally plugin
         'accounting_integration_tally_invoices',
@@ -13068,6 +13073,7 @@ class Route
         'beta_account_fetch_multiple'                       => HeartbeatLagChecker::SLAVE,
         'submerchants_fetch_multiple'                       => HeartbeatLagChecker::SLAVE,
         'transaction_statement_fetch_multiple'              => HeartbeatLagChecker::SLAVE,
+        'transaction_statement_fetch_multiple_for_banking'        => HeartbeatLagChecker::SLAVE,
         'batch_fetch_by_id'                                 => HeartbeatLagChecker::MASTER,
         'batch_process_by_id'                               => HeartbeatLagChecker::MASTER,
         'payment_fetch_by_id'                               => HeartbeatLagChecker::MASTER,
@@ -13353,6 +13359,7 @@ class Route
         'beta_account_fetch_multiple',
         'submerchants_fetch_multiple',
         'transaction_statement_fetch_multiple',
+        'transaction_statement_fetch_multiple_for_banking',
         'mock_hdfc_enroll',
         'mock_hdfc_payment',
         'mock_hdfc_auth_enrolled',

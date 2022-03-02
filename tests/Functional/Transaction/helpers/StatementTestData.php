@@ -98,6 +98,103 @@ return [
         ],
     ],
 
+    'testFetchMultipleStatementsForBanking' => [
+        'request' => [
+            'url'    => '/transactions_banking',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin'    =>  'https://x.razorpay.com',
+            ],
+            'content' => [
+                'count' => 10,
+                'skip'  => 0,
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 4,
+                'items'  => [
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 1590,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'reversal',
+                            'amount'         => 1590,
+                            'currency'       => 'INR',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1590,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1590,
+                        'balance'        => 103410,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'payout',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 105000,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                    [
+                        // 'id'             => '',
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 2500,
+                        'currency'       => 'INR',
+                        'credit'         => 2500,
+                        'debit'          => 0,
+                        'balance'        => 102500,
+                        'source'         => [
+                            // 'id'             => '',
+                            'entity'         => 'bank_transfer',
+                            'mode'           => 'NEFT',
+                            // 'bank_reference' => '',
+                            'amount'         => 2500,
+                            'payer_name'     => null,
+                            'payer_account'  => '7654321234567',
+                            'payer_ifsc'     => 'HDFC0000001',
+                        ],
+                        // 'created_at'     => ,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchMultipleStatementsWithMerchantRules' => [
         'request' => [
             'url'    => '/transactions',

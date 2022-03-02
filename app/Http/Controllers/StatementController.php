@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 use RZP\Models\Transaction;
 
@@ -22,6 +23,15 @@ class StatementController extends Controller
     public function get(string $id)
     {
         $transaction = $this->service()->fetch($id, $this->input);
+
+        return ApiResponse::json($transaction);
+    }
+
+    public function listForBanking()
+    {
+        $input = Request::all();
+
+        $transaction = $this->service()->fetchMultipleForBanking($input);
 
         return ApiResponse::json($transaction);
     }

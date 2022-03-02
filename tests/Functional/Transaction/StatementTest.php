@@ -64,6 +64,58 @@ class StatementTest extends TestCase
         $this->assertNotEmpty($statement['source']['payee_account']);
     }
 
+    public function testFetchMultipleStatementsForBanking()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['business_banking' => true]);
+
+        // Creates two bank transfer transaction on banking balance.
+        $this->createBankTransferTransaction();
+        $this->createBankTransferTransaction();
+
+        $this->createPayout();
+
+        $payout = $this->getDbEntity('payout');
+
+        $this->reversePayout($payout);
+
+        // Creates one normal payment transaction on primary balance.
+        $this->doAuthAndCapturePayment(null, 50000);
+
+        $user =  (new User())->createBankingUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+        ],'admin');
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'x_transaction_view',
+                'type'        => 'admin',
+                'value'       => 'true'
+            ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      =>  '10000000000000',
+            'business_name'    =>  'Test Name Private Limited ltd ltd. Liability partnership',
+            'business_website' =>  'https://shopify.secondleveldomain.edu.in'
+        ]);
+
+        // One the first two transactions should appear in response.
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $response = $this->startTest();
+
+        // Asserts other keys existence in items - for bank_transfer txn
+        $statement = $response['items'][2];
+        $this->assertNotEmpty($statement['id']);
+        $this->assertNotEmpty($statement['created_at']);
+        $this->assertNotEmpty($statement['source']['id']);
+        $this->assertNotEmpty($statement['source']['bank_reference']);
+        $this->assertNotEmpty($statement['source']['payee_account']);
+    }
+
     public function testFetchStatement()
     {
         $this->createBankTransferTransaction();

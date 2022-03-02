@@ -122,6 +122,38 @@ class Repository extends Transaction\Repository
         return $statements;
     }
 
+    public function setBaseQueryAndFetchForBanking(array $input,
+                                         string $merchantId = null,
+                                         string $connectionType = null,
+                                         $balance = null): PublicCollection
+    {
+        $this->setBaseQueryIfApplicable($merchantId);
+
+        $this->forceIndexForXDashboardDefaultRequests($input, $balance);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $statements = parent::fetch($input, $merchantId, $connectionType);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $totalFetchTime = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::QUERY_TIME_FOR_TRANSACTION_API_FOR_BANKING , [
+            'duration_ms'    => $totalFetchTime,
+            'merchantId'     => $merchantId,
+        ]);
+
+
+        // After fetching settlement collection, we lazy load source relations for payout.
+        $statements->where(Entity::TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
+
+        // After fetching settlement collection, we lazy load source relations for Fund account validation.
+        $statements->where(Entity::TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
+
+        return $statements;
+    }
+
     protected function setBaseQueryIfApplicable(string $merchantId)
     {
         $variant = $this->app->razorx->getTreatment($merchantId,
@@ -144,6 +176,28 @@ class Repository extends Transaction\Repository
         $query->from(\DB::raw(Table::TRANSACTION.' IGNORE INDEX (transactions_created_at_index)'));
 
         return $query;
+    }
+
+    protected function forceIndexForXDashboardDefaultRequests($input, $balance)
+    {
+        if( ($balance != null and $balance->isTypeBanking())
+            and (array_key_exists(self::FROM, $input) or $this->checkDefaultFilters($input)) )
+        {
+            $this->baseQuery = $this->newQueryWithConnection($this->getSlaveConnection())
+                ->from(\DB::raw(Table::TRANSACTION.' USE INDEX (transactions_merchant_id_created_at_index)'));
+        }
+    }
+
+    protected function checkDefaultFilters($input)
+    {
+        if (sizeof($input) === 3 and
+            array_key_exists('balance_id', $input) and
+            array_key_exists('count', $input) and
+            array_key_exists('skip', $input) )
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
