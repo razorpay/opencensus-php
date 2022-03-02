@@ -200,6 +200,8 @@ class Type
 
     const WHITELISTED_DOMAIN  =  'whitelisted_domain';
 
+    const REWARDS = 'rewards';
+    
     const VIRTUAL_ACCOUNT_EDIT = "virtual_account_edit";
 
     const DEBIT_NOTE          = 'debit_note';
@@ -551,6 +553,7 @@ class Type
         self::TERMINAL_CREATION,
     ];
 
+    // map of type of batch -> permission
     public static $batchToAdminPermissionMapping = [
         self::ADJUSTMENT                         => Name::ADJUSTMENT_BATCH_UPLOAD,
         self::REPORT                             => Name::REPORTING_BATCH_UPLOAD,
@@ -593,7 +596,15 @@ class Type
         self::MERCHANT_CAPITAL_TAGS              => Name::MERCHANT_CAPITAL_TAGS_UPLOAD,
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
         self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
-        self::WHITELISTED_DOMAIN          => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
+        self::ENTITY_UPDATE_ACTION               => Name::ADMIN_BATCH_CREATE,
+        self::CREATE_EXEC_RISK_ACTION            => Name::ADMIN_BATCH_CREATE,
+        self::WHITELISTED_DOMAIN                 => Name::BULK_UPDATE_WHITELISTED_DOMAIN,
+        self::EARLY_SETTLEMENT_TRIAL             => Name::ADMIN_BATCH_CREATE,
+        self::CAPITAL_MERCHANT_ELIGIBILITY_CONFIG=> Name::ADMIN_BATCH_CREATE,
+        self::REWARDS                            => Name::ADMIN_BATCH_CREATE,
+        self::MERCHANT_STATUS_ACTION             => Name::ADMIN_BATCH_CREATE,
+        self::ENTITY_MAPPING                     => Name::ADMIN_BATCH_CREATE,
+        self::ADMIN_BATCH                        => Name::ADMIN_BATCH_CREATE,
         self::INSTANT_ACTIVATION                 => Name::INSTANT_ACTIVATION,
         self::MDR_ADJUSTMENTS                    => Name::MDR_ADJUSTMENTS,
         self::MERCHANT_ACTIVATION                => Name::MERCHANT_ACTIVATION,
@@ -603,6 +614,10 @@ class Type
         self::PRICING_RULE                       => Name::PRICING_RULE,
 
         self::DEBIT_NOTE                         => Name::CREATE_DEBIT_NOTE,
+        self::NACH_MIGRATION                     => Name::ADMIN_BATCH_CREATE,
+        self::CREATE_PAYMENT_FRAUD               => Name::ADMIN_BATCH_CREATE,
+        self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
+        self::BANKING_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

@@ -2362,6 +2362,10 @@ class Validator extends Base\Validator
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND);
             }
         }
+        else
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_TYPE_PERMISSION_MISSING);
+        }
     }
 
     /**

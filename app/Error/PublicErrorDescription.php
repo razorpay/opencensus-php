@@ -970,6 +970,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_STATE                                             = 'Invalid state passed in query parameters';
     const BAD_REQUEST_INVALID_WORKFLOW_FOR_PAYOUT                               = 'Workflow does not have create_payout permission';
     const BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND                             = 'Required permission not found';
+    const BAD_REQUEST_BATCH_TYPE_PERMISSION_MISSING                             = 'Batch type permission missing';
     const BAD_REQUEST_PAYOUT_WORKFLOW_EDIT_IN_PROGRESS                          = 'Workflow edit on the same payout rule is active';
     const BAD_REQUEST_PAYOUT_INVALID_STATE                                      = 'Payout is not in pending state';
     const BAD_REQUEST_USER_ROLE_NOT_SUPPORTED_FOR_WORKFLOW                      = 'User role is not supported for workflows';
