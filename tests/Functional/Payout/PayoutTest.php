@@ -23,10 +23,12 @@ use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
+
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settings;
 use RZP\Models\Card\Type;
 use Razorpay\OAuth\Client;
 use RZP\Models\FileStore;
@@ -18406,4 +18408,88 @@ class PayoutTest extends OAuthTestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals($payout['transaction_id'], $txn['id']);
     }
-}
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsSuccess()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->create(['id' => '90000merchant1']);
+        $this->fixtures->merchant->create(['id' => '90000merchant2']);
+        $this->fixtures->merchant->create(['id' => '90000merchant3']);
+        $this->fixtures->merchant->create(['id' => '90000merchant4']);
+
+        $this->startTest();
+
+        $merchantSlas = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA]);
+
+        $expectedSlas = array(
+            '90000merchant1' => 10,
+            '90000merchant2' => 20,
+            '90000merchant3' => 10,
+            '90000merchant4' => 20,
+        );
+        $expectedMerchantIds = array_keys($expectedSlas);
+
+        $this->assertArrayKeysExist($merchantSlas, $expectedMerchantIds);
+
+        $this->assertEquals($expectedSlas['90000merchant1'], $merchantSlas['90000merchant1']);
+        $this->assertEquals($expectedSlas['90000merchant2'], $merchantSlas['90000merchant2']);
+        $this->assertEquals($expectedSlas['90000merchant3'], $merchantSlas['90000merchant3']);
+        $this->assertEquals($expectedSlas['90000merchant4'], $merchantSlas['90000merchant4']);
+
+        $settingsEntities = $this->getDbEntities('settings');
+        $merchantIdsFromSettings = [];
+
+        foreach($settingsEntities as $settingsEntity) {
+            $settingsData = $settingsEntity->toArray();
+            $merchantId = $settingsData['entity_id'];
+            array_push($merchantIdsFromSettings, $merchantId);
+            $this->assertEquals($expectedSlas[$merchantId], $settingsData['value']);
+            $this->assertEquals(Settings\Module::PAYOUTS, $settingsData['module']);
+            $this->assertEquals('merchant', $settingsData['entity_type']);
+        }
+        $this->assertEqualsCanonicalizing($expectedMerchantIds, $merchantIdsFromSettings);
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsMissingPayload()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsInvalidSla()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsEmptyMerchantIdList()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsInvalidMerchantId()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsNonUniqueMerchantIds()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsUnknownMerchantIds()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+ }

@@ -30,6 +30,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\PayoutService;
 use RZP\Models\Admin\Permission;
 use RZP\Exception\LogicException;
+use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Mail\Payout\PendingApprovals;
@@ -77,6 +78,8 @@ class Service extends Base\Service
     protected $workflowConfigService;
 
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
+
+    protected const PAYOUTS_ON_HOLD_SLA_SETTINGS_KEY = "payouts_on_hold_sla";
 
     protected const ON_HOLD_FETCH_LIMIT = 5000;
 
@@ -2575,5 +2578,52 @@ class Service extends Base\Service
     public function createPayoutViaLedgerCronJob(array $blacklistIds, array $forcedMerchantIds, int $limit)
     {
         $this->core->createPayoutViaLedgerCronJob($blacklistIds, $forcedMerchantIds, $limit);
+    }
+
+    public function updateMerchantOnHoldSlas(array $input)
+    {
+        (new Validator)->validateMerchantSlasForOnHoldPayouts($input);
+
+        $adminService = new Admin\Service;
+
+        $merchantSlaConfigList = $adminService->getConfigKey([
+            'key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA
+        ]);
+
+        $this->repo->transaction(
+            function () use ($input, & $merchantSlaConfigList, $adminService) {
+                foreach ($input as $sla => $merchantIds) {
+                    foreach ($merchantIds as $merchantId) {
+                        try
+                        {
+                            $merchantEntity = $this->repo->merchant->findOrFail($merchantId);
+                        }
+                        catch (DbQueryException $exception)
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_ERROR,
+                                null,
+                                null,
+                                "merchantId: $merchantId is not found in database"
+                            );
+                        }
+
+                        $accessor = Settings\Accessor::for($merchantEntity, Settings\Module::PAYOUTS);
+
+                        $accessor->upsert(self::PAYOUTS_ON_HOLD_SLA_SETTINGS_KEY, $sla);
+
+                        $accessor->save();
+
+                        $merchantSlaConfigList[$merchantId] = $sla;
+                    }
+                }
+
+                $adminService->setConfigKeys([
+                    Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA => $merchantSlaConfigList
+                ]);
+            }
+        );
+
+        return ['success' => true];
     }
 }

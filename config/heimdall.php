@@ -1665,6 +1665,10 @@ return [
             ],
             Permission::RETRY_PAYOUTS_ON_SERVICE => [
                 'assignable' => true,
+            ],
+            Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS => [
+                'description' => 'Set merchant SLA for on-hold payouts',
+                'assignable' => true
             ]
         ],
 

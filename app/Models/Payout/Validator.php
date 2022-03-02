@@ -1270,4 +1270,49 @@ class Validator extends Base\Validator
             );
         }
     }
+
+    public function validateMerchantSlasForOnHoldPayouts(array $input) {
+        $slas = array_keys($input);
+
+        if(count($slas) == 0) {
+            throw new Exception\BadRequestValidationFailureException(
+                "There should be atleast one SLA => merchantIds key value pair in request body"
+            );
+        }
+
+        foreach($slas as $sla) {
+            if(!is_numeric($sla) || !is_int((int) $sla) || (int) $sla < 0) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "sla value should be an integer greater than 0"
+                );
+            }
+        }
+
+        $allMerchantIds = [];
+        $merchantIdsArrays = array_values($input);
+
+        foreach($merchantIdsArrays as $merchantIdsArray) {
+            if(!is_array($merchantIdsArray) || !is_sequential_array($merchantIdsArray)) {
+                throw new Exception\BadRequestValidationFailureException(
+                    "The value for a SLA should be a non-empty list of merchantIds"
+                );
+            }
+
+            array_map(function($value) use (& $allMerchantIds) {
+                if(!is_string($value) || empty($value)) {
+                    throw new Exception\BadRequestValidationFailureException(
+                        "merchantId should be a non-empty string"
+                    );
+                }
+
+                array_push($allMerchantIds, $value);
+            }, $merchantIdsArray);
+        }
+
+        if(count($allMerchantIds) !== count(array_flip($allMerchantIds))) {
+            throw new Exception\BadRequestValidationFailureException(
+                "all merchantIds should be a unique"
+            );
+        }
+    }
 }

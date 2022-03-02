@@ -16748,4 +16748,157 @@ return [
             ],
         ],
     ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsSuccess' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                '10'        => ["90000merchant1", "90000merchant3"],
+                '20'        => ["90000merchant2", "90000merchant4"],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success'  =>  true,
+            ],
+        ],
+    ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsMissingPayload' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => []
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'There should be atleast one SLA => merchantIds key value pair in request body',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsInvalidSla' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                'abc-invalid-sla' => ['90000merchant1']
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'sla value should be an integer greater than 0',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsEmptyMerchantIdList' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                '10' => []
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The value for a SLA should be a non-empty list of merchantIds',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsInvalidMerchantId' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                '10' => ['']
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'merchantId should be a non-empty string',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsNonUniqueMerchantIds' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                '10' => ['m1'],
+                '20' => ['m1']
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'all merchantIds should be a unique',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateMerchantSlaForOnHoldPayoutsUnknownMerchantIds' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                '10' => ['m1'],
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'merchantId: m1 is not found in database',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
 ];

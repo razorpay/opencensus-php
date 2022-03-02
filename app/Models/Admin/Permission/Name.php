@@ -913,7 +913,7 @@ class Name
     const MANAGE_CAMPAIGNHQ_OPERATIONS          = 'manage_campaignhq_operations';
     const MERCHANT_GET_OAUTH_TOKEN              = 'merchant_get_oauth_token';
 
-
+    const SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS  = 'set_merchant_sla_for_on_hold_payouts';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

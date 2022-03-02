@@ -1497,7 +1497,9 @@ class Route
         'payout_send_pending_approval_reminder'    => ['post',     'payouts/pending-payouts-approval-reminder',      'PayoutController@pendingPayoutApprovalReminder'                       ],
 
         'payout_wf_config_migrate'                 => ['post',     'payouts_configs/migrate',                        'PayoutController@migrateWorkflowConfigsToWorkflowService'          ],
-        'payout_notification_to_slack_app'         => ['post',     'payout_notification/slack_app',                   'PayoutController@sendPendingPayoutsNotificationToSlack'],
+        'payout_notification_to_slack_app'         => ['post',     'payout_notification/slack_app',                  'PayoutController@sendPendingPayoutsNotificationToSlack'],
+
+        'update_merchant_sla_for_on_hold_payouts'  => ['put',      'payouts/merchant_on_hold_slas',                  'PayoutController@updateMerchantOnHoldSlas'],
 
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
@@ -6389,6 +6391,8 @@ class Route
 
         'admin_patch_purpose_code',
         'purpose_code_admin',
+
+        'update_merchant_sla_for_on_hold_payouts',
     ];
 
     public static $routePermission = [
@@ -7566,6 +7570,9 @@ class Route
         //Purpose code routes permission
         'purpose_code_admin'                  => Permission::VIEW_MERCHANT,
         'admin_patch_purpose_code'            => Permission::EDIT_MERCHANT,
+
+        'update_merchant_sla_for_on_hold_payouts'           => Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS,
+
     ];
 
     public static $bankingRoutePermissions = [
@@ -11018,6 +11025,7 @@ class Route
             'update_merchant_notification_config_admin',
             'update_merchant_options',
             'update_merchant_options_admin',
+            'update_merchant_sla_for_on_hold_payouts',
             'update_partner_intent',
             'update_partner_type',
             'update_payment_config',

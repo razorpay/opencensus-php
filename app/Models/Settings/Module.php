@@ -25,6 +25,7 @@ class Module
     const PAYMENT_PAGE_ITEM     = 'payment_page_item';
     const PAYOUT_PURPOSE        = 'payout_purpose';
     const PAYOUT_LINK           = 'payout_link';
+    const PAYOUTS               = 'payouts';
     const TAX_PAYMENTS          = 'tax_payments';
     const X_APPS                = 'x_apps';
     const CONTACT_TYPE          = 'contact_type';
