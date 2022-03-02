@@ -2327,16 +2327,33 @@ class Repository extends Base\Repository
                 $serialized[Statement\Entity::CONTACT_EMAIL] = $contact->getEmail();
                 $serialized[Statement\Entity::CONTACT_PHONE] = $contact->getContact();
                 $serialized[Statement\Entity::FUND_ACCOUNT_NUMBER] = $fa->getAccountDestinationAsText(false);
-                $serialized[Common::NOTES] = $entity->source->getNotes()->toArray();
+                $notes = $entity->source->getNotes();
 
-                $serialized[Common::NOTES] = array_map(
-                    function ($key, $value)
+                // TODO:: Add test cases
+                try
+                {
+                    if($notes !== null)
                     {
-                        return compact('key', 'value');
-                    },
-                    array_keys($serialized[Common::NOTES]),
-                    $serialized[Common::NOTES]
-                );
+                        $serialized[Common::NOTES] = $notes->toArray();
+
+                        $serialized[Common::NOTES] = array_map(
+                            function ($key, $value)
+                            {
+                                return compact('key', 'value');
+                            },
+                            array_keys($serialized[Common::NOTES]),
+                            $serialized[Common::NOTES]
+                        );
+                    }
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->info(
+                        TraceCode::ES_TRANSACTION_NOTES_SYNC,
+                        [
+                            'notes' => $notes
+                        ]);
+                }
             }
         }
 

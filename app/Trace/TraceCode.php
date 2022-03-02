@@ -3236,6 +3236,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_INFO                                      = 'TRANSACTION_INFO';
     const TRANSACTION_INFO_ALERT                                = 'TRANSACTION_INFO_ALERT';
     const PAYMENT_TRANSACTION_CPS_QUEUE_DELETE                  = 'PAYMENT_TRANSACTION_CPS_QUEUE_DELETE';
+    const ES_TRANSACTION_NOTES_SYNC                             = 'ES_TRANSACTION_NOTES_SYNC';
 
 
     // Subscription service
