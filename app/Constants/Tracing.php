@@ -277,6 +277,11 @@ class Tracing
             'stakeholder_fetch_v2',
             'stakeholder_fetch_all_v2',
 
+            'link_account_documents_v2',
+            'link_stakeholder_documents_v2',
+            'get_account_documents_v2',
+            'get_stakeholder_documents_v2',
+
             // used by frontend-graphql
             'banking_accounts_list',
             'contact_list',

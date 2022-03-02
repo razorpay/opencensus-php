@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\GenericDocument;
 use RZP\Models\Merchant\Document;
+use RZP\Trace\Tracer;
 
 
 class DocumentResponse extends Detail\Core
@@ -15,8 +17,11 @@ class DocumentResponse extends Detail\Core
     {
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        // get documents required as per business type, category, subcategory
-        $fieldsRequired = $this->getDocumentsGroupedAndMergedByProofType($merchantDetails, $entityType);
+        $fieldsRequired = Tracer::inspan(['name' => HyperTrace::GET_REQUIRED_DOC_TYPES], function () use ($merchantDetails, $entityType) {
+
+            // get documents required as per business type, category, subcategory
+            return $this->getDocumentsGroupedAndMergedByProofType($merchantDetails, $entityType);
+        });
 
         // get currently uploaded documents
         $documentsArr = [];
@@ -29,29 +34,29 @@ class DocumentResponse extends Detail\Core
             $documentsArr[$document->getDocumentType()] = $document;
         }
 
-        // construct documents as per required docs and uploaded docs
-        $returnData = [];
+        $returnData = Tracer::inspan(['name' => HyperTrace::CONSTRUCT_DOCUMENT_V2_RESPONSE], function () use ($fieldsRequired, $documentService, $documentsArr) {
 
-        foreach ($fieldsRequired as $proofType => $fields)
-        {
-            foreach ($fields as $field)
-            {
-                if (isset($documentsArr[$field]) === true)
-                {
-                    if (isset($returnData[$proofType]) === false)
-                    {
-                        $returnData[$proofType] = [];
+            // construct documents as per required docs and uploaded docs
+            $returnData = [];
+
+            foreach ($fieldsRequired as $proofType => $fields) {
+                foreach ($fields as $field) {
+                    if (isset($documentsArr[$field]) === true) {
+                        if (isset($returnData[$proofType]) === false) {
+                            $returnData[$proofType] = [];
+                        }
+
+                        $signedUrlResponse = $documentService->getDocumentDownloadLinkFromUFH([], $documentsArr[$field]->getPublicFileStoreId());
+
+                        $returnData[$proofType][] = [
+                            Constants::TYPE => $documentsArr[$field]->getDocumentType(),
+                            Constants::URL => $signedUrlResponse['signed_url'],
+                        ];
                     }
-
-                    $signedUrlResponse = $documentService->getDocumentDownloadLinkFromUFH([], $documentsArr[$field]->getPublicFileStoreId());
-
-                    $returnData[$proofType][] = [
-                        Constants::TYPE        => $documentsArr[$field]->getDocumentType(),
-                        Constants::URL         => $signedUrlResponse['signed_url'],
-                    ];
                 }
             }
-        }
+            return $returnData;
+        });
 
         return $returnData;
     }

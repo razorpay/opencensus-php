@@ -50,6 +50,7 @@ class HyperTrace
     const QR_CODES_FETCH_MULTIPLE_PAYMENT_ID                    = 'qrv2_qr_codes.fetch_multiple.paymentId';
     const QR_CODES_FETCH_MULTIPLE_FETCH_ALL                     = 'qrv2_qr_codes.fetch_multiple.fetch_all';
     const QR_CODES_FETCH                                        = 'qrv2_qr_codes.fetch';
+
     const QR_PAYMENT_FETCH_MULTIPLE_PAYMENTS                    = 'qrv2_qr_payment.fetchMultiplePayments';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_CODE_ID                = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_PAYMENT_ID             = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';
@@ -87,9 +88,18 @@ class HyperTrace
     const UPDATE_NC_FIELDS_ACKNOWLEDGED                         = 'update_nc_fields_acknowledged';
     const VALIDATE_NC_RESPONDED_IF_APPLICABLE                   = 'validate_nc_responded_if_applicable';
 
+    const POST_ACCOUNTS_DOCUMENTS                               = 'post_accounts_documents_v2.service';
+    const POST_STAKEHOLDER_DOCUMENTS                            = 'post_stakeholder_documents_v2.service';
+    const GET_ACCOUNTS_DOCUMENTS                                = 'get_accounts_documents_v2.service';
+    const GET_STAKEHOLDER_DOCUMENTS                             = 'get_stakeholder_documents_v2.service';
+    const UPLOAD_ACTIVATION_FILE                                = 'upload_activation_file';
+    const UPDATE_NC_FIELDS_ACKNOWLEDGED_FOR_NO_DOC              = 'update_nc_fields_acknowledged_for_no_doc';
+    const DOCUMENT_V2_GET_RESPONSE                              = 'document_v2_get_response';
+    const GET_REQUIRED_DOC_TYPES                                = 'get_required_doc_types';
+    const CONSTRUCT_DOCUMENT_V2_RESPONSE                        = 'construct_document_v2_response';
+
     /*Partnerships traces names*/
     const CREATE_SUBMERCHANT_SERVICE                           = 'create_submerchant.service';
     const CREATE_SUBMERCHANT_CORE                              = 'create_submerchant.core';
-
 
 }

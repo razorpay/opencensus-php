@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -18,8 +19,7 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
-
-
+use RZP\Trace\Tracer;
 
 
 class Service extends Base\Service
@@ -174,7 +174,10 @@ class Service extends Base\Service
 
         $timeStarted = millitime();
 
-        $documentResponse =  (new DocumentResponse)->documentsResponse($merchant, $entityType, $entity->getId());
+        $documentResponse = Tracer::inspan(['name' => HyperTrace::DOCUMENT_V2_GET_RESPONSE], function () use ($merchant, $entityType, $entity) {
+
+            return (new DocumentResponse)->documentsResponse($merchant, $entityType, $entity->getId());
+        });
 
         $this->captureMetricsForDocumentFetch($entity, $timeStarted);
 
@@ -202,7 +205,10 @@ class Service extends Base\Service
             throw new Exception\BadRequestValidationFailureException('invalid document type:'. $input[Entity::DOCUMENT_TYPE] . ' for '. $entity->getEntity());
         }
 
-        $this->uploadActivationFileByPartner($merchant, $entity, $input);
+        Tracer::inspan(['name' => HyperTrace::UPLOAD_ACTIVATION_FILE], function () use ($merchant, $entity, $input) {
+
+            $this->uploadActivationFileByPartner($merchant, $entity, $input);
+        });
 
         $merchantDetails = $merchant->merchantDetail;
 
@@ -214,19 +220,27 @@ class Service extends Base\Service
 
             $ncAcknowledgementPayload = [$documentType => "uploaded"];
 
-            $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($ncAcknowledgementPayload, $merchant);
+            Tracer::inspan(['name' => HyperTrace::UPDATE_NC_FIELDS_ACKNOWLEDGED], function () use ($accountV2Core, $ncAcknowledgementPayload, $merchant) {
 
-            $noDocGmvLimitExhausted = $accountV2Core->isNoDocOnboardingGmvLimitExhausted($merchant->getId());
+                $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($ncAcknowledgementPayload, $merchant);
+            });
 
-            if ($noDocGmvLimitExhausted === true)
-            {
-                (new NeedsClarification\Core())->updateNCFieldsAcknowledgedIfApplicableForNoDoc($merchant, $merchantDetails);
-            }
+            Tracer::inspan(['name' => HyperTrace::UPDATE_NC_FIELDS_ACKNOWLEDGED_FOR_NO_DOC], function () use ($accountV2Core, $merchant, $merchantDetails) {
+
+                $noDocGmvLimitExhausted = $accountV2Core->isNoDocOnboardingGmvLimitExhausted($merchant->getId());
+
+                if ($noDocGmvLimitExhausted === true) {
+                    (new NeedsClarification\Core())->updateNCFieldsAcknowledgedIfApplicableForNoDoc($merchant, $merchantDetails);
+                }
+            });
         }
 
         AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$merchant, $merchantDetails);
 
-        $documentResponse =  (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
+        $documentResponse = Tracer::inspan(['name' => HyperTrace::DOCUMENT_V2_GET_RESPONSE], function () use ($merchant, $entity) {
+
+            return (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
+        });
 
         $this->captureMetricsForDocumentUpload($entity, $input, $timeStarted);
 
