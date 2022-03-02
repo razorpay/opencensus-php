@@ -27,21 +27,25 @@ class TwoFactorVerificationOTP extends React.Component {
   };
 
   onConfirm = () => {
-    return this.props
-      .onConfirm({
-        otp: this.otpValue,
-        receiver: this.props.contactMobile,
-      })
-      .then((data) => {
-        // not calling onCloseClick onSuccess since it triggers onClose callback
-        // closeModal can be explicitly called in onSuccess callback if required
-        this.props.onSuccess(data);
-      })
-      .catch(({ errors }) => {
-        this.props.onWrongOtp({ errors });
-        this.setState({ wrongOtp: true });
-      });
+    return this.validOtp()
+      ? this.props
+          .onConfirm({
+            otp: this.otpValue,
+            receiver: this.props.contactMobile,
+          })
+          .then((data) => {
+            // not calling onCloseClick onSuccess since it triggers onClose callback
+            // closeModal can be explicitly called in onSuccess callback if required
+            this.props.onSuccess(data);
+          })
+          .catch(({ errors }) => {
+            this.props.onWrongOtp({ errors });
+            this.setState({ wrongOtp: true });
+          })
+      : this.setState({ wrongOtp: true });
   };
+
+  validOtp = () => this.otpValue && this.otpValue.length === 6;
 
   componentDidMount() {
     analyticsTrack({
