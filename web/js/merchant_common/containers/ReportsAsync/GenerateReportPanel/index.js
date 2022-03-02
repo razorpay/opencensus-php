@@ -13,6 +13,8 @@ import SelectConfig from './SelectConfig';
 import SelectPeriod from './SelectPeriod';
 import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
@@ -88,8 +90,13 @@ export default class GenerateReportPanel extends React.PureComponent {
           config_report_type: report_type,
         }),
       );
-    } catch (err) {
-      console.error({ err });
+    } catch (error) {
+      errorService.captureError(error, {
+        tags: {
+          team: Teams.COMMON,
+        },
+        rank: Ranks.P2,
+      });
     }
   })
   onGenerateReport = () => {

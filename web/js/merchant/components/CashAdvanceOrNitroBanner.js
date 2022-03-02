@@ -10,6 +10,8 @@ import Amount from 'common/ui/Amount';
 import { fetchProducts, getApplications } from 'merchant/reducers/capital';
 import { CAPITAL_PRODUCT_NAME_CODE_MAP } from 'merchant/views/Capital/Loans/constants';
 import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 const EVENT_CATEGORY_CA_BANNER = 'Cash Advance Banner - Settlements';
 
@@ -54,8 +56,13 @@ const CashAdvanceOrNitroBanner = ({
       if (!errors && applications && applications.length > 0) {
         setHasMerchantApplied(true);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      errorService.captureError(error, {
+        tags: {
+          team: Teams.COMMON,
+        },
+        rank: Ranks.P2,
+      });
     } finally {
       setIsApplicationsLoading(false);
     }

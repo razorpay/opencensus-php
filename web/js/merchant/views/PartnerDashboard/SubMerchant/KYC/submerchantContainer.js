@@ -12,6 +12,8 @@ import * as EventsActions from 'merchant/reducers/trackEvents';
 import KycForm from 'merchant/containers/Activation/new';
 import { setInstantActivationsTracking } from 'merchant/containers/Activation/ga_new';
 import User from 'merchant/models/User';
+import errorService from '@razorpay/universe-utils/errorService';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 const SubmerchantActivationContainer = ({
   user,
@@ -127,7 +129,12 @@ const SubmerchantActivationContainer = ({
           gst_details = gst_details?.data;
         }
       } catch (error) {
-        console.error(error);
+        errorService.captureError(error, {
+          tags: {
+            team: Teams.COMMON,
+          },
+          rank: Ranks.P2,
+        });
       }
 
       if (gst_details?.results && gst_details.results.length) {
@@ -148,7 +155,12 @@ const SubmerchantActivationContainer = ({
           newClarificationReasons = newClarificationReasons && newClarificationReasons.data;
           setClarificationReasons(newClarificationReasons);
         } catch (error) {
-          console.error(error);
+          errorService.captureError(error, {
+            tags: {
+              team: Teams.COMMON,
+            },
+            rank: Ranks.P2,
+          });
         }
       } else {
         setClarificationReasons({});
