@@ -18,12 +18,17 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
   form: 'updatePasswordChangeForm',
 })
 export default class PasswordForm extends PureComponent {
+  passwordRegex = /^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/;
+
   changePassword = (props) => {
     let errorMessage;
     if (props.old_password === props.password) {
       errorMessage = 'Old password cannot be the same as the new password';
     } else if (props.password !== props.password_confirmation) {
       errorMessage = 'New password and new password confirmation should be same';
+    } else if (this.passwordRegex.test(props.password) !== true) {
+      errorMessage =
+        'The password must be between 8 and 50 characters, must include at least 1 letter and 1 number';
     }
 
     if (errorMessage) {
@@ -35,6 +40,7 @@ export default class PasswordForm extends PureComponent {
       return;
     }
 
+    // eslint-disable-next-line consistent-return
     return this.props
       .updatePassword(props)
       .then(() => {
