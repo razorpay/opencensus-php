@@ -12,7 +12,6 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import { RZPFeatures } from 'merchant/helpers/data';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
-import CheckoutRewardsAnnouncement from 'merchant/components/Announcements/CheckoutRewards';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -105,7 +104,6 @@ export default class CheckoutRewardsIndex extends Component {
       <div className="checkout-rewards-main-container">
         <div className="banner-container">
           <DashboardBanner />
-          <CheckoutRewardsAnnouncement userId={user.current} />
         </div>
         <tabbed-container>
           <header id="link-header">

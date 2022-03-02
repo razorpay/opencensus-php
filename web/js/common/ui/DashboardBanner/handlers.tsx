@@ -9,7 +9,6 @@ import {
   setBaseLocation as fnSetBaseLocation,
 } from '../../../merchant/reducers/app';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
-import PLFeaturesModal from '../../../merchant/components/Announcements/CatalystCampaignBanner/PLFeaturesModal';
 import { sendDataToSalesForce } from '../../utils/common-api';
 import CatalystCampaign from '../GrowthCustomizeModal/CatalystCampaign';
 import ExclusiveOffer from '../ExclusiveOffer';
@@ -28,12 +27,6 @@ const getClickHandler = (id = '') => {
     });
   };
 
-  const openPLFeaturesModal = () => {
-    openModal({
-      component: <PLFeaturesModal closeModal={closeModal} />,
-      className: 'PL_Catalyst_Banner--Modal',
-    });
-  };
   const handlePaymentCatalystCta1 = (imageID = '') => {
     openModal({
       component: <CatalystCampaign imageID={imageID} />,
@@ -61,8 +54,6 @@ const getClickHandler = (id = '') => {
     case 'OCT-NITRO-CARDOFFER':
     case 'OCT-NITRO-ICICIBranded':
       return openRazorpayXNitroModal;
-    case 'JUL21-PG-PL-Cross-selling':
-      return openPLFeaturesModal;
     case 'settlements-banner-JUL21-RXCC-ULTRA':
       return sendPayloadToSalesforce('ultra-campaign', user);
     case 'SEP21-ULTRALOC-BANNER':

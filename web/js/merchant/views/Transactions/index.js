@@ -19,7 +19,6 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Time from 'common/ui/Time';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
-import CatalystCampaignBanner from 'merchant/components/Announcements/CatalystCampaignBanner';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
@@ -123,9 +122,6 @@ class TransactionsContainer extends Component {
             </AnnouncementBanner>
           </ShowWhen>
           <DashboardBanner />
-          <ShowWhen additionalCondition={(usr) => usr.isCatalystCampaignEnabled}>
-            <CatalystCampaignBanner productName="Transactions" />
-          </ShowWhen>
         </div>
         <tabbed-container>
           {/* To make the header scrollable we just need to add this new class to the header component */}
