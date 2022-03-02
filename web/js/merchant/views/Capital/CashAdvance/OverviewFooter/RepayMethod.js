@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import Input from 'common/new-ui/Input';
 import Repayments from 'merchant/models/Capital/Repayments';
 import { loadCheckoutScript } from '../../utils/index';
 import {
@@ -22,7 +21,6 @@ import {
   trackCheckoutFlowSuccess,
   trackRepayCancel,
   trackRepayConfirm,
-  trackSettlementAmountUpdated,
 } from '../TrackEvents/trackEvents';
 
 function updateRepaymentData(data, onResolve, onReject) {
@@ -32,7 +30,7 @@ function updateRepaymentData(data, onResolve, onReject) {
 }
 
 const RepayMethod = ({
-  merchantId,
+  user,
   setView,
   repayAmount,
   balance,
@@ -50,21 +48,51 @@ const RepayMethod = ({
   repayType,
   location: { pathname = '' },
 }) => {
-  const [customAmountInput, setCustomAmountInput] = useState(settlementBalance.customAmount / 100);
-
-  useEffect(() => {
-    const amount = repayAmount > balance ? balance : repayAmount;
-    setCustomAmountInput(amount / 100);
-  }, [repayAmount, balance]);
-
   const isNextRepayableRepayType = repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
+
+  const handleRazorpayCheckoutPayment = (RepaymentInstance, paymentParams) => {
+    const requests = [
+      loadCheckoutScript(),
+      RepaymentInstance.createRepayment({
+        ...paymentParams,
+        payment_reference_type: COLLECTIONS_PAYMENT_REFERENCE_TYPE.ORDER,
+        amount: Number(bankBalance.amount),
+      }),
+    ];
+
+    return Promise.all(requests).then(([_, repaymentDetails]) => {
+      const { data: { payment_reference_id: order_id } = {} } = repaymentDetails;
+      if (!order_id) return Promise.reject(new Error('No Order Id found'));
+
+      return new Promise((resolve, reject) => {
+        const razorpayInstance = new window.Razorpay({
+          order_id,
+          prefill: {
+            name: user.name,
+            email: user.email,
+            contact: user.contact_mobile,
+          },
+          handler: (response) => {
+            trackCheckoutFlowSuccess(pathname);
+            updateRepaymentData(response, resolve, reject);
+          },
+          modal: {
+            ondismiss: () => {
+              trackCheckoutFlowCancel(pathname, repayAmount);
+              reject();
+            },
+          },
+        });
+        razorpayInstance.open();
+      });
+    });
+  };
 
   const handleRepayClick = () => {
     const RepaymentInstance = new Repayments();
     const paymentParams = {
-      // merchant_id: merchantId,
-      credit_id: merchantId,
+      credit_id: user.current,
       product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
       currency: 'INR',
     };
@@ -146,39 +174,6 @@ const RepayMethod = ({
       });
   };
 
-  const handleRazorpayCheckoutPayment = (RepaymentInstance, paymentParams) => {
-    const requests = [
-      loadCheckoutScript(),
-      RepaymentInstance.createRepayment({
-        ...paymentParams,
-        payment_reference_type: COLLECTIONS_PAYMENT_REFERENCE_TYPE.ORDER,
-        amount: Number(bankBalance.amount),
-      }),
-    ];
-
-    return Promise.all(requests).then(([_, repaymentDetails]) => {
-      const { data: { payment_reference_id: order_id } = {} } = repaymentDetails;
-      if (!order_id) return Promise.reject(new Error('No Order Id found'));
-
-      return new Promise((resolve, reject) => {
-        const razorpayInstance = new Razorpay({
-          order_id,
-          handler: (response) => {
-            trackCheckoutFlowSuccess(pathname);
-            updateRepaymentData(response, resolve, reject);
-          },
-          modal: {
-            ondismiss: () => {
-              trackCheckoutFlowCancel(pathname, repayAmount);
-              reject();
-            },
-          },
-        });
-        razorpayInstance.open();
-      });
-    });
-  };
-
   const handleCancelClick = () => {
     const isSettlementActiveAndHasBalance = !!(
       settlementBalance &&
@@ -226,68 +221,6 @@ const RepayMethod = ({
       setSettlementBalance({ ...settlementBalance, active: false });
       setBankBalance({ ...bankBalance, active: true });
     } else setBankBalance({ ...bankBalance, active });
-  };
-
-  const handleCustomAmountDoneClick = () => {
-    setSettlementBalance({
-      ...settlementBalance,
-      isCustomAmountActive: false,
-      amount: customAmountInput * 100,
-    });
-  };
-
-  const handleEditClick = () => {
-    setSettlementBalance({ ...settlementBalance, isCustomAmountActive: true, active: true });
-    if (repayInputType === 'radio') {
-      setBankBalance({ ...bankBalance, active: false });
-    }
-  };
-
-  const handleCustomAmountChange = (event) => {
-    let error = '';
-    let errorStr;
-    const value = parseInt(event.target.value);
-
-    if (value < 10 || event.target.value === '') {
-      errorStr = `Min. amount can be selected ₹ 10`;
-      error = (
-        <p>
-          Min. amount can be selected <Amount value={1000} currency="INR" />
-        </p>
-      );
-    } else if (value > repayAmount / 100) {
-      errorStr = `Max. amount can be selected ₹ ${(repayAmount / 100).toFixed(2)}`;
-      error = (
-        <p>
-          Max. amount can be selected <Amount value={repayAmount} currency="INR" />
-        </p>
-      );
-    } else if (value > balance / 100) {
-      errorStr = `Max. Available Balance is ₹ ${(balance / 100).toFixed(2)}`;
-      error = (
-        <p>
-          Max. Available Balance is <Amount value={balance} currency="INR" />
-        </p>
-      );
-    }
-    trackSettlementAmountUpdated(pathname, {
-      error: errorStr,
-      amount: event.target.value,
-    });
-    setCustomAmountInput(event.target.value);
-    setSettlementBalance({
-      ...settlementBalance,
-      error,
-    });
-  };
-
-  const handleCustomAmountCloseClick = () => {
-    setSettlementBalance({
-      ...settlementBalance,
-      customAmount: settlementBalance.amount,
-      isCustomAmountActive: false,
-      error: '',
-    });
   };
 
   const isBalanceZero = balance === 0;
@@ -404,17 +337,9 @@ const RepayMethod = ({
   );
 };
 
-export default withRouter(
-  connect((state, ownProps) => {
-    const {
-      session: {
-        user: { current: merchantId },
-      },
-    } = state;
+const mapStateToProps = (state, ownProps) => ({
+  user: state.session.user,
+  ...ownProps,
+});
 
-    return {
-      merchantId,
-      ...ownProps,
-    };
-  })(RepayMethod),
-);
+export default withRouter(connect(mapStateToProps)(RepayMethod));
