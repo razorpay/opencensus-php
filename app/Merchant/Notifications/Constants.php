@@ -953,25 +953,6 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Boost your revenue growth',
-            'description' => 'Grow your revenue streams by accepting international payments in 100+ foreign currencies',
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cross-border-payments-icon.svg',
-            'id'          => 'Sep21-CrossBorder-Activation',
-            'campaign'    => 'growth',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Accept International Payments',
-                    'url'   => '/payment-methods?utm_source=Dashboard+announcement&utm_campaign=Existing+domestic+merchants&utm_id=International+Payments',
-                ],
-            ],
-            'start_ts'    => 1634187296,
-            'end_ts'      => 1642136096,
-            'filters'     => [
-                'splitz_experiments'         => ['CROSS_BORDER_PAYMENTS_ANNOUNCEMENT'],
-            ],
-        ],
-        [
             'title'       => 'Razorpay Trusted Business badge is now Live!',
             'description' => 'Congratulations, you are now a Razorpay Trusted Business! 🚀',
             'start_ts'    => 1632421145,

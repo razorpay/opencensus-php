@@ -72,7 +72,6 @@ import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/ut
 import ShowWhen from '../../components/ShowWhen';
 import ABCBanner from '../../components/Announcements/ABCBanner';
 import StartupCongratulationBanner from '../../components/Announcements/StartupCongratulationBanner';
-import CrossBorderPaymentsBanner from '../../components/Announcements/CrossBorderPaymentsBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import NitroICICIBanner from '../../components/Announcements/NitroICICIBanner';
@@ -644,9 +643,6 @@ class AnalyticsDesktop extends Component {
             <StartupCongratulationBanner user={user} />
           </ShowWhen>
           <DashboardBanner />
-          <ShowWhen additionalCondition={(usr) => usr.isCrossBorderPaymentsCampaignEnabled}>
-            <CrossBorderPaymentsBanner productName="CrossBorderPayment-Create" />
-          </ShowWhen>
           <ShowWhen
             additionalCondition={(usr) =>
               usr.isNitroIciciBrandedCampaignEnabled ||

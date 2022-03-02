@@ -10,7 +10,6 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
-import SubscriptionButtonLaunchFullPageBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch/FullPageBanner';
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
@@ -1057,9 +1056,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           actionBtns={actionBtns}
           isPageReady={isPageReady}
           handleClose={this.handleClose}
-        >
-          <SubscriptionButtonLaunchFullPageBanner productName="PaymentPages-Create" />
-        </Header>
+        />
         {content}
       </div>
     );
