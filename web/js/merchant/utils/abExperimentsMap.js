@@ -69,7 +69,7 @@ export default {
     'I8KTdSuwTZ8dYt',
 
     // prod experiment ids
-    'HmbfCtIa68aQcC',
+    'I8PCawTxVfMpC5',
   ],
   whats_new_lazy_experiment: [
     // beta experiment ids
