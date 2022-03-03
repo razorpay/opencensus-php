@@ -282,6 +282,11 @@ class Tracing
             'get_account_documents_v2',
             'get_stakeholder_documents_v2',
 
+            'product_config_fetch_v2',
+            'product_config_update_v2',
+            'product_config_create_v2',
+            'business_unit_tnc_fetch_v2',
+
             // used by frontend-graphql
             'banking_accounts_list',
             'contact_list',

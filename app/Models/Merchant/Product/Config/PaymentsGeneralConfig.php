@@ -179,7 +179,10 @@ class PaymentsGeneralConfig extends Base\Service
             $this->merchantService->setDefaultLateAuthConfigForMerchant($merchant);
         }
 
-        return $this->updateConfig($merchant, $configs);
+        return Tracer::inspan(['name' => HyperTrace::UPDATE_CONFIG], function () use ($merchant, $configs) {
+
+            return $this->updateConfig($merchant, $configs);
+        });
     }
 
     /**
@@ -197,7 +200,10 @@ class PaymentsGeneralConfig extends Base\Service
             $this->$function($merchant, $configValue);
         }
 
-        return $this->getConfig($merchant);
+        return Tracer::inspan(['name' => HyperTrace::GET_CONFIG], function () use ($merchant) {
+
+            return $this->getConfig($merchant);
+        });
     }
 
     private function updateNotifications(Merchant\Entity $merchant, array $configValue)

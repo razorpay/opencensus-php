@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Product;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -17,6 +18,7 @@ use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
 use RZP\Models\Merchant\Product\BusinessUnit\Constants as BusinessUnit;
+use RZP\Trace\Tracer;
 
 class Core extends Base\Core
 {
@@ -87,20 +89,33 @@ class Core extends Base\Core
     {
         $response = [];
 
-        $response = array_merge($response, $this->paymentsGeneralConfig->getConfig($merchant));
+        $response = Tracer::inspan(['name' => HyperTrace::GET_CONFIG], function () use ($response, $merchant) {
 
-        $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+            return array_merge($response, $this->paymentsGeneralConfig->getConfig($merchant));
+        });
 
-        $response[Util\Constants::REQUIREMENTS] = $requirementService->fetchRequirements($merchant, $merchantProduct);
+        $response[Util\Constants::REQUIREMENTS] = Tracer::inspan(['name' => HyperTrace::FETCH_REQUIREMENTS], function () use ($merchant, $merchantProduct) {
 
-        $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
+            $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
 
-        $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+            return $requirementService->fetchRequirements($merchant, $merchantProduct);
+        });
 
-        if ($hasAcceptedTnc === true)
-        {
-            $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
-        }
+        $response[Util\Constants::PAYMENT_METHODS] = Tracer::inspan(['name' => HyperTrace::GET_PAYMENT_METHODS], function () use ($merchant) {
+
+            return $this->paymentMethods->get($merchant);
+        });
+
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_ACCEPTED_TNC_DETAILS], function () use ($merchant, $merchantProduct, $response) {
+
+            $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+            if ($hasAcceptedTnc === true) {
+                $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+            }
+            return $response;
+        });
+
         return $response;
     }
 
@@ -108,7 +123,10 @@ class Core extends Base\Core
     {
         $response = [];
 
-        $response = array_merge($response, $this->paymentsGeneralConfig->createConfig($merchant, $input));
+        $response = Tracer::inspan(['name' => HyperTrace::CREATE_CONFIG], function () use ($response, $input, $merchant) {
+
+            return array_merge($response, $this->paymentsGeneralConfig->createConfig($merchant, $input));
+        });
 
         $merchantDetails = $merchant->merchantDetail;
 
@@ -122,9 +140,12 @@ class Core extends Base\Core
         }
         else
         {
-            $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+            $response[Util\Constants::REQUIREMENTS] = Tracer::inspan(['name' => HyperTrace::FETCH_REQUIREMENTS], function () use ($merchant, $merchantProduct) {
 
-            $response[Util\Constants::REQUIREMENTS] = $requirementService->fetchRequirements($merchant, $merchantProduct);
+                $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+                return $requirementService->fetchRequirements($merchant, $merchantProduct);
+            });
 
             if (count($response[Util\Constants::REQUIREMENTS]) > 0)
             {
@@ -191,26 +212,36 @@ class Core extends Base\Core
             $response[Util\Constants::PAYMENT_METHODS_UPDATE] = $paymentMethodsConfig;
         }
 
-        $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+        list($input, $response) = Tracer::inspan(['name' => HyperTrace::ACCEPT_OR_FETCH_PRODUCT_TNC], function () use ($input, $response, $merchantProduct, $merchant) {
 
-        if (isset($input[Util\Constants::TNC_ACCEPTED]) === true)
-        {
-            unset($input[Util\Constants::TNC_ACCEPTED]);
+            $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
 
-            $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant);
-        }
-        else if($hasAcceptedTnc === true) {
+            if (isset($input[Util\Constants::TNC_ACCEPTED]) === true)
+            {
+                unset($input[Util\Constants::TNC_ACCEPTED]);
 
-            $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
-        }
+                $response[Util\Constants::TNC] = $this->tnc->acceptProductConfigTnc($merchantProduct->getProduct(), $merchant);
+            }
+            else if ($hasAcceptedTnc === true)
+            {
+                $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+            }
+            return [$input, $response];
+        });
 
-        $response = array_merge($response, $this->paymentsGeneralConfig->updateConfig($merchant, $input));
+        $response = Tracer::inspan(['name' => HyperTrace::UPDATE_CONFIG], function () use ($response, $merchant, $input) {
+
+            return array_merge($response, $this->paymentsGeneralConfig->updateConfig($merchant, $input));
+        });
 
         $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
 
-        $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+        $response[Util\Constants::REQUIREMENTS] = Tracer::inspan(['name' => HyperTrace::FETCH_REQUIREMENTS], function () use ($merchant, $merchantProduct) {
 
-        $response[Util\Constants::REQUIREMENTS] = $requirementService->fetchRequirements($merchant, $merchantProduct);
+            $requirementService = Requirements\Factory::getInstance($merchantProduct->getProduct());
+
+            return $requirementService->fetchRequirements($merchant, $merchantProduct);
+        });
 
         return $response;
     }
@@ -448,16 +479,24 @@ class Core extends Base\Core
 
         $input = Util\PaymentGatewayRequestHandler::handleRequest($input);
 
-        $response = $this->createPaymentGeneralConfig($merchant, $merchantProduct, $input);
+        $response = Tracer::inspan(['name' => HyperTrace::CREATE_PAYMENT_GENERAL_CONFIG], function () use ($merchant, $merchantProduct, $input) {
 
-        $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
+            return $this->createPaymentGeneralConfig($merchant, $merchantProduct, $input);
+        });
 
-        $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+        $response[Util\Constants::PAYMENT_METHODS] = Tracer::inspan(['name' => HyperTrace::GET_PAYMENT_METHODS], function () use ($merchant) {
 
-        if ($hasAcceptedTnc === true)
-        {
-            $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
-        }
+            return $this->paymentMethods->get($merchant);
+        });
+
+        $response = Tracer::inspan(['name' => HyperTrace::FETCH_ACCEPTED_TNC_DETAILS], function () use ($merchant, $merchantProduct, $response) {
+            $hasAcceptedTnc = $this->tncCore->hasAcceptedBusinessUnitTnc($merchant, BusinessUnit::PRODUCT_BU_MAPPING[$merchantProduct->getProduct()]);
+
+            if ($hasAcceptedTnc === true) {
+                $response[Util\Constants::TNC] = $this->tnc->fetchProductConfigTnc($merchantProduct->getProduct(), $merchant);
+            }
+            return $response;
+        });
 
         return $response;
     }

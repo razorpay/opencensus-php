@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Product;
 
 use App;
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -15,6 +16,7 @@ use RZP\Models\Merchant\Product\TncMap\Acceptance\Service as Tnc;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Product\Util\ProductRequestHandler;
 use RZP\Models\Merchant\Product\Util\ProductResponseHandler;
+use RZP\Trace\Tracer;
 
 class Service extends Base\Service
 {
@@ -29,13 +31,19 @@ class Service extends Base\Service
 
         $merchantProduct = $this->validateAndGetMerchantProduct($merchant->getId(), $merchantProductConfigId);
 
-        $response = $this->core()->getConfig($merchant, $merchantProduct);
+        $response = Tracer::inspan(['name' => HyperTrace::GET_PRODUCT_CONFIG_CORE], function () use ($merchant, $merchantProduct) {
+
+            return $this->core()->getConfig($merchant, $merchantProduct);
+        });
 
         $timeTaken = millitime() - $timeStarted;
 
         $this->captureMetricsForFetchProductConfig($merchantProduct, $timeTaken);
 
-        return ProductResponseHandler::handleResponse($merchantProduct, $response);
+        return Tracer::inspan(['name' => HyperTrace::HANDLE_PRODUCT_CONFIG_RESPONSE], function () use ($merchantProduct, $response) {
+
+            return ProductResponseHandler::handleResponse($merchantProduct, $response);
+        });
     }
 
     public function updateConfig(string $merchantId, string $merchantProductConfigId, array $request)
@@ -48,13 +56,22 @@ class Service extends Base\Service
 
         $productName = $merchantProduct->getProduct();
 
-        $transformedRequest = ProductRequestHandler::handleRequest($productName, $request);
+        $transformedRequest = Tracer::inspan(['name' => HyperTrace::TRANSFORM_PRODUCT_CONFIG_REQUEST], function () use ($productName, $request) {
 
-        $response = $this->core()->updateConfig($merchant, $merchantProduct, $transformedRequest);
+            return ProductRequestHandler::handleRequest($productName, $request);
+        });
+
+        $response = Tracer::inspan(['name' => HyperTrace::UPDATE_PRODUCT_CONFIG_CORE], function () use ($merchant, $merchantProduct, $transformedRequest) {
+
+            return $this->core()->updateConfig($merchant, $merchantProduct, $transformedRequest);
+        });
 
         $this->captureMetricsForUpdateProductConfig($merchantProduct);
 
-        return ProductResponseHandler::handleResponse($merchantProduct, $response);
+        return Tracer::inspan(['name' => HyperTrace::HANDLE_PRODUCT_CONFIG_RESPONSE], function () use ($merchantProduct, $response) {
+
+            return ProductResponseHandler::handleResponse($merchantProduct, $response);
+        });
     }
 
     public function createConfig(string $merchantId, array $payload): array
@@ -67,12 +84,17 @@ class Service extends Base\Service
 
         $productName = $merchantProductInput[Entity::PRODUCT_NAME];
 
-        if(isset($payload[Util\Constants::TNC_ACCEPTED]) === true )
-        {
-            unset($payload[Util\Constants::TNC_ACCEPTED]);
+        $payload = Tracer::inspan(['name' => HyperTrace::ACCEPT_PRODUCT_TNC], function () use ($payload, $productName, $merchant) {
 
-            (new Tnc)->acceptProductConfigTnc($productName, $merchant);
-        }
+            if (isset($payload[Util\Constants::TNC_ACCEPTED]) === true)
+            {
+                unset($payload[Util\Constants::TNC_ACCEPTED]);
+
+                (new Tnc)->acceptProductConfigTnc($productName, $merchant);
+            }
+
+            return $payload;
+        });
 
         $merchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductName($merchantId, $productName);
 
@@ -81,7 +103,10 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALREADY_EXISTS,
                                $merchantProduct->toArrayPublic());
 
-            $response = $this->getConfig(AccountEntity::getSignedId($merchantId), $merchantProduct->getPublicId());
+            $response = Tracer::inspan(['name' => HyperTrace::GET_PRODUCT_CONFIG], function () use ($merchantId, $merchantProduct) {
+
+                return $this->getConfig(AccountEntity::getSignedId($merchantId), $merchantProduct->getPublicId());
+            });
         }
 
         else
@@ -90,7 +115,10 @@ class Service extends Base\Service
 
             $merchantProduct = (new Entity)->generateId();
 
-            (new Methods\Core())->setDefaultMethods($merchant, $partner);
+            Tracer::inspan(['name' => HyperTrace::SET_DEFAULT_METHODS], function () use ($merchant, $partner) {
+
+                (new Methods\Core())->setDefaultMethods($merchant, $partner);
+            });
 
             $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantProduct, $payload, $productName) {
 
@@ -111,11 +139,17 @@ class Service extends Base\Service
                     ]
                 );
 
-                $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
+                $response = Tracer::inspan(['name' => HyperTrace::CREATE_PRODUCT_CONFIG_CORE], function () use ($merchant, $merchantProduct, $payload) {
+
+                    return $this->core()->createConfig($merchant, $merchantProduct, $payload);
+                });
 
                 $this->captureMetricsForCreateProductConfig($merchantProduct);
 
-                return ProductResponseHandler::handleResponse($merchantProduct, $response);
+                return Tracer::inspan(['name' => HyperTrace::HANDLE_PRODUCT_CONFIG_RESPONSE], function () use ($merchantProduct, $response) {
+
+                    return ProductResponseHandler::handleResponse($merchantProduct, $response);
+                });
             });
         }
 

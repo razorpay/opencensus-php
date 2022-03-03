@@ -8,6 +8,7 @@ use Config;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Constants\HyperTrace;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Mail\User as UserMail;
@@ -102,6 +103,7 @@ use RZP\Models\Merchant\MerchantApplications\Core as MerchantApplicationsCore;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
+use RZP\Trace\Tracer;
 
 class Core extends Base\Core
 {
@@ -346,7 +348,10 @@ class Core extends Base\Core
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
-        $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
+        Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {
+
+            $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
+        });
 
         // The parent Id has to be linked only when it's a marketplace
         // If both market place and referral are present when creating a referral account we should not link parentId.
@@ -388,7 +393,10 @@ class Core extends Base\Core
 
         $subMerchantDetailInput = !empty($contactMobile) ? [Detail\Entity::CONTACT_MOBILE => $contactMobile] : [];
 
-        $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput);
+        Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function () use ($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput) {
+
+            $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput);
+        });
 
         $this->syncHeimdallRelatedEntities($subMerchant, $input);
 

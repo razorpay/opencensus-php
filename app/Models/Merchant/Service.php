@@ -5596,11 +5596,16 @@ class Service extends Base\Service
         {
             SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId());
 
-            $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
+            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product) {
 
-            // Partner and sub-merchant are connected via partner's app,
-            // this connect is used for multiple validity checks, web-hooks, etc
-            $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+                $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
+            });
+
+            Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant) {
+                // Partner and sub-merchant are connected via partner's app,
+                // this connect is used for multiple validity checks, web-hooks, etc
+                $this->mapSubMerchantPartnerAppIfApplicable($merchant, $subMerchant);
+            });
         }
 
         // Users will be created and given access to the account in partners flow, irrespective of enable
@@ -5608,7 +5613,10 @@ class Service extends Base\Service
         // dashboard access is true.
         if ((($enableDashboardAccess === true) and ($isLinkedAccount === true)) or ($isLinkedAccount === false))
         {
-            [$newUser, $createdNewUser] = $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
+            [$newUser, $createdNewUser] = Tracer::inspan(['name' => HyperTrace::CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE], function () use ($subMerchant, $merchant, $product) {
+
+                return $this->createAdditionalUserOrFetchIfApplicable($subMerchant, $merchant, $product);
+            });
         }
 
         $this->repo->saveOrFail($subMerchant);
@@ -5620,8 +5628,10 @@ class Service extends Base\Service
                 Feature\Entity::ENTITY_TYPE  => CE::MERCHANT,
                 Feature\Entity::NAME         => Feature\Constants::ALLOW_REVERSALS_FROM_LA
             ];
+            Tracer::inspan(['name' => HyperTrace::ADD_FEATURE_REQUEST], function () use ($featureParams) {
 
-            (new Feature\Core)->create($featureParams, true);
+                (new Feature\Core)->create($featureParams, true);
+            });
         }
 
         $subMerchantAdditionType = ($isLinkedAccount === true) ? Metric::MARKETPLACE : Metric::PARTNER;
@@ -9088,7 +9098,7 @@ class Service extends Base\Service
         $merchantFields[Merchant\Entity::PURPOSE_CODE] = $input['purpose_code'];
         $merchantDetailsFields[Merchant\Detail\Entity::IEC_CODE] = $this->getIecCode($input);
         $merchantId = $input['merchant_id'];
-    
+
         $merchant =  $this->repo->merchant->fetchMerchantFromId($merchantId);
 
         (new Validator)->validateIecCode(
@@ -9117,7 +9127,7 @@ class Service extends Base\Service
                 Merchant\Detail\Entity::IEC_CODE => $merchant->getIecCode(),
             ]
         );
-        
+
         return ['success' => true];
     }
 }

@@ -64,11 +64,11 @@ class HyperTrace
     const SEND_MAIL_TO_SUBMERCHANT                             = 'send_mail_to_submerchant';
     const VALIDATE_PARTNER_ACCESS                              = 'validate_partner_access';
     const FILL_SUBMERCHANT_DETAILS                             = 'fill_submerchant_details';
-    const FETCH_ACCOUNT_V2                                     = 'account_v2.fetch';
+    const FETCH_ACCOUNT_V2                                     = 'account_v2.fetch.service';
     const FETCH_ACCOUNT_V2_CORE                                = 'account_v2.fetch.core';
-    const EDIT_ACCOUNT_V2                                      = 'account_v2.edit';
+    const EDIT_ACCOUNT_V2                                      = 'account_v2.edit.service';
     const EDIT_ACCOUNT_V2_CORE                                 = 'account_v2.edit.core';
-    const DELETE_ACCOUNT_V2                                    = 'account_v2.delete';
+    const DELETE_ACCOUNT_V2                                    = 'account_v2.delete.service';
     const ACCOUNT_V2_DISABLE                                   = 'account_v2.delete.disable';
 
     const CREATE_STAKEHOLDER_V2                                 = 'stakeholder_v2.create.service';
@@ -98,8 +98,34 @@ class HyperTrace
     const GET_REQUIRED_DOC_TYPES                                = 'get_required_doc_types';
     const CONSTRUCT_DOCUMENT_V2_RESPONSE                        = 'construct_document_v2_response';
 
+    const CREATE_PRODUCT_CONFIG                                 = 'create_product_config.service';
+    const CREATE_PRODUCT_CONFIG_CORE                            = 'create_product_config.core';
+    const SET_DEFAULT_METHODS                                   = 'set_default_methods';
+    const GET_PRODUCT_CONFIG                                    = 'get_product_config.service';
+    const GET_PRODUCT_CONFIG_CORE                               = 'get_product_config.core';
+    const UPDATE_PRODUCT_CONFIG                                 = 'update_product_config.service';
+    const UPDATE_PRODUCT_CONFIG_CORE                            = 'update_product_config.core';
+    const TRANSFORM_PRODUCT_CONFIG_REQUEST                      = 'transform_product_config_request';
+    const ACCEPT_PRODUCT_TNC                                    = 'accept_product_tnc';
+    const ACCEPT_OR_FETCH_PRODUCT_TNC                           = 'accept_or_fetch_product_tnc';
+    const CREATE_PAYMENT_GENERAL_CONFIG                         = 'create_payment_general_config';
+    const CREATE_CONFIG                                         = 'payment_general_config.create_config';
+    const UPDATE_CONFIG                                         = 'payment_general_config.update_config';
+    const GET_CONFIG                                            = 'payment_general_config.get_config';
+    const FETCH_ACCEPTED_TNC_DETAILS                            = 'fetch_accepted_tnc_details';
+    const FETCH_REQUIREMENTS                                    = 'fetch_requirements';
+    const GET_PAYMENT_METHODS                                   = 'get_payment_methods';
+    const HANDLE_PRODUCT_CONFIG_RESPONSE                        = 'handle_product_config_response';
+
+    const FETCH_BU_TNC                                          = 'fetch_business_unit_tnc';
+
     /*Partnerships traces names*/
     const CREATE_SUBMERCHANT_SERVICE                           = 'create_submerchant.service';
     const CREATE_SUBMERCHANT_CORE                              = 'create_submerchant.core';
-
+    const ASSIGN_SUBMERCHANT_PRICING_PLAN                      = 'assign_submerchant_pricing_plan';
+    const ADD_MERCHANT_SUPPORTING_ENTITIES                     = 'add_merchant_supporting_entities';
+    const MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE            = 'map_submerchant_partner_app_if_applicable';
+    const ADD_FEATURE_REQUEST                                  = 'add_feature_request.core';
+    const ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE               = 'attach_submerchant_owner_if_applicable';
+    const CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE        = 'create_additional_user_or_fetch_if_applicable';
 }

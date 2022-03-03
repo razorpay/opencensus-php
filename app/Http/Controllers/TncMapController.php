@@ -4,8 +4,10 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Product\TncMap;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
+use RZP\Trace\Tracer;
 
 class TncMapController extends Controller
 {
@@ -20,6 +22,9 @@ class TncMapController extends Controller
 
     public function fetchTncForBusinessUnit(string $businessUnit)
     {
-        return $this->service()->fetchTncForBU($businessUnit);
+        return Tracer::inspan(['name' => HyperTrace::FETCH_BU_TNC], function () use ($businessUnit) {
+
+            return $this->service()->fetchTncForBU($businessUnit);
+        });
     }
 }
