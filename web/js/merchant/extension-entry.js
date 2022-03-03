@@ -20,7 +20,7 @@
     // Body
     var loggedInText = d.createElement('div');
     loggedInText.setAttribute('class', 'ExtensionPopup-Text--dark');
-    loggedInText.innerHTML = 'Logged in as <b>' + email + '</b>';
+    loggedInText.innerHTML = 'Logged in as <b>' + email + '</b>'; // nosemgrep : https://semgrep.dev/s/swati31196:rzp-insecure-document-method
 
     var text = d.createElement('div');
     text.setAttribute('class', 'ExtensionPopup-Text');

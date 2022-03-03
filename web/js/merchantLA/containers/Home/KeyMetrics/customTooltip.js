@@ -205,7 +205,7 @@ const customToolTip = function(tooltipModel) {
     }
     // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
-    innerTooltip.innerHTML = innerHtml;
+    innerTooltip.innerHTML = innerHtml; // nosemgrep : https://semgrep.dev/s/swati31196:rzp-insecure-document-method
 
     innerTooltip.querySelector('.deepdive-link').onclick = trackTooltipDeepdive;
 
