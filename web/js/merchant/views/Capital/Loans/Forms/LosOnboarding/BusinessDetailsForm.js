@@ -68,7 +68,15 @@ const BusinessDetailsForm = ({
       businessDetails = loanApplicationDetails?.business_details?.data?.business;
     }
 
-    const { legal_name, deed_type, business_pan, gstin } = businessDetails;
+    const {
+      legal_name,
+      deed_type,
+      business_pan,
+      gstin,
+      date_of_incorporation,
+      nature,
+      ownership,
+    } = businessDetails;
     const { address_line1, city, state, pincode } = businessDetails.addresses[0];
 
     setFormData({
@@ -80,6 +88,9 @@ const BusinessDetailsForm = ({
       city,
       state: state ? state : Object.entries(states)[0][0],
       pincode,
+      date_of_incorporation,
+      nature,
+      ownership,
     });
   };
 
