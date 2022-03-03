@@ -434,11 +434,12 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::LEDGER_TRANSACTIONS_FETCH_REQUEST,
             [
-                'merchant_id_count' => count($input[Entity::MERCHANT_ID]),
-                'start_time'        => $input['from'],
-                'end_time'          => $input['to'],
-                'limit'             => $input['count'],
-                'offset'            => $input['skip']
+                'merchant_id_count'     => count($input[Entity::MERCHANT_ID]),
+                'start_time'            => $input['from'],
+                'end_time'              => $input['to'],
+                'limit'                 => $input['count'],
+                'offset'                => $input['skip'],
+                'last_processed_txn_id' => $input['last_processed_txn_id'],
             ]);
 
         $startTimeMs = round(microtime(true) * 1000);
@@ -448,7 +449,8 @@ class Service extends Base\Service
             $input['from'],
             $input['to'],
             $input['count'],
-            $input['skip']
+            $input['skip'],
+            $input['last_processed_txn_id']
         );
 
         $endTimeMs = round(microtime(true) * 1000);

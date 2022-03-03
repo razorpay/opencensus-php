@@ -2487,9 +2487,10 @@ class Repository extends Base\Repository
      * @param $to
      * @param int $count
      * @param int $skip
+     * @param int|null $lastProcessedTxnId
      * @return mixed
      */
-    public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0)
+    public function fetchBankingTransactionsForLedgerRecon(array $merchantIds, $from, $to, int $count = 1000, int $skip = 0, string $lastProcessedTxnId = null)
     {
         // select column
         $transactionIdColumn = $this->dbColumn(Entity::ID);
@@ -2523,22 +2524,36 @@ class Repository extends Base\Repository
             $merchantFeeModelColumn
         ];
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select($selectColumn)
-            ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
-            ->leftjoin(Table::MERCHANT, $merchantIdColumn, '=', $transactionMerchantIdColumn)
-            // To fetch only banking transaction until pg use cases are onboarded
-            ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
-            {
-                $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
-            })
-            ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::SHARED)
-            ->whereIn($transactionMerchantIdColumn, $merchantIds)
-            ->betweenTime($from, $to)
-            ->take($count)
-            ->skip($skip)
-            ->latest($transactionCreatedAtColumn)
-            ->get();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select($selectColumn)
+                      ->leftjoin(Table::BALANCE, $balanceIdColumn, '=', $transactionBalanceIdColumn)
+                      ->leftjoin(Table::MERCHANT, $merchantIdColumn, '=', $transactionMerchantIdColumn)
+                      // To fetch only banking transaction until pg use cases are onboarded
+                      ->where(function ($query) use ($transactionBalanceIdColumn, $balanceTypeColumn)
+                      {
+                          $query->WhereIn($balanceTypeColumn, [Balance\Type::BANKING]);
+                      })
+                      ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::SHARED)
+                      ->whereIn($transactionMerchantIdColumn, $merchantIds);
+
+        if (empty($lastProcessedTxnId) === false)
+        {
+            // lastProcessedTxnId is stored in ledger redis which is the last transaction
+            // processed by data comparator in its one cycle. When the data comparator starts again,
+            // it fetched transactions which are not processed in its initial cycle, i.e.,
+            // transactions which are greater than the last processed transaction id and created before the given time
+            $query->where($transactionIdColumn, '>', $lastProcessedTxnId)
+                  ->where($transactionCreatedAtColumn, '<', $to);
+        }
+        else
+        {
+            $query->betweenTime($from, $to);
+        }
+
+        return $query->take($count)
+                     ->skip($skip)
+                     ->oldest($transactionCreatedAtColumn)
+                     ->get();
     }
 
     public function fetchTransactionIdsForSettlementId(string $settlementId)
