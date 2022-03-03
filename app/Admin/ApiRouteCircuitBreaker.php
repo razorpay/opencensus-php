@@ -296,6 +296,8 @@ class ApiRouteCircuitBreaker
      */
     protected function matchPathPattern($pathPattern, $path)
     {
+        $pathPattern = trim($pathPattern, '/');
+
         $optionals = $this->extractOptionalParameters($pathPattern);
 
         $whereAs = [];
