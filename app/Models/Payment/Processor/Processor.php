@@ -226,6 +226,11 @@ class Processor
     const HEADLESS_CARD_PAYMENTS_VIA_PGROUTER = 'headless_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service for IVR or OTP during Payment creation
+     */
+    const IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_card_payments_via_pg_router';
+
+    /**
      * User consent flag indicates whether the user has given consent to tokenise
      * the card or not.
      */
@@ -245,6 +250,11 @@ class Processor
      * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service for headless and rupay, during Payment creation
      */
     const HEADLESS_S2S_CARD_PAYMENTS_VIA_PGROUTER = 'headless_s2s_card_payments_via_pg_router';
+
+    /**
+     * Razorx flag to indicate if a s2s payment should go via PG Router and CPS or just via API service for IVR or OTP during Payment creation
+     */
+    const S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_s2s_card_payments_via_pg_router';
 
     /**
      * @var Merchant\Entity
@@ -491,6 +501,8 @@ class Processor
             $supportedFlows = [
                 Card\IIN\Flow::_3DS,
                 Card\IIN\Flow::HEADLESS_OTP,
+                Card\IIN\Flow::IVR,
+                Card\IIN\Flow::OTP,
                 // magic is mainly used for checkout flows and has no impact on payment flows
                 Card\IIN\Flow::MAGIC,
                 // Pin is depricated
@@ -516,10 +528,17 @@ class Processor
 
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
+            $isIVR = (in_array(Card\IIN\Flow::IVR, $enabledFlows, true) === true);
+            $isOTP = (in_array(Card\IIN\Flow::OTP, $enabledFlows, true) === true);
 
             if ($this->app['basicauth']->isPrivateAuth() === false)
             {
-                if (($isRupay === true) || (($isHeadless === true) &&
+                if ((($isIVR && $merchant->isIvrEnabled() === true) || ($isOTP && $merchant->isAxisExpressPayEnabled() === true)) &&
+                    ($merchant->isFeatureEnabled('otp_auth_default') === true))
+                {
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                }
+                elseif (($isRupay === true) || (($isHeadless === true) &&
                         ($merchant->isFeatureEnabled('otp_auth_default') === true) &&
                         ($merchant->isHeadlessEnabled() === true)))
                     {
@@ -531,7 +550,12 @@ class Processor
             }
             else
             {
-                if (($isRupay === true) || (($isHeadless === true) &&
+                if ((($isIVR && $merchant->isIvrEnabled() === true) || ($isOTP && $merchant->isAxisExpressPayEnabled() === true)) &&
+                    ($merchant->isFeatureEnabled('otp_auth_default') === true))
+                {
+                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                }
+                elseif (($isRupay === true) || (($isHeadless === true) &&
                         ($merchant->isFeatureEnabled('otp_auth_default') === true) &&
                         ($merchant->isHeadlessEnabled() === true)))
                 {
