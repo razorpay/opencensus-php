@@ -26,7 +26,7 @@ const Summary = ({
 }) => {
   const handleRepayNowClick = () => {
     trackRepayNow(pathname);
-    setView(REPAYMENT_VIEWS.REPAY_METHOD);
+    setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
 
   const repaymentDate = nextRepaymentDate ? (
@@ -41,7 +41,7 @@ const Summary = ({
         <Loader />
       ) : (
         <Fragment>
-          <p className="title">Next Automatic Repayment</p>
+          <p className="title">Current Outstanding Amount</p>
           <div className="large-amount">
             <Amount value={nextRepayableAmount} />
           </div>
@@ -59,7 +59,7 @@ const Summary = ({
               class="btn btn-outline"
               onClick={() => trackViewRepayments(pathname)}
             >
-              View Repayments
+              View Past Repayments
             </Link>
           </div>
         </Fragment>

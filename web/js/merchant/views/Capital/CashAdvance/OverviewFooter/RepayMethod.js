@@ -16,7 +16,6 @@ import {
 } from '../constants';
 import { getPrincipalAmount, getInterestAmount } from './utils';
 import {
-  trackChangeAmount,
   trackCheckoutFlowCancel,
   trackCheckoutFlowSuccess,
   trackRepayCancel,
@@ -197,11 +196,6 @@ const RepayMethod = ({
       settlementBalance,
       bankBalance,
     });
-    setView(REPAYMENT_VIEWS.SUMMARY);
-  };
-
-  const handleChangeAmountClick = () => {
-    trackChangeAmount();
     setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
 
@@ -326,11 +320,6 @@ const RepayMethod = ({
         <div>
           <Amount className="repay--amount" currency="INR" value={repayAmount} /> will be the
           Repayable amount
-        </div>
-      )}
-      {!settlementBalance.isCustomAmountActive && (
-        <div>
-          <Button.Transparent onClick={handleChangeAmountClick}>Change Amount</Button.Transparent>
         </div>
       )}
     </div>

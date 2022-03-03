@@ -31,7 +31,7 @@ const RepayAmount = ({
   const [isCustomAmountActive, setIsCustomAmountActive] = useState(false);
 
   const handleCancelClick = () => {
-    setView(REPAYMENT_VIEWS.REPAY_METHOD);
+    setView(REPAYMENT_VIEWS.SUMMARY);
   };
 
   const handleConfirmClick = () => {
@@ -109,7 +109,7 @@ const RepayAmount = ({
       <div className="repay-text">I want to repay</div>
       <div className="flex repay-actions">
         <div
-          className={`action ${
+          className={`action repay-actions-box ${
             repayType === REPAY_AMOUNT_TYPES.NEXT_REPAYABLE ? 'active' : ''
           } cursor-pointer`}
           onClick={() => handleRadioSelect(REPAY_AMOUNT_TYPES.NEXT_REPAYABLE, nextRepayableAmount)}
@@ -123,14 +123,14 @@ const RepayAmount = ({
             />
           </div>
           <div>
-            <div className="repay--type-title mb-4">Next Repayable</div>
+            <div className="repay--type-title mb-4">Current Outstanding Amount</div>
             <div className="mt-4">
               <Amount className="repay--amount" currency="INR" value={nextRepayableAmount} />
             </div>
           </div>
         </div>
         <div
-          className={`action ml--1 ${
+          className={`action repay-actions-box ml--1 ${
             repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED ? 'active' : ''
           } cursor-pointer`}
           onClick={() => handleRadioSelect(REPAY_AMOUNT_TYPES.TOTAL_OWED, totalOwedAmount)}
@@ -144,14 +144,14 @@ const RepayAmount = ({
             />
           </div>
           <div>
-            <div className="repay--type-title">Total Owed</div>
+            <div className="repay--type-title">Total Outstanding Amount</div>
             <div className="mt-4">
               <Amount className="repay--amount" currency="INR" value={totalOwedAmount} />
             </div>
           </div>
         </div>
         <div
-          className={`action ml--1 mr-24 ${
+          className={`action repay-actions-box ml--1 mr-24 ${
             repayType === REPAY_AMOUNT_TYPES.CUSTOM && !customAmountError ? 'active' : ''
           } ${repayType === REPAY_AMOUNT_TYPES.CUSTOM && customAmountError ? 'error' : ''}`}
         >
@@ -220,20 +220,22 @@ const RepayAmount = ({
           </div>
         </div>
         <div>
-          <Button.Primary
-            disabled={
-              repayType === REPAY_AMOUNT_TYPES.CUSTOM &&
-              (customAmountError || !tempCustomAmount || isCustomAmountActive)
-            }
-            className="mr-24"
-            onClick={handleConfirmClick}
-          >
-            Confirm
-          </Button.Primary>
-          <Button.Transparent onClick={handleCancelClick}>Cancel</Button.Transparent>
+          <div className="flex wrapper-alignment">
+            <Button.Primary
+              disabled={
+                repayType === REPAY_AMOUNT_TYPES.CUSTOM &&
+                (customAmountError || !tempCustomAmount || isCustomAmountActive)
+              }
+              className="mr-24"
+              onClick={handleConfirmClick}
+            >
+              Confirm
+            </Button.Primary>
+            <Button.Transparent onClick={handleCancelClick}>Cancel</Button.Transparent>
+          </div>
         </div>
       </div>
-      <div className="flex" style={{ justifyContent: 'space-between' }}>
+      <div className="flex wrapper-alignment">
         {!isCustomRepayType && (
           <div className="flex">
             <div className="principal">

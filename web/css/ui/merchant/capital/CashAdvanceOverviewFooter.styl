@@ -78,6 +78,20 @@
     }
     .repay-actions {
       margin: 12px 0px 24px;
+      .repay--amount {
+        .rzp-currency, .rzp-whole, .rzp-paise {
+          color: #162F56;
+          font-weight: 700;
+        }
+        .rzp-currency, .rzp-whole {
+          font-size: 14px;
+          opacity: 0.76;
+        }
+        .rzp-paise {
+          font-size: 12px;
+          opacity: 0.56;
+        }
+      }
     }
     .repay--type-title {
       font-size: 14px;
@@ -131,6 +145,12 @@
         border-color: rgba(22, 47, 86, 0.1);
         opacity: 0.5;
       }
+    }
+    .repay-actions-box {
+      height: 112px;
+    }
+    .wrapper-alignment {
+      justify-content: space-between;
     }
     &.repay-amount {
       padding: 34px 32px 25px;
