@@ -265,7 +265,7 @@ class Core extends Base\Core
     {
         $response = $this->app['gateway']->call(MandateHubs\MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_UPDATE, $input, $this->mode);
 
-        $mandate = BillDeskSIHub\BillDeskSIHub::getMandateFromSIHubResponse($response['data']);
+        $mandate = BillDeskSIHub\BillDeskSIHub::getMandateFromSIHubResponse($response['data'], null);
 
         $this->updateMandateFromCallbackResponse($mandate);
 

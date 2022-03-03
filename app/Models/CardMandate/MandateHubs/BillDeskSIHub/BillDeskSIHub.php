@@ -47,7 +47,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         // TODO add appropriate checks
         $cardMandate->setStatus(CardMandate\Status::MANDATE_APPROVED);
 
-        return $this->getMandateFromSIHubResponse($response['data']);
+        return $this->getMandateFromSIHubResponse($response['data'],$billDeskInput['card']);
     }
 
     /**
@@ -133,7 +133,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         $response = $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB,
             Payment\Action::CARD_MANDATE_CANCEL, $billDeskInput, $this->mode);
 
-        return $this->getMandateFromSIHubResponse($response['data']);
+        return $this->getMandateFromSIHubResponse($response['data'],null);
     }
 
     /**
@@ -173,7 +173,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         return [
             Constants::PAYMENT          => $payment->toArray(),
-            Constants::TERMINAL         => $cardMandate->terminal ? $cardMandate->terminal->toArray() : null,
+            Constants::TERMINAL         => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY          => MandateHubs::BILLDESK_SIHUB,
             Constants::MERCHANT         => $payment->merchant->toArray(),
             Constants::TOKEN            => $tokenData,
@@ -196,7 +196,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::PAYMENT              => $payment->toArray(),
             Constants::GATEWAY              => MandateHubs::BILLDESK_SIHUB,
             Constants::CARD                 => $payment->card->toArray(),
-            Constants::TERMINAL             => $cardMandate->terminal ? $cardMandate->terminal->toArray() : null,
+            Constants::TERMINAL             => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::MERCHANT             => $payment->merchant->toArray(),
             Constants::RECURRING_DEBIT_TYPE => Constants::RECURRING_DEBIT_TYPE_INITIAL,
             Constants::AUTHENTICATION       => $authenticationData,
@@ -238,7 +238,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         return [
             Constants::PAYMENT      => $payment->toArray(),
-            Constants::TERMINAL     => $cardMandate->terminal ? $cardMandate->terminal->toArray() : null,
+            Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
             Constants::NOTIFICATION => $payment->cardMandateNotification->toArray(),
             Constants::CARD         => $cardData,
@@ -260,7 +260,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::PAYMENT              => $payment->toArray(),
             Constants::GATEWAY              => MandateHubs::BILLDESK_SIHUB,
             Constants::CARD                 => $payment->card->toArray(),
-            Constants::TERMINAL             => $cardMandate->terminal ? $cardMandate->terminal->toArray() : null,
+            Constants::TERMINAL             => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::MERCHANT             => $payment->merchant->toArray(),
             Constants::NOTIFICATION         => $payment->cardMandateNotification->toArray(),
             Constants::RECURRING_DEBIT_TYPE => Constants::RECURRING_DEBIT_TYPE_SUBSEQUENT,
@@ -272,9 +272,10 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
     /**
      * @param $response
+     * @param $card
      * @return Mandate
      */
-    public static function getMandateFromSIHubResponse($response): Mandate {
+    public static function getMandateFromSIHubResponse($response ,$card=null): Mandate {
 
         if (isset($response[Constants::AMOUNT]) === true){
             $response[Constants::AMOUNT]= $response[Constants::AMOUNT]*100;
@@ -282,13 +283,13 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $mandateAttributes = [
             Mandate::MANDATE_ID                 => $response[Constants::ID] ?? null,
-            Mandate::MANDATE_CARD_ID            => $response[Constants::CARD][Constants::CARD_ID] ?? null,
-            Mandate::MANDATE_CARD_NAME          => $response[Constants::CARD][Constants::CARD_NAME] ?? null,
-            Mandate::MANDATE_CARD_LAST4         => $response[Constants::CARD][Constants::CARD_LAST4] ?? null,
-            Mandate::MANDATE_CARD_NETWORK       => $response[Constants::CARD][Constants::CARD_NETWORK] ?? null,
-            Mandate::MANDATE_CARD_TYPE          => $response[Constants::CARD][Constants::CARD_TYPE] ?? null,
-            Mandate::MANDATE_CARD_ISSUER        => $response[Constants::CARD][Constants::CARD_ISSUER] ?? null,
-            Mandate::MANDATE_CARD_INTERNATIONAL => $response[Constants::CARD][Constants::CARD_INTERNATIONAL] ?? null,
+            Mandate::MANDATE_CARD_ID            => $card ? $card[Constants::CARD_ID] : null,
+            Mandate::MANDATE_CARD_NAME          => $card ? $card[Constants::CARD_NAME] : null,
+            Mandate::MANDATE_CARD_LAST4         => $card ? $card[Constants::CARD_LAST4] : null,
+            Mandate::MANDATE_CARD_NETWORK       => $card ? $card[Constants::CARD_NETWORK] : null,
+            Mandate::MANDATE_CARD_TYPE          => $card ? $card[Constants::CARD_TYPE] : null,
+            Mandate::MANDATE_CARD_ISSUER        => $card ? $card[Constants::CARD_ISSUER] : null,
+            Mandate::MANDATE_CARD_INTERNATIONAL => $card ? $card[Constants::CARD_INTERNATIONAL] : null,
             Mandate::MANDATE_SUMMARY_URL        => $response[Constants::REDIRECT_URL] ?? null,
             Mandate::STATUS                     => $response[Constants::STATUS] ?? null,
             Mandate::DEBIT_TYPE                 => $response[Constants::DEBIT_TYPE] ?? null,
@@ -354,7 +355,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     {
         return [
             Constants::PAYMENT      => $payment->toArray(),
-            Constants::TERMINAL     => $cardMandate->terminal ? $cardMandate->terminal->toArray() : null,
+            Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
             Constants::CARD         => $payment->card->toArray(),
             Constants::MERCHANT     => $payment->merchant->toArray(),
