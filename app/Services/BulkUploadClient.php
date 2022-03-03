@@ -59,7 +59,9 @@ class BulkUploadClient extends Job
             catch (\Exception $e)
             {
                 $this->trace->info(TraceCode::ERROR_EXCEPTION, ["error" => $e->getMessage()]);
+                return ;
             }
+            sleep(1);
         }
     }
 
@@ -93,6 +95,7 @@ class BulkUploadClient extends Job
                 TraceCode::RAW_ADDRESS_KAFKA_FAILED_COUNT,
                 ['error' => $e->getMessage()]
             );
+            return false;
         }
         return true;
     }

@@ -59,5 +59,7 @@ class RawAddressContactsProcess extends Command
         $this->info("mode: ".$mode ." topic: ".$topics);
 
         $this->bulkUploadClientService->process($mode);
+
+        sleep(60);
     }
 }
