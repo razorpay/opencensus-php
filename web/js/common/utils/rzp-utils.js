@@ -1385,3 +1385,13 @@ export const checkHTML5APIvalidity = () => htmlApiList.find((apiName) => !window
  * @return {String}
  */
 export const truncateString = (str, num) => (str?.length > num ? `${str.slice(0, num)}...` : str);
+
+// This function converts any string to camelcase E.g Some RandomString -> someRandomString
+export const camelize = (str) => {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) =>
+      index === 0 ? word.toLowerCase() : word.toUpperCase(),
+    )
+    .replace(/\s+/g, '');
+};

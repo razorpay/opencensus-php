@@ -4,7 +4,6 @@ import { compose } from 'redux';
 import Spinner from 'common/ui/Spinner';
 import * as ConfigActions from 'merchant/reducers/config';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
-import FlashCheckout from './FlashCheckout';
 import DefaultRefundSpeed from './DefaultRefundSpeed';
 import FeeBearerSelfserver from './FeeBearerSelfserve';
 import CheckoutTheme from './CheckoutTheme';
@@ -33,10 +32,13 @@ import {
   SMS_NOTIF,
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
+  SKIP_CARD_MANDATE_SUMMARY,
 } from './deeplink-constants';
 import { getFeature } from 'common/utils/features';
 import EasterEgg from 'merchant/components/EasterEgg';
 import Firc from './components/FircAnnouncements/Firc';
+import ToggleSetting from './ToggleSetting';
+import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
 
 class CongfigurationContainer extends Component {
   state = {
@@ -331,7 +333,7 @@ class CongfigurationContainer extends Component {
             </ShowWhen>
             {user.isOrgAllowedFunctionality('flashcheckout') && (
               <IntoView hashedWith={FLASH_CHECKOUT}>
-                <FlashCheckout org={org} />
+                <ToggleSetting {...flashCheckoutProps} org={org} />
               </IntoView>
             )}
             <IntoView hashedWith={CAPTURE_SETTINGS}>
@@ -375,6 +377,9 @@ class CongfigurationContainer extends Component {
                 <WhatsappNotification />
               </IntoView>
             )}
+            <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
+              <ToggleSetting {...skipCardMandateSummaryProps} />
+            </IntoView>
           </div>
         )}
         <EasterEgg extraClass="ftx-settings-page-mweb" page="Settings" />
