@@ -37,6 +37,7 @@ class Entity
     const COUPON                     = 'coupon';
     const DEVICE                     = 'device';
     const PAYOUT                     = 'payout';
+    const PAYOUT_OUTBOX              = 'payout_outbox';
     const REFUND                     = 'refund';
     const REPORT                     = 'report';
     const COUNTER                    = 'counter';
@@ -1067,6 +1068,7 @@ class Entity
         self::FUND_LOADING_DOWNTIMES        => \RZP\Models\FundLoadingDowntime::class,
 
         self::PAYOUTS_META                  => \RZP\Models\PayoutMeta::class,
+        self::PAYOUT_OUTBOX                 => \RZP\Models\PayoutOutbox::class,
 
         self::WORKFLOW_CONFIG               => \RZP\Models\Workflow\Service\Config::class,
         self::WORKFLOW_ENTITY_MAP           => \RZP\Models\Workflow\Service\EntityMap::class,

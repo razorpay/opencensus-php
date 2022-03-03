@@ -28,6 +28,7 @@ class Table
     const BATCH                        = 'batches';
     const DEVICE                       = 'devices';
     const PAYOUT                       = 'payouts';
+    const PAYOUT_OUTBOX                = 'payout_outbox';
     const REFUND                       = 'refunds';
     const REPORT                       = 'reports';
     const CONTACT                      = 'contacts';

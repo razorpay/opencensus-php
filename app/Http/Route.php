@@ -3212,6 +3212,7 @@ class Route
         'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
         'payout_analytics_axis_cc'                => ['get',      'payouts_analytics',                                      'PayoutController@payoutAnalytics'                             ],
 
+        'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
         // Sub Virtual Account Routes
@@ -4408,6 +4409,9 @@ class Route
         'payment_analytics_partition_cron',
         'payout_links_batch_process',
         'merchant_methods_hdfc_debit_emi',
+
+        // payout outbox cron creates a new partition and drops oldest partition, runs daily
+        'payout_outbox_partition_cron',
 
         'vendor_payment_email_integration_webhook',
         // ledger route
@@ -11582,6 +11586,7 @@ class Route
             'health_checker_reminder_cron',
             'fraud_checker_milestone_cron',
             'payment_analytics_partition_cron',
+            'payout_outbox_partition_cron',
             'banking_account_service_cron_routes',
             'merchant_methods_hdfc_debit_emi',
             'merchant_action_notification_cron',
