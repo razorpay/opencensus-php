@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\PaymentLink\Metric;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 
 class Service extends Base\Service
@@ -432,9 +433,15 @@ class Service extends Base\Service
      */
     public function createPaymentHandle(string $merchantId)
     {
+        $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_REQUEST);
+
+        $startTime = millitime();
+
         $prevBasicAuth = $this->getPrevAuthAndSetVariables($merchantId);
 
         $prevMode = $this->mode;
+
+        $modifiedResponse = [];
 
         try
         {
@@ -452,10 +459,16 @@ class Service extends Base\Service
 
             $response = $this->core->createPaymentHandle($input, $this->merchant, $this->user);
 
-            return $this->modifyResponseForPaymentHandle($response);
+            $modifiedResponse = $this->modifyResponseForPaymentHandle($response);
+
+            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT);
         }
         catch(\Throwable $e)
         {
+            $this->trace->count(Metric::PAYMENT_HANDLE_CREATION_FAILED_COUNT, [
+                'error'   => $e
+                ]);
+
             $this->trace->traceException($e, Trace::ERROR,
                 TraceCode::PAYMENT_HANDLE_CREATION_FAILED,
                 [
@@ -468,6 +481,10 @@ class Service extends Base\Service
 
             $this->app['basicauth']->setModeAndDbConnection($prevMode);
         }
+
+        $this->trace->histogram(Metric::PAYMENT_HANDLE_CREATION_TIME_TAKEN, millitime() - $startTime);
+
+        return $modifiedResponse;
     }
 
     public function updatePaymentHandle(array $input): array

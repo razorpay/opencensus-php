@@ -29,4 +29,10 @@ final class Metric
     const PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_COMPLETE_TASK      = 'payment_page_processor_time_taken_to_complete_task';
     const PAYMENT_PAGE_PROCESSOR_JOB_SUCCESS_COUNT_TOTAL          = 'payment_page_processor_job_success_count_total';
     const PAYMENT_PAGE_PROCESSOR_JOB_FAIL_COUNT_TOTAL             = 'payment_page_processor_job_fail_count_total';
+
+    // Payment Handle Metrics
+    const PAYMENT_HANDLE_CREATION_TIME_TAKEN                      = 'payment_handle_creation_time_taken';
+    const PAYMENT_HANDLE_CREATION_FAILED_COUNT                    = 'payment_handle_creation_failed_count';
+    const PAYMENT_HANDLE_CREATION_SUCCESSFUL_COUNT                = 'payment_handle_creation_successful_count';
+    const PAYMENT_HANDLE_CREATION_REQUEST                         = 'payment_handle_creation_request';
 }
