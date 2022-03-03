@@ -1583,7 +1583,8 @@ class Core extends Base\Core
 
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
-        $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::UNDER_REVIEW);
+        $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
+        $ncCount++;
         $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
         $additionalDetails = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
         $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2, $newClarificationReasonsV2, $ncCount, $source);

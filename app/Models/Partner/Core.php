@@ -528,7 +528,6 @@ class Core extends Detail\Core
         $statusChangeLogs = $partnerActivation->getActivationStatusChangeLog();
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Activation\Constants::UNDER_REVIEW);
-
         $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
         $additionalDetails = $this->getClarificationReasons($existingAdditionalDetails, $newAdditionalDetails, $ncCount, $source);
 
