@@ -2241,6 +2241,7 @@ class Validator extends Base\Validator
         Entity::VISA_MPAN,
         Entity::RUPAY_MPAN,
         Entity::ACCOUNT_TYPE,
+        Entity::CORPORATE,
     ];
 
     protected static $automaticGatewayMatchAttributes = [
