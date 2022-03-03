@@ -70,7 +70,8 @@ $is_performance_optimized   = $data['view_preferences']['page_load_optimization_
           paymentData: data.payment_link,
           environment: data.environment,
           payment_handle_amount: data.payment_handle_amount,
-          is_preview: data.is_preview
+          is_preview: data.is_preview,
+          keyless_header: data.keyless_header,
         };
     </script>
 
