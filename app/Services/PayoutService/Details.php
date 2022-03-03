@@ -23,7 +23,7 @@ class Details extends Base
             ]);
 
         $request = $input + [
-                'id'        => $payout->getId(),
+                'source_id' => $payout->getId(),
             ];
 
         $response = $this->makeRequestAndGetContent(

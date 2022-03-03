@@ -21,10 +21,10 @@ class Status extends Base
                                              string $bankStatusCode = null)
     {
         $request = [
-            'id'                => $payoutId,
-            'status'            => $status,
-            'failure_reason'    => $failureReason,
-            'bank_status_code'  => $bankStatusCode
+            'source_id'        => $payoutId,
+            'status'           => $status,
+            'failure_reason'   => $failureReason,
+            'bank_status_code' => $bankStatusCode
         ];
 
         $this->trace->info(TraceCode::PAYOUT_STATUS_UPDATE_FROM_FTS_REQUEST,
