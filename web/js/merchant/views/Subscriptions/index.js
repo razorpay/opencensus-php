@@ -32,7 +32,6 @@ import QuickGuide, {
   getSubscriptionQuickGuideIsClosed,
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
-import Announcement from 'merchant/components/Announcements';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { PaperNachBanner, UpdatePaymentMethodBanner } from './components/banners/';
 import { PAPER_NACH_CARD_BANNER_URL, UPDATE_PAYMENT_METHOD_URL } from './constants';
@@ -156,16 +155,6 @@ class SubscriptionsController extends React.Component {
           <DashboardBanner />
           {!userInfo.isChargeAtWillEnabled && (
             <UpdatePaymentMethodBanner url={UPDATE_PAYMENT_METHOD_URL} />
-          )}
-          {userInfo.isChargeAtWillEnabled && !showPaperNachBanner && (
-            <Announcement
-              title="UPI Mandate Update"
-              canBeClosed={true}
-              theme="primary"
-              key={`as-presented-${userInfo.current}`}
-              id="as-presnted-banner"
-              message="You can now charge customers on UPI Autopay any time as per your business requirement and not just monthly basis"
-            />
           )}
           {showPaperNachBanner && <PaperNachBanner url={PAPER_NACH_CARD_BANNER_URL} />}
         </div>
