@@ -182,6 +182,7 @@ class Constants
 
     //DASHBOARD URLS
     const SUPPORT_TICKET_DASHBOARD_URL = 'app/ticket-support/%s/%s/agent/conversation';
+    const SUPPORT_TICKET_DASHBOARD_BUTTON_URL = '%s/%s/agent/conversation';
 
     const MERCHANT_PLUGIN_TAG       = 'plugin_merchant';
 }

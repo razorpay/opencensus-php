@@ -2177,7 +2177,8 @@ Thanks for choosing Razorpay. There are a few requirements that need to be compl
 - {2}
 - {3}
 - {4}
-Please share the links/proofs by replying to this ticket - {5}.
+
+Please share the links/proofs by replying to this ticket.
 Regards,
 Team Razorpay', '1234567890');
     }

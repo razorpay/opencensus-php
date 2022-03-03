@@ -38,16 +38,17 @@ class WhatsappNotificationService extends BaseNotificationService
         $fdInstance = $this->args['ticket']->getFdInstance();
 
         $payload = [
-            'ownerId'       => $merchant->getId(),
-            'ownerType'     => Merchant\Constants::MERCHANT,
-            'template'      => $this->getTemplateMessage(),
-            'template_name' => $templateName,
-            'receiver'      => $this->getPhone(),
-            'source'        => 'api.' . $this->mode . '.admin_dashboard',
-            'params'        => [
-                '1'                              => $merchant->getName(),
-                strval($noOfDocuments + 2) => $this->app['config']->get('applications.dashboard.url') . sprintf(Merchant\FreshdeskTicket\Constants::SUPPORT_TICKET_DASHBOARD_URL, $fdInstance, $ticketId),
+            'ownerId'          => $merchant->getId(),
+            'ownerType'        => Merchant\Constants::MERCHANT,
+            'template'         => $this->getTemplateMessage(),
+            'template_name'    => $templateName,
+            'receiver'         => $this->getPhone(),
+            'source'           => 'api.' . $this->mode . '.admin_dashboard',
+            'params'           => [
+                '1'            => $merchant->getName(),
             ],
+            'is_cta_template'  => true,
+            'button_url_param' => sprintf(Merchant\FreshdeskTicket\Constants::SUPPORT_TICKET_DASHBOARD_BUTTON_URL, $fdInstance, $ticketId)
         ];
 
         $count = 2;
