@@ -4024,4 +4024,45 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testOnMultipleOrderMakePaymentShouldUpdateCapturedPaymentCount' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl/order',
+            'method'  => 'post',
+            'content' => [
+                "line_items" => [
+                    [
+                        "payment_page_item_id" => "ppi_10000000000ppi",
+                        "amount" => 5000,
+                        "quantity" => 1,
+                    ],
+                    [
+                        "payment_page_item_id" => "ppi_10000000001ppi",
+                        "amount" => 10000,
+                        "quantity" => 2,
+                    ]
+                ],
+                "notes" => [
+                    "email" => "some@email.com",
+                    "phone" => "898989898",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testOnGetDetailsCallAndNoCapturedPaymentCountShouldUpdateCapturedPaymentCount' => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl/details',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'captured_payments_count' => 1
+            ],
+        ],
+    ],
 ];

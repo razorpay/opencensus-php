@@ -1102,6 +1102,55 @@ class Core extends Base\Core
         ];
     }
 
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $entity
+     *
+     * @return int
+     */
+    public function updateAndGetCapturedPaymentCount(Entity $entity): int
+    {
+        $capturedPaymentCount = 0;
+
+        if ($this->repo->isTransactionActive() === false)
+        {
+            $this->repo->transaction(function() use ($entity, & $capturedPaymentCount) {
+
+                $this->repo->payment_link->lockForUpdateAndReload($entity);
+
+                $capturedPaymentCount = $this->updateAndGetCapturedPaymentCount($entity);
+            });
+
+            return $capturedPaymentCount;
+        }
+
+        $capturedPaymentCount = $this->repo->payment->getCapturedPaymentsForPaymentPage($entity);
+
+        $this->updateCapturedPaymentCount($capturedPaymentCount, $entity);
+
+        return $capturedPaymentCount;
+    }
+
+    /**
+     * @param int                            $count
+     * @param \RZP\Models\PaymentLink\Entity $entity
+     * @param array                          $existingComputedSettings
+     *
+     * @return void
+     */
+    private function updateCapturedPaymentCount(int $count, Entity $entity, array $existingComputedSettings = [])
+    {
+        $this->repo->assertTransactionActive();
+        
+        if (empty($existingComputedSettings) === true)
+        {
+            $existingComputedSettings = $entity->getComputedSettings()->toArray();
+        }
+
+        $existingComputedSettings[Entity::CAPTURED_PAYMENTS_COUNT] = $count;
+
+        $entity->getComputedSettingsAccessor()->upsert($existingComputedSettings)->save();
+    }
+
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)
     {
         $settings[Entity::CHECKOUT_OPTIONS] = [
@@ -1172,6 +1221,9 @@ class Core extends Base\Core
             Entity::COLLECTED_AMOUNT    => $collectedAmount,
             Entity::SUPPORTER_COUNT     => 1
         ]);
+
+        // update captured payment count for the entity
+        $this->updateCapturedPaymentCountOnthePage($paymentLink);
 
         $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL, $paymentLink->getMetricDimensions());
     }
@@ -1866,6 +1918,44 @@ class Core extends Base\Core
             );
         });
         return $paymentPageItem;
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     *
+     * @return void
+     */
+    protected function updateCapturedPaymentCountOnthePage(Entity $paymentLink)
+    {
+        $computedSettings   = $paymentLink->getComputedSettings()->toArray();
+
+        $context = [
+            "entity"    => [
+                Entity::ID  => $paymentLink->getId(),
+            ],
+            Entity::COMPUTED_SETTINGS   => $computedSettings,
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_UPDATING_TRANSACTION_COUNT, $context);
+
+        $totalTransactionCountSoFar = array_get($computedSettings, Entity::CAPTURED_PAYMENTS_COUNT);
+
+        if ($totalTransactionCountSoFar === null)
+        {
+            /**
+             * captured payment count has never been computed for this entity
+             * we will update the count by making a query and update it,
+             * so that from next time we will simply increment the count
+             *
+             * purpose of calling $this->repo->payment->getCapturedPaymentsForPaymentPage is
+             * we will not have the captured_payment_count for old payment pages.
+             */
+            $this->updateAndGetCapturedPaymentCount($paymentLink);
+
+            return;
+        }
+
+        $this->updateCapturedPaymentCount(1 + (int) $totalTransactionCountSoFar, $paymentLink, $computedSettings);
     }
 
     /**

@@ -101,12 +101,6 @@ class PaymentPageProcessor extends Job
             $this->context
         );
 
-        $this->trace->histogram(
-            PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TIME_TAKEN_TO_PICK_JOB,
-            $timeTakenToPickJobInMilliSecs,
-            $this->context
-        );
-
         $this->trace->count(PaymentLink\METRIC::PAYMENT_PAGE_PROCESSOR_COUNT_TOTAL, $this->context);
 
         $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_COMPLETED, $this->context);

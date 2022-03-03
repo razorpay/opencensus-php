@@ -158,6 +158,7 @@ class Entity extends Base\PublicEntity
 
     const PARTNER_WEBHOOK_SETTINGS              = Constants::PARTNER_WEBHOOK_SETTINGS_KEY;
     const PARTNER_SHIPROCKET                    = Constants::PARTNER_SHIPROCKET;
+    const COMPUTED_SETTINGS                     = 'computed_settings';
 
     // shiprocket specific udfs name
     const ADDRESS                               = 'address';

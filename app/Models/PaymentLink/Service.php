@@ -96,7 +96,7 @@ class Service extends Base\Service
 
         $extra[Entity::CAPTURED_PAYMENTS_COUNT] = Tracer::inSpan(['name' => 'payment_page.get_details.get_captured_payments'], function() use($entity)
         {
-            return $this->repo->payment->getCapturedPaymentsForPaymentPage($entity);
+            return $this->getCapturedPaymentCount($entity);
         });
 
         $extra[Entity::SETTINGS] = Tracer::inSpan(['name' => 'payment_page.get_details.serialize'], function() use($entity)
@@ -105,6 +105,25 @@ class Service extends Base\Service
         });
 
         return $data + $extra;
+    }
+
+    /**
+     * @param \RZP\Models\PaymentLink\Entity $entity
+     *
+     * @return int
+     */
+    private function getCapturedPaymentCount(Entity $entity): int
+    {
+        $computedSettings = $entity->getComputedSettings()->toArray();
+
+        $capturedPaymentCount = array_get($computedSettings, Entity::CAPTURED_PAYMENTS_COUNT);
+
+        if ($capturedPaymentCount === null)
+        {
+            $capturedPaymentCount = $this->core->updateAndGetCapturedPaymentCount($entity);
+        }
+
+        return (int) $capturedPaymentCount;
     }
 
     public function create(array $input): array

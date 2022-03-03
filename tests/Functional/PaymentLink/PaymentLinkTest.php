@@ -2317,6 +2317,62 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * @group pp_captured_payment_count
+     */
+    public function testOnMultipleOrderMakePaymentShouldUpdateCapturedPaymentCount()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $pl = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $order->getId()));
+
+        // total 6 payments
+        for ($i = 0; $i<5; $i++)
+        {
+            $orderRes   = $this->startTest();
+            $orderId    = $order->stripDefaultSign($orderRes['order']['id']);
+
+            $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $orderId));
+        }
+
+        // get latest instance
+        $pl = $this->getDbEntityById('payment_link', $pl->getId());
+
+        $computed = $pl->getComputedSettings()->toArray();
+
+        $this->assertEquals($computed[PaymentLink\Entity::CAPTURED_PAYMENTS_COUNT], '6');
+    }
+
+    /**
+     * @group pp_captured_payment_count
+     */
+    public function testOnGetDetailsCallAndNoCapturedPaymentCountShouldUpdateCapturedPaymentCount()
+    {
+        $data = $this->createPaymentLinkAndOrderForThat();
+
+        $pl = $data['payment_link'];
+
+        $order = $data['payment_link_order']['order'];
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($pl, $this->getDbEntityById('order', $order->getId()));
+
+        // get latest instance
+        $pl = $this->getDbEntityById('payment_link', $pl->getId());
+
+        // remove the computed settings for captured payment count
+        $computed = $pl->getComputedSettings()->toArray();
+
+        unset($computed[PaymentLink\Entity::CAPTURED_PAYMENTS_COUNT]);
+
+        $pl->getComputedSettingsAccessor()->upsert($computed)->save();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function setupPartnerWebhookSettingTestCase(array $webhookSettings, bool $validUdf = true)
