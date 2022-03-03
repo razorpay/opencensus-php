@@ -55,8 +55,7 @@ abstract class AbstractEventClient extends Base\Core
     {
         try
         {
-            if (($this->mock === true) or
-                ($this->app->runningUnitTests() === true))
+            if ($this->mock === true)
             {
                 return false;
             }

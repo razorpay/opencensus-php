@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Fraud;
 
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Fraud\BulkNotification;
 
 class Core extends Base\Core
@@ -40,6 +41,8 @@ class Core extends Base\Core
             $fraudEntity = (new Entity)->build($input);
 
             $this->repo->payment_fraud->saveOrFail($fraudEntity);
+
+            $this->app['diag']->trackPaymentFraudEvent(EventCode::PAYMENT_FRAUD_CREATED, $fraudEntity);
 
             return [true, $fraudEntity];
         }

@@ -50,4 +50,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::REPORTED_TO_RAZORPAY_AT) ?? $this->getAttribute(self::CREATED_AT);
     }
+
+    public function getReportedToIssuerAt()
+    {
+        return $this->getAttribute(self::REPORTED_TO_ISSUER_AT) ?? $this->getReportedToRazorpayAt();
+    }
 }

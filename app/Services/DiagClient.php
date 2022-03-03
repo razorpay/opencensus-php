@@ -22,6 +22,7 @@ class DiagClient extends EventTrackerClient
     use Traits\PaymentPageEvent;
     use Traits\UpiTransferEvent;
     use Traits\BankTransferEvent;
+    use Traits\PaymentFraudEvent;
     use Traits\TrustedBadgeEvent;
     use Traits\PaymentConfigEvent;
     use Traits\VirtualAccountEvent;

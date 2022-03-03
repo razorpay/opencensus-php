@@ -138,6 +138,10 @@ class BulkFraudNotifyTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $snsPayloadArray = [];
+
+        $this->mockLumberjackSns(1, $snsPayloadArray);
+
         $this->addPermissionToBaAdmin('save_payment_fraud');
 
         $merchant = $this->fixtures->create('merchant', [
@@ -156,7 +160,66 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->startTest($testData);
 
-        $this->assertFraudEntityExists($payment->getId());
+        $fraud = $this->assertFraudEntityExists($payment->getId());
+
+        //for pushing fraud event to lumberjack
+        $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
+
+        $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
+    }
+
+    protected function mockLumberjackSns($count, &$snsPayloadArray = [])
+    {
+        $sns = \Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app['config']->set('applications.lumberjack.mock', false);
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->times($count)
+            ->with(\Mockery::on(function(string $input) use (& $snsPayloadArray) {
+                $jsonDecodedInput = json_decode($input, true);
+
+                array_push($snsPayloadArray, $jsonDecodedInput);
+
+                return true;
+
+            }),    \Mockery::type('string'));
+    }
+
+    protected function getExpectedSNSPayload($fraud, $payment)
+    {
+        return [
+            'mode'   => 'test',
+            'events' => [
+                [
+                    'event_type'    => 'payment-fraud-events',
+                    'event_version' => 'v1',
+                    'event_group'   => 'payment_fraud',
+                    'event'         => 'payment_fraud.created',
+                    'properties'    => [
+                        'payment_fraud' => [
+                            'id'                      => $fraud->id,
+                            'payment_id' => $fraud->payment_id,
+                            'reported_to_razorpay_at' => $fraud->reported_to_razorpay_at ?? $fraud->created_at,
+                            'reported_to_issuer_at'   => (int) $fraud->reported_to_issuer_at ?? $fraud->reported_to_razorpay_at ?? $fraud->created_at,
+                        ],
+                        'payment'       => [
+                            'id'          => $payment->getPublicId(),
+                            'amount' => 1000000,
+                            'base_amount' => 1000000,
+                            'currency'    => 'INR',
+                            'method'      => 'card',
+                            'issuer'      => null,
+                            'type'        => 'PG',
+                            'gateway'     => 'hdfc',
+                        ],
+                        'error_code'    => 'SUCCESS',
+                    ],
+                ],
+            ]
+        ];
     }
 
     public function testSavePaymentFraudValidationError()
@@ -456,8 +519,10 @@ class BulkFraudNotifyTest extends TestCase
     {
         $paymentId = '10000000000002';
 
+        $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
+
         $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('02705601344033737573894')"],
-                                [null,[]]);
+                                [null, []]);
 
         $this->mockDruidRequest(['query' => "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('003373757389')"],
                                 [
@@ -473,16 +538,26 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->ba->batchAppAuth();
 
+        $snsPayloadArray = [];
+
+        $this->mockLumberjackSns(1, $snsPayloadArray);
+
         $response = $this->startTest();
 
-        $fraudId = $this->assertFraudEntityExists($response['items'][0]['Payment ID'], 'MasterCard');
+        $fraud = $this->assertFraudEntityExists($response['items'][0]['Payment ID'], 'MasterCard');
 
-        $this->assertEquals($response['items'][0]['Fraud ID'], $fraudId);
+        $this->assertEquals($response['items'][0]['Fraud ID'], $fraud->id);
+
+        $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
+
+        $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
     }
 
     public function testCreateFraudBatchVisa()
     {
         $paymentId = '10000000000002';
+
+        $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
         $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('74110751299033415520957','74110751299033415520957')"],
                                 [
@@ -498,13 +573,24 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->ba->batchAppAuth();
 
+        $snsPayloadArray = [];
+
+        $this->mockLumberjackSns(1, $snsPayloadArray);
+
         $response = $this->startTest();
 
-        $fraudId = $this->assertFraudEntityExists($response['items'][0]['Payment ID']);
+        $fraud = $this->assertFraudEntityExists($response['items'][0]['Payment ID']);
+
+        $fraudId = $fraud->id;
 
         $this->assertEquals($response['items'][0]['Fraud ID'], $fraudId);
 
         $this->assertEquals($response['items'][1]['Fraud ID'], $fraudId);
+
+        $expectedSNSPayload = $this->getExpectedSNSPayload($fraud, $payment);
+
+        $this->assertArraySelectiveEquals($expectedSNSPayload, $snsPayloadArray[0]);
+
     }
 
     public function testCreateFraudBatchVisaDruidQueryFails()
@@ -550,10 +636,11 @@ class BulkFraudNotifyTest extends TestCase
         $this->prepareAndDoTest($fileData, $expectedOutputFileRows, 0, false);
     }
 
+    //this function will assert that only one fraud exist for given payment Id and will return that fraud
     protected function assertFraudEntityExists($paymentId, $reportedBy = 'Visa')
     {
         $fraud = \DB::connection('test')->table('payment_fraud')
-             ->where('payment_id', $paymentId);
+                    ->where('payment_id', $paymentId);
 
         $this->assertEquals(1, $fraud->count());
 
@@ -565,7 +652,7 @@ class BulkFraudNotifyTest extends TestCase
             $this->assertEquals(1635552000, $fraud->first()->reported_to_issuer_at);
         }
 
-        return $fraud->first()->id;
+        return $fraud->first();
     }
 
     public function testNotifySingleForSamePaymentIdAndReportedBy()

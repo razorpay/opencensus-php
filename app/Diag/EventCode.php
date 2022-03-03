@@ -856,6 +856,11 @@ class EventCode
         'name'  => 'dispute.processed'
     ];
 
+    const PAYMENT_FRAUD_CREATED = [
+        'group' => 'payment_fraud',
+        'name' => 'payment_fraud.created'
+    ];
+
     const BVS_CONSUMED_VALIDATION_DOCUMENT_VERIFICATION_RESULTS = [
         'group' => 'onboarding',
         'name'  => 'bvs.consumed_validation.document_verification.results'
