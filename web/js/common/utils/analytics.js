@@ -2,6 +2,7 @@ import { titleCase } from './rzp-utils';
 import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 export const sendToLumberjack = ({ eventName, properties = {} }) => {
   const body = {
@@ -154,8 +155,9 @@ export const analyticsTrack = ({
         eventTimestamp,
         experiment_ID: getCookie('auth_source') === 'website' ? 'Signup_experiment_1' : 'none',
         // TODO: Deprecated, remove once all iterations are migrated
-        device_type: window.innerWidth <= 1020 ? 'mweb' : 'dweb',
-        source: window.innerWidth <= 1020 ? 'Mobile Dashboard' : 'Dashboard',
+        // We use 1020px, as we mark tablets and mobile as mweb (in analytics)
+        device_type: isMobileDevice(1020) ? 'mweb' : 'dweb',
+        source: isMobileDevice(1020) ? 'Mobile Dashboard' : 'Dashboard',
         userId: properties.userId || 'UNKNWON_USER',
       },
       {

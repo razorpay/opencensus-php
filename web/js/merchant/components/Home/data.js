@@ -9,7 +9,10 @@ const API_INVALID_RESP = {
 const OLDEST_TXN_ERROR = {
   error: 'Unable to get your first transaction date',
 };
-const isMobileDevice = () => window.innerWidth <= 767;
+const isMobileDevice = (customWidth) =>
+  document.documentElement?.clientWidth
+    ? document.documentElement.clientWidth <= (customWidth ? customWidth : 767)
+    : window.innerWidth <= (customWidth ? customWidth : 767);
 
 const paymentMethodsOrder = [
   'card',
