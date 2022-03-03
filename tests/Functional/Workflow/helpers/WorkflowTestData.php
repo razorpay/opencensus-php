@@ -1019,6 +1019,7 @@ return [
                 "owner_id" =>  "10000000000000",
                 "owner_type" =>  "merchant",
                 "enabled" =>  "false",
+                'template' => []
             ],
         ],
         'response' => [

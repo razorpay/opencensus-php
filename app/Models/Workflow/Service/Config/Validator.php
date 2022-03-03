@@ -33,6 +33,7 @@ class Validator extends Base\Validator
         Entity::SERVICE              => 'required|string|in:rx_live,rx_test,growth,relay',
         Entity::OWNER_ID             => 'required|string|max:14',
         Entity::OWNER_TYPE           => 'required|string|max:20',
+        Entity::TEMPLATE             => 'sometimes|array',
     ];
 
     protected static $createRules = [
