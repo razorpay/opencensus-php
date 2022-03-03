@@ -59,49 +59,6 @@ func validatePaymentPageRequest(request PaymentPageRequest) error {
 	return nil // request is valid so we return nil
 }
 
-func validatePaymentPageOrderRequest(request PaymentPageOrderRequest,requestPP PaymentPageRequest) error {
-	if request.LineItems[0].Amount>requestPP.PaymentPageItems[0].MaxAmount {
-		return errors.New("amount should not be greater than to payment page item max amount")
-	}
-	//if len(request.PaymentPageItems) == 0 {
-	//	return errors.New("The payment page items field is required.")
-	//}
-	//if !strings.Contains(request.PPSettings.PaymentSuccessRedirectURL, "https") {
-	//	return errors.New("The settings.payment success redirect url format is invalid.")
-	//}
-	//if request.PaymentPageItems[0].Stock==0{
-	//	return errors.New("The stock must be at least 1.")
-	//}
-	//if request.PaymentPageItems[0].Settings.Position<0{
-	//	return errors.New("The settings.position must be at least 0.")
-	//}
-	//if request.PaymentPageItems[0].Settings.Position>10000{
-	//	return errors.New("The settings.position may not be greater than 1000.")
-	//}
-	//if request.Currency != request.PaymentPageItems[0].Item.Currency {
-	//	return errors.New("payment page currency and payment page item currency should be same")
-	//}
-	//if request.Currency =="USD" && request.PaymentPageItems[0].MaxAmount<10 {
-	//	return errors.New("max_amount must be atleast USD 0.1")
-	//}
-	//if request.PaymentPageItems[0].MinAmount> request.PaymentPageItems[0].MaxAmount {
-	//	return errors.New("min amount should not be greater than max amount")
-	//}
-	//if request.PaymentPageItems[0].MinPurchase> request.PaymentPageItems[0].Stock {
-	//	return errors.New("min purchase should not be greater than stock")
-	//}
-	//if request.PaymentPageItems[0].MinAmount<100 {
-	//	return errors.New("min_amount must be atleast INR 1")
-	//}
-	//if !(request.PaymentPageItems[0].MaxAmount>0 && request.PaymentPageItems[0].MaxAmount<4294967295){
-	//	return errors.New("The max amount must be valid integer between 0 and 4294967295.")
-	//}
-	//if !(request.PaymentPageItems[0].Stock>0 && request.PaymentPageItems[0].Stock<4294967295){
-	//	return errors.New("The stock must be valid integer between 0 and 4294967295.")
-	//}
-	return nil // request is valid so we return nil
-}
-
 func (s *PaymentPageAPITestSuite) TestPaymentPageNegative(){
 	type errorTestCases struct {
 		description   string
@@ -793,6 +750,173 @@ func (s *PaymentPageAPITestSuite) TestPaymentPageCreateOrderPositive(){
 		})
 	}
 }
+
+func (s *PaymentPageAPITestSuite) TestPaymentPageUpdatePositive(){
+	type positiveTestCases struct {
+		description   string
+		input         PaymentPageRequest
+	}
+	ppitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+			Amount: 50000,
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       5,
+		MinPurchase: 1,
+		MaxPurchase: 10,
+	}
+	ppmultipleitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       5,
+		MinPurchase: 1,
+		MaxPurchase: 10,
+		MinAmount: 100,
+		MaxAmount: 1000,
+	}
+	ppitempos := []PaymentPageItems{ppitem}
+	ppitemmultiple :=[]PaymentPageItems{ppmultipleitem}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "With Amount, Min and Max Purchase",
+			input: PaymentPageRequest{
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "With Min Amount, Max Amount, Min and Max Purchase",
+			input: PaymentPageRequest{
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitemmultiple,
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreatePaymentPage(s.T(), scenario.input)
+			ppResUpdate := UpdatePaymentPage(s.T(), scenario.input, ppRes)
+			verifyUpdatedPP(s.T(), scenario.input, ppResUpdate)
+		})
+	}
+}
+func (s *PaymentPageAPITestSuite) TestPaymentPageUpdateNegative(){
+	type positiveTestCases struct {
+		description   string
+		input         PaymentPageRequest
+	}
+	ppitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+			Amount: 50000,
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       5,
+		MinPurchase: 1,
+		MaxPurchase: 10,
+	}
+	ppmultipleitem := PaymentPageItems{
+		Item:        Item{
+			Name:        "exy",
+			Currency:    "INR",
+			Description: "test",
+			Type:        "payment_page",
+		},
+		Settings:    PPItemSettings{
+			Position: 1,
+		},
+		Stock:       5,
+		MinPurchase: 1,
+		MaxPurchase: 10,
+		MinAmount: 100,
+		MaxAmount: 1000,
+	}
+	ppitempos := []PaymentPageItems{ppitem}
+	ppitemmultiple :=[]PaymentPageItems{ppmultipleitem}
+	for _, scenario := range []positiveTestCases{
+		{
+			description: "With Amount, Min and Max Purchase",
+			input: PaymentPageRequest{
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitempos,
+			},
+		},
+		{
+			description: "With Min Amount, Max Amount, Min and Max Purchase",
+			input: PaymentPageRequest{
+				Title:          "Test Page",
+				Description:    "bag for test",
+				Terms:          "Terms and contions",
+				SupportEmail:   "prem.svmm@test.com",
+				SupportContact: "7502233314",
+				PPSettings: PPSettings{
+					UdfSchema:                 "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":2}}]",
+					AllowSocialShare:          "1",
+					PaymentSuccessMessage:     "Payment is successfull",
+					PaymentSuccessRedirectURL: "https://google.com",
+					Theme:                     "light",
+				},
+				PaymentPageItems: ppitemmultiple,
+			},
+		},
+	} {
+		s.Run(scenario.description, func (){
+			ppRes := CreatePaymentPage(s.T(), scenario.input)
+			ppResUpdate := UpdatePaymentPage(s.T(), scenario.input, ppRes)
+			verifyUpdatedPP(s.T(), scenario.input, ppResUpdate)
+		})
+	}
+}
 func (s *PaymentPageAPITestSuite) TestPaymentPageCreateOrderNegative(){
 	type negativeTestCases struct {
 		description   string
@@ -888,6 +1012,11 @@ func verifyCreatedPP(t *testing.T, ppRequest PaymentPageRequest, ppResponse Paym
 	assert.Equal(t, ppRequest.Title, ppResponse.Title)
 	assert.NotEmptyf(t, ppResponse.ID, "PP did not created")
 	assert.Equal(t, ppRequest.Currency, ppResponse.Currency)
+}
+
+func verifyUpdatedPP(t *testing.T, ppRequest PaymentPageRequest, ppResponse PaymentPageResponse) {
+	assert.Equal(t, ppRequest.Title, ppResponse.Title)
+	assert.NotEmptyf(t, ppResponse.ID, "PP did not created")
 }
 func verifyCreatedPPOrder(t *testing.T, ppResponse PaymentPageOrderResponse) {
 	assert.NotEmptyf(t, ppResponse.Order.ID, "PP Order did not created")

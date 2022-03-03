@@ -1,7 +1,7 @@
 package e2e
 
 type PaymentPageRequest struct {
-	Currency         string             `json:"currency"`
+	Currency         string             `json:"currency,omitempty"`
 	ExpireBy         interface{}        `json:"expire_by"`
 	Title            string             `json:"title"`
 	Description      string             `json:"description"`
@@ -9,8 +9,8 @@ type PaymentPageRequest struct {
 	SupportEmail     string             `json:"support_email"`
 	SupportContact   string             `json:"support_contact"`
 	PPSettings       PPSettings          `json:"settings"`
-	TemplateType     string             `json:"template_type"`
-	ViewType         string             `json:"view_type"`
+	TemplateType     string             `json:"template_type,omitempty"`
+	ViewType         string             `json:"view_type,omitempty"`
 	PaymentPageItems []PaymentPageItems `json:"payment_page_items"`
 }
 type PPSettings struct {

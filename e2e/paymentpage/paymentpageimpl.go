@@ -23,6 +23,20 @@ func CreatePaymentPage(t *testing.T, paymentPageReq PaymentPageRequest) PaymentP
 	return paymentPageRes
 }
 
+func CreateSubsctiptionButton(t *testing.T, paymentPageReq PaymentPageRequest) PaymentPageResponse {
+	var paymentPageRes PaymentPageResponse
+	Initialize(t)
+	obj := paymentPageHost.POST("/v1/payment_pages").
+		WithBasicAuth(e2e.Config.PaymentPage.Username, e2e.Config.PaymentPage.Password).
+		WithHeaders(header).
+		WithQuery("view_type","subscription_button").
+		WithJSON(paymentPageReq).
+		Expect().
+		Status(http.StatusOK).Body()
+	json.Unmarshal([]byte(obj.Raw()), &paymentPageRes)
+	return paymentPageRes
+}
+
 // Create PaymentPageOrder
 func CreatePaymentPageOrder(t *testing.T, paymentPageOrderReq PaymentPageOrderRequest,paymentPageRes PaymentPageResponse) PaymentPageOrderResponse {
 	Initialize(t)
@@ -43,6 +57,19 @@ func CreatePaymentPageOrder(t *testing.T, paymentPageOrderReq PaymentPageOrderRe
 		Status(http.StatusOK).Body()
 	json.Unmarshal([]byte(obj.Raw()), &ppOrderRes)
 	return ppOrderRes
+}
+
+func UpdatePaymentPage(t *testing.T, paymentPageReq PaymentPageRequest,paymentPageRes PaymentPageResponse) PaymentPageResponse {
+	Initialize(t)
+	var ppRes PaymentPageResponse
+	obj := paymentPageHost.PATCH(fmt.Sprintf("/v1/payment_pages/%s",paymentPageRes.ID)).
+		WithBasicAuth(e2e.Config.PaymentPage.Username, e2e.Config.PaymentPage.Password).
+		WithHeaders(header).
+		WithJSON(paymentPageReq).
+		Expect().
+		Status(http.StatusOK).Body()
+	json.Unmarshal([]byte(obj.Raw()), &ppRes)
+	return ppRes
 }
 
 func CreatePaymentPageOrderNegative(t *testing.T, paymentPageOrderReq PaymentPageOrderRequest,paymentPageRes PaymentPageResponse) ErrorResponse {
