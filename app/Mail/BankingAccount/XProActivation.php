@@ -72,6 +72,20 @@ class XProActivation extends Base
             $spocEmail = $data[Entity::BANKING_ACCOUNT_CA_SPOC_DETAILS][Detail\Entity::SALES_POC_EMAIL];
         }
 
+        $green_channel_value = "No";
+
+        if ($data[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Detail\Entity::ADDITIONAL_DETAILS] != null)
+        {
+
+            $additional_details = json_decode($data[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][Detail\Entity::ADDITIONAL_DETAILS], true);
+
+            if (array_key_exists("green_channel", $additional_details))
+            {
+                $green_channel_value = ($additional_details["green_channel"]) ? "Yes" : "No";
+            }
+
+        }
+
         $data = [
             'internal_reference_number' => $data[Entity::BANK_REFERENCE_NUMBER],
             'merchant_name'             => $merchant[Merchant\Entity::NAME],
@@ -84,6 +98,7 @@ class XProActivation extends Base
             'reviewer_name'             => $data['reviewer_name'],
             'pincode'                   => $data[Entity::PINCODE],
             'application_date'          => $dateTime,
+            'green_channel'             => $green_channel_value,
         ];
 
         return $data;
