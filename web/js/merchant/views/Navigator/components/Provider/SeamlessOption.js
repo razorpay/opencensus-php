@@ -18,16 +18,22 @@ export const SeamlessOption = ({ providers, selectedProvider }) => {
           <div className="enable-seamless-info-msg">
             <div className="seamless-header">
               <i className="i i-info-outline" />
-              Enable seamless option*
+              {selectedProvider === 'ingenico'
+                ? `${gatewayName} Prerequisites*`
+                : 'Enable seamless option*'}
             </div>
             <div className="seamless-desc">
-              Your {gatewayName} account should have the seamless option enabled to use optimizer.
+              {selectedProvider === 'ingenico'
+                ? `Your ${gatewayName} account should have the required features enabled to use optimizer.`
+                : `Your ${gatewayName} account should have the seamless option enabled to use optimizer.`}
             </div>
             <div className="seamless-how-to-block">
               <div className="seamless-how-to">
                 <i className="i i-help" />
                 <span onClick={collapseHowTo}>
-                  How to enable seamless option on {gatewayName}?
+                  {selectedProvider === 'ingenico'
+                    ? `Steps to enable ${gatewayName}`
+                    : `How to enable seamless option on ${gatewayName}?`}
                   <img
                     src="https://cdn.razorpay.com/static/assets/rewards/rewards_list_up_vector.svg"
                     className={`arrow-img ${isCollapsed ? '' : 'arrow-img-rotate'}`}

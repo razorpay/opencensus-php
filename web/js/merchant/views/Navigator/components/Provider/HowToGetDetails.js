@@ -1,7 +1,7 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import { gatewayDetailsMapping } from '../util';
 
-const PROVIDERS_WITH_DETAILS_ON_EMAIL = ['atom', 'upi_mindgate'];
+const PROVIDERS_WITH_DETAILS_ON_EMAIL = ['atom', 'upi_mindgate', 'ingenico'];
 
 export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => {
   const gatewayName = providers[selectedProvider]['Gateway Name'].data_value;
@@ -19,20 +19,27 @@ export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => 
             </p>
           </div>
         ) : (
-          <img src={gatewayDetailsMapping[selectedProvider].dashboardImg} />
+          gatewayDetailsMapping[selectedProvider]?.dashboardImg && (
+            <img
+              alt="gateway-dashboard"
+              src={gatewayDetailsMapping[selectedProvider].dashboardImg}
+            />
+          )
         )}
-        <div className="acc-info-msg">
-          <i className="i i-info-outline" />
-          Don’t have a registered {gatewayName} Business Account, register on{' '}
-          <a
-            href={gatewayDetailsMapping[selectedProvider].dashboardUrl}
-            className="gateway-dashboard-url"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {gatewayDetailsMapping[selectedProvider].dashboardUrlLabel}
-          </a>
-        </div>
+        {gatewayDetailsMapping[selectedProvider]?.dashboardUrl && (
+          <div className="acc-info-msg">
+            <i className="i i-info-outline" />
+            Don’t have a registered {gatewayName} Business Account, register on
+            <a
+              href={gatewayDetailsMapping[selectedProvider].dashboardUrl}
+              className="gateway-dashboard-url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {gatewayDetailsMapping[selectedProvider].dashboardUrlLabel}
+            </a>
+          </div>
+        )}
       </div>
       <div className="modal-footer">
         <button className="btn btn-primary" onClick={closeModal}>

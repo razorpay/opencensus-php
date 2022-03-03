@@ -1273,6 +1273,9 @@ tr.is_current {
       font-weight: bold;
       line-height: 20px;
       color: rgba(22, 47, 86, 0.87);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
     &--methods {
       font-size: 12px;
@@ -1425,6 +1428,7 @@ tr.is_current {
       }
       .gateway-dashboard-url {
         text-decoration: underline;
+        margin-left: 5px;
         &:hover, &:focus {
           color: #528ff0;
         }

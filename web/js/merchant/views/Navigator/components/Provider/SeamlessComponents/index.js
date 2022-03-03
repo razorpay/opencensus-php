@@ -5,6 +5,7 @@ import { CashfreePoints } from './CashfreePoints';
 import { PaytmPoints } from './PaytmPoints';
 import { AtomPoints } from './AtomPoints';
 import { PineLabsPoints } from './PineLabsPoints';
+import { IngenicoPoints } from './IngenicoPoints';
 
 export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
   switch (selectedProvider) {
@@ -20,6 +21,8 @@ export const SeamlessHowto = ({ gatewayName, selectedProvider }) => {
       return <AtomPoints gatewayName={gatewayName} />;
     case 'pinelabs':
       return <PineLabsPoints gatewayName={gatewayName} />;
+    case 'ingenico':
+      return <IngenicoPoints />;
     default:
       return (
         <ol>

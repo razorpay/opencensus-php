@@ -959,19 +959,22 @@ export const rule = {
   rules: [],
 };
 
+const LOGO_PATH = 'static/assets/merchant-dash/providers';
+
 export const gatewayLogos = {
-  razorpay: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/razorpay.png',
-  smart_router: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/razorpay.png',
-  payu: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/payu.png',
-  paytm: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/paytm.png',
-  billdesk: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/bill-desk.png',
-  atom: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/atom.png',
-  fss: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/fss.png',
-  cybersource: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/cybersource.png',
-  cashfree: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/cashfree.svg',
-  ccavenue: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/ccavenue.svg',
-  upi_mindgate: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/hdfc.png',
-  pinelabs: 'https://cdn.razorpay.com/static/assets/merchant-dash/providers/pinelabs.png',
+  razorpay: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
+  smart_router: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
+  payu: `${window.cdnBaseUrl}/${LOGO_PATH}/payu.png`,
+  paytm: `${window.cdnBaseUrl}/${LOGO_PATH}/paytm.png`,
+  billdesk: `${window.cdnBaseUrl}/${LOGO_PATH}/bill-desk.png`,
+  atom: `${window.cdnBaseUrl}/${LOGO_PATH}/atom.png`,
+  fss: `${window.cdnBaseUrl}/${LOGO_PATH}/fss.png`,
+  cybersource: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
+  cashfree: `${window.cdnBaseUrl}/${LOGO_PATH}/cashfree.svg`,
+  ccavenue: `${window.cdnBaseUrl}/${LOGO_PATH}/ccavenue.svg`,
+  upi_mindgate: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
+  pinelabs: `${window.cdnBaseUrl}/${LOGO_PATH}/pinelabs.png`,
+  ingenico: `${window.cdnBaseUrl}/${LOGO_PATH}/ingenico.png`,
 };
 
 export const popularGateways = ['payu'];
@@ -1047,48 +1050,48 @@ export const SMART_ROUTER = 'smart_router';
 
 export const rzpGateways = ['razorpay', 'smart_router'];
 
+const DASHBOARD_PATH = 'static/assets/merchant-dash/provider-dashboard';
+
 export const gatewayDetailsMapping = {
   payu: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/payu_dashboard.png',
+    dashboardImg: `${window.cdnBaseUrl}/${DASHBOARD_PATH}/payu_dashboard.png`,
     dashboardUrl: 'https://onboarding.payu.in',
     dashboardUrlLabel: 'onboarding.payu.in',
   },
   cashfree: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/cashfree_dashboard.png',
+    dashboardImg: `${window.cdnBaseUrl}/${DASHBOARD_PATH}/cashfree_dashboard.png`,
     dashboardUrl: 'https://merchant.cashfree.com',
     dashboardUrlLabel: 'merchant.cashfree.com',
   },
   ccavenue: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/ccavenue_dashboard.png',
+    dashboardImg: `${window.cdnBaseUrl}/${DASHBOARD_PATH}/ccavenue_dashboard.png`,
     dashboardUrl: 'https://dashboard.ccavenue.com',
     dashboardUrlLabel: 'dashboard.ccavenue.com',
   },
   paytm: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/paytm_dashboard.png',
+    dashboardImg: `${window.cdnBaseUrl}/${DASHBOARD_PATH}/paytm_dashboard.png`,
     dashboardUrl: 'https://dashboard.paytm.com',
     dashboardUrlLabel: 'dashboard.paytm.com',
   },
   atom: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/atom_dashboard.png',
+    dashboardImg: null,
     dashboardUrl: 'https://pgreports.atomtech.in/titan_merchant_console/home',
     dashboardUrlLabel: 'pgreports.atomtech.in',
   },
   upi_mindgate: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/upi_mindgate.png',
+    dashboardImg: null,
     dashboardUrl: 'https://www.mindgate.in/our-offerings/payment-gateway-corporate/',
     dashboardUrlLabel: 'mindgate.in',
   },
   pinelabs: {
-    dashboardImg:
-      'https://cdn.razorpay.com/static/assets/merchant-dash/provider-dashboard/pinelabs_dashboard.png',
+    dashboardImg: `${window.cdnBaseUrl}/${DASHBOARD_PATH}/pinelabs_dashboard.png`,
     dashboardUrl: 'https://www.pinelabs.com/online-payment-gateway',
     dashboardUrlLabel: 'pinelabs.com',
+  },
+  ingenico: {
+    dashboardImg: null,
+    dashboardUrl: 'https://www.techprocess.co.in/product-offerings/payment-gateway',
+    dashboardUrlLabel: 'techprocess.co.in',
   },
 };
 
