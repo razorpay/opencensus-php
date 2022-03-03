@@ -1203,7 +1203,7 @@ class Constants
     const SUBM_QR_IMAGE_CONTENT    = 'subm_qr_image_content';
 
     const RAZORPAYX_FLOWS_VIA_OAUTH = 'razorpayx_flows_via_oauth';
-  
+
     /**
      * Feature flag to allow only 3ds enabled international transactions
      */
@@ -2454,6 +2454,7 @@ class Constants
         self::DISABLE_COLLECT_CONSENT,
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
+        self::CARD_MANDATE_SKIP_PAGE
     ];
 
     /*
