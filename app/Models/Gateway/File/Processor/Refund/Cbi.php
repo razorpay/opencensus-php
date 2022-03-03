@@ -33,48 +33,27 @@ class Cbi extends Base
     {
         $formattedData = [];
 
-        $amount = 0;
-        $index = 0;
-
         foreach ($data as $row)
         {
-            $date = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('dmY');
+            $from_account_number = str_pad(Config::get('gateway.mozart.netbanking_cbi.account_number'), 17, "0", STR_PAD_LEFT);
 
-            $account_number = str_pad(substr($this->fetchBankAccountNumber($row), 3), 17, "0", STR_PAD_LEFT);
+            $to_account_number = str_pad(substr($this->fetchBankAccountNumber($row), 3), 17, "0", STR_PAD_LEFT);
 
             $narration_text = str_pad($row['merchant']->getFilteredDba(), 50, " ", STR_PAD_RIGHT);
 
-            $transaction_amount = str_pad($row['refund']['amount'], 16, '0', STR_PAD_LEFT);
+            $transaction_amount = str_pad($row['refund']['amount'], 17, '0', STR_PAD_LEFT);
+
+            $reference_no = str_pad($row['refund']['id'], 20, "0", STR_PAD_LEFT);
 
             $formattedData[] = [
-                RefundFields::TYPE_OF_TRANSACTION  => '01',
-                RefundFields::ACCOUNT_NUMBER       => $account_number,
+                RefundFields::TYPE_OF_TRANSACTION  => 'DD',
+                RefundFields::FROM_ACCOUNT_NUMBER  => $from_account_number,
+                RefundFields::TO_ACCOUNT_NUMBER    => $to_account_number,
                 RefundFields::TRANSACTION_AMOUNT   => $transaction_amount,
                 RefundFields::NARRATION_TEXT       => $narration_text,
-                RefundFields::REFERENCE_NO         => '        ',
-                RefundFields::VALUE_DATE           => $date,
+                RefundFields::REFERENCE_NO         => $reference_no,
             ];
-
-            ++$index;
-
-            $amount = $amount + $row['refund']['amount'];
         }
-        $date = Carbon::now(Timezone::IST)->format('dmY');
-
-        $transaction_amount = str_pad($amount, 16, '0', STR_PAD_LEFT);
-
-        $narration_text = str_pad("Debit to Razorpay", 50, " ", STR_PAD_RIGHT);
-
-        $account_number = str_pad(Config::get('gateway.mozart.netbanking_cbi.account_number'), 17, "0", STR_PAD_LEFT);
-
-        $formattedData[$index] = [
-            RefundFields::TYPE_OF_TRANSACTION  => "51",
-            RefundFields::ACCOUNT_NUMBER       => $account_number,
-            RefundFields::TRANSACTION_AMOUNT   => $transaction_amount,
-            RefundFields::NARRATION_TEXT       => $narration_text,
-            RefundFields::REFERENCE_NO         => "        ",
-            RefundFields::VALUE_DATE           => $date
-        ];
 
         $formattedData = $this->getTextData($formattedData, "", "");
 

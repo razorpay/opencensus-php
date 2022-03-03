@@ -130,21 +130,19 @@ class NbplusNetbankingCbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
     {
         $refundsFileContents = file($refundFileData['url']);
 
-        $dateInFile1 = substr($refundsFileContents[0], -10);
-        $refundTimestamp = $refundTransaction1['created_at'];
-        $dateInRefundEntity1 = Carbon::createFromTimestamp($refundTimestamp, Timezone::IST)->format('dmY');
+        $refNoInFile1 = substr($refundsFileContents[0], -16, 14);
+        $refundID1 = substr($refundTransaction1['entity_id'],-14);
 
-        $dateInFile2 = substr($refundsFileContents[1], -10);
-        $refundTimestamp = $refundTransaction2['created_at'];
-        $dateInRefundEntity2 = Carbon::createFromTimestamp($refundTimestamp, Timezone::IST)->format('dmY');
+        $refNoInFile2 = substr($refundsFileContents[1], -14);
+        $refundID2 = substr($refundTransaction2['entity_id'],-14);
 
-        $this->assertEquals(trim($dateInFile1), $dateInRefundEntity1);
-        $this->assertEquals(trim($dateInFile2), $dateInRefundEntity2);
+        $this->assertEquals($refundID1, $refNoInFile1);
+        $this->assertEquals($refundID2, $refNoInFile2);
 
-        $this->assertCount(3, $refundsFileContents);
+        $this->assertCount(2, $refundsFileContents);
 
-        $refund1 = substr($refundsFileContents[0],19,16);
-        $refund2 = substr($refundsFileContents[1],19,16);
+        $refund1 = substr($refundsFileContents[0],36,17);
+        $refund2 = substr($refundsFileContents[1],36,17);
 
         $this->assertEquals($refundAmounts[0], (int)$refund1);
         $this->assertEquals($refundAmounts[1], (int)$refund2);
