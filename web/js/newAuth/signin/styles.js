@@ -12,7 +12,7 @@ export const Container = Styled(View)`
   height: 100%;
   background: ${({ org }) =>
     ((org === BANK_NAMES.ICICI || org === BANK_NAMES.AXIS) && theme.colors.background[600]) ||
-    'linear-gradient(314deg, #54a5ff -40%, #03299C)'};
+    'linear-gradient(0deg, rgba(2, 42, 156, 0.3), rgba(2, 42, 156, 0.3)), linear-gradient(232.85deg, #020529 -52%, #000B8E 198.1%);'};
 `;
 
 export const CustomLinkButton = Styled(View)`
