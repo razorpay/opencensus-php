@@ -85,6 +85,12 @@ class Repository extends Base\Repository
         return $this->addQueryParamOrgId($query, $orgId);
     }
 
+    protected function newSlaveQueryWithOrgIdParam($orgId = null)
+    {
+        $query = $this->newQueryOnSlave();
+        return $this->addQueryParamOrgId($query, $orgId);
+    }
+
     protected function addQueryParamOrgId($query, $orgId = null)
     {
         $app = App::getFacadeRoot();
@@ -534,7 +540,7 @@ class Repository extends Base\Repository
 
     public function getPlansOrderedByPlanId(array $input)
     {
-        $query = $this->newQueryWithOrgIdParam();
+        $query = $this->newSlaveQueryWithOrgIdParam();
 
         if (empty($input[Entity::TYPE]) === false)
         {
