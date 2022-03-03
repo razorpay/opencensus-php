@@ -512,6 +512,11 @@ class Service extends Base\Service
         return (new CardMandate\Core)->processMandateHQCallBack($input);
     }
 
+    public function handleSihubWebhook($input)
+    {
+        return (new CardMandate\Core)->processSihubWebhook($input);
+    }
+
     public function redirectToAuthorize($id, $input=[])
     {
         $attrs = [
@@ -708,7 +713,7 @@ class Service extends Base\Service
 
         $payment->setRecurringType(Payment\RecurringType::INITIAL);
 
-        if ($payment->card->isRecurringSupported(true) === false)
+        if ($payment->card->isRecurringSupported(true, $payment->hasSubscription()) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);

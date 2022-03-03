@@ -39,6 +39,8 @@ class AxisGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'axis_migs';
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testPayment()

@@ -244,6 +244,7 @@ return [
     'mock_mozart'                 => env('MOZART_MOCK'),
     'mock_upi_citi'               => env('UPI_CITI_MOCK'),
     'mock_hdfc_debit_emi'         => env('HDFC_DEBIT_EMI_MOCK'),
+    'mock_billdesk_sihub'         => env('BILLDESK_SIHUB_MOCK'),
     'mock_emerchantpay'           => env('EMERCHANTPAY_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),

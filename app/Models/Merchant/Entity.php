@@ -3232,4 +3232,9 @@ class Entity extends Base\PublicEntity
     {
         return ($this->isFeatureEnabled(Feature\Constants::ADDRESS_NAME_REQUIRED) === true);
     }
+
+    public function isBilldeskSIHubEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE_BILLDESK_SIHUB);
+    }
 }

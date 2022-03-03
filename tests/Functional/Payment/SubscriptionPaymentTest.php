@@ -108,6 +108,8 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'emandate');
         // -- Add eMandate payment details END---
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testCreateInitialPaymentCard()
@@ -328,6 +330,8 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->ba->publicAuth();
 
+
+
         $this->makeRequestAndGetContent($request);
 
         $token = $this->getDbLastEntity(Entity::TOKEN);
@@ -541,6 +545,8 @@ class SubscriptionPaymentTest extends TestCase
         ];
 
         $this->ba->publicAuth();
+
+
 
         $this->makeRequestAndGetContent($request);
 
@@ -929,6 +935,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentCardWithOffer()
     {
+
+
         $paymentBody = $this->cardPayment;
 
         $paymentBody['offer_id'] = $this->offer->getPublicId();

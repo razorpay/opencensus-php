@@ -40,4 +40,20 @@ class AuthenticateInitData extends Base\Mock\Server
             'external_trace_id' => '',
         ];
     }
+
+    public function billdesk_sihub($entities)
+    {
+        return [
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+            'data'              => [
+                'amount'    => 6,
+                'currency'  => 356,
+                'id'        => 'VkHYuA3NH3',
+                'status'    => 'pending'
+            ],
+        ];
+    }
 }

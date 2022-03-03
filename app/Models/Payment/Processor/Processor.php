@@ -2984,6 +2984,7 @@ class Processor
         $this->payment = $payment;
 
         $traceCode = TraceCode::PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT;
+
         $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT;
 
         $exception = new Exception\BadRequestException($errorCode);
@@ -2997,6 +2998,7 @@ class Processor
     {
         $this->payment = $payment;
         $traceCode = TraceCode::PAYMENT_CARD_MANDATE_CANCELLED_BY_USER;
+
         $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER;
 
         $data = [
@@ -3026,6 +3028,7 @@ class Processor
         $this->payment = $payment;
 
         $traceCode = TraceCode::PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED;
+
         $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED;
 
         $exception = new Exception\BadRequestException($errorCode);

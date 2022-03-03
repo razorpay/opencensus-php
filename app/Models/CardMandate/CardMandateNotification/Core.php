@@ -16,6 +16,7 @@ use RZP\Models\CardMandate;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
+use RZP\Models\CardMandate\MandateHubs;
 
 class Core extends Base\Core
 {
@@ -24,6 +25,7 @@ class Core extends Base\Core
         $cardMandateNotification = (new Entity)->build();
 
         $cardMandateNotification->merchant()->associate($cardMandate->merchant);
+
         $cardMandateNotification->cardMandate()->associate($cardMandate);
 
         if ($payment !== null)
@@ -38,7 +40,15 @@ class Core extends Base\Core
             $input[Entity::DEBIT_AT] = $this->getDebitTime($input);
         }
 
-        $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $input);
+        try
+        {
+            $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $payment, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->handleNotificationFailed($cardMandateNotification, $payment);
+            throw $e;
+        }
 
         $cardMandateNotification->setNotificationId($notification->getId());
 
@@ -85,7 +95,7 @@ class Core extends Base\Core
             $cardMandateNotification->getStatus() === Status::NOTIFIED and
             $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED)
         {
-            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
+            $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification, $mandateHub);
 
             $cardMandateNotification->setReminderId($reminderId);
 
@@ -189,7 +199,7 @@ class Core extends Base\Core
 
         $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        $validationResponse = $mandateHub->validatePayment($cardMandate->getMandateId(), [
+        $validationResponse = $mandateHub->getValidationBeforeSubsequentPayment($cardMandate, $payment, [
             CardMandate\MandateHubs\Notification::NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
             CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount(),
         ]);
@@ -332,18 +342,22 @@ class Core extends Base\Core
         $processor->failNotificationNotSentCardAutoRecurringPayment($payment);
     }
 
-    protected function setCardAutoRecurringReminder(Entity $cardMandateNotification)
+    protected function setCardAutoRecurringReminder(Entity $cardMandateNotification, $mandateHub = MandateHubs\MandateHubs::MANDATE_HQ)
     {
         $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_REMINDER_CREATE_REQUEST, [
             'id' => $cardMandateNotification->getId(),
+            'mandate_id'  => $cardMandateNotification->cardMandate->getId(),
+            'mandate_hub' => $cardMandateNotification->cardMandate->getMandateHub(),
         ]);
 
         $reminderData = [
-            'remind_at' => $cardMandateNotification->getRemindAt(),
+            'remind_at' => $cardMandateNotification->getRemindAt($mandateHub),
         ];
 
         $namespace  = Reminders\ReminderProcessor::CARD_AUTO_RECURRING;
+
         $merchantId = Merchant\Account::SHARED_ACCOUNT;
+
         $paymentId  = $cardMandateNotification->payment->GetId();
 
         $url = sprintf('reminders/send/%s/payment/%s/%s', $this->mode, $namespace, $paymentId);
@@ -362,6 +376,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_REMINDER_CREATE_RESPONSE, [
             'id'          => $cardMandateNotification->getId(),
+            'mandate_id'  => $cardMandateNotification->cardMandate->getId(),
+            'mandate_hub' => $cardMandateNotification->cardMandate->getMandateHub(),
             'reminder_id' => $reminderId,
         ]);
 

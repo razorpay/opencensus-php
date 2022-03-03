@@ -151,6 +151,8 @@ class Route
         'payment_notify'                           => ['post',     'payments/notify',                                'PaymentController@sendNotification'                                ],
         'get_issuer_from_iin'                      => ['get',      'mandate_hq/iin/{id}',                            'IinController@getIssuerDetails'                                    ],
         'mandate_hq_callback'                      => ['post',     'mandate_hq/callback',                            'PaymentCreateController@handleMandateHQCallback'                   ],
+        'sihub_update_webhook'                     => ['post',     'recurring/billdesk/enrolment/modify',            'PaymentCreateController@handleSihubWebhook'                        ],
+        'sihub_delete_webhook'                     => ['post',     'recurring/billdesk/enrolment/delete',            'PaymentCreateController@handleSihubWebhook'                        ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
         'refresh_payments_ongoing_downtimes_cron'  => ['get',      'payments/downtimes/ongoing/refresh_cache_cron',  'DowntimeController@refreshOngoingDowntimesCache'                   ],
@@ -8072,6 +8074,10 @@ class Route
 
         // Mandate HQ Webhook Callback
         'mandate_hq_callback',
+
+        // Sihub Webhook
+        'sihub_update_webhook',
+        'sihub_delete_webhook',
 
         // Direct Tax-Payment
         'direct_tax_payments_tds_category_public',

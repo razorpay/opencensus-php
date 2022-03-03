@@ -22,7 +22,7 @@ class SharpGatewayTest extends TestCase
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
-
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'sharp';
@@ -342,7 +342,6 @@ class SharpGatewayTest extends TestCase
     public function testRecurringPaymentAuthenticateCard()
     {
         $this->fixtures->merchant->addFeatures('charge_at_will');
-
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $response = $this->doAuthPayment($payment);
@@ -389,7 +388,6 @@ class SharpGatewayTest extends TestCase
     public function testRecurringHardDeclinePaymentAuthenticateCard()
     {
         $this->fixtures->merchant->addFeatures('charge_at_will');
-
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['amount'] = '5555';
         $payment['card']['number'] = '4006660000000007';
@@ -405,7 +403,6 @@ class SharpGatewayTest extends TestCase
     public function testRecurringSoftDeclinePaymentAuthenticateCard()
     {
         $this->fixtures->merchant->addFeatures('charge_at_will');
-
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['amount'] = '4444';
         $payment['card']['number'] = '4006660000000007';

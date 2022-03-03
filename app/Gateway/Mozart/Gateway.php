@@ -33,6 +33,7 @@ class Gateway extends Base\Gateway
     use AuthorizeFailed {
         extractPaymentsProperties as extractPaymentsPropertiesAuthorizedFailedTrait;
     }
+    use CardMandate;
 
     use CommonGatewayTrait;
     protected $gateway = 'mozart';
@@ -1986,6 +1987,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => null,
             ],
+            Payment\Gateway::BILLDESK_SIHUB => [
+                Action::AUTHENTICATE_INIT   => null,
+                Action::AUTHENTICATE_VERIFY => null,
+                Action::PAY_INIT            => null,
+                Action::PAY_VERIFY          => null,
+                Action::MANDATE_REVOKE      => null,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -2162,6 +2170,13 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => null,
+            ],
+            Payment\Gateway::BILLDESK_SIHUB => [
+                Action::AUTHENTICATE_INIT   => null,
+                Action::AUTHENTICATE_VERIFY => null,
+                Action::PAY_INIT            => null,
+                Action::PAY_VERIFY          => null,
+                Action::MANDATE_REVOKE      => null,
             ],
         ];
 
@@ -2700,7 +2715,8 @@ class Gateway extends Base\Gateway
             return ;
         }
 
-        if ($this->action === Action::PAY_INIT and $this->getGateway($input) !== Payment\Gateway::GOOGLE_PAY)
+        if (($this->action === Action::PAY_INIT) and
+            (in_array($this->getGateway($input), [Payment\Gateway::GOOGLE_PAY, Payment\Gateway::BILLDESK_SIHUB], true) === false))
         {
             $isTpvEnabled = $input['merchant']->isTPVRequired();
 

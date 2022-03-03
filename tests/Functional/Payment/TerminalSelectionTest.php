@@ -1295,7 +1295,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         $options = new Options;
@@ -1629,7 +1630,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment'  => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         $this->app['rzp.mode'] = Mode::TEST;
@@ -2139,7 +2141,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         $options = new Options;
@@ -2488,7 +2491,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         $this->app['rzp.mode'] = Mode::TEST;
@@ -2562,7 +2566,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         return $input;
@@ -2612,7 +2617,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         return $input;
@@ -2778,6 +2784,7 @@ class TerminalSelectionTest extends TestCase
         return [
             'payment'    => $payment,
             'merchant'   => $payment->merchant,
+            'card_mandate' => null,
             ];
 
     }
@@ -2899,7 +2906,8 @@ class TerminalSelectionTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         $this->app['rzp.mode'] = Mode::TEST;

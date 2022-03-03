@@ -44,6 +44,8 @@ class FirstDataS2sGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testPaymentAuthAndCaptureForPurchaseModeTerminal()

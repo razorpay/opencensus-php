@@ -68,6 +68,9 @@ class Metric
         Payment\Action::FETCH_TOKEN,
         Payment\Action::VERIFY,
         Payment\Action::VERIFY_REFUND,
+        Payment\Action::CARD_MANDATE_CREATE,
+        Payment\Action::CARD_MANDATE_PRE_DEBIT_NOTIFY,
+        Payment\Action::REPORT_PAYMENT,
         Payment\Action::VALIDATE_VPA,
         // Payment\Action::OTP_GENERATE,
         // Payment\Action::REVERSE,
@@ -278,7 +281,7 @@ class Metric
         switch ($method)
         {
             case Payment\Method::CARD:
-                $issuer = 'none';
+                $issuer = $input[Entity::CARD][Card\Entity::ISSUER] ?? 'none';
                 break;
 
             case Payment\Method::WALLET:

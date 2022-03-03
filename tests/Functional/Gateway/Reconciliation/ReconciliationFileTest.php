@@ -71,6 +71,8 @@ class ReconciliationFileTest extends TestCase
         $this->recurringPayment = $this->getDefaultRecurringPaymentArray();
 
         $this->mockCardVault();
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testFirstDataReconPaymentFile()
@@ -79,6 +81,8 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_first_data_terminal');
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
@@ -398,6 +402,8 @@ class ReconciliationFileTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+
 
         $payment = $this->getNewPaymentEntity(true, false);
 
@@ -1902,11 +1908,15 @@ class ReconciliationFileTest extends TestCase
     /**
      * Test for success and failure count of a processed batch
      */
-    public function testAxisMigsBatchProcessTest(bool $addFeature = true)
+    public function testAxisMigsBatchProcessTest(bool $addFeature = true, bool $mockMandate=true)
     {
         $this->fixtures->create('terminal:shared_migs_recurring_terminals');
 
         if ($addFeature === true) $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        if ($mockMandate === true) {
+
+        }
 
         // Recurring authorised payments
         $this->getNewPaymentEntity(true, false);
@@ -1979,6 +1989,8 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
+
+
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
 
@@ -1994,7 +2006,7 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
         // Run Axis migs test
-        $this->testAxisMigsBatchProcessTest(false);
+        $this->testAxisMigsBatchProcessTest(false, false);
     }
 
     public function testFreechargeReconPaymentFile()
@@ -3546,6 +3558,8 @@ class ReconciliationFileTest extends TestCase
     {
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);

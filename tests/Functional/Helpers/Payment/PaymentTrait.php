@@ -92,6 +92,8 @@ trait PaymentTrait
     protected $failPaymentOnBankPage = false;
     protected $gatewayDown = false;
 
+    protected $mandateHqTerminal = null;
+
     protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR')
     {
         if ($payment === null)

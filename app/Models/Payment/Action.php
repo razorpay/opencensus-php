@@ -52,6 +52,13 @@ class Action
     const MANDATE_CANCEL                = 'mandate_cancel';
     const VALIDATE_APP                  = 'validate_app';
     const VALIDATE_CRED                 = 'validate_cred';
+    const CARD_MANDATE_CREATE           = 'card_mandate_create';
+    const CARD_MANDATE_PRE_DEBIT_NOTIFY = 'card_mandate_pre_debit_notify';
+    const CARD_MANDATE_VERIFY           = 'card_mandate_verify';
+    const REPORT_PAYMENT                = 'report_payment';
+    const CARD_MANDATE_UPDATE           = 'card_mandate_update';
+    const CARD_MANDATE_CANCEL           = 'card_mandate_cancel';
+
 
     protected $merchant;
 

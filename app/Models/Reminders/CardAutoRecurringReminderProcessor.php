@@ -14,9 +14,11 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         $payment = (new Payment\Core)->retrievePaymentById($id);
 
         $processor = (new Payment\Processor\Processor($payment->merchant));
+
         $processor->setPayment($payment);
 
         $verified = false;
+
         try
         {
             (new CardMandateNotification\Core)->verifyNotification($payment);

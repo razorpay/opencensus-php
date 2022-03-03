@@ -555,6 +555,7 @@ class PaymentFetchTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
 
         $this->mockCardVault();
 

@@ -48,6 +48,8 @@ class FirstDataGatewayTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->payment['card']['number'] = '6522622211727786';
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testRecurringPayment()

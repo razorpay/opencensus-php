@@ -11,6 +11,16 @@ return [
             'content' => [],
         ],
     ],
+    'testSIHUBCardMandateFlow' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'DELETE',
+            'url'       => '/subscription_registration/tokens/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     'testCreateCardMandatePaymentWithAuthLink' => [
         'request'  => [
             'url'     => '/subscription_registration/auth_links',
@@ -60,6 +70,18 @@ return [
             'content' => [],
         ],
     ],
+
+    'runSIHubCreateCardMandateAutoPayment' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreateCardMandateAutoPaymentVerificationFailed' => [
         'request' => [
             'content' => [],

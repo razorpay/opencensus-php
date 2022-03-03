@@ -89,14 +89,16 @@ class PaymentEvent extends Event
         $payment = $this->entity;
 
         $properties['payment'] = [
-                'id'           => $payment->getPublicId(),
-                'amount'       => $payment->getAmount(),
-                'base_amount'  => $payment->getBaseAmount(),
-                'currency'     => $payment->getCurrency(),
-                'method'       => $payment->getMethod(),
-                'issuer'       => $payment->getIssuer(),
-                'type'         => $payment->getTransactionType(),
-                'gateway'      => $payment->getGateway(),
+                'id'             => $payment->getPublicId(),
+                'amount'         => $payment->getAmount(),
+                'base_amount'    => $payment->getBaseAmount(),
+                'currency'       => $payment->getCurrency(),
+                'method'         => $payment->getMethod(),
+                'issuer'         => $payment->getIssuer(),
+                'type'           => $payment->getTransactionType(),
+                'gateway'        => $payment->getGateway(),
+                'recurring'      => $payment->isRecurring(),
+                'recurring_type' => $payment->getRecurringType(),
         ];
 
         // upi properties

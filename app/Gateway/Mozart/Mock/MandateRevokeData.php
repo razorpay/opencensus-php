@@ -41,5 +41,23 @@ class MandateRevokeData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function billdesk_sihub($entities)
+    {
+        $response = [
+            'data' =>
+                [
+                    'status' => 'deleted',
+                    '_raw' => '',
+                    ''
+                ],
+            'error' => null,
+            'success' => true,
+            'mozart_id' => '',
+            'external_trace_id' => '',
+        ];
+
+        return $response;
+    }
 }
 

@@ -13,6 +13,7 @@ use RZP\Models\Card\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\QueryCache\Cacheable;
+use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 
 class Entity extends Base\PublicEntity
 {
@@ -323,11 +324,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MANDATE_HUBS);
     }
 
-    public function isCardMandateApplicable(Merchant\Entity $merchant)
+    public function isCardMandateApplicable(Merchant\Entity $merchant, bool $hasSubscription = false)
     {
         if ($this->getMandateHubs() > 0)
         {
-            return true;
+            $hubs = $this->getApplicableMandateHubs($merchant, $hasSubscription);
+
+            if (count($hubs) > 0){
+                return true;
+            }
         }
 
         $iin = $this->getIin();
@@ -335,6 +340,19 @@ class Entity extends Base\PublicEntity
         $app = App::getFacadeRoot();
 
         return $app->mandateHQ->isBinSupported($iin);
+    }
+
+    public function getApplicableMandateHubs(Merchant\Entity $merchant, bool $hasSubscription = false)
+    {
+        $hubs = MandateHub::getEnabledMandateHubs($this->getMandateHubs());
+
+        if ((in_array(MandateHubs::BILLDESK_SIHUB, $hubs, true) === true) &&
+            (($hasSubscription === true) || ($merchant->isBilldeskSIHubEnabled() === false)))
+        {
+            $hubs = array_diff($hubs, [MandateHubs::BILLDESK_SIHUB]);
+        }
+
+        return $hubs;
     }
 
     public function setTrivia($trivia)

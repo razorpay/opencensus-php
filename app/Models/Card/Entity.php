@@ -925,11 +925,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::PREPAID);
     }
 
-    public function isRecurringSupported(bool $isInitial = true)
+    public function isRecurringSupported(bool $isInitial = true, bool $hasSubscription = false)
     {
         $iin = $this->iinRelation;
 
-        return $this->isRecurringSupportedOnIIN($this->merchant, $iin, $isInitial);
+        return $this->isRecurringSupportedOnIIN($this->merchant, $iin, $isInitial, $hasSubscription);
     }
 
     public function isRzpSavedCard()
@@ -939,7 +939,7 @@ class Entity extends Base\PublicEntity
                 ($this->getAttribute(self::VAULT) === Card\Vault::RZP_VAULT));
     }
 
-    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null, bool $isInitial = true)
+    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null, bool $isInitial = true, bool $hasSubscription = false)
     {
         if($iin === null)
         {
@@ -960,7 +960,7 @@ class Entity extends Base\PublicEntity
                 or ($iin->isAmex() === true))
             and ($isInitial === true))
         {
-            return $app->mandateHQ->isBinSupported($iin->getIin());
+            return $iin->isCardMandateApplicable($merchant, $hasSubscription);
         }
 
         return true;

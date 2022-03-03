@@ -2,22 +2,32 @@
 
 namespace RZP\Models\CardMandate\MandateHubs;
 
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\CardMandate;
-use RZP\Models\Payment;
 
 class MandateHubSelector extends Base\Core
 {
+    /**
+     * @param CardMandate\Entity $cardMandate
+     * @return BaseHub
+     */
     public function GetMandateHubForCardMandate(CardMandate\Entity $cardMandate): BaseHub
     {
-        return $this->getHubInstance($cardMandate->getMandateHub());
+       return $this->getHubInstance($cardMandate->getMandateHub());
     }
 
-    public function getHubInstance($mandateHub): BaseHub
+    /**
+     * @param $mandateHub
+     * @return BaseHub
+     */
+    public function getHubInstance($mandateHub) : BaseHub
     {
         switch ($mandateHub)
         {
+            case MandateHubs::MANDATE_HQ:
+                return (new MandateHQ\MandateHQ);
+            case MandateHubs::BILLDESK_SIHUB:
+                return (new BillDeskSIHub\BillDeskSIHub);
             default:
                 return (new MandateHQ\MandateHQ);
         }

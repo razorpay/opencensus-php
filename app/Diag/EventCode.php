@@ -977,6 +977,36 @@ class EventCode
         'name'  => 'payment.eligibility_check.processed'
     ];
 
+    const PAYMENT_CARD_MANDATE_CREATE_INITIATED = [
+        'group' => 'mandate',
+        'name'  => 'payment.card_mandate.create.initiated'
+    ];
+
+    const PAYMENT_CARD_MANDATE_CREATE_PROCESSED = [
+        'group' => 'mandate',
+        'name'  => 'payment.card_mandate.create.processed'
+    ];
+
+    const PAYMENT_CARD_MANDATE_SUBSEQUENT_INITIATED = [
+        'group' => 'mandate',
+        'name'  => 'payment.card_mandate.subsequent.initiated'
+    ];
+
+    const PAYMENT_CARD_MANDATE_SUBSEQUENT_PROCESSED = [
+        'group' => 'mandate',
+        'name'  => 'payment.card_mandate.subsequent.processed'
+    ];
+
+    const PAYMENT_CARD_MANDATE_REPORT_INITIATED = [
+        'group' => 'mandate',
+        'name'  => 'payment.card_mandate.report.initiated'
+    ];
+
+    const PAYMENT_CARD_MANDATE_REPORT_PROCESSED = [
+        'group' => 'mandate',
+        'name'  => 'payment.card_mandate.report.processed'
+    ];
+
     const BIN_API_SUCCESS = [
         'group' => 'bin_api',
         'name'  => 'bin.api.success'

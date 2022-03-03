@@ -446,7 +446,8 @@ class TerminalRuleFilterTest extends TestCase
 
         $input = [
             'payment' => $payment,
-            'merchant' => $payment->merchant
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
         ];
 
         $options = new Terminal\Options;

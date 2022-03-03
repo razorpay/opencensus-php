@@ -65,20 +65,25 @@ class CardMandateTest extends TestCase
             'type' => 'credit',
             'recurring' => 1,
             'issuer' => IFSC::RATN,
-            'mandate_hubs' => ['mandate_hq' => '1'],
+            'mandate_hubs' => ['mandate_hq'=>'1', 'billdesk_sihub'=>'1'],
+
         ]);
 
         $this->paymentInput = $this->getDefaultRecurringPaymentArray();
+
         $this->paymentInput['bank'] = IFSC::RATN;
 
         $order = $this->fixtures->create('order', [
             'amount' => 50000,
             'payment_capture' => 1,
         ]);
+
         $this->paymentInput['card']['number'] = '4000184186218826';
+
         $this->paymentInput['order_id'] = $order->getPublicId();
 
         $this->mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
         $this->app->instance('mandateHQ', $this->mandateHQ);
 
         $this->mandateConfirm = 'true';
@@ -93,8 +98,6 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -114,6 +117,7 @@ class CardMandateTest extends TestCase
         $token = $payment->localToken;
         $this->assertNotEmpty($token);
         $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertTrue($token->hasCardMandate());
 
         $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
         $this->assertNotEmpty($cardMandate);
@@ -125,7 +129,6 @@ class CardMandateTest extends TestCase
     public function testCreateCardMandatePaymentWithSkipSummaryPage()
     {
         $this->mockCheckBin();
-
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
@@ -163,8 +166,6 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $this->razorxValue = 'cardps';
         $this->enableCpsConfig();
@@ -529,8 +530,6 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
-
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -567,8 +566,6 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -756,8 +753,6 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
-
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/checkout',
@@ -791,8 +786,6 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $paymentInp = $this->paymentInput;
 
@@ -978,8 +971,6 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
-
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -1017,8 +1008,6 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
-
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -1052,8 +1041,6 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -1093,8 +1080,6 @@ class CardMandateTest extends TestCase
         $this->mandateConfirm = 'false';
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $exception = false;
         try
@@ -1718,6 +1703,81 @@ class CardMandateTest extends TestCase
         }
     }
 
+
+    public function runBDSIHubCreateCardMandatePayment()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_sihub_terminal');
+
+        $this->fixtures->terminal->disableTerminal($this->mandateHqTerminal['id']);
+
+        $this->fixtures->edit('iin', '411111',[
+            'mandate_hubs' => ['mandate_hq'=>'1', 'billdesk_sihub'=>'1'],
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['allow_billdesk_sihub']);
+
+        $this->paymentInput['card']['number'] = '4111111111111111';
+
+        $this->mockCps(null, 'entity_fetch');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+    }
+
+    public function runSIHubCreateCardMandateAutoPayment()
+    {
+        $this->runBDSIHubCreateCardMandatePayment();
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertNotNull($cardMandateNotification->reminder_id);
+        $this->assertNotEmpty($cardMandateNotification->notified_at);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment->getStatus());
+    }
+
     protected function mockValidatePayment($errorCode = '')
     {
         $callable = function () use ($errorCode)
@@ -1734,6 +1794,7 @@ class CardMandateTest extends TestCase
 
         return $this->mockMandateHQ($callable, 'validatePayment');
     }
+
     protected function mockPostDebitNotification($success = true)
     {
         $callable = function () use ($success)
@@ -1824,8 +1885,6 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
-
         $this->paymentInput[Payment::CALLBACK_URL]='https://www.facebook.com';
 
         $request = [
@@ -1848,8 +1907,6 @@ class CardMandateTest extends TestCase
 
         $this->mockReportPayment();
 
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
-
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -1870,8 +1927,6 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate($callable);
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method'  => 'POST',
@@ -1968,67 +2023,84 @@ class CardMandateTest extends TestCase
 
     protected function mockCpsEntityFetch($url)
     {
+        $payment = $this->getDbLastPayment();
+        $case1 = 'entity/authentication/'.$payment->getId();
+        $case2 = 'entity/authorization/'.$payment->getId();
         switch ($url)
         {
-            case 'entity/authentication/Flj85rfBFlPfVu':
+            case $case1:
                 return [
-                    'id' => 'Flj87LBAuB6JcE',
-                    'created_at' => 1602011616,
-                    'payment_id' => 'Flj85rfBFlPfVu',
-                    'merchant_id' => 'CCOhinUeUsT8HN',
-                    'attempt_id' => 'Flj87KPgVIXUjX',
-                    'status' => 'skip',
-                    'gateway' => 'visasafeclick',
-                    'terminal_id' => 'DfqXJH6OO9NEU5',
-                    'gateway_merchant_id' => 'escowrazcybs',
-                    'enrollment_status' => 'Y',
-                    'pares_status' => 'Y',
-                    'acs_url' => '',
-                    'eci' => '05',
-                    'commerce_indicator' => '',
-                    'xid' => 'ODUzNTYzOTcwODU5NzY3Qw==',
-                    'cavv' => '3q2+78r+ur7erb7vyv66vv\\/\\/8=',
-                    'cavv_algorithm' => '1',
-                    'notes' => '',
-                    'error_code' => '',
-                    'gateway_error_code' => '',
-                    'gateway_error_description' => '',
-                    'gateway_transaction_id1' => '',
-                    'gateway_reference_id1' => '',
-                    'success' => true
+                    "id" => "IWwKsyEBb05e21",
+                    "created_at" => $payment->getCreatedAt(),
+                    "updated_at" => $payment->getUpdatedAt(),
+                    "payment_id" => $payment->getId(),
+                    "merchant_id" => "8XGbgY6OnlIm6z",
+                    "attempt_id" => "IWwKsxawtcsIBm",
+                    "status" => "success",
+                    "gateway" => "mpi_blade",
+                    "terminal_id" => "CXj5Zj9zr8uC7X",
+                    "acq_bin" => "",
+                    "gateway_merchant_id" => "38RR00000000823",
+                    "protocol" => "Mpi_bladeResponse",
+                    "protocol_version" => "1.0.2",
+                    "enrollment_status" => "Y",
+                    "pares_status" => "Y",
+                    "acs_url" => "https:\/\/mock-go.func.razorpay.in\/Acs\/mpi",
+                    "eci" => "5",
+                    "commerce_indicator" => "",
+                    "xid" => "MDAwMDAwSVd3S3FISkJKT2psV0o=",
+                    "cavv" => "jF1fS0KopYfvCBEDAhxwAmkAAAA=",
+                    "cavv_algorithm" => "3",
+                    "notes" => "",
+                    "error_code" => "",
+                    "gateway_error_code" => "",
+                    "gateway_error_description" => "",
+                    "gateway_transaction_id1" => "062154366958693210908217",
+                    "gateway_transaction_id2" => "",
+                    "gateway_reference_id1" => "",
+                    "gateway_reference_id2" => "",
+                    "success" => true,
+                    "status_code" => 200
                 ];
-            case 'entity/authorization/Flj85rfBFlPfVu':
+            case $case2:
                 return [
-                    'id' => 'Flj87MbKrlsztd',
-                    'created_at' => 1602011616,
-                    'merchant_id' => 'CCOhinUeUsT8HN',
-                    'payment_id' => 'Flj85rfBFlPfVu',
-                    'verify_id' => 'Flj85rfBFlPfVu',
-                    'recon_id' => '',
-                    'acquirer' => 'hdfc',
-                    'gateway' => 'cybersource',
-                    'gateway_merchant_id' => 'escowrazcybs',
-                    'action' => 'authorize',
-                    'amount' => 100,
-                    'currency' => 'INR',
-                    'gateway_transaction_id' => 'Flj87MVvqSonRp',
-                    'gateway_reference_id1' => '6020116178806361104007',
-                    'cavv_algorithm' => '',
-                    'status' => 'failed',
-                    'notes' => '',
-                    'auth_code' => '052128',
-                    'rrn' => '',
-                    'arn' => '',
-                    'avs_response_code' => '',
-                    'cvc_response_code' => '',
-                    'risk_result' => '',
-                    'switch_response_code' => '',
-                    'error_code' => 'SERVER_ERROR_INVALID_ARGUMENT',
-                    'gateway_error_code' => '102',
-                    'gateway_error_description' => 'One or more fields in the request contains invalid data',
-                    'acs_transaction_id' => '',
-                    'gateway_payment_id' => '',
-                    'success' => true
+                    "id" => "IWwKwBHY8FXCEH",
+                    "created_at" => 1639394284,
+                    "updated_at" => 1639394287,
+                    "merchant_id" => "8XGbgY6OnlIm6z",
+                    "payment_id" => "IWwKqHJBJOjlWJ",
+                    "verify_id" => "",
+                    "recon_id" => "",
+                    "acquirer" => "ratn",
+                    "gateway" => "hitachi",
+                    "gateway_merchant_id" => "38RR00000000823",
+                    "action" => "pay",
+                    "amount" => 600,
+                    "currency" => "INR",
+                    "narration" => "",
+                    "gateway_transaction_id" => "IWwKwBFnz9HQy9",
+                    "gateway_reference_id1" => "",
+                    "gateway_reference_id2" => "",
+                    "cavv_algorithm" => "",
+                    "status" => "authorized",
+                    "notes" => "",
+                    "auth_code" => "000235",
+                    "rrn" => "000011841449",
+                    "arn" => "",
+                    "reason_code" => "00",
+                    "avs_response_code" => "",
+                    "cvc_response_code" => "",
+                    "risk_result" => "",
+                    "switch_response_code" => "",
+                    "error_code" => "",
+                    "gateway_error_code" => "",
+                    "gateway_error_description" => "",
+                    "acs_transaction_id" => "",
+                    "gateway_payment_id" => "",
+                    "avs_result" => "",
+                    "network_transaction_id" => "",
+                    "success" => true,
+                    "status_code" => 200
                 ];
             default:
                 return [
@@ -2040,7 +2112,6 @@ class CardMandateTest extends TestCase
 
     public function testUserMandateCancel()
     {
-
         $this->mockCheckBin();
 
         $this->mockRegisterMandate();
@@ -2048,8 +2119,6 @@ class CardMandateTest extends TestCase
         $this->mandateConfirm = 'false';
 
         $this->mockReportPayment();
-
-        $this->mockGetMandateHubTerminal($this->mandateHqTerminal);
 
         $request = [
             'method' => 'POST',
@@ -2108,12 +2177,28 @@ class CardMandateTest extends TestCase
         $this->assertNull($cardMandateNotification->reminder_id);
     }
 
-    protected function mockGetMandateHubTerminal($terminal): void
+    public function testSIHUBCardMandateFlow()
     {
-        $terminalSelectorMock = \Mockery::mock('RZP\Models\CardMandate\MandateHubs\MandateHubTerminalSelector')
-                                 ->makePartial();
+        $this->runSIHubCreateCardMandateAutoPayment();
 
-        $terminalSelectorMock->shouldReceive('GetTerminalForPayment')->andReturn($terminal);
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $token->getPublicId());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $cardMandate = $this->getDbLastEntity(Entity::CARD_MANDATE);
+
+        $this->assertEquals('cancelled', $cardMandate->getStatus());
+    }
+
+    protected function mockMandateHQ($callable = null, $method = 'registerMandate')
+    {
+        $this->mandateHQ->shouldReceive($method)
+            ->andReturnUsing($callable);
     }
 
 }

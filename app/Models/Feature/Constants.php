@@ -1193,6 +1193,11 @@ class Constants
     const ORDER_RECEIPT_UNIQUE_ERR = 'order_receipt_unique_err';
 
     /**
+     * card mandate for recurring card payment for billdesk_sihub
+     */
+    const RECURRING_CARD_MANDATE_BILLDESK_SIHUB = 'allow_billdesk_sihub';
+
+    /**
      * If applied on partner merchant then all its sub merchants will have QR image content visible
      */
     const SUBM_QR_IMAGE_CONTENT    = 'subm_qr_image_content';
@@ -1665,8 +1670,10 @@ class Constants
         self::OFFLINE_PAYMENT_ON_CHECKOUT     => true,
         self::ORDER_RECEIPT_UNIQUE_ERR        => true,
         self::SUBM_QR_IMAGE_CONTENT           => true,
+        self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => true,
         self::RAZORPAYX_FLOWS_VIA_OAUTH       => true,
         self::FAIL_NON3DS_INTERNATIONAL       => true,
+
     ];
 
     // Entity type constants
@@ -2345,6 +2352,11 @@ class Constants
         self::TRANSFER_PROCESS_LA_MUTEX => [
             'feature'       => self::TRANSFER_PROCESS_LA_MUTEX,
             'display_name'  => 'Mutex lock on linked account ID before transfer processing',
+            'documentation' => '',
+        ],
+        self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => [
+            'feature' => self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB,
+            'display_name'  => 'Card mandate for card recurring payments for billdesk sihub',
             'documentation' => '',
         ],
         self::ONE_CC_GA_ANALYTICS => [

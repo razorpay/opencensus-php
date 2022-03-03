@@ -1165,7 +1165,8 @@ class Server extends Base\Mock\Server
 
     protected function getGateway($entities)
     {
-        if ((isset($entities['gateway']) === true) and ($entities['gateway'] === 'google_pay'))
+        if ((isset($entities['gateway']) === true) and
+            (($entities['gateway'] === 'google_pay') or ($entities['gateway'] === 'billdesk_sihub')))
         {
             return $entities['gateway'];
         }

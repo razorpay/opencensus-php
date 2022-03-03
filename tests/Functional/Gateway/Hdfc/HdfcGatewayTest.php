@@ -64,6 +64,8 @@ class HdfcGatewayTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testPayment()

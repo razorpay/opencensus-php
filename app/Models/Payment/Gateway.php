@@ -2048,6 +2048,11 @@ class Gateway
         Gateway::FULCRUM,
     ];
 
+    public static $cardMandateGateways = [
+        Gateway::BILLDESK_SIHUB,
+        Gateway::MANDATE_HQ,
+    ];
+
     public static $upiRecurringGateways = [
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
@@ -2073,6 +2078,11 @@ class Gateway
         IFSC::MAHB,
         IFSC::IOBA,
         IFSC::FDRL,
+        IFSC::SBIN,
+        IFSC::RATN,
+        IFSC::INDB,
+        IFSC::HDFC,
+        IFSC::BARB,
     ];
 
     public static $directDebitCardNetworks = [
@@ -3140,6 +3150,11 @@ class Gateway
     public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    public static function isCardMandateGateways($gateway): bool
+    {
+        return in_array($gateway, self::$cardMandateGateways, true);
     }
 
     public static function isOnlyAuthorizationGateway($gateway): bool

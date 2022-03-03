@@ -865,6 +865,15 @@ class PaymentCreateController extends Controller
         return $data;
     }
 
+    public function handleSihubWebhook()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->handleSihubWebhook($input);
+
+        return $data;
+    }
+
     protected function returnCallbackResponse($data)
     {
         $merchant = $this->app['basicauth']->getMerchant();

@@ -51,6 +51,8 @@ class HitachiGatewayTest extends TestCase
         // Therefore, we must disable hdfc terminal for the test cases
         // to run via the shared Hitachi terminal.
         //
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->addFeatures('charge_at_will');
@@ -174,7 +176,6 @@ class HitachiGatewayTest extends TestCase
             'issuer'    => 'KKBK',
             'recurring' => 1
         ]);
-
         $response = $this->doAuthPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 

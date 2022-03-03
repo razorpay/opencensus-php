@@ -51,7 +51,8 @@ class TransactionFilter extends Terminal\Filter
         'shared_terminal',
         'mcc',
         'application',
-        'provider'
+        'provider',
+        'card_mandate'
     ];
 
     public function methodFilter($terminal)
@@ -150,6 +151,7 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $payment->card->getNetworkCode();
             $gateway = $terminal->getGateway();
+            $cardMandate = $this->input['card_mandate'];
 
             if ($payment->isBharatQr() === true)
             {
@@ -158,6 +160,10 @@ class TransactionFilter extends Terminal\Filter
             }
             else if (($terminal->getId() === 'CmRSEGymhC3lae') and ($network === Network::RUPAY))
             {
+                return true;
+            }
+            else if ((is_null($cardMandate) === false) &&
+                (Gateway::isCardMandateGateways($terminal->getGateway()) === true)) {
                 return true;
             }
             else
@@ -291,10 +297,15 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
         $merchant = $this->input['merchant'];
+        $cardMandate = $this->input['card_mandate'];
 
         if ($payment->isRecurring() === false)
         {
             return ($terminal->isNonRecurring() === true);
+        }
+
+        if ((is_null($cardMandate) === false) && (Gateway::isCardMandateGateways($terminal->getGateway()) === true)) {
+            return true;
         }
 
         $recurringGateway = Gateway::isRecurringGateway($terminal->getGateway());
@@ -1124,5 +1135,16 @@ class TransactionFilter extends Terminal\Filter
 
             return (in_array(strtoupper($wallet), $enabledBanks, true));
         }
+    }
+
+    public function cardMandateFilter($terminal) {
+        $method  = $this->input['payment']->getMethod();
+        $cardMandate = $this->input['card_mandate'];
+
+        if ($method === Method::CARD && is_null($cardMandate) === false) {
+            return Gateway::isCardMandateGateways($terminal->getGateway());
+        }
+
+        return true;
     }
 }

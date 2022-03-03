@@ -31,9 +31,8 @@ class SubscriptionRegistrationTest extends TestCase
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionRegistrationTestData.php';
-
         parent::setUp();
-
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
         $this->ba->proxyAuth();
     }
 
@@ -298,7 +297,7 @@ class SubscriptionRegistrationTest extends TestCase
     public function testChargeToken()
     {
         $paymentRequest = $this->setupPaymentRequest();
-        
+
         $this->doAuthPayment($paymentRequest);
 
         $this->ba->proxyAuth();
@@ -665,7 +664,7 @@ class SubscriptionRegistrationTest extends TestCase
 
     public function testFetchSingleToken()
     {
-       $this->testPayAuthLink();
+        $this->testPayAuthLink();
 
         $this->ba->proxyAuth();
 
@@ -988,7 +987,6 @@ class SubscriptionRegistrationTest extends TestCase
     public function testListTokensWithPaymentIdFilter()
     {
         $paymentRequest = $this->setupPaymentRequest();
-
         $this->doAuthPayment($paymentRequest);
 
         $token = $this->getDbLastEntity('token');

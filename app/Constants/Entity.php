@@ -366,6 +366,7 @@ class Entity
     const UPI_MOZART             = 'upi_mozart';
     const NETBANKING_DCB         = 'netbanking_dcb';
     const NETBANKING_NSDL        = 'netbanking_nsdl';
+    const BILLDESK_SIHUB         = 'billdesk_sihub';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
     const EMERCHANTPAY           = 'emerchantpay';
 
@@ -1001,6 +1002,7 @@ class Entity
         self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
         self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
         self::CRED                   => \RZP\Gateway\Mozart::class,
+        self::BILLDESK_SIHUB         => \RZP\Gateway\Mozart::class,
         self::CHECKOUT_DOT_COM       => \RZP\Gateway\Mozart::class,
         self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
         self::EMERCHANTPAY           => \RZP\Gateway\Mozart::class,

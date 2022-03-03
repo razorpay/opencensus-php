@@ -6,6 +6,8 @@ use Crypt;
 use Carbon\Carbon;
 
 use RZP\Models\Card;
+use RZP\Models\CardMandate\Entity;
+use RZP\Models\CardMandate\Status;
 use RZP\Models\Payment;
 use RZP\Models\CardMandate;
 use RZP\Constants\Timezone;
@@ -38,11 +40,17 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return self::getMandateFromMandateHqResponse($response);
     }
 
-    public function RegisterMandate(Payment\Entity $payment, $input = []): Mandate
+    public function RegisterMandate(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = []): Mandate
     {
         $mandateHqInput = $this->getRegisterInput($payment, $input);
 
         $response = $this->app->mandateHQ->registerMandate($mandateHqInput);
+
+        if ((empty($input[Entity::SKIP_SUMMARY_PAGE]) === false) and
+            ($input[Entity::SKIP_SUMMARY_PAGE] === true))
+        {
+            $cardMandate->setStatus(Status::MANDATE_APPROVED);
+        }
 
         return $this->getMandateFromMandateHqResponse($response);
     }
@@ -61,7 +69,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return $this->app->mandateHQ->reportPayment($cardMandate->getMandateId(), $mandateHqInput);
     }
 
-    public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, $input): Notification
+    public function CreatePreDebitNotification(CardMandate\Entity $cardMandate, ?Payment\Entity $payment, $input): Notification
     {
         $mandateHqInput = $this->getCreatePreDebitNotificationInput($input);
 
@@ -70,9 +78,44 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return self::getNotificationFromMandateHqResponse($response);
     }
 
-    public function validatePayment($mandateId, $input)
+    public function getRedirectResponseIfApplicable(CardMandate\Entity $cardMandate, Payment\Entity $payment)
     {
-        return $this->app->mandateHQ->validatePayment($mandateId, $input);
+        if ($cardMandate->isCustomerConsentRequired() === false)
+        {
+            return null;
+        }
+
+        $mandateUrl = $cardMandate->getMandateSummaryUrl();
+
+        if ($this->app['basicauth']->isPrivateAuth() === true)
+        {
+            return [
+                'razorpay_payment_id' => $payment->getPublicId(),
+                'next'                => [
+                    [
+                        'action' => 'redirect',
+                        'url'    => $mandateUrl,
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'request' => [
+                'url'     => $mandateUrl,
+                'method'  => 'get',
+                'content' => [],
+            ],
+            'version'    => 1,
+            'type'       => 'first',
+            'payment_id' => $payment->getPublicId(),
+            'gateway'    => Crypt::encrypt('mandate_hq__' . Carbon::now()->unix()),
+        ];
+    }
+
+    public function getValidationBeforeSubsequentPayment(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = [])
+    {
+        return $this->app->mandateHQ->validatePayment($cardMandate->getMandateId(), $input);
     }
 
     public static function getMandateFromMandateHqResponse($response): Mandate {
@@ -328,40 +371,5 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         $cardToken = $card->getCardVaultToken();
 
         return (new Card\CardVault)->getCardNumber($cardToken);
-    }
-
-    public function getRedirectResponseIfApplicable(CardMandate\Entity $cardMandate, Payment\Entity $payment)
-    {
-        if ($cardMandate->isCustomerConsentRequired() === false)
-        {
-            return null;
-        }
-
-        $mandateUrl = $cardMandate->getMandateSummaryUrl();
-
-        if ($this->app['basicauth']->isPrivateAuth() === true)
-        {
-            return [
-                'razorpay_payment_id' => $payment->getPublicId(),
-                'next'                => [
-                    [
-                        'action' => 'redirect',
-                        'url'    => $mandateUrl,
-                    ],
-                ],
-            ];
-        }
-
-        return [
-            'request'    => [
-                'url'     => $mandateUrl,
-                'method'  => 'get',
-                'content' => [],
-            ],
-            'version'    => 1,
-            'type'       => 'first',
-            'payment_id' => $payment->getPublicId(),
-            'gateway'    => Crypt::encrypt('mandate_hq__' . Carbon::now()->unix()),
-        ];
     }
 }

@@ -8,13 +8,16 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
+use RZP\Models\CardMandate\MandateHubs;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\MandateHQ;
+use RZP\Models\CardMandate\MandateHubs\BillDeskSIHub;
 use RZP\Models\CardMandate\MandateHubs\MandateStatus;
 
 class Core extends Base\Core
@@ -33,8 +36,18 @@ class Core extends Base\Core
         $this->route = $this->app['api.route'];
     }
 
+    /**
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @return Entity
+     * @throws \Exception
+     */
     public function create(Payment\Entity $payment, $input = []): Entity
     {
+        $ex = null;
+
+        $cardMandate = null;
+
         $this->trace->info(TraceCode::CARD_MANDATE_CREATE_REQUEST, [
             'payment_id' => $payment->getId(),
         ]);
@@ -44,68 +57,133 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
         }
 
+
+        $this->app['diag']->trackPaymentEventV2(
+            EventCode::PAYMENT_CARD_MANDATE_CREATE_INITIATED,
+            $payment
+        );
+
         if ($payment->merchant->isFeatureEnabled(Feature\Constants::CARD_MANDATE_SKIP_PAGE) === true)
         {
             $input[Entity::SKIP_SUMMARY_PAGE] = true;
         }
 
-        $cardMandate = (new Entity)->build();
 
-        $cardMandate->merchant()->associate($payment->merchant);
 
-        $terminal = (new MandateHubs\MandateHubTerminalSelector)->GetTerminalForPayment($payment, $cardMandate);
-
-        $cardMandate->terminal()->associate($terminal);
-
-        $mandateHub = (new MandateHubs\MandateHubSelector)->getHubInstance($terminal->getGateway());
-
-        $mandate = $mandateHub->RegisterMandate($payment, $input);
-
-        $this->fillDataFromMandateRegisterResponse($cardMandate, $mandate);
-
-        if ((empty($input[Entity::SKIP_SUMMARY_PAGE]) === false) and
-            ($input[Entity::SKIP_SUMMARY_PAGE] === true))
+        try
         {
-            $cardMandate->setStatus(Status::MANDATE_APPROVED);
+            $cardMandate = (new Entity)->build();
+
+            $cardMandate->merchant()->associate($payment->merchant);
+
+            $terminal = (new MandateHubs\MandateHubTerminalSelector)->GetTerminalForPayment($payment, $cardMandate);
+
+            $cardMandate->terminal()->associate($terminal);
+
+            $mandateHub = (new MandateHubs\MandateHubSelector)->getHubInstance($terminal->getGateway());
+
+            $mandate = $mandateHub->RegisterMandate($cardMandate, $payment, $input);
+
+            $this->fillDataFromMandateRegisterResponse($cardMandate, $mandate);
+
+            $this->repo->saveOrFail($cardMandate);
+
+            $this->trace->info(
+                TraceCode::CARD_MANDATE_CREATED,
+                [
+                    'merchant_id'     => $payment->merchant->getId(),
+                    'card_mandate_id' => $cardMandate->getId(),
+                    'mandate_hub'     => $cardMandate->getMandateHub(),
+                ]
+            );
         }
+        catch (\Exception $exception)
+        {
+            $ex = $exception;
 
-        $this->repo->saveOrFail($cardMandate);
-
-        $this->trace->info(
-            TraceCode::CARD_MANDATE_CREATED,
-            [
-                'merchant_id'     => $payment->merchant->getId(),
-                'card_mandate_id' => $cardMandate->getId(),
-            ]
-        );
+            throw $exception;
+        }
+        finally
+        {
+            $this->app['diag']->trackPaymentEventV2(
+                EventCode::PAYMENT_CARD_MANDATE_CREATE_PROCESSED,
+                $payment,
+                $ex,
+                [],
+                (new EventData)
+                    ->withCardMandate($cardMandate)
+                    ->toArray()
+            );
+        }
 
         return $cardMandate;
     }
 
+    /**
+     * @param Payment\Entity $payment
+     * @return CardMandateNotification\Entity
+     * @throws \Exception
+     */
     public function createPreDebitNotification(Payment\Entity $payment): CardMandateNotification\Entity
     {
+        $ex = null;
+
+        $cardMandateNotification = null;
+
+        $cardMandate = $payment->localToken->cardMandate;
+
         $this->trace->info(TraceCode::CARD_MANDATE_PRE_DEBIT_NOTIFICATION_REQUEST, [
-            'payment_id' => $payment->getId(),
+            'payment_id'  => $payment->getId(),
+            'mandate_id'  => $cardMandate->getId(),
+            'mandate_hub' => $cardMandate->getMandateHub(),
         ]);
 
-        $token = $payment->localToken;
+        $this->app['diag']->trackPaymentEventV2(
+            EventCode::PAYMENT_CARD_MANDATE_SUBSEQUENT_INITIATED,
+            $payment,
+            null,
+            [],
+            (new EventData)
+                ->withCardMandate($cardMandate)
+                ->toArray()
+        );
 
-        $cardMandateId = $token->getCardMandateId();
+        try
+        {
+            $cardMandateNotification = (new CardMandateNotification\Core)->create($cardMandate, [
+                CardMandateNotification\Entity::AMOUNT => $payment->getAmount(),
+            ], $payment);
 
-        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+            $cardMandateNotification->payment()->associate($payment);
 
-        $cardMandateNotification = (new CardMandateNotification\Core)->create($cardMandate, [
-            CardMandateNotification\Entity::AMOUNT => $payment->getAmount(),
-        ], $payment);
+            $cardMandateNotification->saveOrFail();
 
-        $cardMandateNotification->payment()->associate($payment);
+            $this->trace->info(TraceCode::CARD_MANDATE_PRE_DEBIT_NOTIFICATION_CREATED, [
+                'payment_id'                   => $payment->getId(),
+                'card_mandate_notification_id' => $cardMandateNotification->getId(),
+                'mandate_hub'                  => $cardMandate->getMandateHub(),
+                'reminder_id'                  => $cardMandateNotification->getReminderId(),
+            ]);
+        }
+        catch (\Exception $exception)
+        {
+            $ex = $exception;
 
-        $cardMandateNotification->saveOrFail();
+            throw $exception;
+        }
+        finally {
 
-        $this->trace->info(TraceCode::CARD_MANDATE_PRE_DEBIT_NOTIFICATION_CREATED, [
-            'payment_id'                   => $payment->getId(),
-            'card_mandate_notification_id' => $cardMandateNotification->getId(),
-        ]);
+            $this->app['diag']->trackPaymentEventV2(
+                EventCode::PAYMENT_CARD_MANDATE_SUBSEQUENT_PROCESSED,
+                $payment,
+                $ex,
+                [],
+                (new EventData)
+                    ->withCardMandate($cardMandate)
+                    ->withCardMandateNotification($cardMandateNotification)
+                    ->toArray()
+            );
+        }
 
         return $cardMandateNotification;
     }
@@ -151,11 +229,7 @@ class Core extends Base\Core
 
         $this->verifyHash($hash, $payment->getPublicId());
 
-        $token = $payment->localToken;
-
-        $cardMandateId = $token->getCardMandateId();
-
-        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+        $cardMandate = $payment->localToken->cardMandate;
 
         $status = Status::MANDATE_APPROVED;
 
@@ -185,6 +259,17 @@ class Core extends Base\Core
             'card_mandate_id'     => $cardMandate->getId(),
             'card_mandate_status' => $cardMandate->getStatus(),
         ]);
+    }
+
+    public function processSihubWebhook($input)
+    {
+        $response = $this->app['gateway']->call(MandateHubs\MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_UPDATE, $input, $this->mode);
+
+        $mandate = BillDeskSIHub\BillDeskSIHub::getMandateFromSIHubResponse($response['data']);
+
+        $this->updateMandateFromCallbackResponse($mandate);
+
+        return [];
     }
 
     public function processMandateHQCallBack($input)
@@ -334,7 +419,7 @@ class Core extends Base\Core
 
     public function reportSubsequentPayment(Payment\Entity $payment)
     {
-        $this->trace->info(TraceCode::CARD_MANDATE_PAYMENT_INITIAL_REPORT, [
+        $this->trace->info(TraceCode::CARD_MANDATE_PAYMENT_SUBSEQUENT_REPORT, [
             'payment_id'  => $payment->getId(),
         ]);
 

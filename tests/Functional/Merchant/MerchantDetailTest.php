@@ -1184,6 +1184,7 @@ We look forward to transacting with you!
     public function testZohoMerchantHeaders()
     {
         $this->fixtures->merchant->addFeatures(['zoho', 'charge_at_will']);
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
         $this->mockCardVault();
 

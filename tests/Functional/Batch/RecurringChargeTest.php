@@ -23,6 +23,8 @@ class RecurringChargeTest extends TestCase
 
         $this->mockCardVault();
 
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
+
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
@@ -39,7 +41,6 @@ class RecurringChargeTest extends TestCase
     public function testCreateBatchOfRecurringChargeTypeQueued()
     {
         Queue::fake();
-
         $entries = $this->getDefaultVirtualAccountFileEntries();
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
@@ -52,7 +53,6 @@ class RecurringChargeTest extends TestCase
     public function testCreateBatchOfRecurringChargeTypeStatus()
     {
         $entries = $this->getDefaultVirtualAccountFileEntries();
-
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
         $response = $this->startTest();

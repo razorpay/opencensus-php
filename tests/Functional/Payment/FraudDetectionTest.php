@@ -34,6 +34,7 @@ class FraudDetectionTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testBlockedBin()

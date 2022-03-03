@@ -34,6 +34,7 @@ use RZP\Constants\Entity as Constants;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Models\Gateway\Terminal\GatewayProcessor\Hitachi\GatewayProcessor;
 use Throwable;
@@ -811,6 +812,14 @@ class Selector extends Base\Core
                     $flows = $iin->getFlows();
 
                     $paymentData['card']['flows'] = $flows;
+
+                    //Condition for sending mandate_hubs only during mandate create process
+                    if (empty($this->input['card_mandate']) === false)
+                    {
+                        $mandateHubs = $iin->getApplicableMandateHubs($merchant, $payment->hasSubscription());
+
+                        $paymentData['card']['mandate_hubs'] = $mandateHubs;
+                    }
                 }
 
                 $paymentData['card']['tokenised'] = $card->isTokenPan();

@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -910,5 +911,18 @@ class PayVerifyData extends Base\Mock\Server
         }
 
         return $response->toArray();
+    }
+
+    public function billdesk_sihub($entities)
+    {
+        return [
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+            'data'              => [
+                'status'    => 'success'
+            ],
+        ];
     }
 }

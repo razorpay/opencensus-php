@@ -369,8 +369,8 @@ trait Authorize
                     return $redirectResponse;
                 }
             }
-            else
-            {
+            else {
+
                 return null;
             }
         }
@@ -2392,7 +2392,7 @@ trait Authorize
             $card = $payment->localToken->card;
         }
 
-        if ($card->isRecurringSupported($isInitialOrCardChange) === false)
+        if ($card->isRecurringSupported($isInitialOrCardChange, $payment->hasSubscription()) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
@@ -4537,7 +4537,7 @@ trait Authorize
 
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($card->isRecurringSupported(true) === true))
+                ($card->isRecurringSupported(true, $payment->hasSubscription()) === true))
             {
                 $recurring = true;
             }
@@ -4559,7 +4559,7 @@ trait Authorize
 
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($card->isRecurringSupported($payment->isRecurringTypeInitial()) === true))
+                ($card->isRecurringSupported($payment->isRecurringTypeInitial(), $payment->hasSubscription()) === true))
             {
                 $payment->setRecurring(true);
             }

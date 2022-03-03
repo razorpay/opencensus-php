@@ -989,4 +989,19 @@ class PayInitData extends Base\Mock\Server
 
         return $response->toArray();
     }
+
+    public function billdesk_sihub($entities)
+    {
+        return [
+            'success' => true,
+            'error'   => null,
+            'data'              => [
+                'amount'    => 6,
+                'currency'  => 356,
+                'id'        => '18TYP7OD7XDM',
+                'status'    => 'notified',
+                'delivered_at' => Carbon::now()->timestamp,
+            ],
+        ];
+    }
 }

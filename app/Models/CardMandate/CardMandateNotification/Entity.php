@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\CardMandate\MandateHubs;
 
 /**
  * @property Merchant\Entity    $merchant
@@ -182,7 +183,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NOTIFICATION_ID);
     }
 
-    public function getRemindAt()
+    public function getRemindAt($mandateHub = MandateHubs\MandateHubs::MANDATE_HQ)
     {
         $notifiedAt = $this->getNotifiedAt();
 
@@ -201,7 +202,13 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $time->addDay()->addMinutes(5);
+            if ($mandateHub === MandateHubs\MandateHubs::BILLDESK_SIHUB)
+            {
+                $time->addDay()->addHours(12)->addMinutes(5);
+            }
+            else {
+                $time->addDay()->addMinutes(5);
+            }
         }
 
         return $time->timestamp;

@@ -41,6 +41,8 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->mockCardVault();
+
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
     }
 
     public function testRecurringFirstPaymentCreatePublicAuth()
@@ -60,6 +62,7 @@ class RecurringPaymentTest extends TestCase
 
     public function testCardRecurringAutoPaymentIfTokenIsPaused()
     {
+
         $this->testRecurringFirstPaymentCreatePublicAuth();
 
         $token = $this->getDbLastEntity(E::TOKEN);
@@ -108,6 +111,7 @@ class RecurringPaymentTest extends TestCase
 
     public function testCardRecurringAutoPaymentIfTokenStatusIsDeactivated()
     {
+
         $this->testRecurringFirstPaymentCreatePublicAuth();
 
         $this->allowAllTerminalRazorx();
@@ -133,6 +137,7 @@ class RecurringPaymentTest extends TestCase
 
     public function testCardRecurringAutoPaymentIfTokenStatusIsSuspended()
     {
+
         $this->testRecurringFirstPaymentCreatePublicAuth();
 
         $this->allowAllTerminalRazorx();
@@ -486,6 +491,8 @@ class RecurringPaymentTest extends TestCase
                 ],
         ];
 
+
+
         $response = $this->makeRequestAndGetContent($request);
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
@@ -591,6 +598,8 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 
+
+
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $this->doAuthAndCapturePayment($payment);
@@ -652,6 +661,8 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 
+
+
         $payment = $this->getDefaultRecurringPaymentArray();
 
         $payment['card']['number'] = '5567630000002004';
@@ -710,6 +721,8 @@ class RecurringPaymentTest extends TestCase
                 '3ds' => '1',
             ]
         ]);
+
+
 
         $payment = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '4024001104457538';
@@ -857,6 +870,8 @@ class RecurringPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -1063,6 +1078,8 @@ class RecurringPaymentTest extends TestCase
         list($firstDataTerminal1, $firstDataTerminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -1515,16 +1532,7 @@ class RecurringPaymentTest extends TestCase
         $this->mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
 
         $this->app->instance('mandateHQ', $this->mandateHQ);
-
-        $mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
-
-        $terminalSelectorMock = \Mockery::mock('RZP\Models\CardMandate\MandateHubs\MandateHubTerminalSelector')
-                                        ->makePartial();
-
-        $terminalSelectorMock->shouldReceive('GetTerminalForPayment')->andReturn($mandateHqTerminal);
-
         $this->mandateConfirm = 'true';
-
         $this->mockRegisterMandate();
         $this->mockCheckBin();
         $this->mockShouldSkipSummaryPage(false);

@@ -1693,6 +1693,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::OTM_COLLECT) === true);
     }
 
+    public function isMandateHub()
+    {
+        return ($this->isTypeApplicable(Type::MANDATE_HUB) === true);
+    }
+
     public function isPin()
     {
         return ($this->isTypeApplicable(Type::PIN) === true);

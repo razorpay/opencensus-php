@@ -58,7 +58,7 @@ class PaymentCreateTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
-
+        $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
@@ -2844,7 +2844,6 @@ class PaymentCreateTest extends TestCase
     public function testPaymentS2SRedirectJsonPrivateAuthRecurringPayment()
     {
         $this->mockCardVault();
-
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $payment = $this->getDefaultRecurringPaymentArray();
@@ -7530,11 +7529,11 @@ class PaymentCreateTest extends TestCase
             'content' => $payment,
             'url'     => '/payments/create/ajax',
             'method'  => 'post'
-        ]; 
+        ];
 
         $esMock = $this->createEsMock(['bulkUpdate']);
 
-       
+
         // Ref to InvoiceTest.testCreateInvoiceAndAssertEsSync() test on why
         // this is being asserted differently.
 
@@ -7563,7 +7562,7 @@ class PaymentCreateTest extends TestCase
 
         EsSync::dispatch('test', 'create', 'payment', 'GfnS1Fj048VHo2', true);
     }
-  
+
      public function testRearchPaymentEsSyncCron()
     {
         $this->enablePgRouterConfig();
@@ -7777,18 +7776,18 @@ class PaymentCreateTest extends TestCase
                         ]
                     ];
             });
-    
 
-        
+
+
         $request = [
             'content' => ['backfill' => true],
             'url'     => '/payments_cards/payments/es_sync',
             'method'  => 'post'
-        ]; 
+        ];
 
         $esMock = $this->createEsMock(['bulkUpdate']);
 
-       
+
         // Ref to InvoiceTest.testCreateInvoiceAndAssertEsSync() test on why
         // this is being asserted differently.
 

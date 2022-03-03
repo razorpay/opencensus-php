@@ -122,4 +122,20 @@ class AuthVerifyData extends Base\Mock\Server
 
         return $response;
     }
+
+    public function billdesk_sihub($entities)
+    {
+        return [
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+            'data'              => [
+                'amount'    => 6,
+                'currency'  => 356,
+                'id'        => 'VkHYuA3NH3',
+                'status'    => 'pending'
+            ],
+        ];
+    }
 }
