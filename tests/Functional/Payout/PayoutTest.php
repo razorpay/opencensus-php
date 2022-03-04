@@ -8402,6 +8402,32 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('processed', $fta->getStatus());
     }
 
+    public function testPayoutWithoutFtaManualStatusUpdateToFailed()
+    {
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('create_request_submitted', $payout->getStatus());
+
+        $request = [
+            'url'       => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'failed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        // Assert that payout status was updated.
+        $this->assertEquals('failed', $payout->getStatus());
+    }
+
     public function testUpdatePayoutStatusToProcessedManuallyFailed()
     {
         $this->testCreatePayout();

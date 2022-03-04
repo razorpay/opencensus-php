@@ -3599,6 +3599,11 @@ class Core extends Base\Core
         /** @var Attempt\Entity $fta */
         $fta = $payout->fundTransferAttempts()->first();
 
+        if (empty($fta) === true)
+        {
+            return;
+        }
+
         // Only updating fta failure reason if payout failure reason was updated during this request.
         if ((empty($input[Entity::FAILURE_REASON]) === false) and
             ($payout->wasChanged(Entity::FAILURE_REASON) === true))
