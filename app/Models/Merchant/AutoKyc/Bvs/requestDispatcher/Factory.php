@@ -9,6 +9,8 @@ use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Merchant\RazorxTreatment;
+
 class Factory
 {
     public function getBvsRequestDispatcherForArtefact(
@@ -38,6 +40,9 @@ class Factory
 
     public function getBvsRequestDispatcherForDocument(DocumentEntity $document, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
+        $isExperimentEnabledForJoinValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
+            RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
+
         switch ($document->getDocumentType())
         {
             case Type::MSME_CERTIFICATE:
@@ -47,8 +52,24 @@ class Factory
                 return new ShopEstablishmentDocOcr($merchant, $merchantDetails, $document);
 
             case Type::AADHAR_BACK:
-                return new AadharBackOcr($merchant, $merchantDetails, $document);
-
+                if ($isExperimentEnabledForJoinValidation)
+                {
+                    return new AadhaarFrontAndBackValidationOcr($merchant, $merchantDetails, $document);
+                }
+                else
+                {
+                    return new AadharBackOcr($merchant, $merchantDetails, $document);
+                }
+            case Type::AADHAR_FRONT:
+                if ($isExperimentEnabledForJoinValidation)
+                {
+                    return new AadhaarFrontAndBackValidationOcr($merchant, $merchantDetails, $document);
+                }
+                else
+                {
+                    throw new Exception\LogicException('document type not supported in this flow: ' .
+                        $document->getDocumentType());
+                }
             case Type::GST_CERTIFICATE:
                 return new GSTCertificateOcr($merchant, $merchantDetails, $document);
 
@@ -70,7 +91,6 @@ class Factory
                         return new TrustSocietyNgoBusinessCertificateOcr($merchant, $merchantDetails, $document);
                 }
                 break;
-
             default:
                 throw new Exception\LogicException('document type not supported in this flow: ' . $document->getDocumentType());
         }

@@ -5413,7 +5413,7 @@ class Core extends Base\Core
      * @throws LogicException
      */
     public function updateDocumentVerificationStatus(
-        Merchant\Entity $merchant,Merchant\Detail\Entity $merchantDetail, string $field, string $validationUnit = ''): bool
+        Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetail, string $field, string $validationUnit = ''): bool
     {
         $enabledVerificationDocuments = array_keys(Constant::ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION);
 
@@ -5449,7 +5449,7 @@ class Core extends Base\Core
 
             $statusUpdateFactory = new DocumentStatusUpdater\Factory();
 
-            $statusUpdater = $statusUpdateFactory->getInstance($merchant,$merchantDetail, $validation);
+            $statusUpdater = $statusUpdateFactory->getInstance($merchant, $merchantDetail, $validation);
 
             $statusUpdater->updateStatusToPending();
         }

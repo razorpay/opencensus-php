@@ -227,9 +227,32 @@ class Type
         self::VOTER_ID_FRONT,
     ];
 
+    protected static $jointValidationDocuments = [
+        self::AADHAR_FRONT,
+        self::AADHAR_BACK,
+    ];
+
     public static function isValid($value)
     {
         return (in_array($value, self::VALID_DOCUMENTS) === true);
+    }
+
+    public static function getRelatedDocumentType($documentType)
+    {
+         if ($documentType === self::AADHAR_FRONT) {
+             return self::AADHAR_BACK;
+         }
+         return self::AADHAR_FRONT;
+    }
+
+    public static function isJointValidationDocumentType($documentType): bool
+    {
+        if (empty($documentType))
+        {
+            return false;
+        }
+
+        return in_array($documentType, self::$jointValidationDocuments, true);
     }
 
     public static function isDocumentTypeToPerformOcr($documentType): bool

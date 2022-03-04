@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Constants\Entity as E;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
@@ -12,7 +13,9 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Stakeholder\Entity as StakeholderEntity;
+use RZP\Trace\TraceCode;
 
 class Factory
 {
@@ -150,7 +153,6 @@ class Factory
                                                ValidationEntity $validation): StatusUpdater
     {
         $validationId = $validation->getValidationId();
-
         $merchant_document = (new DocumentCore())->getDocument($merchant->getMerchantId(), $validationId);
         if ($validation->getValidationUnit() === Constants::IDENTIFIER)
         {
@@ -163,13 +165,20 @@ class Factory
         }
         else
         {
-            if (isset($merchant_document) === false or Type::isPoaDocument($merchant_document->getDocumentType()) === true)
+            // poa should be returned even for aadhaar_back for joint validation experiment
+            $isExperimentEnabledForJointValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
+                RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
+
+            if (isset($merchant_document) === false or
+                Type::isPoaDocument($merchant_document->getDocumentType()) === true or
+                ($isExperimentEnabledForJointValidation and
+                    Type::isJointValidationDocumentType($merchant_document->getDocumentType()) === true))
             {
-                return new POA($merchant, $merchantDetails,$validation);
+                return new POA($merchant, $merchantDetails, $validation);
             }
             else
             {
-                return new NullStatusUpdater($merchant, $merchantDetails,$validation);
+                return new NullStatusUpdater($merchant, $merchantDetails, $validation);
             }
         }
     }

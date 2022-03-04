@@ -144,7 +144,6 @@ class Core extends Base\Core
         $document = (new Entity)->generateId();
 
         $document->merchant()->associate($merchant);
-
         $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
         $entity = $entity ?? $merchant;
@@ -189,7 +188,7 @@ class Core extends Base\Core
                 $merchant
             );
 
-            (new Detail\Core())->updateDocumentVerificationStatus($merchant,$merchantDetails, $document->getDocumentType());
+            (new Detail\Core())->updateDocumentVerificationStatus($merchant, $merchantDetails, $document->getDocumentType());
 
             $this->repo->saveOrFail($merchantDetails);
 
@@ -389,8 +388,32 @@ class Core extends Base\Core
 
     public function performOcrWithBvs(Entity $document, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
+        // If document type belong to the category of joint validation document,
+        // we need to send both documents together in one request.
+        // Currently, this is hidden behind experiment.
+        $isExperimentEnabledForJointValidation = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getMerchantId(),
+            RazorxTreatment::AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION);
 
-        if (Type::isPoaDocument($document->getDocumentType()) === true)
+        if ($isExperimentEnabledForJointValidation and Type::isJointValidationDocumentType($document->getDocumentType()) === true)
+        {
+            $this->trace->info(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
+                'performOcrWithBvs' => 'aadhaar front and back joint validation experiment.',
+                '$merchant' => $merchant->getMerchantId()
+                ]);
+            $factory = new requestDispatcher\Factory();
+
+            $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
+                $document, $merchant, $merchantDetails);
+
+            if(empty($requestDispatcher)===false)
+            {
+                $this->trace->debug(TraceCode::BVS_JOINT_VALIDATION_REQUEST, [
+                    'triggerBVSRequest' => 'request dispatcher non-empty.'
+                ]);
+                $requestDispatcher->triggerBVSRequest();
+            }
+        }
+        else if (Type::isPoaDocument($document->getDocumentType()) === true)
         {
             $this->performPoaOcrWithBvs($document, $merchantDetails);
         }
@@ -483,7 +506,7 @@ class Core extends Base\Core
 
     public function getDocument(string $merchantId,string $validationId)
     {
-        return $this->repo->merchant_document->findDocumentsForMerchantIdAndValidationId($merchantId,$validationId);
+        return $this->repo->merchant_document->findDocumentsForMerchantIdAndValidationId($merchantId, $validationId);
     }
 
     public function saveInMerchantDocument(array $response, string $merchantId, string $documentType, int $documentDate = null)

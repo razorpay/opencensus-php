@@ -41,7 +41,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Returns all non deleted documents for given validationId
+     * Returns first non deleted documents for given validationId
      *
      * @param string $merchantId
      * @param string $validationId
@@ -116,6 +116,23 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
+    }
+
+    /**
+     * Fetch the documents by merchantId and documentType.
+     *
+     * @param string $merchantId
+     * @param string $documentType
+     * @return mixed
+     */
+    public function findDocumentsForMerchantIdAndDocumentType(string $merchantId, string $documentType)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::DOCUMENT_TYPE, $documentType)
+            ->whereNull(Entity::DELETED_AT)
+            ->get()
+            ->first();
     }
 
 }

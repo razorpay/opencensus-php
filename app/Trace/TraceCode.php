@@ -5334,6 +5334,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BVS_GET_VALIDATION_REQUEST            = 'BVS_GET_VALIDATION_REQUEST';
     const BVS_GET_VALIDATION_RESPONSE           = 'BVS_GET_VALIDATION_RESPONSE';
+    const BVS_JOINT_VALIDATION_REQUEST          = 'BVS_JOINT_VALIDATION_REQUEST';
 
     //Personalisation trace codes
     const PERSONALISATION_CONTENT        = 'PERSONALISATION_CONTENT';

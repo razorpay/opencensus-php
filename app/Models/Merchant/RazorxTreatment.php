@@ -470,6 +470,11 @@ final class RazorxTreatment
     // payout service will be consuming status independently from kafka
     const DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE = 'disable_status_update_to_payout_service';
 
+    // Razorx treatment constant to send a single request to bvs for validating aadhaar
+    // document, rather than sending a single one.
+    const AADHAAR_FRONT_AND_BACK_JOINT_VALIDATION = "aadhaar_front_and_back_joint_validation";
+
     // Experiment to allow linked account creation with existing email id
     const ALLOW_LINKED_ACCOUNT_CREATION_FOR_EXISTING_EMAILS = 'allow_linked_account_creation_for_existing_emails';
+
 }

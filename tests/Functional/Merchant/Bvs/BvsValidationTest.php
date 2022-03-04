@@ -177,6 +177,7 @@ class BvsValidationTest extends TestCase
         $this->assertNotNull($document->getValidationId());
         $this->assertNull($merchantDetails->getPoaVerificationStatus());
     }
+
     public function checkCreateBvsValidationAadharBack()
     {
         $mid = '10000000000000';

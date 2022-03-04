@@ -117,8 +117,8 @@ class Constant
     const ADMIN_ROLE                                    = "admin";
     const ADMIN_LOGGED_IN_AS_MERCHANT_MESSAGE           = "(Admin Logged in as Merchant)";
     const ADMIN_IS_LOGGED_IN_AS_MERCHANT_HEADER         = "1";
-
     const GSTIN_WITH_BUSINESS_PAN_FOR_NO_DOC            = "gstin_with_business_pan_for_no_doc";
+    const AADHAAR_FRONT_AND_BACK_OCR                    = "aadhaar_front_and_back";
 
     // Response fields
     const VALIDATION_ID   = 'validation_id';
