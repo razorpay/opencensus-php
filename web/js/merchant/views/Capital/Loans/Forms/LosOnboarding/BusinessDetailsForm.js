@@ -271,7 +271,7 @@ const BusinessDetailsForm = ({
         </div>
       </div>
       {pincodeError && (
-        <div class="flex">
+        <div class="flex los-row">
           <Input
             value={formData.city}
             onChange={handleChange}
@@ -298,7 +298,7 @@ const BusinessDetailsForm = ({
 
       <div className="flex los-row">
         <Input.Select
-          label="Select Property Ownership "
+          label="Property Ownership"
           value={formData.ownership || {}}
           onChange={handleChange}
           size="small"

@@ -15,6 +15,7 @@ export const BUSINESS_TYPES = {
 };
 
 export const BUSINESS_NATURE_TYPES = [
+  '',
   { label: 'Manufacturer', name: 'Manufacturer' },
   { label: 'Wholesaler', name: 'Wholesaler' },
   { label: 'Trader', name: 'Trader' },
@@ -24,6 +25,7 @@ export const BUSINESS_NATURE_TYPES = [
 ];
 
 export const PROPERTY_OWNERSHIP_TYPES = [
+  '',
   { label: 'Owned', name: 'Owned' },
   { label: 'Rented', name: 'Rented' },
   { label: 'Other', name: 'Other' },
