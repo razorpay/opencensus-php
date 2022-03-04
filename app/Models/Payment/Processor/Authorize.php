@@ -10063,7 +10063,11 @@ trait Authorize
 
         $mode = $this->mode;
 
-        $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
+        /** Removing this as we are not storing in enach entity after migration.
+         * Details are being stored in payments_nbplus.emandate_registration
+         * reference number is to be fetched from token entity
+        */
+        //$gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail($payment['id'], GatewayAction::AUTHORIZE);
 
         $returnData['emandate_details'] = enachNpciGateway::fetchEmandateDisplayDetails(
                                                                                $payment,
@@ -10071,8 +10075,7 @@ trait Authorize
                                                                                $terminal,
                                                                                $merchant,
                                                                                $config,
-                                                                               $mode,
-                                                                               $gatewayPayment
+                                                                               $mode
                                                                               );
 
         return $returnData;

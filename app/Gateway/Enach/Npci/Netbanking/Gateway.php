@@ -149,8 +149,7 @@ class Gateway extends Base\Gateway
                     $input['terminal'],
                     $input['merchant'],
                     $this->config,
-                    $this->mode,
-                    $gatewayPayment
+                    $this->mode
                 )
             ];
 
@@ -998,8 +997,7 @@ class Gateway extends Base\Gateway
                                                        $terminal,
                                                        $merchant,
                                                        $config,
-                                                       $mode = Mode::TEST,
-                                                       $gatewayPayment = null
+                                                       $mode = Mode::TEST
                                                       )
     {
         $bank   = $payment['bank'];
@@ -1056,12 +1054,8 @@ class Gateway extends Base\Gateway
             'corporate_name'     => str_limit($merchantName, 25, ''),
             'utility_code'       => $utilityCode,
             'purpose_text'       => $categoryDescription,
+            'reference_number'   => $token->getGatewayToken(),
         ];
-
-        if ($gatewayPayment !== null)
-        {
-            $displayDetails['reference_number'] = $gatewayPayment->getGatewayReferenceId();
-        }
 
         return $displayDetails;
     }
