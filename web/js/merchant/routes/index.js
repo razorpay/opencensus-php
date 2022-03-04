@@ -291,7 +291,9 @@ const StoresProductsCreate = lazy(() =>
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
-
+const NitroPgPricing = lazy(() =>
+  import(/* webpackChunkName: "NitroPgPricing" */ 'common/ui/MwebExOfferCampaign/NitroPgPricing'),
+);
 const entityDetailsMap = {
   '/payments/:id(pay_.+)/:entity_name(transfers|disputes)/:entity_id': {
     component: PaymentsDetails,
@@ -308,6 +310,9 @@ const entityDetailsMap = {
   },
   '/optimizer/rules/:id': {
     component: RuleDetail,
+  },
+  '/exclusive-offer/:campaign': {
+    component: NitroPgPricing,
   },
   '/optimizer/provider/:id': {
     component: ProviderDetails,

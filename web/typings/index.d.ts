@@ -13,4 +13,5 @@ interface Window {
   SENTRY_DSN: string;
   cdnBaseUrl: string;
   bankingServiceUrl: string;
+  rzp_user: any;
 }

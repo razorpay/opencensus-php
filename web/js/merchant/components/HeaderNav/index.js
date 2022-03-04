@@ -24,6 +24,7 @@ import {
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
+import OffersForYou from 'common/ui/OffersForYou';
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -186,6 +187,9 @@ class HeaderNav extends Component {
                 {!showMobileNav && (
                   <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
                 )}
+                <ShowWhen additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}>
+                  <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
+                </ShowWhen>
                 {/* Will uncomment later. Please dont block this from going to prod  */}
                 {!showMobileNav && user.isMobileSignupCareActive && (
                   <li id="support-request">

@@ -33,6 +33,7 @@ const OffersForYou = ({
   history,
   setActivePageName,
   setBaseLocation,
+  showMobileNav = false,
 }) => {
   const offersForYouState = LocalStorageService.getItem('offers_for_you_state');
   let showAnimation = true;
@@ -89,55 +90,59 @@ const OffersForYou = ({
   };
 
   const handleClick = () => {
-    /* onboarding offer will be the priority over the other offers.
+    if (!showMobileNav) {
+      /* onboarding offer will be the priority over the other offers.
     if two offer enable at the same time */
-    if (user.isICICILinkedCAEnabled) handleConnectedBankingFlow();
-    else if (canShowOnboardingOffers) {
-      showMTUOffer(true);
-      analyticsTrack({
-        objectName: 'Exclusive Offer',
-        actionName: 'clicked',
-        screen: 'home page',
-        properties: {
-          location: 'top header',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
-    } else if (user.isProjectMoonshineEnabled) {
-      openModals({
-        component: (
-          <RXPayrollMoonshineModal
-            hideModal={closeModals}
-            fromWhere="offers-for-you"
-            tracking={tracking}
-          />
-        ),
-        size: 'xlarge',
-        className: 'RXPayrollMoonshine--Modal',
-      });
-    } else if (user.isPartOfNeostone) {
-      openModals({
-        component: <NitroSelfServe user={user} handleClose={closeModals} tracking={tracking} />,
-        size: 'xlarge',
-        className: 'RazorpayXNitroAnnouncement--Modal',
-      });
-    } else if (user.isGSExclusiveOfferEnabled) {
-      openModals({
-        component: <ExclusiveOffer />,
-        size: 'xlarge',
-        className: 'GSExclusiveOffer--Modal',
-      });
-    } else {
-      openModals({
-        component: (
-          <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
-        ),
-        size: 'xlarge',
-        className:
-          user.isProjectKeystoneCorporateCardsEnabled || user.isProjectKeystoneCashAdvanceEnabled
-            ? 'Keystone--Modal'
-            : 'RazorpayXNitroAnnouncement--Modal',
-      });
+      if (user.isICICILinkedCAEnabled) handleConnectedBankingFlow();
+      else if (canShowOnboardingOffers) {
+        showMTUOffer(true);
+        analyticsTrack({
+          objectName: 'Exclusive Offer',
+          actionName: 'clicked',
+          screen: 'home page',
+          properties: {
+            location: 'top header',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      } else if (user.isProjectMoonshineEnabled) {
+        openModals({
+          component: (
+            <RXPayrollMoonshineModal
+              hideModal={closeModals}
+              fromWhere="offers-for-you"
+              tracking={tracking}
+            />
+          ),
+          size: 'xlarge',
+          className: 'RXPayrollMoonshine--Modal',
+        });
+      } else if (user.isPartOfNeostone) {
+        openModals({
+          component: <NitroSelfServe user={user} handleClose={closeModals} tracking={tracking} />,
+          size: 'xlarge',
+          className: 'RazorpayXNitroAnnouncement--Modal',
+        });
+      } else if (user.isGSExclusiveOfferEnabled) {
+        openModals({
+          component: <ExclusiveOffer />,
+          size: 'xlarge',
+          className: 'GSExclusiveOffer--Modal',
+        });
+      } else {
+        openModals({
+          component: (
+            <RazorpayXNitroAnnouncement hideModal={closeModals} fromWhere="offers-for-you" />
+          ),
+          size: 'xlarge',
+          className:
+            user.isProjectKeystoneCorporateCardsEnabled || user.isProjectKeystoneCashAdvanceEnabled
+              ? 'Keystone--Modal'
+              : 'RazorpayXNitroAnnouncement--Modal',
+        });
+      }
+    } else if (user.isProjectNitroEnabled) {
+      history.push('/exclusive-offer/nitro');
     }
 
     tracking.trackEvent(
@@ -150,10 +155,10 @@ const OffersForYou = ({
   };
 
   return (
-    <li className="offers-for-you">
+    <li className={!showMobileNav ? 'offers-for-you' : ''}>
       <a onClick={handleClick}>
         <OffersForYouIcon setIsStopped={setIsStopped} isStopped={isStopped} />
-        Exclusive Offer
+        {!showMobileNav ? 'Exclusive Offer' : null}
       </a>
     </li>
   );

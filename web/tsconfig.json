@@ -37,7 +37,8 @@
     "js/common/new-ui",
     "js/common/ui/DashboardBanner",
     "js/common/ui/NotificationsDropdown/Neostone",
-    "js/common/ui/GrowthCustomizeModal"
+    "js/common/ui/GrowthCustomizeModal",
+    "js/common/ui/MwebExOfferCampaign"
   ],
   "exclude": ["node_modules", "js/common/utils"]
 }

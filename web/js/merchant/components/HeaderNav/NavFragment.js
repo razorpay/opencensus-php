@@ -69,6 +69,7 @@ class NavFragment extends Component {
             user.isProjectMoonshineEnabled ||
             user.isProjectKeystoneCorporateCardsEnabled ||
             user.isProjectKeystoneCashAdvanceEnabled ||
+            user.isGSExclusiveOfferEnabled ||
             user.isICICILinkedCAFlowEnabled('offers-for-you')
           }
         >
