@@ -380,7 +380,7 @@ class PaperNachIcici extends Base
 
         $accountType = strtoupper($accountTypeMapping);
 
-        $mandateCategoryCode = CategoryCode::getCategoryCodeFromMcc($merchantCategory);
+        $mandateCategoryCode = CategoryCode::getCategoryCodeFromMccForNach($merchantCategory);
 
         $customerName = $token['beneficiary_name'] ?? $token->customer->getName();
         $customerName = substr($customerName, 0, 40);

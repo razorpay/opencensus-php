@@ -275,6 +275,49 @@ class IciciGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function  testGatewayFileRegisterWhenMccNotRecognized()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->setCategory('9999');
+
+        $payment = $this->createDummyRegisterToken();
+        $this->fixtures->stripSign($payment['id']);
+
+        $this->ba->cronAuth();
+
+        $data = $this->testData['testGatewayFileRegisterWhenMccNotRecognized'];
+
+        $content = $this->startTest();
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $zipFile = $files['items'][0];
+
+        $expectedFileContentZip = [
+            'type'        => 'icici_nach_register',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $zipArchive = new ZipArchive();
+
+        $zipFilePath = storage_path('files/filestore') . '/' . $zipFile['location'];
+
+        $zipArchive->open($zipFilePath);
+        $zipArchive->extractTo(dirname($zipFilePath) . '/extracted');
+        $zipArchive->close();
+
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        $fileName = 'MMS-CREATE-ICIC-ICIC406434-{$date}-{$count}';
+        $fileName = strtr($fileName, ['{$date}' => $date, '{$count}' => '000001']);
+
+        $this->validateRegisterXml(dirname($zipFilePath) . '/extracted/' . $fileName . '-INP.xml', $payment['id']);
+    }
+
     public function testGatewaySuccessRegistrationResponseFile()
     {
         $payment = $this->createDummyRegisterToken();

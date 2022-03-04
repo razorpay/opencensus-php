@@ -74,6 +74,16 @@ class CategoryCode
         return self::A001;
     }
 
+    public static function getCategoryCodeFromMccForNach($mcc)
+    {
+        if (isset(self::$mccToCategoryCodeMapping[$mcc]) === true)
+        {
+            return self::$mccToCategoryCodeMapping[$mcc];
+        }
+
+        return self::U099;
+    }
+
     public static function getCategoryDescriptionFromCode($code)
     {
         return self::$catCodeToDescriptionMapping[$code];
