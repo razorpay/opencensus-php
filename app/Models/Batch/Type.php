@@ -201,7 +201,7 @@ class Type
     const WHITELISTED_DOMAIN  =  'whitelisted_domain';
 
     const REWARDS = 'rewards';
-    
+
     const VIRTUAL_ACCOUNT_EDIT = "virtual_account_edit";
 
     const DEBIT_NOTE          = 'debit_note';
@@ -618,6 +618,9 @@ class Type
         self::CREATE_PAYMENT_FRAUD               => Name::ADMIN_BATCH_CREATE,
         self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
         self::BANKING_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
+        self::IRCTC_REFUND                        => Name::MERCHANT_BATCH_UPLOAD,
+        self::IRCTC_DELTA_REFUND                  => Name::MERCHANT_BATCH_UPLOAD,
+        self::IRCTC_SETTLEMENT                    => Name::MERCHANT_BATCH_UPLOAD,
     ];
 
     public static $workflowApplicableBatchTypes = [
