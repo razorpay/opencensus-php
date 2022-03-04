@@ -85,6 +85,11 @@ class VerifyCsrfToken extends BaseVerifier
                     $this->tokensMatch($request)
                 )
                 {
+                    if(empty($request->input('_request_identifier')) === false)
+                    {
+                        $this->logTokensMatch($request);
+                    }
+
                     return $next($request);
                 }
                 else
