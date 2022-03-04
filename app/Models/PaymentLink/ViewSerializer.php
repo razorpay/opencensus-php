@@ -40,7 +40,6 @@ class ViewSerializer extends Base\Core
      * @var Merchant\Entity
      */
     protected $merchant;
-    const RAZORX_ASTERIX_EXPERIMENT = 'pp_hostedpage_asterisk';
 
     public function __construct(Entity $paymentLink)
     {
@@ -115,14 +114,6 @@ class ViewSerializer extends Base\Core
 
     protected function serializeMerchantForHosted(): array
     {
-        $mode = $this->mode ?? Mode::LIVE;
-
-        $asterixVariant = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            self::RAZORX_ASTERIX_EXPERIMENT,
-            $mode
-        );
-
         $contactOptional = $this->merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
 
         $emailOptional  = $this->merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
@@ -143,7 +134,6 @@ class ViewSerializer extends Base\Core
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'branding_variant' => 'control',
-            'asterix_variant'  => $asterixVariant,
             'contact_optional' => $contactOptional,
             'email_optional'   => $emailOptional,
             'support_email'    => $supportDetails['support_email'],
