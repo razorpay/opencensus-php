@@ -1420,9 +1420,16 @@ class GatewayController extends Controller
             return $publicKey;
         }
 
-        if ($payment->getOrderId() !== null)
+        $paymentOrderID = $payment->getApiOrderId();
+
+        if ($paymentOrderID === null)
         {
-            $order = $this->repo->order->findOrFailPublic($payment->getOrderId());
+            $paymentOrderID = $payment->getOrderId();
+        }
+
+        if (empty($paymentOrderID) === false)
+        {
+            $order = $this->repo->order->findOrFailPublic($paymentOrderID);
 
             $publicKey = $order->getPublicKey();
 
