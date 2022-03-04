@@ -18409,6 +18409,64 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout['transaction_id'], $txn['id']);
     }
 
+    public function testPayoutCreateOnInternalContactByCapitalCollections()
+    {
+        $this->ba->capitalCollectionsAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
+            ]);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id' => $contact->getId(),
+            ],
+            [
+                'name' => 'test',
+                'ifsc' => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+        
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+    }
+
+    public function testPayoutCreateOnCollectionsInternalContactByOtherAppFailure()
+    {
+        $this->ba->capitalCollectionsAuth();
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
+            ]);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->ba->xPayrollAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateMerchantSlaForOnHoldPayoutsSuccess()
     {
         $this->ba->adminAuth();

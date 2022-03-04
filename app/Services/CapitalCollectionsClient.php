@@ -4,15 +4,12 @@ namespace RZP\Services;
 
 use App;
 
-use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Http\Request\Requests;
 use Psr\Http\Message\RequestInterface;
 use RZP\Exception\BadRequestException;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
-use OpenCensus\Trace\Propagator\ArrayHeaders;
 use RZP\Models\Payout\Entity as PayoutEntity;
 
 class CapitalCollectionsClient implements ExternalService
@@ -52,7 +49,7 @@ class CapitalCollectionsClient implements ExternalService
             $request['filter'] = $input;
         }
 
-        $response = $this->sendRequestAndParseResponse('v1/entities', $request, [], 'POST');
+        $response = $this->sendRequestAndParseResponse('v1/entities', $request, ['X-Auth-Type' => 'admin'], 'POST');
 
         $entities = $response['entities'][$entity];
 
@@ -65,7 +62,7 @@ class CapitalCollectionsClient implements ExternalService
 
     public function fetch(string $entity, string $id, array $input)
     {
-        return $this->sendRequestAndParseResponse('v1/entity/'. $entity . '/'. $id, [], [], 'GET')['entity'];
+        return $this->sendRequestAndParseResponse('v1/entity/'. $entity . '/'. $id, [], ['X-Auth-Type' => 'admin'], 'GET')['entity'];
     }
 
     public function pushPayoutStatusUpdate(PayoutEntity $payout, string $mode)
@@ -119,17 +116,22 @@ class CapitalCollectionsClient implements ExternalService
         $username                = $config['username'];
         $password                = $config['secret'];
 
-        $defaultHeaders = [
+        $defaultHeaders = $headers + [
             'Accept'            => 'application/json',
             'Content-Type'      => 'application/json',
             'X-Task-Id'         => $this->app['request']->getTaskId(),
-            'X-Admin-Id'        => $this->ba->getAdmin()->getId() ?? '',
-            'X-Admin-Email'     => $this->ba->getAdmin()->getEmail() ?? '',
-            'X-Auth-Type'       => 'admin',
             'Authorization'     => 'Basic '. base64_encode($username . ':' . $password),
         ];
 
-        return $this->sendRequest($defaultHeaders+$headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
+        if((array_key_exists('X-Auth-Type', $defaultHeaders) === true) and
+            $defaultHeaders['X-Auth-Type'] === 'admin')
+        {
+            $defaultHeaders['X-Admin-Id']        = $this->ba->getAdmin()->getId() ?? '';
+            $defaultHeaders['X-Admin-Email']     = $this->ba->getAdmin()->getEmail() ?? '';
+        }
+        
+
+        return $this->sendRequest($defaultHeaders, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
 
     protected function sendRequest($headers, $url, $method, $body)
