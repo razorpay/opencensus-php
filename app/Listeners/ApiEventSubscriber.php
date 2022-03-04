@@ -3,6 +3,7 @@
 namespace RZP\Listeners;
 
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Payout;
@@ -426,7 +427,24 @@ class ApiEventSubscriber extends Base\Core
             (new CardMandate\Core)->reportSubsequentPayment($payment);
         }
 
+        $this->pushForRevival($payment);
+
         $this->dispatchEventToStork($payload);
+    }
+
+
+    private function pushForRevival(Payment\Entity $payment)
+    {
+        if (ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER === $payment->getInternalErrorCode())
+            return;
+
+        if ($payment->hasOrder() === true and
+            empty($payment->order->getProductType()) and
+            empty($payment->order->invoice) and
+            $payment->merchant->isFeatureEnabled(Feature\Constants::MISSED_ORDERS_PLINK))
+        {
+            (new Payment\Core())->pushFailedPaymentToKafkaForPLCreation($payment);
+        }
     }
 
     protected function onPaymentCaptured($payment)

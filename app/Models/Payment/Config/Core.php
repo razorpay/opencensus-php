@@ -4,7 +4,6 @@
 namespace RZP\Models\Payment\Config;
 
 use RZP\Diag\EventCode;
-use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base;
@@ -75,6 +74,14 @@ class Core extends Base\Core
                             throw new Exception\BadRequestException(
                                 ErrorCode::BAD_REQUEST_DEFAULT_LATE_AUTH_CONFIG_PRESENT, null, null,
                                 'Default Config is present for the provided merchant');
+                        }
+
+                        if ((isset($defaultConfig) === true) and
+                            ($input['type'] === Type::PAYMENT_FAILED))
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_DEFAULT_PAYMENT_FAILED_CONFIG_PRESENT, null, null,
+                                'Default Payment Failed Config is present for the provided merchant');
                         }
 
                         if (isset($defaultConfig) === true)
@@ -223,6 +230,15 @@ class Core extends Base\Core
 
     }
 
+    private function updatePaymentFailedConfig($config, $input)
+    {
+        $config->setConfig(json_encode($input['config']));
+
+        $this->repo->saveOrFail($config);
+
+        return $config;
+    }
+
     private function updateDccConfig($config, $input)
     {
         $config->setConfig(json_encode($input['config']));
@@ -276,6 +292,11 @@ class Core extends Base\Core
                         if ($type === Type::DCC)
                         {
                             $this->updateDccConfig($config, $input);
+                        }
+
+                        if ($type === Type::PAYMENT_FAILED)
+                        {
+                            $this->updatePaymentFailedConfig($config, $input);
                         }
 
                         return $config;
@@ -356,6 +377,18 @@ class Core extends Base\Core
             $this->repo->saveOrFail($config);
 
             return $config;
+    }
+
+    public function getPaymentFailedConfig($merchantId)
+    {
+        $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, Type::PAYMENT_FAILED);
+
+        if(isset($config) === true)
+        {
+            return json_decode($config->config, true);
+        }
+
+        return false;
     }
 
     public function validateAndSaveCustomerFeeConfig($inputConfig)

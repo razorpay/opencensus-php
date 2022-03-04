@@ -9,10 +9,11 @@ class Type
     const LOCALE                 = 'locale';
     const RISK                   = 'risk';
     const DCC                    = 'dcc';
+    const PAYMENT_FAILED         = 'payment_failed';
     const CONVENIENCE_FEE        = 'convenience_fee';
 
     protected static $supportedConfigType = [
-      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE
+      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::PAYMENT_FAILED
     ];
 
     public function isConfigTypeSupported($type)

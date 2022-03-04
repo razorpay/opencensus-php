@@ -4,13 +4,18 @@ namespace RZP\Models\Payment;
 
 use Cache;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
+use RZP\Models\Order\Entity;
 use RZP\Models\Payment;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Services\PaymentLinkService;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -281,5 +286,147 @@ class Core extends Base\Core
             'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'subject'        => 'Payment Successful of '.$amount[0].$amount[1].'.'.$amount[2],
         ];
+    }
+
+    public function createPaymentLinkToReviveOrder(Payment\Entity $payment)
+    {
+        if ($payment->getContact() == Payment\Entity::DUMMY_PHONE )
+        {
+            return null;
+        }
+
+        if ($payment->order->isPartialPaymentAllowed()) {
+            return null;
+        }
+
+        $paymentFailedConfig = (new Config\Core())->getPaymentFailedConfig($payment->getMerchantId());
+
+        $plExpireAfterHours = 24;
+
+        if (
+            $paymentFailedConfig !== false &&
+            isset($paymentFailedConfig['retry_payment_links']) == true &&
+            isset($paymentFailedConfig['retry_payment_links']['expiry_after']) == true)
+        {
+            $plExpireAfterHours = $paymentFailedConfig['retry_payment_links']['expiry_after'];
+        }
+
+        $expiryAt = Carbon::now()->addHours($plExpireAfterHours)->getTimestamp();
+
+        $title = sprintf("Complete you order on %s", $payment->merchant->getDisplayNameElseName());
+
+        $createUpiLink = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::PL_MISSED_ORDER_UPI_LINK, $this->mode);
+
+        $data = [
+            'order_id' => $payment->getOrderId(),
+            'upi_link' => $createUpiLink,
+            'amount' => $payment->order->getAmount(),
+            'currency' => $payment->order->getCurrency(),
+            'expire_by' => $expiryAt,
+            'description' => "Retry your failed payment now",
+            'reference_id' => $payment->order->getReceipt(),
+            'customer' => [
+                "contact" => $payment->getContact(),
+                "email" => $payment->getEmail(),
+            ],
+            "notify" => [
+                "sms" => true,
+                "email" => false
+            ],
+            "notes" => $payment->order->getNotes(),
+            "options" => [
+                "hosted_page" => [
+                    "title" => $title,
+                    "label" => [
+                        "description" => "",
+                    ],
+                    "show_expire_countdown" => true,
+                ],
+            ],
+        ];
+
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SUCCESS, [ 'response' => $data]);
+
+        try {
+            $response = (new PaymentLinkService($this->app))->sendDirectRequestParams("v1/retry_payment_links", "POST", $payment->merchant, $data);
+
+            $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SUCCESS, [ 'response' => $response]);
+
+            return $response;
+        } catch (ServerErrorException $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_PAYMENT_PL_CREATION_FAILED
+            );
+            return null;
+        }
+    }
+
+    public function pushFailedPaymentToKafkaForPLCreation($payment)
+    {
+        $producerKey = $payment->getId();
+
+        $topic = env('REGISTER_PAYMENT_FAILED_SCHEDULER_EVENT');
+
+        $namespace = 'payment_failed_retry';
+
+        $paymentFailedConfig = (new Config\Core())->getPaymentFailedConfig($payment->getMerchantId());
+
+        if ($paymentFailedConfig === false or
+            (isset($paymentFailedConfig['retry_payment_links']) === false and
+                (isset($paymentFailedConfig['retry_payment_links']['send_after']) === false))
+        ) {
+            return false;
+        }
+
+        $data = [
+            Constants::NAMESPACE    => $namespace,
+            Constants::ENTITY_ID    => $payment->getId(),
+            Constants::ENTITY_TYPE  => 'payments',
+            Constants::REMINDER_DATA => [
+                Constants::CREATE_PL_AT      => Carbon::now()->addSeconds($paymentFailedConfig['retry_payment_links']['send_after'])->getTimestamp()
+            ],
+        ];
+
+        $message = [
+            Constants::KAFKA_MESSAGE_TASK_NAME => Constants::REGISTER_PAYMENT_FAILED_IN_SCHEDULER,
+            Constants::KAFKA_MESSAGE_DATA      => $data,
+        ];
+
+        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SUCCESS, ['msg' => $message]);
+
+        try
+        {
+            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_KAFKA_PUSH_SUCCESS,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'topic'         => $topic,
+                ]
+            );
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_FAILED_KAFKA_PUSH_SUCCESS, $payment);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_PAYMENT_PL_CREATION_FAILED
+            );
+
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_KAFKA_PUSH_FAILED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'topic'         => $topic,
+                ]
+            );
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_FAILED_KAFKA_PUSH_FAILED, $payment, $e);
+        }
+        return true;
     }
 }

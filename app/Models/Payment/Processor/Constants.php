@@ -41,15 +41,17 @@ class Constants
     const FORCE_AUTH_PAYMENT            = 'force_auth_payment';
 
     //kafka constants
-    const REGISTER_PAYMENT_IN_SCHEDULER   = 'register_payment_in_scheduler';
-    const KAFKA_MESSAGE_TASK_NAME         = 'task_name';
-    const KAFKA_MESSAGE_DATA              = 'data';
-    const NAMESPACE                       = 'namespace';
-    const ENTITY_ID                       = 'entity_id';
-    const ENTITY_TYPE                     = 'entity_type';
-    const REMINDER_DATA                   = 'reminder_data';
-    const VERIFY_AT                       = 'verify_at';
-    const VERIFY_SERVICE                  = 'verify_service';
+    const REGISTER_PAYMENT_IN_SCHEDULER                = 'register_payment_in_scheduler';
+    const KAFKA_MESSAGE_TASK_NAME                      = 'task_name';
+    const KAFKA_MESSAGE_DATA                           = 'data';
+    const NAMESPACE                                    = 'namespace';
+    const ENTITY_ID                                    = 'entity_id';
+    const ENTITY_TYPE                                  = 'entity_type';
+    const REMINDER_DATA                                = 'reminder_data';
+    const VERIFY_AT                                    = 'verify_at';
+    const VERIFY_SERVICE                               = 'verify_service';
+    const CREATE_PL_AT                                 = 'create_pl_at';
+    const REGISTER_PAYMENT_FAILED_IN_SCHEDULER         = 'register_payment_failed_in_scheduler';
 
     //Auto Refund Reasons
     const MERCHANT_AUTO_REFUND_DELAY            = 'Merchants auto_refund_delay %s has been set as refund_at value';

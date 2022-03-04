@@ -4537,6 +4537,18 @@ class Service extends Base\Service
         }
     }
 
+    public function reviveOrderViaPL($id)
+    {
+        $payment = $this->repo->payment->find($id);
+
+        if ($payment->hasOrder() == false || $payment->order->isPaid() == true)
+        {
+            return false;
+        }
+
+        return $this->core->createPaymentLinkToReviveOrder($payment);
+    }
+
     /**
      * Authorizes failed payment based on ART input
      * [force_authorize_failed,verify_authorize_failed]
@@ -4767,7 +4779,6 @@ class Service extends Base\Service
         }
 
         $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
-
         $successCount = 0;
         $failedCount = 0;
 

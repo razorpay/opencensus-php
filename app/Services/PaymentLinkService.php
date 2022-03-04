@@ -297,6 +297,55 @@ class PaymentLinkService
         return $response;
     }
 
+    public function sendDirectRequestParams(string $path, string $method, $merchant, $body)
+    {
+        $url = $this->baseUrl . $path;
+
+        $headers = [
+            'Accept'            => self::CONTENT_TYPE_JSON,
+            'Content-Type'      => self::CONTENT_TYPE_JSON
+        ];
+
+        $headers['X-Razorpay-MerchantId'] = $merchant->getId();
+
+        $enabledFeatures = $merchant->getEnabledFeatures();
+
+        $headers['X-Razorpay-Merchant-Features'] = json_encode($enabledFeatures);
+
+        $headers['X-Razorpay-Mode']       = $this->ba->getMode();
+
+        $requestBody = [];
+
+        if ((empty($body) === false) && ($method !== Request::METHOD_GET))
+        {
+            $requestBody = json_encode($body);
+        }
+
+        $options = [
+            'timeout' => $this->timeOut,
+            'auth'    => [$this->key, $this->secret],
+        ];
+
+        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => $url]);
+
+        $params = [
+            'url'     => $url,
+            'headers' => $headers,
+            'data'    => $requestBody,
+            'options' => $options,
+            'method'  => $method,
+        ];
+
+        $response = \Requests::request(
+            $params['url'],
+            $params['headers'],
+            $params['data'],
+            $params['method'],
+            $params['options']);
+
+        return $this->parseAndReturnResponse($response);
+    }
+
     protected function getHeaders(\Illuminate\Http\Request $request): array
     {
         $headers = [

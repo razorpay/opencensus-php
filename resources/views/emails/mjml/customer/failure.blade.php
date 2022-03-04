@@ -370,6 +370,67 @@
       </table>
 
     </div>
+
+    @if($payment['retry_payment_link']['enable'] == true)
+        <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+          <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+              <tbody>
+              <tr>
+                  <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                      <div class="mj-column-per-100 outlook-group-fix"
+                           style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                              <tbody>
+                              <tr>
+                                  <td style="vertical-align:top;padding:0px;">
+
+                                      <div
+                                          style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+                                          <div class="card merchant-highlight informative"
+                                               style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
+                                              <div class="information-row"
+                                                   style="font-size: 14px; line-height: 1.5; width: 100%; box-sizing: border-box; padding-left: 9.3%;">
+                                                  <div class="center-align" style="text-align: center;">
+                                                      <div class="para para-banner para-light"
+                                                           style="margin: 0; font-size: 16px; line-height: 1.5; color: #7B8199;">
+                                                          <div style="font-size: 14px;">
+                                                              You can also complete your order using the below payment link.
+                                                          </div>
+                                                          <hr style="opacity: 0.2; margin: 16px 0;">
+                                                      </div>
+                                                  </div>
+                                                  <div class="label"
+                                                       style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                      <label style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; color: #9B9B9B; font-weight: bold; text-transform: uppercase;">AMOUNT PAYABLE</label>
+                                                      <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; font-weight: bold; font-size: 18px;">
+                                                          {{ $payment['retry_payment_link']['amount'] }}
+                                                      </div>
+                                                  </div>
+                                                  <div class="value" style="color: #515978; display: inline-block; max-width: 50%;">
+                                                      <a class="footer--cta" href="{{ $payment['retry_payment_link']['short_link'] }}" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; padding: 9px 15px; display: inline-block; border-radius: 4px; white-space: nowrap; cursor: pointer; color: {{ $merchant['contrast_color'] }}; background-color: {{ $merchant['brand_color'] }}; border: 1px solid {{ $merchant['brand_color'] }};">
+                                                          PROCEED TO PAY
+                                                      </a>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+
+                                  </td>
+                              </tr>
+                              </tbody>
+                          </table>
+
+                      </div>
+                  </td>
+              </tr>
+              </tbody>
+          </table>
+
+      </div>
+    @endif
+
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>

@@ -646,6 +646,13 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function reviveOrderViaPL($id)
+    {
+        $data = $this->service()->reviveOrderViaPL($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function paymentsCardEsSyncCron()
     {
         $input = Request::all();

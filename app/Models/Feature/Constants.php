@@ -1043,6 +1043,11 @@ class Constants
     const ALLOW_NETWORK_TOKENS = 'allow_network_tokens';
 
     /**
+     * Feature flag to allow creation of Payment Links for missed orders via Payment Gateway (via Orders API)
+     */
+    const MISSED_ORDERS_PLINK = 'missed_orders_plink';
+
+    /**
      * Feature flag to onboard merchants on network tokenization in live mode
      */
     const ONBOARD_TOKENIZATION = 'onboard_tokenization';
@@ -1623,6 +1628,7 @@ class Constants
         self::BENE_EMAIL_NOTIFICATION         => true,
         self::BENE_SMS_NOTIFICATION           => true,
         self::ALLOW_NETWORK_TOKENS            => true,
+        self::MISSED_ORDERS_PLINK             => true,
         self::DISABLE_PAYPAL_AS_BACKUP        => true,
         self::PAYOUT_ASYNC_INGRESS            => true,
         self::ONE_CLICK_CHECKOUT              => true,
@@ -2447,6 +2453,7 @@ class Constants
         self::SETTLEMENTS_SMS_STOP,
         self::COVID_19_RELIEF,
         self::CRED_MERCHANT_CONSENT,
+        self::MISSED_ORDERS_PLINK,
         self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_COUPONS,
         self::ONE_CC_MANDATORY_LOGIN,

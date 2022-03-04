@@ -196,6 +196,7 @@ class Route
         'payment_cancel'                           => ['get',      'payments/{x_entity_id}/cancel',                  'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                 => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_fix_attempted_orders'             => ['post',     'payments/fix_attempted_orders',                  'PaymentController@postFixAttemptedOrders'                          ],
+        'payment_order_revive'                     => ['get',      'payments/{id}/revive',                           'PaymentController@reviveOrderViaPL'                                ],
         'payment_fix_authorize_at'                 => ['post',     'payments/fix_authorized_at',                     'PaymentController@postFixAuthorizedAt'                             ],
         'internal_payment_authorize_refund'        => ['post',     'internal/payments/{id}/authorize_refund',         'PaymentController@postRefundAuthorizedInternal'                            ],
         'payment_authorize_refund'                 => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
@@ -3890,6 +3891,7 @@ class Route
     public static $internal = [
         'upi_transfer_process_internal',
         'payment_callback_bharatqr_internal',
+        'payment_order_revive',
         'm2m_referral_link_get_public',
         'payout_links_customer_hosted_page_data',
         'payout_links_customer_hosted_page_demo_data',
@@ -12056,6 +12058,7 @@ class Route
             'api_entity_fetch',
             'internal_order_update',
             'internal_transactions',
+            'payment_order_revive',
             'payment_verify_new',
             'internal_merchant_fetch',
             'payment_notify',

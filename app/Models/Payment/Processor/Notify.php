@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
-use RZP\Events\Event;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Reward\RewardCoupon\Core as RewardCouponCore;
@@ -19,9 +18,7 @@ use RZP\Models\Base\Utility;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
-use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Email as MerchantEmail;
-use RZP\Models\Currency\DCC as Dcc;
 use RZP\Models\Reward\Repository as RewardRepository;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 
@@ -530,6 +527,44 @@ class Notify
      */
     protected function templateData()
     {
+        $failedPaymentLink = [
+            'enable'   => false,
+        ];
+
+        if (
+            ($this->payment->isFailed() == true) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::MISSED_ORDERS_PLINK) == true)
+        )
+        {
+            $failedPaymentConfig = (new Payment\Config\Core())->getPaymentFailedConfig($this->merchant->getId());
+
+            if (
+                (isset($failedPaymentConfig['retry_payment_links']) == false) or
+                (isset($failedPaymentConfig['retry_payment_links']['send_after']) == false) or
+                ($failedPaymentConfig['retry_payment_links']['send_after'] == null) or
+                ($failedPaymentConfig['retry_payment_links']['send_after'] == "")
+            )
+            {
+                $response = (new Payment\Core())->createPaymentLinkToReviveOrder($this->payment);
+
+                if (
+                    ($response !== null) and
+                    (isset($response['short_url']) == true)
+                )
+                {
+                    $failedPaymentLink['enable'] = true;
+
+                    $failedPaymentLink['short_link'] = $response['short_url'];
+
+                    $failedPaymentLink['amount'] = $this->payment->getFormattedAmount();
+                }
+                else
+                {
+                    $failedPaymentLink['enable'] = false;
+                }
+            }
+        }
+
         $data  = [
             'customer'  => [
                 'email' => $this->payment->getEmail(),
@@ -565,7 +600,8 @@ class Notify
                 'risk'                 => $this->merchant->getRiskRating(),
 
                 'dcc'                  => ($this->payment->isDCC() and $this->merchant->isDCCMarkupVisible()),
-                'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC())
+                'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC()),
+                'retry_payment_link'   => $failedPaymentLink,
             ],
             'org'       => [
                 'id'                   => $this->merchant->getOrgId(),
