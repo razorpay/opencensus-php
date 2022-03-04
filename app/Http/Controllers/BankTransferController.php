@@ -28,7 +28,18 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
+        $this->trace->info(TraceCode::BANK_TRANSFER_YES_BANK_VA_INPUT, [
+            Entity::INPUT           => $input,
+            Entity::REQUEST_SOURCE  => Entity::INPUT,
+            Entity::GATEWAY         => Provider::YESBANK,
+        ]);
+
         $response = $this->service()->saveRequestAndProcess($input, null, false, $input);
+
+        $this->trace->info(TraceCode::BANK_TRANSFER_YES_BANK_VA_RESPONSE, [
+            Entity::GATEWAY         => Provider::YESBANK,
+            "response"              => $response
+        ]);
 
         return ApiResponse::json($response);
     }
@@ -64,6 +75,12 @@ class BankTransferController extends Controller
         ]);
 
         $response = $this->service()->saveRequestAndProcess($input, Provider::ICICI, true, $input);
+
+        $this->trace->info(TraceCode::ICICI_VA_MIS_RESPONSE, [
+            "response"              => $input,
+            Entity::REQUEST_SOURCE  => Entity::FILE,
+            Entity::GATEWAY         => Provider::ICICI,
+        ]);
 
         return ApiResponse::json($response);
     }
@@ -493,6 +510,12 @@ class BankTransferController extends Controller
         $input['status'] = $statusCode === 200 ? 'ACCEPT' : 'REJECT';
 
         $input['reject_reason'] = $failureReason;
+
+        $this->trace->info(TraceCode::ICICI_VA_CALLBACK_RESPONSE, [
+            "response"             =>   $input,
+            "status_code"          =>   $statusCode,
+            Entity::GATEWAY        =>   Provider::ICICI,
+        ]);
 
         return ApiResponse::json(['Virtual_Account_Number_Verification_OUT' =>
             [

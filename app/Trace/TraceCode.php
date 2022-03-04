@@ -1571,7 +1571,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_SAVE_REQUEST                            = 'BANK_TRANSFER_SAVE_REQUEST';
     const BANK_TRANSFER_REQUEST_SAVED                           = 'BANK_TRANSFER_REQUEST_SAVED';
     const BANK_TRANSFER_SAVE_REQUEST_FAILED                     = 'BANK_TRANSFER_SAVE_REQUEST_FAILED';
+    const BANK_TRANSFER_YES_BANK_VA_INPUT                       = 'BANK_TRANSFER_YES_BANK_VA_INPUT';
+    const BANK_TRANSFER_YES_BANK_VA_RESPONSE                    = 'BANK_TRANSFER_YES_BANK_VA_RESPONSE';
     const ICICI_VA_MIS                                          = 'ICICI_VA_MIS';
+    const ICICI_VA_MIS_RESPONSE                                 = 'ICICI_VA_MIS_RESPONSE';
 
     const BANK_TRANSFER_PROCESS_SQS_PUSH_INIT                   = 'BANK_TRANSFER_PROCESS_SQS_PUSH_INIT';
     const BANK_TRANSFER_PROCESS_SQS_PUSH_FAILED                 = 'BANK_TRANSFER_PROCESS_SQS_PUSH_FAILED';
@@ -4923,6 +4926,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // ICICI Integration
     const ICICI_VA_CALLBACK                                     = 'ICICI_VA_CALLBACK';
+    const ICICI_VA_CALLBACK_RESPONSE                            = 'ICICI_VA_CALLBACK_RESPONSE';
 
     const PROCESS_PENDING_BANK_TRANSFER_INPUT                   = 'PROCESS_PENDING_BANK_TRANSFER_INPUT';
 
