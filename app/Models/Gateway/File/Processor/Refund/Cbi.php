@@ -37,6 +37,11 @@ class Cbi extends Base
         {
             $from_account_number = str_pad(Config::get('gateway.mozart.netbanking_cbi.account_number'), 17, "0", STR_PAD_LEFT);
 
+            if ($row['terminal']['tpv'] === 1)
+            {
+                $from_account_number = str_pad(Config::get('gateway.mozart.netbanking_cbi.account_number_tpv'), 17, "0", STR_PAD_LEFT);
+            }
+
             $to_account_number = str_pad(substr($this->fetchBankAccountNumber($row), 3), 17, "0", STR_PAD_LEFT);
 
             $narration_text = str_pad($row['merchant']->getFilteredDba(), 50, " ", STR_PAD_RIGHT);

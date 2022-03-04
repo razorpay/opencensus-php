@@ -889,6 +889,7 @@ return [
         ],
         'netbanking_cbi' => [
             'account_number'         => env('CBI_NODAL_ACCOUNT_NUMBER'),
+            'account_number_tpv'     => env('CBI_TPV_POOL_ACCOUNT_NUMBER'),
         ],
         'razorpayx' => [
             'direct' => [
