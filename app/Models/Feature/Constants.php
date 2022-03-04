@@ -767,7 +767,7 @@ class Constants
     const AUTOMATED_LOC_ELIGIBLE = 'automated_loc_eligible';
 
     const TRANSFER_SETTLED_WEBHOOK          = 'transfer_settled_webhook';
-    const TRANSFER_FAILED_WEBHOOK           = 'transfer_failed_webhook';
+
     const LA_BANK_ACCOUNT_UPDATE            = 'la_bank_account_update';
 
     const REWARD_MERCHANT_DASHBOARD        = 'reward_merchant_dashboard';
@@ -1161,8 +1161,6 @@ class Constants
      * Feature flag to add virtual account expiry
      */
     const SET_VA_DEFAULT_EXPIRY = 'set_va_default_expiry';
-    // Feature to take mutex lock on linked account ID before transfer processing.
-    const TRANSFER_PROCESS_LA_MUTEX = 'transfer_process_la_mutex';
 
 
     /**
@@ -1533,7 +1531,6 @@ class Constants
         self::LOGOUT_ADMIN_INACTIVITY         => true,
         self::ORG_SECOND_FACTOR_AUTH         => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
-        self::TRANSFER_FAILED_WEBHOOK         => true,
         self::LA_BANK_ACCOUNT_UPDATE          => true,
         self::P2P_UPI                         => true,
         self::PAYPAL_GTM_NOTIFICATION         => true,
@@ -1661,7 +1658,6 @@ class Constants
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,
-        self::TRANSFER_PROCESS_LA_MUTEX       => true,
         self::FAIL_VA_ON_VALIDATION           => true,
         self::AUTHORIZE_VIA_AUTHZ             => true,
         self::SR_SENSITIVE_BUCKET_1           => true,
@@ -2110,11 +2106,6 @@ class Constants
             'display_name'  => 'transfer.settled webhook',
             'documentation' => '',
         ],
-        self::TRANSFER_FAILED_WEBHOOK => [
-            'feature'       => self::TRANSFER_FAILED_WEBHOOK,
-            'display_name'  => 'transfer.failed webhook',
-            'documentation' => '',
-        ],
         self::LA_BANK_ACCOUNT_UPDATE => [
             'feature'       => self::LA_BANK_ACCOUNT_UPDATE,
             'display_name'  => 'la_bank_account_update',
@@ -2353,11 +2344,6 @@ class Constants
         self::DISABLE_COLLECT_CONSENT => [
             'feature'       => self::DISABLE_COLLECT_CONSENT,
             'display_name'  => 'Disable tokenisation consent collection by Razorpay',
-            'documentation' => '',
-        ],
-        self::TRANSFER_PROCESS_LA_MUTEX => [
-            'feature'       => self::TRANSFER_PROCESS_LA_MUTEX,
-            'display_name'  => 'Mutex lock on linked account ID before transfer processing',
             'documentation' => '',
         ],
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB => [

@@ -2154,11 +2154,6 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::AGGREGATOR));
     }
 
-    public function hasTransferFailedWebhookFeature()
-    {
-        return ($this->isFeatureEnabled(Feature\Constants::TRANSFER_FAILED_WEBHOOK));
-    }
-
     public function hasOptionalSubmerchantEmailFeature(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::ALLOW_SUBMERCHANT_WITHOUT_EMAIL));
