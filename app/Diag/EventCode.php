@@ -625,6 +625,11 @@ class EventCode
         'name'  => 'act.change_activation_flow.success',
     ];
 
+    const NO_DOC_SUBMERCHANT_ONBOARDING_FAILED = [
+        'group' => 'onboarding',
+        'name'  => 'no_doc.submerchant_onboarding.failed',
+    ];
+
     const KYC_FORM_SUBMIT_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'kyc.form_submit.success',

@@ -6,6 +6,7 @@ use Request;
 use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Feature;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
@@ -172,9 +173,13 @@ class Core extends Merchant\Core
             }
             else
             {
-                throw new Exception\BadRequestException(
+                $ex = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_SUBM_NO_DOC_ONBOARDING_NOT_ENABLED_FOR_PARTNER
                 );
+
+                $this->app['diag']->trackOnboardingEvent(EventCode::NO_DOC_SUBMERCHANT_ONBOARDING_FAILED, $this->merchant, $ex);
+
+                throw $ex;
             }
         }
 
