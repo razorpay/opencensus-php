@@ -60,6 +60,18 @@
       "description": "Payout timed out at partner bank. Please retry after 30 min."
     }
   },
+  "PBANK_REQUEST_NOT_FOUND": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout pending at partner bank. Status will be updated after 48 working hours."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_timeout",
+      "description": "Payout timed out at partner bank. Please retry after 30 min."
+    }
+  },
   "TXN_REJECTED": {
     "failed": {
       "source": "beneficiary_bank",

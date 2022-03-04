@@ -143,6 +143,7 @@ class ErrorCodeMapping
         'AUTHENTICATION_FAILED'                 => 'Payout failed. Contact support for help.',
         'RETURNED'                              => 'Payout failed. Contact support for help.',
         'REQUEST_NOT_FOUND'                     => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
+        'PBANK_REQUEST_NOT_FOUND'               => 'Temporary Issue at Partner bank. Reinitiate transfer after 30 min.',
         'PBANK_CBS_REJECTED'                    => 'Issue at partner bank. Reinitiate transfer after 30 min',
         'INVALID_IFSC'                          => 'IFSC Code is Not Valid. Please check and retry.',
         'MERCHANT_INVALID_TXN_DETAILS'          => 'Narration provided is not supported. Please check and retry.',
