@@ -53,7 +53,7 @@ class DatabaseEventListener
                 TraceCode::DB_QUERY_EXECUTION_LOG,
                 [
                     'application' => 'api',
-                    'route'      => $this->app['request.ctx']->getRoute() ?? $this->$app['worker.ctx']->getJobName(),
+                    'route'      => $this->app['request.ctx']->getRoute() ?? $this->app['worker.ctx']->getJobName(),
                     'connection' => $event->connectionName,
                     'query'      => $event->sql,
                     'bindings'   => $event->bindings,
