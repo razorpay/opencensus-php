@@ -1915,14 +1915,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The requested feature is unavailable.',
+                    'description' => 'You cannot change the value of this feature',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
         ],
     ],
 
@@ -1942,14 +1942,106 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'features' => [
-
-                ]
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You cannot change the value of this feature',
+                ],
             ],
+            'status_code' => 400,
         ],
-        'status_code' => 200,
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
     ],
 
+    'testAddRestrictedFeatureSkipWFAtPayouts' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'skip_wf_at_payouts' => 1
+                ],
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You cannot change the value of this feature',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+    'testAddRestrictedFeatureSkipWFForPayroll' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'skip_wf_for_payroll' => 1
+                ],
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You cannot change the value of this feature',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+
+    'testAddRestrictedFeatureNewBankingError' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'new_banking_error' => 1
+                ],
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'You cannot change the value of this feature',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
     'testAddSkipWorkflowPayoutSpecificFeatureToMerchant' => [
         'request'   => [
             'content' => [

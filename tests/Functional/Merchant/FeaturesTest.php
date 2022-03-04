@@ -2732,6 +2732,45 @@ Regards,
         $this->startTest();
     }
 
+    public function testAddRestrictedFeatureSkipWFAtPayouts()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAddRestrictedFeatureSkipWFForPayroll()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAddRestrictedFeatureNewBankingError()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->startTest();
+    }
+
     public function testAddFeatureSkipWorkflowPayoutSpecificAsMerchantTreatmentEnabled()
     {
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
@@ -2756,28 +2795,7 @@ Regards,
             'business_type' => 2
         ]);
 
-        $response = $this->startTest();
-
-        $features = $response['features'];
-
-        $check = false;
-
-        foreach ($features as $feature)
-        {
-            if ($feature['feature'] === Constants::SKIP_WF_AT_PAYOUTS)
-            {
-                $this->assertTrue($feature['value']);
-
-                $this->assertEquals(
-                    Constants::$visibleFeaturesMap[Constants::SKIP_WF_AT_PAYOUTS]['display_name'],
-                    $feature['display_name']
-                );
-
-                $check = true;
-            }
-        }
-
-        $this->assertTrue($check);
+        $this->startTest();
     }
 
     public function testAddSkipWorkflowPayoutSpecificFeatureToMerchant()
