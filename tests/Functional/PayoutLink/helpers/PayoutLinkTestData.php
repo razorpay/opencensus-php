@@ -2747,8 +2747,8 @@ return [
         'response' => [
             'status_code' => 200,
             'content'     => [
-                'count'        => 5,
-                'total_amount' => 500000,
+                'count'        => 0,
+                'total_amount' => 0,
             ],
         ]
     ],
@@ -2808,5 +2808,433 @@ return [
             'status_code' => 200,
             'content'     => [],
         ]
-    ]
+    ],
+
+    'testBulkRejectTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/reject/bulk',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testBulkApproveOtpTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/approve/bulk/otp',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testBulkApproveTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/approve/bulk',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testApprovePayoutLinkTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testRejectPayoutLinkTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/reject',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testApproveOtpTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/poutlk_12345/approve/otp',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ]
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testGetSettingsTestMode' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/10000000000000/settings',
+            'content' => []
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'IMPS' => false,
+                'UPI' => true,
+                'AMAZONPAY' => true,
+            ],
+        ]
+    ],
+
+    'testUpdateSettingsTestMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/10000000000000/settings',
+            'content' => []
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'IMPS' => true,
+                'UPI' => true,
+                'AMAZONPAY' => true,
+            ],
+        ]
+    ],
+
+    'testCancelTestModeWithProxyAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_1234/cancel',
+            'content' => []
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'contact_id'   => '1000010contact',
+                'amount'       => 1000,
+                'user_id'      => null,
+                'currency'     => 'INR',
+                'description'  => 'This is a test payout',
+                'purpose'      => 'refund',
+                'receipt'      => 'Test Payout Receipt',
+                'notes'        => [
+                    'hi' => 'hello'
+                ],
+                'short_url'    => 'http=>//76594130.ngrok.io/i/mGs4ehe',
+                'status'       => 'cancelled',
+                'created_at'   => 1575367399,
+                'cancelled_at' => 1575367499,
+            ],
+        ]
+    ],
+
+    'testFetchPayoutLinkByIdTestMode' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/poutlk_1234',
+            'content' => []
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'contact_id'   => '1000010contact',
+                'amount'       => 1000,
+                'user_id'      => null,
+                'currency'     => 'INR',
+                'description'  => 'This is a test payout',
+                'purpose'      => 'refund',
+                'receipt'      => 'Test Payout Receipt',
+                'notes'        => [
+                    'hi' => 'hello'
+                ],
+                'short_url'    => 'http=>//76594130.ngrok.io/i/mGs4ehe',
+                'status'       => 'issued',
+                'created_at'   => 1575367399,
+                'cancelled_at' => null,
+            ],
+        ]
+    ],
+
+    'testBulkResendNotificationTestMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/bulk-resend-notification',
+            'content' => []
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testBulkResendNotificationLiveMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/bulk-resend-notification',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'payout_link_ids' => 'poutlk_4eWc1vLJKgR2hE,poutlk_4KGz1vLJNkQ79k',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                "success_payout_link_ids" => "poutlk_4eWc1vLJKgR2hE",
+                "failed_payout_link_ids" => "poutlk_4KGz1vLJNkQ79k"
+            ],
+        ]
+    ],
+
+    'testCancelTestModeWithPrivateAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_1234/cancel',
+            'content' => []
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'contact_id'   => '1000010contact',
+                'amount'       => 1000,
+                'user_id'      => null,
+                'currency'     => 'INR',
+                'description'  => 'This is a test payout',
+                'purpose'      => 'refund',
+                'receipt'      => 'Test Payout Receipt',
+                'notes'        => [
+                    'hi' => 'hello'
+                ],
+                'short_url'    => 'http=>//76594130.ngrok.io/i/mGs4ehe',
+                'status'       => 'cancelled',
+                'created_at'   => 1575367399,
+                'cancelled_at' => 1575367499,
+            ],
+        ]
+    ],
+
+    'testGenerateAndSendCustomerOtpTestMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_12345678912345/generate-customer-otp',
+            'content' => [
+                'context' => 'some-context',
+            ],
+            'headers' => [
+                'X-Razorpay-Mode' => 'test',
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'Test Mode is currently not supported for Payout Links'
+                ]
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+        ]
+    ],
+
+    'testGenerateAndSendCustomerOtpLiveModeWithOutModeHeader' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_12345678912345/generate-customer-otp',
+            'content' => [
+                'context' => 'some-context',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'success' => 'ok'
+            ],
+        ]
+    ],
+
+    'testGenerateAndSendCustomerOtpLiveModeWithModeHeader' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/poutlk_12345678912345/generate-customer-otp',
+            'content' => [
+                'context' => 'some-context',
+            ],
+            'headers' => [
+                'X-Razorpay-Mode' => 'live',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'success' => 'ok'
+            ],
+        ]
+    ],
+
+    'testGetHostedPageDataWithIssuedLinkForAppAuthInTestMode' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/poutlk_12345/view-data',
+            'headers' => [
+                'X-Razorpay-Mode' => 'test',
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status' => 'issued',
+                'userDetails' => [
+                    'name' => 't***',
+                    'maskedEmail' => 't***@g***l.com'
+                ],
+                'amount' => '100',
+                'supportDetails' => [
+                    'supportEmail' => '',
+                ],
+            ],
+        ]
+    ],
+
+    'testGetStatusPayoutLinkTestMode' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/poutlk_12345678954321/status',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'status'    => 'issued'
+            ]
+        ]
+    ],
+
+    'testGetStatusPayoutLinkLiveMode' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payout-links/poutlk_12345678954321/status',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'status'    => 'issued'
+            ]
+        ]
+    ],
+
+    'testExpireCallbackForCancellingReminderTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/test/expire-callback/1234',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'BAD_REQUEST_REMINDER_NOT_APPLICABLE'
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
+        ]
+    ],
+
+    'testExpireCallbackForContinueReminderTestMode' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/test/expire-callback/1234',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchIntegrationDetailsTestMode' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/_meta/integration-details',
+            'content' => [
+                'source' => 'shopify',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'integration_status' => 'not-initiated',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

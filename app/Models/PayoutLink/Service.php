@@ -485,7 +485,6 @@ class Service extends Base\Service
         {
             return $this->core->getSettings($this->merchant);
         }
-
         return $this->app['payout-links']->getSettings($this->merchant->getPublicId());
     }
 
@@ -585,7 +584,7 @@ class Service extends Base\Service
                 {
                     $payout = $payouts['items'][0];
 
-                    $payout = $this->repo->payout->findByPublicId($payout['id']);
+                    $payout = $this->repo->payout->connection($mode)->findByPublicId($payout['id']);
                 }
             }
         }
@@ -633,21 +632,8 @@ class Service extends Base\Service
     public function getModeAndMerchant(string $payoutLinkId)
     {
         $entityClass = E::getEntityClass('payout_link');
-        $entityId    = $entityClass::verifyIdAndSilentlyStripSign($payoutLinkId);
 
-        // Try to retrieve merchant using LIVE mode
-        $mode     = Mode::LIVE;
-        $merchant = optional($this->repo->payout_link->connection($mode)->find($entityId))->merchant;
-
-        // If we fail to retrieve merchant, try using TEST mode
-        if ($merchant === null)
-        {
-            $mode     = Mode::TEST;
-            $merchant = optional($this->repo->payout_link->connection($mode)->find($entityId))->merchant;
-        }
-
-        if ($merchant != null)
-            return [$mode, $merchant];
+        $entityClass::verifyIdAndSilentlyStripSign($payoutLinkId);
 
         list($mode, $merchantId) =  $this->app['payout-links']->getModeAndMerchant($payoutLinkId);
 
@@ -655,7 +641,7 @@ class Service extends Base\Service
 
         if ($merchant === null)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, ['attributes' => $entityId]);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, ['attributes' => $payoutLinkId]);
         }
 
         return [$mode, $merchant];

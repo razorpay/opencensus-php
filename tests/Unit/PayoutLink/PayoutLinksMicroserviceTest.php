@@ -19,7 +19,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         parent::setUp();
     }
 
-    protected function setUpMocksAndFeature(string $methodName) : array
+    protected function setUpMocksAndFeature(string $methodName, string $mode = Mode::LIVE) : array
     {
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -30,6 +30,8 @@ class PayoutLinkMicroserviceTest extends TestCase
         $auth = $this->app['basicauth'];
 
         $this->app->instance('basicauth', $auth);
+
+        $this->app->instance('rzp.mode', $mode);
 
         $merchant = $this->fixtures->create('merchant',
             [
@@ -154,18 +156,14 @@ class PayoutLinkMicroserviceTest extends TestCase
 
     public function testCancelPLForTestMode()
     {
-        $result = $this->setUpMocksAndFeatureForTestMode();
+        $result = $this->setUpMocksAndFeature('cancel', 'test');
 
         $this->ba->privateAuth();
 
-        try
-        {
-            $result['service']->cancel('');
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
+        $result['service']->cancel('');
+
+        // assert that the microservice method was called when feature was enabled
+        $result['mock']->shouldHaveReceived('cancel');
     }
 
     public function testFetch()
@@ -182,18 +180,13 @@ class PayoutLinkMicroserviceTest extends TestCase
 
     public function testFetchForTestMode()
     {
-        $result = $this->setUpMocksAndFeatureForTestMode();
+        $result = $result = $this->setUpMocksAndFeature('fetch', 'test');
 
         $this->ba->privateAuth();
 
-        try
-        {
-            $result['service']->fetchMerchantSpecific('', []);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
+        $result['service']->fetchMerchantSpecific('', []);
+
+        $result['mock']->shouldHaveReceived('fetch');
     }
 
     public function testFetchMultiple()
@@ -210,18 +203,14 @@ class PayoutLinkMicroserviceTest extends TestCase
 
     public function testFetchMultipleForTestMode()
     {
-        $result = $this->setUpMocksAndFeatureForTestMode();
+        $result = $this->setUpMocksAndFeature('fetchMultiple', 'test');
 
         $this->ba->privateAuth();
 
-        try
-        {
-            $result['service']->fetchMultipleMerchantSpecific([], "");
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
+        $result['service']->fetchMultipleMerchantSpecific([], "");
+
+        // assert that the microservice method was called when feature was enabled
+        $result['mock']->shouldHaveReceived('fetchMultiple');
     }
 
     public function testInitiate()
@@ -320,16 +309,12 @@ class PayoutLinkMicroserviceTest extends TestCase
 
     public function testSummaryForTestMode()
     {
-        $result = $this->setUpMocksAndFeatureForTestMode();
+        $result = $this->setUpMocksAndFeature('summary', 'test');
 
-        try
-        {
-            $result['service']->summary([]);
-        }
-        catch(\Exception $e)
-        {
-            $this->assertExceptionClass($e, Exception\BadRequestException::class);
-        }
+        $result['service']->summary([]);
+
+        // assert that the microservice method was called when feature was enabled
+        $result['mock']->shouldHaveReceived('summary');
     }
 
     public function testGetBatchSummary()
@@ -375,6 +360,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(true);
         $mock->method("getKeylessHeader")
             ->willReturn(null);
+        $mock->method("getModeForPublicPage")
+            ->willReturn('live');
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
         $this->assertTrue($data['allow_upi']);
@@ -412,6 +399,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(true);
         $mock->method("getKeylessHeader")
             ->willReturn(null);
+        $mock->method("getModeForPublicPage")
+            ->willReturn('live');
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
         $this->assertFalse($data['allow_amazon_pay']);
@@ -448,6 +437,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(true);
         $mock->method("getKeylessHeader")
             ->willReturn(null);
+        $mock->method("getModeForPublicPage")
+            ->willReturn('live');
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
         $this->assertFalse($data['allow_amazon_pay']);
@@ -487,6 +478,8 @@ class PayoutLinkMicroserviceTest extends TestCase
             ->willReturn(true);
         $mock->method("getKeylessHeader")
             ->willReturn(null);
+        $mock->method("getModeForPublicPage")
+            ->willReturn('live');
 
 
         $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
@@ -499,6 +492,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $trace = \Mockery::mock('RZP\Trace\Trace');
         $trace->shouldReceive("info");
         $this->app->instance("trace", $trace);
+        $this->app->instance("rzp.mode", 'live');
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
@@ -522,6 +516,7 @@ class PayoutLinkMicroserviceTest extends TestCase
         $trace = \Mockery::mock('RZP\Trace\Trace');
         $trace->shouldReceive("info");
         $this->app->instance("trace", $trace);
+        $this->app->instance("rzp.mode", "live");
         $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
             ->enableOriginalConstructor()
             ->setConstructorArgs([$this->app])
@@ -1003,6 +998,9 @@ class PayoutLinkMicroserviceTest extends TestCase
 
         $mock->method('getKeylessHeader')
             ->willReturn(null);
+
+        $mock->method('getModeForPublicPage')
+            ->willReturn('live');
 
         $data = $mock->getHostedPageData($payoutLinkId, $this->getMerchantEntity($merchantId));
 

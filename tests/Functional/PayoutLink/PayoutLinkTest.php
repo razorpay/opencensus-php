@@ -2363,7 +2363,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -2380,7 +2380,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -2399,7 +2399,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3185,14 +3185,14 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
 
-    private function prepareBankingAccountData($merchantId)
+    private function prepareBankingAccountData($merchantId, $mode = 'live')
     {
-        $xBalance1 = $this->fixtures->create('balance',
+        $xBalance1 = $this->fixtures->on($mode)->create('balance',
             [
                 'merchant_id'       => $merchantId,
                 'type'              => 'banking',
@@ -3201,7 +3201,7 @@ class PayoutLinkTest extends TestCase
                 'balance'           => 300,
             ]);
 
-        return $this->fixtures->create('banking_account', [
+        return $this->fixtures->on($mode)->create('banking_account', [
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
             'merchant_id'           => $merchantId,
@@ -3240,7 +3240,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3274,7 +3274,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3308,7 +3308,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3342,7 +3342,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3376,7 +3376,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3410,7 +3410,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3444,7 +3444,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3478,7 +3478,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->payoutLinksCustomerPageAuth();
+        $this->ba->payoutLinksCustomerPageAuth('live');
 
         $this->startTest();
     }
@@ -3513,6 +3513,15 @@ class PayoutLinkTest extends TestCase
         return $plMock;
     }
 
+    protected function getPlMockForTestMode(string $message)
+    {
+        return $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+    }
+
     protected function getMockedServiceMakeRequestSuccessResponse(array $successData)
     {
         $plMock = $this->getMockBuilder('RZP\Services\PayoutLinks')
@@ -3526,13 +3535,22 @@ class PayoutLinkTest extends TestCase
         return $plMock;
     }
 
+    protected function getMockedPlForTestMode()
+    {
+        return $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array('makeRequest'))
+            ->getMock();
+    }
+
     public function testApprovePayoutLinkInternalServerError()
     {
         $plMock = $this->getMockedServiceMakeRequestErrorResponse('The server encountered an unexpected condition which prevented it from fulfilling the request.');
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3543,7 +3561,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3554,7 +3572,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3565,7 +3583,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3576,7 +3594,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3587,7 +3605,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3598,7 +3616,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3642,8 +3660,8 @@ class PayoutLinkTest extends TestCase
     public function testWorkflowSummaryTestMode()
     {
         $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
-            'count'        => 5,
-            'total_amount' => 500000,
+            'count'        => 0,
+            'total_amount' => 0,
         ]);
 
         $this->app->instance('payout-links', $plMock);
@@ -3661,7 +3679,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3672,7 +3690,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3683,7 +3701,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3694,7 +3712,7 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
@@ -3705,10 +3723,355 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $this->startTest();
     }
 
+    public function testBulkRejectTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testBulkApproveOtpTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testBulkApproveTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutLinkTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutLinkTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testApproveOtpTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetSettingsTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'merchant_id' => '10000000000000',
+            'mode' => [
+                'IMPS' => '0',
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testUpdateSettingsTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'merchant_id' => '10000000000000',
+            'mode' => [
+                'IMPS' => '1',
+                'UPI' => '1',
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testCancelTestModeWithProxyAuth()
+    {
+        $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
+
+        $testData['send_sms'] = '1';
+
+        $testData['send_email'] = '0';
+
+        $testData['status'] = 'cancelled';
+
+        $testData['cancelled_at'] = 1575367499;
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse($testData);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutLinkByIdTestMode()
+    {
+        $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
+
+        $testData['send_sms'] = '0';
+
+        $testData['send_email'] = '0';
+
+        $testData['status'] = 'issued';
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse($testData);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testBulkResendNotificationTestMode()
+    {
+        $plMock = $this->getMockedPlForTestMode();
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testBulkResendNotificationLiveMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            "success_payout_link_ids" => "poutlk_4eWc1vLJKgR2hE",
+            "failed_payout_link_ids" => "poutlk_4KGz1vLJNkQ79k"
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testCancelTestModeWithPrivateAuth()
+    {
+        $testData = self::TEST_PAYOUT_LINK_PAYLOAD;
+
+        $testData['send_sms'] = '1';
+
+        $testData['send_email'] = '0';
+
+        $testData['status'] = 'cancelled';
+
+        $testData['cancelled_at'] = 1575367499;
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse($testData);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->privateAuth('rzp_test_TheTestAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testGenerateAndSendCustomerOtpTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'settings' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $this->fixtures->on('test')->create('merchant',
+            [
+                'id' => '12345678954321'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testGenerateAndSendCustomerOtpLiveModeWithOutModeHeader()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'settings' => [
+                'merchant_id' => '10000000000000',
+            ],
+            'success' => 'ok',
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $this->fixtures->on('live')->create('merchant',
+            [
+                'id' => '12345678954321'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testGenerateAndSendCustomerOtpLiveModeWithModeHeader()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'settings' => [
+                'merchant_id' => '10000000000000',
+            ],
+            'success' => 'ok',
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $this->fixtures->on('live')->create('merchant',
+            [
+                'id' => '12345678954321'
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testGetHostedPageDataWithIssuedLinkForAppAuthInTestMode()
+    {
+        $mid = '10000000000000';
+
+        $ba = $this->prepareBankingAccountData($mid, 'test');
+
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'payout_link_response' => [
+                'id' => '12345',
+                'merchant_id' => $mid,
+                'account_number' => $ba['account_number'],
+                'status' => 'issued',
+                'contact' => [
+                    'name' => 'test',
+                    'email' => 'test@gmail.com',
+                ],
+                'amount' => 100,
+                'currency' => 'INR',
+            ],
+            'settings' => [
+                'merchant_id' => $mid,
+                'mode' => [
+                    'support_email' => 'support@gmail.com'
+                ]
+            ],
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->payoutLinksCustomerPageAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testGetStatusPayoutLinkTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'status' => 'issued',
+            'send_sms' => '0',
+            'send_email' => '0',
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->publicAuth('rzp_test_TheTestAuthKey');
+
+        $this->startTest();
+
+    }
+
+    public function testGetStatusPayoutLinkLiveMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([
+            'status' => 'issued',
+            'send_sms' => '0',
+            'send_email' => '0',
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->publicAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+    }
+
+    public function testExpireCallbackForCancellingReminderTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestErrorResponse('BAD_REQUEST_REMINDER_NOT_APPLICABLE');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testExpireCallbackForContinueReminderTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse($this->mockedContinueReminderResponse());
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchIntegrationDetailsTestMode()
+    {
+        $plMock = $this->getMockedServiceMakeRequestSuccessResponse([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
 }
 

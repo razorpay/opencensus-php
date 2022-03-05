@@ -159,6 +159,13 @@ class PayoutLinks
     const X_SHOPIFY_API_VERSION                    = 'x_shopify_api_version';
     const X_SHOPIFY_WEBHOOK_ID                     = 'x_shopify_webhook_id';
 
+    const X_APP_MODE                               = 'X-App-Mode';
+
+    const POST                                     = 'POST';
+    const X_RAZORPAY_MODE                          = 'X-Razorpay-Mode';
+    const INTEGRATION_STATUS                       = 'integration_status';
+    const NOT_INITIATED                            = 'not-initiated';
+
     public static $statusValidForSupportDetailsInHostedPage = [
         self::STATUS_EXPIRED,
         self::STATUS_PENDING,
@@ -202,7 +209,20 @@ class PayoutLinks
         $this->app = $app;
     }
 
-    protected function isWorkflowEnabledForPLMerchant(string $merchantId) {
+    protected function getMode()
+    {
+        $mode = Mode::LIVE;
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $mode = $this->app['rzp.mode'];
+        }
+
+        return $mode;
+    }
+
+    protected function isWorkflowEnabledForPLMerchant(string $merchantId)
+    {
         // get pl_workflow_experiment_flag value
         $variant = $this->app['razorx']->getTreatment($merchantId,
             Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW,
@@ -213,8 +233,6 @@ class PayoutLinks
 
     public function create(MerchantEntity $merchant, array $input): array
     {
-        $this->rzpModeCheck($merchant->getId());
-
         $url = sprintf('%s/%s', $this->baseUrl, self::CREATE_PAYOUT_LINK_PATH);
 
         $sendSms = array_pull($input, self::SEND_SMS, "false");
@@ -242,7 +260,7 @@ class PayoutLinks
             self::IS_WORKFLOW_ENABLED           => $this->isWorkflowEnabledForPLMerchant($merchant->getId())
         ];
 
-        $response = $this->makeRequest($url, $input);
+        $response = $this->makeRequest($url, $input, [], self::POST, $this->getMode());
 
         $expandArray = [0 => self::USER];
 
@@ -275,6 +293,8 @@ class PayoutLinks
 
     public function approvePayoutLink(string $payoutLinkId, array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $url = $this->getConstructedUrl(self::APPROVE_WORKFLOW_PATH);
 
         $input = $this->prepareActionInput($input, $payoutLinkId, $merchant, $user, $userRole);
@@ -284,6 +304,8 @@ class PayoutLinks
 
     public function rejectPayoutLink(string $payoutLinkId, array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $url = $this->getConstructedUrl(self::REJECT_WORKFLOW_PATH);
 
         $input = $this->prepareActionInput($input, $payoutLinkId, $merchant, $user, $userRole);
@@ -293,14 +315,6 @@ class PayoutLinks
 
     public function workflowSummary(MerchantEntity $merchant, string $userRole)
     {
-        if($this->app['rzp.mode'] === Mode::TEST)
-        {
-            return [
-                self::COUNT => 5,
-                self::TOTAL_AMOUNT => 500000,
-            ];
-        }
-
         $url = $this->getConstructedUrl(self::WORKFLOW_SUMMARY_PATH);
 
         $request = [
@@ -319,6 +333,8 @@ class PayoutLinks
 
     public function approveBulkPayoutLinks(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $url = $this->getConstructedUrl(self::BULK_APPROVE_PATH);
 
         $input = $this->prepareBulkActionInput($input, $merchant, $user, $userRole);
@@ -328,6 +344,8 @@ class PayoutLinks
 
     public function rejectBulkPayoutLinks(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $url = $this->getConstructedUrl(self::BULK_REJECT_PATH);
 
         $input = $this->prepareBulkActionInput($input, $merchant, $user, $userRole);
@@ -335,8 +353,10 @@ class PayoutLinks
         $this->makeRequest($url, $input);
     }
 
-    public function approvePayoutLinkOtp(string $payoutLinkId, UserEntity $user, string $userRole)
+    public function approvePayoutLinkOtp(string $payoutLinkId, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
+        $this->rzpModeCheck($merchant->getId() ?? "");
+
         $url = $this->getConstructedUrl(self::APPROVE_OTP_PATH);
 
         $userDetails = $this->getUserDetails($user, $userRole);
@@ -351,6 +371,8 @@ class PayoutLinks
 
     public function approveBulkPayoutLinksOtp(array $input, MerchantEntity $merchant, UserEntity $user, string $userRole)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $url = $this->getConstructedUrl(self::BULK_APPROVE_OTP_PATH);
 
         $userDetails = $this->getUserDetails($user, $userRole);
@@ -402,7 +424,7 @@ class PayoutLinks
             self::MERCHANT_ID => $merchantId
         ];
 
-        $response = $this->makeRequest($url, $request);
+        $response = $this->makeRequest($url, $request, [], self::POST, $this->getMode());
 
         $settings = array_pull($response, self::MODE, []);
 
@@ -427,7 +449,7 @@ class PayoutLinks
 
         $oldSettings = $this->getSettings($merchantId);
 
-        $response = $this->makeRequest($url, $request);
+        $response = $this->makeRequest($url, $request, [], self::POST, $this->getMode());
 
         $newSettings = array_pull($response, self::MODE, []);
 
@@ -440,8 +462,6 @@ class PayoutLinks
 
     public function cancel(string $payoutLinkId, string $merchantId)
     {
-        $this->rzpModeCheck($merchantId);
-
         $this->trace->info(TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
             [
                 $payoutLinkId
@@ -454,7 +474,7 @@ class PayoutLinks
             self::MERCHANT_ID    => $merchantId
         ];
 
-        $response = $this->makeRequest($url, $request);
+        $response = $this->makeRequest($url, $request, [], self::POST, $this->getMode());
 
         $this->processParameters($response);
 
@@ -463,8 +483,6 @@ class PayoutLinks
 
     public function fetch(string $payoutLinkId, array $input, string $merchantId = "")
     {
-        $this->rzpModeCheck($merchantId);
-
         $forAdminResponse = true;
 
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_PATH);
@@ -485,7 +503,7 @@ class PayoutLinks
 
         $input['expand'] = $expandArray;
 
-        $response = $this->makeRequest($url, $input);
+        $response = $this->makeRequest($url, $input, [], self::POST, $this->getMode());
 
         $this->processParameters($response, $forAdminResponse, $expandArray, $isDashboardRequest);
 
@@ -496,8 +514,6 @@ class PayoutLinks
 
     public function fetchMultiple(array $input)
     {
-        $this->rzpModeCheck();
-
         $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_MULTIPLE_PATH);
 
         if(key_exists('id', $input))
@@ -515,7 +531,7 @@ class PayoutLinks
             $expandArray = $input['expand'];
         }
 
-        $response = $this->makeRequest($url, $input);
+        $response = $this->makeRequest($url, $input, [], self::POST, $this->getMode());
 
         $response[self::COUNT] = array_pull($response, self::COUNT, 0);
 
@@ -540,30 +556,35 @@ class PayoutLinks
                 $payoutLinkId
             ]);
 
+        $mode = $this->getModeForPublicPage();
+
         $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
 
         $request = [
             self::PAYOUT_LINK_ID => 'poutlk_' . $payoutLinkId
         ];
 
-        $response =  $this->makeRequest($url, $request);
+        $response =  $this->makeRequest($url, $request, [], self::POST, $mode);
 
-        return [Mode::LIVE, $response['settings'][self::MERCHANT_ID]];
+        return [$mode, $response['settings'][self::MERCHANT_ID]];
     }
 
     public function initiate(MerchantEntity $merchant, array $input, string $payoutLinkId): array
     {
+        $mode = $this->getModeForPublicPage();
+
         $url = sprintf('%s/%s', $this->baseUrl, self::INITIATE_PAYOUT_LINK_PATH);
 
         $input[self::MERCHANT_ID] = $merchant->getId();
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
 
-        return $this->makeRequest($url, $input);
+        return $this->makeRequest($url, $input, [], self::POST, $mode);
     }
 
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
     {
+        $this->headerCheckForRequestsInCustomerFacingPage();
 
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_GENERATE_OTP_PATH);
 
@@ -574,11 +595,13 @@ class PayoutLinks
 
     public function getFundAccountsOfContact(string $payoutLinkId, array $input): array
     {
+        $mode = $this->getModeForPublicPage();
+
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_GET_FUND_ACCOUNTS_BY_CONTACT);
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
 
-        $response = $this->makeRequest($url, $input);
+        $response = $this->makeRequest($url, $input, [], self::POST, $mode);
 
         $response[self::COUNT] = array_pull($response, self::COUNT, 0);
 
@@ -589,13 +612,15 @@ class PayoutLinks
 
     public function getHostedPageData(string $payoutLinkId, MerchantEntity $merchant = null)
     {
+        $mode = $this->getModeForPublicPage();
+
         $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
 
         $request = [
             self::PAYOUT_LINK_ID => $payoutLinkId
         ];
 
-        $response = $this->makeRequest($url, $request);
+        $response = $this->makeRequest($url, $request, [], self::POST, $mode);
 
         $payoutUtr = null;
 
@@ -603,9 +628,9 @@ class PayoutLinks
 
         $payoutLinkInfo = $response['payout_link_response'];
 
-        $merchant = $merchant ?: $this->repo->merchant->findOrFail($payoutLinkInfo[self::MERCHANT_ID]);
+        $merchant = $merchant ?: $this->repo->merchant->connection($mode)->findOrFail($payoutLinkInfo[self::MERCHANT_ID]);
 
-        $keylessHeader = $this->getKeylessHeader($merchant->getId(), Mode::LIVE);
+        $keylessHeader = $this->getKeylessHeader($merchant->getId(), $mode);
 
         if (key_exists('payouts', $payoutLinkInfo)
             && key_exists('count', $payoutLinkInfo['payouts']))
@@ -671,7 +696,6 @@ class PayoutLinks
             $supportMail = array_pull($settings, Entity::SUPPORT_EMAIL, '');
         }
 
-
         $data = [
             'api_host'                    => $this->config['url.api.production'],
             'payout_link_id'              => $payoutLinkInfo['id'],
@@ -709,10 +733,8 @@ class PayoutLinks
         return $this->app->environment();
     }
 
-    public function pushPayoutStatus($payoutLinkId, $payoutId, $payoutStatus)
+    public function pushPayoutStatus($payoutLinkId, $payoutId, $payoutStatus, $mode = Mode::LIVE)
     {
-        $this->rzpModeCheck();
-
         $input = [
             'payout_link_id'  => $payoutLinkId,
             'payout_id'       => $payoutId,
@@ -721,16 +743,18 @@ class PayoutLinks
 
         $url = $this->getConstructedUrl(self::PAYOUT_STATUS_UPDATE);
 
-        return $this->makeRequest($url, $input);
+        return $this->makeRequest($url, $input, [], self::POST, $mode);
     }
 
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array
     {
+        $mode = $this->getModeForPublicPage();
+
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_VERIFY_OTP_PATH);
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
 
-        return $this->makeRequest($url, $input);
+        return $this->makeRequest($url, $input, [], self::POST, $mode);
     }
 
     public function resendNotification(string $payoutLinkId, array $input)
@@ -779,15 +803,13 @@ class PayoutLinks
 
     public function summary(string $merchantId)
     {
-        $this->rzpModeCheck($merchantId);
-
         $url = $this->getConstructedUrl(self::SUMMARY);
 
         $request = [
             self::MERCHANT_ID => $merchantId
         ];
 
-        return $this->makeRequest($url, $request);
+        return $this->makeRequest($url, $request, [], self::POST, $this->getMode());
     }
 
     public function adminActions(array $input)
@@ -815,8 +837,6 @@ class PayoutLinks
 
     public function processBatch(array $input)
     {
-        $this->rzpModeCheck();
-
         $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
 
         $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID) ?? null;
@@ -849,22 +869,33 @@ class PayoutLinks
 
         $request[self::BATCH_REQUEST_ROWS] = $input;
 
+        $mode = Mode::LIVE;
+        if(sizeof($input) > 0)
+        {
+            $mode = $input[0]['mode'];
+        }
+        else
+        {
+            $this->trace->info(TraceCode::PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT, [
+                'merchant_id' => $merchantId,
+                'batch_id'    => $batchId,
+            ]);
+        }
+
         $url = $this->getConstructedUrl(self::CREATE_BATCH);
 
-        return $this->makeRequest($url, $request);
+        return $this->makeRequest($url, $request, [], self::POST, $mode);
     }
 
     public function getBatchSummary(string $merchantId, string $batchId)
     {
-        $this->rzpModeCheck();
-
         $request[self::BATCH_ID] = $batchId;
 
         $request[self::MERCHANT_ID] = $merchantId;
 
         $url = $this->getConstructedUrl(self::BATCH_SUMMARY);
 
-        $response = $this->makeRequest($url, $request);
+        $response = $this->makeRequest($url, $request, [], self::POST, $this->getMode());
 
         $response[self::BATCH_PL_COUNT] = array_pull($response, self::BATCH_PL_COUNT, 0);
 
@@ -913,6 +944,8 @@ class PayoutLinks
 
     public function integrateApp(array $input, MerchantEntity $merchant)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $merchantId = array_pull($input, self::MERCHANT_ID, $merchant->getId());
 
         $request[self::MERCHANT_ID] = $merchantId;
@@ -940,6 +973,8 @@ class PayoutLinks
 
     public function fetchShopifyOrderDetails(array $input, MerchantEntity $merchant)
     {
+        $this->rzpModeCheck($merchant->getId());
+
         $input[self::MERCHANT_ID] = $merchant->getId();
 
         $url = $this->getConstructedUrl(self::SHOPIFY_GET_ORDER_DETAILS_PATH);
@@ -953,6 +988,8 @@ class PayoutLinks
 
     public function bulkResendNotification(array $input)
     {
+        $this->rzpModeCheck();
+
         $url = $this->getConstructedUrl(self::RESEND_BULK_NOTIFICATION_PATH);
 
         $response = $this->makeRequest($url, $input);
@@ -962,6 +999,14 @@ class PayoutLinks
 
     public function integrationDetails(array $input, MerchantEntity $merchant)
     {
+        if($this->getMode() === Mode::TEST)
+        {
+            return [
+                self::MERCHANT_ID          => $merchant->getId(),
+                self::INTEGRATION_STATUS   => self::NOT_INITIATED,
+            ];
+        }
+
         $this->trace->info(TraceCode::PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST,
             [
                 'logged_in_merchant' => $merchant->getId(),
@@ -1017,7 +1062,7 @@ class PayoutLinks
         return $this->reminderResponseHandler($response);
     }
 
-    public function expireCallback(string $reminderEntityId)
+    public function expireCallback(string $reminderEntityId, string $mode = Mode::LIVE)
     {
         $url = $this->getConstructedUrl(self::EXPIRE_CALLBACK_PATH);
 
@@ -1025,7 +1070,7 @@ class PayoutLinks
             self::REMINDER_ENTITY_ID => $reminderEntityId
         ];
 
-        $responseBody = $this->makeRequest($url, $input);
+        $responseBody = $this->makeRequest($url, $input, [], self::POST, $mode);
 
         return $this->reminderResponseHandler($responseBody);
     }
@@ -1038,7 +1083,7 @@ class PayoutLinks
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
 
-        return $this->makeRequest($url, $input);
+        return $this->makeRequest($url, $input, [], self::POST, $this->getMode());
     }
 
     public function expireCronjob()
@@ -1247,11 +1292,14 @@ class PayoutLinks
     protected function makeRequest(string $url,
                                    array $data,
                                    array $headers = [],
-                                   string $method = 'POST')
+                                   string $method = self::POST,
+                                   string $mode = Mode::LIVE)
     {
         $headers['Content-Type'] = 'application/json';
 
         $headers['X-Task-ID'] = $this->app['request']->getId();
+
+        $headers[self::X_APP_MODE] = $mode;
 
         $headers[Passport::PASSPORT_JWT_V1] = $this->app['basicauth']->getPassportJwt($this->baseUrl);
 
@@ -1267,7 +1315,8 @@ class PayoutLinks
 
         $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
             [
-                'url' => $url
+                'url'  => $url,
+                'mode' => $mode
             ]);
 
         $response = Requests::request(
@@ -1869,5 +1918,31 @@ class PayoutLinks
         return $keylessHeader;
     }
 
+    protected function getModeForPublicPage()
+    {
+        $mode = $this->app['request']->header(self::X_RAZORPAY_MODE) ?? null;
+
+        if($mode === null)
+        {
+            $mode = $this->getMode();
+        }
+
+        return $mode;
+    }
+
+    protected function headerCheckForRequestsInCustomerFacingPage(string $merchantId = "")
+    {
+        if($this->getModeForPublicPage() === Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_LINK_NOT_SUPPORTED_FOR_TEST_MODE,
+                null,
+                [
+                    Entity::MERCHANT_ID     => $merchantId
+                ],
+                self::TEST_MODE_ERROR_MESSAGE
+            );
+        }
+    }
 }
 

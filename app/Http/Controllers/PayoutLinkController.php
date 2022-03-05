@@ -7,6 +7,7 @@ use Request;
 use Redirect;
 use ApiResponse;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 
 class PayoutLinkController extends Controller
 {
@@ -164,6 +165,7 @@ class PayoutLinkController extends Controller
     {
         $response = $this->app['payout-links']->approvePayoutLinkOtp(
             $payoutLinkId,
+            $this->ba->getMerchant(),
             $this->ba->getUser(),
             $this->ba->getUserRole()
         );
@@ -472,6 +474,14 @@ class PayoutLinkController extends Controller
     public function expireCallback(string $reminderEntityId)
     {
         $response = $this->app['payout-links']->expireCallback($reminderEntityId);
+
+        // $response will be containing 2 keys i.e. status_code and response_body
+        return ApiResponse::json($response['response_body'], $response['status_code']);
+    }
+
+    public function expireCallbackTestMode(string $reminderEntityId)
+    {
+        $response = $this->app['payout-links']->expireCallback($reminderEntityId, Mode::TEST);
 
         // $response will be containing 2 keys i.e. status_code and response_body
         return ApiResponse::json($response['response_body'], $response['status_code']);

@@ -3480,6 +3480,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINKS_MS_ERROR_RESPONSE                        = 'PAYOUT_LINKS_MS_ERROR_RESPONSE';
     const PAYOUT_LINKS_API_ROUTE                                = 'PAYOUT_LINKS_API_ROUTE';
     const PAYOUT_LINKS_MS_ROUTE                                 = 'PAYOUT_LINKS_MS_ROUTE';
+    const PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT         = 'PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT';
 
     const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
     const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';

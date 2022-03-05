@@ -52,7 +52,7 @@ class PayoutLinkUpdater extends Base
 
                     $payoutLinkService = $this->app['payout-links'];
 
-                    $payoutLinkService->pushPayoutStatus($payoutLinkId, $this->payout->getId(), $this->payout->getStatus());
+                    $payoutLinkService->pushPayoutStatus($payoutLinkId, $this->payout->getId(), $this->payout->getStatus(), $this->mode);
                 }
             }
         }

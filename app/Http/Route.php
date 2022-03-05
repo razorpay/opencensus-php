@@ -1645,6 +1645,7 @@ class Route
         'payout_links_bulk_reject'                 => ['post',      'payout-links/reject/bulk',                      'PayoutLinkController@rejectBulkPayoutLinks'                        ],
         'payout_links_reminder_callback'           => ['post',      'payout-links/send-reminder-callback/{id}',      'PayoutLinkController@sendReminderCallback'                         ],
         'payout_links_expire_callback'             => ['post',      'payout-links/expire-callback/{id}',             'PayoutLinkController@expireCallback'                               ],
+        'test_payout_links_expire_callback'        => ['post',      'payout-links/test/expire-callback/{id}',        'PayoutLinkController@expireCallbackTestMode'                       ],
         'payout_links_admin_auth_api'              => ['post',      'payout-links/admin',                            'PayoutLinkController@adminActions'                                 ],
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
@@ -4461,6 +4462,7 @@ class Route
         // Payout-Links route
         'payout_links_reminder_callback',
         'payout_links_expire_callback',
+        'test_payout_links_expire_callback',
 
         // Payout-Links Expire Cron Job
         'payout_links_expire_cron',
@@ -11897,6 +11899,7 @@ class Route
             'tax_payments_reminders_callback',
             'payout_links_reminder_callback',
             'payout_links_expire_callback',
+            'test_payout_links_expire_callback',
             'merchant_international_enablement_reminder',
         ],
 

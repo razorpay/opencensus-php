@@ -21,9 +21,16 @@ class PayoutLinkBulk extends Base
             /** @var UserEntity $user */
             $user = $this->app['basicauth']->getUser();
 
+            $mode = isset($this->app['rzp.mode']) ? $this->app['rzp.mode'] : 'live';
+
             if(empty($user) === false)
             {
                 $config['user_id'] = $user->getId();
+            }
+
+            if(empty($mode) === false)
+            {
+                $config['mode'] = $mode;
             }
 
             $input["config"] = $config;
