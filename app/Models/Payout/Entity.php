@@ -2388,10 +2388,20 @@ class Entity extends Base\PublicEntity
         {
             $statusDetails = (new PayoutsStatusDetails\Repository())->fetchPayoutStatusDetailsLatest($this->getId());
 
+            if($statusDetails['reason'] !== null)
+            {
+                $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason']];
+            }
+            else
+            {
+                $source = null;
+            }
+
             $statusDetailsArray =
                 [
-                    'reason' => $statusDetails['reason'],
-                    'description' => $statusDetails['description'],
+                    'reason'        => $statusDetails['reason'],
+                    'description'   => $statusDetails['description'],
+                    'source'        => $source,
                 ];
 
             $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
@@ -2423,11 +2433,21 @@ class Entity extends Base\PublicEntity
 
                 foreach ($statusDetails as $statusArray)
                 {
+                    if($statusArray['reason'] !== null)
+                    {
+                        $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusArray['reason']];
+                    }
+                    else
+                    {
+                        $source = null;
+                    }
+
                     $statusSummary [$statusArray['status']] [] =
                         [
-                            PayoutsStatusDetails\Entity::REASON => $statusArray['reason'],
-                            PayoutsStatusDetails\Entity::DESCRIPTION => $statusArray['description'],
-                            'timestamp' => $statusArray['created_at'],
+                            PayoutsStatusDetails\Entity::REASON         => $statusArray['reason'],
+                            PayoutsStatusDetails\Entity::DESCRIPTION    => $statusArray['description'],
+                            'timestamp'                                 => $statusArray['created_at'],
+                            'source'                                    => $source,
                         ];
                 }
                 $attributes[self::STATUS_SUMMARY] = $statusSummary;
