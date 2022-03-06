@@ -9,6 +9,8 @@ use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Merchant\Tnc\Entity as TncEntity;
 use RZP\Models\Merchant\Email\Entity as EmailEntity;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Constants
 {
@@ -108,6 +110,7 @@ class Constants
 
     // merchant verification
     const VERIFICATION    = 'verification';
+    const VERIFICATION_ERROR_CODES = 'verification_error_codes';
     const REQUIRED_FIELDS = 'required_fields';
 
     const DUMMY_ACTIVATION_FILE = '100000000Dummy';
@@ -490,6 +493,39 @@ class Constants
         BusinessType::PUBLIC_LIMITED =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
         BusinessType::PRIVATE_LIMITED => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
         BusinessType::LLP =>RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES
+    ];
+
+    const SUPPORTED_VERIFICATION_RESPONSE_TYPES = [
+        BVSConstants::AADHAAR
+    ];
+
+    const VERIFICATION_RESPONSE_KEYS = [
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF => Entity::POA_VERIFICATION_STATUS,
+        BVSConstants::AADHAAR . BvsValidationConstants::IDENTIFIER => Entity::POA_VERIFICATION_STATUS,
+    ];
+
+    const VERIFICATION_RESPONSE_ERROR_CODES = [
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 504 error - Internal Server Error' => 'AADHAAR_KARZA_GATEWAY_TIMEOUT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 502 error - Internal Server Error' =>  'AADHAAR_KARZA_BAD_GATEWAY',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 503 error - Service Unavailable' =>  'AADHAAR_KARZA_SERVICE_UNAVAILABLE',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 400 error - Bad Request' =>  'AADHAAR_KARZA_BAD_REQUEST',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway request failed with http code - 500 error - Internal Server Error' =>  'AADHAAR_KARZA_INTERNAL_ERROR',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'bad request sent to karza' =>  'AADHAAR_KARZA_BAD_REQUEST_SENT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 400' =>  'AADHAAR_KARZA_BAD_REQUEST',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 502' =>  'AADHAAR_KARZA_BAD_GATEWAY',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 504' =>  'AADHAAR_KARZA_GATEWAY_TIMEOUT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'Karza gateway call failed with http code 500' =>  'AADHAAR_KARZA_INTERNAL_ERROR',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'REQUEST_FAILED' =>  'AADHAAR_EXTERNAL_SERVICE_REQUEST_FAILED',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document does not match  AadhaarBack document' =>  'AADHAAR_BACK_NOT_MATCHED',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document does not match  AadhaarFrontBottom document' =>  'AADHAAR_FRONT_NOT_MATCHED',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document is not a valid AadhaarFrontBottom document' =>  'AADHAAR_FRONT_INVALID',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input document is not a valid AadhaarBack document' =>  'AADHAAR_BACK_INVALID',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'parameter 1 of equals is not string type - rule - 0 failed' =>  'AADHAAR_NAME_MISMATCH',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'parameter 2 in fuzzy_suzzy is not a string type - rule - 0 failed' =>  'AADHAAR_NUMBER_MISMATCH',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'input image type and artefact type doesn\'t match' =>  'AADHAAR_NOT_VALID',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'hystrix: timeout' =>  'AADHAAR_HYSTRIX_TIMEOUT',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'name: cannot be blank.' =>  'AADHAAR_NAME_MISMATCH',
+        BVSConstants::AADHAAR . BvsValidationConstants::PROOF . 'invalid image submitted' =>  'AADHAAR_NUMBER_MISMATCH'
     ];
 }
 

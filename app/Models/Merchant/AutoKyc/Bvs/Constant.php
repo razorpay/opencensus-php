@@ -299,6 +299,7 @@ class Constant
         Constant::PASSPORT . '-' . BvsValidationConstants::IDENTIFIER                                 => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
         Constant::VOTERS_ID . '-' . BvsValidationConstants::PROOF                                     => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
         Constant::PASSPORT . '-' . BvsValidationConstants::PROOF                                      => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
+        Constant::AADHAAR . '-' . BvsValidationConstants::PROOF                                       => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS]
     ];
 
 }

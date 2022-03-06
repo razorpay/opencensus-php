@@ -19,6 +19,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Core extends Base\Core
 {
@@ -50,6 +51,7 @@ class Core extends Base\Core
         $this->repo->deleteOrFail($document);
 
         return $merchantDetailCore->createResponse($this->merchant->merchantDetail);
+
     }
 
     /**

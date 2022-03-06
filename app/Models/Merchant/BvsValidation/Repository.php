@@ -83,7 +83,7 @@ class Repository extends Base\Repository
             ->first();
     }
 
-    public function getValidationsOfStatus(String $status,int $startTimeStamp,int $endTimeStamp)
+    public function getValidationsOfStatus(String $status, int $startTimeStamp, int $endTimeStamp)
     {
         $validationIdColumn     = $this->dbColumn(Entity::VALIDATION_ID);
         $ownerIdColumn          = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);

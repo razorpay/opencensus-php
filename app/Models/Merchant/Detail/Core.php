@@ -12,10 +12,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use Rzp\Bvs\Validation\V1\TwirpError;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
@@ -3037,6 +3037,24 @@ class Core extends Base\Core
 
             return $response;
         });
+
+        // append error codes to response
+        // add this in try-catch so that it doesn't affect the usual response flow.
+        try
+        {
+            $error_status = $this->fetchVerificationErrorCodes($merchant->getMerchantId());
+            $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+                '$error_status' => $error_status,
+            ]);
+            $response[DetailConstants::VERIFICATION_ERROR_CODES] = $error_status;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+                'error' => $e,
+            ]);
+            $response[DetailConstants::VERIFICATION_ERROR_CODES] = [];
+        }
 
         return $response;
     }
@@ -6239,5 +6257,65 @@ class Core extends Base\Core
             $error_description = $validation->getErrorCode();
         }
         return $error_description;
+    }
+
+    /*
+     * This function builds the response error code in the event there exists an error in the validation
+     * It queries the latest validation for the supported artefact types and checks if it has error,
+     * in case it has error, it ensures the document associated with the validation is not deleted and
+     * post which it maps the error code to the relevant custom error code.
+     */
+    public function fetchVerificationErrorCodes(string $merchantId): array
+    {
+        $errorCodes = [];
+        // for each artefact type make a separate query to database, given we need to fetch only the
+        // latest record and see if it has error
+        foreach (DetailConstants::SUPPORTED_VERIFICATION_RESPONSE_TYPES as $artefactType)
+        {
+            $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerIdAndOwnerType(
+                $merchantId,
+                Constant::MERCHANT,
+                $artefactType
+            );
+            $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+                '$validation' => $validation,
+            ]);
+            if (empty($validation) === true or empty($validation->getErrorCode()) === true)
+            {
+                // since there is no error associated with the latest validation skip the processing
+                continue;
+            }
+            $validationUnit = $validation->getValidationUnit();
+            if ($validationUnit === BvsValidationConstants::PROOF)
+            {
+                // verify that the latest validation does not belong to a deleted document
+                $document = $this->repo->merchant_document->findNonDeletedDocumentForMerchantIdAndValidationId($merchantId,
+                    $validation->getValidationId());
+                if (empty($document) === true)
+                {
+                    // since document associated with the validation is deleted, skip the processing
+                    continue;
+                }
+                $this->trace->info(TraceCode::MERCHANT_DETAIL_VERIFICATION_ERROR_RESPONSE, [
+                    '$document' => $document,
+                ]);
+            }
+            $errorDescription = $validation->getErrorDescription();
+            $validationErrorCodeKey = Constant::ARTEFACT_STATUS_ATTRIBUTE_MAPPING[$artefactType . '-' . $validationUnit][1];
+            // get value from the error_description
+            $verificationResponseKey = $artefactType . $validationUnit . $errorDescription;
+            if (isset(DetailConstants::VERIFICATION_RESPONSE_ERROR_CODES[$verificationResponseKey]))
+            {
+                $validationErrorCodeValue = DetailConstants::VERIFICATION_RESPONSE_ERROR_CODES[$verificationResponseKey];
+            }
+            else
+            {
+                $errorPrefix = strtoupper($artefactType);
+                $validationErrorCodeValue = $errorPrefix . '_' . $validation->getErrorCode();
+            }
+            // append the output
+            $errorCodes[$validationErrorCodeKey] = $validationErrorCodeValue;
+        }
+        return $errorCodes;
     }
 }

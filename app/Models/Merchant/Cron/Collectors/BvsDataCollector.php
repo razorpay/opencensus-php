@@ -16,7 +16,7 @@ class BvsDataCollector extends TimeBoundDbDataCollector
 
     protected function collectDataWithinInterval($startTime, $endTime): CollectorDto
     {
-        //fetch validations in captured state which are created before 1 day
+        // fetch validations in captured state which are created before 1 day
         $capturedValidations = $this->repo->bvs_validation->getValidationsOfStatus(BvsValidationConstants::CAPTURED, $startTime, $endTime);
 
         $this->app['trace']->info(TraceCode::CRON_ATTEMPT_STARTED, [
@@ -28,7 +28,7 @@ class BvsDataCollector extends TimeBoundDbDataCollector
 
         return CollectorDto::create($capturedValidations);
     }
-    
+
     protected function getStartInterval() : int
     {
         return $this->lastCronTime;

@@ -188,7 +188,6 @@ class DetailServiceTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
 
         $actualResponse = $this->merchantService->saveMerchantDetailsForActivation($merchantData);
-
         $expectedResponse = [
             'lock_common_fields' => [
                 'contact_name',

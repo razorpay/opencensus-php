@@ -89,7 +89,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetch all the documents by merchantId , documentType and documentDate
+     * Fetch all the documents by merchantId, documentType and documentDate
      *
      * @param string $merchantId
      * @param string $documentType
@@ -119,7 +119,24 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Fetch the documents by merchantId and documentType.
+     * Returns all non deleted documents for given validationId
+     *
+     * @param string $merchantId
+     * @param string $validationId
+     *
+     * @return mixed
+     */
+    public function findNonDeletedDocumentForMerchantIdAndValidationId(string $merchantId, string $validationId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::VALIDATION_ID, $validationId)
+            ->whereNull(Entity::DELETED_AT)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->first();
+    }
+
+    /* Fetch the documents by merchantId and documentType.
      *
      * @param string $merchantId
      * @param string $documentType

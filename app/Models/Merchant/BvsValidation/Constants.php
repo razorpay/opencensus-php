@@ -56,6 +56,11 @@ class Constants
     const NOT_MATCHED       = 'not_matched';
     const PENDING           = 'pending';
     const INITIATED         = 'initiated';
+    const FAILED_STATUS = [
+        self::FAILED,
+        self::INCORRECT_DETAILS,
+        self::NOT_MATCHED
+    ];
 
     // error codes
     const INPUT_DATA_ISSUE      = 'INPUT_DATA_ISSUE';

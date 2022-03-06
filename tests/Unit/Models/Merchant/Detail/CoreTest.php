@@ -142,6 +142,22 @@ class CoreTest extends TestCase
             'bvs_validation',
             array_merge($defaultBvsDetails, $customBvsDetails));
 
+        $this->fixtures->create('merchant_document',
+            [
+                'merchant_id'   => $mid,
+                'validation_id' => $bvsValidation->getValidationId(),
+                'document_type' => Document\Type::AADHAR_FRONT,
+                'file_store_id' => '123123',
+            ]);
+
+        $this->fixtures->create('merchant_document',
+            [
+                'merchant_id'   => $mid,
+                'validation_id' => $bvsValidation->getValidationId(),
+                'document_type' => Document\Type::AADHAR_BACK,
+                'file_store_id' => '123123'
+            ]);
+
         return [
             'merchant_detail'    => $merchantDetail,
             'verificationDetail' => $verificationDetail,
@@ -2312,6 +2328,102 @@ class CoreTest extends TestCase
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
     }
 
+    public function testFetchVerificationErrorCodesNoArtefactMatch()
+    {
+        // when no records are matched for unsupported  artefact type
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::VOTERS_ID,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
+            BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $this->assertEmpty($error_codes);
+    }
+
+    public function testFetchVerificationErrorCodesNoErrorRecords()
+    {
+        // when no records are matched for supported artefact type
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::AADHAAR,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
+            BVSEntity::VALIDATION_STATUS => BvsValidationConstants::SUCCESS
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $this->assertEmpty($error_codes);
+    }
+
+    public function testFetchVerificationErrorCodesMatchDescriptionStatusFailed()
+    {
+        // when records are found and error description is matched and validation status is failed
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::AADHAAR,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
+            BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE => 'NO_PROVIDER_ERROR',
+            BVSEntity::ERROR_DESCRIPTION => 'input document does not match  AadhaarBack document'
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_BACK_NOT_MATCHED'];
+        $this->assertEquals($error_codes, $expectedOutput);
+    }
+
+    public function testFetchVerificationErrorCodesEmptyDescription()
+    {
+        // when records are found and error description does not exist.
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ],[],[
+            BVSConstants::ARTEFACT_TYPE     => BVSConstants::AADHAAR,
+            BVSConstants::VALIDATION_UNIT   => BvsValidationConstants::PROOF,
+            BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE => 'DOCUMENT_UNIDENTIFIABLE',
+            BVSEntity::ERROR_DESCRIPTION => ''
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        // output falls back to the error code
+        $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_DOCUMENT_UNIDENTIFIABLE'];
+        $this->assertEquals($error_codes, $expectedOutput);
+    }
+
+    public function testFetchVerificationErrorCodesNotMatchDescription()
+    {
+        // when records are found and error description is not defined in map
+        $core = new DetailCore();
+        $this->createAndFetchMocks();
+        $fixtures = $this->createAndFetchFixtures([
+        ], [], [
+            BVSConstants::ARTEFACT_TYPE => BVSConstants::AADHAAR,
+            BVSConstants::VALIDATION_UNIT => BvsValidationConstants::PROOF,
+            BVSEntity::VALIDATION_STATUS => BvsValidationConstants::FAILED,
+            BVSEntity::ERROR_CODE => 'INPUT_DATA_ISSUE',
+            BVSEntity::ERROR_DESCRIPTION => 'UNDEFINED IN MAP'
+        ]);
+        $merchantDetail = $fixtures['merchant_detail'];
+        $merchantId = $merchantDetail->getMerchantId();
+        $error_codes = $core->fetchVerificationErrorCodes($merchantId);
+        // output falls back to the error code
+        $expectedOutput = [Entity::POA_VERIFICATION_STATUS => 'AADHAAR_INPUT_DATA_ISSUE'];
+        $this->assertEquals($error_codes, $expectedOutput);
+    }
+
     public function testActivatedMccPendingActivationStatusTrust()
     {
         Mail::fake();
@@ -2363,6 +2475,7 @@ class CoreTest extends TestCase
         $this->assertCount(2,$queuedEmails);
         $this->assertContains($queuedEmails->get(0)->getTemplate(),$expectedEmails);
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
+
     }
 
     protected function mockRazorxTreatment(string $returnValue = 'on')
