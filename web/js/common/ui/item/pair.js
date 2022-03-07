@@ -4,7 +4,7 @@ import * as items from './index';
 import * as id from './id';
 import { getAmount, getTime } from 'common/ui/item';
 import { makeIdLink } from 'common/ui/item/id';
-import { getIntervalCycle, subString } from 'common/utils/rzp-utils';
+import { getIntervalCycle, subString, titleCase } from 'common/utils/rzp-utils';
 import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import { RefundStatusLabel, OfferStatusLabel } from 'merchant/components/StatusLabel';
 
@@ -275,7 +275,7 @@ export const description = {
 
 export const qrUsage = {
   title: 'QR Usage',
-  value: (item) => <div class="qr_usage">{item.usage.replace('_', ' ')}</div>,
+  value: (item) => <div class="qr_usage">{titleCase(item.usage) || '-'}</div>,
 };
 
 export const amountReceived = {
