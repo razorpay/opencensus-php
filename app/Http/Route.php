@@ -1859,6 +1859,7 @@ class Route
 
         // Coupon routes
         'coupon_create'                            => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_expiry_alert'                      => ['post',      'coupons/alert',                                  'CouponController@sendAlert'                                           ],
         'coupon_apply'                             => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
         'coupon_delete'                            => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         'coupon_update'                            => ['patch',    'coupons/{id}',                                   'CouponController@update'                                           ],
@@ -3891,6 +3892,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'coupon_expiry_alert',
         'upi_transfer_process_internal',
         'payment_callback_bharatqr_internal',
         'payment_order_revive',
@@ -6400,7 +6402,6 @@ class Route
         // Payment Fraud
         'get_fraud_attributes',
         'save_payment_fraud',
-
         'admin_patch_purpose_code',
         'purpose_code_admin',
 
@@ -11396,6 +11397,7 @@ class Route
         ],
 
         'cron' => [
+            'coupon_expiry_alert',
             'fd_consume_webhook',
             // Not actually a cron, but added in this list
             // so the cron app has access to the route.

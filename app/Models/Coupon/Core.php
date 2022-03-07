@@ -14,6 +14,7 @@ use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
+use RZP\Models\Coupon\Entity as Coupon;
 
 class Core extends Base\Core
 {
@@ -26,6 +27,11 @@ class Core extends Base\Core
         $entityType = $input[Entity::ENTITY_TYPE];
 
         $entity = $this->repo->$entityType->findByPublicId($input[Entity::ENTITY_ID]);
+
+        if (empty($input[Coupon::ALERTS]) === false)
+        {
+            $input[Coupon::ALERTS] = $this->mergeJson(Coupon::getDefaultAlerts(), $input[Coupon::ALERTS]);
+        }
 
         if (empty($input[Entity::MERCHANT_ID]) === true)
         {
@@ -89,11 +95,11 @@ class Core extends Base\Core
             $config = Constants::COUPON_CONFIG[$couponCode];
         }
         //    Grow-1299 make internal coupons non redeemable from controllers
-        if ($config[Constants::IS_SYSTEM_COUPON] and !$isSystemCall)
+        if ($coupon->isInternal()!=null and $coupon->isInternal()===true and !$isSystemCall)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
-                null,
+                [],
                 $input);
         }
 
@@ -128,6 +134,7 @@ class Core extends Base\Core
 
     public function apply(Merchant\Entity $merchant, array $input, bool $isSystemCall = false): array
     {
+
         $couponCode = $input[Entity::CODE] ?? '';
 
         $input[Entity::COUPON_CODE] = $couponCode;
@@ -156,7 +163,6 @@ class Core extends Base\Core
         {
 
             $coupon = $this->validateAndGetDetails($merchant, $input,$isSystemCall);
-
             $this->applyMerchantPromotion($merchant, $coupon);
         }
         catch (\Throwable $exception)
@@ -203,25 +209,9 @@ class Core extends Base\Core
         try
         {
             $couponCode = $coupon-> getCode();
-            //
-            $this->trace->debug(
-                TraceCode::DEBUG_LOGGING,
-                [
-                    'message'             => 'himgang:couponCode received',
-                    'error'               => $couponCode,
-                ]);
-
-            if (isset(Constants::COUPON_CONFIG[$couponCode]) === true)
-            {
-                $config = Constants::COUPON_CONFIG[$couponCode];
-            }
-            else
-            {
-                $config = Constants::COUPON_CONFIG['default'];
-            }
 
             //    Grow-1299 make internal coupons non redeemable from controllers
-            if ($config[Constants::IS_SYSTEM_COUPON] and !$isSystemCall)
+            if ($coupon->isInternal()!=null and $coupon->isInternal()===true and !$isSystemCall)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_COUPON_CODE,
@@ -468,5 +458,27 @@ class Core extends Base\Core
 
             $merchantCore->sendPartnerLeadInfoToSalesforce($merchant->getId(), $partner->getId(), $product);
         }
+    }
+
+    protected function mergeJson($existingDetails, $newDetails)
+    {
+        if (empty($newDetails) === false)
+        {
+            foreach ($newDetails as $key => $value)
+            {
+                $existingDetails[$key] = $value;
+            }
+        }
+
+        return $existingDetails;
+    }
+
+    /**
+     * @param array $dateRanges
+     * @return Entity
+     */
+    public function getExpiringCoupons(array $dateRanges)
+    {
+        return $this->repo->coupon->fetchCouponsByExpiry($dateRanges);
     }
 }

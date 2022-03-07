@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::PRICING_PLAN_ID         => 'sometimes|alpha_num|size:14|custom',
         Entity::PURPOSE                 => 'required|string|max:50',
         Entity::CREATOR_NAME            => 'required|string|max:50',
+        Entity::CREATOR_EMAIL           => 'required|string',
         Entity::START_AT                => 'sometimes|epoch',
         Entity::END_AT                  => 'sometimes|epoch',
         Entity::PRODUCT                 => 'sometimes|string|in:banking,primary'

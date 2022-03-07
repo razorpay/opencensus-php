@@ -20,6 +20,7 @@ class Service extends Base\Service
         $this->validateModeIsApplicableForProduct($this->mode, $input[Entity::PRODUCT]);
 
         $input[Entity::CREATOR_NAME] = $this->auth->getAdmin()->getName();
+        $input[Entity::CREATOR_EMAIL] = $this->auth->getAdmin()->getEmail();
 
         $eventId = $input[Entity::EVENT_ID];
 
@@ -42,6 +43,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::PROMOTION_CREATE_REQUEST, $input);
 
         $input[Entity::CREATOR_NAME] = $this->auth->getAdmin()->getName();
+        $input[Entity::CREATOR_EMAIL] = $this->auth->getAdmin()->getEmail();
 
         $promotion = $this->core()->create($input);
 

@@ -24,6 +24,7 @@ return [
                 'name'              => 'Test-Promotion',
                 'credit_amount'     => 100,
                 'credits_expire'    => false,
+                'creator_email'     => 'superadmin@razorpay.com',
             ]
         ]
     ],

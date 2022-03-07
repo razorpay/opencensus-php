@@ -651,6 +651,22 @@ class CouponsTest extends TestCase
         return $response;
     }
 
+    public function couponAlert(array $payload)
+    {
+       $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/coupons/alert',
+            'method'  => 'post',
+            'content' => $payload
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+
     public function applyMtuCouponOnMerchant()
     {
         $request = [
@@ -803,6 +819,33 @@ class CouponsTest extends TestCase
             {
                 $response = $this->applyCouponOnMerchant($content);
             });
+    }
+
+    public function testCouponExpiryAlert()
+    {
+        $promotion = $this->fixtures->create('promotion:onetime');
+
+        $tomorrowTimestamp = Carbon::tomorrow()->timestamp;
+
+        $couponAttributes = [
+            'entity_id'   => $promotion->getId(),
+            'entity_type' => 'promotion',
+            'end_at'    => $tomorrowTimestamp,
+            'merchant_id' => '100000Razorpay',
+        ];
+
+        $coupon = $this->fixtures->create('coupon:coupon', $couponAttributes);
+
+        $payload = [
+            "emails" =>["himanshu.gangwar@razorpay.com","karkala.vasanthi@razorpay.com"],
+            "days" => [1]
+        ];
+
+        $requestData = $this->testData[__FUNCTION__];
+        $response = $this->couponAlert($payload);
+
+        $this->assertEquals($requestData['response']['content'], $response);
+
     }
 
     public function testApplyNotApplicableCoupon()

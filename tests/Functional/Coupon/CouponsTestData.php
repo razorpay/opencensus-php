@@ -405,4 +405,11 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_COUPON_NOT_APPLICABLE
         ],
     ],
+    'testCouponExpiryAlert' => [
+        'response' => [
+            'content' => [
+                'message' => 'SUCCESSFULLY Generated alerts',
+                ]
+        ]
+    ],
 ];

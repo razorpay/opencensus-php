@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const PARTNER_ID              = 'partner_id';
     const PURPOSE                 = 'purpose';
     const CREATOR_NAME            = 'creator_name';
+    const CREATOR_EMAIL           = 'creator_email';
     const PRODUCT                 = 'product';
     const EVENT_ID                = 'event_id';
     const STATUS                  = 'status';
@@ -33,6 +34,8 @@ class Entity extends Base\PublicEntity
     const REFERENCE3              = 'reference3';
     const REFERENCE4              = 'reference4';
     const REFERENCE5              = 'reference5';
+
+
 
     //These two variables are used to create schedule for promotion
     //in case the credits need to be expired and renewed
@@ -62,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::PRICING_PLAN_ID,
         self::PURPOSE,
         self::CREATOR_NAME,
+        self::CREATOR_EMAIL,
         self::START_AT,
         self::END_AT,
         self::DEACTIVATED_AT,
@@ -85,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::PARTNER_ID,
         self::PURPOSE,
         self::CREATOR_NAME,
+        self::CREATOR_EMAIL,
         self::EVENT_ID,
         self::ACTIVATED_AT,
         self::START_AT,

@@ -46,4 +46,21 @@ class Repository extends Base\Repository
                     ->with(['source'])
                     ->first();
     }
+
+    public function fetchCouponsByExpiry(array $dateRanges)
+    {
+        $query = $this->newQuery();
+        $count=0;
+        foreach ($dateRanges as $dates)
+        {
+            if($count ===0)
+                $query->where(Entity::END_AT, '>=', $dates[0])->where(Entity::END_AT, '<', $dates[1]);
+            else
+                $query->orWhere(Entity::END_AT, '>=', $dates[0])->where(Entity::END_AT, '<', $dates[1]);
+            $count++;
+        }
+        return $query->get();
+    }
+
+
 }

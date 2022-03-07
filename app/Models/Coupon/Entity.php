@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
 
     const COUPON_CODE = 'coupon_code';
     const ENTITY_TYPE_PROMOTION = 'promotion';
+    const IS_INTERNAL = 'is_internal';
+    const ALERTS = 'alerts';
 
     protected $entity = 'coupon';
 
@@ -32,6 +34,8 @@ class Entity extends Base\PublicEntity
         self::START_AT,
         self::END_AT,
         self::MAX_COUNT,
+        self::IS_INTERNAL,
+        self::ALERTS
     ];
 
     protected $visible = [
@@ -45,10 +49,13 @@ class Entity extends Base\PublicEntity
         self::END_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::IS_INTERNAL,
+        self::ALERTS
     ];
 
     protected $defaults = [
         self::USED_COUNT => 0,
+        self::IS_INTERNAL =>false,
     ];
 
     protected $casts = [
@@ -56,7 +63,17 @@ class Entity extends Base\PublicEntity
         self::END_AT     => 'int',
         self::MAX_COUNT  => 'int',
         self::USED_COUNT => 'int',
+        self::IS_INTERNAL => 'bool',
+        self::ALERTS => 'array'
     ];
+
+    public static function getDefaultAlerts()
+    {
+        return [
+            Constants::EMAIL          => [],
+            Constants::SLACK          => []
+        ];
+    }
 
     public function merchant()
     {
@@ -110,5 +127,10 @@ class Entity extends Base\PublicEntity
         $usedCount = $usedCount + 1;
 
         $this->setAttribute(self::USED_COUNT, $usedCount);
+    }
+
+    public function isInternal()
+    {
+        return $this->getAttribute(self::IS_INTERNAL);
     }
 }

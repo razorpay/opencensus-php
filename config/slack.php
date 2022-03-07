@@ -205,6 +205,8 @@ return array(
         // ledger alerts channel
         'platform-ledger-alerts' => 'C01FW2MTBMZ',
 
+        // slack alert channel for coupon expiry alerts
+        'coupon_expiry_alerts'   => 'C034U2MAVCY',
         // p0_pp_alert
         'p0_pp_alerts'           => 'C02661NA20G'
     ],

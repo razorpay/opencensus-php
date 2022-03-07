@@ -67,6 +67,9 @@ class Events
 
     const NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW        = 'NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW';
 
+    const COUPON_EXPIRY_ALERT                                           = 'COUPON_EXPIRY_ALERT';
+
+
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
         self::MERCHANT_BUSINESS_WEBSITE_ADD                             => 'sms.dashboard.merchant_business_website_add',
@@ -226,6 +229,7 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'emails.merchant.add_additional_website_success',
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'emails.merchant.rejection_reason_notification',
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'emails.merchant.needs_clarification_on_workflow',
+        self::COUPON_EXPIRY_ALERT                                       => 'emails.coupon.coupon_expiry_alert',
     ];
 
     // Event vs email Tags mapping

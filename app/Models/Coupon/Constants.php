@@ -21,6 +21,8 @@ class Constants
     const FAILED_EVENT_CODE       = 'failed_event_code';
     const APPLY_PROMOTION_PRICING = 'apply_promotion_pricing';
     const IS_SYSTEM_COUPON        = 'is_system_coupon';
+    const EMAIL = 'email';
+    const SLACK = 'slack';
 
     const COUPON_CONFIG = [
         Constants::M2M_FRIEND    => [

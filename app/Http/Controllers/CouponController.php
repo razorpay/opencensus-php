@@ -26,4 +26,11 @@ class CouponController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function sendAlert()
+    {
+        $input = Request::all();
+        $data  = $this->service()->sendExpiryAlert($input);
+        return ApiResponse::json($data);
+    }
 }

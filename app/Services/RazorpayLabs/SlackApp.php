@@ -89,6 +89,35 @@ class SlackApp
         }
     }
 
+//    public function sendCouponExpiryAlert($payload)
+//    {
+//        $url = $this->getUrlForCouponAlerts();
+//        $payload = json_encode($payload);
+//
+//        try {
+//            $this->trace->info(
+//                TraceCode::SENDING_COUPON_EXPIRY_NOTIFICATION_TO_SLACK_APP,
+//                [
+//                    'payload' => $payload,
+//                    'url'     => $url,
+//                    'method'  => 'POST'
+//                ]
+//            );
+//
+//            $this->sendRequestToSlack( $url, 'POST', $payload);
+//        }
+//        catch (\Requests_Exception $exception) {
+//            $this->trace->error(
+//                TraceCode::CALL_TO_SLACK_APP_FAILED,
+//                [
+//                    'exception' => $exception->getMessage(),
+//                ]
+//            );
+//
+//            throw $exception;
+//        }
+//    }
+
     public function getSubscribedMerchantList()
     {
         try {
@@ -200,6 +229,10 @@ class SlackApp
     {
         return $this->config['url'] . '/subscribed-merchants';
     }
+
+//    private function getUrlForCouponAlerts(){
+//        return $this->config['url'] . '/coupon_expiry_alerts';
+//    }
 
     private function getPendingPayoutsNotficiationUrl()
     {

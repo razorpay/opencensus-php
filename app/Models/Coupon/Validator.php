@@ -23,6 +23,8 @@ class Validator extends Base\Validator
         Entity::START_AT    => 'sometimes|epoch',
         Entity::END_AT      => 'sometimes|epoch',
         Entity::MAX_COUNT   => 'sometimes|integer',
+        Entity::IS_INTERNAL   => 'sometimes|bool',
+        Entity::ALERTS   => 'sometimes|array'
     ];
 
     protected static $createValidators = [
