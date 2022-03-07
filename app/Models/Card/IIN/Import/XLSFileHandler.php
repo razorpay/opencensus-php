@@ -114,7 +114,7 @@ class XLSFileHandler
      */
     protected function removeFile($file)
     {
-        return unlink($file);
+        return unlink($file); // nosemgrep : php.lang.security.unlink-use.unlink-use
     }
 
     /**

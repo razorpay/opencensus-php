@@ -1080,7 +1080,7 @@ class Base extends BaseModel\Core
     {
         if (($filePath !== null) and (file_exists($filePath) === true))
         {
-            $success = unlink($filePath);
+            $success = unlink($filePath); // nosemgrep :php.lang.security.unlink-use.unlink-use
 
             if ($success === false)
             {

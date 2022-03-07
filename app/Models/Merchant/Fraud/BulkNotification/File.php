@@ -38,7 +38,7 @@ class File
         $data = $this->parseExcelSheets($filepath, 0);
 
         // Delete Local File
-        unlink($filepath);
+        unlink($filepath); // nosemgrep : php.lang.security.unlink-use.unlink-use
 
         return $data;
     }

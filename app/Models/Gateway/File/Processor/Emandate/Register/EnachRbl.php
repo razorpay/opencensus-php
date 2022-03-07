@@ -140,7 +140,7 @@ class EnachRbl extends Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
-            unlink($zipFilePath);
+            unlink($zipFilePath); // nosemgrep : php.lang.security.unlink-use.unlink-use
         }
         catch (\Throwable $e)
         {

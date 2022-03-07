@@ -53,7 +53,7 @@ class Handler extends BaseHandler
 
         $fileName = self::STORAGE_DIRECTORY . $directory . '/' . $key;
 
-        unlink($fileName);
+        unlink($fileName); // nosemgrep : php.lang.security.unlink-use.unlink-use
     }
 
     public function saveAs($bucket, $key, $filePath)

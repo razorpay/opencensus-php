@@ -107,7 +107,7 @@ class Service extends Base\Service
         $data = $this->parseFile($filepath, $extension);
 
         // Delete Local File
-        unlink($filepath);
+        unlink($filepath); // nosemgrep : php.lang.security.unlink-use.unlink-use
 
         return $data;
     }

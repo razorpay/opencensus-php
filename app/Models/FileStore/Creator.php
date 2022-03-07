@@ -570,7 +570,7 @@ class Creator extends Base\Core
         if (($this->shouldDeleteLocalFile === true) and
             (file_exists($filePath) === false))
         {
-            unlink($filePath);
+            unlink($filePath); // nosemgrep : php.lang.security.unlink-use.unlink-use
         }
     }
 

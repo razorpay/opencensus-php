@@ -253,7 +253,7 @@ class PaperNachIcici extends Base
                 }
                 else
                 {
-                    unlink($item->getPathname());
+                    unlink($item->getPathname()); // nosemgrep : php.lang.security.unlink-use.unlink-use
                 }
             }
 
@@ -536,7 +536,7 @@ class PaperNachIcici extends Base
 
         $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
-        unlink($zipFileLocalPath);
+        unlink($zipFileLocalPath); // nosemgrep : php.lang.security.unlink-use.unlink-use
     }
 
     public static function getAccountTypeMapping(string $accountType): string

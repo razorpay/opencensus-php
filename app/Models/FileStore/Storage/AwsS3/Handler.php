@@ -99,7 +99,7 @@ class Handler extends BaseHandler
         if ($this->config['mock'] === true)
         {
             $filePath = storage_path(Store::STORAGE_DIRECTORY) . $key;
-            unlink($filePath);
+            unlink($filePath); // nosemgrep : php.lang.security.unlink-use.unlink-use
             return;
         }
 

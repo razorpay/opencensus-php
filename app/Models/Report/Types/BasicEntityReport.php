@@ -356,7 +356,7 @@ class BasicEntityReport extends BaseReport
     {
         if (file_exists($fullpath) === true)
         {
-            unlink($fullpath);
+            unlink($fullpath); // nosemgrep : php.lang.security.unlink-use.unlink-use
         }
     }
 

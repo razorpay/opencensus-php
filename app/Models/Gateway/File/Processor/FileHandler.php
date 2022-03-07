@@ -100,7 +100,7 @@ trait FileHandler
 
         $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
-        unlink($zipFileLocalPath);
+        unlink($zipFileLocalPath); // nosemgrep : php.lang.security.unlink-use.unlink-use
     }
 
     protected function getLocalSaveDir(): string

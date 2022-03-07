@@ -207,7 +207,7 @@ trait FileHandlerTrait
 
         if ($fullPath !== null)
         {
-            $success = unlink($fullPath);
+            $success = unlink($fullPath); // nosemgrep : php.lang.security.unlink-use.unlink-use
 
             if ($success === false)
             {

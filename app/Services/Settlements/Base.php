@@ -301,7 +301,7 @@ class Base
 
         // if invalid characters or regex fails, remove failing characters
         //need to make sure, length checkers are added before rgex check; since attributes like bene names have complex regex's where ordering exists wrt to characters of different kinds.
-        $attributeValue=preg_replace($pattern,$replacementCharacter,'/'.preg_quote($attributeValue).'/');
+        $attributeValue=preg_replace($pattern,$replacementCharacter,'/'.preg_quote($attributeValue).'/'); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
 
         //if length exceeds threshold, trim blindly to that length
         //this will not happen in case of bene names, bene mobile.

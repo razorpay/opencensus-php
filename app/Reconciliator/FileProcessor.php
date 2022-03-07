@@ -245,7 +245,7 @@ class FileProcessor
             return;
         }
 
-        $success = unlink($filePath);
+        $success = unlink($filePath); // nosemgrep : php.lang.security.unlink-use.unlink-use
 
         if ($success === false)
         {
@@ -295,7 +295,7 @@ class FileProcessor
             }
             else
             {
-                unlink("$dir/$file");
+                unlink("$dir/$file"); // nosemgrep : php.lang.security.unlink-use.unlink-use
             }
         }
 

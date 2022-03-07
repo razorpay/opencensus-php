@@ -73,7 +73,7 @@ class GenerateOpenApiSpecifications
 
                 $count += 1;
 
-                $apiDetailObj = unserialize($apiDetails);
+                $apiDetailObj = unserialize($apiDetails); // nosemgrep : php.lang.security.unserialize-use.unserialize-use
 
                 if ($primaryApiDetails === null)
                 {

@@ -635,7 +635,7 @@ class Core extends Base\Core
 
             Mail::send($email);
 
-            unlink($fileName);
+            unlink($fileName); // nosemgrep : php.lang.security.unlink-use.unlink-use
 
             return $result->getIds();
         }

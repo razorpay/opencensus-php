@@ -101,7 +101,7 @@ class Core extends Base\Core
                 ],
             ]);
 
-        unlink($pdfPath);
+        unlink($pdfPath); // nosemgrep : php.lang.security.unlink-use.unlink-use
 
     }
 

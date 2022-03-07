@@ -80,7 +80,7 @@ class Report extends Base\Core
 
     public function __destruct()
     {
-        unlink($this->fileName);
+        unlink($this->fileName); // nosemgrep : php.lang.security.unlink-use.unlink-use
     }
 
     protected function initialize(string $type)

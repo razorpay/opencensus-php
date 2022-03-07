@@ -152,7 +152,7 @@ class PaperNachCiti extends Base
 
                 $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
-                unlink($zipFilePath);;
+                unlink($zipFilePath); // nosemgrep : php.lang.security.unlink-use.unlink-use
             }
 
             $this->fileStore = $fileStoreIds;
@@ -420,7 +420,7 @@ class PaperNachCiti extends Base
                 }
                 else
                 {
-                    unlink($item->getPathname());
+                    unlink($item->getPathname()); // nosemgrep : php.lang.security.unlink-use.unlink-use
                 }
             }
 
