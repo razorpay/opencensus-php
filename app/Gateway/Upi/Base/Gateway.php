@@ -94,6 +94,8 @@ class Gateway extends Base\Gateway
             'connect_timeout'   => 10,
         ];
 
+        $headers = flatten_array($headers);
+
         try
         {
             $response = Requests::request(
