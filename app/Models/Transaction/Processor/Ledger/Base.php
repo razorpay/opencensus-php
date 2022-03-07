@@ -256,7 +256,7 @@ class Base extends Core
 //            $retryCount = 10; // to skip retry and go to async job
 //            throw new \Requests_Exception(null, "Forced exception for testing");
         }
-        catch (\RZP\Exception\RuntimeException $e)
+        catch (\RZP\Exception\BaseException $e)
         {
             $exceptionData = $e->getData();
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR,
@@ -345,7 +345,7 @@ class Base extends Core
             $this->trace->traceException($re, Trace::CRITICAL, TraceCode::LEDGER_FETCH_BY_TRANSACTOR_REQUEST_TIMEOUT);
             throw new GatewayTimeoutException($re->getMessage(), $re);
         }
-        catch (\RZP\Exception\RuntimeException $e)
+        catch (\RZP\Exception\BaseException $e)
         {
             $exceptionData = $e->getData();
             // If it's a validation failure, convert to a new BadRequestValidationFailureException

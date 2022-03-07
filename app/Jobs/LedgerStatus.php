@@ -293,7 +293,7 @@ class LedgerStatus extends Job
             // successful status checked
             $this->markCreditEntityAsSuccess($response);
         }
-        catch (\RZP\Exception\RuntimeException $ex)
+        catch (\RZP\Exception\BaseException $ex)
         {
             $exceptionData = $ex->getData();
 

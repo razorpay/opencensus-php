@@ -3,6 +3,8 @@
 namespace RZP\Services;
 
 use Request;
+use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -10,6 +12,7 @@ use RZP\Http\Request\Requests;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstant;
+use Symfony\Component\HttpFoundation\Response;
 use RZP\Models\Payout\Service as PayoutService;
 use RZP\Models\Reversal\Service as ReversalService;
 use RZP\Models\Adjustment\Service as AdjustmentService;
@@ -571,26 +574,41 @@ class Ledger
      * @return array
      * @throws Exception\RuntimeException
      */
-    protected function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    public function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
     {
         $code = $response->status_code;
+
+        $response = [
+            'body' => json_decode($response->body, true),
+            'code' => $code,
+        ];
 
         if (($throwExceptionOnFailure === true) and
             (in_array($code, [200, 201, 204, 302], true) === false))
         {
-
-            throw new Exception\RuntimeException(
-                'Unexpected response code received from Ledger service.',
-                [
-                    'status_code'   => $code,
-                    'response_body' => json_decode($response->body, true),
-                ]);
+            if (($code >= Response::HTTP_BAD_REQUEST) and ($code <Response::HTTP_INTERNAL_SERVER_ERROR))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    [
+                        'status_code'   => $code,
+                        'response_body' => $response['body'],
+                    ],
+                    $response['body']['msg']);
+            }
+            else
+            {
+                throw new Exception\RuntimeException(
+                    'Unexpected response code received from Ledger service.',
+                    [
+                        'status_code'   => $code,
+                        'response_body' => $response['body'],
+                    ]);
+            }
         }
 
-        return [
-            'body' => json_decode($response->body, true),
-            'code' => $code,
-        ];
+        return $response;
     }
 
     /**
