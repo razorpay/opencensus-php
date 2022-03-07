@@ -269,6 +269,8 @@ class PlinkController extends Controller
 
         $headers['User-Agent'] = $request->userAgent();
 
+        $headers['X-User-Agent'] = $request->header('X-User-Agent');
+
         $headers['X-Razorpay-Public-Key'] = $this->ba->getPublicKey();
 
         $requester = $request->header('X-Razorpay-Requester');
