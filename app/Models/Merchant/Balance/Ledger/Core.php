@@ -192,7 +192,11 @@ class Core extends Base\Core
             $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
         }
 
-        // Todo: Add creditBalance to request payload after changes on ledger side
+        if ($creditBalance !== 0)
+        {
+            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = (string) $creditBalance;
+        }
+
         $this->trace->info(
             TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
             [
