@@ -1253,6 +1253,16 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function getNewChannelHealthStats(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_NEW_CHANNEL_HEALTH_STATS,
+            Requests::GET,
+            $input);
+    }
+
     public function createSourceAccountMappings(array $input)
     {
         $this->setAdminHeader();

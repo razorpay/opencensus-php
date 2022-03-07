@@ -570,6 +570,7 @@ class Route
         'fts_dashboard_channel_health_delete'               => ['delete',   'fts/dashboard/channel_health_events',                              'FTSController@deleteChannelHealth'                                 ],
         'fts_dashboard_test_transactions_trigger'           => ['post',     'fts/dashboard/channel_health_events/trigger_test_transactions',    'FTSController@triggerTestTransactions'                             ],
         'fts_dashboard_channel_health_stats'                => ['get',      'fts/dashboard/channel_health_events/stats',                        'FTSController@getChannelHealthStats'                               ],
+        'fts_dashboard_new_channel_health_stats'            => ['get',      'fts/dashboard/new_channel_health_stats',                           'FTSController@getNewChannelHealthStats'                            ],
         'fts_dashboard_sa_mappings_create'                  => ['post',     'fts/dashboard/source_account_mappings',                            'FTSController@createSourceAccountMappings'                         ],
         'fts_dashboard_sa_mappings_delete'                  => ['delete',   'fts/dashboard/source_account_mappings',                            'FTSController@deleteSourceAccountMappings'                         ],
         'fts_dashboard_direct_account_routing_rules_get'    => ['get',      'fts/dashboard/direct_account_routing_rules',                       'FTSController@getDirectAccountRoutingRules'                        ],
@@ -6080,6 +6081,7 @@ class Route
         'delete_merchant_options_admin',
         'fts_dashboard_test_transactions_trigger',
         'fts_dashboard_channel_health_stats',
+        'fts_dashboard_new_channel_health_stats',
 
 //        //relay routes
         'relay_get_apps',
@@ -7236,6 +7238,7 @@ class Route
         'fts_dashboard_test_transactions_trigger'           => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fetch_account_balance'               => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_channel_health_stats'                => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_new_channel_health_stats'            => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_create'               => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_channel_health_delete'               => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_sa_mappings_create'                  => Permission::FTS_ROUTING_RULES_UPDATE,
@@ -9804,6 +9807,7 @@ class Route
             'fts_dashboard_channel_health_create',
             'fts_dashboard_channel_health_delete',
             'fts_dashboard_channel_health_stats',
+            'fts_dashboard_new_channel_health_stats',
             'fts_dashboard_fund_transfer_check_status',
             'fts_dashboard_fund_transfer_status_bulk',
             'fts_dashboard_fund_transfer_update',

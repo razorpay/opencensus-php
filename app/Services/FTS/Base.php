@@ -124,6 +124,8 @@ class Base
 
     const FTS_FAIL_FAST_STATUS_LOGS_GET_URL = '/routing/fail_fast_status_logs';
 
+    const FTS_NEW_CHANNEL_HEALTH_STATS = '/routing/channel_health_stats';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';
