@@ -48,7 +48,7 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::TRIGGER_WEBHOOK_NOTIFICATIONS, ["state"=> Status::STARTED, "downtime" => $downtime]);
 
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime));
-
+            (new DowntimeManagerService($this->app))->notifyDowntime($downtime, Status::STARTED);
             (new SlackAppService($this->app))
                 ->sendDowntimeRequestToSlack($downtime, Status::STARTED);
         }
@@ -85,6 +85,7 @@ class Core extends Base\Core
                 PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
             }
 
+            (new DowntimeManagerService($this->app))->notifyDowntime($downtime, Status::UPDATED);
             (new SlackAppService($this->app))->sendDowntimeRequestToSlack($downtime, Status::STARTED);
         }
 

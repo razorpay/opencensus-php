@@ -6471,6 +6471,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SAVE_MERCHANT_METHODS                             = 'SAVE_MERCHANT_METHODS';
     const PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE           = 'PAYMENTS_GENERAL_CONFIG_CREATE_RESPONSE';
     const PRODUCT_CONFIGURATION_CREATE_RESPONSE             = 'PRODUCT_CONFIGURATION_CREATE_RESPONSE';
+    const CALL_TO_DOWNTIME_MANAGER_FAILED                   = 'CALL_TO_DOWNTIME_MANAGER_FAILED';
+    const SENT_DOWNTIME_TO_DOWNTIME_MANAGER                 = 'SENT_DOWNTIME_TO_DOWNTIME_MANAGER';
+    const SENDING_DOWNTIME_TO_DOWNTIME_MANAGER              = 'SENDING_DOWNTIME_TO_DOWNTIME_MANAGER';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -1230,5 +1230,11 @@ return [
         'mock'     => env('AUTHZ_XPLATFORM_ENFORCER_MOCK', true),
         'url'      => env('AUTHZ_XPLATFORM_ENFORCER_BASE_URL'),
         'mock_url' => env('AUTHZ_XPLATFORM_ENFORCER_BASE_MOCK_URL')
-    ]
+    ],
+
+    'downtime_manager' => [
+        'url' => env('DOWNTIME_MANAGER_URL'),
+        'user' => env('DOWNTIME_MANAGER_USER'),
+        'password' => env('DOWNTIME_MANAGER_PASSWORD')
+    ],
 ];
