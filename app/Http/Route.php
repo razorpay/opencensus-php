@@ -2959,6 +2959,7 @@ class Route
         'bulk_cancel_internal_instrument_requests'     => ['patch',     'cancel_internal_instrument_request',                        'InstrumentRequestController@cancelInternalInstrumentRequests'    ],
         'instrument_request_razorx_admin'         => ['get',       'instrument_request/razorx/admin',                           'InstrumentRequestController@getRazorxForAdminDashboard'         ],
         'fetch_instrument_comment_list'           => ['get',       'instrument_request_comment_list',                           'InstrumentRequestController@fetchInstrumentCommentList'         ],
+        'fetch_instrument_previous_status'        => ['get',       'terminals/proxy/instrument_request_previous_status/{id}',    'TerminalController@proxyV2TerminalService'         ],
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
@@ -6173,6 +6174,7 @@ class Route
         'merchant_instrument_request_create_bulk_v2',
         'instrument_request_razorx_admin',
         'fetch_instrument_comment_list',
+        'fetch_instrument_previous_status',
         'fetch_merchant_instrument_requests',
         'wfs_config_create',
         'wfs_config_update',
@@ -7378,6 +7380,7 @@ class Route
         'bulk_cancel_internal_instrument_requests'         => Permission::CANCEL_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_instrument_comment_list'               => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'fetch_instrument_previous_status'            => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk_v2'  => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
@@ -9773,6 +9776,7 @@ class Route
             'fetch_batch_action_entities',
             'fetch_batch_actions',
             'fetch_instrument_comment_list',
+            'fetch_instrument_previous_status',
             'fetch_internal_instrument_requests',
             'fetch_fund_loading_downtime_by_id',
             'fetch_merchant_balance_configs',

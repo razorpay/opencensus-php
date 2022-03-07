@@ -10,6 +10,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BVS_BANK_VERIFICATION                        = 'MERCHANT_BVS_BANK_VERIFICATION';
     const GET_RZORX_EXPERIMENT_ERROR                            = 'GET_RZORX_EXPERIMENT_ERROR';
     const BVS_VERIFICATION_ERROR                                = 'BVS_VERIFICATION_ERROR';
+    const TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE             = 'TERMINAL_SERVICE_PREVIOUS_STATUS_RESPONSE';
 
     const HTTP_REQUEST_RESPONSE_SIZE                            = 'HTTP_REQUEST_RESPONSE_SIZE';
 
