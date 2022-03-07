@@ -247,6 +247,7 @@ class Service extends Base\Service
             'rx_search_enhancement_phase1',
             'rx_slack_integration_gtm',
             'rx_acc_statement_date_filter',
+            'rx_accounting_gtm',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
