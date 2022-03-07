@@ -144,6 +144,7 @@ class Netbanking
         IFSC::BDBL,
         IFSC::UCBA,
         IFSC::TMBL,
+        IFSC::PYTM,
     ];
 
     protected static $selfCorp = [
@@ -194,6 +195,7 @@ class Netbanking
         IFSC::DCBL,
         IFSC::UCBA,
         IFSC::TMBL,
+        IFSC::PYTM,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -224,6 +226,12 @@ class Netbanking
                 IFSC::SIBL,
             ],
         ],
+        Gateway::PAYTM => [
+            'retail' => [],
+            'tpv' => [
+                IFSC::PYTM,
+            ]
+        ]
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -504,6 +512,9 @@ class Netbanking
                 IFSC::VIJB,
                 IFSC::YESB,
             ],
+            'tpv' => [
+                IFSC::PYTM
+            ]
         ],
         Gateway::PAYU => [
             'retail' => [
