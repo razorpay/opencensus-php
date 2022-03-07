@@ -1,24 +1,40 @@
+**IMPORTANT**
+
+For reviewing PR, please post the PR on this channel #payments-dashboard-pr-reviews. 
+Tag Payment Dashboard PR Reviewers(@dashboard-pr-reviewers) user group.
+
+Please don't review this PR until and unless you are from @dashboard-pr-reviewers group.
+
+---
+
 **Description**
 1. What is this PR about?
 2. Write individual changes in points
 [Screenshot with each point if necessary]
 
+---
 
 **List of impacted parts in dashboard**
 - Eg: modules, features, whole dashboard, roles-permissions, etc.
 - Eg: Small/Big functionality in invoices
 - Eg: UI of entire invoices page
 
+---
 
 **Dependencies**
 - [ ] Add any related PRs? Like api, static, etc.
 
+---
 
 **QA sign off done by?**
 [Name]
 
+---
 
 **Check List**
+
+Make sure to check the checkboxes which are necessary for your PR.
+
 - [ ] Add Jira ID(s) in PR title or in the description?
 - [ ] Self-check PR once?
 - [ ] Is format of your [commit messages](https://www.conventionalcommits.org/en/v1.0.0/) proper?
