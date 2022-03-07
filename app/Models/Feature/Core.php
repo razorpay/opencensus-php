@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Mail\Merchant\FullES;
 use RZP\Mail\Los\LoanEligible;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Exception\LogicException;
@@ -293,14 +294,16 @@ class Core extends Base\Core
 
         else if(($feature->getName() === Constants::ES_ON_DEMAND) and
                 (in_array(Constants::ES_AUTOMATIC, $merchant->getEnabledFeatures()) === false) and
-                ($isLiveMode === true))
+                (in_array(Constants::ES_ON_DEMAND_RESTRICTED, $merchant->getEnabledFeatures()) === false) and
+                ($isLiveMode === true) and
+                $this->app['basicauth']->isAdminAuth() === true)
         {
             $merchantEmail = $merchant->getEmail();
 
             $data['contact_name']  = $merchant->getName();
             $data['contact_email'] = $merchantEmail;
 
-            $esEligibleEmail = new EsEligible($data);
+            $esEligibleEmail = new FullES($data);
 
             Mail::queue($esEligibleEmail);
 

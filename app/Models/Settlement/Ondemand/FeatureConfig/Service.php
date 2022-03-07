@@ -2,12 +2,15 @@
 
 namespace RZP\Models\Settlement\Ondemand\FeatureConfig;
 
+use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Mail\Merchant\FullES;
+use RZP\Mail\Merchant\PartialES;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Pricing\Feature as PricingFeature;
@@ -55,21 +58,11 @@ class Service extends Base\Service
                             (new Ondemand\Service)->createOrUpdatePricingRule($merchant, $input[Entity::ES_PRICING_PERCENT],
                                                                 PricingFeature::ESAUTOMATIC_RESTRICTED);
 
-
-                            if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
-                            {
-                                $featureInput = [
-                                    Feature\Entity::ENTITY_ID   => $input[Entity::MERCHANT_ID],
-                                    Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
-                                    Feature\Entity::NAME        => Feature\Constants::ES_ON_DEMAND,
-                                ];
-
-                                (new Feature\Core)->create($featureInput, true);
-                            }
+                            $flagUpdate = $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND);
 
                             if($input[Entity::FULL_ACCESS] === 'yes')
                             {
-                                $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+                                $flagUpdate = $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED) || $flagUpdate;
 
                                 if ($merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC_RESTRICTED) === true)
                                 {
@@ -80,10 +73,30 @@ class Service extends Base\Service
                             }
                             else if ($input[Entity::FULL_ACCESS] === 'no')
                             {
-                                $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+                                 $flagUpdate = $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED) || $flagUpdate ;
                             }
 
                             $this->createOrUpdateFeatureConfig($input);
+
+                            //Mails are sent only if there is any featureFlag updation
+                            if ($flagUpdate === true)
+                            {
+                                try
+                                {
+                                    $this->sendMailsPostEnableOndemand($input[Entity::FULL_ACCESS], $merchant);
+                                }
+                                catch (\Throwable $exception)
+                                {
+                                    $this->trace->traceException(
+                                        $exception,
+                                        Trace::ERROR,
+                                        TraceCode::ES_ONDEMAND_ENABLED_MERCHANT_NOT_NOTIFIED,
+                                        [
+                                            'merchant_id' => $input[Entity::MERCHANT_ID],
+                                            'full_access' => $input[Entity::FULL_ACCESS]
+                                        ]);
+                                }
+                            }
 
                         });
 
@@ -124,7 +137,14 @@ class Service extends Base\Service
         return $result->toArrayWithItems();
     }
 
-    public function enableFeatureFlag($merchant, $feature)
+    /**
+     * @param $merchant
+     * @param $feature
+     * @return bool
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    public function enableFeatureFlag($merchant, $feature): bool
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {
@@ -135,10 +155,19 @@ class Service extends Base\Service
             ];
 
             (new Feature\Core)->create($featureInput, true);
+
+            return true;
         }
+
+        return false;
     }
 
-    public function disableFeatureFlag($merchant, $feature)
+    /**
+     * @param $merchant
+     * @param $feature
+     * @return bool
+     */
+    public function disableFeatureFlag($merchant, $feature): bool
     {
         if ($merchant->isFeatureEnabled($feature) === true)
         {
@@ -148,7 +177,11 @@ class Service extends Base\Service
                                                                             $feature);
 
             (new Feature\Core)->delete($feature, true);
+
+            return true;
         }
+
+        return false;
     }
 
     public function createOrUpdateFeatureConfig($input)
@@ -232,16 +265,18 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
         $this->app['basicauth']->setMerchant($merchant);
-        (new \RZP\Models\Merchant\Service)->enableScheduledEs(true);
+        (new \RZP\Models\Merchant\Service)->enableScheduledEs(true, false);
     }
 
     public function enableFullESFromRestricted($merchantId)
     {
         $merchant = $this->repo->merchant->find($merchantId);
 
-        $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND);
+        $flagUpdate = false;
 
-        $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
+        $flagUpdate = $flagUpdate || $this->enableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND);
+
+        $flagUpdate = $flagUpdate || $this->disableFeatureFlag($merchant, Feature\Constants::ES_ON_DEMAND_RESTRICTED);
 
         if ($merchant->isFeatureEnabled(Feature\Constants::ES_AUTOMATIC_RESTRICTED) === true)
         {
@@ -249,5 +284,49 @@ class Service extends Base\Service
 
             $this->enableScheduledEs($merchantId);
         }
+
+        if ($flagUpdate === true)
+        {
+            try
+            {
+                $this->sendMailsPostEnableOndemand('yes', $merchant);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::FEATURE_ENABLE_PARTIAL_ES_MAIL_FAILED,
+                    [
+                        'merchant_id' => 'random'
+                    ]);
+            }
+        }
+    }
+
+    public function sendMailsPostEnableOndemand($fullAccess, $merchant)
+    {
+        $data['contact_name']  = $merchant->getName();
+        $data['contact_email'] = $merchant->getEmail();;
+
+        $mail = null;
+
+        if ($fullAccess === 'yes')
+        {
+            $mail = new FullES($data);
+        }
+        else
+        {
+            $mail = new PartialES($data);
+        }
+
+        Mail::queue($mail);
+
+        $this->trace->info(
+            TraceCode::ES_ONDEMAND_ENABLED_MERCHANT_NOTIFIED,
+            [
+                'merchant_id' => $merchant->getId(),
+                'full_access' => $fullAccess
+            ]);
     }
 }

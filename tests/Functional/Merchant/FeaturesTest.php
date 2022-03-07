@@ -20,11 +20,11 @@ use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Mail\Merchant\FullES as FullESMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
-use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -707,7 +707,7 @@ class FeaturesTest extends OAuthTestCase
 
         $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
 
-        Mail::assertQueued(EsEligibleMail::class);
+        Mail::assertQueued(FullESMail::class);
     }
 
     public function testEsEligibleEmailShouldNotNotify()

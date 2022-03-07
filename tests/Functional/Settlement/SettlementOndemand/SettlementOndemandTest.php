@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\SettlementOndemand;
 
 use Hash;
+use Mail;
 use Queue;
 use Config;
 use DateTime;
@@ -12,7 +13,9 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
+use RZP\Mail\Merchant\FullES;
 use RZP\Models\Pricing\Feature;
+use RZP\Mail\Merchant\PartialES;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Mock\RazorpayXClient;
@@ -1758,6 +1761,8 @@ class SettlementOndemandTest extends TestCase
     {
         $this->ba->batchAppAuth();
 
+        Mail::fake();
+
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
         $this->fixtures->create('merchant', [
@@ -1821,11 +1826,15 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNotNull($secondMerchantFeature);
 
+        Mail::assertQueued(FullES::class, 2);
+
     }
 
     public function testEnableEsOnDemandFullAccessWithEsAutomaticRestrictedEnabledFromBatchRoute()
     {
         $this->ba->batchAppAuth();
+
+        Mail::fake();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
@@ -1947,11 +1956,15 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($secondMerchantEsAutomaticFeature);
 
+        Mail::assertQueued(FullES::class, 2);
+
     }
 
     public function testDisableOnDemandFullAccessWithEsAutomaticEnabledFromBatchRoute()
     {
         $this->ba->batchAppAuth();
+
+        Mail::fake();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
@@ -2055,11 +2068,15 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($firstMerchantFeature);
 
         $this->assertNotNull($secondMerchantFeature);
+
+        Mail::assertQueued(PartialES::class, 2);
     }
 
     public function testEnableEsOnDemandRestrictedAccessFromBatchRoute()
     {
         $this->ba->batchAppAuth();
+
+        Mail::fake();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
@@ -2141,6 +2158,8 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($secondMerchantOndemandRestrictedFeature);
 
         $this->assertNotNull($secondMerchantOndemandFeature);
+
+        Mail::assertQueued(PartialES::class, 2);
     }
 
     public function testEarlySettlementFeaturePeriodCreateFullAccess()
@@ -2793,6 +2812,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->ba->batchAppAuth();
 
+        Mail::fake();
+
         $this->fixtures->org->createHdfcOrg();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
@@ -2887,6 +2908,8 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($secondMerchantOndemandRestrictedFeature);
 
         $this->assertNotNull($secondMerchantOndemandFeature);
+
+        Mail::assertQueued(PartialES::class, 2);
     }
 
     public function testEnableFullOndemandViaCron()
@@ -3069,6 +3092,8 @@ class SettlementOndemandTest extends TestCase
     {
         $this->ba->batchAppAuth();
 
+        Mail::fake();
+
         $this->fixtures->pricing->createStandardPlan();
 
         $this->fixtures->create('merchant', [
@@ -3160,6 +3185,8 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($secondMerchantOndemandRestrictedFeature);
 
+        Mail::assertQueued(FullES::class);
+
     }
 
     public function testUpdateFeatureConfigForCrossOrgMerchantFromBatchRoute()
@@ -3167,6 +3194,8 @@ class SettlementOndemandTest extends TestCase
         $orgId = '6dLbNSpv5XbCOG';
 
         $this->ba->batchAppAuth();
+
+        Mail::fake();
 
         $this->fixtures->org->createHdfcOrg();
 
@@ -3278,11 +3307,15 @@ class SettlementOndemandTest extends TestCase
 
         $this->assertNull($secondMerchantOndemandRestrictedFeature);
 
+        Mail::assertQueued(FullES::class, 2);
+
     }
 
     public function testEnableEsOnDemandRestrictedAccessFromBatchRouteFailure()
     {
         $this->ba->batchAppAuth();
+
+        Mail::fake();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
@@ -3336,6 +3369,8 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($firstMerchantOndemandFeature);
 
         $this->assertNotNull($firstMerchantOndemandRestrictedFeature);
+
+        Mail::assertQueued(PartialES::class, 1);
     }
 
     public function testOndemandCreationWithLimitExceededError()
