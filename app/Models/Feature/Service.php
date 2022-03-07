@@ -70,7 +70,8 @@ class Service extends Base\Service
                     ]);
 
                 // fetch merchant entity
-                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                // not fetching merchant incase of pg_gateway_onboarding
+                $merchant = ($action !== Constants::PG_GATEWAY_ONBOARD) ? $this->repo->merchant->findOrFailPublic($merchantId) : null;
 
                 switch ($action)
                 {
@@ -135,6 +136,40 @@ class Service extends Base\Service
                             }
                         }
                         break;
+
+                    case 'pg_shadow_onboard':
+
+                        // first sending the request to ledger because if anything fails we don't add the feature
+                        $this->ledgerPGAccountCreateRequest($merchant);
+
+                        // Add PG_LEDGER_JOURNAL_WRITES feature to merchant
+                        (new Core)->create(
+                            [
+                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Entity::ENTITY_ID => $merchant->getId(),
+                                Entity::NAME => Constants::PG_LEDGER_JOURNAL_WRITES,
+                            ]);
+                        break;
+
+                    case 'pg_gateway_onboard':
+
+                        $gateway = $request['gateway'];
+                        $this->ledgerPGGatewayAccountCreateRequest($merchantId, $gateway);
+                        break;
+
+                    //The case below removes feature flag from merchant
+                    case 'pg_shadow_merchant_offboard':
+
+                        $featureFlag = Constants::PG_LEDGER_JOURNAL_WRITES;
+                        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                            EntityConstants::MERCHANT,
+                            $merchant->getId(),
+                            $featureFlag);
+
+                        if (!empty($feature)) {
+                            (new Core)->delete($feature);
+                        }
+                        break;
                 }
             } catch(\Exception $e) {
 
@@ -157,6 +192,37 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    //Calls ledger service to create merchant sub accounts for PG tenant.
+    //Auto Loads Credits and Balances from current
+    private function ledgerPGAccountCreateRequest($merchant)
+    {
+        // Fetch Merchant balance. Required to generate request body for account creation on ledger
+        $balance = $this->repo->balance->getMerchantBalanceByType(
+            $merchant->getId(),
+            BalanceType::PRIMARY,
+            $this->mode);
+
+        //fetches fee and amount credits from credits table
+        $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCredits($merchant->getId());
+
+        (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
+            $merchant,
+            $this->mode,
+            $balance->getBalance(),
+            $creditBalances
+        );
+    }
+
+    private function ledgerPGGatewayAccountCreateRequest(string $merchantId, string $gateway)
+    {
+
+        (new Merchant\Balance\Ledger\Core)->createPGLedgerGatewayAccount(
+            $merchantId,
+            $this->mode,
+            $gateway
+        );
     }
 
     private function ledgerAccountCreateRequest($merchant)

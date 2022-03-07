@@ -17,9 +17,10 @@ use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 
 class Core extends Base\Core
 {
-    const LEDGER_ACCOUNT_ONBOARDING = 'ledger_account_onboarding';
-    const DIRECT_MERCHANT_ONBOARDING = 'direct_merchant_onboarding';
-    const SHARED_MERCHANT_ONBOARDING = 'shared_merchant_onboarding';
+    const LEDGER_ACCOUNT_ONBOARDING     = 'ledger_account_onboarding';
+    const DIRECT_MERCHANT_ONBOARDING    = 'direct_merchant_onboarding';
+    const SHARED_MERCHANT_ONBOARDING    = 'shared_merchant_onboarding';
+    const SHARED_GATEWAY_ONBOARDING     = 'shared_gateway_onboarding';
 
     const MODE                  = 'mode';
     const TENANT                = 'tenant';
@@ -31,21 +32,29 @@ class Core extends Base\Core
     const ENTITIES              = 'entities';
     const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
     const BANKING_ACCOUNT_ID    = 'banking_account_id';
+    const FEE                   = 'fee';
+    const AMOUNT                = 'amount';
+    const REFUND                = 'refund';
+    const GATEWAY               = 'gateway';
 
-    const MERCHANT_BALANCE_OPENING_BALANCE = 'merchant_balance_opening_balance';
-    const MERCHANT_REWARD_OPENING_BALANCE = 'merchant_reward_opening_balance';
+    const MERCHANT_BALANCE_OPENING_BALANCE  = 'merchant_balance_opening_balance';
+    const MERCHANT_REWARD_OPENING_BALANCE   = 'merchant_reward_opening_balance';
+    const MERCHANT_FEE_OPENING_BALANCE      = "merchant_fee_opening_balance";
+    const MERCHANT_REFUND_OPENING_BALANCE   = "merchant_refund_opening_balance";
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
     const UUID_FORMAT     = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
 
     const X = 'X';
+    const PG = 'PG';
 
     const SHARED = 'shared';
     const DIRECT = 'direct';
 
     protected $eventDescription = [
-        self::DIRECT_MERCHANT_ONBOARDING  => 'Event for onboarding of merchant on direct account',
-        self::SHARED_MERCHANT_ONBOARDING  => 'Event for onboarding of merchant on shared account',
+        self::DIRECT_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on direct account',
+        self::SHARED_MERCHANT_ONBOARDING    => 'Event for onboarding of merchant on shared account',
+        self::SHARED_GATEWAY_ONBOARDING     => 'Event for onboarding a gateway'
     ];
 
     const TIME_TAKEN       = 'time_taken';
@@ -107,6 +116,61 @@ class Core extends Base\Core
             $this->createXLedgerAccountPushToSNS($snsPyload);
         }
 
+    }
+
+    /***
+     * Make a call to ledger to create sub accounts for provided merchant
+     * @param Merchant $merchant
+     * @param string $mode
+     * @param int $balanceAmount
+     * @param array $creditBalances
+     */
+    public function createPGLedgerAccount(Merchant $merchant, string   $mode, int $balanceAmount, array $creditBalances)
+    {
+        try
+        {
+            $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::SHARED_MERCHANT_ONBOARDING, $balanceAmount, $creditBalances);
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->setIdempotencyKey(Uuid::uuid1()->toString());
+            $ledgerService->setTenantHeader(self::PG);
+            $ledgerService->createAccountsOnEvent($payload, true);
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception and retry in async
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_CREATE_REQUEST_FAILED,
+                [
+                    self::MERCHANT_ID => $merchant->getMerchantId(),
+                    self::TENANT      => self::PG
+                ]);
+        }
+    }
+
+    public function createPGLedgerGatewayAccount(string $merchantId, string $mode, string $gateway)
+    {
+        try
+        {
+            $payload = $this->getPGLedgerGatewayAccountCreatePayload($mode, $merchantId, self::SHARED_GATEWAY_ONBOARDING, $gateway);
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->setIdempotencyKey(Uuid::uuid1()->toString());
+            $ledgerService->setTenantHeader(self::PG);
+            $ledgerService->createAccountsOnEvent($payload, true);
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception and retry in async
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_CREATE_REQUEST_FAILED,
+                [
+                    self::MERCHANT_ID => $merchantId,
+                    self::GATEWAY     => $gateway
+                ]);
+        }
     }
 
     public function createXLedgerAccountPushToSNS($payload)
@@ -201,6 +265,84 @@ class Core extends Base\Core
             TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
             [
                 'payload'               => $payload,
+            ]
+        );
+
+        return $payload;
+    }
+
+    public function getPGLedgerAccountCreatePayload($mode, $merchant, $event, $balanceAmount, $creditBalances): array
+    {
+        $eventObj = [
+            self::EVENT_NAME            => $event,
+            self::EVENT_DESCRIPTION     => $this->eventDescription[$event],
+            self::ENTITIES              => (object) [],
+        ];
+
+        $payload = [
+            self::TENANT            => self::PG,
+            self::MODE              => $mode,
+            self::MERCHANT_ID       => $merchant->getId(),
+            self::EVENTS             => [
+                $eventObj
+            ]
+        ];
+
+        if ($balanceAmount !== 0)
+        {
+            $payload[self::MERCHANT_BALANCE_OPENING_BALANCE] = (string) $balanceAmount;
+        }
+
+        if(isset($creditBalances[self::FEE]) === true)
+        {
+            $payload[self::MERCHANT_FEE_OPENING_BALANCE] = $creditBalances[self::FEE];
+        }
+
+        if(isset($creditBalances[self::AMOUNT]) === true)
+        {
+            $payload[self::MERCHANT_REWARD_OPENING_BALANCE] = $creditBalances[self::AMOUNT];
+        }
+
+        if(isset($creditBalances[self::REFUND]) === true)
+        {
+            $payload[self::MERCHANT_REFUND_OPENING_BALANCE] = $creditBalances[self::REFUND];
+        }
+
+        $this->trace->info(
+            TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
+            [
+                'payload'               => $payload,
+                self::TENANT            => self::PG
+            ]
+        );
+
+        return $payload;
+    }
+
+    public function getPGLedgerGatewayAccountCreatePayload($mode, $merchantId, $event, $gateway): array
+    {
+        $eventObj = [
+            self::EVENT_NAME            => $event,
+            self::EVENT_DESCRIPTION     => $this->eventDescription[$event],
+            self::ENTITIES              => [
+                self::GATEWAY => array($gateway)
+            ],
+        ];
+
+        $payload = [
+            self::TENANT            => self::PG,
+            self::MODE              => $mode,
+            self::MERCHANT_ID       => $merchantId,
+            self::EVENTS            => [
+                $eventObj
+            ]
+        ];
+
+        $this->trace->info(
+            TraceCode::LEDGER_REQUEST_PAYLOAD_CREATED,
+            [
+                'payload'               => $payload,
+                self::TENANT            => self::PG
             ]
         );
 

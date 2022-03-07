@@ -202,9 +202,10 @@ class Constants
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
 
     // Ledger constants
-    const IDEMPOTENCY_KEY = 'idempotency_key';
-    const MERCHANT_ID     = 'merchant_id';
-    const MODE            = 'mode';
+    const IDEMPOTENCY_KEY       = 'idempotency_key';
+    const MERCHANT_ID           = 'merchant_id';
+    const MODE                  = 'mode';
+    const PG_GATEWAY_ONBOARD    = 'pg_gateway_onboard';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
@@ -1002,6 +1003,12 @@ class Constants
     const LEDGER_JOURNAL_READS  = 'ledger_journal_reads';
     const LEDGER_REVERSE_SHADOW = 'ledger_reverse_shadow';
 
+
+    /**
+     * Ledger Features for PG release
+     */
+    const PG_LEDGER_JOURNAL_WRITES = 'pg_ledger_journal_writes';
+
     /**
      * If contact number updated via admin dashboard, mark it verified by default if feature present on org
      */
@@ -1609,6 +1616,7 @@ class Constants
         self::FEATURE_BBPS                    => true,
         self::ADDRESS_REQUIRED                => true,
         self::LEDGER_JOURNAL_WRITES           => true,
+        self::PG_LEDGER_JOURNAL_WRITES        => true,
         self::LEDGER_JOURNAL_READS            => true,
         self::LEDGER_REVERSE_SHADOW           => true,
         self::ORG_AXIS_PAYPAL                 => true,

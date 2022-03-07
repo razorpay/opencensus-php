@@ -296,6 +296,32 @@ class Repository extends Base\Repository
         return $data;
     }
 
+    public function getTypeAggregatedMerchantCredits(string $merchantId): array
+    {
+        $results =  $this->newQuery()
+                        ->selectRaw(
+                            Entity::TYPE . ', ' .
+                            'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+                        ->where(Entity::VALUE, '>', 0)
+                        ->merchantId($merchantId)
+                        ->where(function ($query)
+                        {
+                            $query->where(Entity::EXPIRED_AT, '>', time())
+                                ->orWhereNull(Entity::EXPIRED_AT);
+                        })
+                        ->groupBy(Entity::TYPE)
+                        ->get();
+
+        $data = [];
+
+        foreach ($results as $record)
+        {
+            $data[$record[Entity::TYPE]] = $record['sum'];
+        }
+
+        return $data;
+    }
+
     public function getTypeAggregatedMerchantCreditsForProductForDashboard(string $merchantId, string $product): array
     {
         $results =  $this->newQuery()
