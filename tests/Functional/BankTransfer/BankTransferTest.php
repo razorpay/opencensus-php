@@ -8525,4 +8525,151 @@ class BankTransferTest extends TestCase
         $this->processBankTransferProcessWithDifferentAmount(100);
         $this->processBankTransferProcessWithDifferentAmount(200);
     }
+
+    public function testBankTransferIciciWherePayerAccountIsExtractedFromPayerName()
+    {
+        $this->setupForIciciXFundLoading();
+
+        $data = $this->testData[__FUNCTION__]['request']['content'];
+
+        $utr = $data['transaction_id'];
+
+        $expectedPayerAccount = '073560123123';
+
+        $payerIfsc = $data['payer_ifsc'];
+
+        $payerName = 'Name of account holder';
+
+        $payeeAccount = $data['payee_account'];
+
+        $payeeIfsc = $data['payee_ifsc'];
+
+        $description = $data['description'];
+
+        $expectedAmount = $data['amount'] . '00';
+
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::PAYER_ACCOUNT_NAME_INVALID_REGEXES => ['HSBC', '-']
+        ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading,
+            $countOfPayoutsBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $countOfBankTransferRequestsBeforeFundLoading = count($this->getDbEntities('bank_transfer_request', [], 'live'));
+
+        Mail::fake();
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => '3434123412341234',
+        ]);
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => 'ShrdVirtualAcc',
+                'type'           => 'virtual_account',
+                'account_number' => '3434123412341234',
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => 'ShrdVirtualAcc',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'active',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+            [
+                'balance_id' => $balance1->getId(),
+                'status'     => 'approved',
+                'payer_ifsc' => 'HSBC0560002',
+                'payer_account_number' => '73560123123'
+            ]);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading,
+            $countOfPayoutsAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no new payment or new payout was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+        $this->assertEquals($countOfPayoutsBeforeFundLoading, $countOfPayoutsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $countOfBankTransferRequestsAfterFundLoading = count($this->getDbEntities('bank_transfer_request', [], 'live'));
+        $this->assertEquals($countOfBankTransferRequestsBeforeFundLoading + 1, $countOfBankTransferRequestsAfterFundLoading);
+
+        $creditTransaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $creditTransaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals('bank_transfer', $creditTransaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $creditTransaction->getEntityId());
+        $this->assertEquals($expectedAmount, $creditTransaction->getAmount());
+        $this->assertEquals($expectedAmount, $creditTransaction->getCredit());
+        $this->assertEquals(0, $creditTransaction->getDebit());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals('ShrdVirtualAcc', $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+        $this->assertEquals(S::PROCESSED, $bankTransfer->getStatus());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($expectedPayerAccount, $payerBankAccount->getAccountNumber());
+        $this->assertEquals($payerIfsc, $payerBankAccount->getIfscCode());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($payerIfsc, $bankTransfer->getPayerIfsc());
+        $this->assertEquals($payerName, $bankTransfer->getPayerName());
+        $this->assertEquals($expectedPayerAccount, $bankTransfer->getPayerAccount());
+        $this->assertEquals($payeeAccount, $bankTransfer->getPayeeAccount());
+        $this->assertEquals($payeeIfsc, $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($description, $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        Mail::assertNotQueued(FundLoadingFailed::class);
+
+        $updatedMerchantBankingBalance = $this->getDbEntity('balance',
+            [
+                'merchant_id'   => '10000000000000',
+                'type'          => 'banking'
+            ], 'live');
+
+        // Assertions on balance.
+        $this->assertEquals($balance1['balance'] + $bankTransfer['amount'],
+            $updatedMerchantBankingBalance['balance']);
+    }
 }

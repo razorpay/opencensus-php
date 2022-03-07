@@ -120,6 +120,8 @@ class Service extends Base\Service
 
             $this->removeInvalidRegexFromPayerAccount($input);
 
+            $this->extractPayerNameAndAccountFromPayerName($input);
+
             $bankAccount = $this->getQrBankAccount($input);
 
             if ($bankAccount !== null)
@@ -197,6 +199,38 @@ class Service extends Base\Service
             }
 
             $input[Entity::PAYER_ACCOUNT] = $payerAccountNumber;
+        }
+    }
+
+    /**
+     * HSBC data shows an exception where payer account has the value `IN` and its correct value is part of the payer name
+     * This method is used to extract out payer account from the incoming payer name and update the payer name
+     */
+    private function extractPayerNameAndAccountFromPayerName(& $input)
+    {
+        $invalidPayerAccountValue = 'IN';
+
+        if (isset($input[Entity::PAYER_ACCOUNT]) === true && $input[Entity::PAYER_ACCOUNT] === $invalidPayerAccountValue)
+        {
+            $payerName = $input[Entity::PAYER_NAME];
+
+            $payerAccountNameInvalidRegexes = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::PAYER_ACCOUNT_NAME_INVALID_REGEXES]);
+
+            foreach ($payerAccountNameInvalidRegexes as $invalidRegex)
+            {
+                $invalidPrefixRegex = '/' . $invalidRegex . '/i';
+
+                $payerName = preg_replace($invalidPrefixRegex, '', $payerName); // nosemgrep : php.lang.security.preg-replace-eval.preg-replace-eval
+            }
+
+            $payerAccountAndNameArr = explode(" ", trim($payerName), 2);
+
+            if (sizeof($payerAccountAndNameArr) === 2)
+            {
+                $input[Entity::PAYER_ACCOUNT] = $payerAccountAndNameArr[0];
+
+                $input[Entity::PAYER_NAME] = $payerAccountAndNameArr[1];
+            }
         }
     }
 

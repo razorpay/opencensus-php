@@ -146,6 +146,8 @@ class ConfigKey
 
     const PAYER_ACCOUNT_NUMBER_INVALID_REGEXES  = self::PREFIX . 'payer_account_number_invalid_regexes';
 
+    const PAYER_ACCOUNT_NAME_INVALID_REGEXES  = self::PREFIX . 'payer_account_name_invalid_regexes';
+
     const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
 
     const RBL_STATEMENT_FETCH_WINDOW_LENGTH     = self::PREFIX . 'rbl_statement_fetch_window_length';
@@ -389,6 +391,7 @@ class ConfigKey
         self::RZP_INTERNAL_ACCOUNTS,
         self::SUB_BALANCES_MAP,
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
+        self::PAYER_ACCOUNT_NAME_INVALID_REGEXES,
     ];
 
     const REDIS_CONFIG_MAP = [
@@ -411,6 +414,7 @@ class ConfigKey
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS => [Name::EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS],
         self::PAYER_ACCOUNT_NUMBER_INVALID_REGEXES => [Name::SET_PAYER_ACCOUNT_INVALID_REGEX],
         self::USE_MASTER_DB_CONNECTION => [Name::USE_MASTER_DB_CONNECTION],
+        self::PAYER_ACCOUNT_NAME_INVALID_REGEXES => [Name::SET_PAYER_NAME_INVALID_REGEX],
     ];
 
     /**

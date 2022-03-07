@@ -186,7 +186,8 @@ class Validator extends Base\Validator
         ConfigKey::RZP_INTERNAL_ACCOUNTS                                               => 'array',
         ConfigKey::SUB_BALANCES_MAP                                                    => 'filled|array',
         ConfigKey::BAS_CREDIT_BEFORE_DEBIT_UTRS                                        => 'array',
-        ConfigKey::USE_MASTER_DB_CONNECTION                                            => 'filled|boolean'
+        ConfigKey::USE_MASTER_DB_CONNECTION                                            => 'filled|boolean',
+        ConfigKey::PAYER_ACCOUNT_NAME_INVALID_REGEXES                                  => 'filled|array'
     ];
 
     protected static $setRedisKeysRules = [
