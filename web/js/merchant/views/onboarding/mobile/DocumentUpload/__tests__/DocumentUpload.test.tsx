@@ -116,3 +116,16 @@ test('on changing category or sub-category expected doc is visible or not', asyn
   );
   waitFor(() => fireEvent.blur(screen.getByLabelText('Shop Establishment Number')));
 });
+
+test('should show aadhaar error message', async () => {
+  ActivationDB.update({
+    business_type: '1',
+    activation_form_milestone: 'L1',
+    verification_error_codes: {
+      poa_verification_status: 'AADHAAR_BACK_NOT_MATCHED',
+    },
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('Input document does not match Aadhaar back')).toBeInTheDocument();
+});

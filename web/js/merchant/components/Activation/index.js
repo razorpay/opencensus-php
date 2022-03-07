@@ -2991,7 +2991,8 @@ export function ActivationField(field) {
 
   if (rest.checkValidityFromAPI) {
     const error = rest.checkValidityFromAPI(this);
-    if (!this.state.dirty[rest.name] && error) rest.propagatedError = error;
+    if ((!this.state.dirty[rest.name] || this.state.dirty[rest.name] === 'fakepath') && error)
+      rest.propagatedError = error;
     else rest.propagatedError = '';
   }
 

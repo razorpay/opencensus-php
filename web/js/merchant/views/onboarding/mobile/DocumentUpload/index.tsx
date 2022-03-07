@@ -38,6 +38,7 @@ import {
   isDocumentTabComplete,
   getDefaultSelectedDocs,
   getDocumentTitle,
+  getAadhaarErrorMessage,
 } from '../services/utils';
 import { analyticsTrack } from 'common/services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
@@ -369,6 +370,14 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
     });
   };
 
+  const verificationErrorCode = data?.verification_error_codes ?? [];
+  const errorCode =
+    verificationErrorCode && Object.keys(verificationErrorCode).length
+      ? verificationErrorCode.poa_verification_status
+      : '';
+
+  const aadhaarErrorMessage = getAadhaarErrorMessage(errorCode);
+
   return (
     <>
       {shouldShowEsignFlow && (
@@ -559,6 +568,9 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                   />
                   <Text color="shade.950" size="xsmall">
                     Back Side
+                  </Text>
+                  <Text color="negative.900" size="xsmall">
+                    {aadhaarErrorMessage}
                   </Text>
                 </Field>
               </FormSection>

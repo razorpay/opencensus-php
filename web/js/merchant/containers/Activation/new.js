@@ -208,6 +208,7 @@ export default class ActivationContainer extends React.Component {
       cin_verification_status,
       company_cin,
       gstin,
+      verification_error_codes,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -242,6 +243,7 @@ export default class ActivationContainer extends React.Component {
       cin_verification_status,
       company_cin,
       gstin,
+      verification_error_codes,
     });
 
     this.props.updateSession({

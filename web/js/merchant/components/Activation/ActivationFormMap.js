@@ -52,6 +52,7 @@ import {
   isCompanyPANVerified,
   canShowCustomGstinField,
   getBankVerificationAtteemptError,
+  getAadhaarErrorMessage,
 } from './ActivationUtils';
 
 import {
@@ -1444,6 +1445,7 @@ const uploadFields = [
       return null;
     },
     _name: 'address_proof',
+    _autoRenderImpure: true,
     _cmp: Input.Select,
     options: Object.keys(ADDRESS_PROOF_TYPES).map((type) => {
       return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
@@ -1466,15 +1468,26 @@ const uploadFields = [
       const addressProofType = ADDRESS_PROOF_TYPES[address_proof];
       return addressProofType.label + ' ' + addressProofType.frontView;
     },
+    _autoRenderImpure: true,
     getName: (activation) => activation.state.address_proof + '_' + 'front',
     _cmp: Input.File,
-    className: 'document-group',
+    className: (activation) => {
+      const errorClass =
+        getAadhaarErrorMessage(activation) && activation.isOnKYCTab() ? 'is-mature is-invalid' : '';
+      return `document-group ${errorClass}`;
+    },
     _type: 'address_proof_doc_upload',
     _when: (activation) => {
       return (
         (_showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled) &&
         showAadharDoc(activation)
       );
+    },
+    checkValidityFromAPI: (activation) => {
+      if (activation.isOnKYCTab()) {
+        return getAadhaarErrorMessage(activation);
+      }
+      return '';
     },
   },
   {
@@ -1490,8 +1503,12 @@ const uploadFields = [
     },
     getName: (activation) => activation.state.address_proof + '_' + 'back',
     _cmp: Input.File,
-    className: 'document-group',
+    className: (activation) => {
+      const errorClass = getAadhaarErrorMessage(activation) ? 'is-mature is-invalid' : '';
+      return `document-group ${errorClass}`;
+    },
     _type: 'address_proof_doc_upload',
+    _autoRenderImpure: true,
     description: (activation) =>
       isUnregisteredBusiness(activation) ? 'JPG/PNG of max. size 2MB or PDF of max. size 4MB' : '',
     _when: (activation) => {
@@ -1500,6 +1517,7 @@ const uploadFields = [
         showAadharDoc(activation)
       );
     },
+    checkValidityFromAPI: getAadhaarErrorMessage,
   },
   {
     name: 'business_proof_url',

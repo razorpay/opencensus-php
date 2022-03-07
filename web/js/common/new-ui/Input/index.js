@@ -606,7 +606,7 @@ Field.File2 = (_) => {
 };
 
 Field.File = (_) => {
-  const { label, description } = separateDomProps(_);
+  const { label, description, propagatedError } = separateDomProps(_);
 
   return (
     <div class={inputClass({ props: _ })}>
@@ -627,6 +627,7 @@ Field.File = (_) => {
           downloadUrl={_.downloadUrl}
           showCloseBtn={_.showCloseBtn}
         />
+        <Error text={propagatedError} />
         <Description text={description} />
       </div>
     </div>

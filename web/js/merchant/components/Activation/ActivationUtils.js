@@ -543,6 +543,49 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
   return activationState;
 }
 
+const getAadhaarErrorMessage = (activation) => {
+  const verificationErrorCode =
+    activation.props.data.verification_error_codes ||
+    activation.props.user.verification_error_codes;
+
+  const errorCode =
+    verificationErrorCode && Object.keys(verificationErrorCode).length
+      ? verificationErrorCode.poa_verification_status
+      : '';
+
+  switch (errorCode) {
+    //aadhar front error
+    case 'AADHAAR_FRONT_NOT_MATCHED':
+    case 'AADHAAR_FRONT_INVALID':
+      return 'Input document does not match Aadhaar front';
+    //aadhar back error
+    case 'AADHAAR_BACK_NOT_MATCHED':
+    case 'AADHAAR_BACK_INVALID':
+      return 'Input document does not match Aadhaar back';
+    //incorrect details
+    case 'AADHAAR_VALIDATION_ERROR':
+    case 'AADHAAR_ARTEFACT_INVALIDATED':
+    case 'AADHAAR_DOCUMENT_UNIDENTIFIABLE':
+    case 'AADHAAR_INPUT_DATA_ISSUE':
+    case 'AADHAAR_INPUT_IMAGE_ISSUE':
+    case 'AADHAAR_DATA_UNAVAILABLE':
+    case 'AADHAAR_REMOTE_RECORDS_INCONSISTENT':
+    case 'AADHAAR_DATA_CROSS_CHECK_ERROR':
+    case 'AADHAAR_NOT_SUPPORTED':
+    case 'AADHAAR_INVALID_DOCUMENT_ERROR':
+    case 'AADHAAR_NOT_VALID':
+    case 'AADHAAR_NAME_BLANK':
+      return 'Please upload correct Aadhaar copy. If details were correct, please ensure you upload clearly visible picture/scan';
+    //not match
+    case 'AADHAAR_RULE_EXECUTION_FAILED':
+    case 'AADHAAR_NAME_MISMATCH':
+    case 'AADHAAR_NUMBER_MISMATCH':
+      return 'Aadhaar details do not match. Please check and upload correct Aadhaar copy';
+    default:
+      return '';
+  }
+};
+
 const getBankTabHeader = (businessType) => {
   let title = bankAccountTabName;
   let subtitle = '';
@@ -620,4 +663,5 @@ export {
   isVerificationFailed,
   canShowCustomGstinField,
   getBankVerificationAtteemptError,
+  getAadhaarErrorMessage,
 };
