@@ -29,6 +29,12 @@ class CardlessEmi extends Service
         $this->input = $input;
 
 
+        if($input['payment']['wallet'] === \RZP\Models\Payment\Processor\CardlessEmi::ZESTMONEY && $action === "capture")
+        {
+            return ;
+        }
+
+
         if ($this->action === Action::AUTHORIZE_FAILED)
         {
             $action = Action::VERIFY;
