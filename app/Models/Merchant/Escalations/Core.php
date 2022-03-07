@@ -344,6 +344,17 @@ class Core extends Base\Core
             'merchants_count' => count($transactedMerchants),
         ]);
 
+        $m2mMerchants = $this->repo->m2m_referral->filterMerchants($transactedMerchants);
+
+        $this->trace->info(TraceCode::ESCALATION_CRON_TRACE, [
+            'last_cron_time'  => $lastCronTime,
+            'type'            => 'm2m merchants',
+            'merchants_count' => count($m2mMerchants),
+        ]);
+
+        $transactedMerchants =  array_diff($transactedMerchants, $m2mMerchants);
+
+
         $merchantIdChunks = array_chunk($transactedMerchants, 100);
         $merchantIdList   = [];
 

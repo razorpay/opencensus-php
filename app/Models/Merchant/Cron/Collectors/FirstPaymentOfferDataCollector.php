@@ -38,7 +38,25 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
         $transactedMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
             $merchantList, $startTime);
 
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'args'          => $this->args,
+            'start_time'    => $startTime,
+            'end_time'      => $endTime,
+            'transactedMerchants' => count($transactedMerchants)
+        ]);
+
         $merchantIdList =  array_diff($merchantList, $transactedMerchants);
+
+        $m2mMerchants = $this->repo->m2m_referral->filterMerchants($merchantIdList);
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'args'          => $this->args,
+            'start_time'    => $startTime,
+            'end_time'      => $endTime,
+            'm2mMerchants' => count($m2mMerchants)
+        ]);
+
+        $merchantIdList =  array_diff($merchantIdList, $m2mMerchants);
 
         $finalMidList = [];
 

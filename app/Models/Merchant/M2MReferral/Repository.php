@@ -59,4 +59,12 @@ class Repository extends Base\Repository
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
     }
+    public function filterMerchants(array $merchantIdList)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
 }

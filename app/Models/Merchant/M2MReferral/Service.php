@@ -182,6 +182,7 @@ class Service extends Base\Service
 
         return null;
     }
+
     public function getReferralCodeIfApplicable(MerchantEntity $merchant)
     {
         try
@@ -197,13 +198,36 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e,
                                          Trace::ERROR,
-                                         TraceCode::SEND_MTU_EVENT_FAILED,
+                                         TraceCode::GET_M2M_REFERRALS,
                                          [
                                              DEConstants::MERCHANT_ID => $merchant->getId()]);
 
         }
 
         return null;
+    }
+    public function isReferralMerchant(MerchantEntity $merchant)
+    {
+        try
+        {
+            $m2mReferral = $this->entityRepo->getReferralDetailsFromMerchantId($merchant->getId());
+
+            if (empty($m2mReferral) === false)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::GET_M2M_REFERRALS,
+                                         [
+                                             DEConstants::MERCHANT_ID => $merchant->getId()]);
+
+        }
+
+        return false;
     }
     protected function sendPurchaseEvent($m2mReferral)
     {

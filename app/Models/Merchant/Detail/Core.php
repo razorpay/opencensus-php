@@ -3084,6 +3084,11 @@ class Core extends Base\Core
             return false;
         }
 
+        if((new Merchant\M2MReferral\Service())->isReferralMerchant($merchant) === true)
+        {
+            return false;
+        }
+
         $query = [
             'filters' => [
                 'default' => [

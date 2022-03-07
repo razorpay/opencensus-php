@@ -6240,6 +6240,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //M2M
     const CREATE_M2M_REFERRALS                      = "CREATE_M2M_REFERRALS";
     const EDIT_M2M_REFERRALS                        = "EDIT_M2M_REFERRALS";
+    const GET_M2M_REFERRALS                         = "GET_M2M_REFERRALS";
     const STORE_FRIEND_BUY_REFERRAL_DETAILS_FAILED  = 'STORE_FRIEND_BUY_REFERRAL_DETAILS_FAILED';
     const FRIEND_BUY_SERVICE_REQUEST                = 'FRIEND_BUY_SERVICE_REQUEST';
     const FRIEND_BUY_SERVICE_REQUEST_FAILED         = 'FRIEND_BUY_SERVICE_REQUEST_FAILED';
