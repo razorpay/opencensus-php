@@ -71,6 +71,12 @@ const ConnectedBanking = lazy(() =>
   import(/* webpackChunkName: "ConnectedBanking" */ 'merchant/views/ConnectedBanking'),
 );
 
+const RazorpayXWidget = lazy(() =>
+  import(
+    /* webpackChunkName: "RazorpayXWidget" */ 'merchant/views/RazorpayXWidget/RazorpayXWidget'
+  ),
+);
+
 const BBPS = lazy(() => import(/* webpackChunkName: "BBPS" */ 'merchant/views/BBPS'));
 const PaymentButton = lazy(() =>
   import(/* webpackChunkName: "PaymentButton" */ 'merchant/views/PaymentButton'),
@@ -478,6 +484,12 @@ export default class Content extends Component {
             additionalCondition={(user) =>
               user.isICICILinkedCAEnabled || getXCAStatus(user).showState === 'neostone-tracker'
             }
+          />
+
+          <ShowWhenRoute
+            path="/razorpayx"
+            component={RazorpayXWidget}
+            additionalCondition={(user) => user.isShowRazorpayXWidgetEnabled && user.isOrgRZP}
           />
 
           <ShowWhenRoute

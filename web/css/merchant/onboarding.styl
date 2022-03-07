@@ -406,6 +406,7 @@
 
 .OnBoarding--Subscription,
 .OnBoarding--Route,
+.OnBoarding--RazorpayX,
 .OnBoarding--PaymentPages,
 .OnBoarding--MagicCheckout,
 .OnBoarding--PaymentLinks,
@@ -730,3 +731,60 @@
         width: 530px;
   .right-floating-card
     right: 90px;
+
+.OnBoarding--RazorpayX
+  .Landing--Image
+    background: none
+    &:before
+      background: #242B4D
+      box-shadow: 2px 2px 0 #171B2F, 2px 2px 0 #171B2F, 3px 3px 0 #252D5A, 4px 4px 0 #252D5A
+    img
+      right: 0
+    @media(max-width: 1250px)
+      display: none
+      
+  .Slider
+    background-image: url("https://cdn.razorpay.com/static/assets/razorpayx/razorpayx-connected-banking-bg.svg")
+    background-size: cover
+    background-color: transparent
+    min-height: 640px
+
+    .SliderDots
+      bottom: 12%
+      z-index: 5
+      
+      .SliderDots-dot
+        border-color: rgba(255, 255, 255, 0.54)
+
+        &--active
+          background-color: rgba(255, 255, 255, 0.54)
+
+  .Product--Details
+    margin-top: 60px
+    @media(max-width: 1250px)
+      width: 100%
+      margin-top: 0
+      padding: 24px
+    
+    .Details-heading
+      display: none
+    
+    .Details-desc
+      img.razorpayx-logo
+        margin-bottom: 14px
+
+      color: rgba(255, 255, 255, 0.74)
+      font-size: 16px
+      font-weight: 400
+
+    .Button-Container
+      @media(max-width: 375px)
+        position: static
+        display: flex
+        justify-content: flex-end
+
+        button.Forward-Button
+            margin-top: 40px
+
+.text-razorpayx-orange
+  color: #FC6D0B

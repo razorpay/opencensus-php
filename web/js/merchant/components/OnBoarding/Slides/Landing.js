@@ -29,6 +29,7 @@ export default class OnBoardingLanding extends React.PureComponent {
       imageUrl,
       ytVideoUrl,
       callout,
+      ctaText,
       className = '',
     } = this.props;
 
@@ -76,7 +77,7 @@ export default class OnBoardingLanding extends React.PureComponent {
 
           <div class="Button-Container">
             <Button class="Forward-Button" iconAfter="arrow-forward" onClick={this.handleNexButton}>
-              Read More
+              {ctaText || 'Read More'}
             </Button>
           </div>
         </div>

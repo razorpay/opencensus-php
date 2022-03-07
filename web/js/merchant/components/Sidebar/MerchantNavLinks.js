@@ -164,6 +164,17 @@ function MerchantNavLinks(props) {
         }
       />
       <MainNavLink
+        label="Banking"
+        type="product"
+        icon="i i-razorpayx text-razorpayx-orange"
+        to="/razorpayx"
+        isNew={true}
+        additionalCondition={(currentUser) =>
+          currentUser.isShowRazorpayXWidgetEnabled && currentUser.isOrgRZP
+        }
+      />
+
+      <MainNavLink
         label="Subscriptions"
         type="product"
         icon="i i-refresh text-info"

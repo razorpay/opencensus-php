@@ -493,6 +493,10 @@ export default class User {
     return getSplitzExperimentVariant('connected_banking_icici_exp')?.variables?.result === 'on';
   }
 
+  get isShowRazorpayXWidgetEnabled() {
+    return getSplitzExperimentVariant('show_razorpayx_widget_exp')?.variables?.result === 'on';
+  }
+
   get isProjectMoonshineEnabled() {
     return getSplitzExperimentVariant('project_moonshine')?.variables?.result === 'on';
   }

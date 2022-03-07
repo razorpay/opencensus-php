@@ -290,6 +290,14 @@ export default {
     'IikVfIRle60YdX',
   ],
 
+  show_razorpayx_widget_exp: [
+    //beta experiment ids
+    'J1MNmTAEwWWYX2',
+
+    //prod experiment ids,
+    'J299iRPbuBRWeb',
+  ],
+
   catalyst_banner_fl_experiment: [
     // beta experiment ids
     'IScORMIXWZ7mKa',
