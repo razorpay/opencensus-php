@@ -861,6 +861,12 @@ class Constants
     const PAYOUTS_ON_HOLD = 'payouts_on_hold';
 
     /**
+     * Used to manage on_hold feature(Holding payout for a certain sla) in case of bene/NPCI downtime for payout requests
+     * If this flag is enabled the payout will be not be hold for the merchant even if bene or NPCI or partner_bank is down
+     */
+    const SKIP_HOLD_PAYOUTS = 'skip_hold_payouts';
+
+    /**
      * Merchant feature used to control visibility of dcc markup on frontend
      * Even if the feature 'PAYOUTS_ON_HOLD' is set for merchants, 10% of the payouts may be sent as test transactions
      * to detect uptime. If this flag is enabled ( solely for DMT merchants), the payout will never be sent as test
@@ -1572,6 +1578,7 @@ class Constants
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
+        self::SKIP_HOLD_PAYOUTS               => true,
         self::SKIP_TEST_TXN_FOR_DMT           => true,
         self::SKIP_CONTACT_DEDUP_FA_BA        => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
