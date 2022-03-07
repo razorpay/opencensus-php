@@ -5805,6 +5805,9 @@ ALTER TABLE merchant_banks
 ALTER TABLE terminals
     ADD COLUMN cred TINYINT(1) NOT NULL DEFAULT 0;
 
+ALTER TABLE terminals
+    ADD COLUMN offline TINYINT(1) NOT NULL DEFAULT 0;
+
 ALTER TABLE promotions
     ADD COLUMN product varchar(255) DEFAULT NULL,
     ADD COLUMN event_id char(14) DEFAULT NULL,

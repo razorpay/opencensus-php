@@ -1297,6 +1297,56 @@ return [
         ],
     ],
 
+    'testCreateOfflineTerminal' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                  => 'offline_hdfc',
+                'gateway_merchant_id'      => '12344',
+                'gateway_acquirer'         => 'hdfc',
+                'offline'                  =>  1,
+                'type'                  => [
+                    'direct_settlement_without_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+    ],
+
+    'testCreateOfflineBadRequestTerminal' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                  => 'offline_hdfc',
+                'gateway_merchant_id'      => '12344',
+                'gateway_acquirer'         => 'hdfc',
+                'gateway_terminal_id'      => '12344',
+                'offline'                     =>  1,
+                'type'                  => [
+                    'direct_settlement_without_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "gateway_terminal_id is/are not required and should not be sent",
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testCreateTwidTerminal' => [
         'request' => [
             'url' => '/merchants/10000000000000/terminals',

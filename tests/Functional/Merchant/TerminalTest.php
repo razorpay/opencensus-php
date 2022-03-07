@@ -703,6 +703,24 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOfflineTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateOfflineBadRequestTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateTwidTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -3402,7 +3420,7 @@ class TerminalTest extends TestCase
 
         $this->assertEquals('random', $terminal['gateway_access_code']);
     }
-    
+
     public function testGetSalesforceDetailsForMerchantIDs() {
         $salesForceResponsePayload = [
             'random-MID-123' => [

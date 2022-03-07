@@ -144,6 +144,7 @@ class Gateway
     const GETSIMPL           = 'getsimpl';
     const PAYLATER_ICICI     = 'paylater_icici';
     const CRED               = 'cred';
+    const OFFLINE_HDFC       = 'offline_hdfc';
     const TWID               = 'twid';
     const LAZYPAY            = 'lazypay';
     const TRUSTLY            = 'trustly';
@@ -351,6 +352,7 @@ class Gateway
         self::NETBANKING_IDFC       => self::IDFC,
         self::NETBANKING_SBI        => self::SBIN,
         self::NETBANKING_INDUSIND   => self::INDUSIND,
+        self::OFFLINE_HDFC          => self::HDFC,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -379,6 +381,7 @@ class Gateway
         self::ZAAKPAY               => self::ZAAKPAY,
         self::PINELABS              => self::PINELABS,
         self::INGENICO              => self::INGENICO,
+        self::OFFLINE_HDFC          => self::HDFC,
     ];
 
 
@@ -526,6 +529,7 @@ class Gateway
         self::NETBANKING_BDBL,
         self::NETBANKING_UCO,
         self::NETBANKING_HDFC,
+        self::OFFLINE_HDFC,
     ];
 
     /**
@@ -1475,6 +1479,10 @@ class Gateway
             self::PAYLATER,
         ],
 
+        Method::OFFLINE => [
+            self::OFFLINE_HDFC,
+        ],
+
         Method::APP => [
             self::CRED,
             self::TWID,
@@ -1947,6 +1955,7 @@ class Gateway
         self::CARDLESS_EMI,
         self::PAYLATER,
         self::FULCRUM,
+        self::OFFLINE_HDFC,
     ];
 
     public static $verifyDisabled = [

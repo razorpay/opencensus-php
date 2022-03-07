@@ -93,6 +93,7 @@ class Entity extends Base\PublicEntity
     const MPAN                          = 'mpan';
     const CRED                          = 'cred';
     const APP                           = 'app';
+    const OFFLINE                       = 'offline';
 
     // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
@@ -208,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::CRED,
         self::PLAN_ID,
         self::APP,
+        self::OFFLINE,
     ];
 
     protected $public = [
@@ -282,7 +284,8 @@ class Entity extends Base\PublicEntity
         self::PAYLATER,
         self::MPAN,
         self::ACCOUNT_TYPE,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::OFFLINE,
     ];
 
     protected $hidden = [
@@ -357,6 +360,7 @@ class Entity extends Base\PublicEntity
         self::SYNC_STATUS                => SyncStatus::NOT_SYNCED,
         self::ACCOUNT_TYPE               => null,
         self::PLAN_ID                    => null,
+        self::OFFLINE                    => 0,
     ];
 
     protected $casts = [
@@ -386,6 +390,7 @@ class Entity extends Base\PublicEntity
         self::APP                       => 'boolean',
         self::PAYLATER                  => 'boolean',
         self::DIRECT                    => 'boolean',
+        self::OFFLINE                   => 'boolean',
     ];
 
     protected $appends = [
@@ -685,6 +690,11 @@ class Entity extends Base\PublicEntity
     public function isCredEnabled()
     {
         return $this->getAttribute(self::CRED);
+    }
+
+    public function isOfflineEnabled()
+    {
+        return $this->getAttribute(self::OFFLINE);
     }
 
     public function isAppEnabled()
@@ -1161,7 +1171,7 @@ class Entity extends Base\PublicEntity
         {
             $gateway = $input[self::GATEWAY];
 
-            if ((in_array($gateway, Payment\Gateway::$internationalCardGateways, true) === true) or 
+            if ((in_array($gateway, Payment\Gateway::$internationalCardGateways, true) === true) or
                 (in_array($gateway, Payment\Gateway::$internationalGateways, true) === true))
             {
                 $input[self::INTERNATIONAL] = 1;

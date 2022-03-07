@@ -133,6 +133,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::CRED)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::OFFLINE)
+                ->default(0);
+
             $table->tinyInteger(Terminal::APP)
                   ->default(0);
 

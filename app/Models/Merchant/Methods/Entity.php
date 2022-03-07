@@ -302,6 +302,7 @@ class Entity extends Base\PublicEntity
         self::PAYPAL         => false,
         self::ADDITIONAL_WALLETS => [],
         self::COD            => false,
+        self::OFFLINE        => false,
     );
 
     protected $wallets = array(
@@ -1106,6 +1107,11 @@ class Entity extends Base\PublicEntity
     public function setCreditCard($card)
     {
         $this->setAttribute(self::CREDIT_CARD, $card);
+    }
+
+    public function setOffline(int $value)
+    {
+        $this->setAttribute(self::OFFLINE, $value);
     }
 
     public function setDebitCard($card)

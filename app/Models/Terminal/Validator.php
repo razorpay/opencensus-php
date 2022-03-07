@@ -77,6 +77,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|string',
         Entity::PLAN_ID                     => 'sometimes',
         Entity::ENABLED_WALLETS             => 'sometimes|array',
+        Entity::OFFLINE                     => 'sometimes|string',
     ];
 
     protected static $mpansBeforeTokenizationRules = [
@@ -2061,6 +2062,24 @@ class Validator extends Base\Validator
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    protected static $offlineHdfcTerminalRules = [
+        Entity::GATEWAY                                     => 'required|in:offline_hdfc',
+        Entity::GATEWAY_MERCHANT_ID                         => 'required|string',
+        Entity::GATEWAY_ACQUIRER                            => 'required|string|in:hdfc',
+        Entity::OFFLINE                                     => 'required|boolean|in:1',
+        Entity::TYPE                                        => 'required|array',
+        Entity::TYPE . '.direct_settlement_without_refund'  => 'required|in:1',
+        Entity::STATUS                                      => 'sometimes|in:activated,deactivated',
+    ];
+
+    protected static $offlineHdfcEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::OFFLINE                     => 'sometimes|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::STATUS                      => 'sometimes|in:activated,deactivated',
+    ];
+
     protected static $twidTerminalRules = [
         Entity::GATEWAY                     => 'required|in:twid',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -2396,6 +2415,10 @@ class Validator extends Base\Validator
         // Don't unset for paysecure and fulcrum gateway, req is initiated from Terminals Service via merchants/{id}/terminals/internal route
         if (in_array($input['gateway'], [Payment\Gateway::PAYSECURE, Payment\Gateway::FULCRUM]) === false)
         {
+            if(isset($input[Entity::GATEWAY_ACQUIRER]))
+            {
+                $gateway_acquirer = $input[Entity::GATEWAY_ACQUIRER];
+            }
 
             unset(
                 $input[Entity::ORG_ID], // unsetting org_id as it is added explicitly in core create() and will be present for all gateways
@@ -2413,6 +2436,11 @@ class Validator extends Base\Validator
                 $input[Entity::ENABLED_WALLETS],
                 $input[Entity::MODE],
                 $input[Entity::PLAN_ID]);
+
+            if ($input['gateway'] === Payment\Gateway::OFFLINE_HDFC)
+            {
+                $input[Entity::GATEWAY_ACQUIRER] = $gateway_acquirer;
+            }
 
         }
         $op = $input['gateway'] . '_terminal';
