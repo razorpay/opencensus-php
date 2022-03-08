@@ -54,6 +54,13 @@ class Service extends Base\Service
 
     public function login(string $orgId, array $input)
     {
+        if ((isset($input[Entity::USERNAME]) === false) or
+            (isset($input[Entity::PASSWORD]) === false))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
+        }
+
         $email = $input['username'];
 
         $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
