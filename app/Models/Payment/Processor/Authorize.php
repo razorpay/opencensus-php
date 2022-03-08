@@ -8639,12 +8639,16 @@ trait Authorize
                 $this->repo->saveOrFail($txn);
 
 
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($payment) {
-                    // This occurs in purchase model
-                    $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
+                if($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+                {
+                    \Event::dispatch(new TransactionalClosureEvent(function () use ($payment)
+                    {
+                        // This occurs in purchase model
+                        $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
 
-                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
-                }));
+                        LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                    }));
+                }
             }
 
             $this->repo->saveOrFail($payment);

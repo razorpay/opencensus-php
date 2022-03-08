@@ -985,12 +985,16 @@ class Core extends Base\Core
     {
         list($txn, $feeSplit) = $this->createTransactionForSource($settlement);
 
-        \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $settlement)
+        if($txn->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
         {
-            $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
 
-            LedgerEntryJob::dispatch($this->mode, $transactionMessage, $txn->merchant)->onConnection('sync');
-        }));
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $settlement)
+            {
+                $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
+
+                LedgerEntryJob::dispatch($this->mode, $transactionMessage, $txn->merchant)->onConnection('sync');
+            }));
+        }
 
         return $txn;
     }

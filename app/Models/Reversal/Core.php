@@ -523,15 +523,18 @@ class Core extends Base\Core
 
             $txnCore->saveFeeDetails($txn, $feesSplit);
 
-            // Create ledger entry for transaction here
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $reversal, $feeOnlyReversal)
+            if($reversal->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
             {
-                $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn);
+                // Create ledger entry for transaction here
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $reversal, $feeOnlyReversal)
+                {
+                    $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn);
 
-                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object) RefundJournalEvents::fetchLedgerRulesForReversal($reversal, $txn, $reversal->entity, $feeOnlyReversal);
+                    $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object)RefundJournalEvents::fetchLedgerRulesForReversal($reversal, $txn, $reversal->entity, $feeOnlyReversal);
 
-                LedgerEntryJob::dispatch($this->mode, $transactionMessage, $reversal->merchant)->onConnection('sync');
-            }));
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $reversal->merchant)->onConnection('sync');
+                }));
+            }
 
             return $reversal;
         });

@@ -325,10 +325,13 @@ trait Capture
 
                         $this->repo->saveOrFail($this->payment);
 
-                        // this is triggered for auth and capture model when merchant triggers the manual capture
-                        $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
+                        if($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+                        {
+                            // this is triggered for auth and capture model when merchant triggers the manual capture
+                            $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
 
-                        LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                            LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                        }
                     }
 
                     return true;
@@ -614,10 +617,13 @@ trait Capture
                     // in a transaction, which could fail and end up rolling back.
                     $this->repo->saveOrFail($this->payment);
 
-                    // Gets called in auto capture mode of auth and capture model
-                    $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
+                    if($this->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+                    {
+                        // Gets called in auto capture mode of auth and capture model
+                        $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
 
-                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                        LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                    }
                 }
             }
 
@@ -810,15 +816,18 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
-            $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
+            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            {
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
 
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
-                // Job will be dispatched only if the transaction commits.
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
+                    // Job will be dispatched only if the transaction commits.
 
-                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object) CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
+                    $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object)CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
 
-                LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
-            }));
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                }));
+            }
 
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.

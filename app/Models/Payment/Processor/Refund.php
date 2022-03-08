@@ -40,6 +40,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Balance\BalanceConfig;
@@ -1079,10 +1080,15 @@ trait Refund
 
         $this->repo->saveOrFail($txn);
 
-        \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $refund)
+
+
+        if($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_JOURNAL_WRITES) === true)
         {
-            RefundJournalEvents::createLedgerEntriesForRefunds($this->mode, $refund, $txn);
-        }));
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $refund)
+            {
+                RefundJournalEvents::createLedgerEntriesForRefunds($this->mode, $refund, $txn);
+            }));
+        }
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
 
