@@ -8,6 +8,13 @@ dev:
       namespace: ${NAMESPACE}
       disableDownload: true
       initialSync: preferLocal
+    - labelSelector:
+        name: ${APP_NAME}-${DEVSTACK_LABEL}
+      localSubPath: ./resources
+      containerPath: /app/resources
+      namespace: ${NAMESPACE}
+      disableDownload: true
+      initialSync: preferLocal
   logs:
     showLast: 200
     sync: true

@@ -7,7 +7,8 @@
     $dark_theme_color           = '#383838';
     $light_theme_color          = '#efefef';
     $is_error_view              = isset($request_params['error']['description']);
-    $is_performance_optimized   = $data['view_preferences']['page_load_optimization_enabled'] === 'on' ? true : false;
+    $is_preview                 = request()->get('preview') === 'true';
+    $optimised_web_vitals       = $data['merchant']['optimised_web_vitals'] === 'on';
 ?>
 
 
@@ -84,12 +85,22 @@
                     window.RZP.renderApp('paymentpage-container', templateData);
                 }
             </script>
+            @if($optimised_web_vitals === false)
+                <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+                <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
+                <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" defer></script>
+            @else
+                @if($is_preview === false)
+                    <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
+                @endif
+                <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
 
-            <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
-            <script src="https://cdn.razorpay.com/static/assets/color.js" defer></script>
-            <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" defer></script>
-            @if ($is_performance_optimized === false) 
-                <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+                <link rel="preconnect" href="https://fonts.googleapis.com"/>
+                <link href="https://fonts.googleapis.com/css?family=Muli:400,700&display=swap" rel="stylesheet">
+                <script src="https://cdn.quilljs.com/1.3.6/quill.min.js" defer ></script>
+
+                <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" defer></script>
+                <link rel="stylesheet" href="https://cdn.razorpay.com/static/assets/social-share/icons.css" />
             @endif
         @else
             @include('payment_link.partials.post_screen')
@@ -107,7 +118,7 @@
             @endif
         </div>
         <!-- Adding checkout scripts after initial load -->
-        @if ($is_error_view === false and $is_performance_optimized === true)
+        @if ($is_error_view === false and ($optimised_web_vitals === false or $is_preview === false))
             <script>
                 window.addEventListener('load', function() {
                     setTimeout(() => {

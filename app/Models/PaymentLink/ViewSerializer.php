@@ -41,6 +41,8 @@ class ViewSerializer extends Base\Core
      */
     protected $merchant;
 
+    const RAZORX_PERFORMANCE_OPTIMISED = 'pp_optimised_web_vitals';
+
     public function __construct(Entity $paymentLink)
     {
         parent::__construct();
@@ -114,6 +116,14 @@ class ViewSerializer extends Base\Core
 
     protected function serializeMerchantForHosted(): array
     {
+        $mode = $this->mode ?? Mode::LIVE;
+
+        $lcpOptimised = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            self::RAZORX_PERFORMANCE_OPTIMISED,
+            $mode
+        );
+        
         $contactOptional = $this->merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
 
         $emailOptional  = $this->merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
@@ -134,6 +144,7 @@ class ViewSerializer extends Base\Core
             'brand_color'      => get_rgb_value($this->merchant->getBrandColorOrOrgPreference()),
             'brand_text_color' => get_brand_text_color($this->merchant->getBrandColorOrDefault()),
             'branding_variant' => 'control',
+            'optimised_web_vitals'=> $lcpOptimised,
             'contact_optional' => $contactOptional,
             'email_optional'   => $emailOptional,
             'support_email'    => $supportDetails['support_email'],
@@ -344,13 +355,10 @@ class ViewSerializer extends Base\Core
 
         $mode = $this->mode ?? Mode::LIVE;
 
-        $pageLoadOptimizationEnabled = 'on';
-
         $disclaimerTextEnabled = 'on';
 
         return [
             'exempt_customer_flagging'       => $exemptCustomerFlagging,
-            'page_load_optimization_enabled' => $pageLoadOptimizationEnabled,
             'disclaimer_text_enabled'        => $disclaimerTextEnabled,
             ];
     }

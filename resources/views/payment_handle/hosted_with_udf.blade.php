@@ -7,7 +7,6 @@ $meta_description           = 'Use this link to enter the amount and pay securel
 $dark_theme_color           = '#383838';
 $light_theme_color          = '#efefef';
 $is_error_view              = isset($request_params['error']['description']);
-$is_performance_optimized   = $data['view_preferences']['page_load_optimization_enabled'] === 'on' ? true : false;
 ?>
 
 
