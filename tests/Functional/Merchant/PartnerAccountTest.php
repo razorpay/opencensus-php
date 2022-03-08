@@ -27,6 +27,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PartnerAccountTest extends TestCase
 {
+    
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
     use PartnerTrait;

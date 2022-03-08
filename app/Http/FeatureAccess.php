@@ -236,6 +236,8 @@ class FeatureAccess
         //
         $merchantFeatures = $this->merchant->getEnabledFeatures();
 
+        $merchantFeatures = $this->overridePartnerFeature($merchantFeatures);
+
         $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS_DB, [
             "merchant_feature"     => $merchantFeatures,
             "orgAndMerchant"       => $routeFeatures,
@@ -380,5 +382,64 @@ class FeatureAccess
 
         // Do not block if the app is not a competitor or if the competitor app is not trying to access an S2S route.
         return true;
+    }
+
+    /**
+     * This is a temporary fix to copy partner feature to merchants.
+     * Will be removed once proper fix is released.
+     * @param $merchantFeatures
+     * @return mixed
+     */
+    protected function overridePartnerFeature($merchantFeatures)
+    {
+        $featureName = Feature\Constants::QR_CODES;
+
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        $whiteListedRoutes = [
+            'qr_code_create',
+            'qr_code_close',
+            'qr_code_fetch',
+            'qr_code_fetch_multiple',
+            'qr_payments_fetch_multiple',
+            'qr_payment_fetch_for_qr_code',
+        ];
+
+        if(in_array($currentRoute, $whiteListedRoutes) === false || // check if current route belongs to qr_codes
+           in_array($featureName, $merchantFeatures) === true ||    // if merchant already has this feature enabled no need to process further
+           $this->merchant->isLive() === false) // if merchant is not live, no need to do this override by partner
+        {
+            return $merchantFeatures;
+        }
+
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
+
+        $partner = $partners->filter(function (Merchant\Entity $partner) use ($featureName) {
+            return ($partner->isFeatureEnabled($featureName) === true);
+        })->first();
+
+        if (empty($partner) === true)
+        {
+            return $merchantFeatures;
+        }
+
+        $isFeatureOverrideAllowedForPartner = (new Merchant\Core)->isRazorxExperimentEnable(
+            $partner->getId(),
+            Merchant\RazorxTreatment::PARTNER_QR_CODE_FEATURE_OVERRIDE);
+
+        $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS, [
+            "Overriden feature by partner experiment enabled" => $isFeatureOverrideAllowedForPartner,
+            "Merchant" => $partner->getId(),
+        ]);
+
+        if (empty($partner) === false and $isFeatureOverrideAllowedForPartner === true) {
+            $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS, [
+                "Overriden feature by partner" => $partner->getId(),
+                "Merchant" => $this->merchant->getId(),
+                "feature" => $featureName,
+            ]);
+            array_push($merchantFeatures, $featureName);
+        }
+        return $merchantFeatures;
     }
 }
