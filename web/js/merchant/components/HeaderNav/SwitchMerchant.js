@@ -5,7 +5,6 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   let merchants = user.merchants;
   merchants = Object.keys(merchants).map((merchantId) => merchants[merchantId]);
-  merchants = merchants.filter((merchant) => merchant.product === 'primary');
   return (
     <PowerSelect
       options={merchants}
