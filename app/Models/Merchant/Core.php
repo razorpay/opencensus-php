@@ -14,6 +14,7 @@ use RZP\Jobs\SyncStakeholder;
 use RZP\Mail\User as UserMail;
 use \RZP\Models\BankingAccount;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Exception\BadRequestValidationFailureException;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Constants\Entity as EntityConstants;
 
@@ -6653,6 +6654,10 @@ class Core extends Base\Core
 
     private function processUpdateAggregatorToReseller(string $merchantId)
     {
+        $this->trace->info(
+            TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_REQUEST,
+            ['merchant_id' => $merchantId]);
+
         $merchant = $this->repo->merchant->find($merchantId);
 
         if ($merchant === null || $merchant->isAggregatorPartner() === false)
@@ -6689,12 +6694,16 @@ class Core extends Base\Core
                 $this->updateExistingApplicationMappings($merchant->getId(), $existingAppId, $app[OAuthApp\Entity::ID], $managedApp);
             }
 
-            $this->deletePartnerAppForIds($merchant->getId(), $existingAppIds);
-
             $merchant->setPartnerType(Constants::RESELLER);
 
             $this->repo->merchant->saveOrFail($merchant);
+
+            $this->deletePartnerAppForIds($merchant->getId(), $existingAppIds);
         });
+
+        $this->trace->info(
+            TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_SUCCESS,
+            ['merchant_id' => $merchantId]);
     }
 
     private function updateExistingApplicationMappings(string $merchantId, string $existingAppId, string $updatedAppId, bool $managedApp = false)
@@ -6720,7 +6729,21 @@ class Core extends Base\Core
     {
         foreach ($appIds as $appId)
         {
-            app('authservice')->deleteApplication($appId, $merchantId);
+            try
+            {
+                app('authservice')->deleteApplication($appId, $merchantId);
+            }
+            catch (BadRequestValidationFailureException $e)
+            {
+                (new AccessMap\Core)->deleteAccessMapByApplicationId($appId);
+
+                // delete merchant and application mapping
+                (new MerchantApplications\Core)->deleteByApplication($appId);
+
+                $this->trace->info(
+                    TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_SUCCESS,
+                    ['merchant_id' => $merchantId, 'app_id' => $appId]);
+            }
         }
     }
 }
