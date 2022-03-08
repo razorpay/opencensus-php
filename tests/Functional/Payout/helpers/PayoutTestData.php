@@ -16749,6 +16749,30 @@ return [
         ],
     ],
 
+    'testUpdateMerchantSlaForOnHoldPayoutsInsufficientPermission' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/payouts/merchant_on_hold_slas',
+            'content'   => [
+                '10'        => ["90000merchant1", "90000merchant3"],
+                '20'        => ["90000merchant2", "90000merchant4"],
+            ]
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
     'testUpdateMerchantSlaForOnHoldPayoutsSuccess' => [
         'request' => [
             'method'    => 'PUT',

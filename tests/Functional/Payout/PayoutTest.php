@@ -18535,7 +18535,7 @@ class PayoutTest extends OAuthTestCase
                 'ifsc' => 'SBIN0007105',
                 'account_number' => '111000',
             ]);
-        
+
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
 
         $this->startTest();
@@ -18569,6 +18569,31 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
 
         $this->ba->xPayrollAuth();
+
+        $this->startTest();
+    }
+
+    private function removePermission($permission)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = (new Admin\Permission\Repository())->retrieveIdsByNames([$permission]);
+
+        $role->permissions()->delete($perm->firstOrFail()->getId());
+    }
+
+    public function testUpdateMerchantSlaForOnHoldPayoutsInsufficientPermission()
+    {
+        $this->ba->adminAuth();
+
+        $this->removePermission(Admin\Permission\Name::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS);
+
+        $this->fixtures->merchant->create(['id' => '90000merchant1']);
+        $this->fixtures->merchant->create(['id' => '90000merchant2']);
+        $this->fixtures->merchant->create(['id' => '90000merchant3']);
+        $this->fixtures->merchant->create(['id' => '90000merchant4']);
 
         $this->startTest();
     }

@@ -1677,6 +1677,10 @@ return [
                 'description'   => 'Allows to set RX account prefixes',
                 'assignable'    => true,
             ],
+            Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS => [
+                'description'   => 'Allows to set merchant SLAs in Redis for on-hold payouts',
+                'assinable'     => true
+            ],
             Permission::SET_SHARED_ACCOUNT_ALLOWED_CHANNELS => [
                 'description'   => 'Allows to set shared account channels',
                 'assignable'    => true,
