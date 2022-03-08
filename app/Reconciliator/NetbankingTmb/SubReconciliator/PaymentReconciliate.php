@@ -41,4 +41,18 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
     {
         return $row[Reconciliate::TXN_DATE_TIME] ?? null;
     }
+
+    protected function getArn($row)
+    {
+        return $this->getReferenceNumber($row);
+    }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer'  =>  [
+                'reference1' => $this->getReferenceNumber($row),
+            ]
+        ];
+    }
 }

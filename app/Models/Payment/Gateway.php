@@ -530,6 +530,7 @@ class Gateway
         self::NETBANKING_UCO,
         self::NETBANKING_HDFC,
         self::OFFLINE_HDFC,
+        self::NETBANKING_TMB,
     ];
 
     /**
