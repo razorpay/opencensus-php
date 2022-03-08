@@ -300,6 +300,15 @@ class CustomerController extends Controller
         return ApiResponse::json($address);
     }
 
+    public function editGlobalAddress()
+    {
+        $input = Request::all();
+
+        $address = $this->service()->editGlobalAddress($input);
+
+        return ApiResponse::json($address);
+    }
+
     public function getAddresses(string $customerId)
     {
         $input = Request::all();

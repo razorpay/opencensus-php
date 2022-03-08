@@ -631,6 +631,7 @@ class Checkout
             $savedTokens = $tokenCore->fetchTokensByCustomer($customer, $merchant);
 
             $savedAddresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
+            $savedAddresses = $savedAddresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
 
             //
             // TODO: Remove this later when we start handling the below case.

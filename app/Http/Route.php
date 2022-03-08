@@ -1019,6 +1019,7 @@ class Route
         'customer_get_saved_status'                => ['get',      'customers/status/{contact}',                     'CustomerController@fetchGlobalCustomerStatus'                      ],
         'customer_logout_global'                   => ['delete',   'apps/logout',                                    'CustomerController@logoutCustomer'                                 ],
         'customer_create_global_address'           => ['post',     'customers/addresses',                            'CustomerController@createGlobalAddress'                            ],
+        'customer_edit_global_address'             => ['put',      'customers/addresses',                            'CustomerController@editGlobalAddress'                            ],
         'customer_create_address'                  => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
         'customer_delete_address'                  => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
         'customer_fetch_addresses'                 => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
@@ -3480,6 +3481,7 @@ class Route
         'merchant_coupon_remove',
         'shipping_info',
         'customer_create_global_address',
+        'customer_edit_global_address',
         'order_update_customer_details_1cc',
         'order_reset_1cc',
         '1cc_pincode_get',
@@ -8164,6 +8166,7 @@ class Route
         'app_delete_token',
         'checkout_personalisation',
         'customer_create_global_address',
+        'customer_edit_global_address',
     ];
 
     /**

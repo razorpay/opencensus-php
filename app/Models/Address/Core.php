@@ -85,7 +85,7 @@ class Core extends Base\Core
 
         unset($input[Entity::TYPE]);
 
-        $this->repo->transaction(function () use ($address, $input) {
+        return $this->repo->transaction(function () use ($address, $input) {
             $address->edit($input);
 
             if ($address->isPrimary() === true)
@@ -94,6 +94,8 @@ class Core extends Base\Core
             }
 
             $this->repo->saveOrFail($address);
+
+            return $address;
         });
     }
 
@@ -235,7 +237,7 @@ class Core extends Base\Core
             $address->setPrimary(true);
             $this->repo->saveOrFail($address);
 
-            if (($currentPrimaryAddress->count() === 1) and ($currentPrimaryAddress->getId() !== $address->getId()))
+            if (($currentPrimaryAddress->count() === 1) and ($currentPrimaryAddress->first()->getId() !== $address->getId()))
             {
                 $currentPrimaryAddress = $currentPrimaryAddress->first();
 

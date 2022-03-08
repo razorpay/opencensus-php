@@ -13,7 +13,7 @@ use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use Mockery;
 use RZP\Models\Customer\Account\Constants as AccountConstants;
 
-class CustomerTest extends TestCase
+class customerTest extends TestCase
 {
     use AttemptTrait;
     use DbEntityFetchTrait;
@@ -640,6 +640,16 @@ class CustomerTest extends TestCase
 
     public function testCreateGlobalAddress()
     {
+        $this->ba->publicAuth();
+        $this->mockSession();
+        $this->startTest();
+    }
+
+    public function testEditGlobalAddress()
+    {
+        $this->testCreateGlobalAddress();
+        $res = $this->getDbLastEntity('address');
+        $this->testData["testEditGlobalAddress"]["request"]["content"]["shipping_address"]["id"] = $res->getId();
         $this->ba->publicAuth();
         $this->mockSession();
         $this->startTest();

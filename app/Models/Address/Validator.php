@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Validator extends Base\Validator
 {
@@ -37,16 +38,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME     => 'sometimes|string|between:2,64',
-        Entity::LINE1    => 'sometimes|string|between:10,255',
-        Entity::LINE2    => 'sometimes|string|between:5,255|custom',
-        Entity::CITY     => 'sometimes|string|between:2,32',
-        Entity::ZIPCODE  => 'sometimes|string|between:2,10',
-        Entity::STATE    => 'sometimes|string|between:2,32',
-        Entity::COUNTRY  => 'sometimes|string|between:2,64|custom',
-        Entity::TAG      => 'sometimes|string|between:2,32',
-        Entity::LANDMARK => 'sometimes|string|between:2,32',
-        Entity::PRIMARY  => 'sometimes|in:0,1',
+        UniqueIdEntity::ID  => 'sometimes|string',
+        Entity::NAME        => 'sometimes|string|between:2,64',
+        Entity::LINE1       => 'sometimes|string|between:10,255',
+        Entity::LINE2       => 'sometimes|string|between:5,255|custom',
+        Entity::CITY        => 'sometimes|string|between:2,32',
+        Entity::ZIPCODE     => 'sometimes|string|between:2,10',
+        Entity::STATE       => 'sometimes|string|between:2,32',
+        Entity::COUNTRY     => 'sometimes|string|between:2,64|custom',
+        Entity::TAG         => 'sometimes|string|between:2,32',
+        Entity::LANDMARK    => 'sometimes|string|between:2,32',
+        Entity::PRIMARY     => 'sometimes|in:0,1',
     ];
 
     protected static $createForCustomerRules = [

@@ -518,6 +518,13 @@ class Service extends Base\Service
         return $address;
     }
 
+    public function editGlobalAddress(array $input)
+    {
+        $address = $this->core->editGlobalAddress($input);
+
+        return $address;
+    }
+
     public function createAddress($customerId, array $input)
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant(

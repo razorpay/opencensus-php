@@ -300,7 +300,9 @@ class Core extends Base\Core
             $response['session_id'] = $this->getTemporarySessionToken();
         }
 
-        $response['addresses'] = $this->repo->address->fetchAddressesForEntity($customer, $input);
+        $addresses = $this->repo->address->fetchAddressesForEntity($customer, $input);
+
+        $response['addresses'] = $addresses->sortByDesc(Entity::UPDATED_AT, 1)->values()->all();
 
         return $response;
     }
@@ -383,6 +385,44 @@ class Core extends Base\Core
 
         if ( isset($input[Entity::BILLING_ADDRESS]) ) {
             $address[Entity::BILLING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::BILLING_ADDRESS], true);
+        }
+
+        return $address;
+
+    }
+
+    public function editGlobalAddress($input)
+    {
+        if(Session()->has($this->mode . '_app_token') === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $appToken = Session()->get($this->mode . '_app_token');
+
+        Customer\Validator::validateEditGlobalAddress($input);
+
+        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
+            ['app_token' => $appToken],
+            $this->merchant,
+            true);
+
+        // 1cc Demo: Reject address saving for +911234567890
+        if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
+        {
+            return [];
+        }
+
+        $input = Customer\Validator::validateAndParseContactInInput($input);
+
+        $address = [];
+
+        if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
+            $address[Entity::SHIPPING_ADDRESS] = $this->editAddress($input[Entity::SHIPPING_ADDRESS], $customer);
+        }
+
+        if ( isset($input[Entity::BILLING_ADDRESS]) ) {
+            $address[Entity::BILLING_ADDRESS] = $this->editAddress($input[Entity::BILLING_ADDRESS], $customer);
         }
 
         return $address;
@@ -837,5 +877,23 @@ class Core extends Base\Core
         ];
 
         return $data;
+    }
+
+    /**
+     * @param $input
+     * @param Base\PublicEntity $customer
+     * @param Address\Core $addressEntity
+     * @param array $address
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function editAddress($input, Base\PublicEntity $customer)
+    {
+
+        $addressCore = new Address\Core();
+
+        $address = $this->repo->address->findByEntityAndId($input[Base\UniqueIdEntity::ID], $customer);
+
+        return $addressCore->edit($address, $input);
     }
 }
