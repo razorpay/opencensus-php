@@ -1104,6 +1104,17 @@ class Header
     const API_ONBOARDING_LOGIN_DATE = 'API Onboarding Login Date';
     const MID_OFFICE_POC_NAME       = 'Called By';
 
+    // ICICI STP MIS
+    const STP_ACCOUNT_NO                         = 'Account number';
+    const STP_FCRM_SR_DATE                       = 'FCRM SR date';
+    const STP_SR_NUMBER                          = 'SR Number';
+    const STP_SR_STATUS                          = 'SR Status';
+    const STP_SR_CLOSED_DATE                     = 'SR Closed date';
+    const STP_REMARKS                            = 'Remarks';
+    const STP_CONNECTED_BANKING                  = 'Connected Banking';
+    const STP_T3_DATE                            = 'T+3 Date';
+    const STP_HELPDESK_SR_STATUS                 = 'Hepdesk SR Status';
+    const STP_HELPDESK_SR                        = 'Hepdesk SR';
 
     //ICICI CA Activation
     const APPLICATION_NO                          = 'APPLICATION_NO';
@@ -3994,6 +4005,21 @@ class Header
                 self::STP_DOCS_COLLECTED,
                 self::ACCOUNT_NUMBER_CHANGE,
                 self::FOLLOW_UP_DATE
+            ]
+        ],
+
+        Type::ICICI_STP_MIS => [
+            self::INPUT => [
+                self::STP_ACCOUNT_NO,
+                self::STP_FCRM_SR_DATE,
+                self::STP_SR_NUMBER,
+                self::STP_SR_STATUS,
+                self::STP_SR_CLOSED_DATE,
+                self::STP_REMARKS,
+                self::STP_CONNECTED_BANKING,
+                self::STP_T3_DATE,
+                self::STP_HELPDESK_SR_STATUS,
+                self::STP_HELPDESK_SR,
             ]
         ],
 

@@ -42,4 +42,22 @@ return [
             ],
         ],
     ],
+
+    'testBatchUploadIciciStpMis'     => [
+        'request'  => [
+            'url'     => '/admin/batches',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'icici_stp_mis',
+                'config'   => [
+                    'added_at' => 1593567500,
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'        => 'CREATED'
+            ],
+        ],
+    ],
 ];

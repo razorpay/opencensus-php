@@ -158,6 +158,8 @@ class Type
 
     const ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS  = 'icici_lead_account_activation_comments';
 
+    const ICICI_STP_MIS                            = 'icici_stp_mis';
+
     //cbk => chargeback
     const HITACHI_CBK_MASTERCARD = 'hitachi_cbk_mastercard';
 
@@ -254,6 +256,7 @@ class Type
         self::MERCHANT_STATUS_ACTION,
         self::BANKING_ACCOUNT_ACTIVATION_COMMENTS,
         self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS,
+        self::ICICI_STP_MIS,
         self::NACH_MIGRATION,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
@@ -621,6 +624,7 @@ class Type
         self::IRCTC_REFUND                        => Name::MERCHANT_BATCH_UPLOAD,
         self::IRCTC_DELTA_REFUND                  => Name::MERCHANT_BATCH_UPLOAD,
         self::IRCTC_SETTLEMENT                    => Name::MERCHANT_BATCH_UPLOAD,
+        self::ICICI_STP_MIS                       => Name::ADMIN_BATCH_CREATE,
     ];
 
     public static $workflowApplicableBatchTypes = [

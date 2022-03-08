@@ -311,6 +311,12 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $iciciStpMisCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:icici_stp_mis',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     protected static $virtualBankAccountCreateRules = [
         Entity::TYPE                 => 'required|in:virtual_bank_account',
         Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
@@ -2523,6 +2529,20 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_APPLICATION_NO);
+            }
+        }
+    }
+
+    protected function validateStpMisEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach ($entries as $entry)
+        {
+            $accountNumber = $entry[Header::STP_ACCOUNT_NO];
+
+            if (empty($accountNumber) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_ACCOUNT_NO);
             }
         }
     }

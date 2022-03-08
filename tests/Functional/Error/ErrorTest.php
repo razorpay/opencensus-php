@@ -62,6 +62,7 @@ class ErrorTest extends TestCase
             "BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND",
             "BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW",
             "BAD_REQUEST_BATCH_TYPE_PERMISSION_MISSING",
+            "BAD_REQUEST_BATCH_FILE_INVALID_ACCOUNT_NO",
         ];
 
         $errorCodeBatches = array();

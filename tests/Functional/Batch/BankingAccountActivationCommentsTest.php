@@ -156,6 +156,45 @@ class BankingAccountActivationCommentsTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchUploadIciciStpMis(array $entries = [])
+    {
+        if (empty($entries) === true)
+        {
+            $entries = [
+                [
+                    Batch\Header::STP_ACCOUNT_NO                          => '198734',
+                    Batch\Header::STP_FCRM_SR_DATE                        => '2/8/21',
+                    Batch\Header::STP_SR_NUMBER                           => 'SR776607308',
+                    Batch\Header::STP_SR_STATUS                           => 'Closed',
+                    Batch\Header::STP_SR_CLOSED_DATE                      => '1/9/2021',
+                    Batch\Header::STP_REMARKS                             => 'Assigned to COG_COP',
+                    Batch\Header::STP_CONNECTED_BANKING                   => 'Reg done',
+                    Batch\Header::STP_T3_DATE                             => '8/3/2021',
+                    Batch\Header::STP_HELPDESK_SR_STATUS                  => 'Closed',
+                    Batch\Header::STP_HELPDESK_SR                         => 'SR205973505',
+
+                ],
+                [
+                    Batch\Header::STP_ACCOUNT_NO                          => '000405569238',
+                    Batch\Header::STP_FCRM_SR_DATE                        => '11/8/2021',
+                    Batch\Header::STP_SR_NUMBER                           => 'SR787535989',
+                    Batch\Header::STP_SR_STATUS                           => 'Open',
+                    Batch\Header::STP_SR_CLOSED_DATE                      => '11/9/2021',
+                    Batch\Header::STP_REMARKS                             => 'Requirement not mentioned in BR and request form, kindly check',
+                    Batch\Header::STP_CONNECTED_BANKING                   => 'Reg Not done',
+                    Batch\Header::STP_T3_DATE                             => '9/3/2021',
+                    Batch\Header::STP_HELPDESK_SR_STATUS                  => 'Open',
+                    Batch\Header::STP_HELPDESK_SR                         => 'SR205973522',
+
+                ]
+            ];
+        }
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testBatchUploadIncorrectHeaders()
     {
         $entries = [
@@ -213,4 +252,35 @@ class BankingAccountActivationCommentsTest extends TestCase
 
         $this->testBatchUploadIcici($entries);
     }
+
+    public function testBatchUploadIncorrectHeadersForIciciStpMis()
+    {
+        $entries = [
+            [
+                'abc' => '1921919',
+                Batch\Header::STP_REMARKS => 'Sample Test comment'
+            ]
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->testBatchUploadIciciStpMis($entries);
+    }
+
+    public function testBatchUploadIncorrectValuesForIciciStpMis()
+    {
+        $entries = [
+            [
+                Batch\Header::STP_ACCOUNT_NO => 'abc',
+                Batch\Header::STP_FCRM_SR_DATE => 'Invalid Date',
+            ]
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->testBatchUploadIciciStpMis($entries);
+    }
 }
+
+
+
