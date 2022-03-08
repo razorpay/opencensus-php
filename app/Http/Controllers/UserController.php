@@ -238,25 +238,11 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->registerWithOtp($input);
 
-        $timeEnd = microtime(true);
-
-        $timeTaken = $timeEnd - $timeStarted;
+        $timeTaken = microtime(true) - $timeStarted;
 
         $this->traceDuration($timeTaken, TraceCode::SEND_SIGNUP_OTP_DURATION);
 
-        if (empty($error) === true)
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::SEND_SIGNUP_OTP_SUCCESS];
-        }
-        else
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::SEND_SIGNUP_OTP_FAILED];
-            $traceDetails['errorCode'] = $error['internal_error_code'] ?? 'UNKNOWN_ERROR';
-        }
-
-        $traceDetails['duration'] = $timeTaken;
-
-        $this->pushSignUpLoginMetrics($input, $traceDetails);
+        Helper::pushSignUpLoginMetrics(Constants::SEND_SIGNUP_OTP, $input, $error, $timeTaken);
 
         if(
             isset($error["internal_error_code"]) and
@@ -314,25 +300,11 @@ class UserController extends Controller
             ];
         }
 
-        $timeEnd = microtime(true);
-
-        $timeTaken = $timeEnd - $timeStarted;
+        $timeTaken = microtime(true) - $timeStarted;
 
         $this->traceDuration($timeTaken, TraceCode::VERIFY_SIGNUP_OTP_DURATION);
 
-        if (empty($error) === true)
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::VERIFY_SIGNUP_OTP_SUCCESS];
-        }
-        else
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::VERIFY_SIGNUP_OTP_FAILED];
-            $traceDetails['errorCode'] = $error['internal_error_code'] ?? 'UNKNOWN_ERROR';
-        }
-
-        $traceDetails['duration'] = $timeTaken;
-
-        $this->pushSignUpLoginMetrics($input, $traceDetails);
+        Helper::pushSignUpLoginMetrics(Constants::VERIFY_SIGNUP_OTP, $input, $error, $timeTaken);
 
         if(
             isset($error["internal_error_code"]) and
@@ -409,62 +381,11 @@ class UserController extends Controller
             $error = [$e->getMessage()];
         }
 
-        $timeEnd = microtime(true);
-        $timeTaken = $timeEnd - $timeStart;
+        $timeTaken = microtime(true) - $timeStart;
 
-        if(empty($error) === true)
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::USER_SIGNUP_SUCCESS];
-        }
-        else
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::USER_SIGNUP_FAILED];
-            $traceDetails['errorCode'] = $error['internal_error_code'] ?? 'UNKNOWN_ERROR';
-        }
-
-        $traceDetails['duration'] = $timeTaken;
-
-        $this->pushSignUpLoginMetrics($input, $traceDetails);
+        Helper::pushSignUpLoginMetrics(Constants::USER_SIGNUP, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function pushSignUpLoginMetrics($input, $traceDetails)
-    {
-        $medium  = isset($input['email']) ? MetricConstants::EMAIL : MetricConstants::CONTACT_MOBILE;
-        $product = ApiUrl::isBankingOriginRequest() ? MetricConstants::BANKING : MetricConstants::PRIMARY;
-        $mediumLabel = $traceDetails['isLogin'] ? MetricConstants::LOGIN_MEDIUM : MetricConstants::SIGNUP_MEDIUM;
-        $methodLabel = $traceDetails['isLogin'] ? MetricConstants::LOGIN_METHOD : MetricConstants::SIGNUP_METHOD;
-
-        $traceData = [
-            $medium => isset($input["email"]) ? Util::mask_email($input["email"]) : Util::mask_phone($input["contact_mobile"]),
-            $mediumLabel => $medium,
-            $methodLabel => $traceDetails['method'],
-            'product' => $product,
-        ];
-
-        $traceCode = $traceDetails['traceCode'];
-        $metricName = $traceDetails['metricConstant'];
-
-        $metricDimensions = [
-            $mediumLabel => $medium,
-            $methodLabel => $traceDetails['method'],
-            MetricConstants::PRODUCT => $product,
-        ];
-
-        if($traceDetails['success'] === false)
-        {
-            $traceData['error_code'] = $traceDetails['errorCode'];
-            $metricDimensions['error_code'] = $traceDetails['errorCode'];
-        }
-
-        $this->pushLogsAndMetrics($metricName, $metricDimensions, $traceCode, $traceData);
-
-        $this->metrics->histogram($traceDetails['metricDurationConstant'], $traceDetails['duration'],
-            [
-                $mediumLabel => $medium,
-                MetricConstants::PRODUCT => $product,
-            ]);
     }
 
     public function postOauthRegister()
@@ -523,27 +444,13 @@ class UserController extends Controller
 
         list($error, $data) = $userService->login($input);
 
-        $result = AppResponse::jsonResponse($error, $data);
+        $timeTaken = microtime(true) - $timeStart;
 
-        $timeEnd = microtime(true);
-        $timeTaken = $timeEnd - $timeStart;
         $this->traceDuration($timeTaken, TraceCode::USER_LOGIN_DURATION);
 
-        if(empty($error) === true)
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::USER_LOGIN_SUCCESS];
-        }
-        else
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::USER_LOGIN_FAILED];
-            $traceDetails['errorCode'] = $error['internal_error_code'] ?? 'UNKNOWN_ERROR';
-        }
+        Helper::pushSignUpLoginMetrics(Constants::USER_LOGIN, $input, $error, $timeTaken);
 
-        $traceDetails['duration'] = $timeTaken;
-
-        $this->pushSignUpLoginMetrics($input, $traceDetails);
-
-        return $result;
+        return AppResponse::jsonResponse($error, $data);
     }
 
     /**
@@ -579,25 +486,11 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->otpLogin($input);
 
-        $timeEnd = microtime(true);
-
-        $timeTaken = $timeEnd - $timeStarted;
+        $timeTaken = microtime(true) - $timeStarted;
 
         $this->traceDuration($timeTaken, TraceCode::SEND_LOGIN_OTP_DURATION);
 
-        if (empty($error) === true)
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::SEND_LOGIN_OTP_SUCCESS];
-        }
-        else
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::SEND_LOGIN_OTP_FAILED];
-            $traceDetails['errorCode'] = $error['internal_error_code'] ?? 'UNKNOWN_ERROR';
-        }
-
-        $traceDetails['duration'] = $timeTaken;
-
-        $this->pushSignUpLoginMetrics($input, $traceDetails);
+        Helper::pushSignUpLoginMetrics(Constants::SEND_LOGIN_OTP, $input, $error, $timeTaken);
 
         if((isset($error[UserConstants::INTERNAL_ERROR_CODE]) === true) and
             (in_array($error[UserConstants::INTERNAL_ERROR_CODE], Admin\ApiRequestAny::INTERNAL_ERROR_CODES) === true))
@@ -670,25 +563,11 @@ class UserController extends Controller
 
         list($error, $data) = (new User\Service)->verifyOtpLogin($input);
 
-        $timeEnd = microtime(true);
-
-        $timeTaken = $timeEnd - $timeStarted;
+        $timeTaken = microtime(true) - $timeStarted;
 
         $this->traceDuration($timeTaken, TraceCode::VERIFY_LOGIN_OTP_DURATION);
 
-        if (empty($error) === true)
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::VERIFY_LOGIN_OTP_SUCCESS];
-        }
-        else
-        {
-            $traceDetails = Constants::TRACE_DETAILS_MAP[Constants::VERIFY_LOGIN_OTP_FAILED];
-            $traceDetails['errorCode'] = $error['internal_error_code'] ?? 'UNKNOWN_ERROR';
-        }
-
-        $traceDetails['duration'] = $timeTaken;
-
-        $this->pushSignUpLoginMetrics($input, $traceDetails);
+        Helper::pushSignUpLoginMetrics(Constants::VERIFY_LOGIN_OTP, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -700,27 +579,16 @@ class UserController extends Controller
      */
     public function postOtpLogin2faPassword()
     {
+        $timeStarted = microtime(true);
         $input = Input::all();
 
         list($error, $data) = (new User\Service)->verify2FAMode($input, UserConstants::LOGIN_2FA_WITH_PASSWORD);
 
-        $dimensions = [
-            MetricConstants::LOGIN_METHOD => MetricConstants::OTP,
-            MetricConstants::LOGIN_ACTION => MetricConstants::TWO_FA_PASSWORD_VERIFICATION,
-        ];
+        $timeTaken = microtime(true) - $timeStarted;
 
-        if (empty($error) === true)
-        {
-            $this->metrics->count(MetricConstants::USER_LOGIN_COUNT,
-                EVENT_TRIGGER_COUNT,
-                $dimensions
-            );
-        } else {
-            $this->metrics->count(MetricConstants::TWO_FA_PASSWORD_VERIFICATION_FAILED_COUNT,
-                EVENT_TRIGGER_COUNT,
-                $dimensions
-            );
-        }
+        $this->traceDuration($timeTaken, TraceCode::OTP_LOGIN_2FA_PASSWORD_DURATION);
+
+        Helper::pushSignUpLoginMetrics(Constants::OTP_LOGIN_2FA_PASSWORD, $input, $error, $timeTaken);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -1147,13 +1015,6 @@ class UserController extends Controller
     public function validateJWT()
     {
         return ['success' => true];
-    }
-
-    public function pushLogsAndMetrics(string $metricName, array $metricDimensions, string $traceCode, array $traceFields)
-    {
-        $this->metrics->count($metricName, EVENT_TRIGGER_COUNT, $metricDimensions);
-
-        $this->trace->info($traceCode, $traceFields);
     }
 
 

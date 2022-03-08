@@ -129,116 +129,158 @@ class Constants
     const PASSWORD = "password";
     const OTP = "otp";
 
-    const SEND_SIGNUP_OTP_SUCCESS = 'send_signup_otp_success';
-    const SEND_SIGNUP_OTP_FAILED = 'send_signup_otp_failed';
-    const USER_SIGNUP_SUCCESS = 'user_signup_success';
-    const USER_SIGNUP_FAILED = 'user_signup_failed';
-    const USER_LOGIN_SUCCESS = 'user_login_success';
-    const USER_LOGIN_FAILED = 'user_login_failed';
-    const SEND_LOGIN_OTP_SUCCESS = 'send_login_otp_success';
-    const SEND_LOGIN_OTP_FAILED = 'send_login_otp_failed';
-    const VERIFY_LOGIN_OTP_SUCCESS = 'verify_login_otp_success';
-    const VERIFY_LOGIN_OTP_FAILED = 'verify_login_otp_failed';
-    const VERIFY_SIGNUP_OTP_SUCCESS = 'verify_signup_otp_success';
-    const VERIFY_SIGNUP_OTP_FAILED = 'verify_signup_otp_failed';
+    // trace & metric constants
+    const SUCCESS                   = "success";
+    const FAILED                    = "failed";
+    const DURATION                  = "duration";
+    const ERROR_CODE                = "error_code";
+    const IS_LOGIN                  = "is_login";
+    const METHOD                    = "method";
+    const TRACE_CODE                = "trace_code";
+    const METRIC_CONSTANT           = "metric_constant";
+    const METRIC_DURATION_CONSTANT  = "metric_duration_constant";
+
+    const SUCCESS_SUFFIX   = "_success";
+    const FAILED_SUFFIX    = "_failed";
+    const DURATION_SUFFIX  = "_duration";
+
+    // TOPF BE Flows
+    const SEND_SIGNUP_OTP                   = 'send_signup_otp';
+    const USER_SIGNUP                       = 'user_signup';
+    const USER_LOGIN                        = 'user_login';
+    const SEND_LOGIN_OTP                    = 'send_login_otp';
+    const VERIFY_LOGIN_OTP                  = 'verify_login_otp';
+    const VERIFY_SIGNUP_OTP                 = 'verify_signup_otp';
+    const OTP_LOGIN_2FA_PASSWORD            = 'otp_login_2fa_password';
+
+    const SEND_SIGNUP_OTP_SUCCESS           = 'send_signup_otp_success';
+    const SEND_SIGNUP_OTP_FAILED            = 'send_signup_otp_failed';
+    const USER_SIGNUP_SUCCESS               = 'user_signup_success';
+    const USER_SIGNUP_FAILED                = 'user_signup_failed';
+    const USER_LOGIN_SUCCESS                = 'user_login_success';
+    const USER_LOGIN_FAILED                 = 'user_login_failed';
+    const SEND_LOGIN_OTP_SUCCESS            = 'send_login_otp_success';
+    const SEND_LOGIN_OTP_FAILED             = 'send_login_otp_failed';
+    const VERIFY_LOGIN_OTP_SUCCESS          = 'verify_login_otp_success';
+    const VERIFY_LOGIN_OTP_FAILED           = 'verify_login_otp_failed';
+    const VERIFY_SIGNUP_OTP_SUCCESS         = 'verify_signup_otp_success';
+    const VERIFY_SIGNUP_OTP_FAILED          = 'verify_signup_otp_failed';
+    const OTP_LOGIN_2FA_PASSWORD_SUCCESS    = 'otp_login_2fa_password_success';
+    const OTP_LOGIN_2FA_PASSWORD_FAILED     = 'otp_login_2fa_password_failed';
 
 
     const TRACE_DETAILS_MAP = [
-        self::SEND_SIGNUP_OTP_SUCCESS => [
-            "success" => true,
-            "method" => self::OTP,
-            "traceCode" => TraceCode::SEND_SIGNUP_OTP_SUCCESS,
-            "metricConstant" => MetricConstants::SEND_SIGNUP_OTP_SUCCESS_COUNT,
-            "metricDurationConstant" => MetricConstants::SEND_SIGNUP_OTP_DURATION,
-            "isLogin" => false,
+        self::SEND_SIGNUP_OTP => [
+            self::SEND_SIGNUP_OTP_SUCCESS =>   [
+                self::METHOD                    => self::OTP,
+                self::TRACE_CODE                => TraceCode::SEND_SIGNUP_OTP_SUCCESS,
+                self::METRIC_CONSTANT           => MetricConstants::SEND_SIGNUP_OTP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT  => MetricConstants::SEND_SIGNUP_OTP_DURATION,
+                self::IS_LOGIN                  => false,
+            ],
+            self::SEND_SIGNUP_OTP_FAILED => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::SEND_SIGNUP_OTP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::SEND_SIGNUP_OTP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::SEND_SIGNUP_OTP_DURATION,
+                self::IS_LOGIN => false,
+            ],
         ],
-        self::SEND_SIGNUP_OTP_FAILED => [
-            'success' => false,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::SEND_SIGNUP_OTP_FAILED,
-            'metricConstant' => MetricConstants::SEND_SIGNUP_OTP_FAILED_COUNT,
-            'metricDurationConstant' => MetricConstants::SEND_SIGNUP_OTP_DURATION,
-            'isLogin' => false,
+        self::USER_SIGNUP => [
+            self::USER_SIGNUP_SUCCESS => [
+                self::METHOD => self::PASSWORD,
+                self::TRACE_CODE => TraceCode::USER_SIGNUP_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::USER_SIGNUP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_SIGNUP_DURATION,
+                self::IS_LOGIN => false,
+            ],
+            self::USER_SIGNUP_FAILED => [
+                self::METHOD => self::PASSWORD,
+                self::TRACE_CODE => TraceCode::USER_SIGNUP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::USER_SIGNUP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_SIGNUP_DURATION,
+                self::IS_LOGIN => false,
+            ],
         ],
-         self::USER_SIGNUP_SUCCESS => [
-             'success' => true,
-             "method" => self::PASSWORD,
-             'traceCode' => TraceCode::USER_SIGNUP_SUCCESS,
-             'metricConstant' => MetricConstants::USER_SIGNUP_SUCCESS_COUNT,
-             'metricDurationConstant' => MetricConstants::USER_SIGNUP_DURATION,
-             'isLogin' => false,
-         ],
-         self::USER_SIGNUP_FAILED => [
-             'success' => false,
-             "method" => self::PASSWORD,
-             'traceCode' => TraceCode::USER_SIGNUP_FAILED,
-             'metricConstant' => MetricConstants::USER_SIGNUP_FAILED_COUNT,
-             'metricDurationConstant' => MetricConstants::USER_SIGNUP_DURATION,
-             'isLogin' => false,
-         ],
-        self::USER_LOGIN_SUCCESS => [
-            'success' => true,
-            "method" => self::PASSWORD,
-            'traceCode' => TraceCode::USER_LOGIN_SUCCESS,
-            'metricConstant' => MetricConstants::USER_LOGIN_SUCCESS_COUNT,
-            'metricDurationConstant' => MetricConstants::USER_LOGIN_DURATION,
-            'isLogin' => true,
+        self::USER_LOGIN => [
+            self::USER_LOGIN_SUCCESS => [
+                self::METHOD => self::PASSWORD,
+                self::TRACE_CODE => TraceCode::USER_LOGIN_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::USER_LOGIN_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_LOGIN_DURATION,
+                self::IS_LOGIN => true,
+            ],
+            self::USER_LOGIN_FAILED => [
+                self::METHOD => self::PASSWORD,
+                self::TRACE_CODE => TraceCode::USER_LOGIN_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::USER_LOGIN_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::USER_LOGIN_DURATION,
+                self::IS_LOGIN => true,
+            ],
         ],
-        self::USER_LOGIN_FAILED => [
-            'success' => false,
-            "method" => self::PASSWORD,
-            'traceCode' => TraceCode::USER_LOGIN_FAILED,
-            'metricConstant' => MetricConstants::USER_LOGIN_FAILED_COUNT,
-            'metricDurationConstant' => MetricConstants::USER_LOGIN_DURATION,
-            'isLogin' => true,
+        self::SEND_LOGIN_OTP => [
+            self::SEND_LOGIN_OTP_SUCCESS => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::SEND_LOGIN_OTP_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::SEND_LOGIN_OTP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::SEND_LOGIN_OTP_DURATION,
+                self::IS_LOGIN => true,
+            ],
+            self::SEND_LOGIN_OTP_FAILED => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::SEND_LOGIN_OTP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::SEND_LOGIN_OTP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::SEND_LOGIN_OTP_DURATION,
+                self::IS_LOGIN => true,
+            ],
         ],
-        self::SEND_LOGIN_OTP_SUCCESS => [
-            'success' => true,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::SEND_LOGIN_OTP_SUCCESS,
-            'metricConstant' => MetricConstants::SEND_LOGIN_OTP_SUCCESS_COUNT,
-            'metricDurationConstant' => MetricConstants::SEND_LOGIN_OTP_DURATION,
-            'isLogin' => true,
+        self::VERIFY_LOGIN_OTP => [
+            self::VERIFY_LOGIN_OTP_SUCCESS => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::VERIFY_LOGIN_OTP_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::VERIFY_LOGIN_OTP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::VERIFY_LOGIN_OTP_DURATION,
+                self::IS_LOGIN => true,
+            ],
+            self::VERIFY_LOGIN_OTP_FAILED => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::VERIFY_LOGIN_OTP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::VERIFY_LOGIN_OTP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::VERIFY_LOGIN_OTP_DURATION,
+                self::IS_LOGIN => true,
+            ],
         ],
-        self::SEND_LOGIN_OTP_FAILED => [
-            'success' => true,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::SEND_LOGIN_OTP_FAILED,
-            'metricConstant' => MetricConstants::SEND_LOGIN_OTP_FAILED_COUNT,
-            'metricDurationConstant' => MetricConstants::SEND_LOGIN_OTP_DURATION,
-            'isLogin' => true,
+        self::VERIFY_SIGNUP_OTP => [
+            self::VERIFY_SIGNUP_OTP_SUCCESS => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::VERIFY_SIGNUP_OTP_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::VERIFY_SIGNUP_OTP_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::VERIFY_SIGNUP_OTP_DURATION,
+                self::IS_LOGIN => false,
+            ],
+            self::VERIFY_SIGNUP_OTP_FAILED => [
+                self::METHOD => self::OTP,
+                self::TRACE_CODE => TraceCode::VERIFY_SIGNUP_OTP_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::VERIFY_SIGNUP_OTP_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::VERIFY_SIGNUP_OTP_DURATION,
+                self::IS_LOGIN => false,
+            ],
         ],
-        self::VERIFY_LOGIN_OTP_SUCCESS => [
-            'success' => true,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::VERIFY_LOGIN_OTP_SUCCESS,
-            'metricConstant' => MetricConstants::VERIFY_LOGIN_OTP_SUCCESS_COUNT,
-            'metricDurationConstant' => MetricConstants::VERIFY_LOGIN_OTP_DURATION,
-            'isLogin' => true,
+        self::OTP_LOGIN_2FA_PASSWORD => [
+            self::OTP_LOGIN_2FA_PASSWORD_SUCCESS => [
+                self::METHOD => self::PASSWORD,
+                self::TRACE_CODE => TraceCode::OTP_LOGIN_2FA_PASSWORD_SUCCESS,
+                self::METRIC_CONSTANT => MetricConstants::OTP_LOGIN_2FA_PASSWORD_SUCCESS_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::OTP_LOGIN_2FA_PASSWORD_DURATION,
+                self::IS_LOGIN => true,
+            ],
+            self::OTP_LOGIN_2FA_PASSWORD_FAILED => [
+                self::METHOD => self::PASSWORD,
+                self::TRACE_CODE => TraceCode::OTP_LOGIN_2FA_PASSWORD_FAILED,
+                self::METRIC_CONSTANT => MetricConstants::OTP_LOGIN_2FA_PASSWORD_FAILED_COUNT,
+                self::METRIC_DURATION_CONSTANT => MetricConstants::OTP_LOGIN_2FA_PASSWORD_DURATION,
+                self::IS_LOGIN => true,
+            ],
         ],
-        self::VERIFY_LOGIN_OTP_FAILED => [
-            'success' => false,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::VERIFY_LOGIN_OTP_FAILED,
-            'metricConstant' => MetricConstants::VERIFY_LOGIN_OTP_FAILED_COUNT,
-            'metricDurationConstant' => MetricConstants::VERIFY_LOGIN_OTP_DURATION,
-            'isLogin' => true,
-        ],
-        self::VERIFY_SIGNUP_OTP_SUCCESS => [
-            'success' => true,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::VERIFY_SIGNUP_OTP_SUCCESS,
-            'metricConstant' => MetricConstants::VERIFY_SIGNUP_OTP_SUCCESS_COUNT,
-            'metricDurationConstant' => MetricConstants::VERIFY_SIGNUP_OTP_DURATION,
-            'isLogin' => false,
-        ],
-        self::VERIFY_SIGNUP_OTP_FAILED => [
-            'success' => false,
-            "method" => self::OTP,
-            'traceCode' => TraceCode::VERIFY_SIGNUP_OTP_FAILED,
-            'metricConstant' => MetricConstants::VERIFY_SIGNUP_OTP_FAILED_COUNT,
-            'metricDurationConstant' => MetricConstants::VERIFY_SIGNUP_OTP_DURATION,
-            'isLogin' => false,
-        ]
     ];
 }

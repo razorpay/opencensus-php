@@ -54,6 +54,9 @@ class TraceCode
     const SEND_LOGIN_OTP_SUCCESS                    = 'SEND_LOGIN_OTP_SUCCESS';
     const VERIFY_LOGIN_OTP_SUCCESS                  = 'VERIFY_LOGIN_OTP_SUCCESS';
     const VERIFY_LOGIN_OTP_FAILED                   = 'VERIFY_LOGIN_OTP_FAILED';
+    const OTP_LOGIN_2FA_PASSWORD_DURATION           = 'OTP_LOGIN_2FA_PASSWORD_DURATION';
+    const OTP_LOGIN_2FA_PASSWORD_SUCCESS            = 'OTP_LOGIN_2FA_PASSWORD_SUCCESS';
+    const OTP_LOGIN_2FA_PASSWORD_FAILED             = 'OTP_LOGIN_2FA_PASSWORD_FAILED';
 
     const SEND_SIGNUP_OTP_DURATION                  = 'SEND_SIGNUP_OTP_DURATION';
     const VERIFY_SIGNUP_OTP_DURATION                = 'VERIFY_SIGNUP_OTP_DURATION';
@@ -69,6 +72,8 @@ class TraceCode
     const USER_LOGIN_SUCCESS                        = 'USER_LOGIN_SUCCESS';
     const USER_LOGIN_FAILED                         = 'USER_LOGIN_FAILED';
     const USER_SIGNUP_TRIGGERED                     = 'USER_SIGNUP_TRIGGERED';
+
+    const LOGIN_SIGNUP_METRIC_TRACE_PUSH_FAILED     = 'LOGIN_SIGNUP_METRIC_TRACE_PUSH_FAILED';
 
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
     const USER_OAUTH_LOGIN                          = 'USER_OAUTH_LOGIN';

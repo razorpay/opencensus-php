@@ -154,25 +154,51 @@ class Service extends Base\Service
 
     public function traceApiTrigger(array $input, string $traceCode, string $metricConstant, string $method, bool $isLogin)
     {
-        $signup_medium  = isset($input['email']) ? MetricConstants::EMAIL : MetricConstants::CONTACT_MOBILE;
-        $product = ApiUrl::isBankingOriginRequest() ? 'banking' : 'primary';
-        $methodLabel = $isLogin ? MetricConstants::LOGIN_METHOD : MetricConstants::SIGNUP_METHOD;
-        $mediumLabel = $isLogin ? MetricConstants::LOGIN_MEDIUM : MetricConstants::SIGNUP_MEDIUM;
+        try
+        {
+            $product        = ApiUrl::isBankingOriginRequest() ? 'banking' : 'primary';
+            $methodLabel    = $isLogin ? MetricConstants::LOGIN_METHOD : MetricConstants::SIGNUP_METHOD;
+            $mediumLabel    = $isLogin ? MetricConstants::LOGIN_MEDIUM : MetricConstants::SIGNUP_MEDIUM;
+            $medium         = "MEDIUM_NA";
+            $mediumValue    = "UNKNOWN";
 
-        $this->trace->info($traceCode, [
-            $signup_medium => isset($input['email']) ? Util::mask_email($input['email']) : Util::mask_phone($input['contact_mobile']),
-            'medium' => $signup_medium,
-            'product'=> $product,
+            if(isset($input[Constants::EMAIL]) === true)
+            {
+                $medium         = MetricConstants::EMAIL;
+                $mediumValue    = Util::mask_email($input[Constants::EMAIL]);
+            }
+            elseif (isset($input[Constants::CONTACT_MOBILE]) === true)
+            {
+                $medium         = MetricConstants::CONTACT_MOBILE;
+                $mediumValue    = Util::mask_phone($input[Constants::CONTACT_MOBILE]);
+            }
 
-        ]);
+            $this->trace->info($traceCode, [
+                $medium  => $mediumValue,
+                'medium' => $medium,
+                'product'=> $product,
 
-        $this->metrics->count($metricConstant ,
-            EVENT_TRIGGER_COUNT,
-            [
-                $methodLabel => $method,
-                $mediumLabel => $signup_medium,
-                MetricConstants::PRODUCT => $product,
             ]);
+
+            $this->metrics->count(
+                $metricConstant ,
+                EVENT_TRIGGER_COUNT,
+                [
+                    $methodLabel                => $method,
+                    $mediumLabel                => $medium,
+                    MetricConstants::PRODUCT    => $product,
+                ]
+            );
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::LOGIN_SIGNUP_METRIC_TRACE_PUSH_FAILED,
+                [
+                    "exception" => $e->getMessage()
+                ]
+            );
+        }
     }
 
     /**
@@ -620,36 +646,6 @@ class Service extends Base\Service
             if (in_array('Verification failed because of incorrect OTP.', $error) === true)
             {
                 return [['Verification failed because of incorrect OTP.', self::LOGIN_UNAUTHENTICATED], null];
-            }
-
-            if (in_array('Contact mobile is already verified', $error) === true)
-            {
-                return [['Contact mobile is already verified', self::LOGIN_UNAUTHENTICATED], null];
-            }
-
-            if (in_array('Email is already verified', $error) === true)
-            {
-                return [['Email is already verified', self::LOGIN_UNAUTHENTICATED], null];
-            }
-
-            if (in_array('BAD_REQUEST_EMAIL_NOT_VERIFIED', $error) === true)
-            {
-                return [['Email is not verified.', self::LOGIN_UNAUTHENTICATED], null];
-            }
-
-            if (in_array('BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED', $error) === true)
-            {
-                return [['Contact mobile is not verified.', self::LOGIN_UNAUTHENTICATED], null];
-            }
-
-            if (in_array('BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED', $error) === true)
-            {
-                return [['No accounts associated with the contact mobile/email.', self::LOGIN_UNAUTHENTICATED], null];
-            }
-
-            if (in_array('BAD_REQUEST_MULTIPLE_ACCOUNTS_ASSOCIATED', $error) === true)
-            {
-                return [['Multiple accounts associated with the contact mobile/email.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
             if (in_array('BAD_REQUEST_INCORRECT_OTP', $error) === true)
