@@ -81,7 +81,12 @@ export const initLumberjack = () => {
 };
 
 export const initRefiner = (user) => {
-  if (window.REFINER_PROJECT_ID && user && user.user) {
+  if (
+    window.REFINER_PROJECT_ID &&
+    user &&
+    user.user &&
+    ['activated', 'activated_mcc_pending', 'instantly_activated'].includes(user?.activation_status)
+  ) {
     _refiner('setProject', window.REFINER_PROJECT_ID);
     _refiner('identifyUser', {
       id: user.user?.id,
