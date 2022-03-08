@@ -4,6 +4,7 @@ namespace RZP\Models\Reversal;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -28,9 +29,12 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Exception\GatewayTimeoutException;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutLedger;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedger;
@@ -509,7 +513,7 @@ class Core extends Base\Core
 
         $txnCore = new Transaction\Core;
 
-        $reversal = $this->repo->transaction(function() use ($reversal, $txnCore)
+        $reversal = $this->repo->transaction(function() use ($reversal, $txnCore, $feeOnlyReversal)
         {
             list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
 
@@ -518,6 +522,16 @@ class Core extends Base\Core
             $this->repo->saveOrFail($reversal);
 
             $txnCore->saveFeeDetails($txn, $feesSplit);
+
+            // Create ledger entry for transaction here
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $reversal, $feeOnlyReversal)
+            {
+                $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn);
+
+                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object) RefundJournalEvents::fetchLedgerRulesForReversal($reversal, $txn, $reversal->entity, $feeOnlyReversal);
+
+                LedgerEntryJob::dispatch($this->mode, $transactionMessage, $reversal->merchant)->onConnection('sync');
+            }));
 
             return $reversal;
         });

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6eade8ac675a8b877a7f6efd8d6d6b9d",
+    "content-hash": "d861b9c8ef10fe9e14650cf3490df375",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -2197,6 +2197,58 @@
             "description": "JSONPath implementation for parsing, searching and flattening arrays",
             "abandoned": "softcreatr/jsonpath",
             "time": "2019-07-15T17:23:22+00:00"
+        },
+        {
+            "name": "fntneves/laravel-transactional-events",
+            "version": "1.8.11",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fntneves/laravel-transactional-events.git",
+                "reference": "86627e50c3279ae0c8807a27518573bb11e67069"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fntneves/laravel-transactional-events/zipball/86627e50c3279ae0c8807a27518573bb11e67069",
+                "reference": "86627e50c3279ae0c8807a27518573bb11e67069",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "~5.8.0|^6.0|^7.0",
+                "illuminate/events": "~5.8.0|^6.0|^7.0",
+                "illuminate/support": "~5.8.0|^6.0|^7.0",
+                "loophp/phptree": "^2.5"
+            },
+            "require-dev": {
+                "orchestra/testbench": "~3.8.0|~4.0|^5.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Neves\\Events\\EventServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Neves\\": "src/"
+                },
+                "files": [
+                    "src/Neves/Events/functions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Francisco Neves",
+                    "email": "hey@francisconeves.com"
+                }
+            ],
+            "description": "Transaction-aware Event Dispatcher for Laravel",
+            "time": "2020-10-13T12:19:34+00:00"
         },
         {
             "name": "geoip2/geoip2",
@@ -4470,6 +4522,71 @@
                 "server"
             ],
             "time": "2017-12-23T23:33:42+00:00"
+        },
+        {
+            "name": "loophp/phptree",
+            "version": "2.6.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/loophp/phptree.git",
+                "reference": "2012c884003dfca0253611f767a67315004c0ff4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/loophp/phptree/zipball/2012c884003dfca0253611f767a67315004c0ff4",
+                "reference": "2012c884003dfca0253611f767a67315004c0ff4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 7.1"
+            },
+            "require-dev": {
+                "drupol/php-conventions": "^5",
+                "drupol/phpmerkle": "^2.2",
+                "friends-of-phpspec/phpspec-code-coverage": "^5",
+                "graphp/graphviz": "^0.2",
+                "infection/infection": "^0.22",
+                "infection/phpspec-adapter": "^0.1",
+                "loophp/launcher": "^2.2.2",
+                "microsoft/tolerant-php-parser": "^0.0.20",
+                "nikic/php-parser": "^4",
+                "phpbench/phpbench": "^0.16.10",
+                "phpspec/phpspec": "^7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "loophp\\phptree\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pol Dellaiera",
+                    "email": "pol.dellaiera@protonmail.com"
+                }
+            ],
+            "description": "An implementation of tree data structure",
+            "keywords": [
+                "binary tree",
+                "data structure",
+                "php",
+                "tree"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/drupol",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.paypal.me/drupol",
+                    "type": "paypal"
+                }
+            ],
+            "time": "2021-05-10T20:01:49+00:00"
         },
         {
             "name": "maatwebsite/excel",
@@ -8521,7 +8638,7 @@
                 "sdk",
                 "ufh"
             ],
-            "time": "2021-07-01T10:31:02+00:00"
+            "time": "2021-11-25T05:46:11+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -8565,6 +8682,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
+            "abandoned": true,
             "time": "2017-08-10T18:30:30+00:00"
         },
         {
@@ -14611,7 +14729,6 @@
                     "type": "github"
                 }
             ],
-            "abandoned": true,
             "time": "2020-11-30T07:30:19+00:00"
         },
         {

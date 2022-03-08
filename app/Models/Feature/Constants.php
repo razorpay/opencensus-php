@@ -1003,7 +1003,6 @@ class Constants
     const LEDGER_JOURNAL_READS  = 'ledger_journal_reads';
     const LEDGER_REVERSE_SHADOW = 'ledger_reverse_shadow';
 
-
     /**
      * Ledger Features for PG release
      */

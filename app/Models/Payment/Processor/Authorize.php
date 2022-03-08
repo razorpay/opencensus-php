@@ -77,10 +77,13 @@ use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Reward\Entity as RewardEntity;
 use RZP\Models\Payment\Processor\App as AppMethod;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\Gateway as enachNpciGateway;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
@@ -8634,6 +8637,14 @@ trait Authorize
                 [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
+
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($payment) {
+                    // This occurs in purchase model
+                    $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
+
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+                }));
             }
 
             $this->repo->saveOrFail($payment);

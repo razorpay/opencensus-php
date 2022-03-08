@@ -29,9 +29,13 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as NonVAQr;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 trait Capture
 {
@@ -320,6 +324,11 @@ trait Capture
                         $this->payment->setGatewayCaptured(true);
 
                         $this->repo->saveOrFail($this->payment);
+
+                        // this is triggered for auth and capture model when merchant triggers the manual capture
+                        $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
+
+                        LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
                     }
 
                     return true;
@@ -604,6 +613,11 @@ trait Capture
                     // Saving this here itself because recordCapture will perform other actions too,
                     // in a transaction, which could fail and end up rolling back.
                     $this->repo->saveOrFail($this->payment);
+
+                    // Gets called in auto capture mode of auth and capture model
+                    $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($this->payment);
+
+                    LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
                 }
             }
 
@@ -796,6 +810,16 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
+            $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+
+                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = (object) CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
+
+                LedgerEntryJob::dispatch($this->mode, $transactionMessage, $this->merchant)->onConnection('sync');
+            }));
+
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.
             // This has been done to temporarily handle the distributed transaction failures.
@@ -808,6 +832,7 @@ trait Capture
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
+
 
     protected function handleAsyncUpdateBalanceIfApplicable(Payment\Entity $payment, Transaction\Entity $txn)
     {
@@ -1283,7 +1308,7 @@ trait Capture
           * if not enabled the virtual account will stay in active state
           *  and payment will be refunded later by cron.
           */
-        
+
         $order = $virtualAccount->entity;
 
         $merchant = $virtualAccount->merchant;

@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 use RZP\Diag\EventCode;
 use RZP\Exception;
+use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -39,6 +40,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Gateway\Base\ScroogeResponse;
 use RZP\Listeners\ApiEventSubscriber;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transfer\Metric as TransferMetric;
@@ -49,6 +51,7 @@ use RZP\Models\Payment\Refund\Helpers as RefundHelpers;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 /**
  * Trait Refund
@@ -1075,6 +1078,11 @@ trait Refund
         list($txn, $feesSplit) = $txnCore->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $refund)
+        {
+            RefundJournalEvents::createLedgerEntriesForRefunds($this->mode, $refund, $txn);
+        }));
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
 

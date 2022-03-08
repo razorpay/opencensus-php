@@ -17,6 +17,7 @@ use RZP\Jobs\Settlement\Bucket;
 use RZP\Jobs\CardsPaymentTransaction;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
+use RZP\Models\Ledger\SettlementJournalEvents;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Dispute;
@@ -44,7 +45,9 @@ use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Processor;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
 
 class Core extends Base\Core
@@ -981,6 +984,13 @@ class Core extends Base\Core
     public function createFromSettlement(Settlement\Entity $settlement)
     {
         list($txn, $feeSplit) = $this->createTransactionForSource($settlement);
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $settlement)
+        {
+            $transactionMessage = SettlementJournalEvents::createTransactionMessageForSettlement($settlement, $txn);
+
+            LedgerEntryJob::dispatch($this->mode, $transactionMessage, $txn->merchant)->onConnection('sync');
+        }));
 
         return $txn;
     }
