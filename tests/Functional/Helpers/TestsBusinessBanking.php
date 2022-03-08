@@ -337,7 +337,8 @@ trait TestsBusinessBanking
                                            string $rblBASFetchV2 = 'off',
                                            string $enableQueuedPayoutsViaPayoutsService = 'control',
                                            string $payoutsToFtsSync = 'off',
-                                           string $enableStatusDetailsFeature = 'off')
+                                           string $enableStatusDetailsFeature = 'off',
+                                           string $enableOnHoldPayoutsViaPayoutsService = 'control')
 
     {
         // Mock Razorx
@@ -369,7 +370,8 @@ trait TestsBusinessBanking
                     $rblBASFetchV2,
                     $enableQueuedPayoutsViaPayoutsService,
                     $payoutsToFtsSync,
-                    $enableStatusDetailsFeature
+                    $enableStatusDetailsFeature,
+                    $enableOnHoldPayoutsViaPayoutsService
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -435,6 +437,11 @@ trait TestsBusinessBanking
                     if ($feature === 'enable_queued_payouts_via_payouts_service')
                     {
                         return strtolower($enableQueuedPayoutsViaPayoutsService);
+                    }
+
+                    if ($feature === 'enable_on_hold_payouts_via_payouts_service')
+                    {
+                        return strtolower($enableOnHoldPayoutsViaPayoutsService);
                     }
 
                     if ($feature === 'payout_to_fts_sync_mode')

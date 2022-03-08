@@ -136,6 +136,11 @@ class Core extends Base\Core
     protected $payoutScheduledServiceClient;
 
     /**
+     * @var PayoutService\OnHoldBeneEvent
+     */
+    protected $payoutServiceBeneEventUpdateClient;
+
+    /**
      * @var PayoutService\Retry
      */
     protected $payoutRetryServiceClient;
@@ -171,6 +176,8 @@ class Core extends Base\Core
         $this->payoutCancelServiceClient = $this->app[PayoutService\Cancel::PAYOUT_SERVICE_CANCEL];
 
         $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
+
+        $this->payoutServiceBeneEventUpdateClient = $this->app[PayoutService\OnHoldBeneEvent::PAYOUT_SERVICE_BENE_EVENT_UPDATE];
 
         $this->payoutRetryServiceClient = $this->app[PayoutService\Retry::PAYOUT_SERVICE_RETRY];
 
@@ -4566,6 +4573,8 @@ class Core extends Base\Core
                     self::PAYOUT_MUTEX_LOCK_TIMEOUT,
                     ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS,
                     2);
+
+                $this->payoutServiceBeneEventUpdateClient->processBeneEventUpdateViaMicroservice($input);
             }
         }
         catch (\Throwable $exception)

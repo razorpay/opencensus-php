@@ -529,7 +529,66 @@ return [
         ],
     ],
 
+    'testCreateOnHoldPayoutViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
     'testCreateQueuedPayoutViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 500,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'NEFT',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 500,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'queued',
+                'mode'            => 'NEFT',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCreateQueuedPayoutViaAPIWhenWorkflowAndOnHoldEnabledForMerchant' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
@@ -614,6 +673,24 @@ return [
                 'status'        => 'queued',
                 'error'         => null,
                 "queued_reason" => QueuedReasons::LOW_BALANCE,
+            ],
+        ],
+    ],
+
+    'testCreateLedgerForOnHoldPayoutCreatedViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/create_ledger',
+            'content' => [
+                "id"  => "Gg7sgBZgvYjlSB",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'        => 'created',
+                'error'         => null,
+                'queued_reason' => null,
+                'status_code'   => null
             ],
         ],
     ],

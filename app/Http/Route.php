@@ -2112,6 +2112,9 @@ class Route
         'on_demand_settlement'                     => ['post',     'merchant/payout/demand',                         'PayoutController@postMerchantPayoutOnDemand'                       ],
         'on_demand_settlement_fees'                => ['get',      'merchant/payout/demand/fees',                    'PayoutController@calculateEsOnDemandFees'                          ],
 
+        // Return merchant slas for Payouts on hold
+        'on_hold_merchant_slas_internal'           => ['post',     'merchant/on_hold_slas_internal',                 'PayoutController@getOnHoldMerchantSlas'                            ],
+
         // Settings routes
         'settings_delete'                          => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
         'settings_fetch_defined'                   => ['get',      'settings/{module}/defined_keys',                 'SettingsController@getDefined'                                     ],
@@ -3965,6 +3968,7 @@ class Route
         'payout_fetch_by_id_internal',
         'user_fetch_internal',
         'fetch_actor_info_internal',
+        'on_hold_merchant_slas_internal',
         'offline_verification_webhook',
         'user_verify_second_factor_auth',
         'user_otp_login_2fa_password',
@@ -12175,6 +12179,7 @@ class Route
             'update_payout_payout_service',
             'user_fetch_internal',
             'fetch_actor_info_internal',
+            'on_hold_merchant_slas_internal',
             'internal_balances_queued',
         ],
 

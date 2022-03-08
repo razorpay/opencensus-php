@@ -593,6 +593,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceSchedule();
 
+        $this->registerOnHoldBeneEventUpdate();
+
+        $this->registerOnHoldCron();
+
         $this->registerPayoutServiceQueuedInitiate();
 
         $this->registerPayoutServiceCreate();
@@ -1490,6 +1494,22 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE, function($app)
         {
             return new PayoutService\Schedule($app);
+        });
+    }
+
+    protected function registerOnHoldBeneEventUpdate()
+    {
+        $this->app->singleton(PayoutService\OnHoldBeneEvent::PAYOUT_SERVICE_BENE_EVENT_UPDATE, function($app)
+        {
+            return new PayoutService\OnHoldBeneEvent($app);
+        });
+    }
+
+    protected function registerOnHoldCron()
+    {
+        $this->app->singleton(PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON, function($app)
+        {
+            return new PayoutService\OnHoldCron($app);
         });
     }
 

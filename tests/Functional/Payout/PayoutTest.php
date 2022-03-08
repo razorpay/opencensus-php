@@ -81,6 +81,7 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Payout\PayoutProcessedContactCommunication;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Services\PayoutService\OnHoldBeneEvent as OnHoldBeneEventService;
 use RZP\Models\Payout\Notifications\PayoutProcessedContactCommunication as PayoutProcessedNotification;
 
 class PayoutTest extends OAuthTestCase
@@ -15584,6 +15585,8 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->ftsAuth("live");
 
+        $this->mockPayoutServiceForOnHold();
+
         $this->startTest();
 
         $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
@@ -15592,6 +15595,83 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($eventConfigFromFTS['BENEFICIARY']['HDFC']);
         $this->assertEquals($eventConfigFromFTS['BENEFICIARY']['HDFC']['status'], 'started');
+    }
+
+    public function mockPayoutServiceForOnHold($fail = false, $request = [])
+    {
+        $payoutServiceOnHoldMock = Mockery::mock('RZP\Services\PayoutService\OnHoldBeneEvent',
+            [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceOnHoldMock->shouldReceive('sendRequest')
+            ->withArgs(
+                function($arg) use ($request) {
+                    try
+                    {
+                        // Using this method only here as we want to check if the keys in the
+                        // request are coming properly or not.
+                        $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                        return true;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        return false;
+                    }
+                }
+            )
+            ->andReturn(
+            // We are returning this response only as we don't have a use case of supporting
+            // response based on $request, if needed, that can also be added here using
+            // andReturnUsing method instead of andReturn
+                $this->getResponseForOnHoldPayoutsServiceMock($fail)
+            );
+
+        $this->app->instance(OnHoldBeneEventService::PAYOUT_SERVICE_BENE_EVENT_UPDATE, $payoutServiceOnHoldMock);
+    }
+
+    public function getResponseForOnHoldPayoutsServiceMock($fail, $status = 'processing')
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true) {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code" => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field" => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        } else {
+            $response->status_code = 200;
+            $response->success = true;
+        }
+        return $response;
+    }
+
+    // Assert that the array keys match selectively, we don't compare for values only the keys
+    public function assertArrayKeySelectiveEquals(array $expected, array $actual)
+    {
+        foreach ($expected as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $this->assertArrayHasKey($key, $actual);
+
+                $this->assertArrayKeySelectiveEquals($expected[$key], $actual[$key]);
+            }
+            else
+            {
+                $this->assertArrayHasKey($key, $actual);
+            }
+        }
     }
 
     public function testBeneBankUptimeConfigSetup()

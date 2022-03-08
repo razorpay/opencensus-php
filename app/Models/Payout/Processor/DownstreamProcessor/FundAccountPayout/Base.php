@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 
 use RZP\Constants;
+use RZP\Models\Payout\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use Razorpay\Trace\Logger;

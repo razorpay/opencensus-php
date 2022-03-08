@@ -1083,7 +1083,8 @@ class Base extends BaseCore
 
                     if (($payout->getStatus() === Status::SCHEDULED) or
                         ($payout->getStatus() === Status::QUEUED) or
-                        ($payout->getStatus() === Status::PENDING))
+                        ($payout->getStatus() === Status::PENDING) or
+                        ($payout->getStatus() === Status::ON_HOLD))
                     {
                         if (($payout->getTransactionId() !== null) and
                             ($this->app['basicauth']->isPayoutService() === true))
@@ -2976,7 +2977,8 @@ class Base extends BaseCore
                     if (($status === Status::CREATE_REQUEST_SUBMITTED) or
                         ($status === Status::SCHEDULED) or
                         ($status === Status::QUEUED) or
-                        ($status === Status::PENDING))
+                        ($status === Status::PENDING) or
+                        ($status === Status::ON_HOLD))
                     {
                         $payout = $this->processPayoutPostCreate($payout, $queueFlag);
 
@@ -3078,11 +3080,26 @@ class Base extends BaseCore
                 // skip payout creation via payout service
                 // 1. if on hold payouts feature is enabled
                 // 2. if new banking error feature is enabled
-                if ($this->merchant->isAtLeastOneFeatureEnabled([
-                    Features::PAYOUTS_ON_HOLD,
-                    Features::NEW_BANKING_ERROR]) === true)
+                if ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === true)
                 {
                     return false;
+                }
+
+                // skip payout creation via payout service if on_hold payouts via
+                // service are not enabled for the merchant.
+                if ($this->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
+                {
+                    $variant = $this->app->razorx->getTreatment(
+                        $this->merchant->getId(),
+                        RazorxTreatment::ENABLE_ON_HOLD_PAYOUTS_VIA_PAYOUTS_SERVICE,
+                        $this->mode,
+                        Payout\Entity::RAZORX_RETRY_COUNT
+                    );
+
+                    if (strtolower($variant) !== 'on')
+                    {
+                        return false;
+                    }
                 }
 
                 // skip payout creation via payout service if queue_if_low_balance flag is true and queued payouts via

@@ -559,6 +559,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOnHoldMerchantSlas()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getOnHoldMerchantSlas($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateMerchantOnHoldSlas()
     {
         $input = Request::all();

@@ -87,6 +87,11 @@ class Service extends Base\Service
 
     protected $compositePayoutSaveOrFail = true;
 
+    /**
+     * @var PayoutService\OnHoldCron
+     */
+    protected $payoutServiceOnHoldCronClient;
+
     public function __construct()
     {
         parent::__construct();
@@ -104,6 +109,8 @@ class Service extends Base\Service
         $this->workflowMigration = new WorkflowMigration();
 
         $this->slackAppService = new SlackAppService($this->app);
+
+        $this->payoutServiceOnHoldCronClient = $this->app[PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON];
     }
 
     public function createPayoutEntry($input)
@@ -890,6 +897,42 @@ class Service extends Base\Service
         }
 
         return $purposes->toArrayWithItems();
+    }
+
+    public function getOnHoldMerchantSlas(array $input): array
+    {
+        $this->trace->info(TraceCode::ON_HOLD_MERCHANT_SLAS_INTERNAL_REQUEST, $input);
+
+        $merchantIds = array_pull($input, 'merchant_ids', null);
+
+        if ($merchantIds === null)
+        {
+            return [];
+        }
+
+        $merchantSlaConfigList = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA
+        ]);
+
+        $this->trace->info(TraceCode::ON_HOLD_MERCHANT_SLAS_REDIS_RESPONSE, $merchantSlaConfigList);
+
+        $result = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            if (in_array($merchantId, array_keys($merchantSlaConfigList), true) === true)
+            {
+                $result['merchant_slas'][$merchantId] = $merchantSlaConfigList[$merchantId];
+            }
+            else
+            {
+                $result['merchant_slas'][$merchantId] = 0;
+            }
+        }
+
+        $this->trace->info(TraceCode::ON_HOLD_MERCHANT_SLAS_INTERNAL_RESPONSE, $result);
+
+        return $result;
     }
 
     public function validatePurpose(array $input): array
@@ -2258,6 +2301,19 @@ class Service extends Base\Service
             $response
         );
 
+        try
+        {
+            $this->payoutServiceOnHoldCronClient->sendOnHoldCronViaMicroservice();
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::ON_HOLD_CRON_VIA_MICROSERVICE_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+        }
         return $response;
     }
 

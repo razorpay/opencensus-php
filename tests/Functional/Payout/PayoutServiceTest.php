@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payout\Status;
 use RZP\Services\RazorXClient;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -461,7 +462,20 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
     }
 
-   // fetch payment created from payouts service, currently used in axis cc
+    public function testCreateLedgerForOnHoldPayoutCreatedViaPayoutService()
+    {
+        $this->testCreateOnHoldPayoutViaPayoutService();
+
+        $this->ba->appAuthLive($this->config['applications.payouts_service.secret']);
+
+        $response = $this->startTest();
+
+        $txn = $this->getLastEntity('transaction', true, 'live');
+
+        $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
+    }
+
+    // fetch payment created from payouts service, currently used in axis cc
     public function testPaymentsFetchFromPayoutsService()
     {
         $this->testCreatePayoutServicePaymentCreation();
@@ -931,6 +945,70 @@ class PayoutServiceTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
+    // Since PAYOUTS_ON_HOLD feature is enabled for the merchant and experiment is enabled
+    // to go via payouts service, payout should go via payouts service
+    public function testCreateOnHoldPayoutViaPayoutService()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'on',
+            'on',
+            'control',
+            'off',
+            'off',
+            'on'
+        );
+
+        $this->mockPayoutServiceCreate(false, [], 'on_hold');
+
+        // Doing this because we fetch payout from the db before returning response from api.
+        $this->testCreatePayoutEntry('IMPS');
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'on_hold',
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should have gone via payouts service
+        $this->assertEquals(true, $payout->getIsPayoutService());
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        $this->assertEquals('on_hold', $payout->getStatus());
+    }
+
     // Since NEW_BANKING_ERROR feature is enabled for the merchant, the payout won't go via payouts service and would
     // directly go to processing state.
     public function testCreatePayoutForNewBankingErrorPayout()
@@ -1001,6 +1079,82 @@ class PayoutServiceTest extends TestCase
         );
 
         $balance = $this->getDbEntityById('balance', $balanceId, "live");
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['account_number'] = $balance->getAccountNumber();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should not have gone via payouts service
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Payout should be in queued state
+        $this->assertEquals('queued', $payout->getStatus());
+    }
+
+    // Payout request has queue_if_low_balance flag set to true, workflow and on hold enabled for merchant, it won't go via payouts service
+    public function testCreateQueuedPayoutViaAPIWhenWorkflowAndOnHoldEnabledForMerchant(string $balanceId = '')
+    {
+        if (empty($balanceId) === true)
+        {
+            $balanceId = $this->bankingBalance->getId();
+        }
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $balanceId,
+            [
+                'balance' => 100
+            ]
+        );
+
+        $balance = $this->getDbEntityById('balance', $balanceId, "live");
+
+        $this->fixtures->merchant->addFeatures([Constants::PAYOUT_WORKFLOWS]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::WORKFLOW_VIA_PAYOUTS_MS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'off',
+            'control',
+            'on',
+            'on',
+            'control',
+            'off',
+            'off',
+            'on'
+        );
 
         $testData = & $this->testData[__FUNCTION__];
 

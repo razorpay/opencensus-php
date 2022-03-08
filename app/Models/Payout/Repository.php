@@ -464,6 +464,8 @@ class Repository extends Base\Repository
     {
         $payoutStatus = $this->dbColumn(Entity::STATUS);
 
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+
         $payoutIdColumn = $this->dbColumn(Entity::ID);
 
         $fundAccountId = $this->repo->fund_account->dbColumn(FundAccountEntity::ID);
@@ -480,7 +482,8 @@ class Repository extends Base\Repository
                      ->leftJoin(Table::FUND_ACCOUNT, $fundAccountIdInPayout, '=', $fundAccountId)
                      ->leftJoin(Table::BANK_ACCOUNT, $bankAccountIdInFundAccount, '=', $bankAccountId)
                      ->select($payoutIdColumn)
-                     ->where($payoutStatus, '=', Status::ON_HOLD);
+                     ->where($payoutStatus, '=', Status::ON_HOLD)
+                     ->where($isPayoutService, '=', 0);
 
             if (empty($beneBanksDownList) === false)
             {
@@ -500,10 +503,12 @@ class Repository extends Base\Repository
         $onholdAtColumn = $this->dbColumn(Entity::ON_HOLD_AT);
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $statusColumn = $this->dbColumn(Entity::STATUS);
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($merchantIdColumn)
                     ->where($statusColumn, '=', Status::ON_HOLD)
+                    ->where($isPayoutService, '=', 0)
                     ->whereNotNull($onholdAtColumn)
                     ->distinct()
                     ->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
@@ -520,10 +525,12 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $payoutIdColumn = $this->dbColumn(Entity::ID);
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($payoutIdColumn)
                     ->where($statusColumn, '=', Status::ON_HOLD)
+                    ->where($isPayoutService, '=', 0)
                     ->whereNotNull($onHoldAtColumn)
                     ->where($merchantIdColumn, '=', $merchantId)
                     ->where($onHoldAtColumn, "<=", strtotime(('-' . ($sla * 60) . ' seconds'), $currentTimeStamp))
