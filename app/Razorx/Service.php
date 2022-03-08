@@ -248,6 +248,7 @@ class Service extends Base\Service
             'rx_slack_integration_gtm',
             'rx_acc_statement_date_filter',
             'rx_accounting_gtm',
+            'rx_control_account_balance'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
