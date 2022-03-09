@@ -396,7 +396,7 @@ class UserRolesScope
             'payment_links_get_reminder_next_run'           => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SELLERAPP, Role::MANAGER, Role::SELLERAPP_PLUS, Role::FINANCE,],
             'payment_links_notify_by_medium'                => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP, Role::SELLERAPP_PLUS,],
             'payment_links_service_count_route'             => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
-            'payment_links_update'                          => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SELLERAPP, Role::MANAGER, Role::SELLERAPP_PLUS, Role::FINANCE,],
+            'payment_links_update'                          => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SELLERAPP, Role::MANAGER, Role::SELLERAPP_PLUS,],
             'payment_transfer'                              => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'payment_upi_transfer_fetch'                    => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::FINANCE,],
             'payout_bulk_approve'                           => [Role::ADMIN, Role::OWNER,],
