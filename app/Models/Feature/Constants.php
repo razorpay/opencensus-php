@@ -1004,6 +1004,11 @@ class Constants
     const LEDGER_REVERSE_SHADOW = 'ledger_reverse_shadow';
 
     /**
+     * All Ledger Features for RX Direct accounting release
+     */
+    const DA_LEDGER_JOURNAL_WRITES = 'da_ledger_journal_writes';
+
+    /**
      * Ledger Features for PG release
      */
     const PG_LEDGER_JOURNAL_WRITES = 'pg_ledger_journal_writes';
@@ -1618,6 +1623,7 @@ class Constants
         self::PG_LEDGER_JOURNAL_WRITES        => true,
         self::LEDGER_JOURNAL_READS            => true,
         self::LEDGER_REVERSE_SHADOW           => true,
+        self::DA_LEDGER_JOURNAL_WRITES        => true,
         self::ORG_AXIS_PAYPAL                 => true,
         self::AXIS_PAYPAL_ENABLE              => true,
         self::ORG_AXIS_WHATSAPP               => true,

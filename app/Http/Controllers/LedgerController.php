@@ -57,6 +57,12 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function updateAccountByEntitiesAndMerchantID()
+    {
+        $response = $this->app['ledger']->updateAccountByEntitiesAndMerchantID($this->input);
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function updateAccountDetail()
     {
         $response = $this->app['ledger']->updateAccountDetail($this->input, true);

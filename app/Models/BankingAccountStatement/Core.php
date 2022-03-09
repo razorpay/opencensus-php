@@ -5,8 +5,6 @@ namespace RZP\Models\BankingAccountStatement;
 use Mail;
 use File;
 use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -27,9 +25,12 @@ use RZP\Jobs\IciciBankingAccountStatement;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+
 
 class Core extends Base\Core
 {
@@ -440,7 +441,7 @@ class Core extends Base\Core
 
         $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
 
-        $this->checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, $previousClosingBalance);
+        $this->checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, $previousClosingBalance, $merchant);
 
         $basEntitiesToSave = [];
         $totalRecordCount = 0;
@@ -576,7 +577,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, & $previousClosingBalance)
+    protected function checkAndUpdateBalanceForExistingAccounts($lastBankTxn, $bankTransactions, & $previousClosingBalance, $merchant)
     {
         if (($lastBankTxn === null) and
             (empty($bankTransactions) === false))
@@ -611,8 +612,13 @@ class Core extends Base\Core
             );
 
             $balance->setBalance($previousClosingBalance);
-
             $this->repo->balance->saveOrFail($balance);
+
+            // Update opening balance on ledger when 1st statement fetch happens for Direct account
+            if (($merchant->isFeatureEnabled(FeatureConstants::DA_LEDGER_JOURNAL_WRITES) === true) && ($previousClosingBalance !== 0))
+            {
+                (new Merchant\Balance\Ledger\Core)->updateXLedgerMerchantBalanceAccountForDirect($this->basDetails->getMerchantId(), $this->basDetails->getPublicId(), $previousClosingBalance);
+            }
         }
     }
 

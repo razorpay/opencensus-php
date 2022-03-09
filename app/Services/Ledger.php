@@ -81,6 +81,7 @@ class Ledger
         'deleteMerchants'                   => 'DeleteMerchants',
         'fetchMerchantAccounts'             => 'FetchMerchantAccounts',
         'fetchByTransactor'                 => 'FetchByTransactor',
+        'updateAccountByEntitiesAndMerchantID' => 'UpdateByEntitiesAndMerchantID'
     ];
 
     // Headers
@@ -221,6 +222,20 @@ class Ledger
     public function updateAccount($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function updateAccountByEntitiesAndMerchantID($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['updateAccountByEntitiesAndMerchantID'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 

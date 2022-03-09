@@ -14,6 +14,7 @@ use RZP\Services\Ledger as LedgerService;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\BankingAccount\Entity as BankingAccount;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
+use RZP\Models\BankingAccountStatement\Details\Entity as BankingAccountStatementDetails;
 
 class Core extends Base\Core
 {
@@ -22,20 +23,27 @@ class Core extends Base\Core
     const SHARED_MERCHANT_ONBOARDING    = 'shared_merchant_onboarding';
     const SHARED_GATEWAY_ONBOARDING     = 'shared_gateway_onboarding';
 
-    const MODE                  = 'mode';
-    const TENANT                = 'tenant';
-    const MERCHANT_ID           = 'merchant_id';
-    const EVENT                 = 'event';
-    const EVENTS                = 'events';
-    const EVENT_NAME            = 'name';
-    const EVENT_DESCRIPTION     = 'description';
-    const ENTITIES              = 'entities';
-    const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
-    const BANKING_ACCOUNT_ID    = 'banking_account_id';
-    const FEE                   = 'fee';
-    const AMOUNT                = 'amount';
-    const REFUND                = 'refund';
-    const GATEWAY               = 'gateway';
+    const MODE                              = 'mode';
+    const TENANT                            = 'tenant';
+    const MERCHANT_ID                       = 'merchant_id';
+    const EVENT                             = 'event';
+    const EVENTS                            = 'events';
+    const EVENT_NAME                        = 'name';
+    const EVENT_DESCRIPTION                 = 'description';
+    const ENTITIES                          = 'entities';
+    const FTS_FUND_ACCOUNT_ID               = 'fts_fund_account_id';
+    const BANKING_ACCOUNT_ID                = 'banking_account_id';
+    const BANKING_ACCOUNT_STMT_DETAILS_ID   = 'banking_account_stmt_detail_id';
+    const ACCOUNT_TYPE                      = 'account_type';
+    const FUND_ACCOUNT_TYPE                 = 'fund_account_type';
+    const PAYABLE                           = 'payable';
+    const MERCHANT_DA                       = 'merchant_da';
+    const BALANCE                           = 'balance';
+    const MIN_BALANCE                       = 'min_balance';
+    const FEE                               = 'fee';
+    const AMOUNT                            = 'amount';
+    const REFUND                            = 'refund';
+    const GATEWAY                           = 'gateway';
 
     const MERCHANT_BALANCE_OPENING_BALANCE  = 'merchant_balance_opening_balance';
     const MERCHANT_REWARD_OPENING_BALANCE   = 'merchant_reward_opening_balance';
@@ -58,7 +66,6 @@ class Core extends Base\Core
     ];
 
     const TIME_TAKEN       = 'time_taken';
-    const BALANCE          = 'balance';
     const REWARD_BALANCE   = 'reward_balance';
     const MERCHANT_BALANCE = 'merchant_balance';
 
@@ -88,7 +95,7 @@ class Core extends Base\Core
     {
         $event = $accountType == self::SHARED ? self::SHARED_MERCHANT_ONBOARDING : self::DIRECT_MERCHANT_ONBOARDING;
 
-        $snsPyload = $this->getLedgerAccountCreateSNSPayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance);
+        $snsPyload = $this->getLedgerAccountCreateSNSPayload($mode, $merchant, $event, self::BANKING_ACCOUNT_ID, $bankingAccount->getPublicId(), $balanceAmount, $creditBalance, $bankingAccount->getFtsFundAccountId());
         if ($isReverseShadow === false)
         {
             // onboard to ledger in async for shadow mode
@@ -99,7 +106,7 @@ class Core extends Base\Core
         try
         {
             // onboard to ledger in sync for reverse shadow mode
-            $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance);
+            $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, self::BANKING_ACCOUNT_ID, $bankingAccount->getPublicId(), $balanceAmount, $creditBalance, $bankingAccount->getFtsFundAccountId());
             $ledgerService = $this->app['ledger'];
             $ledgerService->setIdempotencyKey(Uuid::uuid1());
             $ledgerService->setTenantHeader('X');
@@ -192,7 +199,7 @@ class Core extends Base\Core
         }
     }
 
-    public function getLedgerAccountCreateSNSPayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance)
+    public function getLedgerAccountCreateSNSPayload($mode, $merchant, $event, $uniqueIdKey, $uniqueId, $balanceAmount, $creditBalance, $ftsId = null)
     {
         $payload = [
             self::TENANT            => self::X,
@@ -203,14 +210,14 @@ class Core extends Base\Core
                 self::EVENT_NAME            => $event,
                 self::EVENT_DESCRIPTION     => $this->eventDescription[$event],
                 self::ENTITIES              => [
-                    self::BANKING_ACCOUNT_ID => [$bankingAccount->getPublicId()],
+                    $uniqueIdKey => [$uniqueId],
                 ],
             ],
         ];
 
-        if ($bankingAccount->getFtsFundAccountId() !== null)
+        if ($ftsId !== null)
         {
-            $payload[self::EVENT][self::ENTITIES][self::FTS_FUND_ACCOUNT_ID] = [$bankingAccount->getFtsFundAccountId()];
+            $payload[self::EVENT][self::ENTITIES][self::FTS_FUND_ACCOUNT_ID] = [$ftsId];
         }
 
         if ($balanceAmount !== 0)
@@ -226,19 +233,19 @@ class Core extends Base\Core
         return $payload;
     }
 
-    public function getLedgerAccountCreatePayload($mode, $merchant, $event, $bankingAccount, $balanceAmount, $creditBalance)
+    public function getLedgerAccountCreatePayload($mode, $merchant, $event, $uniqueIdKey, $uniqueId, $balanceAmount, $creditBalance, $ftsId = null)
     {
         $eventObj = [
             self::EVENT_NAME            => $event,
             self::EVENT_DESCRIPTION     => $this->eventDescription[$event],
             self::ENTITIES              => [
-                self::BANKING_ACCOUNT_ID => [$bankingAccount->getPublicId()],
+                $uniqueIdKey => [$uniqueId],
             ],
         ];
 
-        if ($bankingAccount->getFtsFundAccountId() !== null)
+        if ($ftsId !== null)
         {
-            $eventObj[self::ENTITIES][self::FTS_FUND_ACCOUNT_ID] = [$bankingAccount->getFtsFundAccountId()];
+            $eventObj[self::ENTITIES][self::FTS_FUND_ACCOUNT_ID] = [$ftsId];
         }
 
         $payload = [
@@ -349,6 +356,51 @@ class Core extends Base\Core
         return $payload;
     }
 
+    /***
+     * Push event to sns topic which will be consumed by ledger SQS to create accounts based on event for direct accounting
+     * @param Merchant $merchant
+     * @param BankingAccount $bankingAccount
+     * @param string $mode
+     * @param string $accountType can be direct (for Direct Accounts)
+     * @param int $balanceAmount
+     * @param int $creditBalance
+     * @param bool $isReverseShadow
+     */
+    public function createXLedgerAccountForDirect(Merchant $merchant, BankingAccountStatementDetails $bankingAccountStmtDetails,
+                                                 string $mode, int $balanceAmount = 0, int $creditBalance = 0, bool $isReverseShadow = false)
+    {
+        $event = self::DIRECT_MERCHANT_ONBOARDING;
+
+        $snsPyload = $this->getLedgerAccountCreateSNSPayload($mode, $merchant, $event, self::BANKING_ACCOUNT_STMT_DETAILS_ID, $bankingAccountStmtDetails->getPublicId(), $balanceAmount, $creditBalance, null);
+        if ($isReverseShadow === false)
+        {
+            // onboard to ledger in async for shadow mode
+            $this->createXLedgerAccountPushToSNS($snsPyload);
+            return;
+        }
+
+        try
+        {
+            // onboard to ledger in sync for reverse shadow mode
+            $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, self::BANKING_ACCOUNT_STMT_DETAILS_ID, $bankingAccountStmtDetails->getPublicId(), $balanceAmount, $creditBalance, null);
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->setIdempotencyKey(Uuid::uuid1());
+            $ledgerService->setTenantHeader('X');
+            $ledgerService->createAccountsOnEvent($payload, true);
+        }
+        catch (\Throwable $ex)
+        {
+            // trace and ignore exception and retry in async
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_CREATE_REQUEST_FAILED,
+                $snsPyload);
+            $this->createXLedgerAccountPushToSNS($snsPyload);
+        }
+
+    }
+
     /**
      * This function is called to fetch merchant balance and credit (reward) balance from ledger service.
      * @param string $merchantId
@@ -417,4 +469,56 @@ class Core extends Base\Core
             $creditBalance[CreditEntity::BALANCE] = (int) $ledgerResponse[self::REWARD_BALANCE][self::BALANCE];
         }
     }
+
+    /**
+     * This function updates merchnat balnce on ledger by mid and entities for Direct accounts
+     * @param string $merchantId
+     * @param string $basdId
+     */
+    public function updateXLedgerMerchantBalanceAccountForDirect(string $merchantId, string $basdId, $balance = null, $minBalance = null)
+    {
+
+        try
+        {
+            if (($balance === null) && ($minBalance == null))
+            {
+                // nothing to update
+                return;
+            }
+
+            // payload to update merchant balance account of DA
+            $payload = [
+                self::MERCHANT_ID => $merchantId,
+                self::ENTITIES => [
+                    self::BANKING_ACCOUNT_STMT_DETAILS_ID   => [$basdId],
+                    self::ACCOUNT_TYPE                      => [self::PAYABLE],
+                    self::FUND_ACCOUNT_TYPE                 => [self::MERCHANT_DA]
+                ]
+            ];
+
+            if ($balance != null)
+            {
+                $payload[self::BALANCE] = $balance;
+            }
+
+            if ($minBalance != null)
+            {
+                $payload[self::MIN_BALANCE] = $minBalance;
+            }
+
+            $ledgerService = $this->app['ledger'];
+            $ledgerService->setTenantHeader('X');
+            $ledgerService->updateAccountByEntitiesAndMerchantID($payload, true);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_ACCOUNT_UPDATE_REQUEST_FAILED,
+                $payload);
+        }
+
+    }
+
 }

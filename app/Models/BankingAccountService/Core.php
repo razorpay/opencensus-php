@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Counter;
 use RZP\Trace\TraceCode;
@@ -20,6 +21,7 @@ use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
@@ -29,9 +31,9 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CREATE_BANKING_REQUEST, $input);
 
-        $balance = $this->repo->transaction(function () use ($merchantId, $input)
+        list($balance, $createdNow, $basDetailEntity) = $this->repo->transaction(function () use ($merchantId, $input)
         {
-            $balance = $this->createBalanceAndBankingAccountStatementDetails($merchantId, $input);
+            list($balance, $createdNow, $basDetailEntity) = $this->createBalanceAndBankingAccountStatementDetails($merchantId, $input);
 
             $merchant = $balance->merchant;
 
@@ -41,12 +43,49 @@ class Core extends Base\Core
 
             (new BankingAccount\Core)->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());
 
-            return $balance;
+            return [$balance, $createdNow, $basDetailEntity];
         });
+
+        // check experiment and onboard to ledger in shadow mode
+        if (($createdNow === true) && ($this->onBoardDAMerchantOnLedgerInShadow($balance->merchant, $this->app['rzp.mode']) === true))
+        {
+            $merchant = $balance->merchant;
+            // assign DA_LEDGER_JOURNAL_WRITES feature for the merchant to be onboarded in
+            // shadow mode for direct accounting
+            if ($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
+            {
+                (new Feature\Core)->create(
+                    [
+                        Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                        Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                        Feature\Entity::NAME        => Feature\Constants::DA_LEDGER_JOURNAL_WRITES,
+                    ]);
+
+                $this->trace->info(
+                    TraceCode::DA_LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                    [
+                        'merchant_id'       => $merchant->getId(),
+                        'mode'              => $this->app['rzp.mode'],
+                    ]);
+
+                (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
+            }
+        }
 
         return [
             'balance_id' => $balance->getId(),
         ];
+    }
+
+    // Returns true if experiment and env variable to onboard direct accounting merchant on ledger in shadow is running.
+    protected function onBoardDAMerchantOnLedgerInShadow($merchant, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING,
+            $mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 
     public function assignBusinessId(string $merchantId, array $input): array
@@ -77,9 +116,9 @@ class Core extends Base\Core
                 Merchant\Balance\Entity::ACCOUNT_NUMBER      => $input[Constants::ACCOUNT_NUMBER],
             ];
 
-            $balance = $this->createBalance($merchant, $attributes);
+            list($balance, $createdNow) = $this->createBalance($merchant, $attributes);
 
-            $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
+            $basDetailEntity = $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
 
@@ -91,7 +130,7 @@ class Core extends Base\Core
 
             (new Merchant\Core())->addHasKeyAccessToMerchantIfApplicable($merchant);
 
-            return $balance;
+            return [$balance, $createdNow, $basDetailEntity];
         }
         catch(\Exception $e)
         {
@@ -124,9 +163,10 @@ class Core extends Base\Core
             $mode = $this->app['rzp.mode'];
 
             $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $attributes, $mode);
+            return [$balance, true];
         }
 
-        return $balance;
+        return [$balance, false];
     }
 
     public function createBankingAccountStatementDetails($merchantId, $input, $balanceId)
@@ -135,7 +175,7 @@ class Core extends Base\Core
 
         $input[Constants::MERCHANT_ID] = $merchantId;
 
-        (new BankingAccountStatement\Details\Core())->createOrUpdate($input);
+        return (new BankingAccountStatement\Details\Core())->createOrUpdate($input);
     }
 
     /**

@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Counter;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -34,6 +35,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
 use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\XProActivation;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use Razorpay\Spine\Exception\DbQueryException;
@@ -811,7 +813,7 @@ class Core extends Base\Core
         // This is in a transaction because, BankingAccount entity update
         // and Balance entity creation, both should succeed or fail
         //
-        $bankingAccount = $this->repo->transaction(function () use ($bankingAccount, $input, $admin)
+        list($bankingAccount, $basDetailEntity, $balance) = $this->repo->transaction(function () use ($bankingAccount, $input, $admin)
         {
             $channel = $bankingAccount->getChannel();
 
@@ -843,7 +845,7 @@ class Core extends Base\Core
                 BASDetails\Entity::STATUS           => BASDetails\Status::ACTIVE
             );
 
-            (new BASDetails\Core)->createOrUpdate($basDetailInput);
+            $basDetailEntity = (new BASDetails\Core)->createOrUpdate($basDetailInput);
 
             $this->createScheduleTaskForFeeRecovery($balance, $merchant);
 
@@ -869,10 +871,36 @@ class Core extends Base\Core
                 Merchant\Constants::MERCHANT_ID => $merchant->getId()
             ]);
 
-            return $bankingAccount;
+            return [$bankingAccount, $basDetailEntity, $balance];
         });
 
         (new Merchant\Core())->addHasKeyAccessToMerchantIfApplicable($bankingAccount->merchant);
+
+        // check experiment and onboard DA to ledger in shadow mode
+        if ($this->onBoardDAMerchantOnLedgerInShadow($bankingAccount->merchant, $this->app['rzp.mode']) === true)
+        {
+            $merchant = $bankingAccount->merchant;
+            // assign DA_LEDGER_JOURNAL_WRITES feature for the merchant to be onboarded in
+            // shadow mode for direct accounting
+            if ($merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES) === false)
+            {
+                (new Feature\Core)->create(
+                    [
+                        Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                        Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                        Feature\Entity::NAME        => Feature\Constants::DA_LEDGER_JOURNAL_WRITES,
+                    ]);
+
+                $this->trace->info(
+                    TraceCode::DA_LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                    [
+                        'merchant_id'       => $merchant->getId(),
+                        'mode'              => $this->app['rzp.mode'],
+                    ]);
+
+                (new Merchant\Balance\Ledger\Core)->createXLedgerAccountForDirect($merchant, $basDetailEntity, $this->app['rzp.mode'], $balance->getBalance(),0,false);
+            }
+        }
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 
@@ -881,6 +909,16 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
+    // Returns true if experiment and env variable to onboard direct accounting merchant on ledger in shadow is running.
+    protected function onBoardDAMerchantOnLedgerInShadow($merchant, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::DA_LEDGER_ONBOARDING,
+            $mode
+        );
+
+        return (strtolower($variant) === 'on');
+    }
     /**
      * Sends banking current account activation sms to the merchant
      *
