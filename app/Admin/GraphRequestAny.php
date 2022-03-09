@@ -71,12 +71,19 @@ class GraphRequestAny
         ];
 
         $options = array_merge($options, $this->getDataForOutgoingRequest($this->data));
+        $spanOptions = (new ApiRequestSpan($this->request))::getRequestSpanOptions(Config::get('razorpay.graphql.server_url'));
 
         try
         {
-            $response = $this->request
-                             ->post(null, $options);
-
+            $response = (new ApiRequestSpan($this->request))->wrapRequestInSpan(
+                'POST',
+                null,
+                [
+                    'options' => $options,
+                    'headers' => $options['headers'],
+                ],
+                $spanOptions
+            );
             $headersToBeAppended = $this->getWhitelistedHeaders($response->getheaders());
 
             return [$response->json(), $headersToBeAppended];
