@@ -114,6 +114,12 @@ class Processor extends Base\Processor
         $this->gatewayInput->put(Entity::VPA, $vpa);
         $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
 
+        $this->callbackInput->put(Entity::DATA, [
+            Entity::BANK_ACCOUNT_ID     => $this->input->get(Entity::BANK_ACCOUNT_ID),
+        ]);
+
+        $this->callbackInput->put('vpa_id', $this->input->get(Entity::ID));
+
         return $this->callGateway();
     }
 

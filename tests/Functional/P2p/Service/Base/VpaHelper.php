@@ -64,6 +64,21 @@ class VpaHelper extends P2pHelper
         return $this->post($request);
     }
 
+    public function assignBankAccountCallback($callback, $content)
+    {
+        $this->validationJsonSchemaPath = 'vpa/add';
+
+        $request = $this->request($callback);
+
+        $default = [
+            'sdk'              => []
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
     public function checkAvailability(string $callback, array $content = [])
     {
         $this->validationJsonSchemaPath = 'vpa/availability';

@@ -167,7 +167,11 @@ class VpaTest extends TestCase
             ]
         ]);
 
-        $vpa = $helper->assignBankAccount($vpa->getPublicId(), $bankAccount->getPublicId());
+        $request = $helper->assignBankAccount($vpa->getPublicId(), $bankAccount->getPublicId());
+
+        $content = $this->handleSdkRequest($request);
+
+        $vpa = $helper->assignBankAccountCallback($request['callback'], $content);
 
         $this->assertNull($vpa['deleted_at']);
     }
@@ -241,7 +245,11 @@ class VpaTest extends TestCase
 
         $helper->withSchemaValidated();
 
-        $helper->assignBankAccount($vpaId, $bankAccount->getPublicId());
+        $request = $helper->assignBankAccount($vpaId, $bankAccount->getPublicId());
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->assignBankAccountCallback($request['callback'], $content);
 
         $this->assertSame($bankAccount->getId(), $this->fixtures->vpa->reload()->getBankAccountId());
 

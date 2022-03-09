@@ -64,7 +64,11 @@ class ScenariosTest extends TestCase
 
         $vpaHelper = $this->getVpaHelper();
 
-        $response = $vpaHelper->assignBankAccount($response['vpa']['id'], $dbBa[0]->getPublicId());
+        $assignRequest = $vpaHelper->assignBankAccount($response['vpa']['id'], $dbBa[0]->getPublicId());
+
+        $content = $this->handleSdkRequest($assignRequest);
+
+        $response = $vpaHelper->assignBankAccountCallback($assignRequest['callback'], $content);
 
         $this->assertSame($dbBa[0]->getPublicId(), $response['bank_account']['id']);
 
@@ -293,7 +297,11 @@ class ScenariosTest extends TestCase
 
         $baId  = $newBa->getPublicId();
 
-        $response = $vpaHelper->assignBankAccount($vpaId, $baId);
+        $request = $vpaHelper->assignBankAccount($vpaId, $baId);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $vpaHelper->assignBankAccountCallback($request['callback'], $content);
 
         $this->assertSame($baId, $response['bank_account']['id']);
 

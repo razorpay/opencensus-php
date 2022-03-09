@@ -68,34 +68,51 @@ class VpaGateway extends Gateway implements Contracts\VpaGateway
 
     public function assignBankAccount(Response $response)
     {
-        $vpa         = $this->input->get(Entity::VPA);
         $bankAccount = $this->input->get(Entity::BANK_ACCOUNT);
+
+        $vpa         = $this->input->get(Entity::VPA);
+
+        if ($this->inputSdk()->isEmpty() === false)
+        {
+            $this->handleLinkAccount($response, $bankAccount);
+
+            $response->setData([
+                Entity::VPA => [
+                    Entity::ID  => $vpa[Entity::ID],
+                ],
+                Entity::BANK_ACCOUNT => [
+                    Entity::ID  => $bankAccount[Entity::ID],
+                ],
+                DeviceToken\Entity::DEVICE_TOKEN => [
+                    Entity::ID                      => $this->getContextDeviceToken()->get(DeviceToken\Entity::ID),
+                    Entity::GATEWAY_DATA            => [
+                        DeviceToken\Entity::EXPIRE_AT   => $this->getCurrentTimestamp(),
+                    ],
+                ],
+            ]);
+
+            return;
+        }
+
         $accRefId    = $bankAccount[Entity::GATEWAY_DATA][Fields::REFERENCE_ID];
 
-        $request = $this->initiateS2sRequest(VpaAction::ADD_BANK_ACCOUNT);
-
-        $request->merge([
-            Fields::MERCHANT_CUSTOMER_ID    => $this->getMerchantCustomerId(),
-            Fields::ACCOUNT_REFERENCE_ID    => $accRefId,
+        $linkAccount = [
             Fields::CUSTOMER_VPA            => $vpa[Entity::ADDRESS],
-        ]);
+            Fields::ACCOUNT_REFERENCE_ID    => $accRefId,
+        ];
 
-        $s2s = $this->sendS2sRequest($request);
+        $callback = [
+            Entity::BANK_ACCOUNT_ID         => $bankAccount->get('id'),
+            Entity::USERNAME                => $vpa[Entity::USERNAME],
+        ];
 
-        $response->setData([
-            Entity::VPA => [
-                Entity::ID  => $vpa[Entity::ID],
-            ],
-            Entity::BANK_ACCOUNT => [
-                Entity::ID  => $bankAccount[Entity::ID],
-            ],
-            DeviceToken\Entity::DEVICE_TOKEN => [
-                Entity::ID                      => $this->getContextDeviceToken()->get(DeviceToken\Entity::ID),
-                Entity::GATEWAY_DATA            => [
-                    DeviceToken\Entity::EXPIRE_AT   => $this->getCurrentTimestamp(),
-                ],
-            ],
-        ]);
+        $request = $this->initiateSdkRequest(VpaAction::LINK_ACCOUNT);
+
+        $request->merge($linkAccount);
+
+        $request->setCallback($callback);
+
+        $response->setRequest($request);
     }
 
     public function initiateCheckAvailability(Response $response)

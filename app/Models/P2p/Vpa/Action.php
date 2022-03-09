@@ -37,6 +37,7 @@ class Action extends Base\Action
         self::ADD                               => Requests::P2P_CUSTOMER_VPA_CREATE,
         self::ADD_SUCCESS                       => Requests::P2P_CUSTOMER_VPA_CREATE,
         self::INITIATE_CHECK_AVAILABILITY       => Requests::P2P_CUSTOMER_VPA_CHECK_AVAILABILITY,
+        self::ASSIGN_BANK_ACCOUNT               => Requests::P2P_CUSTOMER_VPA_ASSIGN_BANK_ACCOUNT,
     ];
 
     protected $redactRules = [
