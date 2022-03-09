@@ -945,6 +945,27 @@ class PayoutServiceTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
     }
 
+    // Since idempotency feature is not available for payouts service,
+    // the payout shouldn't go via payouts service
+    public function testCreatePayoutWithIdempotencyKey()
+    {
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should not have gone via payouts service
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        $idempotencyEntity = $this->getLastEntity('idempotency_key', true,'live');
+
+        $this->assertEquals($idempotencyEntity['idempotency_key'], 'idem_key_test');
+        $this->assertEquals($idempotencyEntity['merchant_id'], '10000000000000');
+        $this->assertEquals($idempotencyEntity['source_id'], $payout['id']);
+        $this->assertEquals($idempotencyEntity['source_type'], 'payout');
+    }
+
     // Since PAYOUTS_ON_HOLD feature is enabled for the merchant and experiment is enabled
     // to go via payouts service, payout should go via payouts service
     public function testCreateOnHoldPayoutViaPayoutService()

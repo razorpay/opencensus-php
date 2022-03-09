@@ -3053,6 +3053,13 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
+                $idempotencyKeyId = $this->app['basicauth']->getIdempotencyKeyId();
+
+                if (empty($idempotencyKeyId) === false)
+                {
+                    return false;
+                }
+
                 // Skip Scheduled payout
                 if ((isset($input[Payout\Entity::SCHEDULED_AT]) === true) and
                     (empty($input[Payout\Entity::SCHEDULED_AT]) === false))
